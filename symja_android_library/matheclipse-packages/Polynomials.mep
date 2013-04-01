@@ -1,0 +1,30 @@
+Package[ 
+  "Polynomials", 
+  (* define the public available symbols *)
+  {LaguerreP, LegendreP}, 
+{ 
+  (* Laguerre polynomials 
+     http://en.wikipedia.org/wiki/Laguerre_polynomials *) 
+  LaguerreP[0,x_]:=1, 
+  LaguerreP[1,x_]:=1-x, 
+  LaguerreP[n_IntegerQ,x_]:= 
+      ExpandAll[(2*n-1-x)*LaguerreP[n-1,x] - (n-1)^2*LaguerreP[n-2,x]] /; NonNegative[n], 
+  (* Legendre polynomials 
+     http://en.wikipedia.org/wiki/Legendre_polynomials *)
+  LegendreP[n_IntegerQ,x_]:=
+      1/(2^n)*Sum[ExpandAll[Binomial[n,k]^2*(x-1)^(n-k)*(x+1)^k], {k,0,n}] /; NonNegative[n]
+    
+(* For tests only: 
+   some internal rules for Legendre polynomials http://en.wikipedia.org/wiki/Legendre_polynomials 
+ *)
+(*  
+  LegendrePIntern[0,x_]=1,
+  LegendrePIntern[1,x_]:=x,
+  LegendrePIntern[n_IntegerQ,x_]:=
+    Block[{ln2},
+           ln2=LegendrePIntern[n-2,x];
+           Print[n-2, ",", ExpandAll[ln2]];
+           1/n*((2*n-1)*x*LegendrePIntern[n-1,x]-(n-1)*ln2)
+         ] /; NonNegative[n]
+ *)
+} ]

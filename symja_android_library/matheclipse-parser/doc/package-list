@@ -1,0 +1,9 @@
+org.matheclipse.parser.client
+org.matheclipse.parser.client.ast
+org.matheclipse.parser.client.eval
+org.matheclipse.parser.client.eval.api
+org.matheclipse.parser.client.math
+org.matheclipse.parser.client.operator
+org.matheclipse.parser.server.util
+org.matheclipse.parser.test
+org.matheclipse.parser.test.eval

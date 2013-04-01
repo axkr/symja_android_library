@@ -1,0 +1,6 @@
+Package[ 
+  "System", 
+  (* define the public available symbols *)
+  { }, 
+{  
+} ]

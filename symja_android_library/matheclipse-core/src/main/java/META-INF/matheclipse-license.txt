@@ -1,0 +1,7 @@
+This MathEclipse library is free software; you can redistribute it and/or modify 
+it under the terms of the Eclipse Public License - v 1.0
+http://www.opensource.org/licenses/eclipse-1.0.php
+
+This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the licenses for more details.
