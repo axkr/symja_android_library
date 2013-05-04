@@ -22,7 +22,7 @@ public class EvalDouble {
 		if (expr instanceof ISymbol) {
 			return evalSymbol(((ISymbol) expr));
 		}
-		throw new UnsupportedOperationException("EvalDouble#eval()");
+		throw new UnsupportedOperationException("EvalDouble#eval(): "+expr);
 	}
 
 	public static double evalAST(double[] stack, final int top, final IAST ast) {

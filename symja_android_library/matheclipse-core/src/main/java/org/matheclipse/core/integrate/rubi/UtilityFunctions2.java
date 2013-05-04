@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class UtilityFunctions2 { 
-  public static IAST RULES = List( 
+  final public static IAST RULES = List( 
 SetDelayed(TrigSimplifyAux(Times(Times($p("u",true),Power(Sin($p("v")),$p("m",true))),Power(Plus(Plus($p("a",true),Times($p("b",true),Power(Cot($p("v")),$p("n",true)))),Times($p("c",true),Power(Csc($p("v")),$p("n",true)))),$p("p",true)))),
     Condition(Times(Times($s("u"),Power(Sin($s("v")),Plus($s("m"),Times(CN1,Times($s("n"),$s("p")))))),Power(Plus(Plus($s("c"),Times($s("b"),Power(Cos($s("v")),$s("n")))),Times($s("a"),Power(Sin($s("v")),$s("n")))),$s("p"))),IntegerQ(List($s("m"),$s("n"),$s("p"))))),
 SetDelayed(TrigSimplifyAux(Times(Times($p("u",true),Power(Csc($p("v")),$p("m",true))),Power(Plus(Plus($p("a",true),Times($p("b",true),Power(Cot($p("v")),$p("n",true)))),Times($p("c",true),Power(Csc($p("v")),$p("n",true)))),$p("p",true)))),

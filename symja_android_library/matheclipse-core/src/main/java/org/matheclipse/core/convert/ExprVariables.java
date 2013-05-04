@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorCollectionBoolean;
 
 /**
- * Determine the variable symbols from a MathEclipse expression.
+ * Determine the variable symbols from a Symja expression.
  * 
  */
 public class ExprVariables {
@@ -34,7 +34,7 @@ public class ExprVariables {
 	private final Set<IExpr> set = new TreeSet<IExpr>();
 
 	/**
-   * 
+   * Determine the variable symbols from a Symja expression.
    */
 	public ExprVariables(final IExpr expression) {
 		super();

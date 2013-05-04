@@ -17,6 +17,7 @@ package org.matheclipse.parser.client.eval;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
@@ -41,7 +42,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 
 	public final static boolean DEBUG = false;
 
-//	private static double EPSILON = 1.0e-15;
+	// private static double EPSILON = 1.0e-15;
 
 	private static Map<String, Complex> SYMBOL_MAP;
 
@@ -83,7 +84,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	}
 
 	static class SetFunction implements IComplexFunction {
-		public Complex evaluate(IEvaluator<Complex, ComplexVariable>  engine, FunctionNode function) {
+		public Complex evaluate(IEvaluator<Complex, ComplexVariable> engine, FunctionNode function) {
 			if (function.size() != 3) {
 				throw new ArithmeticException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) needs 2 arguments: "
 						+ function.toString());
@@ -110,7 +111,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 			return arg1.add(arg2);
 		}
 
-		public Complex evaluate(IEvaluator<Complex, ComplexVariable>  engine, FunctionNode function) {
+		public Complex evaluate(IEvaluator<Complex, ComplexVariable> engine, FunctionNode function) {
 			Complex result = new Complex(0.0, 0.0);
 			for (int i = 1; i < function.size(); i++) {
 				result = result.add(engine.evaluateNode(function.getNode(i)));
@@ -124,7 +125,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 			return arg1.multiply(arg2);
 		}
 
-		public Complex evaluate(IEvaluator<Complex, ComplexVariable>  engine, FunctionNode function) {
+		public Complex evaluate(IEvaluator<Complex, ComplexVariable> engine, FunctionNode function) {
 			Complex result = new Complex(1.0, 0.0);
 			for (int i = 1; i < function.size(); i++) {
 				result = result.multiply(engine.evaluateNode(function.getNode(i)));
@@ -134,17 +135,22 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	}
 
 	static {
-		SYMBOL_MAP = new HashMap<String, Complex>();
+		SYMBOL_MAP = new ConcurrentHashMap<String, Complex>();
+		SYMBOL_MAP.put("Catalan", new Complex(0.91596559417721901505460351493238411077414937428167, 0.0));
 		SYMBOL_MAP.put("Degree", new Complex(Math.PI / 180, 0.0));
 		SYMBOL_MAP.put("E", new Complex(Math.E, 0.0));
 		SYMBOL_MAP.put("I", new Complex(0.0, 1.0));
 		SYMBOL_MAP.put("Pi", new Complex(Math.PI, 0.0));
+		SYMBOL_MAP.put("EulerGamma", new Complex(0.57721566490153286060651209008240243104215933593992, 0.0));
+		SYMBOL_MAP.put("Glaisher", new Complex(1.2824271291006226368753425688697917277676889273250, 0.0));
+		SYMBOL_MAP.put("GoldenRatio", new Complex(1.6180339887498948482045868343656381177203091798058, 0.0));
+		SYMBOL_MAP.put("Khinchin", new Complex(2.6854520010653064453097148354817956938203822939945, 0.0));
 
-		SYMBOL_BOOLEAN_MAP = new HashMap<String, Boolean>();
+		SYMBOL_BOOLEAN_MAP = new ConcurrentHashMap<String, Boolean>();
 		SYMBOL_BOOLEAN_MAP.put("False", Boolean.FALSE);
 		SYMBOL_BOOLEAN_MAP.put("True", Boolean.TRUE);
 
-		FUNCTION_BOOLEAN_MAP = new HashMap<String, Object>();
+		FUNCTION_BOOLEAN_MAP = new ConcurrentHashMap<String, Object>();
 
 		FUNCTION_BOOLEAN_MAP.put("And", new IBooleanBoolean2Function() {
 			public boolean evaluate(boolean arg1, boolean arg2) {
@@ -174,7 +180,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 			}
 		});
 
-		FUNCTION_MAP = new HashMap<String, Object>();
+		FUNCTION_MAP = new ConcurrentHashMap<String, Object>();
 		FUNCTION_MAP.put("ArcTan", new ArcTanFunction());
 		FUNCTION_MAP.put("Log", new LogFunction());
 		FUNCTION_MAP.put("CompoundExpression", new CompoundExpressionFunction());
@@ -257,12 +263,32 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	private Map<String, ComplexVariable> fVariableMap;
 
 	private Map<String, BooleanVariable> fBooleanVariables;
-	
-	public ComplexEvalVisitor() {
+
+	private final boolean fRelaxedSyntax;
+
+	public ComplexEvalVisitor(boolean relaxedSyntax) {
 		fVariableMap = new HashMap<String, ComplexVariable>();
 		fBooleanVariables = new HashMap<String, BooleanVariable>();
+		fRelaxedSyntax = relaxedSyntax;
+		if (fRelaxedSyntax) {
+			if (SYMBOL_MAP.get("pi") == null) {
+				// init tables for relaxed mode
+				for (String key : SYMBOL_MAP.keySet()) {
+					SYMBOL_MAP.put(key.toLowerCase(), SYMBOL_MAP.get(key));
+				}
+				for (String key : SYMBOL_BOOLEAN_MAP.keySet()) {
+					SYMBOL_BOOLEAN_MAP.put(key.toLowerCase(), SYMBOL_BOOLEAN_MAP.get(key));
+				}
+				for (String key : FUNCTION_MAP.keySet()) {
+					FUNCTION_MAP.put(key.toLowerCase(), FUNCTION_MAP.get(key));
+				}
+				for (String key : FUNCTION_BOOLEAN_MAP.keySet()) {
+					FUNCTION_BOOLEAN_MAP.put(key.toLowerCase(), FUNCTION_BOOLEAN_MAP.get(key));
+				}
+			}
+		}
 	}
-	
+
 	public Complex getResult() {
 		return null;
 	}
@@ -292,7 +318,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	public Complex visit(FunctionNode functionNode) {
 		if (functionNode.size() > 0 && functionNode.getNode(0) instanceof SymbolNode) {
 			String symbol = functionNode.getNode(0).toString();
-			if (symbol.equals("If")) {
+			if (symbol.equals("If") || (fRelaxedSyntax && symbol.equalsIgnoreCase("If"))) {
 				if (functionNode.size() == 3) {
 					if (evaluateNodeLogical(functionNode.getNode(1))) {
 						return evaluateNode(functionNode.getNode(2));
@@ -319,10 +345,9 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 					}
 				} else if (functionNode.size() == 3) {
 					if (obj instanceof IComplex2Function) {
-						return ((IComplex2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)),
-								evaluateNode(functionNode.getNode(2)));
+						return ((IComplex2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode.getNode(2)));
 					}
-				} 
+				}
 			}
 		}
 		throw new MathException("EvalDouble#evaluateFunction(FunctionNode) not possible for: " + functionNode.toString());
@@ -382,8 +407,8 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 			} else if (functionNode.size() == 3) {
 				Object obj = FUNCTION_BOOLEAN_MAP.get(symbol);
 				if (obj instanceof IBooleanComplex2Function) {
-					return ((IBooleanComplex2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)),
-							evaluateNode(functionNode.getNode(2)));
+					return ((IBooleanComplex2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode
+							.getNode(2)));
 				} else if (obj instanceof IBooleanBoolean2Function) {
 					return ((IBooleanBoolean2Function) obj).evaluate(evaluateNodeLogical(functionNode.getNode(1)),
 							evaluateNodeLogical(functionNode.getNode(2)));
@@ -398,7 +423,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 		throw new ArithmeticException("EvalDouble#evaluateFunctionLogical(FunctionNode) not possible for: " + functionNode.toString());
 
 	}
-	
+
 	/**
 	 * Returns a <code>String</code> representation of the given
 	 * <code>Complex</code> number.
@@ -407,19 +432,21 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	 * @return
 	 * 
 	 */
-//	public static String toString(Complex c) {
-//		double real = c.getReal();
-//		double imag = c.getImaginary();
-//		if (imag == 0.0) {
-//			return Double.valueOf(real).toString();
-//		} else {
-//			if (imag >= 0.0) {
-//				return Double.valueOf(real).toString() + "+I*" + Double.valueOf(imag).toString();
-//			} else {
-//				return Double.valueOf(real).toString() + "+I*(" + Double.valueOf(imag).toString() + ")";
-//			}
-//		}
-//	}
+	// public static String toString(Complex c) {
+	// double real = c.getReal();
+	// double imag = c.getImaginary();
+	// if (imag == 0.0) {
+	// return Double.valueOf(real).toString();
+	// } else {
+	// if (imag >= 0.0) {
+	// return Double.valueOf(real).toString() + "+I*" +
+	// Double.valueOf(imag).toString();
+	// } else {
+	// return Double.valueOf(real).toString() + "+I*(" +
+	// Double.valueOf(imag).toString() + ")";
+	// }
+	// }
+	// }
 
 	/**
 	 * Define a value for a given variable name.
@@ -459,7 +486,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	public void clearVariables() {
 		fVariableMap.clear();
 	}
-	
+
 	/**
 	 * Optimize an already parsed in <code>functionNode</code> into an
 	 * <code>ASTNode</code>.

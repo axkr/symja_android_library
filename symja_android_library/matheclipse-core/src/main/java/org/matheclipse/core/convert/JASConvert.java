@@ -16,12 +16,14 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Predicates;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
+import edu.jas.arith.ModIntegerRing;
 import edu.jas.integrate.Integral;
 import edu.jas.integrate.LogIntegral;
 import edu.jas.integrate.QuotIntegral;
@@ -466,7 +468,7 @@ public class JASConvert<C extends RingElem<C>> {
 				// sb.append(" ## over " + ap.factory() + "\n");
 
 				if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {
-					IAST rootOf = F.function(F.RootOf);
+					IAST rootOf = F.ast(F.RootOf);
 					rootOf.add(poly2Expr(ar.modul, null));
 					// rootOf.add(variable);
 					// sb.append("sum_(" + ar.getGenerator() + " in ");
@@ -700,6 +702,13 @@ public class JASConvert<C extends RingElem<C>> {
 			result.add(monomTimes);
 		}
 		return result;
+	}
+
+	public static ModIntegerRing option2ModIntegerRing(ISignedNumber option) {
+		// TODO convert to long value
+		long longValue = option.toLong();
+		final BigInteger value = BigInteger.valueOf(longValue);
+		return new ModIntegerRing(longValue, value.isProbablePrime(32));
 	}
 
 	public static IComplex jas2Complex(edu.jas.poly.Complex<BigRational> c) {

@@ -45,6 +45,10 @@ public abstract class ASTNode {
 		return false;
 	}
 
+	public boolean isFree(final ASTNode n) {
+		return !this.equals(n);
+	}
+
 	// public ASTNode derivative(String variableName) {
 	// return new IntegerNode("0");
 	// }

@@ -26,7 +26,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			final ISymbol sym = listArg0.topHead();
 			final int n = listArg0.size() - 1;
 			final int k = ((IInteger) ast.get(2)).getBigNumerator().intValue();
-			final IAST result = F.function(F.List);
+			final IAST result = F.ast(F.List);
 			final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
 			final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
 			IAST partition;
@@ -52,14 +52,14 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 		IAST partition;
 		IAST partitionElement;
 		int partitionStartIndex;
-		partition = F.function(F.List);
+		partition = F.List();
 
 		final int n = listArg0.size() - 1;
 		// 0 is always the first index of a partition
 		partitionStartIndex = 0;
 		for (int i = 1; i < partitionsIndex.length; i++) {
 			// System.out.println(partitionsIndex[i] + ",");
-			partitionElement = F.function(sym);
+			partitionElement = F.ast(sym);
 			if (partitionStartIndex + 1 == partitionsIndex[i]) {
 				// OneIdentity check here
 				if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
@@ -83,7 +83,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 
 		}
 		// generate all elements for the last partitionElement of a partition:
-		partitionElement = F.function(sym);
+		partitionElement = F.ast(sym);
 		if (partitionStartIndex + 1 == n) {
 			// OneIdentity check here
 			if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {

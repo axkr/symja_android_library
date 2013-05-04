@@ -30,7 +30,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * 
 	 */
-	public static PatternSequence valueOf(final Symbol symbol,
+	public static PatternSequence valueOf(final ISymbol symbol,
 			final IExpr check, final boolean def) {
 		PatternSequence p = new PatternSequence();
 		p.fSymbol = symbol;
@@ -44,18 +44,15 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * @param numerator
 	 * @return
 	 */
-	public static PatternSequence valueOf(final Symbol symbol, final IExpr check) {
+	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check) {
 		PatternSequence p = new PatternSequence();
 		p.fSymbol = symbol;
 		p.fCondition = check;
 		return p;
 	}
 
-	public static PatternSequence valueOf(final Symbol symbol) {
-		PatternSequence p = new PatternSequence();
-		p.fSymbol = symbol;
-		p.fCondition = null;
-		return p;
+	public static PatternSequence valueOf(final ISymbol symbol) {
+		return valueOf(symbol, null);
 	}
 
 	/**
@@ -66,7 +63,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * The associated symbol for this pattern sequence
 	 */
-	Symbol fSymbol;
+	ISymbol fSymbol;
 
 	/**
 	 * Use default value, if no matching was found

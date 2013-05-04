@@ -30,7 +30,7 @@ public class Part implements IFunctionEvaluator {
 		final IExpr arg2 = ast.get(pos);
 		int p1 = pos + 1;
 		IExpr temp = null;
-		if (arg2.isInteger()) {
+		if (arg2.isSignedNumber()) {
 			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
 			IExpr ires = null;
 			ires = getIndex(arg1, indx);

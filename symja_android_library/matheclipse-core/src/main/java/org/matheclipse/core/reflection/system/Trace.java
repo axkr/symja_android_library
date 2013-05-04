@@ -29,7 +29,7 @@ public class Trace implements IFunctionEvaluator {
 		}
 		final EvalEngine engine = EvalEngine.get();
 		IAST traceList = engine.evalTrace(temp, matcher, F.List());
-		final IAST holdList = F.function(F.Hold);
+		final IAST holdList = F.ast(F.Hold);
 		holdList.add(traceList);
 		return holdList;
 	}

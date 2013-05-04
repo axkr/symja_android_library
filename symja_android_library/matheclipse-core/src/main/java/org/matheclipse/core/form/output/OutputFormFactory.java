@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.expression.NumberUtil;
@@ -236,6 +238,13 @@ public class OutputFormFactory implements IConstantHeaders {
 	}
 
 	public void convertSymbol(final Writer buf, final ISymbol sym) throws IOException {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(sym.toString());
+			if (str != null) {
+				buf.write(str);
+				return;
+			}
+		}
 		buf.write(sym.toString());
 	}
 
@@ -258,8 +267,7 @@ public class OutputFormFactory implements IConstantHeaders {
 		for (int i = size; i > 0; i--) {
 			temp = plusAST.get(i);
 
-			if ((temp instanceof IAST) && (((IAST) temp).size() > 1) && ((IAST) temp).topHead().toString().equals(Times)) {
-				// final int multPrec = OperatorTable.timesBin.getPrecedence();
+			if (temp.isTimes()) {
 				final String multCh = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getOperatorString();
 				boolean flag = false;
 				final IAST multFun = (IAST) temp;
@@ -422,7 +430,13 @@ public class OutputFormFactory implements IConstantHeaders {
 	public void convert(final Writer buf, final IExpr o, final int precedence) throws IOException {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
-			final String header = list.topHead().toString();
+			String header = list.topHead().toString();
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
+				if (str != null) {
+					header = str;
+				}
+			}
 			final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(header);
 			if (operator != null) {
 				if ((operator instanceof PrefixOperator) && (list.size() == 2)) {
@@ -449,7 +463,7 @@ public class OutputFormFactory implements IConstantHeaders {
 				convertList(buf, list);
 				return;
 			}
-			if (header.equals(Part) && (list.size() == 3)) {
+			if (header.equals(Part) && (list.size() >= 3)) {
 				convertPart(buf, list);
 				return;
 			}
@@ -513,7 +527,7 @@ public class OutputFormFactory implements IConstantHeaders {
 
 	public void convertSlot(final Writer buf, final IAST list) throws IOException {
 		try {
-			final int slot = ((IInteger) list.get(1)).toInt();
+			final int slot = ((ISignedNumber) list.get(1)).toInt();
 			buf.write("#" + slot);
 		} catch (final ArithmeticException e) {
 			// add message to evaluation problemReporter
@@ -564,17 +578,23 @@ public class OutputFormFactory implements IConstantHeaders {
 			buf.write("(");
 		}
 		convert(buf, list.get(1));
-		if (fRelaxedSyntax) {
-			buf.write("[");
-		} else {
-			buf.write("[[");
+		// if (fRelaxedSyntax) {
+		// buf.write("[");
+		// } else {
+		buf.write("[[");
+		// }
+		for (int i = 2; i < list.size(); i++) {
+			convert(buf, list.get(i));
+			if (i < list.size() - 1) {
+				buf.write(",");
+			}
 		}
-		convert(buf, list.get(2));
-		if (fRelaxedSyntax) {
-			buf.write("]");
-		} else {
-			buf.write("]]");
-		}
+
+		// if (fRelaxedSyntax) {
+		// buf.write("]");
+		// } else {
+		buf.write("]]");
+		// }
 		if (!(arg1 instanceof IAST)) {
 			buf.write(")");
 		}

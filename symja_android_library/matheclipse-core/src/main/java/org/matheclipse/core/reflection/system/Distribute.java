@@ -16,7 +16,7 @@ public class Distribute extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 2, 4);
+		Validate.checkRange(ast, 2, 6);
 
 		IExpr arg1 = ast.get(1);
 		IExpr head = F.Plus;
@@ -30,8 +30,18 @@ public class Distribute extends AbstractFunctionEvaluator {
 		}
 
 		if (arg1.isAST()) {
-			IAST resultCollector = F.ast(head);
-			IAST stepResult = F.ast(arg1.head());
+			IAST resultCollector;
+			if (ast.size() >= 5) {
+				resultCollector = F.ast(ast.get(4));
+			} else {
+				resultCollector = F.ast(head);
+			}
+			IAST stepResult;
+			if (ast.size() >= 6) {
+				stepResult = F.ast(ast.get(5));
+			} else {
+				stepResult = F.ast(arg1.head());
+			}
 			distributePosition(resultCollector, stepResult, head, (IAST) arg1, 1);
 			return resultCollector;
 		}

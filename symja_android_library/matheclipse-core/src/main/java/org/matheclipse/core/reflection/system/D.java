@@ -140,7 +140,7 @@ public class D extends AbstractFunctionEvaluator {
 					final IAST plusList = F.Plus();
 					IAST timesList = F.Times();
 					timesList.add(g);
-					timesList.add(F.function(symbolD, f, y));
+					timesList.add(F.D(f, y));
 					timesList.add(F.Power(f, F.CN1));
 					plusList.add(timesList);
 

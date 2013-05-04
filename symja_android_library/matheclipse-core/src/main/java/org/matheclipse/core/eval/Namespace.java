@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -57,41 +58,49 @@ public class Namespace {
 	 */
 	@SuppressWarnings("unchecked")
 	public void setEvaluator(final ISymbol symbol) {
-
-		for (Map.Entry<String, Namespace> namespaceEntry : fPackageNamespaceMap.entrySet()) {
-			Class clazz;
-			try {
-				if (namespaceEntry.getValue() == null) {
-					clazz = Class.forName(namespaceEntry.getKey() + "." + symbol.toString());
-				} else {
-					clazz = Class.forName(namespaceEntry.getKey() + "." + symbol.toString(), true, namespaceEntry.getValue().getClass()
-							.getClassLoader());
+		String functionName;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String symbolName = symbol.toString().toLowerCase();
+			functionName = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbolName);
+		} else {
+			functionName = symbol.toString();
+		}
+		if (functionName != null) {
+			for (Map.Entry<String, Namespace> namespaceEntry : fPackageNamespaceMap.entrySet()) {
+				Class clazz;
+				try {
+					if (namespaceEntry.getValue() == null) {
+						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName);
+					} else {
+						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName, true, namespaceEntry.getValue().getClass()
+								.getClassLoader());
+					}
+				} catch (final ClassNotFoundException e) {
+					// not a predefined function
+					clazz = null;
+				} catch (final NoClassDefFoundError e) {
+					// wrong written functionnames (i.e. PLot, PROduct)
+					// not a predefined function
+					clazz = null;
 				}
-			} catch (final ClassNotFoundException e) {
-				// not a predefined function
-				clazz = null;
-			} catch (final NoClassDefFoundError e) {
-				// wrong written functionnames (i.e. PLot, PROduct)
-				// not a predefined function
-				clazz = null;
-			}
 
-			if (clazz == null) {
-				continue;
-			}
-
-			try {
-				IEvaluator module = (IEvaluator) clazz.newInstance();
-				// a predefined function
-				// use reflection to setUp this symbol
-				symbol.setEvaluator(module);
-//				module.setUp(symbol);
-				return;
-			} catch (final Throwable se) {
-				if (Config.SHOW_STACKTRACE) {
-					se.printStackTrace();
+				if (clazz == null) {
+					continue;
 				}
-				continue;
+
+				try {
+					IEvaluator module = (IEvaluator) clazz.newInstance();
+					// a predefined function
+					// use reflection to setUp this symbol
+					symbol.setEvaluator(module);
+					// module.setUp(symbol);
+					return;
+				} catch (final Throwable se) {
+					if (Config.SHOW_STACKTRACE) {
+						se.printStackTrace();
+					}
+					continue;
+				}
 			}
 		}
 	}
@@ -116,7 +125,7 @@ public class Namespace {
 				// use reflection to setUp this symbol
 				symbol.setEvaluator(module);
 				// module.setUpXML(symbol);
-//				module.setUp(symbol);
+				// module.setUp(symbol);
 				return;
 			} catch (final Throwable se) {
 				if (Config.SHOW_STACKTRACE) {

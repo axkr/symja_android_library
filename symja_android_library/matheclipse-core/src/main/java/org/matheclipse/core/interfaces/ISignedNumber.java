@@ -43,6 +43,31 @@ public interface ISignedNumber extends INumber {
 	 */
 	public int sign();
 
+
+	/**
+	 * Converts this number to <code>int</code>; unlike {@link #intValue}
+	 * this method raises {@link ArithmeticException} if this number cannot be
+	 * represented by an <code>int</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to
+	 *         type <code>int</code>.
+	 * @throws ArithmeticException
+	 *           if conversion to <code>int</code> is not possible.
+	 */
+	public int toInt() throws ArithmeticException;
+	
+	/**
+	 * Converts this number to <code>long</code>; unlike {@link #longValue}
+	 * this method raises {@link ArithmeticException} if this number cannot be
+	 * represented by an <code>long</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to
+	 *         type <code>long</code>.
+	 * @throws ArithmeticException
+	 *           if conversion to <code>int</code> is not possible.
+	 */
+	public long toLong() throws ArithmeticException;
+
 	/**
 	 * Returns the smallest (closest to negative infinity)
 	 * <code>ISignedNumber</code> value that is not less than <code>this</code>

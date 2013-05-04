@@ -40,6 +40,7 @@ import com.google.common.base.Function;
  * </a>
  */
 public class F {
+
 	/**
 	 * The map for predefined strings for the
 	 * {@link IExpr#internalFormString(boolean, int)} method.
@@ -51,7 +52,7 @@ public class F {
 	/**
 	 * The map for predefined symbols
 	 */
-	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(557);
+	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
 
 	public static ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
 		@Override
@@ -107,7 +108,7 @@ public class F {
 	public static ISymbol Condition;
 
 	public static ISymbol Conjugate;
-	
+
 	public static ISymbol Continue;
 
 	public static ISymbol Cos;
@@ -173,6 +174,8 @@ public class F {
 	public static ISymbol Head;
 
 	public static ISymbol Hold;
+
+	public static ISymbol I;
 
 	public static ISymbol If;
 
@@ -580,6 +583,8 @@ public class F {
 
 	public static ISymbol Background;
 
+	public static ISymbol Blank;
+
 	public static ISymbol White;
 
 	public static ISymbol Slot;
@@ -623,7 +628,6 @@ public class F {
 
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
-
 		return unary(Abs, a0);
 	}
 
@@ -721,13 +725,12 @@ public class F {
 	public static IAST Conjugate(final IExpr a0) {
 		return unary(Conjugate, a0);
 	}
-	
+
 	public static IAST Cos(final IExpr a0) {
 		return unary(Cos, a0);
 	}
 
 	public static IAST Cosh(final IExpr a0) {
-
 		return unary(Cosh, a0);
 	}
 
@@ -736,7 +739,7 @@ public class F {
 	}
 
 	public static IAST Sequence() {
-		return function(Sequence);
+		return ast(Sequence);
 	}
 
 	public static IAST Sequence(final IExpr a0) {
@@ -748,13 +751,11 @@ public class F {
 	}
 
 	public static IAST Cross(final IExpr a0, final IExpr a1) {
-
 		return binary(Cross, a0, a1);
 	}
 
 	public static IAST D() {
-
-		return function(D);
+		return ast(D);
 	}
 
 	public static IAST D(final IExpr a0, final IExpr a1) {
@@ -872,7 +873,7 @@ public class F {
 
 	public static IAST Graphics() {
 
-		return function(Graphics);
+		return ast(Graphics);
 	}
 
 	public static IAST Hold(final IExpr a0) {
@@ -988,32 +989,32 @@ public class F {
 
 				CD0 = Num.valueOf(0.0);
 				CD1 = Num.valueOf(1.0);
-				a = predefinedSymbol("a");
-				b = predefinedSymbol("b");
-				c = predefinedSymbol("c");
-				d = predefinedSymbol("d");
-				e = predefinedSymbol("e");
-				f = predefinedSymbol("f");
-				g = predefinedSymbol("g");
-				h = predefinedSymbol("h");
-				i = predefinedSymbol("i");
-				j = predefinedSymbol("j");
-				k = predefinedSymbol("k");
-				l = predefinedSymbol("l");
-				m = predefinedSymbol("m");
-				n = predefinedSymbol("n");
-				o = predefinedSymbol("o");
-				p = predefinedSymbol("p");
-				q = predefinedSymbol("q");
-				r = predefinedSymbol("r");
-				s = predefinedSymbol("s");
-				t = predefinedSymbol("t");
-				u = predefinedSymbol("u");
-				v = predefinedSymbol("v");
-				w = predefinedSymbol("w");
-				x = predefinedSymbol("x");
-				y = predefinedSymbol("y");
-				z = predefinedSymbol("z");
+				a = initPredefinedSymbol("a");
+				b = initPredefinedSymbol("b");
+				c = initPredefinedSymbol("c");
+				d = initPredefinedSymbol("d");
+				e = initPredefinedSymbol("e");
+				f = initPredefinedSymbol("f");
+				g = initPredefinedSymbol("g");
+				h = initPredefinedSymbol("h");
+				i = initPredefinedSymbol("i");
+				j = initPredefinedSymbol("j");
+				k = initPredefinedSymbol("k");
+				l = initPredefinedSymbol("l");
+				m = initPredefinedSymbol("m");
+				n = initPredefinedSymbol("n");
+				o = initPredefinedSymbol("o");
+				p = initPredefinedSymbol("p");
+				q = initPredefinedSymbol("q");
+				r = initPredefinedSymbol("r");
+				s = initPredefinedSymbol("s");
+				t = initPredefinedSymbol("t");
+				u = initPredefinedSymbol("u");
+				v = initPredefinedSymbol("v");
+				w = initPredefinedSymbol("w");
+				x = initPredefinedSymbol("x");
+				y = initPredefinedSymbol("y");
+				z = initPredefinedSymbol("z");
 
 				a_ = new Pattern(a);
 				b_ = new Pattern(b);
@@ -1073,216 +1074,218 @@ public class F {
 				 * Define the &quot;set symbols&quot; first, because of dependencies in
 				 * the predefined rules
 				 */
-				Set = predefinedSymbol("Set");
-				SetDelayed = predefinedSymbol("SetDelayed");
+				Set = initPredefinedSymbol("Set");
+				SetDelayed = initPredefinedSymbol("SetDelayed");
 
-				Plus = predefinedSymbol("Plus");
-				Times = predefinedSymbol("Times");
-				Power = predefinedSymbol("Power");
+				Plus = initPredefinedSymbol("Plus");
+				Times = initPredefinedSymbol("Times");
+				Power = initPredefinedSymbol("Power");
 
-				List = predefinedSymbol(IConstantHeaders.List);
-				Log = predefinedSymbol(IConstantHeaders.Log);
-				True = predefinedSymbol(IConstantHeaders.True);
-				False = predefinedSymbol(IConstantHeaders.False);
-				Null = predefinedSymbol(IConstantHeaders.Null);
-				E = predefinedSymbol(IConstantHeaders.E);
-				Pi = predefinedSymbol(IConstantHeaders.Pi);
-				Second = predefinedSymbol(IConstantHeaders.Second);
-				Indeterminate = predefinedSymbol("Indeterminate");
-				Infinity = predefinedSymbol(IConstantHeaders.Infinity);
-				ComplexInfinity = predefinedSymbol(IConstantHeaders.ComplexInfinity);
-				DirectedInfinity = predefinedSymbol(IConstantHeaders.DirectedInfinity);
+				List = initPredefinedSymbol(IConstantHeaders.List);
+				Log = initPredefinedSymbol(IConstantHeaders.Log);
+				True = initPredefinedSymbol(IConstantHeaders.True);
+				False = initPredefinedSymbol(IConstantHeaders.False);
+				Null = initPredefinedSymbol(IConstantHeaders.Null);
+				E = initPredefinedSymbol(IConstantHeaders.E);
+				Pi = initPredefinedSymbol(IConstantHeaders.Pi);
+				Second = initPredefinedSymbol(IConstantHeaders.Second);
+				Indeterminate = initPredefinedSymbol("Indeterminate");
+				Infinity = initPredefinedSymbol(IConstantHeaders.Infinity);
+				ComplexInfinity = initPredefinedSymbol(IConstantHeaders.ComplexInfinity);
+				DirectedInfinity = initPredefinedSymbol(IConstantHeaders.DirectedInfinity);
 
-				Listable = predefinedSymbol(IConstantHeaders.Listable);
-				Constant = predefinedSymbol(IConstantHeaders.Constant);
-				NumericFunction = predefinedSymbol(IConstantHeaders.NumericFunction);
-				Orderless = predefinedSymbol(IConstantHeaders.Orderless);
-				OneIdentity = predefinedSymbol(IConstantHeaders.OneIdentity);
-				Flat = predefinedSymbol(IConstantHeaders.Flat);
-				HoldFirst = predefinedSymbol(IConstantHeaders.HoldFirst);
-				HoldRest = predefinedSymbol(IConstantHeaders.HoldRest);
-				HoldAll = predefinedSymbol(IConstantHeaders.HoldAll);
-				NHoldFirst = predefinedSymbol(IConstantHeaders.NHoldFirst);
-				NHoldRest = predefinedSymbol(IConstantHeaders.NHoldRest);
-				NHoldAll = predefinedSymbol(IConstantHeaders.NHoldAll);
+				Listable = initPredefinedSymbol(IConstantHeaders.Listable);
+				Constant = initPredefinedSymbol(IConstantHeaders.Constant);
+				NumericFunction = initPredefinedSymbol(IConstantHeaders.NumericFunction);
+				Orderless = initPredefinedSymbol(IConstantHeaders.Orderless);
+				OneIdentity = initPredefinedSymbol(IConstantHeaders.OneIdentity);
+				Flat = initPredefinedSymbol(IConstantHeaders.Flat);
+				HoldFirst = initPredefinedSymbol(IConstantHeaders.HoldFirst);
+				HoldRest = initPredefinedSymbol(IConstantHeaders.HoldRest);
+				HoldAll = initPredefinedSymbol(IConstantHeaders.HoldAll);
+				NHoldFirst = initPredefinedSymbol(IConstantHeaders.NHoldFirst);
+				NHoldRest = initPredefinedSymbol(IConstantHeaders.NHoldRest);
+				NHoldAll = initPredefinedSymbol(IConstantHeaders.NHoldAll);
 
-				Line = predefinedSymbol(IConstantHeaders.Line);
-				BoxRatios = predefinedSymbol(IConstantHeaders.BoxRatios);
-				MeshRange = predefinedSymbol(IConstantHeaders.MeshRange);
-				PlotRange = predefinedSymbol(IConstantHeaders.PlotRange);
+				Line = initPredefinedSymbol(IConstantHeaders.Line);
+				BoxRatios = initPredefinedSymbol(IConstantHeaders.BoxRatios);
+				MeshRange = initPredefinedSymbol(IConstantHeaders.MeshRange);
+				PlotRange = initPredefinedSymbol(IConstantHeaders.PlotRange);
 
-				AxesStyle = predefinedSymbol(IConstantHeaders.AxesStyle);
-				Automatic = predefinedSymbol(IConstantHeaders.Automatic);
-				AxesOrigin = predefinedSymbol(IConstantHeaders.AxesOrigin);
-				Axes = predefinedSymbol(IConstantHeaders.Axes);
-				Background = predefinedSymbol(IConstantHeaders.Background);
-				White = predefinedSymbol(IConstantHeaders.White);
+				AxesStyle = initPredefinedSymbol(IConstantHeaders.AxesStyle);
+				Automatic = initPredefinedSymbol(IConstantHeaders.Automatic);
+				AxesOrigin = initPredefinedSymbol(IConstantHeaders.AxesOrigin);
+				Axes = initPredefinedSymbol(IConstantHeaders.Axes);
+				Background = initPredefinedSymbol(IConstantHeaders.Background);
+				White = initPredefinedSymbol(IConstantHeaders.White);
 
-				// _Failed = createPredefinedSymbol("$Failed");
+				// _Failed = createinitSymbol("$Failed");
 
-				IntegerHead = predefinedSymbol(IConstantHeaders.IntegerHead);
-				RationalHead = predefinedSymbol(IConstantHeaders.RationalHead);
-				SymbolHead = predefinedSymbol(IConstantHeaders.SymbolHead);
-				RealHead = predefinedSymbol(IConstantHeaders.RealHead);
-				ComplexHead = predefinedSymbol(IConstantHeaders.ComplexHead);
-				PatternHead = predefinedSymbol(IConstantHeaders.PatternHead);
-				BlankHead = predefinedSymbol(IConstantHeaders.BlankHead);
-				StringHead = predefinedSymbol(IConstantHeaders.StringHead);
-				MethodHead = predefinedSymbol(IConstantHeaders.MethodHead);
+				IntegerHead = initPredefinedSymbol(IConstantHeaders.IntegerHead);
+				RationalHead = initPredefinedSymbol(IConstantHeaders.RationalHead);
+				SymbolHead = initPredefinedSymbol(IConstantHeaders.SymbolHead);
+				RealHead = initPredefinedSymbol(IConstantHeaders.RealHead);
+				ComplexHead = initPredefinedSymbol(IConstantHeaders.ComplexHead);
+				PatternHead = initPredefinedSymbol(IConstantHeaders.PatternHead);
+				BlankHead = initPredefinedSymbol(IConstantHeaders.BlankHead);
+				StringHead = initPredefinedSymbol(IConstantHeaders.StringHead);
+				MethodHead = initPredefinedSymbol(IConstantHeaders.MethodHead);
 
-				Slot = predefinedSymbol("Slot");
+				Slot = initPredefinedSymbol("Slot");
 				Slot.setAttributes(ISymbol.NHOLDALL);
-				SlotSequence = predefinedSymbol("SlotSequence");
+				SlotSequence = initPredefinedSymbol("SlotSequence");
 				SlotSequence.setAttributes(ISymbol.NHOLDALL);
-				Options = predefinedSymbol("Options");
-				Graphics = predefinedSymbol("Graphics");
-				ReplaceAll = predefinedSymbol("ReplaceAll");
-				Show = predefinedSymbol("Show");
-				SurfaceGraphics = predefinedSymbol("SurfaceGraphics");
+				Options = initPredefinedSymbol("Options");
+				Graphics = initPredefinedSymbol("Graphics");
+				ReplaceAll = initPredefinedSymbol("ReplaceAll");
+				Show = initPredefinedSymbol("Show");
+				SurfaceGraphics = initPredefinedSymbol("SurfaceGraphics");
 
 				// generated symbols
-				Abs = predefinedSymbol("Abs");
-				And = predefinedSymbol("And");
-				Append = predefinedSymbol("Append");
-				Apart = predefinedSymbol("Apart");
-				Apply = predefinedSymbol("Apply");
-				ArcCos = predefinedSymbol("ArcCos");
-				ArcSin = predefinedSymbol("ArcSin");
-				ArcTan = predefinedSymbol("ArcTan");
-				ArcCosh = predefinedSymbol("ArcCosh");
-				ArcSinh = predefinedSymbol("ArcSinh");
-				ArcTanh = predefinedSymbol("ArcTanh");
-				AtomQ = predefinedSymbol("AtomQ");
-				Binomial = predefinedSymbol("Binomial");
-				Block = predefinedSymbol("Block");
-				Break = predefinedSymbol("Break");
-				Cancel = predefinedSymbol("Cancel");
-				Csc = predefinedSymbol("Csc");
-				Ceiling = predefinedSymbol("Ceiling");
-				CompoundExpression = predefinedSymbol("CompoundExpression");
-				Condition = predefinedSymbol("Condition");
-				Conjugate = predefinedSymbol("Conjugate");
-				Continue = predefinedSymbol("Continue");
-				Cos = predefinedSymbol("Cos");
-				Cosh = predefinedSymbol("Cosh");
-				Cot = predefinedSymbol("Cot");
-				Coth = predefinedSymbol("Coth");
-				Cross = predefinedSymbol("Cross");
-				D = predefinedSymbol("D");
-				Denominator = predefinedSymbol("Denominator");
-				Derivative = predefinedSymbol("Derivative");
-				Det = predefinedSymbol("Det");
-				Dot = predefinedSymbol("Dot");
-				Equal = predefinedSymbol("Equal");
-				EvenQ = predefinedSymbol("EvenQ");
-				Expand = predefinedSymbol("Expand");
-				ExpandAll = predefinedSymbol("ExpandAll");
-				Factor = predefinedSymbol("Factor");
-				Factorial = predefinedSymbol("Factorial");
-				FactorInteger = predefinedSymbol("FactorInteger");
-				Fibonacci = predefinedSymbol("Fibonacci");
-				FindRoot = predefinedSymbol("FindRoot");
-				First = predefinedSymbol("First");
-				Floor = predefinedSymbol("Floor");
-				FreeQ = predefinedSymbol("FreeQ");
-				FullForm = predefinedSymbol("FullForm");
-				Function = predefinedSymbol("Function");
-				GCD = predefinedSymbol("GCD");
-				Greater = predefinedSymbol("Greater");
-				GreaterEqual = predefinedSymbol("GreaterEqual");
-				// GroebnerBasis = predefinedSymbol("GroebnerBasis", new
+				Abs = initPredefinedSymbol("Abs");
+				And = initPredefinedSymbol("And");
+				Append = initPredefinedSymbol("Append");
+				Apart = initPredefinedSymbol("Apart");
+				Apply = initPredefinedSymbol("Apply");
+				ArcCos = initPredefinedSymbol("ArcCos");
+				ArcSin = initPredefinedSymbol("ArcSin");
+				ArcTan = initPredefinedSymbol("ArcTan");
+				ArcCosh = initPredefinedSymbol("ArcCosh");
+				ArcSinh = initPredefinedSymbol("ArcSinh");
+				ArcTanh = initPredefinedSymbol("ArcTanh");
+				AtomQ = initPredefinedSymbol("AtomQ");
+				Binomial = initPredefinedSymbol("Binomial");
+				Blank = initPredefinedSymbol("Blank");
+				Block = initPredefinedSymbol("Block");
+				Break = initPredefinedSymbol("Break");
+				Cancel = initPredefinedSymbol("Cancel");
+				Csc = initPredefinedSymbol("Csc");
+				Ceiling = initPredefinedSymbol("Ceiling");
+				CompoundExpression = initPredefinedSymbol("CompoundExpression");
+				Condition = initPredefinedSymbol("Condition");
+				Conjugate = initPredefinedSymbol("Conjugate");
+				Continue = initPredefinedSymbol("Continue");
+				Cos = initPredefinedSymbol("Cos");
+				Cosh = initPredefinedSymbol("Cosh");
+				Cot = initPredefinedSymbol("Cot");
+				Coth = initPredefinedSymbol("Coth");
+				Cross = initPredefinedSymbol("Cross");
+				D = initPredefinedSymbol("D");
+				Denominator = initPredefinedSymbol("Denominator");
+				Derivative = initPredefinedSymbol("Derivative");
+				Det = initPredefinedSymbol("Det");
+				Dot = initPredefinedSymbol("Dot");
+				Equal = initPredefinedSymbol("Equal");
+				EvenQ = initPredefinedSymbol("EvenQ");
+				Expand = initPredefinedSymbol("Expand");
+				ExpandAll = initPredefinedSymbol("ExpandAll");
+				Factor = initPredefinedSymbol("Factor");
+				Factorial = initPredefinedSymbol("Factorial");
+				FactorInteger = initPredefinedSymbol("FactorInteger");
+				Fibonacci = initPredefinedSymbol("Fibonacci");
+				FindRoot = initPredefinedSymbol("FindRoot");
+				First = initPredefinedSymbol("First");
+				Floor = initPredefinedSymbol("Floor");
+				FreeQ = initPredefinedSymbol("FreeQ");
+				FullForm = initPredefinedSymbol("FullForm");
+				Function = initPredefinedSymbol("Function");
+				GCD = initPredefinedSymbol("GCD");
+				Greater = initPredefinedSymbol("Greater");
+				GreaterEqual = initPredefinedSymbol("GreaterEqual");
+				// GroebnerBasis = initSymbol("GroebnerBasis", new
 				// GroebnerBasis());
-				Head = predefinedSymbol("Head");
-				Hold = predefinedSymbol("Hold");
-				If = predefinedSymbol("If");
-				Im = predefinedSymbol("Im");
-				IntegerQ = predefinedSymbol("IntegerQ");
-				Integrate = predefinedSymbol("Integrate");
-				Inverse = predefinedSymbol("Inverse");
+				Head = initPredefinedSymbol("Head");
+				Hold = initPredefinedSymbol("Hold");
+				I = initPredefinedSymbol("I");
+				If = initPredefinedSymbol("If");
+				Im = initPredefinedSymbol("Im");
+				IntegerQ = initPredefinedSymbol("IntegerQ");
+				Integrate = initPredefinedSymbol("Integrate");
+				Inverse = initPredefinedSymbol("Inverse");
 				// KOrderlessPartitions =
-				// predefinedSymbol("KOrderlessPartitions", new
+				// initSymbol("KOrderlessPartitions", new
 				// KOrderlessPartitions());
-				// KPartitions = predefinedSymbol("KPartitions", new
+				// KPartitions = initSymbol("KPartitions", new
 				// KPartitions());
-				// KSubsets = predefinedSymbol("KSubsets", new KSubsets());
-				LeafCount = predefinedSymbol("LeafCount");
-				Length = predefinedSymbol("Length");
-				Less = predefinedSymbol("Less");
-				LessEqual = predefinedSymbol("LessEqual");
-				Level = predefinedSymbol("Level");
-				Limit = predefinedSymbol("Limit");
-				Map = predefinedSymbol("Map");
-				MapAll = predefinedSymbol("MapAll");
-				MatchQ = predefinedSymbol("MatchQ");
-				MatrixPower = predefinedSymbol("MatrixPower");
-				Max = predefinedSymbol("Max");
-				MemberQ = predefinedSymbol("MemberQ");
-				Min = predefinedSymbol("Min");
-				Mod = predefinedSymbol("Mod");
-				Module = predefinedSymbol("Module");
-				N = predefinedSymbol("N");
-				Negative = predefinedSymbol("Negative");
-				NonNegative = predefinedSymbol("NonNegative");
-				Not = predefinedSymbol("Not");
-				// NumberPartitions = predefinedSymbol("NumberPartitions", new
+				// KSubsets = initSymbol("KSubsets", new KSubsets());
+				LeafCount = initPredefinedSymbol("LeafCount");
+				Length = initPredefinedSymbol("Length");
+				Less = initPredefinedSymbol("Less");
+				LessEqual = initPredefinedSymbol("LessEqual");
+				Level = initPredefinedSymbol("Level");
+				Limit = initPredefinedSymbol("Limit");
+				Map = initPredefinedSymbol("Map");
+				MapAll = initPredefinedSymbol("MapAll");
+				MatchQ = initPredefinedSymbol("MatchQ");
+				MatrixPower = initPredefinedSymbol("MatrixPower");
+				Max = initPredefinedSymbol("Max");
+				MemberQ = initPredefinedSymbol("MemberQ");
+				Min = initPredefinedSymbol("Min");
+				Mod = initPredefinedSymbol("Mod");
+				Module = initPredefinedSymbol("Module");
+				N = initPredefinedSymbol("N");
+				Negative = initPredefinedSymbol("Negative");
+				NonNegative = initPredefinedSymbol("NonNegative");
+				Not = initPredefinedSymbol("Not");
+				// NumberPartitions = initSymbol("NumberPartitions", new
 				// NumberPartitions());
-				NumberQ = predefinedSymbol("NumberQ");
-				NumericQ = predefinedSymbol("NumericQ");
-				Numerator = predefinedSymbol("Numerator");
-				OddQ = predefinedSymbol("OddQ");
-				Or = predefinedSymbol("Or");
-				Order = predefinedSymbol("Order");
-				OrderedQ = predefinedSymbol("OrderedQ");
-				Part = predefinedSymbol("Part");
-				// Partition = predefinedSymbol("Partition", new Partition());
-				// Permutations = predefinedSymbol("Permutations", new
+				NumberQ = initPredefinedSymbol("NumberQ");
+				NumericQ = initPredefinedSymbol("NumericQ");
+				Numerator = initPredefinedSymbol("Numerator");
+				OddQ = initPredefinedSymbol("OddQ");
+				Or = initPredefinedSymbol("Or");
+				Order = initPredefinedSymbol("Order");
+				OrderedQ = initPredefinedSymbol("OrderedQ");
+				Part = initPredefinedSymbol("Part");
+				// Partition = initSymbol("Partition", new Partition());
+				// Permutations = initSymbol("Permutations", new
 				// Permutations());
-				Plot = predefinedSymbol("Plot");
-				Plot3D = predefinedSymbol("Plot3D");
+				Plot = initPredefinedSymbol("Plot");
+				Plot3D = initPredefinedSymbol("Plot3D");
 
-				Positive = predefinedSymbol("Positive");
-				PossibleZeroQ = predefinedSymbol("PossibleZeroQ");
+				Positive = initPredefinedSymbol("Positive");
+				PossibleZeroQ = initPredefinedSymbol("PossibleZeroQ");
 
-				Prepend = predefinedSymbol("Prepend");
-				PrimeQ = predefinedSymbol("PrimeQ");
-				Print = predefinedSymbol("Print");
-				Product = predefinedSymbol("Product");
-				Quotient = predefinedSymbol("Quotient");
-				Re = predefinedSymbol("Re");
-				Rest = predefinedSymbol("Rest");
-				Reverse = predefinedSymbol("Reverse");
-				RootOf = predefinedSymbol("RootOf");
-				RotateLeft = predefinedSymbol("RotateLeft");
-				RotateRight = predefinedSymbol("RotateRight");
-				Rule = predefinedSymbol("Rule");
-				RuleDelayed = predefinedSymbol("RuleDelayed");
-				Sec = predefinedSymbol("Sec");
-				Sequence = predefinedSymbol("Sequence");
-				SetAttributes = predefinedSymbol("SetAttributes");
-				Sign = predefinedSymbol("Sign");
-				SignCmp = predefinedSymbol("SignCmp");
-				Sin = predefinedSymbol("Sin");
-				Sinh = predefinedSymbol("Sinh");
-				Sort = predefinedSymbol("Sort");
-				Sqrt = predefinedSymbol("Sqrt");
-				Sum = predefinedSymbol("Sum");
-				Tan = predefinedSymbol("Tan");
-				Tanh = predefinedSymbol("Tanh");
+				Prepend = initPredefinedSymbol("Prepend");
+				PrimeQ = initPredefinedSymbol("PrimeQ");
+				Print = initPredefinedSymbol("Print");
+				Product = initPredefinedSymbol("Product");
+				Quotient = initPredefinedSymbol("Quotient");
+				Re = initPredefinedSymbol("Re");
+				Rest = initPredefinedSymbol("Rest");
+				Reverse = initPredefinedSymbol("Reverse");
+				RootOf = initPredefinedSymbol("RootOf");
+				RotateLeft = initPredefinedSymbol("RotateLeft");
+				RotateRight = initPredefinedSymbol("RotateRight");
+				Rule = initPredefinedSymbol("Rule");
+				RuleDelayed = initPredefinedSymbol("RuleDelayed");
+				Sec = initPredefinedSymbol("Sec");
+				Sequence = initPredefinedSymbol("Sequence");
+				SetAttributes = initPredefinedSymbol("SetAttributes");
+				Sign = initPredefinedSymbol("Sign");
+				SignCmp = initPredefinedSymbol("SignCmp");
+				Sin = initPredefinedSymbol("Sin");
+				Sinh = initPredefinedSymbol("Sinh");
+				Sort = initPredefinedSymbol("Sort");
+				Sqrt = initPredefinedSymbol("Sqrt");
+				Sum = initPredefinedSymbol("Sum");
+				Tan = initPredefinedSymbol("Tan");
+				Tanh = initPredefinedSymbol("Tanh");
 
-				Timing = predefinedSymbol("Timing");
-				Together = predefinedSymbol("Together");
-				Tr = predefinedSymbol("Tr");
-				Trace = predefinedSymbol("Trace");
-				Transpose = predefinedSymbol("Transpose");
-				TrueQ = predefinedSymbol("TrueQ");
-				Trunc = predefinedSymbol("Trunc");
-				Unequal = predefinedSymbol("Unequal");
-				While = predefinedSymbol("While");
+				Timing = initPredefinedSymbol("Timing");
+				Together = initPredefinedSymbol("Together");
+				Tr = initPredefinedSymbol("Tr");
+				Trace = initPredefinedSymbol("Trace");
+				Transpose = initPredefinedSymbol("Transpose");
+				TrueQ = initPredefinedSymbol("TrueQ");
+				Trunc = initPredefinedSymbol("Trunc");
+				Unequal = initPredefinedSymbol("Unequal");
+				While = initPredefinedSymbol("While");
 
-				CInfinity = function(DirectedInfinity, C1);
-				CNInfinity = function(DirectedInfinity, CN1);
-				Slot1 = function(Slot, C1);
-				Slot2 = function(Slot, C2);
+				CInfinity = $(DirectedInfinity, C1);
+				CNInfinity = $(DirectedInfinity, CN1);
+				Slot1 = $(Slot, C1);
+				Slot2 = $(Slot, C2);
 
 				if (symbolObserver != null) {
 					SYMBOL_OBSERVER = symbolObserver;
@@ -1378,7 +1381,7 @@ public class F {
 	}
 
 	public static IAST Line() {
-		return function(Line);
+		return ast(Line);
 	}
 
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
@@ -1391,7 +1394,7 @@ public class F {
 	}
 
 	public static IAST List() {
-		return function(List);
+		return ast(List);
 	}
 
 	public static IAST List(final IExpr a0) {
@@ -1447,7 +1450,7 @@ public class F {
 	}
 
 	public static IAST Max() {
-		return function(Max);
+		return ast(Max);
 	}
 
 	public static IAST Max(final IExpr a0) {
@@ -1463,7 +1466,7 @@ public class F {
 	}
 
 	public static IAST Min() {
-		return function(Min);
+		return ast(Min);
 	}
 
 	public static IAST Min(final IExpr a0) {
@@ -1532,7 +1535,7 @@ public class F {
 	}
 
 	public static IAST Part() {
-		return function(Part);
+		return ast(Part);
 	}
 
 	public static IAST Part(final IExpr a0) {
@@ -1558,7 +1561,7 @@ public class F {
 	// }
 
 	public static IAST Plus() {
-		return function(Plus);
+		return ast(Plus);
 	}
 
 	public static IAST Plus(final IExpr a0) {
@@ -1583,7 +1586,7 @@ public class F {
 
 	public static IAST Power() {
 
-		return function(Power);
+		return ast(Power);
 	}
 
 	public static IAST Power(final IExpr a0, final IExpr a1) {
@@ -1718,7 +1721,7 @@ public class F {
 
 	public static IAST SurfaceGraphics() {
 
-		return function(SurfaceGraphics);
+		return ast(SurfaceGraphics);
 	}
 
 	public static IAST Cot(final IExpr a0) {
@@ -1740,7 +1743,7 @@ public class F {
 	}
 
 	public static IAST Times() {
-		return function(Times);
+		return ast(Times);
 	}
 
 	public static IAST Times(final IExpr a0) {
@@ -1828,7 +1831,7 @@ public class F {
 	 *          <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
-	public static IAST ast(final IExpr head) {
+	public final static IAST ast(final IExpr head) {
 		return AST.newInstance(head);
 	}
 
@@ -1881,13 +1884,9 @@ public class F {
 	 * @return
 	 */
 	public static IAST ast(final IExpr[] arr, final IExpr head) {
-		return AST.newInstance(arr, head);
-		// for (int i = 0; i < arr.length; i++) {
-		// ast.add(arr[i]);
-		// }
-		// return ast;
+		return new AST(head, arr);
 	}
-
+	
 	/**
 	 * Create a function with 1 argument without evaluation.
 	 * 
@@ -1896,9 +1895,7 @@ public class F {
 	 * @return
 	 */
 	public final static IAST unary(final IExpr head, final IExpr a0) {
-		final IAST ast = ast(head);
-		ast.add(a0);
-		return ast;
+		return new AST(new IExpr[] { head, a0 });
 	}
 
 	/**
@@ -1910,24 +1907,24 @@ public class F {
 	 * @return
 	 */
 	public final static IAST binary(final IExpr head, final IExpr a0, final IExpr a1) {
-		return ast(new IExpr[] { a0, a1 }, head);
+		return new AST(new IExpr[] { head, a0, a1 });
 	}
 
 	public final static IAST ternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ast(new IExpr[] { a0, a1, a2 }, head);
+		return new AST(new IExpr[] { head, a0, a1, a2 });
 	}
 
 	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-		return ast(new IExpr[] { a0, a1, a2, a3 }, head);
+		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}
 
 	public final static IAST quinary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
-		return ast(new IExpr[] { a0, a1, a2, a3, a4 }, head);
+		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4 });
 	}
 
 	public final static IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4,
 			final IExpr a5) {
-		return ast(new IExpr[] { a0, a1, a2, a3, a4, a5 }, head);
+		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4, a5 });
 	}
 
 	/**
@@ -2222,140 +2219,6 @@ public class F {
 	}
 
 	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @return
-	 */
-	public static IAST function(final IExpr head) {
-		final IAST list = ast(head);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @param arg0
-	 * @return
-	 */
-	public static IAST function(final IExpr head, final IExpr arg0) {
-		final IAST list = ast(head);
-		list.add(arg0);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @param arg0
-	 *          first argument of the function
-	 * @param arg1
-	 *          second argument of the function
-	 * @return
-	 */
-	public static IAST function(final IExpr head, final IExpr arg0, final IExpr arg1) {
-		final IAST list = ast(head);
-		list.add(arg0);
-		list.add(arg1);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @return
-	 */
-	public static IAST function(final ISymbol head) {
-		final IAST list = ast(head);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @param arg0
-	 * @return
-	 */
-	public static IAST function(final ISymbol head, final IExpr arg0) {
-		final IAST list = ast(head);
-		list.add(arg0);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 * @param arg0
-	 * @param arg1
-	 * @return
-	 */
-	public static IAST function(final ISymbol head, final IExpr arg0, final IExpr arg1) {
-		final IAST list = ast(head);
-		list.add(arg0);
-		list.add(arg1);
-		return list;
-	}
-
-	/**
-	 * Create a function
-	 * 
-	 * @param head
-	 *          usually a String which tags the function
-	 * @return IAST
-	 * @see org.matheclipse.parser.client.IConstantHeaders
-	 */
-	public static IAST function(final String head) {
-		final IAST list = ast($s(head));
-		return list;
-	}
-
-	/**
-	 * Create a unary function with 1 argument
-	 * 
-	 * @param head
-	 *          usually a String which tags the function
-	 * @param arg0
-	 *          the argument of this function
-	 * @return IAST
-	 */
-	public static IAST function(final String head, final IExpr arg0) {
-		final IAST list = ast($s(head));
-		list.add(arg0);
-		return list;
-	}
-
-	/**
-	 * Create a binary function with 2 arguments
-	 * 
-	 * @param head
-	 *          usually a String which tags the function
-	 * @param arg0
-	 *          the first argument of this function
-	 * @param arg1
-	 *          the second argument of this function
-	 * @return IAST
-	 */
-	public static IAST function(final String head, final IExpr arg0, final IExpr arg1) {
-		final IAST list = ast($s(head));
-		list.add(arg0);
-		list.add(arg1);
-		return list;
-	}
-
-	/**
-	 * Get the thread local instance of the <code>ExprFactory</code>
-	 * 
-	 * @return
-	 */
-	// public static ExprFactory get() {
-	// return instance.get();
-	// }
-	/**
 	 * Get the namespace
 	 * 
 	 * @return
@@ -2434,10 +2297,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol) {
-		if (symbol == null) {
-			return Pattern.valueOf(null);
-		}
-		return Pattern.valueOf((Symbol) symbol);
+		return Pattern.valueOf(symbol);
 	}
 
 	/**
@@ -2452,10 +2312,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final boolean def) {
-		if (symbol == null) {
-			return Pattern.valueOf(null, check, def);
-		}
-		return Pattern.valueOf((Symbol) symbol, check, def);
+		return Pattern.valueOf(symbol, check, def);
 	}
 
 	/**
@@ -2467,10 +2324,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check) {
-		if (symbol == null) {
-			return Pattern.valueOf(null, check);
-		}
-		return Pattern.valueOf((Symbol) symbol, check);
+		return Pattern.valueOf(symbol, check);
 	}
 
 	/**
@@ -2483,7 +2337,7 @@ public class F {
 		if (symbolName == null) {
 			return Pattern.valueOf(null);
 		}
-		return Pattern.valueOf((Symbol) $s(symbolName));
+		return Pattern.valueOf($s(symbolName));
 	}
 
 	/**
@@ -2498,7 +2352,7 @@ public class F {
 		if (symbolName == null) {
 			return Pattern.valueOf(null, check);
 		}
-		return Pattern.valueOf((Symbol) $s(symbolName), check);
+		return Pattern.valueOf($s(symbolName), check);
 	}
 
 	/**
@@ -2512,7 +2366,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPattern $p(final String symbolName, boolean def) {
-		return $p((Symbol) $s(symbolName), null, def);
+		return $p($s(symbolName), null, def);
 	}
 
 	/**
@@ -2529,7 +2383,7 @@ public class F {
 		if (symbolName == null) {
 			return Pattern.valueOf(null, check, def);
 		}
-		return Pattern.valueOf((Symbol) $s(symbolName), check, def);
+		return Pattern.valueOf($s(symbolName), check, def);
 	}
 
 	/**
@@ -2539,10 +2393,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol) {
-		if (symbol == null) {
-			return PatternSequence.valueOf(null);
-		}
-		return PatternSequence.valueOf((Symbol) symbol);
+		return PatternSequence.valueOf(symbol);
 	}
 
 	/**
@@ -2557,10 +2408,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def) {
-		if (symbol == null) {
-			return PatternSequence.valueOf(null, check, def);
-		}
-		return PatternSequence.valueOf((Symbol) symbol, check, def);
+		return PatternSequence.valueOf(symbol, check, def);
 	}
 
 	/**
@@ -2572,22 +2420,17 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check) {
-		if (symbol == null) {
-			return PatternSequence.valueOf(null, check);
-		}
-		return PatternSequence.valueOf((Symbol) symbol, check);
+		return PatternSequence.valueOf(symbol, check);
 	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
+	 *          the name of the pattrn symbol
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final String symbolName) {
-		if (symbolName == null) {
-			return PatternSequence.valueOf(null);
-		}
 		return PatternSequence.valueOf((Symbol) $s(symbolName));
 	}
 
@@ -2610,18 +2453,34 @@ public class F {
 		// // symbol
 		// SystemNamespace.DEFAULT.setEvaluator(temp);
 		// }
-
 		return temp;
 	}
 
 	/**
-	 * Set the thread local instance.
+	 * Convert the symbolName to lowercase (if
+	 * <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
+	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
+	 * using the given upper case string to use it as associated class name in
+	 * package org.matheclipse.core.reflection.system.
 	 * 
-	 * @param factory
+	 * @param symbolName
+	 *          the predefined symbol name in upper-case form
+	 * @return
 	 */
-	// public static void set(final ExprFactory factory) {
-	// instance.set(factory);
-	// }
+	private static ISymbol initPredefinedSymbol(final String symbolName) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String lcSymbolName = symbolName.toLowerCase();
+			// use the upper case string here to use it as associated class name
+			// in package org.matheclipse.core.reflection.system
+			ISymbol temp = new Symbol(lcSymbolName);
+			PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
+			return temp;
+		}
+		ISymbol temp = new Symbol(symbolName);
+		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
+		return temp;
+	}
+
 	/**
 	 * Create a string expression
 	 * 
@@ -2658,39 +2517,58 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol $s(final String symbolName) {
-		ISymbol symbol = PREDEFINED_SYMBOLS_MAP.get(symbolName);
+		String name = symbolName;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			name = symbolName.toLowerCase();
+		}
+		ISymbol symbol = PREDEFINED_SYMBOLS_MAP.get(name);
 		if (symbol != null) {
 			return symbol;
 		}
 		EvalEngine engine = EvalEngine.get();
 		Map<String, ISymbol> variableMap = engine.getVariableMap();
-		symbol = variableMap.get(symbolName);
+		symbol = variableMap.get(name);
 		if (symbol != null) {
 			return symbol;
 		}
 		if (Config.SERVER_MODE) {
-			if (Character.isUpperCase(symbolName.charAt(0))) {
-				if (SYMBOL_OBSERVER.createPredefinedSymbol(symbolName)) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
 					// second try, because the symbol may now be added to
 					// fSymbolMap
-					ISymbol secondTry = PREDEFINED_SYMBOLS_MAP.get(symbolName);
+					ISymbol secondTry = PREDEFINED_SYMBOLS_MAP.get(name);
 					if (secondTry != null) {
 						return secondTry;
 					}
 				}
+			} else {
+				if (Character.isUpperCase(name.charAt(0))) {
+					if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
+						// second try, because the symbol may now be added to
+						// fSymbolMap
+						ISymbol secondTry = PREDEFINED_SYMBOLS_MAP.get(name);
+						if (secondTry != null) {
+							return secondTry;
+						}
+					}
+				}
 			}
-			symbol = new Symbol(symbolName);
-			variableMap.put(symbolName, symbol);
-			if (symbolName.charAt(0) == '$') {
+			symbol = new Symbol(name);
+			variableMap.put(name, symbol);
+			if (name.charAt(0) == '$') {
 				SYMBOL_OBSERVER.createUserSymbol(symbol);
 			}
 		} else {
-			symbol = new Symbol(symbolName);
-			PREDEFINED_SYMBOLS_MAP.put(symbolName, symbol);
-			if (Character.isUpperCase(symbolName.charAt(0))) {
-				// probably a predefined function
-				// use reflection to setUp this symbol
+			symbol = new Symbol(name);
+			PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				SystemNamespace.DEFAULT.setEvaluator(symbol);
+			} else {
+				if (Character.isUpperCase(name.charAt(0))) {
+					// probably a predefined function
+					// use reflection to setUp this symbol
+					SystemNamespace.DEFAULT.setEvaluator(symbol);
+				}
 			}
 		}
 
@@ -2741,59 +2619,59 @@ public class F {
 	}
 
 	public static IExpr plus(Integer i, IExpr b) {
-		return function(Plus, integer(i.longValue()), b);
+		return Plus(integer(i.longValue()), b);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {
-		return function(Plus, a, integer(i.longValue()));
+		return Plus(a, integer(i.longValue()));
 	}
 
 	public static IExpr minus(Integer i, IExpr b) {
-		return function(Plus, integer(i.longValue()), function(Times, b, CN1));
+		return Plus(integer(i.longValue()), Times(b, CN1));
 	}
 
 	public static IExpr minus(IExpr a, Integer i) {
-		return function(Plus, a, function(Times, integer(i.longValue()), CN1));
+		return Plus(a, Times(integer(i.longValue()), CN1));
 	}
 
 	public static IExpr multiply(Integer i, IExpr b) {
-		return function(Times, integer(i.longValue()), b);
+		return Times(integer(i.longValue()), b);
 	}
 
 	public static IExpr multiply(IExpr a, Integer i) {
-		return function(Times, a, integer(i.longValue()));
+		return Times(a, integer(i.longValue()));
 	}
 
 	public static IExpr div(IExpr a, Integer i) {
-		return function(Times, a, function(Power, integer(i.longValue()), CN1));
+		return Times(a, Power(integer(i.longValue()), CN1));
 	}
 
 	public static IExpr div(Integer i, IExpr b) {
-		return function(Times, integer(i.longValue()), function(Power, b, CN1));
+		return Times(integer(i.longValue()), Power(b, CN1));
 	}
 
 	public static IExpr mod(IExpr a, Integer i) {
-		return function(Mod, a, integer(i.longValue()));
+		return Mod(a, integer(i.longValue()));
 	}
 
 	public static IExpr mod(Integer i, IExpr b) {
-		return function(Mod, integer(i.longValue()), b);
+		return Mod(integer(i.longValue()), b);
 	}
 
 	public static IExpr and(IExpr a, Integer i) {
-		return function(And, a, integer(i.longValue()));
+		return And(a, integer(i.longValue()));
 	}
 
 	public static IExpr and(Integer i, IExpr b) {
-		return function(And, integer(i.longValue()), b);
+		return And(integer(i.longValue()), b);
 	}
 
 	public static IExpr or(IExpr a, Integer i) {
-		return function(Or, a, integer(i.longValue()));
+		return $(Or, a, integer(i.longValue()));
 	}
 
 	public static IExpr or(Integer i, IExpr b) {
-		return function(Or, integer(i.longValue()), b);
+		return $(Or, integer(i.longValue()), b);
 	}
 
 	/**
@@ -3076,59 +2954,59 @@ public class F {
 	}
 
 	public static IExpr plus(java.math.BigInteger i, IExpr b) {
-		return function(Plus, integer(i), b);
+		return Plus(integer(i), b);
 	}
 
 	public static IExpr plus(IExpr a, java.math.BigInteger i) {
-		return function(Plus, a, integer(i));
+		return Plus(a, integer(i));
 	}
 
 	public static IExpr minus(java.math.BigInteger i, IExpr b) {
-		return function(Plus, integer(i), function(Times, b, CN1));
+		return Plus(integer(i), Times(b, CN1));
 	}
 
 	public static IExpr minus(IExpr a, java.math.BigInteger i) {
-		return function(Plus, a, function(Times, integer(i), CN1));
+		return Plus(a, Times(integer(i), CN1));
 	}
 
 	public static IExpr multiply(java.math.BigInteger i, IExpr b) {
-		return function(Times, integer(i), b);
+		return Times(integer(i), b);
 	}
 
 	public static IExpr multiply(IExpr a, java.math.BigInteger i) {
-		return function(Times, a, integer(i));
+		return Times(a, integer(i));
 	}
 
 	public static IExpr div(IExpr a, java.math.BigInteger i) {
-		return function(Times, a, function(Power, integer(i), CN1));
+		return Times(a, Power(integer(i), CN1));
 	}
 
 	public static IExpr div(java.math.BigInteger i, IExpr b) {
-		return function(Times, integer(i), function(Power, b, CN1));
+		return Times(integer(i), Power(b, CN1));
 	}
 
 	public static IExpr mod(IExpr a, java.math.BigInteger i) {
-		return function(Mod, a, integer(i));
+		return Mod(a, integer(i));
 	}
 
 	public static IExpr mod(java.math.BigInteger i, IExpr b) {
-		return function(Mod, integer(i), b);
+		return Mod(integer(i), b);
 	}
 
 	public static IExpr and(IExpr a, java.math.BigInteger i) {
-		return function(And, a, integer(i));
+		return And(a, integer(i));
 	}
 
 	public static IExpr and(java.math.BigInteger i, IExpr b) {
-		return function(And, integer(i), b);
+		return And(integer(i), b);
 	}
 
 	public static IExpr or(IExpr a, java.math.BigInteger i) {
-		return function(Or, a, integer(i));
+		return Or(a, integer(i));
 	}
 
 	public static IExpr or(java.math.BigInteger i, IExpr b) {
-		return function(Or, integer(i), b);
+		return Or(integer(i), b);
 	}
 
 }

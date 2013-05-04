@@ -113,7 +113,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	public IExpr getAt(final int index);
 
 	/**
-	 * @returnthe head of the expression, which must not be null.
+	 * @return the head of the expression, which must not be null.
 	 */
 	public IExpr head();
 
@@ -144,6 +144,12 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 */
 	IExpr inverse();
 
+	/**
+	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code>
+	 * 
+	 */
+	public boolean isAnd();
+	
 	/**
 	 * Test if this expression is the function <code>ArcCos[&lt;arg&gt;]</code>
 	 * 
@@ -222,7 +228,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * Test if this expression is an AST list, which contains the given <b>header
 	 * element</b> at index position <code>0</code> and some optional <b>argument
 	 * elements</b> at the index positions <code>1..(size()-1)</code>. Therefore
-	 * this expression is no <b>atomic expression</b>.
+	 * this expression is not an <b>atomic expression</b>.
 	 * 
 	 * @see #isAtom()
 	 * 
@@ -233,7 +239,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * Test if this expression is an AST list, which contains the given <b>header
 	 * element</b> at index position <code>0</code> and optional <b>argument
 	 * elements</b> at the index positions <code>1..(length-1)</code>. Therefore
-	 * this expression is no <b>atomic expression</b>.
+	 * this expression is not an <b>atomic expression</b>.
 	 * 
 	 * @see #isAtom()
 	 */
@@ -460,7 +466,13 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * @return <code>null</code> if the expression is not a matrix
 	 */
 	public int[] isMatrix();
-
+	
+	/**
+	 * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>
+	 * 
+	 */
+	public boolean isNot();
+	
 	/**
 	 * Test if this expression is a number
 	 * 
@@ -473,6 +485,12 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 */
 	public boolean isOne();
 
+	/**
+	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
+	 * 
+	 */
+	public boolean isOr();
+	
 	/**
 	 * Test if this expression equals <code>-1</code> in symbolic or numeric mode.
 	 * 

@@ -364,6 +364,34 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return "fraction(" + numerator + "L," + denominator + "L)";
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int toInt() throws ArithmeticException {
+		if (fRational.getDenominator().equals(BigInteger.ONE)) {
+		  return NumberUtil.toInt(fRational.getNumerator());
+		} 
+		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
+		  return 0;
+		}
+		throw new ArithmeticException("toInt: denominator != 1");
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long toLong() throws ArithmeticException {
+		if (fRational.getDenominator().equals(BigInteger.ONE)) {
+		  return NumberUtil.toLong(fRational.getNumerator());
+		} 
+		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
+		  return 0L;
+		}
+		throw new ArithmeticException("toLong: denominator != 1");
+	}
+	
 	@Override
 	public String toString() {
 		return fRational.getNumerator().toString() + "/" + fRational.getDenominator().toString();

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -14,7 +13,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.arith.BigRational;
@@ -57,12 +56,10 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 			final Options options = new Options(ast.topHead(), ast, 4);
 			IExpr option = options.getOption("Modulus");
-			if (option != null && option.isInteger()) {
+			if (option != null && option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
-					final BigInteger value = ((IInteger) option).getBigNumerator();
-					int intValue = ((IInteger) option).toInt();
-					ModIntegerRing modIntegerRing = new ModIntegerRing(intValue, value.isProbablePrime(32));
+					ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
 					JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
 					GenPolynomial<ModInteger> poly1 = jas.expr2JAS(expr1);
 					GenPolynomial<ModInteger> poly2 = jas.expr2JAS(expr2);

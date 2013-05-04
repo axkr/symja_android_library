@@ -25,11 +25,15 @@ import org.matheclipse.parser.client.math.Complex;
  */
 public class ComplexEvaluator extends ObjectEvaluator<Complex, ComplexVariable, Complex> {
 	public ComplexEvaluator() {
-		this(new ComplexEvalVisitor());
+		this(new ComplexEvalVisitor(false), false);
 	}
 
-	public ComplexEvaluator(IASTVisitor<Complex, ComplexVariable, Complex> visitor) {
-		super(visitor);
+	public ComplexEvaluator(boolean relaxedSyntax) {
+		this(new ComplexEvalVisitor(relaxedSyntax), relaxedSyntax);
+	}
+	
+	public ComplexEvaluator(IASTVisitor<Complex, ComplexVariable, Complex> visitor, boolean relaxedSyntax) {
+		super(visitor, relaxedSyntax);
 	}
 
 	/**

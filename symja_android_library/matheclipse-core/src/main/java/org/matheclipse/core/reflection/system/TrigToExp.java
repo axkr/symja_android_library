@@ -51,7 +51,7 @@ public class TrigToExp implements IFunctionEvaluator {
 				return Subtract(Times(C1D2, CI, Log(Plus(C1, Times(CNI, temp)))), Times(C1D2, CI, Log(Plus(C1, Times(CI, temp)))));
 			}
 			if (result != null) {
-				return function(head, result);
+				return $(head, result);
 			}
 			return null;
 		}

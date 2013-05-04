@@ -106,7 +106,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		List<IExpr> varList = r.toList();
 		try {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-			GenPolynomial<BigRational> rPoly = jas.expr2JAS(expr);
+			GenPolynomial<BigRational> rPoly = jas.numericExpr2JAS(expr);
 
 			result = rootsOfPolynomial(rPoly, jas, numericSolutions);
 
@@ -358,30 +358,30 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @param c
 	 * @param d
 	 */
-	private static void cubicSolution(IAST result, IInteger a, IInteger b, IInteger c, IInteger d) {
-		// m = 2*b^3 - 9*a*b*c + 27 * a^2 * d
-		IInteger m = C2.multiply(b.pow(3)).subtract(a.multiply(b.multiply(c.multiply(integer(9))))).add(
-				a.pow(2).multiply(d.multiply(integer(27))));
-		// k = b^2 - 3*a*c
-		IInteger k = b.pow(2).subtract(C3.multiply(a.multiply(c)));
-		// n = m^2 - 4*k^3
-		IInteger n = m.pow(2).subtract(C4.multiply(k.pow(3)));
-
-		// omega1 = -(1/2) + 1/2 * Sqrt[3] * I
-		IExpr omega1 = Plus(CN1D2, Times(C1D2, Sqrt(C3), CI));
-		// omega2 = -(1/2) - 1/2 * Sqrt[3] * I
-		IExpr omega2 = Plus(CN1D2, Times(CN1D2, Sqrt(C3), CI));
-
-		// t1 = (1/2 * (m + n^(1/2))) ^ (1/3)
-		IExpr t1 = Power(Times(C1D2, Plus(m, Sqrt(n))), C1D3);
-		// t2 = (1/2 * (m - n^(1/2))) ^ (1/3)
-		IExpr t2 = Power(Times(C1D2, Subtract(m, Sqrt(n))), C1D3);
-
-		// (-1) / (3*a)
-		IFraction n1d3ta = F.fraction(F.CN1, C3.multiply(a));
-		result.add(Times(n1d3ta, Plus(b, t1, t2)));
-		result.add(Times(n1d3ta, Plus(b, Times(omega2, t1), Times(omega1, t2))));
-		result.add(Times(n1d3ta, Plus(b, Times(omega1, t1), Times(omega2, t2))));
-	}
+//	private static void cubicSolution(IAST result, IInteger a, IInteger b, IInteger c, IInteger d) {
+//		// m = 2*b^3 - 9*a*b*c + 27 * a^2 * d
+//		IInteger m = C2.multiply(b.pow(3)).subtract(a.multiply(b.multiply(c.multiply(integer(9))))).add(
+//				a.pow(2).multiply(d.multiply(integer(27))));
+//		// k = b^2 - 3*a*c
+//		IInteger k = b.pow(2).subtract(C3.multiply(a.multiply(c)));
+//		// n = m^2 - 4*k^3
+//		IInteger n = m.pow(2).subtract(C4.multiply(k.pow(3)));
+//
+//		// omega1 = -(1/2) + 1/2 * Sqrt[3] * I
+//		IExpr omega1 = Plus(CN1D2, Times(C1D2, Sqrt(C3), CI));
+//		// omega2 = -(1/2) - 1/2 * Sqrt[3] * I
+//		IExpr omega2 = Plus(CN1D2, Times(CN1D2, Sqrt(C3), CI));
+//
+//		// t1 = (1/2 * (m + n^(1/2))) ^ (1/3)
+//		IExpr t1 = Power(Times(C1D2, Plus(m, Sqrt(n))), C1D3);
+//		// t2 = (1/2 * (m - n^(1/2))) ^ (1/3)
+//		IExpr t2 = Power(Times(C1D2, Subtract(m, Sqrt(n))), C1D3);
+//
+//		// (-1) / (3*a)
+//		IFraction n1d3ta = F.fraction(F.CN1, C3.multiply(a));
+//		result.add(Times(n1d3ta, Plus(b, t1, t2)));
+//		result.add(Times(n1d3ta, Plus(b, Times(omega2, t1), Times(omega1, t2))));
+//		result.add(Times(n1d3ta, Plus(b, Times(omega1, t1), Times(omega2, t2))));
+//	}
 
 }

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
@@ -18,13 +17,14 @@ public class Intersection extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 3);
-		
-		if (!ast.get(1).isAtom() && !ast.get(2).isAtom()) {
+	public IExpr evaluate(final IAST functionList) {
+		if (functionList.size() != 3) {
+			return null;
+		}
+		if (!functionList.get(1).isAtom() && !functionList.get(2).isAtom()) {
 			final IAST result = F.List();
-			((IAST) ast.get(1)).args().intersection(result,
-					((IAST) ast.get(2)).args());
+			((IAST) functionList.get(1)).args().intersection(result,
+					((IAST) functionList.get(2)).args());
 			return result.args().sort(ExprComparator.CONS);
 		}
 		return null;

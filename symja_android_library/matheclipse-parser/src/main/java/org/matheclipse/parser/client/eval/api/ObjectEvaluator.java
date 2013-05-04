@@ -20,6 +20,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.eval.BooleanVariable;
+import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
  * Evaluates a given expression (as <code>String</code> or
@@ -39,8 +40,11 @@ public class ObjectEvaluator<DATA, DATA_VARIABLE, USER_DATA_TYPE> {
 
 	protected IASTVisitor<DATA, DATA_VARIABLE, USER_DATA_TYPE> fVisitor;
 
-	public ObjectEvaluator(IASTVisitor<DATA, DATA_VARIABLE, USER_DATA_TYPE> visitor) {
+	protected final boolean fRelaxedSyntax;
+	
+	public ObjectEvaluator(IASTVisitor<DATA, DATA_VARIABLE, USER_DATA_TYPE> visitor, boolean relaxedSyntax) {
 		fVisitor = visitor;
+		fRelaxedSyntax = relaxedSyntax;
 	}
 
 	/**
@@ -125,8 +129,13 @@ public class ObjectEvaluator<DATA, DATA_VARIABLE, USER_DATA_TYPE> {
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public DATA evaluate(String expression) {
-		Parser p = new Parser();
+	public DATA evaluate(String expression) { 
+		Parser p;
+		if (fRelaxedSyntax) {
+			p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true);
+		} else {
+			p = new Parser(ASTNodeFactory.MMA_STYLE_FACTORY, false);
+		}
 		fNode = p.parse(expression);
 		if (fNode instanceof FunctionNode) {
 			fNode = fVisitor.optimizeFunction((FunctionNode) fNode);
@@ -138,7 +147,7 @@ public class ObjectEvaluator<DATA, DATA_VARIABLE, USER_DATA_TYPE> {
 	 * Reevaluate the <code>expression</code> (possibly after a new Variable
 	 * assignment)
 	 * 
-	 * @param expression
+	 * @param Expression
 	 * @return
 	 * @throws SyntaxError
 	 */

@@ -142,8 +142,11 @@ public abstract class ExprImpl implements IExpr {
 				return Boolean.FALSE;
 			}
 		} else if (clazz.equals(Integer.class)) {
-			if (this instanceof IInteger) {
-				return Integer.valueOf(((IInteger) this).toInt());
+			if (isSignedNumber()) {
+				try {
+					return Integer.valueOf(((ISignedNumber) this).toInt());
+				} catch (final ArithmeticException e) {
+				}
 			}
 		} else if (clazz.equals(java.math.BigInteger.class)) {
 			if (this instanceof IntegerSym) {
@@ -272,6 +275,10 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	public boolean isAnd() {
+		return false;
+	}
+
 	public boolean isArcCos() {
 		return false;
 	}
@@ -309,6 +316,11 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	public boolean isOne() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isOr() {
 		return false;
 	}
 
@@ -409,6 +421,11 @@ public abstract class ExprImpl implements IExpr {
 	/** {@inheritDoc} */
 	public boolean isSignedNumber() {
 		return this instanceof ISignedNumber;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isNot() {
+		return false;
 	}
 
 	/** {@inheritDoc} */

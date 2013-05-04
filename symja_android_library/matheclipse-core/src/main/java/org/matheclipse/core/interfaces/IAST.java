@@ -53,7 +53,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	 * The head or one of the arguments of the list contains a pattern object
 	 */
 	public final int CONTAINS_PATTERN = 0x0001;
-	
+
 	/**
 	 * The head or one of the arguments of the list contains a pattern object
 	 */
@@ -185,10 +185,19 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	 */
 	public boolean isList();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public boolean isPlus();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public boolean isPower();
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public boolean isTimes();
 
 	/**
@@ -237,8 +246,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function
-	 * returns <code>null</code> the original element is used. If the function
-	 * returns <code>null</code> for every argument this AST is returned.
+	 * returns <code>null</code> the original element is used.
 	 * 
 	 * <br />
 	 * <br />
@@ -249,19 +257,43 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	 * plusAST.map(Functors.replace1st(F.D(F.Null, dAST.get(2))));
 	 * </pre>
 	 * 
-	 * @param head
+	 * @param functor
+	 *          a unary function
 	 * @return
 	 */
 	public IAST map(final Function<IExpr, IExpr> functor);
 
+	/**
+	 * Maps the elements of this IAST with the unary functor. If the function
+	 * returns <code>null</code> the original element of the result list is used.
+	 * 
+	 * @param head
+	 *          the new head element of the result list
+	 * @param functor
+	 *          a unary function
+	 * @return
+	 */
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
-	public IAST map(final IAST resultAST, final Function<IExpr, IExpr> functor);
-	
+	/**
+	 * Maps the elements of this IAST with the unary functor. If the function
+	 * returns <code>null</code> the original element of the result list is used.
+	 * 
+	 * @param clonedResultAST
+	 *          a list which is cloned from <code>this</code> list or greater or
+	 *          equal in size of <code>this</code> list.
+	 * @param functor
+	 *          a unary function
+	 * @return
+	 */
+	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> functor);
+
 	/**
 	 * Maps the elements of this IAST with the elements of the
 	 * <code>secondAST</code>.
 	 * 
+	 * @param functor
+	 *          a binary function
 	 * @return the given resultAST.
 	 * @throws IndexOutOfBoundsException
 	 *           if the secondAST size is lesser than this AST size
@@ -323,15 +355,24 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	/**
 	 * Set the head element of this list
 	 */
-	public void setHeader(IExpr expr);
+	// public void setHeader(IExpr expr);
 
 	/**
-	 * Returns a shallow copy of this <code>INestedList</code> instance. (The
-	 * elements themselves are not copied.)
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied).
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
 	public IAST clone();
+
+	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied) and set the <code>expr</code> at the given
+	 * <code>position</code>.
+	 * 
+	 * @return a clone of this <code>IAST</code> instance.
+	 */
+	public IAST cloneSet(int position, IExpr expr);
 
 	/**
 	 * Create a copy of this <code>IAST</code>, which only contains the head

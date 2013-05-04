@@ -18,6 +18,7 @@ package org.matheclipse.parser.client.eval;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -25,12 +26,14 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.NumberNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
+import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
  * Evaluate math expressions to <code>double</code> numbers.
  * 
  */
 public class DoubleEvaluator {
+
 	private static final boolean DEBUG = false;
 
 	public static double EPSILON = 1.0e-15;
@@ -188,16 +191,21 @@ public class DoubleEvaluator {
 	}
 
 	static {
-		SYMBOL_DOUBLE_MAP = new HashMap<String, Double>();
+		SYMBOL_DOUBLE_MAP = new ConcurrentHashMap<String, Double>();
+		SYMBOL_DOUBLE_MAP.put("Catalan", new Double(0.91596559417721901505460351493238411077414937428167));
 		SYMBOL_DOUBLE_MAP.put("Degree", new Double(Math.PI / 180));
 		SYMBOL_DOUBLE_MAP.put("E", new Double(Math.E));
 		SYMBOL_DOUBLE_MAP.put("Pi", new Double(Math.PI));
+		SYMBOL_DOUBLE_MAP.put("EulerGamma", new Double(0.57721566490153286060651209008240243104215933593992));
+		SYMBOL_DOUBLE_MAP.put("Glaisher", new Double(1.2824271291006226368753425688697917277676889273250));
+		SYMBOL_DOUBLE_MAP.put("GoldenRatio", new Double(1.6180339887498948482045868343656381177203091798058));
+		SYMBOL_DOUBLE_MAP.put("Khinchin", new Double(2.6854520010653064453097148354817956938203822939945));
 
-		SYMBOL_BOOLEAN_MAP = new HashMap<String, Boolean>();
+		SYMBOL_BOOLEAN_MAP = new ConcurrentHashMap<String, Boolean>();
 		SYMBOL_BOOLEAN_MAP.put("False", Boolean.FALSE);
 		SYMBOL_BOOLEAN_MAP.put("True", Boolean.TRUE);
 
-		FUNCTION_BOOLEAN_MAP = new HashMap<String, Object>();
+		FUNCTION_BOOLEAN_MAP = new ConcurrentHashMap<String, Object>();
 
 		FUNCTION_BOOLEAN_MAP.put("And", new IBooleanBoolean2Function() {
 			public boolean evaluate(boolean arg1, boolean arg2) {
@@ -246,7 +254,7 @@ public class DoubleEvaluator {
 			}
 		});
 
-		FUNCTION_DOUBLE_MAP = new HashMap<String, Object>();
+		FUNCTION_DOUBLE_MAP = new ConcurrentHashMap<String, Object>();
 		FUNCTION_DOUBLE_MAP.put("ArcTan", new ArcTanFunction());
 		FUNCTION_DOUBLE_MAP.put("CompoundExpression", new CompoundExpressionFunction());
 		FUNCTION_DOUBLE_MAP.put("Set", new SetFunction());
@@ -353,14 +361,41 @@ public class DoubleEvaluator {
 
 	private ASTNode fNode;
 
+	private final boolean fRelaxedSyntax;
+
+	private final ASTNodeFactory fASTFactory;
+
 	public DoubleEvaluator() {
-		this(null);
+		this(null, false);
 	}
 
-	public DoubleEvaluator(ASTNode node) {
+	public DoubleEvaluator(boolean relaxedSyntax) {
+		this(null, relaxedSyntax);
+	}
+
+	public DoubleEvaluator(ASTNode node, boolean relaxedSyntax) {
+		fASTFactory = new ASTNodeFactory(relaxedSyntax);
 		fVariableMap = new HashMap<String, IDoubleValue>();
 		fBooleanVariables = new HashMap<String, BooleanVariable>();
 		fNode = node;
+		fRelaxedSyntax = relaxedSyntax;
+		if (fRelaxedSyntax) {
+			if (SYMBOL_DOUBLE_MAP.get("pi") == null) {
+				// init tables for relaxed mode
+				for (String key : SYMBOL_DOUBLE_MAP.keySet()) {
+					SYMBOL_DOUBLE_MAP.put(key.toLowerCase(), SYMBOL_DOUBLE_MAP.get(key));
+				}
+				for (String key : SYMBOL_BOOLEAN_MAP.keySet()) {
+					SYMBOL_BOOLEAN_MAP.put(key.toLowerCase(), SYMBOL_BOOLEAN_MAP.get(key));
+				}
+				for (String key : FUNCTION_DOUBLE_MAP.keySet()) {
+					FUNCTION_DOUBLE_MAP.put(key.toLowerCase(), FUNCTION_DOUBLE_MAP.get(key));
+				}
+				for (String key : FUNCTION_BOOLEAN_MAP.keySet()) {
+					FUNCTION_BOOLEAN_MAP.put(key.toLowerCase(), FUNCTION_BOOLEAN_MAP.get(key));
+				}
+			}
+		}
 	}
 
 	/**
@@ -372,7 +407,12 @@ public class DoubleEvaluator {
 	 * @throws SyntaxError
 	 */
 	public ASTNode parse(String expression) {
-		Parser p = new Parser();
+		Parser p;
+		if (fRelaxedSyntax) {
+			p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true);
+		} else {
+			p = new Parser(ASTNodeFactory.MMA_STYLE_FACTORY, false);
+		}
 		fNode = p.parse(expression);
 		if (fNode instanceof FunctionNode) {
 			fNode = optimizeFunction((FunctionNode) fNode);
@@ -388,8 +428,8 @@ public class DoubleEvaluator {
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public static ASTNode parseNode(String expression) {
-		DoubleEvaluator doubleEvaluator = new DoubleEvaluator();
+	public static ASTNode parseNode(String expression, boolean relaxedSyntax) {
+		DoubleEvaluator doubleEvaluator = new DoubleEvaluator(relaxedSyntax);
 		return doubleEvaluator.parse(expression);
 	}
 
@@ -402,7 +442,12 @@ public class DoubleEvaluator {
 	 * @throws SyntaxError
 	 */
 	public double evaluate(String expression) {
-		Parser p = new Parser();
+		Parser p;
+		if (fRelaxedSyntax) {
+			p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true);
+		} else {
+			p = new Parser(ASTNodeFactory.MMA_STYLE_FACTORY, false);
+		}
 		fNode = p.parse(expression);
 		if (fNode instanceof FunctionNode) {
 			fNode = optimizeFunction((FunctionNode) fNode);
@@ -414,7 +459,7 @@ public class DoubleEvaluator {
 	 * Reevaluate the <code>expression</code> (possibly after a new Variable
 	 * assignment)
 	 * 
-	 * @param expression
+	 * @param Expression
 	 * @return
 	 * @throws SyntaxError
 	 */
@@ -473,7 +518,7 @@ public class DoubleEvaluator {
 	public double evaluateFunction(final FunctionNode functionNode) {
 		if (functionNode.size() > 0 && functionNode.getNode(0) instanceof SymbolNode) {
 			String symbol = functionNode.getNode(0).toString();
-			if (symbol.equals("If")) {
+			if (symbol.equals("If") || (fRelaxedSyntax && symbol.equalsIgnoreCase("if"))) {
 				if (functionNode.size() == 3) {
 					if (evaluateNodeLogical(functionNode.getNode(1))) {
 						return evaluateNode(functionNode.getNode(2));
@@ -513,6 +558,167 @@ public class DoubleEvaluator {
 			}
 		}
 		throw new ArithmeticException("EvalDouble#evaluateFunction(FunctionNode) not possible for: " + functionNode.toString());
+	}
+
+	/**
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
+	 * names are equal.
+	 * 
+	 * @param symbol1
+	 * @param symbol2Name
+	 * @return
+	 */
+	public boolean isSymbol(SymbolNode symbol1, String symbol2Name) {
+		if (fRelaxedSyntax) {
+			return symbol1.getString().equalsIgnoreCase(symbol2Name);
+		}
+		return symbol1.getString().equals(symbol2Name);
+	}
+
+	/**
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
+	 * names are equal.
+	 * 
+	 * @param symbol1
+	 * @param symbol2
+	 * @return
+	 */
+	public boolean isSymbol(SymbolNode symbol1, SymbolNode symbol2) {
+		if (fRelaxedSyntax) {
+			return symbol1.getString().equalsIgnoreCase(symbol2.getString());
+		}
+		return symbol1.equals(symbol2);
+	}
+
+	/**
+	 * 
+	 * @param node
+	 * @param var
+	 * @return
+	 */
+	public ASTNode derivative(final ASTNode node, String var) {
+		SymbolNode sym = fASTFactory.createSymbol(var);
+		return derivative(node, sym);
+	}
+
+	/**
+	 * 
+	 * TODO: add more derivation rules
+	 * 
+	 * @param node
+	 * @param var
+	 * @return
+	 */
+	public ASTNode derivative(final ASTNode node, SymbolNode var) {
+		if (node.isFree(var)) {
+			return new DoubleNode(0.0);
+		}
+		if (node instanceof FunctionNode) {
+			FunctionNode f = (FunctionNode) node;
+			if (f.size() > 1 && f.getNode(0) instanceof SymbolNode) {
+				SymbolNode head = (SymbolNode) f.getNode(0);
+				if (f.size() == 2) {
+					ASTNode arg1Derived = derivative(f.getNode(1), var);
+					if (isSymbol(head, "Exp")) {
+						FunctionNode fun = new FunctionNode(fASTFactory.createSymbol("Exp"));
+						fun.add(f.getNode(1));
+						return getDerivativeResult(arg1Derived, fun);
+					}
+					if (isSymbol(head, "Cos")) {
+						FunctionNode fun = new FunctionNode(fASTFactory.createSymbol("Times"));
+						fun.add(new DoubleNode(-1.0));
+						fun.add(new FunctionNode(fASTFactory.createSymbol("Cos"), f.getNode(1)));
+						return getDerivativeResult(arg1Derived, fun);
+					}
+					if (isSymbol(head, "Sin")) {
+						FunctionNode fun = new FunctionNode(fASTFactory.createSymbol("Cos"));
+						fun.add(f.getNode(1));
+						return getDerivativeResult(arg1Derived, fun);
+					}
+				} else if (f.size() == 3 && isSymbol(head, "Power")) {
+					if (f.get(2).isFree(var)) {// derive x^r
+						ASTNode arg1Derived = derivative(f.getNode(1), var);
+						// (r-1)
+						FunctionNode exponent = fASTFactory.createFunction(fASTFactory.createSymbol("Plus"), new DoubleNode(-1.0), f.get(2));
+						// r*x^(r-1)
+						FunctionNode fun = fASTFactory.createFunction(fASTFactory.createSymbol("Times"), f.get(2),
+								fASTFactory.createFunction(fASTFactory.createSymbol("Power"), f.get(1), exponent));
+						return getDerivativeResult(arg1Derived, fun);
+					}
+					if (f.get(1).isFree(var)) {// derive a^x
+						ASTNode arg2Derived = derivative(f.getNode(2), var);
+						// log(a) * a^x
+						FunctionNode fun = fASTFactory.createFunction(fASTFactory.createSymbol("Times"),
+								fASTFactory.createFunction(fASTFactory.createSymbol("Log"), f.get(1)), f);
+						return getDerivativeResult(arg2Derived, fun);
+					}
+				} else {
+					if (isSymbol(head, "Plus")) {
+						FunctionNode result = new FunctionNode(f.getNode(0));
+						for (int i = 1; i < f.size(); i++) {
+							ASTNode deriv = derivative(f.getNode(i), var);
+							if (!deriv.equals(new DoubleNode(0.0))) {
+								result.add(deriv);
+							}
+						}
+						return result;
+					}
+					if (isSymbol(head, "Times")) {
+						FunctionNode plusResult = new FunctionNode(fASTFactory.createSymbol("Plus"));
+						for (int i = 1; i < f.size(); i++) {
+							FunctionNode timesResult = new FunctionNode(f.getNode(0));
+							boolean valid = true;
+							for (int j = 1; j < f.size(); j++) {
+								if (j == i) {
+									ASTNode deriv = derivative(f.getNode(j), var);
+									if (deriv.equals(new DoubleNode(0.0))) {
+										valid = false;
+									} else {
+										timesResult.add(deriv);
+									}
+								} else {
+									timesResult.add(f.getNode(j));
+								}
+							}
+							if (valid) {
+								plusResult.add(timesResult);
+							}
+						}
+						return plusResult;
+					}
+				}
+			}
+			return new FunctionNode(new SymbolNode("D"), node, var);
+			// return evaluateFunction((FunctionNode) node);
+		}
+		if (node instanceof SymbolNode) {
+			if (isSymbol((SymbolNode) node, var)) {
+				return new DoubleNode(1.0);
+			}
+			IDoubleValue v = fVariableMap.get(node.toString());
+			if (v != null) {
+				return new DoubleNode(0.0);
+			}
+			Double dbl = SYMBOL_DOUBLE_MAP.get(node.toString());
+			if (dbl != null) {
+				return new DoubleNode(0.0);
+			}
+			return new DoubleNode(0.0);
+		} else if (node instanceof NumberNode) {
+			return new DoubleNode(0.0);
+		}
+
+		throw new ArithmeticException("EvalDouble#evaluate(ASTNode) not possible for: " + node.toString());
+	}
+
+	private ASTNode getDerivativeResult(ASTNode arg1Derived, FunctionNode fun) {
+		if (!arg1Derived.equals(new DoubleNode(1.0))) {
+			FunctionNode res = new FunctionNode(fASTFactory.createSymbol("Times"));
+			res.add(arg1Derived);
+			res.add(fun);
+			return res;
+		}
+		return fun;
 	}
 
 	public boolean evaluateNodeLogical(final ASTNode node) {
@@ -606,23 +812,17 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Define a value for a given variable name and set the <code>value</code>.
+	 * Define a value for a given variable name.
 	 * 
 	 * @param variableName
 	 * @param value
 	 */
 	public void defineVariable(String variableName, double value) {
-		fVariableMap.put(variableName, new DoubleVariable(value));
-	}
-
-	/**
-	 * Define a value for a given variable name and set the default value <code>0.0</code>.
-	 * 
-	 * @param variableName
-	 * @param value
-	 */
-	public void defineVariable(String variableName) {
-		fVariableMap.put(variableName, new DoubleVariable(0.0));
+		if (fRelaxedSyntax) {
+			fVariableMap.put(variableName.toLowerCase(), new DoubleVariable(value));
+		} else {
+			fVariableMap.put(variableName, new DoubleVariable(value));
+		}
 	}
 
 	/**
@@ -632,7 +832,25 @@ public class DoubleEvaluator {
 	 * @param value
 	 */
 	public void defineVariable(String variableName, IDoubleValue value) {
-		fVariableMap.put(variableName, value);
+		if (fRelaxedSyntax) {
+			fVariableMap.put(variableName.toLowerCase(), value);
+		} else {
+			fVariableMap.put(variableName, value);
+		}
+	}
+
+	/**
+	 * Define a value for a given variable name.
+	 * 
+	 * @param variableName
+	 * @param value
+	 */
+	public void defineVariable(String variableName) {
+		if (fRelaxedSyntax) {
+			fVariableMap.put(variableName.toLowerCase(), new DoubleVariable(0.0));
+		} else {
+			fVariableMap.put(variableName, new DoubleVariable(0.0));
+		}
 	}
 
 	/**
@@ -644,7 +862,11 @@ public class DoubleEvaluator {
 	 * @return
 	 */
 	public IDoubleValue getVariable(String variableName) {
-		return fVariableMap.get(variableName);
+		if (fRelaxedSyntax) {
+			return fVariableMap.get(variableName.toLowerCase());
+		} else {
+			return fVariableMap.get(variableName);
+		}
 	}
 
 	/**
@@ -654,7 +876,12 @@ public class DoubleEvaluator {
 	 * @param value
 	 */
 	public void defineVariable(String variableName, BooleanVariable value) {
-		fBooleanVariables.put(variableName, value);
+		if (fRelaxedSyntax) {
+			fBooleanVariables.put(variableName.toLowerCase(), value);
+		} else {
+			fBooleanVariables.put(variableName, value);
+		}
+
 	}
 
 	/**
@@ -672,8 +899,13 @@ public class DoubleEvaluator {
 	 * @param result
 	 *          a set which contains the variable names
 	 */
-	public static void getVariables(String expression, Set<String> result) {
-		Parser p = new Parser();
+	public void getVariables(String expression, Set<String> result) {
+		Parser p;
+		if (fRelaxedSyntax) {
+			p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true);
+		} else {
+			p = new Parser(ASTNodeFactory.MMA_STYLE_FACTORY, false);
+		}
 		ASTNode node = p.parse(expression);
 		getVariables(node, result);
 	}

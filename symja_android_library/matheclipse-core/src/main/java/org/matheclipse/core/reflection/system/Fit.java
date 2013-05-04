@@ -45,9 +45,9 @@ public class Fit extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		if (ast.get(2).isInteger() && ast.get(3).isSymbol()) {
+		if (ast.get(2).isSignedNumber() && ast.get(3).isSymbol()) {
 			int rowSize = -1;
-			int degree = ((IInteger) ast.get(2)).toInt();
+			int degree = ((ISignedNumber) ast.get(2)).toInt();
 			PolynomialFitter fitter = new PolynomialFitter(degree, new LevenbergMarquardtOptimizer());
 			int[] im = ast.get(1).isMatrix();
 			if (im != null && im[1] == 2) {

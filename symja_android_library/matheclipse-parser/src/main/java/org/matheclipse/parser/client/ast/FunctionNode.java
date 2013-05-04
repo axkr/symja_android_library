@@ -24,8 +24,8 @@ import java.util.ListIterator;
 /**
  * A list of <code>ASTNode</code>'s which represents a parsed function.<br/s>
  * The head of the function (i.e. Sin, Cos, Times,...) is stored in the 0-th
- * index of the list.<br/> The arguments of the function are stored in the
- * 1...n-th index of the list.
+ * index of the list.<br/>
+ * The arguments of the function are stored in the 1...n-th index of the list.
  */
 public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 	private ArrayList<ASTNode> fNodesList;
@@ -113,6 +113,19 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		return fNodesList.isEmpty();
 	}
 
+	@Override
+	public boolean isFree(final ASTNode n) {
+		if (this.equals(n)) {
+			return false;
+		}
+		for (int i = 0; i < fNodesList.size(); i++) {
+			if (!fNodesList.get(i).isFree(n)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public Iterator<ASTNode> iterator() {
 		return fNodesList.iterator();
 	}
@@ -177,7 +190,7 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		} else {
 			buf.append(temp.toString());
 		}
-		buf.append('[');
+		buf.append('(');
 		for (int i = 1; i < size(); i++) {
 			temp = get(i);
 			buf.append(temp == this ? "(this ListNode)" : String.valueOf(temp));
@@ -185,7 +198,7 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 				buf.append(", ");
 			}
 		}
-		buf.append(']');
+		buf.append(')');
 		return buf.toString();
 	}
 

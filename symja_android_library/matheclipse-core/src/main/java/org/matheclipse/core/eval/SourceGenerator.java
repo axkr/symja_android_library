@@ -400,6 +400,82 @@ public class SourceGenerator {
 		}
 
 	}
+	
+	public static void generateFunctionStrings(final String pckgname, boolean isArray) {
+		String name = pckgname;
+		if (!name.startsWith("/")) {
+			name = "/" + name;
+		}
+
+		name = name.replace('.', '/');
+
+		// Get a File object for the package
+		final URL url = SourceGenerator.class.getResource(name);
+		final File directory = new File(url.getFile());
+
+		if (directory.exists()) {
+			
+			System.out.println("\"ArcSinh\",");
+			System.out.println("\"DirectedInfinity\",");
+			System.out.println("\"False\",");
+			System.out.println("\"Flat\",");
+			System.out.println("\"HoldAll\",");
+			System.out.println("\"HoldFirst\",");
+			System.out.println("\"HoldRest\",");
+			System.out.println("\"Indeterminate\",");
+			System.out.println("\"Integer\",");
+			System.out.println("\"List\",");
+			System.out.println("\"Listable\",");
+			System.out.println("\"Modulus\",");
+			System.out.println("\"NumericFunction\",");
+			System.out.println("\"OneIdentity\",");
+			System.out.println("\"Orderless\",");
+			System.out.println("\"Real\",");
+			System.out.println("\"Slot\",");
+			System.out.println("\"SlotSequence\",");
+			System.out.println("\"String\",");
+			System.out.println("\"Symbol\",");			
+			System.out.println("\"True\",");
+			// Get the list of the files contained in the package
+			final String[] files = directory.list();
+			for (int i = 0; i < files.length; i++) {
+
+				// we are only interested in .class files
+				if (files[i].endsWith(".class")) {
+					// removes the .class extension
+					final String classname = files[i].substring(0, files[i].length() - 6);
+					if (!(classname.contains("$"))) {
+						try {
+							// Try to create an instance of the object
+							final Object o = Class.forName(pckgname + "." + classname).newInstance();
+
+							if (o instanceof AbstractSymbolEvaluator) {
+								System.out.print("\"" + classname + "\"");
+							} else {
+								if (isArray) {
+									System.out.print("\"" + classname + "[]\"");
+								} else {
+									System.out.print("\"" + classname + "\"");
+								}
+							}
+							if (i < files.length - 1) {
+								System.out.println(",");
+							}
+						} catch (final ClassNotFoundException cnfex) {
+							System.err.println(cnfex);
+						} catch (final InstantiationException iex) {
+							// We try to instantiate an interface
+							// or an object that does not have a
+							// default constructor
+						} catch (final IllegalAccessException iaex) {
+							// The class is not public
+						}
+					}
+				}
+			}
+		}
+
+	}
 
 	/**
 	 * Generate templates for the Eclipse editor
@@ -483,26 +559,33 @@ public class SourceGenerator {
 		// System.out.println("\n--------------------\n");
 
 		// generate list of symbols
-		generateJFlexKeywords("org.matheclipse.core.reflection.system", 1);
+		// generateJFlexKeywords("org.matheclipse.core.reflection.system", 1);
 
-		// generate javascript:
-		System.out.println("private final String[] COMPLETIONS = { ");
+		// generate predefined function Strings:
+		System.out.println("private final static String[] FUNCTION_STRINGS = { ");
 
-		generateJavaScript("org.matheclipse.core.reflection.system", false);
+		generateFunctionStrings("org.matheclipse.core.reflection.system", false);
 
 		System.out.println("};");
 
-		System.out.println("\n--------------------\n");
+		// generate javascript:
+//		System.out.println("private final String[] COMPLETIONS = { ");
+//
+//		generateJavaScript("org.matheclipse.core.reflection.system", false);
+//
+//		System.out.println("};");
+//
+//		System.out.println("\n--------------------\n");
+//
+//		generateDeclareSymbols("org.matheclipse.core.reflection.system");
+//
+//		System.out.println("\n--------------------\n");
+//
+//		generateCreateSymbols("org.matheclipse.core.reflection.system");
+//		System.out.println("\n--------------------\n");
+//		generateFunctions("org.matheclipse.core.reflection.system");
 
-		generateDeclareSymbols("org.matheclipse.core.reflection.system");
-
-		System.out.println("\n--------------------\n");
-
-		generateCreateSymbols("org.matheclipse.core.reflection.system");
-		System.out.println("\n--------------------\n");
-		generateFunctions("org.matheclipse.core.reflection.system");
-
-		System.out.println("\n--------------------\n");
-		generateEvalFunctions("org.matheclipse.core.reflection.system");
+		// System.out.println("\n--------------------\n");
+		// generateEvalFunctions("org.matheclipse.core.reflection.system");
 	}
 }

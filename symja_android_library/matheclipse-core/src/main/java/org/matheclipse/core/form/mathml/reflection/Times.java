@@ -42,8 +42,8 @@ public class Times extends AbstractOperator {
 	 *          The math function which should be converted to MathML
 	 */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		final IAST numerator = F.function(IConstantHeaders.Times);
-		final IAST denominator = F.function(IConstantHeaders.Times);
+		final IAST numerator = F.Times();
+		final IAST denominator = F.Times();
 		boolean flag = false;
 		IExpr expr;
 		for (int i = 1; i < f.size(); i++) {
@@ -71,7 +71,7 @@ public class Times extends AbstractOperator {
 						continue;
 					}
 
-					denominator.add(F.function(F.Power, p.get(1), F.function(F.Times, F.integer(-1), p.get(2))));
+					denominator.add(F.Power( p.get(1), F.Times( F.integer(-1), p.get(2))));
 					flag = true;
 					continue;
 				}

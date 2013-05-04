@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -242,8 +243,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public IEvaluator getEvaluator() {
 		if (fEvaluator == null) {
 			fEvaluator = DUMMY_EVALUATOR;
-			if (Character.isUpperCase(fSymbolName.charAt(0))) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				SystemNamespace.DEFAULT.setEvaluator(this);
+			} else {
+				if (Character.isUpperCase(fSymbolName.charAt(0))) {
+					SystemNamespace.DEFAULT.setEvaluator(this);
+				}
 			}
 		}
 		return fEvaluator;
@@ -384,7 +389,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {
-		return fSymbolName.equals("True");
+		return this.equals(F.True);
+		// return fSymbolName.equals("True");
 	}
 
 	/** {@inheritDoc} */
@@ -406,7 +412,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFalse() {
-		return fSymbolName.equals("False");
+		// return fSymbolName.equals("False");
+		return this.equals(F.False);
 	}
 
 	/** {@inheritDoc} */
@@ -443,15 +450,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 					}
 					return alias;
 				}
-				// if (fSymbolName.equals("Pi")) {
-				// return "Pi";
-				// } else if (fSymbolName.equals("E")) {
-				// return "E";
-				// } else if (fSymbolName.equals("False")) {
-				// return "False";
-				// } else if (fSymbolName.equals("True")) {
-				// return "True";
-				// }
 			}
 			return "$s(\"" + fSymbolName + "\")";
 		}
@@ -460,6 +458,20 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	@Override
 	public String toString() {
+		return fSymbolName;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String fullFormString() {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
+			if (str != null) {
+				return str;
+			}
+		}
 		return fSymbolName;
 	}
 
@@ -579,6 +591,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	@Override
 	public IExpr negate() {
-		return F.function(F.Times, F.CN1, this);
+		return F.Times(F.CN1, this);
 	}
 }

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -15,7 +14,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
@@ -79,12 +78,10 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 	public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList) throws JASConversionException {
 		final Options options = new Options(lst.topHead(), lst, 2);
 		IExpr option = options.getOption("Modulus");
-		if (option != null && option.isInteger()) {
+		if (option != null && option.isSignedNumber()) {
 
 			// found "Modulus" option => use ModIntegerRing
-			final BigInteger value = ((IInteger) option).getBigNumerator();
-			int intValue = ((IInteger) option).toInt();
-			ModIntegerRing modIntegerRing = new ModIntegerRing(intValue, value.isProbablePrime(32));
+			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
 			JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
 			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
 

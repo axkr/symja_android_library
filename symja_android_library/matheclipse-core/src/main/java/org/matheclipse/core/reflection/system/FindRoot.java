@@ -49,8 +49,8 @@ public class FindRoot extends AbstractFunctionEvaluator implements IConstantHead
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3);
 			IExpr optionMaxIterations = options.getOption("MaxIterations");
-			if (optionMaxIterations != null && optionMaxIterations.isInteger()) {
-				maxIterations = ((IInteger) optionMaxIterations).toInt();
+			if (optionMaxIterations != null && optionMaxIterations.isSignedNumber()) {
+				maxIterations = ((ISignedNumber) optionMaxIterations).toInt();
 			}
 			IExpr optionMethod = options.getOption("Method");
 			if (optionMethod != null && optionMethod.isSymbol()) {
@@ -65,7 +65,7 @@ public class FindRoot extends AbstractFunctionEvaluator implements IConstantHead
 			IAST list = (IAST) ast.get(2);
 			IExpr function = ast.get(1);
 			if (list.size() == 4 && list.get(1).isSymbol() && list.get(2).isSignedNumber() && list.get(3) instanceof ISignedNumber) {
-				if (function.isAST(Equal, 3)) {
+				if (function.isAST(F.Equal, 3)) {
 					function = F.Plus(((IAST) function).get(1), F.Times(F.CN1, ((IAST) function).get(2)));
 				}
 				return F.List(F.Rule(list.get(1), Num.valueOf(findRoot(method, maxIterations, list, function))));
@@ -82,23 +82,23 @@ public class FindRoot extends AbstractFunctionEvaluator implements IConstantHead
 		function = F.eval(function);
 		DifferentiableUnivariateFunction f = new UnaryNumerical(function, xVar, engine);
 		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-		if (method.equals("Bisection")) {
+		if (method.equalsIgnoreCase("Bisection")) {
 			solver = new BisectionSolver();
-		} else if (method.equals("Brent")) {
+		} else if (method.equalsIgnoreCase("Brent")) {
 			solver = new BrentSolver();
-			// } else if (method.equals("Laguerre")) {
+			// } else if (method.equalsIgnoreCase("Laguerre")) {
 			// solver = new LaguerreSolver();
-		} else if (method.equals("Muller")) {
+		} else if (method.equalsIgnoreCase("Muller")) {
 			solver = new MullerSolver();
-		} else if (method.equals("Ridders")) {
+		} else if (method.equalsIgnoreCase("Ridders")) {
 			solver = new RiddersSolver();
-		} else if (method.equals("Secant")) {
+		} else if (method.equalsIgnoreCase("Secant")) {
 			solver = new SecantSolver();
-		} else if (method.equals("RegulaFalsi")) {
+		} else if (method.equalsIgnoreCase("RegulaFalsi")) {
 			solver = new RegulaFalsiSolver();
-		} else if (method.equals("Illinois")) {
+		} else if (method.equalsIgnoreCase("Illinois")) {
 			solver = new IllinoisSolver();
-		} else if (method.equals("Pegasus")) {
+		} else if (method.equalsIgnoreCase("Pegasus")) {
 			solver = new PegasusSolver();
 		} else {
 			// default: NewtonSolver

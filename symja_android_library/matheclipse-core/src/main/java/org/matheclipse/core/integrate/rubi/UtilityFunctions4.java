@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class UtilityFunctions4 { 
-  public static IAST RULES = List( 
+  final public static IAST RULES = List( 
 SetDelayed(FunctionOfExponentialOfLinear($p("u"),$p("x",$s("Symbol"))),
     Module(List(Set($s("lst"),FunctionOfExponentialOfLinear($s("u"),$s("x"),False,False,False)),$s("a"),$s("b"),$s("f")),If(Or(FalseQ($s("lst")),FalseQ(Part($s("lst"),C1))),False,CompoundExpression(CompoundExpression(CompoundExpression(CompoundExpression(Set($s("a"),Part($s("lst"),C1)),Set($s("b"),Part($s("lst"),C2))),Set($s("f"),Part($s("lst"),C3))),If(And(MatchQ($s("u"),Condition(Times($p("v"),Power($p("g"),Plus($p("c",true),Times($p("d"),$s("x"))))),And(FreeQ(List($s("c"),$s("d"),$s("g")),$s("x")),Less(NumericFactor($s("d")),C0)))),Greater(NumericFactor($s("b")),C0)),CompoundExpression(Set($s("a"),Times(CN1,$s("a"))),Set($s("b"),Times(CN1,$s("b")))))),List(FunctionOfExponentialOfLinearSubst($s("u"),$s("a"),$s("b"),$s("f"),$s("x")),$s("a"),$s("b"),$s("f")))))),
 SetDelayed(FunctionOfExponentialOfLinear($p("u"),$p("x"),$p("a"),$p("b"),$p("f")),

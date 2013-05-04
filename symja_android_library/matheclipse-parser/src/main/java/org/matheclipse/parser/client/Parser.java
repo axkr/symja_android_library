@@ -29,7 +29,7 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
-
+  
 /**
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
  * formulas string representation
@@ -41,7 +41,7 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  */
 public class Parser extends Scanner {
 	/**
-	 * Use '('...')' as brackets for arguments  
+	 * Use '('...')' as brackets for arguments
 	 */
 	private final boolean fRelaxedSyntax;
 	private final boolean fPackageMode;
@@ -49,7 +49,7 @@ public class Parser extends Scanner {
 	public final static SymbolNode DERIVATIVE = new SymbolNode("Derivative");
 
 	public Parser() {
-		this(ASTNodeFactory.MMA_STYLE_FACTORY, false);
+		this(ASTNodeFactory.MMA_STYLE_FACTORY, false, false);
 	}
 
 	/**

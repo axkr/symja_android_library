@@ -18,7 +18,7 @@ public class Pattern implements IFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		
 		if (ast.get(1).isSymbol()) {
-			if (ast.get(2).isAST("Blank")) {
+			if (ast.get(2).isAST(F.Blank)) {
 				IAST blank = (IAST) ast.get(2);
 				if (blank.size() == 1) {
 					return F.$p((ISymbol)ast.get(1));

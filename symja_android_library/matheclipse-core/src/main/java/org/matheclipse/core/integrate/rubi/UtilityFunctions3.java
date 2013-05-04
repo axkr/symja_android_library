@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class UtilityFunctions3 { 
-  public static IAST RULES = List( 
+  final public static IAST RULES = List( 
 SetDelayed(SimpSum($p("u"),Times($p("v",true),Power(Cos($p("z")),C2))),
     Condition(Times($s("u"),Power(Sin($s("z")),C2)),SameQ($s("u"),Times(CN1,$s("v"))))),
 SetDelayed(SimpSum($p("u"),Times($p("v",true),Power(Tan($p("z")),C2))),

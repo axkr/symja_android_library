@@ -19,7 +19,7 @@ public class UnitStep implements IFunctionEvaluator {
 		if (ast.size() == 2) {
 			IExpr arg1 = ast.get(1);
 			if (arg1.isSignedNumber()) {
-				ISignedNumber isn = (ISignedNumber) arg1;
+				ISignedNumber isn = (ISignedNumber)arg1;
 				return F.integer(isn.complexSign() < 0 ? 0 : 1);
 			}
 		}

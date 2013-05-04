@@ -31,7 +31,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 		if (ast.size() > 3) {
 			final ISymbol sym = ast.topHead();
-			final IAST result = F.function(sym);
+			final IAST result = F.ast(sym);
 			IExpr tres;
 			IExpr temp = ast.get(1);
 			boolean evaled = false;

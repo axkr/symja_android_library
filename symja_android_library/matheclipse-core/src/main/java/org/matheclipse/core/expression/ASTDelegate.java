@@ -7,14 +7,13 @@ public abstract class ASTDelegate {
 
 	protected IAST fAst;
 
-
 	protected ASTDelegate() {
 		this(null);
 	}
 
 	public ASTDelegate(IAST ast) {
 		super();
-		fAst=ast;
+		fAst = ast;
 	}
 
 	/**
@@ -29,20 +28,16 @@ public abstract class ASTDelegate {
 	}
 
 	protected AST createAST(int[] values) {
-		AST ast = (AST) F.ast(F.List, values.length, true);
-		for (int i = 0; i < values.length; i++) {
-			ast.set(i + 1, F.integer(values[i]));
-		}
-		return ast;
+		return AST.newInstance(F.List, values);
 	}
-	
+
 	/**
 	 * Get the number of rows (i.e. size()-1)
 	 * 
 	 * @return
 	 */
 	public int getRows() {
-		return fAst.size()-1;
+		return fAst.size() - 1;
 	}
 
 	public IExpr getAt(final int index) {
@@ -61,9 +56,9 @@ public abstract class ASTDelegate {
 		return fAst.toString();
 	}
 
-//	public Text toText() {
-//		return fAst.toText();
-//	}
+	// public Text toText() {
+	// return fAst.toText();
+	// }
 
 	public IAST getAST() {
 		return fAst;

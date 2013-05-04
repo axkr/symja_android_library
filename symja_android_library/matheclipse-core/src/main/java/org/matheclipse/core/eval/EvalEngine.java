@@ -85,7 +85,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	transient int fModuleCounter = 0;
 
-	private final boolean fRelaxedSyntax;
+	private boolean fRelaxedSyntax;
 
 	/**
 	 * List for results in <code>Reap[]</code> function.
@@ -404,7 +404,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((result = evalLoop(ast.head())) != null) {
 			// first evaluate the header !
 			IAST resultList = ast.clone();
-			resultList.setHeader(result);
+			resultList.set(0, result);
 			return resultList;
 		}
 
@@ -462,7 +462,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		IExpr result = evalLoop(ast.head());
 		if (result != null) {
 			IAST resultList = ast.clone();
-			resultList.setHeader(result);
+			resultList.set(0, result);
 			return resultList;
 		}
 
@@ -1072,5 +1072,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			setPackageMode(oldPackageMode);
 			setTraceMode(oldTraceMode);
 		}
+	}
+
+	/**
+	 * @return the fRelaxedSyntax
+	 */
+	public boolean isRelaxedSyntax() {
+		return fRelaxedSyntax;
+	}
+
+	/**
+	 * @param fRelaxedSyntax
+	 *          the fRelaxedSyntax to set
+	 */
+	public void setRelaxedSyntax(boolean fRelaxedSyntax) {
+		this.fRelaxedSyntax = fRelaxedSyntax;
 	}
 }

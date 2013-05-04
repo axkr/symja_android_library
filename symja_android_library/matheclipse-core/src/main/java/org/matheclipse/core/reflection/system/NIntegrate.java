@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
 import org.apache.commons.math3.analysis.integration.BaseAbstractUnivariateIntegrator;
 import org.apache.commons.math3.analysis.integration.LegendreGaussIntegrator;
@@ -8,7 +7,7 @@ import org.apache.commons.math3.analysis.integration.RombergIntegrator;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
-import org.matheclipse.core.basic.Config;
+import org.apache.commons.math3.exception.ConvergenceException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -48,7 +47,7 @@ public class NIntegrate extends AbstractFunctionEvaluator implements IConstantHe
 			IAST list = (IAST) ast.get(2);
 			IExpr function = ast.get(1);
 			if (list.size() == 4 && list.get(1).isSymbol() && list.get(2).isSignedNumber() && list.get(3).isSignedNumber()) {
-				if (function.isAST(Equal, 3)) {
+				if (function.isAST(F.Equal, 3)) {
 					function = F.Plus(((IAST) function).get(1), F.Times(F.CN1, ((IAST) function).get(2)));
 				}
 				try {

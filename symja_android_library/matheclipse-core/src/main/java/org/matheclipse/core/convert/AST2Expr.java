@@ -3,6 +3,7 @@ package org.matheclipse.core.convert;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -27,48 +28,49 @@ import org.matheclipse.parser.client.ast.SymbolNode;
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
  * expression into an IExpr expression
  * 
- */  
+ */
 public class AST2Expr {
 
-	public static final String[] PREDEFINED_SYMBOLS = { "True", "False", "List", "Modulus", "Flat", "HoldAll", "HoldFirst",
-			"HoldRest", "Listable", "NumericFunction", "OneIdentity", "Orderless", "Slot", "SlotSequence", "Abs", "AddTo", "And",
-			"Apart", "Append", "AppendTo", "Apply", "ArcCos", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "Binomial", "Blank", "Block",
-			"Boole", "Break", "Cancel", "CartesianProduct", "Cases", "Catalan", "CatalanNumber", "Catch", "Ceiling",
-			"CharacteristicPolynomial", "ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList",
-			"Complement", "Complex", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConstantArray",
-			"Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "Cot", "Count", "Cross", "Csc", "Curl", "D", "Decrement",
+	private final static String[] FUNCTION_STRINGS = { "ArcSinh", "DirectedInfinity", "False", "Flat", "HoldAll", "HoldFirst",
+			"HoldRest", "Indeterminate", "Integer", "List", "Listable", "Modulus", "NumericFunction", "OneIdentity", "Orderless", "Real",
+			"Slot", "SlotSequence", "String", "Symbol", "True", "Abs", "AddTo", "And", "Apart", "Append", "AppendTo", "Apply", "ArcCos",
+			"ArcCot", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "Binomial", "Blank", "Block", "Boole", "BooleanMinimize", "Break",
+			"Cancel", "CartesianProduct", "Cases", "Catalan", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial",
+			"ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList", "Complement", "Complex",
+			"ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray",
+			"Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "Cot", "Coth", "Count", "Cross", "Csc", "Curl", "D", "Decrement",
 			"Default", "Definition", "Degree", "Delete", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
 			"Dimensions", "Discriminant", "Distribute", "Divergence", "DivideBy", "Do", "Dot", "Drop", "E", "Eigenvalues",
 			"Eigenvectors", "Equal", "Erf", "EuclidianDistance", "EulerGamma", "EulerPhi", "EvenQ", "Exp", "Expand", "ExpandAll",
 			"Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree",
 			"FactorSquareFreeList", "FactorTerms", "Fibonacci", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList",
-			"For", "FractionalPart", "FreeQ", "FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify", "Function",
-			"Gamma", "GCD", "Glaisher", "GoldenRatio", "Greater", "GreaterEqual", "GroebnerBasis", "HarmonicNumber", "Head",
-			"HilbertMatrix", "Hold", "Horner", "I", "IdentityMatrix", "If", "Im", "Increment", "Infinity", "Inner", "IntegerPartitions",
-			"IntegerQ", "Integrate", "Intersection", "Inverse", "InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join",
-			"Khinchin", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less", "LessEqual", "LetterQ",
-			"Level", "Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map",
-			"MapAll", "MapThread", "MatchQ", "MatrixPower", "MatrixQ", "Max", "Mean", "Median", "MemberQ", "Min", "Mod", "Module",
-			"MoebiusMu", "Most", "Multinomial", "N", "Negative", "Nest", "NestList", "NextPrime", "NFourierTransform", "NIntegrate",
-			"NonCommutativeMultiply", "NonNegative", "Norm", "Not", "NRoots", "NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order",
-			"OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern",
-			"Permutations", "Pi", "Plot", "Plot3D", "Plus", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ",
-			"PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power",
-			"PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "PrimeQ", "PrimitiveRoots", "Print",
-			"Product", "Quotient", "RandomInteger", "RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll",
-			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots", "RotateLeft",
-			"RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Select", "Set", "SetAttributes", "SetDelayed",
-			"Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh", "Solve", "Sort", "Sow", "Sqrt",
-			"SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "Subsets",
-			"SubtractFrom", "Sum", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "Thread", "Through", "Throw",
-			"Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
-			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal", "Union", "UnitStep", "UnsameQ", "UpperCaseQ", "ValueQ",
-			"VandermondeMatrix", "Variables", "VectorQ", "While" };;
+			"For", "FractionalPart", "FreeQ", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify",
+			"Function", "Gamma", "GCD", "GeometricMean", "Glaisher", "GoldenRatio", "Greater", "GreaterEqual", "GroebnerBasis",
+			"HarmonicNumber", "Head", "HilbertMatrix", "Hold", "Horner", "I", "IdentityMatrix", "If", "Im", "Increment", "Infinity",
+			"Inner", "IntegerPartitions", "IntegerQ", "Integrate", "Intersection", "Inverse", "InverseFunction", "JacobiMatrix",
+			"JacobiSymbol", "JavaForm", "Join", "Khinchin", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length",
+			"Less", "LessEqual", "LetterQ", "Level", "Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition",
+			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MatrixPower", "MatrixQ", "Max", "Mean", "Median", "MemberQ",
+			"Min", "Mod", "Module", "MoebiusMu", "Most", "Multinomial", "N", "Negative", "Nest", "NestList", "NestWhile",
+			"NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm", "Not", "NRoots", "NSolve",
+			"NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight",
+			"ParametricPlot", "Part", "Partition", "Pattern", "Permutations", "Pi", "Plot", "Plot3D", "Plus", "PolynomialExtendedGCD",
+			"PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder",
+			"Position", "Positive", "PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend",
+			"PrependTo", "PrimeQ", "PrimitiveRoots", "Print", "Product", "Quotient", "RandomInteger", "RandomReal", "Range", "Rational",
+			"Rationalize", "Re", "Reap", "ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse",
+			"Riffle", "RootIntervals", "Roots", "RotateLeft", "RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec",
+			"Select", "Set", "SetAttributes", "SetDelayed", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh",
+			"Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
+			"StringLength", "StringTake", "Subsets", "SubtractFrom", "Sum", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh",
+			"Taylor", "Thread", "Through", "Throw", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total",
+			"ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal", "Union",
+			"UnitStep", "UnsameQ", "UpperCaseQ", "ValueQ", "VandermondeMatrix", "Variables", "VectorQ", "While" };
 
-	static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>();
+	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	static {
-		for (String str : PREDEFINED_SYMBOLS) {
+		for (String str : FUNCTION_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
 		}
 
@@ -170,22 +172,57 @@ public class AST2Expr {
 		}
 		if (node instanceof SymbolNode) {
 			String nodeStr = node.getString();
-			if (fLowercaseEnabled) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				nodeStr = nodeStr.toLowerCase();
-				String temp = PREDEFINED_SYMBOLS_MAP.get(nodeStr);
-				if (temp != null) {
-					nodeStr = temp;
+				// String temp = PREDEFINED_SYMBOLS_MAP.get(nodeStr);
+				// if (temp != null) {
+				// nodeStr = temp;
+				// }
+				if (nodeStr.equalsIgnoreCase("I")) {
+					// special - convert on input
+					return F.CI;
+				} else if (nodeStr.equalsIgnoreCase("Infinity")) {
+					// special - convert on input
+					return F.CInfinity;
+				} else if (nodeStr.equalsIgnoreCase("Diff")) {
+					return F.D;
+				} else if (nodeStr.equalsIgnoreCase("ASin")) {
+					return F.ArcSin;
+				} else if (nodeStr.equalsIgnoreCase("ACos")) {
+					return F.ArcCos;
+				} else if (nodeStr.equalsIgnoreCase("ATan")) {
+					return F.ArcTan;
+				} else if (nodeStr.equalsIgnoreCase("ASinh")) {
+					return F.ArcSinh;
+				} else if (nodeStr.equalsIgnoreCase("ACosh")) {
+					return F.ArcCosh;
+				} else if (nodeStr.equalsIgnoreCase("ATanh")) {
+					return F.ArcTanh;
+				} else if (nodeStr.equalsIgnoreCase("Diff")) {
+					return F.D;
+				} else if (nodeStr.equalsIgnoreCase("Int")) {
+					return F.Integrate;
 				}
-			}
 
-			if (nodeStr.equals("I")) {
-				// special - convert on input
-				return F.CI;
-			} else if (nodeStr.equals("Infinity")) {
-				// special - convert on input
-				return F.CInfinity;
+				return F.$s(nodeStr);
+			} else {
+				if (fLowercaseEnabled) {
+					nodeStr = nodeStr.toLowerCase();
+					String temp = PREDEFINED_SYMBOLS_MAP.get(nodeStr);
+					if (temp != null) {
+						nodeStr = temp;
+					}
+				}
+
+				if (nodeStr.equals("I")) {
+					// special - convert on input
+					return F.CI;
+				} else if (nodeStr.equals("Infinity")) {
+					// special - convert on input
+					return F.CInfinity;
+				}
+				return F.$s(nodeStr);
 			}
-			return F.$s(nodeStr);
 		}
 		// because of inheritance check Pattern2Node before PatternNode
 		if (node instanceof Pattern2Node) {

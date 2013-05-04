@@ -251,7 +251,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.function(F.List);
+		final IAST out = F.ast(F.List);
 		for (int i = 0; i < rowSize; i++) {
 			out.add(F.num(vector.getEntry(i)));
 		}

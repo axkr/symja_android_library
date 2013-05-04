@@ -93,7 +93,7 @@ public class Object2Expr { // extends Converter<Object, IExpr> {
 				list = List();
 			} else {
 				final ISymbol head = F.$s(lst.get(0).toString());
-				list = F.function(head);
+				list = F.ast(head);
 
 				for (int i = 1; i < lst.size(); i++) {
 					list.add(convert(lst.get(i)));

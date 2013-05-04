@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class UtilityFunctions0 { 
-  public static IAST RULES = List( 
+  final public static IAST RULES = List( 
 SetDelayed(IndentedPrint($p("n",$s("Integer")),$p("u")),
     CompoundExpression(Print(StringJoin(MakeList($s("n"),stringx(" "))),$s("u")),$s("u"))),
 SetDelayed(MakeList($p("n",$s("Integer")),$p("u")),

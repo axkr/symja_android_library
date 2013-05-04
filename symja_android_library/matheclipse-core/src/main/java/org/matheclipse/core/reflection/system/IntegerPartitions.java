@@ -28,11 +28,11 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 
 		if (ast.get(1).isInteger()) {
 			final int n = ((IInteger) ast.get(1)).getBigNumerator().intValue();
-			final IAST result = F.function(F.List);
+			final IAST result = F.List();
 			IAST temp;
 			final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
 			for (int j[] : comb) {
-				temp = F.function(F.List);
+				temp = F.List();
 				for (int i = 0; i < j.length; i++) {
 					if (j[i] != 0) {
 						temp.add(F.integer(j[i]));

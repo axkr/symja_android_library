@@ -19,7 +19,7 @@ public IExpr evaluate(final IAST functionList) {
 
     if (functionList.size() > 3) {
       final ISymbol sym = functionList.topHead();
-      final IAST result = F.function(sym);
+      final IAST result = F.ast(sym);
       IExpr tres;
       IExpr temp = functionList.get(1);
       boolean evaled = false;

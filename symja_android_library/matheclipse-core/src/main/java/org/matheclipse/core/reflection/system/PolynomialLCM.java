@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
@@ -11,10 +12,9 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.math.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
@@ -43,12 +43,10 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 		if (ast.size() > 3) {
 			final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
 			IExpr option = options.getOption("Modulus");
-			if (option != null && option.isInteger()) {
+			if (option != null && option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
-					final BigInteger value = ((IInteger) option).getBigNumerator();
-					int intValue = ((IInteger) option).toInt();
-					ModIntegerRing modIntegerRing = new ModIntegerRing(intValue, value.isProbablePrime(32));
+					ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
 					JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
 					GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
 					GenPolynomial<ModInteger> temp;

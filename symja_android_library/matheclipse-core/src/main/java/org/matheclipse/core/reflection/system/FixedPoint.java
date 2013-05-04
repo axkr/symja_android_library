@@ -33,14 +33,7 @@ public class FixedPoint extends AbstractFunctionEvaluator {
 			IExpr current = ast.get(2);
 			int steps = Integer.MAX_VALUE;
 			if (ast.size() == 4) {
-				if (!(ast.get(3).isInteger())) {
-					return null;
-				}
-				try {
-					steps = ((IInteger) ast.get(3)).toInt();
-				} catch (ArithmeticException e) {
-					return null;
-				}
+				steps = Validate.checkIntType(ast, 3);
 			}
 			IExpr last;
 			do {

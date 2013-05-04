@@ -4,6 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -29,9 +30,9 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IAST ast, int pos, int startValue) {
-		if (ast.get(pos).isInteger()) {
+		if (ast.get(pos).isSignedNumber()) {
 			try {
-				int result = ((IInteger) ast.get(pos)).toInt();
+				int result = ((ISignedNumber) ast.get(pos)).toInt();
 				if (startValue > result) {
 					throw new WrongArgumentType(ast, ast.get(pos), pos, "Trying to convert the argument into the integer range: "
 							+ startValue + " - " + Integer.MAX_VALUE);
@@ -57,9 +58,9 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IExpr expr, int startValue) {
-		if (expr.isInteger()) {
+		if (expr.isSignedNumber()) {
 			try {
-				int result = ((IInteger) expr).toInt();
+				int result = ((ISignedNumber) expr).toInt();
 				if (startValue > result) {
 					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: " + startValue + " - "
 							+ Integer.MAX_VALUE);

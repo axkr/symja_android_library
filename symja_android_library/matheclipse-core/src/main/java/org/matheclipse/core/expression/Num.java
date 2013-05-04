@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigInteger;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -197,7 +199,7 @@ public class Num extends ExprImpl implements INum {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof Num) {
@@ -230,17 +232,19 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int toInt() throws ArithmeticException {
-		if (fDouble > Integer.MAX_VALUE || fDouble < Integer.MIN_VALUE) {
-			throw new ArithmeticException("toInt: double value not in int range");
-		}
-		int result = Double.valueOf(fDouble).intValue();
-		if (F.isZero(fDouble - result)) {
-			return result;
-		}
-		throw new ArithmeticException("toInt: double value is not an int value");
+		return NumberUtil.toInt(fDouble);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long toLong() throws ArithmeticException {
+		return NumberUtil.toLong(fDouble);
+	}
+	
 	/**
 	 * @return
 	 */

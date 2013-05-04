@@ -2,11 +2,14 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+
+import com.google.common.math.DoubleMath;
 
 /**
  *
@@ -81,6 +84,16 @@ public class NumberUtil {
 		return val;
 	}
 
+	/**
+	 * Converts this number to <code>int</code>; unlike {@link #intValue}
+	 * this method raises {@link ArithmeticException} if this integer cannot be
+	 * represented by an <code>int</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to
+	 *         type <code>int</code>.
+	 * @throws ArithmeticException
+	 *           if conversion to <code>int</code> is not possible.
+	 */
 	public static int toInt(BigInteger a) throws ArithmeticException {
 		int val = a.intValue();
 		if (!a.equals(BigInteger.valueOf(val))) {
@@ -88,7 +101,36 @@ public class NumberUtil {
 		}
 		return val;
 	}
- 
+
+	/**
+	 * Converts this number to <code>int</code>; unlike {@link #intValue}
+	 * this method raises {@link ArithmeticException} if this integer cannot be
+	 * represented by an <code>int</code> type.
+	 * 
+	 * @return the numeric value represented by this number after conversion to
+	 *         type <code>int</code>.
+	 * @throws ArithmeticException
+	 *           if conversion to <code>int</code> is not possible.
+	 */
+	public static int toInt(double d) throws ArithmeticException {
+		// roundToInt() throws ArithmeticException if rounding not possible
+		return DoubleMath.roundToInt(d, RoundingMode.UNNECESSARY);
+	}
+
+	/**
+	 * Converts this number to <code>long</code>; unlike {@link #longValue}
+	 * this method raises {@link ArithmeticException} if this integer cannot be
+	 * represented by an <code>long</code> type.
+	 * 
+	 * @return the numeric value represented by this number after conversion to
+	 *         type <code>long</code>.
+	 * @throws ArithmeticException
+	 *           if conversion to <code>long</code> is not possible.
+	 */
+	public static long toLong(double d) throws ArithmeticException {
+		// roundToLong() throws ArithmeticException if rounding not possible
+		return DoubleMath.roundToLong(d, RoundingMode.UNNECESSARY);
+	}
 	/**
 	 * Compares the absolute value of two rational numbers.
 	 * 

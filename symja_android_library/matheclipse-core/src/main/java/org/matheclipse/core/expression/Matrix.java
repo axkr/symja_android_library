@@ -48,11 +48,12 @@ public class Matrix extends ASTDelegate {
 		AST matrix = (AST) F.ast(F.List, values.length, true);
 		IAST row;
 		for (int i = 0; i < values.length; i++) {
-			row = F.ast(F.List, values[i].length, true);
-			matrix.set(i + 1, row);
-			for (int j = 0; j < values[i].length; j++) {
-				row.set(j + 1, F.integer(values[i][j]));
-			}
+			matrix.set(i + 1, AST.newInstance(F.List, values[i]));
+			// row = F.ast(F.List, values[i].length, true);
+			// matrix.set(i + 1, row);
+			// for (int j = 0; j < values[i].length; j++) {
+			// row.set(j + 1, F.integer(values[i][j]));
+			// }
 		}
 		return matrix;
 	}
@@ -85,7 +86,7 @@ public class Matrix extends ASTDelegate {
 	public IExpr setAt(final int row, final int column, final IExpr value) {
 		return ((IAST) fAst.get(row)).set(column, value);
 	}
-	
+
 	/**
 	 * Get the number of columns in this matrix
 	 * 

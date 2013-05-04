@@ -812,6 +812,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return NumberUtil.toInt(fInteger);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public long toLong() throws ArithmeticException {
 		return NumberUtil.toLong(fInteger);
 	}

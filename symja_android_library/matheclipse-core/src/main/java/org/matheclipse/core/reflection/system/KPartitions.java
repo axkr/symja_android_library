@@ -23,7 +23,7 @@ public class KPartitions extends AbstractFunctionEvaluator {
 			final IAST listArg0 = (IAST) ast.get(1);
 			final int k = Validate.checkIntType(ast, 2);
 			final IAST result = F.List();
-			final KPartitionsList<IExpr, IAST> iter = new KPartitionsList<IExpr, IAST>(listArg0, k, F.function(F.List), AST.COPY, 1);
+			final KPartitionsList<IExpr, IAST> iter = new KPartitionsList<IExpr, IAST>(listArg0, k, F.ast(F.List), AST.COPY, 1);
 			for (IAST part : iter) {
 				result.add(part);
 			}

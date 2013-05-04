@@ -97,7 +97,9 @@ public class ASTNodeFactory implements IParserFactory {
 			// new PostfixOperator("..", "Repeated", 1500),
 			new InfixOperator("/.", "ReplaceAll", 1000, InfixOperator.LEFT_ASSOCIATIVE) };
 
-	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory();
+	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
+
+	public final static ASTNodeFactory RELAXED_STYLE_FACTORY = new ASTNodeFactory(true);
 
 	/**
 	 */
@@ -115,12 +117,15 @@ public class ASTNodeFactory implements IParserFactory {
 		}
 	}
 
+	private final boolean fIgnoreCase;
+
 	/**
 	 * Create a default ASTNode factory
 	 * 
 	 */
-	public ASTNodeFactory() {
-	}
+	public ASTNodeFactory(boolean ignoreCase) {
+		this.fIgnoreCase = ignoreCase;
+	} 
 
 	static public void addOperator(final Map<String, Operator> operatorMap,
 			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr, final String headStr,
@@ -251,6 +256,9 @@ public class ASTNodeFactory implements IParserFactory {
 	}
 
 	public SymbolNode createSymbol(final String symbolName) {
+		if (fIgnoreCase){
+			return new SymbolNode(symbolName.toLowerCase());
+		}
 		return new SymbolNode(symbolName);
 	}
 

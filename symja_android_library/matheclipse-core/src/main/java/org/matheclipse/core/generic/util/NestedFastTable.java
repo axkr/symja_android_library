@@ -1,12 +1,10 @@
 package org.matheclipse.core.generic.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.generic.nested.INestedListElement;
 
 /**
@@ -15,7 +13,7 @@ import org.matheclipse.generic.nested.INestedListElement;
  * Adds a special <code>head</code> object to the FastTable implementation
  * 
  */
-public class NestedFastTable<E extends INestedListElement> extends ArrayList<E> implements INestedList<E> {
+public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E> implements INestedList<E> {
 	/**
 	 * Holds the factory for this NestedList.
 	 */
@@ -58,6 +56,14 @@ public class NestedFastTable<E extends INestedListElement> extends ArrayList<E> 
 	 */
 	public NestedFastTable() {
 		this((E) null);
+	}
+
+	protected NestedFastTable(E[] es) {
+		super(es);
+	}
+	
+	public NestedFastTable(E ex, E... es) {
+		super(ex, es);
 	}
 
 	/**
@@ -220,15 +226,15 @@ public class NestedFastTable<E extends INestedListElement> extends ArrayList<E> 
 		return get(0);
 	}
 
-	public final void setHeader(final E head) {
-		set(0, head);
-	}
+//	public final void setHeader(final E head) {
+//		set(0, head);
+//	}
 
 	@Override
 	public String toString() {
 		final String sep = ", ";
 		E temp = null;
-		if (size()>0){
+		if (size() > 0) {
 			temp = head();
 		}
 		StringBuffer text;
@@ -263,7 +269,7 @@ public class NestedFastTable<E extends INestedListElement> extends ArrayList<E> 
 		// }
 		// };
 
-		private ArrayList _table;
+		private HMArrayList _table;
 
 		private int _currentIndex;
 

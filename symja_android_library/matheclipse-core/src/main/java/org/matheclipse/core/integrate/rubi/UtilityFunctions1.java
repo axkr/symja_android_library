@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class UtilityFunctions1 { 
-  public static IAST RULES = List( 
+  final public static IAST RULES = List( 
 SetDelayed(LinearQ($p("u"),$p("x",$s("Symbol"))),
     And(PolynomialQ($s("u"),$s("x")),SameQ(Exponent($s("u"),$s("x")),C1))),
 SetDelayed(QuadraticQ($p("u"),$p("x",$s("Symbol"))),

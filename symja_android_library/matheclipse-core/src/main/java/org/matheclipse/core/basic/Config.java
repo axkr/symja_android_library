@@ -47,7 +47,7 @@ public class Config {
 	 * 
 	 */
 	public final static boolean SHOW_STACKTRACE = true;
-
+  
 	/**
 	 * Show the console output, if an expression has a head symbol with attribute
 	 * <code>ISymbol.CONSOLE_OUTPUT</code>.
@@ -55,6 +55,12 @@ public class Config {
 	 */
 	public final static boolean SHOW_CONSOLE = true;
 
+	/**
+	 * If <code>true</code> the parser don't distinguish between lower- or
+	 * uppercase symbols (i.e. constants, function names,...)
+	 */
+	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
+	
 	/**
 	 * Version string for console application
 	 * 
@@ -76,7 +82,7 @@ public class Config {
 	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia:
 	 * Machine epsilon</a>
 	 */
-	public static double DOUBLE_EPSILON = Precision.EPSILON; 
+	public static double DOUBLE_EPSILON = Precision.EPSILON;
 
 	/**
 	 * Maximum size of the BigInteger words in <i>server mode</i>.
@@ -96,7 +102,7 @@ public class Config {
 	 * Maximum length of the StringImpl's <code>String</code> in <i>server
 	 * mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.StringImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int STRING_MAX_SIZE = 4096;
 
@@ -110,49 +116,49 @@ public class Config {
 	/**
 	 * Maximum size of the IntegerImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.IntegerImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int INTEGER_MAX_POOL_SIZE = 4096;
 
 	/**
 	 * Maximum size of the FractionImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.FractionImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int FRACTION_MAX_POOL_SIZE = 4096;
 
 	/**
 	 * Maximum size of the ComplexImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.ComplexImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int COMPLEX_MAX_POOL_SIZE = 4096;
 
 	/**
 	 * Maximum size of the DoubleImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.DoubleImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int DOUBLE_MAX_POOL_SIZE = 65536;// 16384;
 
 	/**
 	 * Maximum size of the DoubleComplexImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.DoubleComplexImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int DOUBLECOMPLEX_MAX_POOL_SIZE = 65536;// 16384;
 
 	/**
 	 * Maximum size of the PatternImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.PatternImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int PATTERN_MAX_POOL_SIZE = 1024;
 
 	/**
 	 * Maximum size of the StringImpl pools in <i>server mode</i>.
 	 * 
-	 * @see org.matheclipse.core.expression.StringImpl
+	 * @see org.matheclipse.core.expression.Expression
 	 */
 	public static int STRING_MAX_POOL_SIZE = 1024;
 

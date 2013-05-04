@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.combinatoric.MultisetPartitionsIterator;
+import org.matheclipse.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -14,8 +16,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.combinatoric.KPartitionsIterable;
-import org.matheclipse.generic.combinatoric.KPermutationsIterable;
 
 public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializable {
 
@@ -135,311 +135,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	}
 
 	/**
-	 * Matches an <code>IAST</code> with header attribute <code>Flat</code>.
-	 * 
-	 * @see ISymbol#FLAT
-	 */
-	public class FlatMatcher {
-
-		private IAST fLhsPatternAST;
-
-		final private boolean fOneIdentity;
-
-		private int[] fPartitionsIndex;
-
-		private ISymbol fSymbol;
-
-		private IAST fLhsEvalAST;
-
-		public FlatMatcher(final ISymbol sym, final IAST lhsPatternList, final IAST lhsEvalList) {
-			fSymbol = sym;
-			fLhsPatternAST = lhsPatternList;
-			this.fLhsEvalAST = lhsEvalList;
-			fOneIdentity = (sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY;
-		}
-
-		public boolean matchFlatAST(StackMatcher stackMatcher) {
-			// AbstractExpressionFactory f = fSession.getExpressionFactory();
-			final int n = fLhsEvalAST.size() - 1;
-			final int k = fLhsPatternAST.size() - 1;
-			final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
-			// copy pattern values to local variable
-			IExpr[] patternValues = fPatternMap.copyPattern();
-			for (int partitionsIndex[] : partitionIterator) {
-				fPartitionsIndex = partitionsIndex;
-				if (matchSingleFlatPartition(stackMatcher)) {
-					return true;
-				}
-				// reset pattern values:
-				fPatternMap.resetPattern(patternValues);
-			}
-
-			return false;
-		}
-
-		private boolean matchSingleFlatPartition(StackMatcher stackMatcher) {
-			IAST partitionElement;
-
-			final int n = fLhsEvalAST.size() - 1;
-			// 0 is always the first index of a partition
-			int partitionStartIndex = 0;
-			int partitionElementCounter = 0;
-			int lastStackSize = stackMatcher.size();
-			boolean matched = true;
-			try {
-				for (int i = 1; i < fPartitionsIndex.length; i++) {
-
-					if (partitionStartIndex + 1 == fPartitionsIndex[i]) {
-						// OneIdentity check here
-						if (fOneIdentity) {
-							if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), fLhsEvalAST.get(partitionStartIndex + 1))) {
-								matched = false;
-								return false;
-							}
-						} else {
-							partitionElement = F.function(fSymbol);
-							partitionElement.add(fLhsEvalAST.get(partitionStartIndex + 1));
-							if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-								matched = false;
-								return false;
-							}
-						}
-					} else {
-						partitionElement = F.function(fSymbol);
-						for (int m = partitionStartIndex; m < fPartitionsIndex[i]; m++) {
-
-							if (m + 1 < fPartitionsIndex[i]) {
-								if ((fLhsEvalAST.get(m + 2)).isLTOrdered(fLhsEvalAST.get(m + 1))) {
-									// wrong ordering inside partitionElement
-									matched = false;
-									return false;
-								}
-							}
-							partitionElement.add(fLhsEvalAST.get(m + 1));
-						}
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-							matched = false;
-							return false;
-						}
-					}
-					partitionElementCounter++;
-					partitionStartIndex = fPartitionsIndex[i];
-
-				}
-				// generate all elements for the last partitionElement of a
-				// partition:
-
-				if (partitionStartIndex + 1 == n) {
-					// OneIdentity check here
-					if (fOneIdentity) {
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), fLhsEvalAST.get(partitionStartIndex + 1))) {
-							matched = false;
-							return false;
-						}
-					} else {
-						partitionElement = F.function(fSymbol);
-						partitionElement.add(fLhsEvalAST.get(partitionStartIndex + 1));
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-							matched = false;
-							return false;
-						}
-					}
-				} else {
-					partitionElement = F.function(fSymbol);
-					for (int m = partitionStartIndex; m < n; m++) {
-
-						if (m + 1 < n) {
-							if ((fLhsEvalAST.get(m + 2)).isLTOrdered(fLhsEvalAST.get(m + 1))) {
-								// wrong ordering inside partitionElement
-								matched = false;
-								return false;
-							}
-						}
-						partitionElement.add(fLhsEvalAST.get(m + 1));
-					}
-					if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-						matched = false;
-						return false;
-					}
-				}
-
-				if (!stackMatcher.matchRest()) {
-					matched = false;
-					return false;
-				}
-				return true;
-			} finally {
-				if (!matched) {
-					stackMatcher.removeFrom(lastStackSize);
-				}
-			}
-			// return true;
-		}
-	}
-
-	/**
-	 * Matches a flat orderless expression
-	 */
-	public class FlatOrderlessMatcher {
-
-		private IAST fLhsPatternAST;
-
-		private boolean fOneIdentity;
-
-		private int[] fPartitionsIndex;
-
-		private int[] fPermutationsIndex;
-
-		private ISymbol fSymbol;
-
-		private IAST fLhsEvalAST;
-
-		public FlatOrderlessMatcher(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST) {
-			fSymbol = sym;
-			fLhsPatternAST = lhsPatternAST;
-			this.fLhsEvalAST = lhsEvalAST;
-			// this.fSession = EvalEngine.get();
-			fOneIdentity = (sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY;
-		}
-
-		private boolean matchFlatOrderlessList(StackMatcher stackMatcher) {
-			// AbstractExpressionFactory f = fSession.getExpressionFactory();
-			final int n = fLhsEvalAST.size() - 1;
-			final int k = fLhsPatternAST.size() - 1;
-			final KPermutationsIterable permutationIterator = new KPermutationsIterable(fLhsEvalAST, n, 1);
-			final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
-
-			// copy pattern values to local variable
-			IExpr[] patternValues = fPatternMap.copyPattern();
-
-			// first generate all permutations:
-			for (int permutationsIndex[] : permutationIterator) {
-				fPermutationsIndex = permutationsIndex;
-				// second generate all partitions:
-				for (int partitionsIndex[] : partitionIterator) {
-					fPartitionsIndex = partitionsIndex;
-					if (matchSingleFlatOrderlessPartition(stackMatcher)) {
-						return true;
-					}
-					// reset pattern values:
-					fPatternMap.resetPattern(patternValues);
-				}
-				partitionIterator.reset();
-			}
-			return false;
-		}
-
-		private boolean matchSingleFlatOrderlessPartition(StackMatcher stackMatcher) {
-			IAST partitionElement;
-			// if (Config.SHOW_STACKTRACE == true) {
-			// StringBuffer buf = new StringBuffer();
-			// for (int i = 0; i < fPartitionsIndex.length; i++) {
-			// buf.append(fPartitionsIndex[i]);
-			// buf.append(",");
-			// }
-			// System.out.println(buf.toString() + " <FO> " +
-			// lhsEvalList.toString());
-			// }
-			final int n = fLhsEvalAST.size() - 1;
-			// 0 is always the first index of a partition
-			int partitionStartIndex = 0;
-			int partitionElementCounter = 0;
-			int lastStackSize = stackMatcher.size();
-			boolean matched = true;
-			try {
-
-				for (int i = 1; i < fPartitionsIndex.length; i++) {
-
-					if (partitionStartIndex + 1 == fPartitionsIndex[i]) {
-						// OneIdentity check here
-						if (fOneIdentity) {
-							if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1),
-									fLhsEvalAST.get(fPermutationsIndex[partitionStartIndex] + 1))) {
-								matched = false;
-								return false;
-							}
-						} else {
-							partitionElement = F.function(fSymbol);
-							partitionElement.add(fLhsEvalAST.get(fPermutationsIndex[partitionStartIndex] + 1));
-							if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-								matched = false;
-								return false;
-							}
-						}
-					} else {
-						partitionElement = F.function(fSymbol);
-						for (int m = partitionStartIndex; m < fPartitionsIndex[i]; m++) {
-
-							if (m + 1 < fPartitionsIndex[i]) {
-								if ((fLhsEvalAST.get(fPermutationsIndex[m + 1] + 1)).isLTOrdered(fLhsEvalAST.get(fPermutationsIndex[m] + 1))) {
-									// wrong ordering inside partitionElement
-									matched = false;
-									return false;
-								}
-							}
-							partitionElement.add(fLhsEvalAST.get(fPermutationsIndex[m] + 1));
-						}
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-							matched = false;
-							return false;
-						}
-					}
-					partitionElementCounter++;
-					partitionStartIndex = fPartitionsIndex[i];
-
-				}
-				// generate all elements for the last partitionElement of a
-				// partition:
-
-				if (partitionStartIndex + 1 == n) {
-					// OneIdentity check here
-					if (fOneIdentity) {
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1),
-								fLhsEvalAST.get(fPermutationsIndex[partitionStartIndex] + 1))) {
-							matched = false;
-							return false;
-						}
-					} else {
-						partitionElement = F.function(fSymbol);
-						partitionElement.add(fLhsEvalAST.get(fPermutationsIndex[partitionStartIndex] + 1));
-						if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-							matched = false;
-							return false;
-						}
-					}
-				} else {
-					partitionElement = F.function(fSymbol);
-					for (int m = partitionStartIndex; m < n; m++) {
-
-						if (m + 1 < n) {
-							if ((fLhsEvalAST.get(fPermutationsIndex[m + 1] + 1)).isLTOrdered(fLhsEvalAST.get(fPermutationsIndex[m] + 1))) {
-								// wrong ordering inside partitionElement
-								matched = false;
-								return false;
-							}
-						}
-						partitionElement.add(fLhsEvalAST.get(fPermutationsIndex[m] + 1));
-					}
-					if (!stackMatcher.push(fLhsPatternAST.get(partitionElementCounter + 1), partitionElement)) {
-						matched = false;
-						return false;
-					}
-				}
-
-				if (!stackMatcher.matchRest()) {
-					matched = false;
-					return false;
-				}
-				return true;
-			} finally {
-				if (!matched) {
-					stackMatcher.removeFrom(lastStackSize);
-				}
-			}
-		}
-	}
-
-	/**
 	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code> .
 	 * 
 	 * @see ISymbol#ORDERLESS
@@ -540,6 +235,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 
 	/**
 	 * Contains the "pattern-matching" expression
+	 * 
 	 */
 	protected IExpr fLhsPatternExpr;
 
@@ -891,13 +587,19 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		return null;
 	}
 
-	private boolean matchFlatAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST, StackMatcher stackMatcher) {
+	private boolean matchFlatAndFlatOrderlessAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST,
+			StackMatcher stackMatcher) {
 		if ((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
-			final FlatOrderlessMatcher foMatcher = new FlatOrderlessMatcher(sym, lhsPatternAST, lhsEvalAST);
-			return foMatcher.matchFlatOrderlessList(stackMatcher);
+			FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
+			return !iter.execute();
 		} else {
-			final FlatMatcher fMatcher = new FlatMatcher(sym, lhsPatternAST, lhsEvalAST);
-			return fMatcher.matchFlatAST(stackMatcher);
+			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+			NumberPartitionsIterator iter = new NumberPartitionsIterator(visitor, lhsEvalAST.size() - 1, lhsPatternAST.size() - 1);
+			return !iter.execute();
+			// final FlatMatcher fMatcher = new FlatMatcher(sym, lhsPatternAST,
+			// lhsEvalAST);
+			// return fMatcher.matchFlatAST(stackMatcher);
 		}
 	}
 
@@ -910,31 +612,34 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 
 			final IAST lhsEvalAST = (IAST) lhsEvalExpr;
 			final ISymbol sym = lhsPatternAST.topHead();
-			if (lhsPatternAST.size() < lhsEvalAST.size()) {
-				if (((sym.getAttributes() & ISymbol.FLAT) == ISymbol.FLAT) && lhsPatternAST.head().equals(lhsEvalAST.head())) {
+			if (lhsPatternAST.size() <= lhsEvalAST.size()) {
+				if (((sym.getAttributes() & ISymbol.FLAT) == ISymbol.FLAT) && sym.equals(lhsEvalAST.topHead())
+						&& !(((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) && lhsPatternAST.size() == lhsEvalAST.size())) {
 					if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
 						return false;
 					}
-					return matchFlatAST(sym, lhsPatternAST, lhsEvalAST, stackMatcher);
+					return matchFlatAndFlatOrderlessAST(sym, lhsPatternAST, lhsEvalAST, stackMatcher);
 				}
 
-				if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
-					if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
-						return false;
-					}
-					int lastPosition = lhsPatternAST.size() - 1;
-					if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
-						// TODO only the special case, where the last element is
-						// a pattern sequence, is handled here
-						IAST seq = F.Sequence();
-						seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
-						if (matchPatternSequence((IPatternSequence) lhsPatternAST.get(lastPosition), seq)) {
-							return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition), stackMatcher);
+				if (lhsPatternAST.size() < lhsEvalAST.size()) {
+					if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+						if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
+							return false;
+						}
+						int lastPosition = lhsPatternAST.size() - 1;
+						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
+							// TODO only the special case, where the last element is
+							// a pattern sequence, is handled here
+							IAST seq = F.Sequence();
+							seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
+							if (matchPatternSequence((IPatternSequence) lhsPatternAST.get(lastPosition), seq)) {
+								return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition), stackMatcher);
+							}
 						}
 					}
-				}
 
-				return false;
+					return false;
+				}
 			}
 
 			if (lhsPatternAST.size() != lhsEvalAST.size()) {
@@ -955,8 +660,13 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 			}
 
 			if (lhsPatternAST.isOrderlessAST()) {
-				final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
-				return foMatcher.matchOrderlessAST(1, stackMatcher);
+				// only pure Orderless things (without Flat) will be handled here:
+				// final OrderlessMatcher foMatcher = new
+				// OrderlessMatcher(lhsPatternAST, lhsEvalAST);
+				// return foMatcher.matchOrderlessAST(1, stackMatcher);
+				OrderlessStepVisitor visitor = new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+				MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
+				return !iter.execute();
 			}
 
 			return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, stackMatcher);
