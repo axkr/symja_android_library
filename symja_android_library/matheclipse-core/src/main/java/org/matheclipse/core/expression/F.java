@@ -321,6 +321,8 @@ public class F {
 
 	public static ISymbol Tanh;
 
+	public static ISymbol Taylor;
+	
 	public static ISymbol Times;
 
 	public static ISymbol Timing;
@@ -1272,6 +1274,7 @@ public class F {
 				Tan = initPredefinedSymbol("Tan");
 				Tanh = initPredefinedSymbol("Tanh");
 
+				Taylor = initPredefinedSymbol("Taylor");
 				Timing = initPredefinedSymbol("Timing");
 				Together = initPredefinedSymbol("Together");
 				Tr = initPredefinedSymbol("Tr");
@@ -1742,6 +1745,10 @@ public class F {
 		return unary(Tanh, a0);
 	}
 
+	public static IAST Taylor(final IExpr a0, final IExpr a1) {
+		return binary(Taylor, a0, a1);
+	}
+	
 	public static IAST Times() {
 		return ast(Times);
 	}
