@@ -11,10 +11,10 @@ public class SameQ extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST lst) {
-		if (lst.size() > 1) {
-			for (int i = 2; i < lst.size(); i++) {
-				if (!lst.get(i - 1).isSame(lst.get(i))) {
+	public IExpr evaluate(final IAST ast) {
+		if (ast.size() > 1) {
+			for (int i = 2; i < ast.size(); i++) {
+				if (!ast.get(i - 1).isSame(ast.get(i))) {
 					return F.False;
 				}
 			}
@@ -26,6 +26,6 @@ public class SameQ extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT );
+		symbol.setAttributes(ISymbol.FLAT);
 	}
 }

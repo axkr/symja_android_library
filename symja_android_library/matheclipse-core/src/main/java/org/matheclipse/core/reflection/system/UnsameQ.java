@@ -19,7 +19,7 @@ public class UnsameQ extends AbstractFunctionEvaluator {
 			while (i < ast.size()) {
 				j = i;
 				while (j < ast.size()) {
-					if (ast.get(i - 1).equals(ast.get(j++))) {
+					if (ast.get(i - 1).isSame(ast.get(j++))) {
 						return F.False;
 					}
 				}

@@ -14,7 +14,7 @@ public class ExpandAll extends AbstractFunctionEvaluator implements IConstantHea
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		
+
 		IExpr patt = null;
 		if (ast.size() > 2) {
 			patt = ast.get(2);
@@ -32,10 +32,8 @@ public class ExpandAll extends AbstractFunctionEvaluator implements IConstantHea
 			return null;
 		}
 		IAST ast = (IAST) expr;
-		if (patt != null) {
-			if (ast.isFree(patt, true)) {
-				return null;
-			}
+		if (patt != null && ast.isFree(patt, true)) {
+			return null;
 		}
 		int j = ast.size();
 		IExpr temp = null;
