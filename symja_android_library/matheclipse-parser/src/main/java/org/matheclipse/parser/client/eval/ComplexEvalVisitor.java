@@ -30,6 +30,7 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.api.AbstractASTVisitor;
 import org.matheclipse.parser.client.eval.api.IEvaluator;
+import org.matheclipse.parser.client.math.ArithmeticMathException;
 import org.matheclipse.parser.client.math.Complex;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -86,11 +87,11 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 	static class SetFunction implements IComplexFunction {
 		public Complex evaluate(IEvaluator<Complex, ComplexVariable> engine, FunctionNode function) {
 			if (function.size() != 3) {
-				throw new ArithmeticException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) needs 2 arguments: "
+				throw new ArithmeticMathException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) needs 2 arguments: "
 						+ function.toString());
 			}
 			if (!(function.getNode(1) instanceof SymbolNode)) {
-				throw new ArithmeticException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) symbol required on the left hand side: "
+				throw new ArithmeticMathException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) symbol required on the left hand side: "
 						+ function.toString());
 			}
 			String variableName = ((SymbolNode) function.getNode(1)).getString();
@@ -393,7 +394,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 			}
 		}
 
-		throw new ArithmeticException("EvalDouble#evaluateNodeLogical(ASTNode) not possible for: " + node.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluateNodeLogical(ASTNode) not possible for: " + node.toString());
 	}
 
 	public boolean evaluateFunctionLogical(final FunctionNode functionNode) {
@@ -420,7 +421,7 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 				// }
 			}
 		}
-		throw new ArithmeticException("EvalDouble#evaluateFunctionLogical(FunctionNode) not possible for: " + functionNode.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluateFunctionLogical(FunctionNode) not possible for: " + functionNode.toString());
 
 	}
 

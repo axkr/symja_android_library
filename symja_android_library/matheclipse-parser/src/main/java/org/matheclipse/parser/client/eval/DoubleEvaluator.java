@@ -26,6 +26,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.NumberNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
+import org.matheclipse.parser.client.math.ArithmeticMathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
@@ -61,7 +62,7 @@ public class DoubleEvaluator {
 	 * Set a callback function for unknown function names.
 	 * 
 	 * @param callbackFunction
-	 *          the callback function to set
+	 *            the callback function to set
 	 */
 	public void setCallbackFunction(IDoubleCallbackFunction callbackFunction) {
 		fCallbackFunction = callbackFunction;
@@ -104,12 +105,13 @@ public class DoubleEvaluator {
 	static class SetFunction implements IDoubleFunction {
 		public double evaluate(DoubleEvaluator engine, FunctionNode function) {
 			if (function.size() != 3) {
-				throw new ArithmeticException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) needs 2 arguments: "
+				throw new ArithmeticMathException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) needs 2 arguments: "
 						+ function.toString());
 			}
 			if (!(function.getNode(1) instanceof SymbolNode)) {
-				throw new ArithmeticException("SetFunction#evaluate(DoubleEvaluator,FunctionNode) symbol required on the left hand side: "
-						+ function.toString());
+				throw new ArithmeticMathException(
+						"SetFunction#evaluate(DoubleEvaluator,FunctionNode) symbol required on the left hand side: "
+								+ function.toString());
 			}
 			String variableName = ((SymbolNode) function.getNode(1)).getString();
 			double result = engine.evaluateNode(function.getNode(2));
@@ -434,8 +436,8 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a double
-	 * value
+	 * Parse the given <code>expression String</code> and evaluate it to a
+	 * double value
 	 * 
 	 * @param expression
 	 * @return
@@ -475,12 +477,12 @@ public class DoubleEvaluator {
 	 * <code>double</code> number value.
 	 * 
 	 * @param node
-	 *          abstract syntax tree node
+	 *            abstract syntax tree node
 	 * 
 	 * @return the evaluated double number
 	 * 
-	 * @throws ArithmeticException
-	 *           if the <code>node</code> cannot be evaluated.
+	 * @throws ArithmeticMathException
+	 *             if the <code>node</code> cannot be evaluated.
 	 */
 	public double evaluateNode(final ASTNode node) {
 		if (node instanceof DoubleNode) {
@@ -502,7 +504,7 @@ public class DoubleEvaluator {
 			return ((NumberNode) node).doubleValue();
 		}
 
-		throw new ArithmeticException("EvalDouble#evaluate(ASTNode) not possible for: " + node.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluate(ASTNode) not possible for: " + node.toString());
 	}
 
 	/**
@@ -512,8 +514,8 @@ public class DoubleEvaluator {
 	 * @param functionNode
 	 * @return
 	 * 
-	 * @throws ArithmeticException
-	 *           if the <code>functionNode</code> cannot be evaluated.
+	 * @throws ArithmeticMathException
+	 *             if the <code>functionNode</code> cannot be evaluated.
 	 */
 	public double evaluateFunction(final FunctionNode functionNode) {
 		if (functionNode.size() > 0 && functionNode.getNode(0) instanceof SymbolNode) {
@@ -545,7 +547,8 @@ public class DoubleEvaluator {
 					}
 				} else if (functionNode.size() == 3) {
 					if (obj instanceof IDouble2Function) {
-						return ((IDouble2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode.getNode(2)));
+						return ((IDouble2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)),
+								evaluateNode(functionNode.getNode(2)));
 					}
 				}
 				if (fCallbackFunction != null) {
@@ -557,7 +560,7 @@ public class DoubleEvaluator {
 				}
 			}
 		}
-		throw new ArithmeticException("EvalDouble#evaluateFunction(FunctionNode) not possible for: " + functionNode.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluateFunction(FunctionNode) not possible for: " + functionNode.toString());
 	}
 
 	/**
@@ -639,7 +642,8 @@ public class DoubleEvaluator {
 					if (f.get(2).isFree(var)) {// derive x^r
 						ASTNode arg1Derived = derivative(f.getNode(1), var);
 						// (r-1)
-						FunctionNode exponent = fASTFactory.createFunction(fASTFactory.createSymbol("Plus"), new DoubleNode(-1.0), f.get(2));
+						FunctionNode exponent = fASTFactory.createFunction(fASTFactory.createSymbol("Plus"), new DoubleNode(-1.0),
+								f.get(2));
 						// r*x^(r-1)
 						FunctionNode fun = fASTFactory.createFunction(fASTFactory.createSymbol("Times"), f.get(2),
 								fASTFactory.createFunction(fASTFactory.createSymbol("Power"), f.get(1), exponent));
@@ -708,7 +712,7 @@ public class DoubleEvaluator {
 			return new DoubleNode(0.0);
 		}
 
-		throw new ArithmeticException("EvalDouble#evaluate(ASTNode) not possible for: " + node.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluate(ASTNode) not possible for: " + node.toString());
 	}
 
 	private ASTNode getDerivativeResult(ASTNode arg1Derived, FunctionNode fun) {
@@ -736,7 +740,7 @@ public class DoubleEvaluator {
 			}
 		}
 
-		throw new ArithmeticException("EvalDouble#evaluateNodeLogical(ASTNode) not possible for: " + node.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluateNodeLogical(ASTNode) not possible for: " + node.toString());
 	}
 
 	public boolean evaluateFunctionLogical(final FunctionNode functionNode) {
@@ -759,11 +763,13 @@ public class DoubleEvaluator {
 				// } else {
 				// Object obj = FUNCTION_BOOLEAN_MAP.get(symbol);
 				// if (obj instanceof IBooleanDoubleFunction) {
-				// return ((IBooleanDoubleFunction) obj).evaluate(this, functionNode);
+				// return ((IBooleanDoubleFunction) obj).evaluate(this,
+				// functionNode);
 				// }
 			}
 		}
-		throw new ArithmeticException("EvalDouble#evaluateFunctionLogical(FunctionNode) not possible for: " + functionNode.toString());
+		throw new ArithmeticMathException("EvalDouble#evaluateFunctionLogical(FunctionNode) not possible for: "
+				+ functionNode.toString());
 
 	}
 
@@ -897,7 +903,7 @@ public class DoubleEvaluator {
 	 * 
 	 * @param expression
 	 * @param result
-	 *          a set which contains the variable names
+	 *            a set which contains the variable names
 	 */
 	public void getVariables(String expression, Set<String> result) {
 		Parser p;
@@ -914,9 +920,9 @@ public class DoubleEvaluator {
 	 * Get the variable names from the given AST node.
 	 * 
 	 * @param node
-	 *          an already parsed AST node
+	 *            an already parsed AST node
 	 * @param result
-	 *          a set which contains the variable names
+	 *            a set which contains the variable names
 	 */
 	public static void getVariables(final ASTNode node, Set<String> result) {
 		if (node instanceof FunctionNode) {
