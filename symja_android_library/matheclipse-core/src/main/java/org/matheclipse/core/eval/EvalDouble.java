@@ -10,8 +10,23 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.eval.DoubleEvaluator;
 
-public class EvalDouble {
+public class EvalDouble extends DoubleEvaluator {
+	public EvalDouble() {
+		this(null, false);
+	}
+
+	public EvalDouble(boolean relaxedSyntax) {
+		this(null, relaxedSyntax);
+	}
+
+	public EvalDouble(ASTNode node, boolean relaxedSyntax) {
+		super(node, relaxedSyntax);
+		setCallbackFunction(CoreCallbackFunction.CONST);
+	}
+
 	public static double eval(final double[] stack, final int top, final IExpr expr) {
 		if (expr instanceof IAST) {
 			return evalAST(stack, top, (IAST) expr);
@@ -22,7 +37,7 @@ public class EvalDouble {
 		if (expr instanceof ISymbol) {
 			return evalSymbol(((ISymbol) expr));
 		}
-		throw new UnsupportedOperationException("EvalDouble#eval(): "+expr);
+		throw new UnsupportedOperationException("EvalDouble#eval(): " + expr);
 	}
 
 	public static double evalAST(double[] stack, final int top, final IAST ast) {
@@ -46,7 +61,7 @@ public class EvalDouble {
 		if (result instanceof Num) {
 			return ((Num) result).doubleValue();
 		}
-		throw new UnsupportedOperationException("EvalDouble#evalAST(): "+ast);
+		throw new UnsupportedOperationException("EvalDouble#evalAST(): " + ast);
 	}
 
 	public static double evalSymbol(final ISymbol symbol) {
@@ -63,6 +78,6 @@ public class EvalDouble {
 		if (result instanceof Num) {
 			return ((Num) result).doubleValue();
 		}
-		throw new UnsupportedOperationException("EvalDouble#evalSymbol() - no value assigned for symbol: "+symbol);
+		throw new UnsupportedOperationException("EvalDouble#evalSymbol() - no value assigned for symbol: " + symbol);
 	}
 }

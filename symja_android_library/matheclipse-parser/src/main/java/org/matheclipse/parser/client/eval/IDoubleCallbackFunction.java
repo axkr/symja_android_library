@@ -17,6 +17,11 @@ package org.matheclipse.parser.client.eval;
 
 import org.matheclipse.parser.client.ast.FunctionNode;
 
+/**
+ * A call back function which could be used in <code>DoubleEvaluator</code>, for
+ * evaluating user-defined functions.
+ * 
+ */
 public interface IDoubleCallbackFunction {
-  public double evaluate(DoubleEvaluator engine, FunctionNode function, double[] args);
+	public double evaluate(DoubleEvaluator engine, FunctionNode function, double[] args);
 }
