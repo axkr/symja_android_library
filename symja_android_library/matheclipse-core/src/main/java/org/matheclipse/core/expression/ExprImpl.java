@@ -364,14 +364,14 @@ public abstract class ExprImpl implements IExpr {
 	 * {@inheritDoc}
 	 */
 	public boolean isPattern() {
-		return this instanceof IPattern;
+		return false;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean isPatternSequence() {
-		return this instanceof IPatternSequence;
+		return false;
 	}
 
 	/**

@@ -344,15 +344,16 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	@Override
 	public E get(int location) {
-		if (0 <= location && location < (lastIndex - firstIndex)) {
-			return array[firstIndex + location];
-		}
+		return array[firstIndex + location];
+//		if (0 <= location && location < (lastIndex - firstIndex)) {
+//			return array[firstIndex + location];
+//		}
 		// throw new IndexOutOfBoundsException(
 		// luni.0A=Index: {0}, Size: {1}
 		//            Messages.getString("luni.0A", //$NON-NLS-1$
 		// Integer.valueOf(location), Integer.valueOf(lastIndex - firstIndex)));
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-				+ Integer.valueOf(lastIndex - firstIndex));
+//		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
+//				+ Integer.valueOf(lastIndex - firstIndex));
 	}
 
 	private void growAtEnd(int required) {

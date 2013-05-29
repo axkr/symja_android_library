@@ -29,13 +29,13 @@ public class RulesData implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 8843909916823779295L;
-	
+
 	private transient Map<IExpr, Pair<ISymbol, IExpr>> fEqualRules;
 	private transient ArrayListMultimap<Integer, IPatternMatcher<IExpr>> fSimplePatternRules;
 	private transient List<IPatternMatcher<IExpr>> fPatternRules;
 
 	public RulesData() {
-		this.fEqualRules = null; 
+		this.fEqualRules = null;
 		this.fSimplePatternRules = null;
 		this.fPatternRules = null;
 	}
@@ -103,7 +103,7 @@ public class RulesData implements Serializable {
 			return null;
 		}
 
-//		pmEvaluator.setCondition(condition); 
+		// pmEvaluator.setCondition(condition);
 		if (!isComplicatedPatternRule(leftHandSide)) {
 
 			fSimplePatternRules = getSimplePatternRules();
@@ -112,11 +112,13 @@ public class RulesData implements Serializable {
 		} else {
 
 			fPatternRules = getPatternRules();
-			for (int i = 0; i < fPatternRules.size(); i++) {
-				if (pmEvaluator.equals(fPatternRules.get(i))) {
-					fPatternRules.set(i, pmEvaluator);
+			if (F.isSystemInitialized) {
+				for (int i = 0; i < fPatternRules.size(); i++) {
+					if (pmEvaluator.equals(fPatternRules.get(i))) {
+						fPatternRules.set(i, pmEvaluator);
 
-					return pmEvaluator;
+						return pmEvaluator;
+					}
 				}
 			}
 			fPatternRules.add(pmEvaluator);
@@ -127,7 +129,7 @@ public class RulesData implements Serializable {
 
 	private PatternMatcher addSimplePatternRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
 		final Integer hash = Integer.valueOf(((IAST) leftHandSide).patternHashCode());
-		if (fSimplePatternRules.containsEntry(hash, pmEvaluator)) {
+		if (F.isSystemInitialized && fSimplePatternRules.containsEntry(hash, pmEvaluator)) {
 			fSimplePatternRules.remove(hash, pmEvaluator);
 		}
 		fSimplePatternRules.put(hash, pmEvaluator);
@@ -158,7 +160,7 @@ public class RulesData implements Serializable {
 
 	private boolean isComplicatedPatternRule(final IExpr lhsExpr) {
 		if (lhsExpr.isAST()) {
-			final IAST lhsAST = ((IAST) lhsExpr); 
+			final IAST lhsAST = ((IAST) lhsExpr);
 			if (lhsAST.size() > 1) {
 				final int attr = lhsAST.topHead().getAttributes();
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
@@ -166,7 +168,7 @@ public class RulesData implements Serializable {
 				}
 				if (lhsAST.get(1).isAST()) {
 					IAST arg1 = (IAST) lhsAST.get(1);
-					if (arg1.isCondition()) { 
+					if (arg1.isCondition()) {
 						return true;
 					}
 					// the left hand side is associated with the first argument
@@ -184,7 +186,7 @@ public class RulesData implements Serializable {
 				for (int i = 2; i < lhsAST.size(); i++) {
 					if (lhsAST.get(i).isPattern() && ((IPattern) lhsAST.get(i)).isDefault()) {
 						return true;
-					} 
+					}
 				}
 			}
 		} else if (lhsExpr.isPattern()) {

@@ -20,6 +20,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class PatternMap implements Cloneable, Serializable {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5384429232269800438L;
+
+	/**
 	 * Count the number of patterns in the pattern map.
 	 */
 	private int fPatternCounter;

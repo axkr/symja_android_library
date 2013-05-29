@@ -325,6 +325,13 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	final public boolean isPatternSequence() {
+		return this instanceof IPatternSequence;
+	}
+	
+	/**
 	 * Groovy operator overloading
 	 */
 	public boolean isCase(IExpr that) {

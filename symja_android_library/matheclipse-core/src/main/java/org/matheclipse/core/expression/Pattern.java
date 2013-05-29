@@ -460,6 +460,13 @@ public class Pattern extends ExprImpl implements IPattern {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	final public boolean isPattern() {
+		return true;
+	}
+	
+	/**
 	 * Groovy operator overloading
 	 */
 	public boolean isCase(IExpr that) {

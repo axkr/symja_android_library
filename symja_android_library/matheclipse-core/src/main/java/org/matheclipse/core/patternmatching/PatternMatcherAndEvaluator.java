@@ -25,13 +25,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	/**
 	 * 
 	 * @param setSymbol
-	 *          the symbol which defines this pattern-matching rule (i.e. Set,
-	 *          SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set,
+	 *            SetDelayed,...)
 	 * @param leftHandSide
-	 *          could contain pattern expressions for "pattern-matching"
+	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *          the result which should be evaluated if the "pattern-matching"
-	 *          succeeds
+	 *            the result which should be evaluated if the "pattern-matching"
+	 *            succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
@@ -79,15 +79,15 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	/**
-	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is
-	 * equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code>
+	 * is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
 	 * @param pm1
-	 *          TODO
+	 *            TODO
 	 * @param pm2
-	 *          TODO
+	 *            TODO
 	 * @return
 	 */
 	private static boolean equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1,
@@ -173,7 +173,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 				if (!(fLhsPatternExpr.isFlatAST() && lhsEvalExpr.isFlatAST())) {
 					return null;
 				}
-				// TODO implement equals matching for special cases, if the AST is
+				// TODO implement equals matching for special cases, if the AST
+				// is
 				// Orderless or Flat
 			}
 		}
@@ -188,18 +189,25 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 
 		fPatternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, lhsEvalExpr)) {
-			// if (fLeftHandSide.isAST(F.Integrate)) {
-			// System.out.println(fLeftHandSide.toString());
-			// System.out.println("  :> " + fRightHandSide.toString());
-			// }
 			IExpr result = fPatternMap.substitutePatternSymbols(fRightHandSide);
 			try {
-				return F.eval(result);
+				result = F.eval(result);
 			} catch (final ConditionException e) {
+				// if (lhsEvalExpr.isAST(F.Integrate)) {
+				// System.out.println(fLhsPatternExpr.toString());
+				// System.out.println(lhsEvalExpr.toString() + "  :> " +
+				// result.toString());
+				// }
 				return null;
 			} catch (final ReturnException e) {
-				return e.getValue();
+				result = e.getValue();
 			}
+			// if (lhsEvalExpr.isAST(F.Integrate)) {
+			// System.out.println(fLhsPatternExpr.toString());
+			// System.out.println(lhsEvalExpr.toString() + "  :> " +
+			// result.toString());
+			// }
+			return result;
 		}
 		return null;
 	}

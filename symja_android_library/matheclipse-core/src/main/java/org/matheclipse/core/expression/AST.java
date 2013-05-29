@@ -149,10 +149,11 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * Constructs an empty list with the specified initial capacity.
 	 * 
 	 * @param initialCapacity
-	 *          the initial capacity (i.e. number of arguments without the header
-	 *          element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the
+	 *            header element) of the list.
 	 * @param setLength
-	 *          if <code>true</code>, sets the array's size to initialCapacity.
+	 *            if <code>true</code>, sets the array's size to
+	 *            initialCapacity.
 	 */
 	private AST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity + 1, setLength ? initialCapacity + 1 : 0);
@@ -759,7 +760,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isAST() {
+	final public boolean isAST() {
 		return true;
 	}
 
@@ -910,9 +911,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for canonical order.
-	 * Returns a negative integer, zero, or a positive integer as this expression
-	 * is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for canonical
+	 * order. Returns a negative integer, zero, or a positive integer as this
+	 * expression is canonical less than, equal to, or greater than the
+	 * specified expression.
 	 */
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof AST) {
@@ -959,9 +961,6 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
 		if (obj instanceof AST) {
 			if (hashCode() != obj.hashCode()) {
 				return false;
@@ -1253,8 +1252,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * 
 	 * @param intialCapacity
-	 *          the initial capacity (i.e. number of arguments without the header
-	 *          element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the
+	 *            header element) of the list.
 	 * @param head
 	 * @return
 	 */
@@ -1306,7 +1305,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		for (int i = 1; i <= arr.length; i++) {
 			eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
 		}
-		return new AST(eArr); 
+		return new AST(eArr);
 	}
 
 	/**
@@ -1427,7 +1426,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @param index
 	 * @return
 	 * @throws WrongArgumentType
-	 *           if the cast is not possible
+	 *             if the cast is not possible
 	 */
 	public IInteger getInt(int index) {
 		if (get(index) instanceof IInteger) {
@@ -1443,7 +1442,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @param index
 	 * @return
 	 * @throws WrongArgumentType
-	 *           if the cast is not possible
+	 *             if the cast is not possible
 	 */
 	public INumber getNumber(int index) {
 		if (get(index) instanceof INumber) {
@@ -1459,7 +1458,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @param index
 	 * @return
 	 * @throws WrongArgumentType
-	 *           if the cast is not possible
+	 *             if the cast is not possible
 	 */
 	public IAST getAST(int index) {
 		if (get(index) instanceof IAST) {
@@ -1469,8 +1468,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Casts an <code>IExpr</code> which is a list at position <code>index</code>
-	 * to an <code>IAST</code>.
+	 * Casts an <code>IExpr</code> which is a list at position
+	 * <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -1515,8 +1514,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Signum functionality is used in JAS toString() method, don't use it as math
-	 * signum function.
+	 * Signum functionality is used in JAS toString() method, don't use it as
+	 * math signum function.
 	 * 
 	 * @deprecated
 	 */
