@@ -1,10 +1,7 @@
 package org.matheclipse.core.eval;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +23,6 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
-import org.matheclipse.core.sql.SerializeVariables2DB;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
@@ -961,10 +957,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fModifiedVariablesList;
 	}
 
-	public void serializeVariables2DB(Connection con) throws SQLException,
-			IOException {
-		SerializeVariables2DB.write(con, fSessionID, fModifiedVariablesList);
-	}
+//	public void serializeVariables2DB(Connection con) throws SQLException,
+//			IOException {
+//		SerializeVariables2DB.write(con, fSessionID, fModifiedVariablesList);
+//	}
 
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr without
