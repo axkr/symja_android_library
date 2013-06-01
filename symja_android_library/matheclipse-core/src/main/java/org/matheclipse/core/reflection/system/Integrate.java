@@ -155,14 +155,16 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 				if (arg1.isPower() && symbol.equals(arg1.get(1)) && arg1.get(2).isInteger()) {
 					IInteger i = (IInteger) arg1.get(2);
 					if (i.isGreaterThan(F.C1)) {
-						// Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^ (i+1)
+						// Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^
+						// (i+1)
 						i = i.add(F.C1);
 						return F.Times(F.Power(i, F.CN1), F.Power(symbol, i));
 					}
 				}
 
 				if (arg1.isTimes()) {
-					// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
+					// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /;
+					// FreeQ[a,x]
 					IAST filterCollector = F.Times();
 					IAST restCollector = F.Times();
 					arg1.filter(filterCollector, restCollector, new Predicate<IExpr>() {
@@ -209,7 +211,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 									return apartPlus;
 								}
 								// if (arg1.isTimes()) {
-								// IExpr result = integratePolynomialByParts(arg1, symbol);
+								// IExpr result =
+								// integratePolynomialByParts(arg1, symbol);
 								// if (result != null) {
 								// return result;
 								// }
@@ -219,6 +222,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 					}
 				}
 
+				// EvalEngine engine= EvalEngine.get();
+				// engine.setIterationLimit(8);
 				return F.Integrate.evalDownRule(EvalEngine.get(), ast);
 			}
 		}
@@ -325,8 +330,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 										} else if (cmpTo > 0) {
 											// (b^2-4ac)^(1/2)
 											temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
-											result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp), Power(F.Plus(ax2Plusb,
-													temp), F.CN1)))));
+											result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp),
+													Power(F.Plus(ax2Plusb, temp), F.CN1)))));
 										} else {
 											// (4ac-b^2)^(1/2)
 											temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
@@ -338,7 +343,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 									IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
 									IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
 									isQuadratic(D.get(i - 1), denom);
-									// IFraction a = F.fraction(denom[2].numerator(),
+									// IFraction a =
+									// F.fraction(denom[2].numerator(),
 									// denom[2].denominator());
 									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
 									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
@@ -347,9 +353,12 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
 									} else {
 										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-										temp = Plus(Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))), Times(ArcTan(Times(Plus(p, Times(C2, x)),
-												Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))), Plus(Times(C2, B), Times(CN1, A, p)), Power(
-												Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+										temp = Plus(
+												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+												Times(ArcTan(Times(Plus(p, Times(C2, x)),
+														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
+														Plus(Times(C2, B), Times(CN1, A, p)),
+														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 									}
 									result.add(F.eval(temp));
 								}
@@ -365,20 +374,31 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 								if (A.isZero()) {
 									// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 									// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
-									temp = Times(B, Plus(Times(Integrate(
-											Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Plus(C1, Times(CN1, k))), x), Plus(Times(F.integer(-6L),
-											a), Times(C4, a, k)), Power(Plus(CN1, k), CN1), Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-											Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1), Power(Plus(Times(CN1, Power(b, C2)),
-													Times(C4, a, c)), CN1), Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k))))));
+									temp = Times(
+											B,
+											Plus(Times(
+													Integrate(
+															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+																	Plus(C1, Times(CN1, k))), x),
+													Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
+													Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
+													Times(Plus(b, Times(C2, a, x)),
+															Power(Plus(CN1, k), CN1),
+															Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+																	Times(CN1, Plus(CN1, k))))));
 								} else {
 									// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
-									temp = Plus(Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x), Plus(B,
-											Times(CN1D2, A, Power(a, CN1), b))), Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1), Power(Plus(c,
-											Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
+									temp = Plus(
+											Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
+													Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
+											Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
+													Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
 								}
 								result.add(F.eval(temp));
 							} else {
-								temp = F.eval(F.Times(jas.poly2Expr(genPolynomial), F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
+								temp = F.eval(F.Times(jas.poly2Expr(genPolynomial),
+										F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
 								if (!temp.equals(F.C0)) {
 									if (temp.isAST()) {
 										((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
@@ -402,7 +422,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
+	 * See <a
+	 * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
 	 * Integration by parts</a>
 	 * 
 	 * @param f
@@ -432,7 +453,8 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
+	 * See <a
+	 * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
 	 * Integration by parts</a>
 	 * 
 	 * @param f
@@ -467,7 +489,7 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 	 * into <code>gTimes</code>.
 	 * 
 	 * @param timesAST
-	 *          an AST representing a <code>Times[...]</code> expression.
+	 *            an AST representing a <code>Times[...]</code> expression.
 	 * @param symbol
 	 * @param fTimes
 	 * @param gTimes

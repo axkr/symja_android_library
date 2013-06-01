@@ -267,6 +267,8 @@ public class F {
 
 	public static ISymbol Plus;
 
+	public static ISymbol PolynomialQ;
+	
 	public static ISymbol Positive;
 
 	public static ISymbol PossibleZeroQ;
@@ -921,7 +923,7 @@ public class F {
 			// Permutations());
 			Plot = initPredefinedSymbol("Plot");
 			Plot3D = initPredefinedSymbol("Plot3D");
-
+			PolynomialQ = initPredefinedSymbol("PolynomialQ");
 			Positive = initPredefinedSymbol("Positive");
 			PossibleZeroQ = initPredefinedSymbol("PossibleZeroQ");
 

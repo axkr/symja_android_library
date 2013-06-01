@@ -1,13 +1,25 @@
 package org.matheclipse.core.integrate.rubi;
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.If;
+import static org.matheclipse.core.expression.F.Integrate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.UnsameQ;
+import static org.matheclipse.core.expression.F.ast;
+import static org.matheclipse.core.expression.F.binary;
+import static org.matheclipse.core.expression.F.ternary;
+import static org.matheclipse.core.expression.F.unary;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ZeroQ;
 
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -105,6 +117,18 @@ public class UtilityFunctions {
 
 	public static IAST ListQ(final IExpr a) {
 		return unary(ListQ, a);
+	}
+
+	static ISymbol IntIntegerQ = new Symbol(INTEGRATE_PREFIX + "IntIntegerQ", new IntIntegerQ());
+
+	public static IAST IntIntegerQ(final IExpr a) {
+		return unary(IntIntegerQ, a);
+	}
+	
+	static ISymbol IntPolynomialQ = new Symbol(INTEGRATE_PREFIX + "IntPolynomialQ", new IntPolynomialQ());
+
+	public static IAST IntPolynomialQ(final IExpr a0, final IExpr a1) {
+		return binary(IntPolynomialQ, a0, a1);
 	}
 
 	//
