@@ -333,8 +333,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
@@ -442,6 +442,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
+			if (fSymbolName.length() == 1 && Character.isLowerCase(fSymbolName.charAt(0))) {
+				char ch = fSymbolName.charAt(0);
+				if ('a' <= ch && ch <= 'z') {
+					return fSymbolName;
+				}
+			}
 			if (Character.isUpperCase(fSymbolName.charAt(0))) {
 				String alias = F.PREDEFINED_INTERNAL_STRINGS.get(fSymbolName);
 				if (alias != null) {

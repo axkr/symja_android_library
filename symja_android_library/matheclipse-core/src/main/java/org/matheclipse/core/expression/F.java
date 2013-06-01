@@ -42,6 +42,16 @@ import com.google.common.base.Function;
 public class F {
 
 	/**
+	 * Set to <code>true</code> at the start of initSymbols() method
+	 */
+	public static boolean isSystemStarted = false;
+
+	/**
+	 * Set to <code>true</code> at the end of initSymbols() method
+	 */
+	public static boolean isSystemInitialized = false;
+
+	/**
 	 * The map for predefined strings for the
 	 * {@link IExpr#internalFormString(boolean, int)} method.
 	 */
@@ -245,7 +255,7 @@ public class F {
 
 	public static ISymbol OrderedQ;
 
-	public static ISymbol Part;
+	public final static ISymbol Part = initPredefinedSymbol("Part");
 
 	// public static ISymbol Partition;
 	//
@@ -293,6 +303,8 @@ public class F {
 
 	public static ISymbol RuleDelayed;
 
+	public static ISymbol SameQ;
+	
 	public static ISymbol Sec;
 
 	public static ISymbol Sequence;
@@ -349,62 +361,64 @@ public class F {
 	public static ISymbol Trunc;
 
 	public static ISymbol Unequal;
+	
+	public static ISymbol UnsameQ;
 
 	public static ISymbol While;
 
-	public static ISymbol a;
-	public static ISymbol b;
-	public static ISymbol c;
-	public static ISymbol d;
-	public static ISymbol e;
-	public static ISymbol f;
-	public static ISymbol g;
-	public static ISymbol h;
-	public static ISymbol i;
-	public static ISymbol j;
-	public static ISymbol k;
-	public static ISymbol l;
-	public static ISymbol m;
-	public static ISymbol n;
-	public static ISymbol o;
-	public static ISymbol p;
-	public static ISymbol q;
-	public static ISymbol r;
-	public static ISymbol s;
-	public static ISymbol t;
-	public static ISymbol u;
-	public static ISymbol v;
-	public static ISymbol w;
-	public static ISymbol x;
-	public static ISymbol y;
-	public static ISymbol z;
+	public final static ISymbol a = initPredefinedSymbol("a");
+	public final static ISymbol b = initPredefinedSymbol("b");
+	public final static ISymbol c = initPredefinedSymbol("c");
+	public final static ISymbol d = initPredefinedSymbol("d");
+	public final static ISymbol e = initPredefinedSymbol("e");
+	public final static ISymbol f = initPredefinedSymbol("f");
+	public final static ISymbol g = initPredefinedSymbol("g");
+	public final static ISymbol h = initPredefinedSymbol("h");
+	public final static ISymbol i = initPredefinedSymbol("i");
+	public final static ISymbol j = initPredefinedSymbol("j");
+	public final static ISymbol k = initPredefinedSymbol("k");
+	public final static ISymbol l = initPredefinedSymbol("l");
+	public final static ISymbol m = initPredefinedSymbol("m");
+	public final static ISymbol n = initPredefinedSymbol("n");
+	public final static ISymbol o = initPredefinedSymbol("o");
+	public final static ISymbol p = initPredefinedSymbol("p");
+	public final static ISymbol q = initPredefinedSymbol("q");
+	public final static ISymbol r = initPredefinedSymbol("r");
+	public final static ISymbol s = initPredefinedSymbol("s");
+	public final static ISymbol t = initPredefinedSymbol("t");
+	public final static ISymbol u = initPredefinedSymbol("u");
+	public final static ISymbol v = initPredefinedSymbol("v");
+	public final static ISymbol w = initPredefinedSymbol("w");
+	public final static ISymbol x = initPredefinedSymbol("x");
+	public final static ISymbol y = initPredefinedSymbol("y");
+	public final static ISymbol z = initPredefinedSymbol("z");
 
-	public static IPattern a_;
-	public static IPattern b_;
-	public static IPattern c_;
-	public static IPattern d_;
-	public static IPattern e_;
-	public static IPattern f_;
-	public static IPattern g_;
-	public static IPattern h_;
-	public static IPattern i_;
-	public static IPattern j_;
-	public static IPattern k_;
-	public static IPattern l_;
-	public static IPattern m_;
-	public static IPattern n_;
-	public static IPattern o_;
-	public static IPattern p_;
-	public static IPattern q_;
-	public static IPattern r_;
-	public static IPattern s_;
-	public static IPattern t_;
-	public static IPattern u_;
-	public static IPattern v_;
-	public static IPattern w_;
-	public static IPattern x_;
-	public static IPattern y_;
-	public static IPattern z_;
+	public final static IPattern a_ = initPredefinedPattern(a);
+	public final static IPattern b_ = initPredefinedPattern(b);
+	public final static IPattern c_ = initPredefinedPattern(c);
+	public final static IPattern d_ = initPredefinedPattern(d);
+	public final static IPattern e_ = initPredefinedPattern(e);
+	public final static IPattern f_ = initPredefinedPattern(f);
+	public final static IPattern g_ = initPredefinedPattern(g);
+	public final static IPattern h_ = initPredefinedPattern(h);
+	public final static IPattern i_ = initPredefinedPattern(i);
+	public final static IPattern j_ = initPredefinedPattern(j);
+	public final static IPattern k_ = initPredefinedPattern(k);
+	public final static IPattern l_ = initPredefinedPattern(l);
+	public final static IPattern m_ = initPredefinedPattern(m);
+	public final static IPattern n_ = initPredefinedPattern(n);
+	public final static IPattern o_ = initPredefinedPattern(o);
+	public final static IPattern p_ = initPredefinedPattern(p);
+	public final static IPattern q_ = initPredefinedPattern(q);
+	public final static IPattern r_ = initPredefinedPattern(r);
+	public final static IPattern s_ = initPredefinedPattern(s);
+	public final static IPattern t_ = initPredefinedPattern(t);
+	public final static IPattern u_ = initPredefinedPattern(u);
+	public final static IPattern v_ = initPredefinedPattern(v);
+	public final static IPattern w_ = initPredefinedPattern(w);
+	public final static IPattern x_ = initPredefinedPattern(x);
+	public final static IPattern y_ = initPredefinedPattern(y);
+	public final static IPattern z_ = initPredefinedPattern(z);
 
 	/**
 	 * * Constant integer &quot;0&quot;
@@ -621,14 +635,385 @@ public class F {
 
 	public static ISymbol MethodHead;
 
-	//
-	// public static Generic JSCL_LEXICOGRAPHIC;
-	//
-	// public static Generic JSCL_DEGREE_LEXICOGRAPHIC;
-	//
-	// public static Generic JSCL_DEGREE_REVERSE_LEXICOGRAPHIC;
-
 	// --- generated function symbols
+
+	static {
+
+		try {
+			if (Config.DEBUG) {
+				System.out.println("Config.DEBUG == true");
+			}
+			if (Config.SHOW_STACKTRACE) {
+				System.out.println("Config.SHOW_STACKTRACE == true");
+			}
+			// long start = System.currentTimeMillis();
+
+			C0 = IntegerSym.valueOf(0);
+			C1 = IntegerSym.valueOf(1);
+			C2 = IntegerSym.valueOf(2);
+			C3 = IntegerSym.valueOf(3);
+			C4 = IntegerSym.valueOf(4);
+			C5 = IntegerSym.valueOf(5);
+			CN1 = IntegerSym.valueOf(-1);
+
+			C1D2 = FractionSym.valueOf(1, 2);
+			C1D3 = FractionSym.valueOf(1, 3);
+			C1D4 = FractionSym.valueOf(1, 4);
+			CN1D2 = FractionSym.valueOf(-1, 2);
+			CN1D3 = FractionSym.valueOf(-1, 3);
+			CN1D4 = FractionSym.valueOf(-1, 4);
+
+			CI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
+			CNI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.valueOf(-1L));
+
+			CD0 = Num.valueOf(0.0);
+			CD1 = Num.valueOf(1.0);
+			// a = initPredefinedSymbol("a");
+			// b = initPredefinedSymbol("b");
+			// c = initPredefinedSymbol("c");
+			// d = initPredefinedSymbol("d");
+			// e = initPredefinedSymbol("e");
+			// f = initPredefinedSymbol("f");
+			// g = initPredefinedSymbol("g");
+			// h = initPredefinedSymbol("h");
+			// i = initPredefinedSymbol("i");
+			// j = initPredefinedSymbol("j");
+			// k = initPredefinedSymbol("k");
+			// l = initPredefinedSymbol("l");
+			// m = initPredefinedSymbol("m");
+			// n = initPredefinedSymbol("n");
+			// o = initPredefinedSymbol("o");
+			// p = initPredefinedSymbol("p");
+			// q = initPredefinedSymbol("q");
+			// r = initPredefinedSymbol("r");
+			// s = initPredefinedSymbol("s");
+			// t = initPredefinedSymbol("t");
+			// u = initPredefinedSymbol("u");
+			// v = initPredefinedSymbol("v");
+			// w = initPredefinedSymbol("w");
+			// x = initPredefinedSymbol("x");
+			// y = initPredefinedSymbol("y");
+			// z = initPredefinedSymbol("z");
+
+			// a_ = new Pattern(a);
+			// b_ = new Pattern(b);
+			// c_ = new Pattern(c);
+			// d_ = new Pattern(d);
+			// e_ = new Pattern(e);
+			// f_ = new Pattern(f);
+			// g_ = new Pattern(g);
+			// h_ = new Pattern(h);
+			// i_ = new Pattern(i);
+			// j_ = new Pattern(j);
+			// k_ = new Pattern(k);
+			// l_ = new Pattern(l);
+			// m_ = new Pattern(m);
+			// n_ = new Pattern(n);
+			// o_ = new Pattern(o);
+			// p_ = new Pattern(p);
+			// q_ = new Pattern(q);
+			// r_ = new Pattern(r);
+			// s_ = new Pattern(s);
+			// t_ = new Pattern(t);
+			// u_ = new Pattern(u);
+			// v_ = new Pattern(v);
+			// w_ = new Pattern(w);
+			// x_ = new Pattern(x);
+			// y_ = new Pattern(y);
+			// z_ = new Pattern(z);
+
+			// PREDEFINED_PATTERN_MAP.put("a", a_);
+			// PREDEFINED_PATTERN_MAP.put("b", b_);
+			// PREDEFINED_PATTERN_MAP.put("c", c_);
+			// PREDEFINED_PATTERN_MAP.put("d", d_);
+			// PREDEFINED_PATTERN_MAP.put("e", e_);
+			// PREDEFINED_PATTERN_MAP.put("f", f_);
+			// PREDEFINED_PATTERN_MAP.put("g", g_);
+			// PREDEFINED_PATTERN_MAP.put("h", h_);
+			// PREDEFINED_PATTERN_MAP.put("i", i_);
+			// PREDEFINED_PATTERN_MAP.put("j", j_);
+			// PREDEFINED_PATTERN_MAP.put("k", k_);
+			// PREDEFINED_PATTERN_MAP.put("l", l_);
+			// PREDEFINED_PATTERN_MAP.put("m", m_);
+			// PREDEFINED_PATTERN_MAP.put("n", n_);
+			// PREDEFINED_PATTERN_MAP.put("o", o_);
+			// PREDEFINED_PATTERN_MAP.put("p", p_);
+			// PREDEFINED_PATTERN_MAP.put("q", q_);
+			// PREDEFINED_PATTERN_MAP.put("r", r_);
+			// PREDEFINED_PATTERN_MAP.put("s", s_);
+			// PREDEFINED_PATTERN_MAP.put("t", t_);
+			// PREDEFINED_PATTERN_MAP.put("u", u_);
+			// PREDEFINED_PATTERN_MAP.put("v", v_);
+			// PREDEFINED_PATTERN_MAP.put("w", w_);
+			// PREDEFINED_PATTERN_MAP.put("x", x_);
+			// PREDEFINED_PATTERN_MAP.put("y", y_);
+			// PREDEFINED_PATTERN_MAP.put("z", z_);
+
+			/**
+			 * Define the &quot;set symbols&quot; first, because of dependencies
+			 * in the predefined rules
+			 */
+			Set = initPredefinedSymbol("Set");
+			SetDelayed = initPredefinedSymbol("SetDelayed");
+
+			Plus = initPredefinedSymbol("Plus");
+			Times = initPredefinedSymbol("Times");
+			Power = initPredefinedSymbol("Power");
+
+			List = initPredefinedSymbol(IConstantHeaders.List);
+			Log = initPredefinedSymbol(IConstantHeaders.Log);
+			True = initPredefinedSymbol(IConstantHeaders.True);
+			False = initPredefinedSymbol(IConstantHeaders.False);
+			Null = initPredefinedSymbol(IConstantHeaders.Null);
+			E = initPredefinedSymbol(IConstantHeaders.E);
+			Pi = initPredefinedSymbol(IConstantHeaders.Pi);
+			Second = initPredefinedSymbol(IConstantHeaders.Second);
+			Indeterminate = initPredefinedSymbol("Indeterminate");
+			Infinity = initPredefinedSymbol(IConstantHeaders.Infinity);
+			ComplexInfinity = initPredefinedSymbol(IConstantHeaders.ComplexInfinity);
+			DirectedInfinity = initPredefinedSymbol(IConstantHeaders.DirectedInfinity);
+
+			Listable = initPredefinedSymbol(IConstantHeaders.Listable);
+			Constant = initPredefinedSymbol(IConstantHeaders.Constant);
+			NumericFunction = initPredefinedSymbol(IConstantHeaders.NumericFunction);
+			Orderless = initPredefinedSymbol(IConstantHeaders.Orderless);
+			OneIdentity = initPredefinedSymbol(IConstantHeaders.OneIdentity);
+			Flat = initPredefinedSymbol(IConstantHeaders.Flat);
+			HoldFirst = initPredefinedSymbol(IConstantHeaders.HoldFirst);
+			HoldRest = initPredefinedSymbol(IConstantHeaders.HoldRest);
+			HoldAll = initPredefinedSymbol(IConstantHeaders.HoldAll);
+			NHoldFirst = initPredefinedSymbol(IConstantHeaders.NHoldFirst);
+			NHoldRest = initPredefinedSymbol(IConstantHeaders.NHoldRest);
+			NHoldAll = initPredefinedSymbol(IConstantHeaders.NHoldAll);
+
+			Line = initPredefinedSymbol(IConstantHeaders.Line);
+			BoxRatios = initPredefinedSymbol(IConstantHeaders.BoxRatios);
+			MeshRange = initPredefinedSymbol(IConstantHeaders.MeshRange);
+			PlotRange = initPredefinedSymbol(IConstantHeaders.PlotRange);
+
+			AxesStyle = initPredefinedSymbol(IConstantHeaders.AxesStyle);
+			Automatic = initPredefinedSymbol(IConstantHeaders.Automatic);
+			AxesOrigin = initPredefinedSymbol(IConstantHeaders.AxesOrigin);
+			Axes = initPredefinedSymbol(IConstantHeaders.Axes);
+			Background = initPredefinedSymbol(IConstantHeaders.Background);
+			White = initPredefinedSymbol(IConstantHeaders.White);
+
+			// _Failed = createinitSymbol("$Failed");
+
+			IntegerHead = initPredefinedSymbol(IConstantHeaders.IntegerHead);
+			RationalHead = initPredefinedSymbol(IConstantHeaders.RationalHead);
+			SymbolHead = initPredefinedSymbol(IConstantHeaders.SymbolHead);
+			RealHead = initPredefinedSymbol(IConstantHeaders.RealHead);
+			ComplexHead = initPredefinedSymbol(IConstantHeaders.ComplexHead);
+			PatternHead = initPredefinedSymbol(IConstantHeaders.PatternHead);
+			BlankHead = initPredefinedSymbol(IConstantHeaders.BlankHead);
+			StringHead = initPredefinedSymbol(IConstantHeaders.StringHead);
+			MethodHead = initPredefinedSymbol(IConstantHeaders.MethodHead);
+
+			Slot = initPredefinedSymbol("Slot");
+			Slot.setAttributes(ISymbol.NHOLDALL);
+			SlotSequence = initPredefinedSymbol("SlotSequence");
+			SlotSequence.setAttributes(ISymbol.NHOLDALL);
+			Options = initPredefinedSymbol("Options");
+			Graphics = initPredefinedSymbol("Graphics");
+			ReplaceAll = initPredefinedSymbol("ReplaceAll");
+			Show = initPredefinedSymbol("Show");
+			SurfaceGraphics = initPredefinedSymbol("SurfaceGraphics");
+
+			// generated symbols
+			Abs = initPredefinedSymbol("Abs");
+			And = initPredefinedSymbol("And");
+			Append = initPredefinedSymbol("Append");
+			Apart = initPredefinedSymbol("Apart");
+			Apply = initPredefinedSymbol("Apply");
+			ArcCos = initPredefinedSymbol("ArcCos");
+			ArcSin = initPredefinedSymbol("ArcSin");
+			ArcTan = initPredefinedSymbol("ArcTan");
+			ArcCosh = initPredefinedSymbol("ArcCosh");
+			ArcSinh = initPredefinedSymbol("ArcSinh");
+			ArcTanh = initPredefinedSymbol("ArcTanh");
+			AtomQ = initPredefinedSymbol("AtomQ");
+			Binomial = initPredefinedSymbol("Binomial");
+			Blank = initPredefinedSymbol("Blank");
+			Block = initPredefinedSymbol("Block");
+			Break = initPredefinedSymbol("Break");
+			Cancel = initPredefinedSymbol("Cancel");
+			Csc = initPredefinedSymbol("Csc");
+			Ceiling = initPredefinedSymbol("Ceiling");
+			CompoundExpression = initPredefinedSymbol("CompoundExpression");
+			Condition = initPredefinedSymbol("Condition");
+			Conjugate = initPredefinedSymbol("Conjugate");
+			Continue = initPredefinedSymbol("Continue");
+			Cos = initPredefinedSymbol("Cos");
+			Cosh = initPredefinedSymbol("Cosh");
+			Cot = initPredefinedSymbol("Cot");
+			Coth = initPredefinedSymbol("Coth");
+			Cross = initPredefinedSymbol("Cross");
+			D = initPredefinedSymbol("D");
+			Denominator = initPredefinedSymbol("Denominator");
+			Derivative = initPredefinedSymbol("Derivative");
+			Det = initPredefinedSymbol("Det");
+			Dot = initPredefinedSymbol("Dot");
+			Equal = initPredefinedSymbol("Equal");
+			EvenQ = initPredefinedSymbol("EvenQ");
+			Expand = initPredefinedSymbol("Expand");
+			ExpandAll = initPredefinedSymbol("ExpandAll");
+			Factor = initPredefinedSymbol("Factor");
+			Factorial = initPredefinedSymbol("Factorial");
+			FactorInteger = initPredefinedSymbol("FactorInteger");
+			Fibonacci = initPredefinedSymbol("Fibonacci");
+			FindRoot = initPredefinedSymbol("FindRoot");
+			First = initPredefinedSymbol("First");
+			Floor = initPredefinedSymbol("Floor");
+			FreeQ = initPredefinedSymbol("FreeQ");
+			FullForm = initPredefinedSymbol("FullForm");
+			Function = initPredefinedSymbol("Function");
+			GCD = initPredefinedSymbol("GCD");
+			Greater = initPredefinedSymbol("Greater");
+			GreaterEqual = initPredefinedSymbol("GreaterEqual");
+			// GroebnerBasis = initSymbol("GroebnerBasis", new
+			// GroebnerBasis());
+			Head = initPredefinedSymbol("Head");
+			Hold = initPredefinedSymbol("Hold");
+			I = initPredefinedSymbol("I");
+			If = initPredefinedSymbol("If");
+			Im = initPredefinedSymbol("Im");
+			IntegerQ = initPredefinedSymbol("IntegerQ");
+			Integrate = initPredefinedSymbol("Integrate");
+			Inverse = initPredefinedSymbol("Inverse");
+			// KOrderlessPartitions =
+			// initSymbol("KOrderlessPartitions", new
+			// KOrderlessPartitions());
+			// KPartitions = initSymbol("KPartitions", new
+			// KPartitions());
+			// KSubsets = initSymbol("KSubsets", new KSubsets());
+			LeafCount = initPredefinedSymbol("LeafCount");
+			Length = initPredefinedSymbol("Length");
+			Less = initPredefinedSymbol("Less");
+			LessEqual = initPredefinedSymbol("LessEqual");
+			Level = initPredefinedSymbol("Level");
+			Limit = initPredefinedSymbol("Limit");
+			Map = initPredefinedSymbol("Map");
+			MapAll = initPredefinedSymbol("MapAll");
+			MatchQ = initPredefinedSymbol("MatchQ");
+			MatrixPower = initPredefinedSymbol("MatrixPower");
+			Max = initPredefinedSymbol("Max");
+			MemberQ = initPredefinedSymbol("MemberQ");
+			Min = initPredefinedSymbol("Min");
+			Mod = initPredefinedSymbol("Mod");
+			Module = initPredefinedSymbol("Module");
+			N = initPredefinedSymbol("N");
+			Negative = initPredefinedSymbol("Negative");
+			NonNegative = initPredefinedSymbol("NonNegative");
+			Not = initPredefinedSymbol("Not");
+			// NumberPartitions = initSymbol("NumberPartitions", new
+			// NumberPartitions());
+			NumberQ = initPredefinedSymbol("NumberQ");
+			NumericQ = initPredefinedSymbol("NumericQ");
+			Numerator = initPredefinedSymbol("Numerator");
+			OddQ = initPredefinedSymbol("OddQ");
+			Or = initPredefinedSymbol("Or");
+			Order = initPredefinedSymbol("Order");
+			OrderedQ = initPredefinedSymbol("OrderedQ");
+			// Part = initPredefinedSymbol("Part");
+			// Partition = initSymbol("Partition", new Partition());
+			// Permutations = initSymbol("Permutations", new
+			// Permutations());
+			Plot = initPredefinedSymbol("Plot");
+			Plot3D = initPredefinedSymbol("Plot3D");
+
+			Positive = initPredefinedSymbol("Positive");
+			PossibleZeroQ = initPredefinedSymbol("PossibleZeroQ");
+
+			Prepend = initPredefinedSymbol("Prepend");
+			PrimeQ = initPredefinedSymbol("PrimeQ");
+			Print = initPredefinedSymbol("Print");
+			Product = initPredefinedSymbol("Product");
+			Quotient = initPredefinedSymbol("Quotient");
+			Re = initPredefinedSymbol("Re");
+			Rest = initPredefinedSymbol("Rest");
+			Reverse = initPredefinedSymbol("Reverse");
+			RootOf = initPredefinedSymbol("RootOf");
+			RotateLeft = initPredefinedSymbol("RotateLeft");
+			RotateRight = initPredefinedSymbol("RotateRight");
+			Rule = initPredefinedSymbol("Rule");
+			RuleDelayed = initPredefinedSymbol("RuleDelayed");
+			SameQ = initPredefinedSymbol("SameQ");
+			Sec = initPredefinedSymbol("Sec");
+			Sequence = initPredefinedSymbol("Sequence");
+			SetAttributes = initPredefinedSymbol("SetAttributes");
+			Sign = initPredefinedSymbol("Sign");
+			SignCmp = initPredefinedSymbol("SignCmp");
+			Sin = initPredefinedSymbol("Sin");
+			Sinh = initPredefinedSymbol("Sinh");
+			Sort = initPredefinedSymbol("Sort");
+			Sqrt = initPredefinedSymbol("Sqrt");
+			Sum = initPredefinedSymbol("Sum");
+			Tan = initPredefinedSymbol("Tan");
+			Tanh = initPredefinedSymbol("Tanh");
+
+			Taylor = initPredefinedSymbol("Taylor");
+			Timing = initPredefinedSymbol("Timing");
+			Together = initPredefinedSymbol("Together");
+			Tr = initPredefinedSymbol("Tr");
+			Trace = initPredefinedSymbol("Trace");
+			Transpose = initPredefinedSymbol("Transpose");
+			TrueQ = initPredefinedSymbol("TrueQ");
+			Trunc = initPredefinedSymbol("Trunc");
+			Unequal = initPredefinedSymbol("Unequal");
+			UnsameQ = initPredefinedSymbol("UnsameQ");
+			While = initPredefinedSymbol("While");
+
+			CInfinity = $(DirectedInfinity, C1);
+			CNInfinity = $(DirectedInfinity, CN1);
+			Slot1 = $(Slot, C1);
+			Slot2 = $(Slot, C2);
+
+			// if (symbolObserver != null) {
+			// SYMBOL_OBSERVER = symbolObserver;
+			// }
+			//
+			// if (!noPackageLoading) {
+			// Reader reader = null;
+			// if (fileName != null) {
+			// try {
+			// reader = new FileReader(fileName);
+			// } catch (FileNotFoundException e) {
+			// e.printStackTrace();
+			// }
+			// }
+			// if (reader == null) {
+			// InputStream systemPackage =
+			// F.class.getResourceAsStream("/System.mep");
+			// if (systemPackage != null) {
+			// reader = new InputStreamReader(systemPackage);
+			// }
+			// }
+			// if (reader != null) {
+			// Package.loadPackage(EvalEngine.get(), reader);
+			// }
+			// }
+			PREDEFINED_INTERNAL_STRINGS.put("Pi", "Pi");
+			PREDEFINED_INTERNAL_STRINGS.put("E", "E");
+			PREDEFINED_INTERNAL_STRINGS.put("False", "False");
+			PREDEFINED_INTERNAL_STRINGS.put("True", "True");
+			PREDEFINED_INTERNAL_STRINGS.put("Null", "Null");
+
+			Plus.setDefaultValue(C0);
+			Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
+			Times.setDefaultValue(C1);
+			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
+			Power.setDefaultValue(2, C1);
+			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
+			Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+
+			// long end = System.currentTimeMillis();
+			// System.out.println("Init time: " + (end - start));
+		} catch (Throwable th) {
+			th.printStackTrace();
+		}
+
+	}
 
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
@@ -738,6 +1123,10 @@ public class F {
 		return unary(Cosh, a0);
 	}
 
+	public static IAST SameQ(final IExpr a0,final IExpr a1) {
+		return binary(SameQ, a0, a1);
+	}
+	
 	public static IAST Sec(final IExpr a0) {
 		return unary(Sec, a0);
 	}
@@ -913,16 +1302,6 @@ public class F {
 	}
 
 	/**
-	 * Set to <code>true</code> at the start of initSymbols() method
-	 */
-	public static boolean isSystemStarted = false;
-
-	/**
-	 * Set to <code>true</code> at the end of initSymbols() method
-	 */
-	public static boolean isSystemInitialized = false;
-
-	/**
 	 * Initialize the complete System. Calls
 	 * {@link #initSymbols(String, ISymbolObserver, boolean)} with parameters
 	 * <code>null, null</code>.
@@ -966,324 +1345,340 @@ public class F {
 				}
 				// long start = System.currentTimeMillis();
 
-				C0 = IntegerSym.valueOf(0);
-				C1 = IntegerSym.valueOf(1);
-				C2 = IntegerSym.valueOf(2);
-				C3 = IntegerSym.valueOf(3);
-				C4 = IntegerSym.valueOf(4);
-				C5 = IntegerSym.valueOf(5);
-				CN1 = IntegerSym.valueOf(-1);
-
-				C1D2 = FractionSym.valueOf(1, 2);
-				C1D3 = FractionSym.valueOf(1, 3);
-				C1D4 = FractionSym.valueOf(1, 4);
-				CN1D2 = FractionSym.valueOf(-1, 2);
-				CN1D3 = FractionSym.valueOf(-1, 3);
-				CN1D4 = FractionSym.valueOf(-1, 4);
-
-				CI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
-				CNI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.valueOf(-1L));
-
-				CD0 = Num.valueOf(0.0);
-				CD1 = Num.valueOf(1.0);
-				a = initPredefinedSymbol("a");
-				b = initPredefinedSymbol("b");
-				c = initPredefinedSymbol("c");
-				d = initPredefinedSymbol("d");
-				e = initPredefinedSymbol("e");
-				f = initPredefinedSymbol("f");
-				g = initPredefinedSymbol("g");
-				h = initPredefinedSymbol("h");
-				i = initPredefinedSymbol("i");
-				j = initPredefinedSymbol("j");
-				k = initPredefinedSymbol("k");
-				l = initPredefinedSymbol("l");
-				m = initPredefinedSymbol("m");
-				n = initPredefinedSymbol("n");
-				o = initPredefinedSymbol("o");
-				p = initPredefinedSymbol("p");
-				q = initPredefinedSymbol("q");
-				r = initPredefinedSymbol("r");
-				s = initPredefinedSymbol("s");
-				t = initPredefinedSymbol("t");
-				u = initPredefinedSymbol("u");
-				v = initPredefinedSymbol("v");
-				w = initPredefinedSymbol("w");
-				x = initPredefinedSymbol("x");
-				y = initPredefinedSymbol("y");
-				z = initPredefinedSymbol("z");
-
-				a_ = new Pattern(a);
-				b_ = new Pattern(b);
-				c_ = new Pattern(c);
-				d_ = new Pattern(d);
-				e_ = new Pattern(e);
-				f_ = new Pattern(f);
-				g_ = new Pattern(g);
-				h_ = new Pattern(h);
-				i_ = new Pattern(i);
-				j_ = new Pattern(j);
-				k_ = new Pattern(k);
-				l_ = new Pattern(l);
-				m_ = new Pattern(m);
-				n_ = new Pattern(n);
-				o_ = new Pattern(o);
-				p_ = new Pattern(p);
-				q_ = new Pattern(q);
-				r_ = new Pattern(r);
-				s_ = new Pattern(s);
-				t_ = new Pattern(t);
-				u_ = new Pattern(u);
-				v_ = new Pattern(v);
-				w_ = new Pattern(w);
-				x_ = new Pattern(x);
-				y_ = new Pattern(y);
-				z_ = new Pattern(z);
-
-				PREDEFINED_PATTERN_MAP.put("a", a_);
-				PREDEFINED_PATTERN_MAP.put("b", b_);
-				PREDEFINED_PATTERN_MAP.put("c", c_);
-				PREDEFINED_PATTERN_MAP.put("d", d_);
-				PREDEFINED_PATTERN_MAP.put("e", e_);
-				PREDEFINED_PATTERN_MAP.put("f", f_);
-				PREDEFINED_PATTERN_MAP.put("g", g_);
-				PREDEFINED_PATTERN_MAP.put("h", h_);
-				PREDEFINED_PATTERN_MAP.put("i", i_);
-				PREDEFINED_PATTERN_MAP.put("j", j_);
-				PREDEFINED_PATTERN_MAP.put("k", k_);
-				PREDEFINED_PATTERN_MAP.put("l", l_);
-				PREDEFINED_PATTERN_MAP.put("m", m_);
-				PREDEFINED_PATTERN_MAP.put("n", n_);
-				PREDEFINED_PATTERN_MAP.put("o", o_);
-				PREDEFINED_PATTERN_MAP.put("p", p_);
-				PREDEFINED_PATTERN_MAP.put("q", q_);
-				PREDEFINED_PATTERN_MAP.put("r", r_);
-				PREDEFINED_PATTERN_MAP.put("s", s_);
-				PREDEFINED_PATTERN_MAP.put("t", t_);
-				PREDEFINED_PATTERN_MAP.put("u", u_);
-				PREDEFINED_PATTERN_MAP.put("v", v_);
-				PREDEFINED_PATTERN_MAP.put("w", w_);
-				PREDEFINED_PATTERN_MAP.put("x", x_);
-				PREDEFINED_PATTERN_MAP.put("y", y_);
-				PREDEFINED_PATTERN_MAP.put("z", z_);
-
-				/**
-				 * Define the &quot;set symbols&quot; first, because of
-				 * dependencies in the predefined rules
-				 */
-				Set = initPredefinedSymbol("Set");
-				SetDelayed = initPredefinedSymbol("SetDelayed");
-
-				Plus = initPredefinedSymbol("Plus");
-				Times = initPredefinedSymbol("Times");
-				Power = initPredefinedSymbol("Power");
-
-				List = initPredefinedSymbol(IConstantHeaders.List);
-				Log = initPredefinedSymbol(IConstantHeaders.Log);
-				True = initPredefinedSymbol(IConstantHeaders.True);
-				False = initPredefinedSymbol(IConstantHeaders.False);
-				Null = initPredefinedSymbol(IConstantHeaders.Null);
-				E = initPredefinedSymbol(IConstantHeaders.E);
-				Pi = initPredefinedSymbol(IConstantHeaders.Pi);
-				Second = initPredefinedSymbol(IConstantHeaders.Second);
-				Indeterminate = initPredefinedSymbol("Indeterminate");
-				Infinity = initPredefinedSymbol(IConstantHeaders.Infinity);
-				ComplexInfinity = initPredefinedSymbol(IConstantHeaders.ComplexInfinity);
-				DirectedInfinity = initPredefinedSymbol(IConstantHeaders.DirectedInfinity);
-
-				Listable = initPredefinedSymbol(IConstantHeaders.Listable);
-				Constant = initPredefinedSymbol(IConstantHeaders.Constant);
-				NumericFunction = initPredefinedSymbol(IConstantHeaders.NumericFunction);
-				Orderless = initPredefinedSymbol(IConstantHeaders.Orderless);
-				OneIdentity = initPredefinedSymbol(IConstantHeaders.OneIdentity);
-				Flat = initPredefinedSymbol(IConstantHeaders.Flat);
-				HoldFirst = initPredefinedSymbol(IConstantHeaders.HoldFirst);
-				HoldRest = initPredefinedSymbol(IConstantHeaders.HoldRest);
-				HoldAll = initPredefinedSymbol(IConstantHeaders.HoldAll);
-				NHoldFirst = initPredefinedSymbol(IConstantHeaders.NHoldFirst);
-				NHoldRest = initPredefinedSymbol(IConstantHeaders.NHoldRest);
-				NHoldAll = initPredefinedSymbol(IConstantHeaders.NHoldAll);
-
-				Line = initPredefinedSymbol(IConstantHeaders.Line);
-				BoxRatios = initPredefinedSymbol(IConstantHeaders.BoxRatios);
-				MeshRange = initPredefinedSymbol(IConstantHeaders.MeshRange);
-				PlotRange = initPredefinedSymbol(IConstantHeaders.PlotRange);
-
-				AxesStyle = initPredefinedSymbol(IConstantHeaders.AxesStyle);
-				Automatic = initPredefinedSymbol(IConstantHeaders.Automatic);
-				AxesOrigin = initPredefinedSymbol(IConstantHeaders.AxesOrigin);
-				Axes = initPredefinedSymbol(IConstantHeaders.Axes);
-				Background = initPredefinedSymbol(IConstantHeaders.Background);
-				White = initPredefinedSymbol(IConstantHeaders.White);
-
-				// _Failed = createinitSymbol("$Failed");
-
-				IntegerHead = initPredefinedSymbol(IConstantHeaders.IntegerHead);
-				RationalHead = initPredefinedSymbol(IConstantHeaders.RationalHead);
-				SymbolHead = initPredefinedSymbol(IConstantHeaders.SymbolHead);
-				RealHead = initPredefinedSymbol(IConstantHeaders.RealHead);
-				ComplexHead = initPredefinedSymbol(IConstantHeaders.ComplexHead);
-				PatternHead = initPredefinedSymbol(IConstantHeaders.PatternHead);
-				BlankHead = initPredefinedSymbol(IConstantHeaders.BlankHead);
-				StringHead = initPredefinedSymbol(IConstantHeaders.StringHead);
-				MethodHead = initPredefinedSymbol(IConstantHeaders.MethodHead);
-
-				Slot = initPredefinedSymbol("Slot");
-				Slot.setAttributes(ISymbol.NHOLDALL);
-				SlotSequence = initPredefinedSymbol("SlotSequence");
-				SlotSequence.setAttributes(ISymbol.NHOLDALL);
-				Options = initPredefinedSymbol("Options");
-				Graphics = initPredefinedSymbol("Graphics");
-				ReplaceAll = initPredefinedSymbol("ReplaceAll");
-				Show = initPredefinedSymbol("Show");
-				SurfaceGraphics = initPredefinedSymbol("SurfaceGraphics");
-
-				// generated symbols
-				Abs = initPredefinedSymbol("Abs");
-				And = initPredefinedSymbol("And");
-				Append = initPredefinedSymbol("Append");
-				Apart = initPredefinedSymbol("Apart");
-				Apply = initPredefinedSymbol("Apply");
-				ArcCos = initPredefinedSymbol("ArcCos");
-				ArcSin = initPredefinedSymbol("ArcSin");
-				ArcTan = initPredefinedSymbol("ArcTan");
-				ArcCosh = initPredefinedSymbol("ArcCosh");
-				ArcSinh = initPredefinedSymbol("ArcSinh");
-				ArcTanh = initPredefinedSymbol("ArcTanh");
-				AtomQ = initPredefinedSymbol("AtomQ");
-				Binomial = initPredefinedSymbol("Binomial");
-				Blank = initPredefinedSymbol("Blank");
-				Block = initPredefinedSymbol("Block");
-				Break = initPredefinedSymbol("Break");
-				Cancel = initPredefinedSymbol("Cancel");
-				Csc = initPredefinedSymbol("Csc");
-				Ceiling = initPredefinedSymbol("Ceiling");
-				CompoundExpression = initPredefinedSymbol("CompoundExpression");
-				Condition = initPredefinedSymbol("Condition");
-				Conjugate = initPredefinedSymbol("Conjugate");
-				Continue = initPredefinedSymbol("Continue");
-				Cos = initPredefinedSymbol("Cos");
-				Cosh = initPredefinedSymbol("Cosh");
-				Cot = initPredefinedSymbol("Cot");
-				Coth = initPredefinedSymbol("Coth");
-				Cross = initPredefinedSymbol("Cross");
-				D = initPredefinedSymbol("D");
-				Denominator = initPredefinedSymbol("Denominator");
-				Derivative = initPredefinedSymbol("Derivative");
-				Det = initPredefinedSymbol("Det");
-				Dot = initPredefinedSymbol("Dot");
-				Equal = initPredefinedSymbol("Equal");
-				EvenQ = initPredefinedSymbol("EvenQ");
-				Expand = initPredefinedSymbol("Expand");
-				ExpandAll = initPredefinedSymbol("ExpandAll");
-				Factor = initPredefinedSymbol("Factor");
-				Factorial = initPredefinedSymbol("Factorial");
-				FactorInteger = initPredefinedSymbol("FactorInteger");
-				Fibonacci = initPredefinedSymbol("Fibonacci");
-				FindRoot = initPredefinedSymbol("FindRoot");
-				First = initPredefinedSymbol("First");
-				Floor = initPredefinedSymbol("Floor");
-				FreeQ = initPredefinedSymbol("FreeQ");
-				FullForm = initPredefinedSymbol("FullForm");
-				Function = initPredefinedSymbol("Function");
-				GCD = initPredefinedSymbol("GCD");
-				Greater = initPredefinedSymbol("Greater");
-				GreaterEqual = initPredefinedSymbol("GreaterEqual");
-				// GroebnerBasis = initSymbol("GroebnerBasis", new
-				// GroebnerBasis());
-				Head = initPredefinedSymbol("Head");
-				Hold = initPredefinedSymbol("Hold");
-				I = initPredefinedSymbol("I");
-				If = initPredefinedSymbol("If");
-				Im = initPredefinedSymbol("Im");
-				IntegerQ = initPredefinedSymbol("IntegerQ");
-				Integrate = initPredefinedSymbol("Integrate");
-				Inverse = initPredefinedSymbol("Inverse");
-				// KOrderlessPartitions =
-				// initSymbol("KOrderlessPartitions", new
-				// KOrderlessPartitions());
-				// KPartitions = initSymbol("KPartitions", new
-				// KPartitions());
-				// KSubsets = initSymbol("KSubsets", new KSubsets());
-				LeafCount = initPredefinedSymbol("LeafCount");
-				Length = initPredefinedSymbol("Length");
-				Less = initPredefinedSymbol("Less");
-				LessEqual = initPredefinedSymbol("LessEqual");
-				Level = initPredefinedSymbol("Level");
-				Limit = initPredefinedSymbol("Limit");
-				Map = initPredefinedSymbol("Map");
-				MapAll = initPredefinedSymbol("MapAll");
-				MatchQ = initPredefinedSymbol("MatchQ");
-				MatrixPower = initPredefinedSymbol("MatrixPower");
-				Max = initPredefinedSymbol("Max");
-				MemberQ = initPredefinedSymbol("MemberQ");
-				Min = initPredefinedSymbol("Min");
-				Mod = initPredefinedSymbol("Mod");
-				Module = initPredefinedSymbol("Module");
-				N = initPredefinedSymbol("N");
-				Negative = initPredefinedSymbol("Negative");
-				NonNegative = initPredefinedSymbol("NonNegative");
-				Not = initPredefinedSymbol("Not");
-				// NumberPartitions = initSymbol("NumberPartitions", new
-				// NumberPartitions());
-				NumberQ = initPredefinedSymbol("NumberQ");
-				NumericQ = initPredefinedSymbol("NumericQ");
-				Numerator = initPredefinedSymbol("Numerator");
-				OddQ = initPredefinedSymbol("OddQ");
-				Or = initPredefinedSymbol("Or");
-				Order = initPredefinedSymbol("Order");
-				OrderedQ = initPredefinedSymbol("OrderedQ");
-				Part = initPredefinedSymbol("Part");
-				// Partition = initSymbol("Partition", new Partition());
-				// Permutations = initSymbol("Permutations", new
-				// Permutations());
-				Plot = initPredefinedSymbol("Plot");
-				Plot3D = initPredefinedSymbol("Plot3D");
-
-				Positive = initPredefinedSymbol("Positive");
-				PossibleZeroQ = initPredefinedSymbol("PossibleZeroQ");
-
-				Prepend = initPredefinedSymbol("Prepend");
-				PrimeQ = initPredefinedSymbol("PrimeQ");
-				Print = initPredefinedSymbol("Print");
-				Product = initPredefinedSymbol("Product");
-				Quotient = initPredefinedSymbol("Quotient");
-				Re = initPredefinedSymbol("Re");
-				Rest = initPredefinedSymbol("Rest");
-				Reverse = initPredefinedSymbol("Reverse");
-				RootOf = initPredefinedSymbol("RootOf");
-				RotateLeft = initPredefinedSymbol("RotateLeft");
-				RotateRight = initPredefinedSymbol("RotateRight");
-				Rule = initPredefinedSymbol("Rule");
-				RuleDelayed = initPredefinedSymbol("RuleDelayed");
-				Sec = initPredefinedSymbol("Sec");
-				Sequence = initPredefinedSymbol("Sequence");
-				SetAttributes = initPredefinedSymbol("SetAttributes");
-				Sign = initPredefinedSymbol("Sign");
-				SignCmp = initPredefinedSymbol("SignCmp");
-				Sin = initPredefinedSymbol("Sin");
-				Sinh = initPredefinedSymbol("Sinh");
-				Sort = initPredefinedSymbol("Sort");
-				Sqrt = initPredefinedSymbol("Sqrt");
-				Sum = initPredefinedSymbol("Sum");
-				Tan = initPredefinedSymbol("Tan");
-				Tanh = initPredefinedSymbol("Tanh");
-
-				Taylor = initPredefinedSymbol("Taylor");
-				Timing = initPredefinedSymbol("Timing");
-				Together = initPredefinedSymbol("Together");
-				Tr = initPredefinedSymbol("Tr");
-				Trace = initPredefinedSymbol("Trace");
-				Transpose = initPredefinedSymbol("Transpose");
-				TrueQ = initPredefinedSymbol("TrueQ");
-				Trunc = initPredefinedSymbol("Trunc");
-				Unequal = initPredefinedSymbol("Unequal");
-				While = initPredefinedSymbol("While");
-
-				CInfinity = $(DirectedInfinity, C1);
-				CNInfinity = $(DirectedInfinity, CN1);
-				Slot1 = $(Slot, C1);
-				Slot2 = $(Slot, C2);
+				// C0 = IntegerSym.valueOf(0);
+				// C1 = IntegerSym.valueOf(1);
+				// C2 = IntegerSym.valueOf(2);
+				// C3 = IntegerSym.valueOf(3);
+				// C4 = IntegerSym.valueOf(4);
+				// C5 = IntegerSym.valueOf(5);
+				// CN1 = IntegerSym.valueOf(-1);
+				//
+				// C1D2 = FractionSym.valueOf(1, 2);
+				// C1D3 = FractionSym.valueOf(1, 3);
+				// C1D4 = FractionSym.valueOf(1, 4);
+				// CN1D2 = FractionSym.valueOf(-1, 2);
+				// CN1D3 = FractionSym.valueOf(-1, 3);
+				// CN1D4 = FractionSym.valueOf(-1, 4);
+				//
+				// CI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
+				// CNI = ComplexSym.valueOf(BigInteger.ZERO,
+				// BigInteger.valueOf(-1L));
+				//
+				// CD0 = Num.valueOf(0.0);
+				// CD1 = Num.valueOf(1.0);
+				// a = initPredefinedSymbol("a");
+				// b = initPredefinedSymbol("b");
+				// c = initPredefinedSymbol("c");
+				// d = initPredefinedSymbol("d");
+				// e = initPredefinedSymbol("e");
+				// f = initPredefinedSymbol("f");
+				// g = initPredefinedSymbol("g");
+				// h = initPredefinedSymbol("h");
+				// i = initPredefinedSymbol("i");
+				// j = initPredefinedSymbol("j");
+				// k = initPredefinedSymbol("k");
+				// l = initPredefinedSymbol("l");
+				// m = initPredefinedSymbol("m");
+				// n = initPredefinedSymbol("n");
+				// o = initPredefinedSymbol("o");
+				// p = initPredefinedSymbol("p");
+				// q = initPredefinedSymbol("q");
+				// r = initPredefinedSymbol("r");
+				// s = initPredefinedSymbol("s");
+				// t = initPredefinedSymbol("t");
+				// u = initPredefinedSymbol("u");
+				// v = initPredefinedSymbol("v");
+				// w = initPredefinedSymbol("w");
+				// x = initPredefinedSymbol("x");
+				// y = initPredefinedSymbol("y");
+				// z = initPredefinedSymbol("z");
+				//
+				// a_ = new Pattern(a);
+				// b_ = new Pattern(b);
+				// c_ = new Pattern(c);
+				// d_ = new Pattern(d);
+				// e_ = new Pattern(e);
+				// f_ = new Pattern(f);
+				// g_ = new Pattern(g);
+				// h_ = new Pattern(h);
+				// i_ = new Pattern(i);
+				// j_ = new Pattern(j);
+				// k_ = new Pattern(k);
+				// l_ = new Pattern(l);
+				// m_ = new Pattern(m);
+				// n_ = new Pattern(n);
+				// o_ = new Pattern(o);
+				// p_ = new Pattern(p);
+				// q_ = new Pattern(q);
+				// r_ = new Pattern(r);
+				// s_ = new Pattern(s);
+				// t_ = new Pattern(t);
+				// u_ = new Pattern(u);
+				// v_ = new Pattern(v);
+				// w_ = new Pattern(w);
+				// x_ = new Pattern(x);
+				// y_ = new Pattern(y);
+				// z_ = new Pattern(z);
+				//
+				// PREDEFINED_PATTERN_MAP.put("a", a_);
+				// PREDEFINED_PATTERN_MAP.put("b", b_);
+				// PREDEFINED_PATTERN_MAP.put("c", c_);
+				// PREDEFINED_PATTERN_MAP.put("d", d_);
+				// PREDEFINED_PATTERN_MAP.put("e", e_);
+				// PREDEFINED_PATTERN_MAP.put("f", f_);
+				// PREDEFINED_PATTERN_MAP.put("g", g_);
+				// PREDEFINED_PATTERN_MAP.put("h", h_);
+				// PREDEFINED_PATTERN_MAP.put("i", i_);
+				// PREDEFINED_PATTERN_MAP.put("j", j_);
+				// PREDEFINED_PATTERN_MAP.put("k", k_);
+				// PREDEFINED_PATTERN_MAP.put("l", l_);
+				// PREDEFINED_PATTERN_MAP.put("m", m_);
+				// PREDEFINED_PATTERN_MAP.put("n", n_);
+				// PREDEFINED_PATTERN_MAP.put("o", o_);
+				// PREDEFINED_PATTERN_MAP.put("p", p_);
+				// PREDEFINED_PATTERN_MAP.put("q", q_);
+				// PREDEFINED_PATTERN_MAP.put("r", r_);
+				// PREDEFINED_PATTERN_MAP.put("s", s_);
+				// PREDEFINED_PATTERN_MAP.put("t", t_);
+				// PREDEFINED_PATTERN_MAP.put("u", u_);
+				// PREDEFINED_PATTERN_MAP.put("v", v_);
+				// PREDEFINED_PATTERN_MAP.put("w", w_);
+				// PREDEFINED_PATTERN_MAP.put("x", x_);
+				// PREDEFINED_PATTERN_MAP.put("y", y_);
+				// PREDEFINED_PATTERN_MAP.put("z", z_);
+				//
+				// /**
+				// * Define the &quot;set symbols&quot; first, because of
+				// * dependencies in the predefined rules
+				// */
+				// Set = initPredefinedSymbol("Set");
+				// SetDelayed = initPredefinedSymbol("SetDelayed");
+				//
+				// Plus = initPredefinedSymbol("Plus");
+				// Times = initPredefinedSymbol("Times");
+				// Power = initPredefinedSymbol("Power");
+				//
+				// List = initPredefinedSymbol(IConstantHeaders.List);
+				// Log = initPredefinedSymbol(IConstantHeaders.Log);
+				// True = initPredefinedSymbol(IConstantHeaders.True);
+				// False = initPredefinedSymbol(IConstantHeaders.False);
+				// Null = initPredefinedSymbol(IConstantHeaders.Null);
+				// E = initPredefinedSymbol(IConstantHeaders.E);
+				// Pi = initPredefinedSymbol(IConstantHeaders.Pi);
+				// Second = initPredefinedSymbol(IConstantHeaders.Second);
+				// Indeterminate = initPredefinedSymbol("Indeterminate");
+				// Infinity = initPredefinedSymbol(IConstantHeaders.Infinity);
+				// ComplexInfinity =
+				// initPredefinedSymbol(IConstantHeaders.ComplexInfinity);
+				// DirectedInfinity =
+				// initPredefinedSymbol(IConstantHeaders.DirectedInfinity);
+				//
+				// Listable = initPredefinedSymbol(IConstantHeaders.Listable);
+				// Constant = initPredefinedSymbol(IConstantHeaders.Constant);
+				// NumericFunction =
+				// initPredefinedSymbol(IConstantHeaders.NumericFunction);
+				// Orderless = initPredefinedSymbol(IConstantHeaders.Orderless);
+				// OneIdentity =
+				// initPredefinedSymbol(IConstantHeaders.OneIdentity);
+				// Flat = initPredefinedSymbol(IConstantHeaders.Flat);
+				// HoldFirst = initPredefinedSymbol(IConstantHeaders.HoldFirst);
+				// HoldRest = initPredefinedSymbol(IConstantHeaders.HoldRest);
+				// HoldAll = initPredefinedSymbol(IConstantHeaders.HoldAll);
+				// NHoldFirst =
+				// initPredefinedSymbol(IConstantHeaders.NHoldFirst);
+				// NHoldRest = initPredefinedSymbol(IConstantHeaders.NHoldRest);
+				// NHoldAll = initPredefinedSymbol(IConstantHeaders.NHoldAll);
+				//
+				// Line = initPredefinedSymbol(IConstantHeaders.Line);
+				// BoxRatios = initPredefinedSymbol(IConstantHeaders.BoxRatios);
+				// MeshRange = initPredefinedSymbol(IConstantHeaders.MeshRange);
+				// PlotRange = initPredefinedSymbol(IConstantHeaders.PlotRange);
+				//
+				// AxesStyle = initPredefinedSymbol(IConstantHeaders.AxesStyle);
+				// Automatic = initPredefinedSymbol(IConstantHeaders.Automatic);
+				// AxesOrigin =
+				// initPredefinedSymbol(IConstantHeaders.AxesOrigin);
+				// Axes = initPredefinedSymbol(IConstantHeaders.Axes);
+				// Background =
+				// initPredefinedSymbol(IConstantHeaders.Background);
+				// White = initPredefinedSymbol(IConstantHeaders.White);
+				//
+				// // _Failed = createinitSymbol("$Failed");
+				//
+				// IntegerHead =
+				// initPredefinedSymbol(IConstantHeaders.IntegerHead);
+				// RationalHead =
+				// initPredefinedSymbol(IConstantHeaders.RationalHead);
+				// SymbolHead =
+				// initPredefinedSymbol(IConstantHeaders.SymbolHead);
+				// RealHead = initPredefinedSymbol(IConstantHeaders.RealHead);
+				// ComplexHead =
+				// initPredefinedSymbol(IConstantHeaders.ComplexHead);
+				// PatternHead =
+				// initPredefinedSymbol(IConstantHeaders.PatternHead);
+				// BlankHead = initPredefinedSymbol(IConstantHeaders.BlankHead);
+				// StringHead =
+				// initPredefinedSymbol(IConstantHeaders.StringHead);
+				// MethodHead =
+				// initPredefinedSymbol(IConstantHeaders.MethodHead);
+				//
+				// Slot = initPredefinedSymbol("Slot");
+				// Slot.setAttributes(ISymbol.NHOLDALL);
+				// SlotSequence = initPredefinedSymbol("SlotSequence");
+				// SlotSequence.setAttributes(ISymbol.NHOLDALL);
+				// Options = initPredefinedSymbol("Options");
+				// Graphics = initPredefinedSymbol("Graphics");
+				// ReplaceAll = initPredefinedSymbol("ReplaceAll");
+				// Show = initPredefinedSymbol("Show");
+				// SurfaceGraphics = initPredefinedSymbol("SurfaceGraphics");
+				//
+				// // generated symbols
+				// Abs = initPredefinedSymbol("Abs");
+				// And = initPredefinedSymbol("And");
+				// Append = initPredefinedSymbol("Append");
+				// Apart = initPredefinedSymbol("Apart");
+				// Apply = initPredefinedSymbol("Apply");
+				// ArcCos = initPredefinedSymbol("ArcCos");
+				// ArcSin = initPredefinedSymbol("ArcSin");
+				// ArcTan = initPredefinedSymbol("ArcTan");
+				// ArcCosh = initPredefinedSymbol("ArcCosh");
+				// ArcSinh = initPredefinedSymbol("ArcSinh");
+				// ArcTanh = initPredefinedSymbol("ArcTanh");
+				// AtomQ = initPredefinedSymbol("AtomQ");
+				// Binomial = initPredefinedSymbol("Binomial");
+				// Blank = initPredefinedSymbol("Blank");
+				// Block = initPredefinedSymbol("Block");
+				// Break = initPredefinedSymbol("Break");
+				// Cancel = initPredefinedSymbol("Cancel");
+				// Csc = initPredefinedSymbol("Csc");
+				// Ceiling = initPredefinedSymbol("Ceiling");
+				// CompoundExpression =
+				// initPredefinedSymbol("CompoundExpression");
+				// Condition = initPredefinedSymbol("Condition");
+				// Conjugate = initPredefinedSymbol("Conjugate");
+				// Continue = initPredefinedSymbol("Continue");
+				// Cos = initPredefinedSymbol("Cos");
+				// Cosh = initPredefinedSymbol("Cosh");
+				// Cot = initPredefinedSymbol("Cot");
+				// Coth = initPredefinedSymbol("Coth");
+				// Cross = initPredefinedSymbol("Cross");
+				// D = initPredefinedSymbol("D");
+				// Denominator = initPredefinedSymbol("Denominator");
+				// Derivative = initPredefinedSymbol("Derivative");
+				// Det = initPredefinedSymbol("Det");
+				// Dot = initPredefinedSymbol("Dot");
+				// Equal = initPredefinedSymbol("Equal");
+				// EvenQ = initPredefinedSymbol("EvenQ");
+				// Expand = initPredefinedSymbol("Expand");
+				// ExpandAll = initPredefinedSymbol("ExpandAll");
+				// Factor = initPredefinedSymbol("Factor");
+				// Factorial = initPredefinedSymbol("Factorial");
+				// FactorInteger = initPredefinedSymbol("FactorInteger");
+				// Fibonacci = initPredefinedSymbol("Fibonacci");
+				// FindRoot = initPredefinedSymbol("FindRoot");
+				// First = initPredefinedSymbol("First");
+				// Floor = initPredefinedSymbol("Floor");
+				// FreeQ = initPredefinedSymbol("FreeQ");
+				// FullForm = initPredefinedSymbol("FullForm");
+				// Function = initPredefinedSymbol("Function");
+				// GCD = initPredefinedSymbol("GCD");
+				// Greater = initPredefinedSymbol("Greater");
+				// GreaterEqual = initPredefinedSymbol("GreaterEqual");
+				// // GroebnerBasis = initSymbol("GroebnerBasis", new
+				// // GroebnerBasis());
+				// Head = initPredefinedSymbol("Head");
+				// Hold = initPredefinedSymbol("Hold");
+				// I = initPredefinedSymbol("I");
+				// If = initPredefinedSymbol("If");
+				// Im = initPredefinedSymbol("Im");
+				// IntegerQ = initPredefinedSymbol("IntegerQ");
+				// Integrate = initPredefinedSymbol("Integrate");
+				// Inverse = initPredefinedSymbol("Inverse");
+				// // KOrderlessPartitions =
+				// // initSymbol("KOrderlessPartitions", new
+				// // KOrderlessPartitions());
+				// // KPartitions = initSymbol("KPartitions", new
+				// // KPartitions());
+				// // KSubsets = initSymbol("KSubsets", new KSubsets());
+				// LeafCount = initPredefinedSymbol("LeafCount");
+				// Length = initPredefinedSymbol("Length");
+				// Less = initPredefinedSymbol("Less");
+				// LessEqual = initPredefinedSymbol("LessEqual");
+				// Level = initPredefinedSymbol("Level");
+				// Limit = initPredefinedSymbol("Limit");
+				// Map = initPredefinedSymbol("Map");
+				// MapAll = initPredefinedSymbol("MapAll");
+				// MatchQ = initPredefinedSymbol("MatchQ");
+				// MatrixPower = initPredefinedSymbol("MatrixPower");
+				// Max = initPredefinedSymbol("Max");
+				// MemberQ = initPredefinedSymbol("MemberQ");
+				// Min = initPredefinedSymbol("Min");
+				// Mod = initPredefinedSymbol("Mod");
+				// Module = initPredefinedSymbol("Module");
+				// N = initPredefinedSymbol("N");
+				// Negative = initPredefinedSymbol("Negative");
+				// NonNegative = initPredefinedSymbol("NonNegative");
+				// Not = initPredefinedSymbol("Not");
+				// // NumberPartitions = initSymbol("NumberPartitions", new
+				// // NumberPartitions());
+				// NumberQ = initPredefinedSymbol("NumberQ");
+				// NumericQ = initPredefinedSymbol("NumericQ");
+				// Numerator = initPredefinedSymbol("Numerator");
+				// OddQ = initPredefinedSymbol("OddQ");
+				// Or = initPredefinedSymbol("Or");
+				// Order = initPredefinedSymbol("Order");
+				// OrderedQ = initPredefinedSymbol("OrderedQ");
+				// Part = initPredefinedSymbol("Part");
+				// // Partition = initSymbol("Partition", new Partition());
+				// // Permutations = initSymbol("Permutations", new
+				// // Permutations());
+				// Plot = initPredefinedSymbol("Plot");
+				// Plot3D = initPredefinedSymbol("Plot3D");
+				//
+				// Positive = initPredefinedSymbol("Positive");
+				// PossibleZeroQ = initPredefinedSymbol("PossibleZeroQ");
+				//
+				// Prepend = initPredefinedSymbol("Prepend");
+				// PrimeQ = initPredefinedSymbol("PrimeQ");
+				// Print = initPredefinedSymbol("Print");
+				// Product = initPredefinedSymbol("Product");
+				// Quotient = initPredefinedSymbol("Quotient");
+				// Re = initPredefinedSymbol("Re");
+				// Rest = initPredefinedSymbol("Rest");
+				// Reverse = initPredefinedSymbol("Reverse");
+				// RootOf = initPredefinedSymbol("RootOf");
+				// RotateLeft = initPredefinedSymbol("RotateLeft");
+				// RotateRight = initPredefinedSymbol("RotateRight");
+				// Rule = initPredefinedSymbol("Rule");
+				// RuleDelayed = initPredefinedSymbol("RuleDelayed");
+				// Sec = initPredefinedSymbol("Sec");
+				// Sequence = initPredefinedSymbol("Sequence");
+				// SetAttributes = initPredefinedSymbol("SetAttributes");
+				// Sign = initPredefinedSymbol("Sign");
+				// SignCmp = initPredefinedSymbol("SignCmp");
+				// Sin = initPredefinedSymbol("Sin");
+				// Sinh = initPredefinedSymbol("Sinh");
+				// Sort = initPredefinedSymbol("Sort");
+				// Sqrt = initPredefinedSymbol("Sqrt");
+				// Sum = initPredefinedSymbol("Sum");
+				// Tan = initPredefinedSymbol("Tan");
+				// Tanh = initPredefinedSymbol("Tanh");
+				//
+				// Taylor = initPredefinedSymbol("Taylor");
+				// Timing = initPredefinedSymbol("Timing");
+				// Together = initPredefinedSymbol("Together");
+				// Tr = initPredefinedSymbol("Tr");
+				// Trace = initPredefinedSymbol("Trace");
+				// Transpose = initPredefinedSymbol("Transpose");
+				// TrueQ = initPredefinedSymbol("TrueQ");
+				// Trunc = initPredefinedSymbol("Trunc");
+				// Unequal = initPredefinedSymbol("Unequal");
+				// While = initPredefinedSymbol("While");
+				//
+				// CInfinity = $(DirectedInfinity, C1);
+				// CNInfinity = $(DirectedInfinity, CN1);
+				// Slot1 = $(Slot, C1);
+				// Slot2 = $(Slot, C2);
 
 				if (symbolObserver != null) {
 					SYMBOL_OBSERVER = symbolObserver;
@@ -1308,23 +1703,23 @@ public class F {
 						Package.loadPackage(EvalEngine.get(), reader);
 					}
 				}
-				PREDEFINED_INTERNAL_STRINGS.put("Pi", "Pi");
-				PREDEFINED_INTERNAL_STRINGS.put("E", "E");
-				PREDEFINED_INTERNAL_STRINGS.put("False", "False");
-				PREDEFINED_INTERNAL_STRINGS.put("True", "True");
-				PREDEFINED_INTERNAL_STRINGS.put("Null", "Null");
-
-				Plus.setDefaultValue(C0);
-				Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
-				Times.setDefaultValue(C1);
-				Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
-				Power.setDefaultValue(2, C1);
-				Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
-				Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-
+				// PREDEFINED_INTERNAL_STRINGS.put("Pi", "Pi");
+				// PREDEFINED_INTERNAL_STRINGS.put("E", "E");
+				// PREDEFINED_INTERNAL_STRINGS.put("False", "False");
+				// PREDEFINED_INTERNAL_STRINGS.put("True", "True");
+				// PREDEFINED_INTERNAL_STRINGS.put("Null", "Null");
+				//
+				// Plus.setDefaultValue(C0);
+				// Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
+				// Times.setDefaultValue(C1);
+				// Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
+				// Power.setDefaultValue(2, C1);
+				// Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
+				// Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+				//
 				isSystemInitialized = true;
-				// long end = System.currentTimeMillis();
-				// System.out.println("Init time: " + (end - start));
+				// // long end = System.currentTimeMillis();
+				// // System.out.println("Init time: " + (end - start));
 			} catch (Throwable th) {
 				th.printStackTrace();
 			}
@@ -1543,6 +1938,9 @@ public class F {
 	}
 
 	public static IAST Part(final IExpr a0, final IExpr a1) {
+//		if (a0 == null || a1 == null||a0 == F.Null || a1 == F.Null) {
+//			System.out.println("Part argument is null");
+//		}
 		return binary(Part, a0, a1);
 	}
 
@@ -1780,6 +2178,10 @@ public class F {
 
 	public static IAST Trunc(final IExpr a0) {
 		return unary(Trunc, a0);
+	}
+	
+	public static IAST UnsameQ(final IExpr a0,final IExpr a1) {
+		return binary(UnsameQ, a0, a1);
 	}
 
 	/**
@@ -2491,6 +2893,12 @@ public class F {
 		}
 		ISymbol temp = new Symbol(symbolName);
 		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
+		return temp;
+	}
+
+	private static IPattern initPredefinedPattern(final ISymbol symbol) {
+		IPattern temp = new Pattern(symbol);
+		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
 		return temp;
 	}
 

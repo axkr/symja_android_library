@@ -16,6 +16,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class UtilityFunctionCtors {
 
 	public final static String INTEGRATE_PREFIX = "Integrate::";
+	public static ISymbol INTEGRATE_TRIG_SIMPLIFY = null;
+	public static ISymbol INTEGRATE_SMARTLEAFCOUNT = null;
+	public static ISymbol INTEGRATE_SMARTNUMERATOR = null;
+	public static ISymbol INTEGRATE_SMARTDENOMINATOR = null;
+	public static ISymbol INTEGRATE_SIMP = null;
+	public static ISymbol INTEGRATE_REAPLIST = null;
 
 	public static ISymbol $sDBG(final String symbolName) {
 		ISymbol sym = $s(symbolName);
@@ -712,7 +718,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST ReapList(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "ReapList"), a0);
+		if (INTEGRATE_REAPLIST==null){
+			INTEGRATE_REAPLIST=$sDBG(INTEGRATE_PREFIX + "ReapList");
+			INTEGRATE_REAPLIST.setAttributes(ISymbol.HOLDFIRST);
+		}
+		return unary(INTEGRATE_REAPLIST, a0);
 	}
 
 	public static IAST RecognizedFormQ(final IExpr a0, final IExpr a1) {
@@ -760,7 +770,10 @@ public class UtilityFunctionCtors {
 	// }
 
 	public static IAST Simp(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "Simp"), a0);
+		if (INTEGRATE_SIMP == null) {
+			INTEGRATE_SIMP = $sDBG(INTEGRATE_PREFIX + "Simp");
+		}
+		return unary(INTEGRATE_SIMP, a0);
 	}
 
 	public static IAST SimpAux(final IExpr a0) {
@@ -812,15 +825,24 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST SmartDenominator(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "SmartDenominator"), a0);
+		if (INTEGRATE_SMARTDENOMINATOR == null) {
+			INTEGRATE_SMARTDENOMINATOR = $sDBG(INTEGRATE_PREFIX + "SmartDenominator");
+		}
+		return unary(INTEGRATE_SMARTDENOMINATOR, a0);
 	}
 
 	public static IAST SmartLeafCount(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "SmartLeafCount"), a0);
+		if (INTEGRATE_SMARTLEAFCOUNT == null) {
+			INTEGRATE_SMARTLEAFCOUNT = $sDBG(INTEGRATE_PREFIX + "SmartLeafCount");
+		}
+		return unary(INTEGRATE_SMARTLEAFCOUNT, a0);
 	}
 
 	public static IAST SmartNumerator(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "SmartNumerator"), a0);
+		if (INTEGRATE_SMARTNUMERATOR == null) {
+			INTEGRATE_SMARTNUMERATOR = $sDBG(INTEGRATE_PREFIX + "SmartNumerator");
+		}
+		return unary(INTEGRATE_SMARTNUMERATOR, a0);
 	}
 
 	public static IAST SmartTrigExpand(final IExpr a0, final IExpr a1) {
@@ -952,7 +974,10 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST TrigSimplify(final IExpr a0) {
-		return unary($sDBG(INTEGRATE_PREFIX + "TrigSimplify"), a0);
+		if (INTEGRATE_TRIG_SIMPLIFY == null) {
+			INTEGRATE_TRIG_SIMPLIFY = $sDBG(INTEGRATE_PREFIX + "TrigSimplify");
+		}
+		return unary(INTEGRATE_TRIG_SIMPLIFY, a0);
 	}
 
 	public static IAST TrigSimplifyAux(final IExpr a0) {

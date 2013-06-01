@@ -87,7 +87,8 @@ public class Module extends AbstractFunctionEvaluator {
 
 		try {
 			rememberVariables(intializerList, engine, varAppend, variables);
-			return engine.evaluate(F.subst(arg2, Functors.rules(variables)));
+			IExpr temp = engine.evaluate(F.subst(arg2, Functors.rules(variables)));
+			return temp;
 		} finally {
 			removeVariables(engine, variables);
 		}

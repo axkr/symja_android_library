@@ -37,15 +37,22 @@ public class UtilityFunctions {
 	}
 
 	public static ISymbol $sDBG(final String symbolName) {
-		ISymbol sym = $s(symbolName);
-		// sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		return sym;
+		return $s(symbolName);
+		// ISymbol sym = $s(symbolName);
+		// sym.setAttributes(sym.getAttributes() | ISymbol.CONSOLE_OUTPUT);
+		// return sym;
 	}
 
 	public static IAST FunctionOfQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		// call the constructor with 4 arguments
 		return UtilityFunctionCtors.FunctionOfQ(a0, a1, a2, F.False);
 	}
+
+	// public static IAST FunctionOfQ(final IExpr a0, final IExpr a1, final
+	// IExpr a2, final IExpr a3) {
+	// // call the constructor with 4 arguments
+	// return UtilityFunctionCtors.FunctionOfQ(a0, a1, a2, a3);
+	// }
 
 	public static IAST IntegrateMonomialSum(final IExpr a0, final IExpr a1) {
 		// TODO
@@ -337,14 +344,6 @@ public class UtilityFunctions {
 		return binary($sDBG("PolynomialQ"), a0, a1);
 	}
 
-	public static IAST SameQ(final IExpr a0, final IExpr a1) {
-		return binary($sDBG("SameQ"), a0, a1);
-	}
-
-	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
-		return binary($sDBG("UnsameQ"), a0, a1);
-	}
-
 	public static IAST SinIntegral(final IExpr a) {
 		// TODO fix this
 		return unary($s("SinIntegral"), a);
@@ -460,13 +459,13 @@ public class UtilityFunctions {
 
 	public static void init() {
 		// Dist[u_,v_]+Dist[w_,v_] := If[ZeroQ[u+w], 0, Dist[u+w,v]],
-		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Dist($p("w"), $p("v")), If(ZeroQ(Plus(
-				$s("u"), $s("w"))), C0, Dist(Plus($s("u"), $s("w")), $s("v"))), null);
+		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Dist($p("w"), $p("v")),
+				If(ZeroQ(Plus($s("u"), $s("w"))), C0, Dist(Plus($s("u"), $s("w")), $s("v"))), null);
 		// Dist[u_,v_]-Dist[w_,v_] := If[ZeroQ[u-w], 0, Dist[u-w,v]],
-		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Times(CN1, Dist($p("w"), $p("v"))), If(
-				ZeroQ(Plus($s("u"), Times(CN1, $s("w")))), C0, Dist(Plus($s("u"), Times(CN1, $s("w"))), $s("v"))), null);
+		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Times(CN1, Dist($p("w"), $p("v"))),
+				If(ZeroQ(Plus($s("u"), Times(CN1, $s("w")))), C0, Dist(Plus($s("u"), Times(CN1, $s("w"))), $s("v"))), null);
 		// Dist[u_,v_]*w_ := Dist[w*u,v] /; w=!=-1
-		org.matheclipse.core.reflection.system.Times.CONST.setUpHashRule(Dist($p("u"), $p("v")), $p("w"), Dist(Times($s("w"), $s("u")),
-				$s("v")), UnsameQ($s("w"), CN1));
+		org.matheclipse.core.reflection.system.Times.CONST.setUpHashRule(Dist($p("u"), $p("v")), $p("w"),
+				Dist(Times($s("w"), $s("u")), $s("v")), UnsameQ($s("w"), CN1));
 	}
 }

@@ -29,7 +29,7 @@ public class CompoundExpression implements IFunctionEvaluator {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.FLAT);
 	}
 
 }

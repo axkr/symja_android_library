@@ -218,13 +218,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param relaxedSyntax
 	 * @see javax.servlet.http.HttpSession#getID()
 	 */
-	public EvalEngine(final String sessionID, final int recursionLimit,
-			final PrintStream out, boolean relaxedSyntax) {
+	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax) {
 		this(sessionID, recursionLimit, -1, out, relaxedSyntax);
 	}
 
-	public EvalEngine(final String sessionID, final int recursionLimit,
-			final int iterationLimit, final PrintStream out,
+	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit, final PrintStream out,
 			boolean relaxedSyntax) {
 		fSessionID = sessionID;
 		// fExpressionFactory = f;
@@ -373,8 +371,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            expressions. Typically a <code>F.List()</code> will be used.
 	 * @return
 	 */
-	public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher,
-			IAST list) {
+	public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher, IAST list) {
 		IAST traceList = F.List();
 		try {
 			beginTrace(matcher, list);
@@ -430,8 +427,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			final IExpr arg1 = ast.get(1);
 			if (arg1.isList()) {
 				// thread over the list
-				if ((result = EvaluationSupport.threadList(ast,
-						((IAST) arg1).size() - 1, 1)) != null) {
+				if ((result = EvaluationSupport.threadList(ast, ((IAST) arg1).size() - 1, 1)) != null) {
 					return result;
 				}
 			}
@@ -542,8 +538,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		if ((listLength != 0)
-				&& ((result = EvaluationSupport.threadList(ast, listLength, 1)) != null)) {
+		if ((listLength != 0) && ((result = EvaluationSupport.threadList(ast, listLength, 1)) != null)) {
 			return result;
 		}
 		return null;
@@ -630,8 +625,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 					if ((evaledExpr = evalLoop(ast.get(1))) != null) {
 						resultList = ast.clone();
-						resultList.setEvalFlags(ast.getEvalFlags()
-								& IAST.IS_MATRIX_OR_VECTOR);
+						resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						resultList.set(1, evaledExpr);
 						if (astSize == 2) {
 							return resultList;
@@ -656,8 +650,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						if ((evaledExpr = evalLoop(ast.get(i))) != null) {
 							if (resultList == null) {
 								resultList = ast.clone();
-								resultList.setEvalFlags(ast.getEvalFlags()
-										& IAST.IS_MATRIX_OR_VECTOR);
+								resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 							}
 							resultList.set(i, evaledExpr);
 						}
@@ -761,6 +754,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 			IExpr temp = expr.evaluate(this);
 			if (temp != null) {
+				if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
+					System.out.println(expr.toString());
+				}
 				if (fTraceMode) {
 					fTraceStack.addIfEmpty(expr);
 					fTraceStack.add(temp);
@@ -770,14 +766,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				do {
 					temp = result.evaluate(this);
 					if (temp != null) {
+						if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
+							System.out.println(expr.toString());
+						}
 						if (fTraceMode) {
 							fTraceStack.add(temp);
 						}
 						result = temp;
-						if (fIterationLimit >= 0
-								&& fIterationLimit <= ++iterationCounter) {
-							IterationLimitExceeded.throwIt(iterationCounter,
-									result);
+						if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
+							IterationLimitExceeded.throwIt(iterationCounter, result);
 						}
 					}
 				} while (temp != null);
@@ -957,10 +954,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fModifiedVariablesList;
 	}
 
-//	public void serializeVariables2DB(Connection con) throws SQLException,
-//			IOException {
-//		SerializeVariables2DB.write(con, fSessionID, fModifiedVariablesList);
-//	}
+	// public void serializeVariables2DB(Connection con) throws SQLException,
+	// IOException {
+	// SerializeVariables2DB.write(con, fSessionID, fModifiedVariablesList);
+	// }
 
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr without
@@ -1024,8 +1021,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return
 	 */
 	public static Stack<IExpr> localStackCreate(final String symbolName) {
-		Map<String, Stack<IExpr>> localVariableStackMap = get()
-				.getLocalVariableStackMap();
+		Map<String, Stack<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
 		Stack<IExpr> temp = localVariableStackMap.get(symbolName);
 		if (temp != null) {
 			return temp;

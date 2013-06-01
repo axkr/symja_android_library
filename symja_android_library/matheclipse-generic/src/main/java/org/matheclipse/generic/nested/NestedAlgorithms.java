@@ -38,7 +38,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	 * according to the level specification.
 	 * 
 	 */
-	// public T apply(final T expr, final Function<T, T> function, final LevelSpec
+	// public T apply(final T expr, final Function<T, T> function, final
+	// LevelSpec
 	// level) {
 	// return apply(expr, function, level, 0);
 	// }
@@ -48,7 +49,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	 * according to the level specification.
 	 * 
 	 */
-	// public T apply(final T expr, final Function<T, T> function, final LevelSpec
+	// public T apply(final T expr, final Function<T, T> function, final
+	// LevelSpec
 	// level, final int headOffset) {
 	// L result = null;
 	// int minDepth = 0;
@@ -125,8 +127,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 	/**
 	 * Calculates the depth of an expression. Atomic expressions (no sublists)
-	 * have depth <code>1</code> Example: the nested list <code>[x,[y]]</code> has
-	 * depth <code>3</code>
+	 * have depth <code>1</code> Example: the nested list <code>[x,[y]]</code>
+	 * has depth <code>3</code>
 	 * 
 	 */
 	public int depth(final L list) {
@@ -135,8 +137,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 	/**
 	 * Calculates the depth of an expression. Atomic expressions (no sublists)
-	 * have depth <code>1</code> Example: the nested list <code>[x,[y]]</code> has
-	 * depth <code>3</code>
+	 * have depth <code>1</code> Example: the nested list <code>[x,[y]]</code>
+	 * has depth <code>3</code>
 	 * 
 	 * @param headOffset
 	 * 
@@ -156,14 +158,15 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	}
 
 	/**
-	 * Traverse all <code>list</code> element's and filter out the element in the
-	 * given <code>positions</code> list.
+	 * Traverse all <code>list</code> element's and filter out the element in
+	 * the given <code>positions</code> list.
 	 * 
 	 * @param list
 	 * @param positions
 	 * @param positionConverter
-	 *          the <code>positionConverter</code> creates an <code>int</code>
-	 *          value from the given position objects in <code>positions</code>.
+	 *            the <code>positionConverter</code> creates an <code>int</code>
+	 *            value from the given position objects in
+	 *            <code>positions</code>.
 	 * @param headOffsez
 	 */
 	public T extract(final L list, final List<? extends T> positions, final IPositionConverter<? super T> positionConverter) {
@@ -171,14 +174,15 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	}
 
 	/**
-	 * Traverse all <code>list</code> element's and filter out the elements in the
-	 * given <code>positions</code> list.
+	 * Traverse all <code>list</code> element's and filter out the elements in
+	 * the given <code>positions</code> list.
 	 * 
 	 * @param list
 	 * @param positions
 	 * @param positionConverter
-	 *          the <code>positionConverter</code> creates an <code>int</code>
-	 *          value from the given position objects in <code>positions</code>.
+	 *            the <code>positionConverter</code> creates an <code>int</code>
+	 *            value from the given position objects in
+	 *            <code>positions</code>.
 	 * @param headOffsez
 	 */
 	public T extract(final L list, final List<? extends T> positions, final IPositionConverter<? super T> positionConverter,
@@ -205,8 +209,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	}
 
 	/**
-	 * Traverse all <code>nestedListElement</code>'s and add the matching elements
-	 * to the <code>resultCollection</code>.
+	 * Traverse all <code>nestedListElement</code>'s and add the matching
+	 * elements to the <code>resultCollection</code>.
 	 * 
 	 * @param nestedListElement
 	 * @param matcher
@@ -219,8 +223,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	}
 
 	/**
-	 * Traverse all <code>nestedListElement</code>'s and add the matching elements
-	 * to the <code>resultCollection</code>.
+	 * Traverse all <code>nestedListElement</code>'s and add the matching
+	 * elements to the <code>resultCollection</code>.
 	 * 
 	 * @param nestedListElement
 	 * @param matcher
@@ -322,8 +326,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	}
 
 	/**
-	 * Add all expressions according to the level specification <code>level</code>
-	 * to the <code>resultCollection</code>
+	 * Add all expressions according to the level specification
+	 * <code>level</code> to the <code>resultCollection</code>
 	 * 
 	 * @param <T>
 	 * @param expr
@@ -336,8 +340,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	// }
 
 	/**
-	 * Add all expressions according to the level specification <code>level</code>
-	 * to the <code>resultCollection</code>
+	 * Add all expressions according to the level specification
+	 * <code>level</code> to the <code>resultCollection</code>
 	 * 
 	 * @param <T>
 	 * @param expr
@@ -376,7 +380,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	// return resultCollection;
 	// }
 
-	// public void total(final T expr, final LevelSpec level, final Function<T, T>
+	// public void total(final T expr, final LevelSpec level, final Function<T,
+	// T>
 	// function, int headOffset) {
 	// int minDepth = 0;
 	// level.incCurrentLevel();
@@ -403,9 +408,9 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 	/**
 	 * Add the positions to the <code>resultCollection</code> where the matching
-	 * expressions appear in <code>list</code>. The <code>positionConverter</code>
-	 * converts the <code>int</code> position into an object for the
-	 * <code>resultCollection</code>.
+	 * expressions appear in <code>list</code>. The
+	 * <code>positionConverter</code> converts the <code>int</code> position
+	 * into an object for the <code>resultCollection</code>.
 	 * 
 	 * @param list
 	 * @param prototypeList
@@ -421,9 +426,9 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 	/**
 	 * Add the positions to the <code>resultCollection</code> where the matching
-	 * expressions appear in <code>list</code>. The <code>positionConverter</code>
-	 * converts the <code>int</code> position into an object for the
-	 * <code>resultCollection</code>.
+	 * expressions appear in <code>list</code>. The
+	 * <code>positionConverter</code> converts the <code>int</code> position
+	 * into an object for the <code>resultCollection</code>.
 	 * 
 	 * @param list
 	 * @param prototypeList
@@ -530,9 +535,7 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 				temp = replaceAll(nestedList.get(i), from, to);
 				if (temp != null) {
-					if (result == null) {
-						result = clone(nestedList);
-					}
+					result = clone(nestedList);
 					result.set(i, temp);
 				} else {
 					return null;
@@ -545,8 +548,8 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 
 	/**
 	 * Replace all elements in the <code>from</code> list, found in expression
-	 * <i>expr</i> with the corresponding elements in the <code>to</code> list. If
-	 * no replacement is found return <code>null</code>
+	 * <i>expr</i> with the corresponding elements in the <code>to</code> list.
+	 * If no replacement is found return <code>null</code>
 	 * 
 	 * @param <T>
 	 * @param expr

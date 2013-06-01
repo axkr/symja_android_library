@@ -15,6 +15,9 @@ public class Part implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
+//			if (ast.get(1) == F.Null) {
+//				System.out.println("Part argument is null");
+//			}
 			if (ast.get(1).isAST()) {
 				return getPart(ast.getAST(1), ast, 2);
 			}
@@ -23,6 +26,7 @@ public class Part implements IFunctionEvaluator {
 	}
 
 	private IExpr getPart(final IExpr expr1, final IAST ast, int pos) {
+		
 		if (!expr1.isAST()) {
 			throw new WrongArgumentType(ast, expr1, pos, "Wrong argument for Part[] function. Function or list expected.");
 		}

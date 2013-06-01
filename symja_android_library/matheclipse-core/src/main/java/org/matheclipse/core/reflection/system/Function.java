@@ -1,21 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Slot;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Predicate;
 
 public class Function implements IFunctionEvaluator {
 
