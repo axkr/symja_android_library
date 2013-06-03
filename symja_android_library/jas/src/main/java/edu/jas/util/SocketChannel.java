@@ -1,5 +1,5 @@
 /*
- * $Id: SocketChannel.java 2771 2009-08-05 20:10:49Z kredel $
+ * $Id$
  */
 
 //package edu.unima.ky.parallel;

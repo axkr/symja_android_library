@@ -1,5 +1,5 @@
 /*
- * $Id: ModIntegerRing.java 4105 2012-08-18 10:20:41Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;

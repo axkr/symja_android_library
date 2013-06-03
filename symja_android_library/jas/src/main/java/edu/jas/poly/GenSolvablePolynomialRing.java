@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomialRing.java 4139 2012-08-26 10:24:29Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -23,7 +23,7 @@ import edu.jas.structure.RingFactory;
 
 /**
  * GenSolvablePolynomialRing generic solvable polynomial factory implementing
- * RingFactory and extending GenPolynomialRing factory; Factory for n-variate
+ * RingFactory and extending GenPolynomialRing factory. Factory for n-variate
  * ordered solvable polynomials over C. The non-commutative multiplication
  * relations are maintained in a relation table. Almost immutable object, except
  * variable names and relation table contents.
@@ -119,6 +119,18 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      */
     public GenSolvablePolynomialRing(RingFactory<C> cf, int n, TermOrder t, String[] v) {
         this(cf, n, t, v, null);
+    }
+
+
+    /**
+     * The constructor creates a solvable polynomial factory object with the
+     * given term order and commutative relations.
+     * @param cf factory for coefficients of type C.
+     * @param t a term order.
+     * @param v names for the variables.
+     */
+    public GenSolvablePolynomialRing(RingFactory<C> cf, TermOrder t, String[] v) {
+        this(cf, v.length, t, v, null);
     }
 
 
@@ -333,7 +345,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
                 }
             }
         }
-        return true;
+        return coFac.isAssociative();
     }
 
 
@@ -654,6 +666,37 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         spfac.partial = partial;
         spfac.table.reverse(this.table);
         return spfac;
+    }
+
+
+    /**
+     * Recursive representation as polynomial ring with i main variables.
+     * @param i number of main variables.
+     * @return recursive polynomial ring factory.
+     */
+    @Override
+    public GenSolvablePolynomialRing<GenPolynomial<C>> recursive(int i) {
+        if (i <= 0 || i >= nvar) {
+            throw new IllegalArgumentException("wrong: 0 < " + i + " < " + nvar);
+        }
+        GenSolvablePolynomialRing<C> cfac = contract(i);
+        //System.out.println("cvars = " + Arrays.toString(cfac.vars));
+        //System.out.println("vars = " + Arrays.toString(vars));
+        String[] v = null;
+        if (vars != null) {
+            v = new String[i];
+            int k = 0;
+            for (int j = nvar - i; j < nvar; j++) {
+                v[k++] = vars[j];
+            }
+        }
+        //System.out.println("v = " + Arrays.toString(v));
+        TermOrder to = tord.contract(0, i); // ??
+        RecSolvablePolynomialRing<C> pfac = new RecSolvablePolynomialRing<C>(cfac, i, to, v);
+        //System.out.println("pfac = " + pfac.toScript());
+        pfac.table.recursive(table);
+        pfac.coeffTable.recursive(table);
+        return pfac;
     }
 
 }

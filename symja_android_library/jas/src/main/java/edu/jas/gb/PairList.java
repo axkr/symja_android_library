@@ -1,5 +1,5 @@
 /*
- * $Id: PairList.java 3372 2010-11-28 16:42:48Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -71,6 +71,13 @@ public interface PairList<C extends RingElem<C> > {
      * @return true if a next pair could exist, otherwise false.
      */
     public boolean hasNext();
+
+
+    /**
+     * Get the size of the list of polynomials.
+     * @return size of the polynomial list.
+     */
+    public int size();
 
 
     /**

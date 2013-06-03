@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBase.java 2412 2009-02-07 12:17:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -8,14 +8,12 @@ package edu.jas.gb;
 import java.util.List;
 
 import edu.jas.poly.GenSolvablePolynomial;
-
 import edu.jas.structure.RingElem;
 
 
 /**
- * Solvable Groebner Bases interface.
- * Defines methods for left, right and twosided Groebner bases 
- * and left, right and twosided GB tests.
+ * Solvable Groebner Bases interface. Defines methods for left, right and
+ * twosided Groebner bases and left, right and twosided GB tests.
  * @param <C> coefficient type
  * @author Heinz Kredel.
  */
@@ -54,8 +52,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param Fp solvable polynomial list.
      * @return true, if Fp is a two-sided Groebner base, else false.
      */
-    public boolean isTwosidedGB(int modv, 
-                                List<GenSolvablePolynomial<C>> Fp);
+    public boolean isTwosidedGB(int modv, List<GenSolvablePolynomial<C>> Fp);
 
 
     /**
@@ -80,8 +77,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param F solvable polynomial list.
      * @return leftGB(F) a left Groebner base of F.
      */
-    public List<GenSolvablePolynomial<C>> 
-               leftGB(List<GenSolvablePolynomial<C>> F);
+    public List<GenSolvablePolynomial<C>> leftGB(List<GenSolvablePolynomial<C>> F);
 
 
     /**
@@ -90,18 +86,15 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param F solvable polynomial list.
      * @return leftGB(F) a left Groebner base of F.
      */
-    public List<GenSolvablePolynomial<C>> 
-           leftGB(int modv, 
-                  List<GenSolvablePolynomial<C>> F);
+    public List<GenSolvablePolynomial<C>> leftGB(int modv, List<GenSolvablePolynomial<C>> F);
 
 
-    /** 
+    /**
      * Solvable Extended Groebner base using critical pair class.
      * @param F solvable polynomial list.
      * @return a container for an extended left Groebner base of F.
      */
-    public SolvableExtendedGB<C>  
-           extLeftGB( List<GenSolvablePolynomial<C>> F );
+    public SolvableExtendedGB<C> extLeftGB(List<GenSolvablePolynomial<C>> F);
 
 
     /**
@@ -110,9 +103,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param F solvable polynomial list.
      * @return a container for an extended left Groebner base of F.
      */
-    public SolvableExtendedGB<C> 
-           extLeftGB( int modv, 
-                      List<GenSolvablePolynomial<C>> F );
+    public SolvableExtendedGB<C> extLeftGB(int modv, List<GenSolvablePolynomial<C>> F);
 
 
     /**
@@ -120,8 +111,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param Gp a left Groebner base.
      * @return leftGBmi(F) a minimal left Groebner base of Gp.
      */
-    public List<GenSolvablePolynomial<C>> 
-           leftMinimalGB(List<GenSolvablePolynomial<C>> Gp);
+    public List<GenSolvablePolynomial<C>> leftMinimalGB(List<GenSolvablePolynomial<C>> Gp);
 
 
     /**
@@ -129,8 +119,8 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param Fp solvable polynomial list.
      * @return tsGB(Fp) a twosided Groebner base of Fp.
      */
-    public List<GenSolvablePolynomial<C>> 
-           twosidedGB(List<GenSolvablePolynomial<C>> Fp);
+    public List<GenSolvablePolynomial<C>> twosidedGB(List<GenSolvablePolynomial<C>> Fp);
+
 
     /**
      * Twosided Groebner base using pairlist class.
@@ -138,9 +128,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param Fp solvable polynomial list.
      * @return tsGB(Fp) a twosided Groebner base of Fp.
      */
-    public List<GenSolvablePolynomial<C>> 
-           twosidedGB(int modv, 
-                      List<GenSolvablePolynomial<C>> Fp);
+    public List<GenSolvablePolynomial<C>> twosidedGB(int modv, List<GenSolvablePolynomial<C>> Fp);
 
 
     /**
@@ -148,8 +136,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param F solvable polynomial list.
      * @return rightGB(F) a right Groebner base of F.
      */
-    public List<GenSolvablePolynomial<C>> 
-           rightGB(List<GenSolvablePolynomial<C>> F);
+    public List<GenSolvablePolynomial<C>> rightGB(List<GenSolvablePolynomial<C>> F);
 
 
     /**
@@ -158,9 +145,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param F solvable polynomial list.
      * @return rightGB(F) a right Groebner base of F.
      */
-    public List<GenSolvablePolynomial<C>> 
-           rightGB(int modv, 
-                   List<GenSolvablePolynomial<C>> F);
+    public List<GenSolvablePolynomial<C>> rightGB(int modv, List<GenSolvablePolynomial<C>> F);
 
 
     /**
@@ -168,8 +153,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param exgb an SolvableExtendedGB container.
      * @return true, if exgb contains a left reduction matrix, else false.
      */
-    public boolean
-           isLeftReductionMatrix(SolvableExtendedGB<C> exgb);  
+    public boolean isLeftReductionMatrix(SolvableExtendedGB<C> exgb);
 
 
     /**
@@ -180,10 +164,7 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> {
      * @param Mg a possible left reduction matrix.
      * @return true, if Mg and Mf are left reduction matrices, else false.
      */
-    public boolean
-           isLeftReductionMatrix(List<GenSolvablePolynomial<C>> F, 
-                                 List<GenSolvablePolynomial<C>> G,
-                                 List<List<GenSolvablePolynomial<C>>> Mf,  
-                                 List<List<GenSolvablePolynomial<C>>> Mg);  
+    public boolean isLeftReductionMatrix(List<GenSolvablePolynomial<C>> F, List<GenSolvablePolynomial<C>> G,
+                    List<List<GenSolvablePolynomial<C>>> Mf, List<List<GenSolvablePolynomial<C>>> Mg);
 
 }

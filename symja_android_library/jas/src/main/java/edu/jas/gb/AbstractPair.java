@@ -1,5 +1,5 @@
 /*
- * $Id: AbstractPair.java 3416 2010-12-19 15:45:06Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -25,6 +25,7 @@ public abstract class AbstractPair<C extends RingElem<C> >
     public final GenPolynomial<C> pj;
     public final int i;
     public final int j;
+    protected int s;
 
 
     /**
@@ -42,6 +43,20 @@ public abstract class AbstractPair<C extends RingElem<C> >
 
     /**
      * AbstractPair constructor.
+     * @param a polynomial i.
+     * @param b polynomial j.
+     * @param i first index.
+     * @param j second index.
+     * @param s maximal index.
+     */
+    public AbstractPair(GenPolynomial<C> a, GenPolynomial<C> b, 
+                        int i, int j, int s) {
+        this(a.leadingExpVector().lcm(b.leadingExpVector()),a,b,i,j,s); 
+    }
+
+
+    /**
+     * AbstractPair constructor.
      * @param lcm least common multiple of lt(a) and lt(b).
      * @param a polynomial i.
      * @param b polynomial j.
@@ -50,11 +65,40 @@ public abstract class AbstractPair<C extends RingElem<C> >
      */
     public AbstractPair(ExpVector lcm, GenPolynomial<C> a, GenPolynomial<C> b, 
                         int i, int j) {
+        this(lcm,a,b,i,j,0); 
+    }
+
+
+    /**
+     * AbstractPair constructor.
+     * @param lcm least common multiple of lt(a) and lt(b).
+     * @param a polynomial i.
+     * @param b polynomial j.
+     * @param i first index.
+     * @param j second index.
+     * @param s maximal index.
+     */
+    public AbstractPair(ExpVector lcm, GenPolynomial<C> a, GenPolynomial<C> b, 
+                        int i, int j, int s) {
         e = lcm;
         pi = a; 
         pj = b; 
         this.i = i; 
         this.j = j;
+        s = Math.max(i,s);
+        s = Math.max(j,s);
+        this.s = s;
+    }
+
+
+    /**
+     * Set maximal index.
+     * @param s maximal index for pair polynomials.
+     */
+    public void maxIndex(int s) {
+        s = Math.max(this.i,s);
+        s = Math.max(this.j,s);
+        this.s = s;
     }
 
 
@@ -63,7 +107,7 @@ public abstract class AbstractPair<C extends RingElem<C> >
      */
     @Override
     public String toString() {
-        return "pair(" + i + "," + j + "{" + pi.length() + "," + pj.length() + "},"
+        return "pair(" + i + "," + j + "," + s + ",{" + pi.length() + "," + pj.length() + "},"
                        + e + ")";
     }
 

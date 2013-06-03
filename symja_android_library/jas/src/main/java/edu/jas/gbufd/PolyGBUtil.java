@@ -1,5 +1,5 @@
 /*
- * $Id: PolyGBUtil.java 4049 2012-07-25 17:10:49Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;

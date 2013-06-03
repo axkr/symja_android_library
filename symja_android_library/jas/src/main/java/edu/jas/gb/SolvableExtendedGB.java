@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableExtendedGB.java 3451 2010-12-27 12:45:18Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;

@@ -1,5 +1,5 @@
 /*
- * $Id: HenselUtil.java 4115 2012-08-19 13:18:59Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -38,7 +38,7 @@ public class HenselUtil {
     private static final Logger logger = Logger.getLogger(HenselUtil.class);
 
 
-    private static final boolean debug = logger.isInfoEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -921,12 +921,14 @@ public class HenselUtil {
         GenPolynomial<ModInteger> cp = PolyUtil.<ModInteger> fromIntegerCoefficients(mfac, C);
         if (!cp.equals(cl)) {
             System.out.println("Hensel precondition wrong!");
-            System.out.println("cl      = " + cl);
-            System.out.println("cp      = " + cp);
-            System.out.println("mon(cl) = " + cl.monic());
-            System.out.println("mon(cp) = " + cp.monic());
-            System.out.println("cp-cl   = " + cp.subtract(cl));
-            System.out.println("M       = " + M + ", p = " + p);
+            if (debug) {
+                System.out.println("cl      = " + cl);
+                System.out.println("cp      = " + cp);
+                System.out.println("mon(cl) = " + cl.monic());
+                System.out.println("mon(cp) = " + cp.monic());
+                System.out.println("cp-cl   = " + cp.subtract(cl));
+                System.out.println("M       = " + M + ", p = " + p);
+            }
             return false;
         }
 
@@ -1094,7 +1096,7 @@ public class HenselUtil {
         T = PolyUtil.<MOD> fromIntegerCoefficients(mfac, Ti);
         //System.out.println("S = " + S + ": " + S.ring.coFac);
         //System.out.println("T = " + T + ": " + T.ring.coFac);
-        if ( debug ) {
+        if ( true || debug ) {
             List<GenPolynomial<MOD>> AP = new ArrayList<GenPolynomial<MOD>>();
             AP.add(B); AP.add(A);
             List<GenPolynomial<MOD>> SP = new ArrayList<GenPolynomial<MOD>>();
@@ -1443,12 +1445,14 @@ public class HenselUtil {
         if ( t.equals(C) ) {
             return true;
         }
-        System.out.println("a  = " + a);
-        System.out.println("b  = " + b);
-        System.out.println("s1 = " + s1);
-        System.out.println("s2 = " + s2);
-        System.out.println("t  = " + t);
-        System.out.println("C  = " + C);
+        if (debug) {
+            System.out.println("a  = " + a);
+            System.out.println("b  = " + b);
+            System.out.println("s1 = " + s1);
+            System.out.println("s2 = " + s2);
+            System.out.println("t  = " + t);
+            System.out.println("C  = " + C);
+        }
         return false;
     }
 
@@ -1507,12 +1511,14 @@ public class HenselUtil {
             t = t.sum(s);
         }
         if (!t.equals(C)) {
-            System.out.println("no diophant lift!");
-            System.out.println("A = " + A);
-            System.out.println("B = " + B);
-            System.out.println("S = " + S);
-            System.out.println("C = " + C);
-            System.out.println("t = " + t);
+            if (debug) { 
+                System.out.println("no diophant lift!");
+                System.out.println("A = " + A);
+                System.out.println("B = " + B);
+                System.out.println("S = " + S);
+                System.out.println("C = " + C);
+                System.out.println("t = " + t);
+            }
             return false;
         }
         return true;
@@ -1571,7 +1577,7 @@ public class HenselUtil {
 
         List<GenPolynomial<MOD>> S = liftExtendedEuclidean(F, k + 1); // lift works for any k, TODO: use this
         //System.out.println("Sext = " + S);
-        if (debug) {
+        if (true || debug) {
             logger.info("EE lift = " + S);
             // adjust coefficients
             List<GenPolynomial<MOD>> Sx = PolyUtil.fromIntegerCoefficients(pfac, PolyUtil
@@ -1726,14 +1732,17 @@ public class HenselUtil {
 
         // inplace modify polynomials, replace leading coefficient
         for ( GenPolynomial<BigInteger> ai : Fi ) {
-             ExpVector ea = ai.leadingExpVector();
-             ai.doPutToMap(ea, cc);
+	    if ( ai.isZERO() ) {
+                continue;
+            }
+            ExpVector ea = ai.leadingExpVector();
+            ai.doPutToMap(ea, cc);
         }
         //System.out.println("Fi = " + Fi);
 
         List<GenPolynomial<MOD>> S = liftExtendedEuclidean(F, k + 1); // lift works for any k, TODO: use this
         //System.out.println("Sext = " + S);
-        if (debug) {
+        if (true || debug) {
             logger.info("EE lift = " + S);
             // adjust coefficients
             List<GenPolynomial<MOD>> Sx = PolyUtil.fromIntegerCoefficients(pfac, PolyUtil

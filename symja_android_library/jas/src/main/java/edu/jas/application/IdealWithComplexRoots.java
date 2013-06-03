@@ -1,5 +1,5 @@
 /*
- * $Id: IdealWithComplexRoots.java 4050 2012-07-25 17:14:32Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

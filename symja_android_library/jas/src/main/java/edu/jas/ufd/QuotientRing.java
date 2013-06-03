@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 4067 2012-07-27 16:17:35Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -341,12 +341,12 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
 
 
     /**
-     * Generate a random residum polynomial.
+     * Generate a random quotient polynomial.
      * @param k bitsize of random coefficients.
      * @param l number of terms.
      * @param d maximal degree in each variable.
      * @param q density of nozero exponents.
-     * @return a random residue polynomial.
+     * @return a random quotient polynomial.
      */
     public Quotient<C> random(int k, int l, int d, float q) {
         GenPolynomial<C> r = ring.random(k, l, d, q).monic();
@@ -362,7 +362,7 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
      * Quotient random.
      * @param n such that 0 &le; v &le; (2<sup>n</sup>-1).
      * @param rnd is a source for random bits.
-     * @return a random residue element.
+     * @return a random quotient element.
      */
     public Quotient<C> random(int n, Random rnd) {
         GenPolynomial<C> r = ring.random(n, rnd).monic();

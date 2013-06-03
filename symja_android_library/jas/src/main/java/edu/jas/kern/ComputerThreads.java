@@ -1,5 +1,5 @@
 /*
- * $Id: ComputerThreads.java 3295 2010-08-26 17:01:10Z kredel $
+ * $Id$
  */
 
 package edu.jas.kern;

@@ -1,5 +1,5 @@
 /*
- * $Id: RealAlgebraicRing.java 3947 2012-05-28 10:50:47Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

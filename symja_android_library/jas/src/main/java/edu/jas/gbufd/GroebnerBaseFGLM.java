@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseFGLM.java 4061 2012-07-27 12:03:20Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;
@@ -28,6 +28,9 @@ import edu.jas.structure.RingFactory;
  * via FGLM algorithm.
  * @param <C> coefficient type
  * @author Jan Suess
+ *
+ * @see edu.jas.application.GBAlgorithmBuilder
+ * @see edu.jas.gbufd.GBFactory
  */
 public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
 
@@ -39,10 +42,17 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
 
 
     /**
+     * The backing GB algorithm implementation.
+     */
+    private GroebnerBaseAbstract<C> sgb;
+
+
+    /**
      * Constructor.
      */
     public GroebnerBaseFGLM() {
         super();
+        sgb = null;
     }
 
 
@@ -52,6 +62,7 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
      */
     public GroebnerBaseFGLM(Reduction<C> red) {
         super(red);
+        sgb = null;
     }
 
 
@@ -62,6 +73,29 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
      */
     public GroebnerBaseFGLM(Reduction<C> red, PairList<C> pl) {
         super(red, pl);
+        sgb = null;
+    }
+
+
+    /**
+     * Constructor.
+     * @param red Reduction engine
+     * @param pl pair selection strategy
+     * @param gb backing GB algorithm.
+     */
+    public GroebnerBaseFGLM(Reduction<C> red, PairList<C> pl, GroebnerBaseAbstract<C> gb) {
+        super(red, pl);
+        sgb = gb;
+    }
+
+
+    /**
+     * Constructor.
+     * @param gb backing GB algorithm.
+     */
+    public GroebnerBaseFGLM(GroebnerBaseAbstract<C> gb) {
+        super();
+        sgb = gb;
     }
 
 
@@ -97,7 +131,9 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
             Fp.add(g);
         }
         // compute graded term order Groebner base
-        GroebnerBaseAbstract<C> sgb = GBFactory.<C> getImplementation(pfac.coFac);
+        if (sgb == null) {
+            sgb = GBFactory.<C> getImplementation(pfac.coFac);
+        }
         List<GenPolynomial<C>> Gp = sgb.GB(modv, Fp);
         logger.info("graded GB = " + Gp);
         if (tord.equals(pfac.tord)) {
@@ -118,9 +154,9 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
 
 
     /**
-     * Algorithm CONVGROEBNER: Converts Groebnerbases w.r.t. total degree
-     * termorder into Groebnerbase w.r.t to inverse lexicographical termorder
-     * @return Groebnerbase w.r.t to inverse lexicographical termorder
+     * Algorithm CONVGROEBNER: Converts Groebner bases w.r.t. total degree
+     * termorder into Groebner base w.r.t to inverse lexicographical term order
+     * @return Groebner base w.r.t to inverse lexicographical term order
      */
     public List<GenPolynomial<C>> convGroebnerToLex(List<GenPolynomial<C>> groebnerBasis) {
         if (groebnerBasis == null || groebnerBasis.size() == 0) {
@@ -226,10 +262,10 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
 
 
     /**
-     * Algorithm lMinterm: MINTERM algorithm for inverse lexicographical
-     * termorder.
+     * Algorithm lMinterm: MINTERM algorithm for inverse lexicographical term
+     * order.
      * @param t Term
-     * @param G Groebnerbasis
+     * @param G Groebner basis
      * @return Term that specifies condition (D) or null (Condition (D) in
      *         "A computational approach to commutative algebra", Becker,
      *         Weispfenning, Kredel, 1993, p. 427)
@@ -359,6 +395,28 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
             }
         }
         return maximum;
+    }
+
+
+    /**
+     * Cleanup and terminate ThreadPool.
+     */
+    public void terminate() {
+        if ( sgb == null ) {
+            return;
+        }
+        sgb.terminate();
+    }
+
+
+    /**
+     * Cancel ThreadPool.
+     */
+    public int cancel() {
+        if ( sgb == null ) {
+            return 0;
+        }
+        return sgb.cancel();
     }
 
 }

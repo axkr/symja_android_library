@@ -1,5 +1,5 @@
 /*
- * $Id: FactorAlgebraicPrim.java 4110 2012-08-19 12:02:16Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseSeq.java 3420 2010-12-19 21:34:25Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -23,6 +23,9 @@ import edu.jas.poly.GenPolynomialRing;
  * Implements Groebner bases and GB test.
  * @param <C> coefficient type
  * @author Heinz Kredel
+ *
+ * @see edu.jas.application.GBAlgorithmBuilder
+ * @see edu.jas.gbufd.GBFactory
  */
 
 public class GroebnerBaseSeq<C extends RingElem<C>> 
@@ -46,6 +49,15 @@ public class GroebnerBaseSeq<C extends RingElem<C>>
      */
     public GroebnerBaseSeq(Reduction<C> red) {
         super(red);
+    }
+
+
+    /**
+     * Constructor.
+     * @param pl pair selection strategy
+     */
+    public GroebnerBaseSeq(PairList<C> pl) {
+        super(pl);
     }
 
 
@@ -145,6 +157,8 @@ public class GroebnerBaseSeq<C extends RingElem<C>>
               H = H.monic();
               if ( H.isONE() ) {
                   G.clear(); G.add( H );
+                  pairlist.putOne();
+                  logger.info("end " + pairlist); 
                   return G; // since no threads are activated
               }
               if ( debug ) {
@@ -156,9 +170,9 @@ public class GroebnerBaseSeq<C extends RingElem<C>>
                  pairlist.put( H );
               }
         }
-        logger.debug("#sequential list = "+G.size());
+        logger.debug("#sequential list = " + G.size());
         G = minimalGB(G);
-        logger.info("" + pairlist); 
+        logger.info("end " + pairlist); 
         return G;
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: FactorInteger.java 4115 2012-08-19 13:18:59Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -1236,17 +1236,17 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         //System.out.println("pd = " + pd);
         logger.info("multivariate modulo p^k: " + pq);
 
-        List<MOD> Vm = new ArrayList<MOD>(V.size());
-        for (BigInteger v : V) {
-            MOD vm = muqfac.fromInteger(v.getVal());
-            Vm.add(vm);
-        }
+        //List<MOD> Vm = new ArrayList<MOD>(V.size());
+        //for (BigInteger v : V) {
+        //    MOD vm = muqfac.fromInteger(v.getVal());
+        //    Vm.add(vm);
+        //}
         //System.out.println("Vm = " + Vm);
 
         // Hensel lifting of factors
         List<GenPolynomial<MOD>> mlift;
         try {
-            mlift = HenselMultUtil.<MOD> liftHensel(pd, pq, muqfactors, Vm, k, lf);
+            mlift = HenselMultUtil.<MOD> liftHensel(pd, pq, muqfactors, V, k, lf);
             logger.info("mlift = " + mlift);
         } catch (NoLiftingException nle) {
             //System.out.println("exception : " + nle);

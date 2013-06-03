@@ -1,5 +1,5 @@
 /*
- * $Id: StandardBaseSeq.java 3349 2010-10-15 20:54:27Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

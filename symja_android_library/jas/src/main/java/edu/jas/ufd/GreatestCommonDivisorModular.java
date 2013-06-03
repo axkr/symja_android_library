@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorModular.java 4111 2012-08-19 12:30:30Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;

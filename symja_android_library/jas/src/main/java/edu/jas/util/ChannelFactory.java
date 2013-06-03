@@ -1,5 +1,5 @@
 /*
- * $Id: ChannelFactory.java 3297 2010-08-26 19:09:03Z kredel $
+ * $Id$
  */
 
 //package edu.unima.ky.parallel;
@@ -34,6 +34,9 @@ public class ChannelFactory extends Thread {
     private static final Logger logger = Logger.getLogger(ChannelFactory.class);
 
 
+    private final boolean debug = logger.isDebugEnabled();
+
+
     /**
      * default port of socket.
      */
@@ -49,7 +52,6 @@ public class ChannelFactory extends Thread {
     /**
      * BoundedBuffer for sockets.
      */
-    //private BoundedBuffer buf = new BoundedBuffer(100);
     private final BlockingQueue<SocketChannel> buf;
 
 
@@ -84,7 +86,6 @@ public class ChannelFactory extends Thread {
      * @param p port.
      */
     public ChannelFactory(int p) {
-        // buf = new ArrayBlockingQueue<SocketChannel>(100); 
         buf = new LinkedBlockingQueue<SocketChannel>(/*infinite*/);
         if (p <= 0) {
             port = DEFAULT_PORT;
@@ -98,6 +99,9 @@ public class ChannelFactory extends Thread {
         } catch (BindException e) {
             srv = null;
             logger.warn("server not started, port used " + port);
+            if (debug) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             logger.debug("IOException " + e);
             if (logger.isDebugEnabled()) {
@@ -171,9 +175,14 @@ public class ChannelFactory extends Thread {
                 System.out.println("Server on " + h + " not ready in " + delay + "ms");
                 try {
                     Thread.sleep(delay);
+                    if (i % 50 == 0 && debug) {
+                        throw new Exception("time wait, host = " + h + ", port = " + port);
+                    }
                 } catch (InterruptedException w) {
                     Thread.currentThread().interrupt();
                     throw new IOException("Interrupted during IO wait " + w);
+                } catch (Exception ee) { // debug only
+                    ee.printStackTrace();
                 }
             }
         }

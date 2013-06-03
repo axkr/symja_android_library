@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedMinPairlist.java 3418 2010-12-19 17:54:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -190,7 +190,11 @@ public class OrderedMinPairlist<C extends RingElem<C> > extends OrderedPairlist<
         if ( ! c ) {
             pair = null;
         } else {
+            pair.maxIndex(P.size()-1);
             remCount++; // count only real pairs
+            if ( logger.isDebugEnabled() ) {
+                logger.info("pair(" + pair.j + "," + pair.i + ")");
+            }
         }
         return pair; 
     }

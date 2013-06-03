@@ -1,5 +1,5 @@
 /*
- * $Id: GBProxy.java 4045 2012-07-25 16:48:23Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -50,6 +50,8 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
 
     /**
      * Proxy constructor.
+     * @param e1 Groebner base engine.
+     * @param e2 Groebner base engine.
      */
     public GBProxy(GroebnerBaseAbstract<C> e1, GroebnerBaseAbstract<C> e2) {
         this.e1 = e1;
@@ -65,13 +67,14 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
      */
     @Override
     public String toString() {
-        return "GBProxy[ " + e1.getClass().getName() + ", " + e2.getClass().getName() + " ]";
+        return "GBProxy[ " + e1.toString() + ", " + e2.toString() + " ]";
     }
 
 
     /**
      * Cleanup and terminate ThreadPool.
      */
+    @Override
     public void terminate() {
         e1.terminate();
         e2.terminate();
@@ -81,6 +84,7 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
     /**
      * Cancel ThreadPool.
      */
+    @Override
     public int cancel() {
         int s = e1.cancel();
         s += e2.cancel();

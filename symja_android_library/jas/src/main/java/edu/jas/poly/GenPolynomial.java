@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4148 2012-08-31 19:49:27Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -184,6 +184,27 @@ Iterable<Monomial<C>> {
         }
         if (!c.isZERO()) {
             val.put(e, c);
+        }
+    }
+
+
+    /**
+     * Remove an ExpVector to coefficient entry from the internal map of this
+     * GenPolynomial. <b>Note:</b> Do not use this method unless you are
+     * constructing a new polynomial. this is modified and breaks the
+     * immutability promise of this class.
+     * @param e exponent.
+     * @param c expected coefficient, null for ignore.
+     */
+    public void doRemoveFromMap(ExpVector e, C c) {
+        C b = val.remove(e);
+        if (debug) {
+            if ( c == null ) { // ignore b
+                return;
+            }
+            if ( ! c.equals(b) ) {
+                logger.error("map entry wrong " + e + " to " + c + " old " + b);
+            }
         }
     }
 
@@ -661,7 +682,9 @@ Iterable<Monomial<C>> {
         ExpVector lt = ai.next();
         lt = ai.next(); // size > 1
         SortedMap<ExpVector, C> red = val.tailMap(lt);
-        return new GenPolynomial<C>(ring, red);
+        GenPolynomial<C> r = ring.getZERO().copy();
+        r.doPutToMap(red); //  new GenPolynomial<C>(ring, red);
+        return r;
     }
 
 
@@ -908,7 +931,7 @@ Iterable<Monomial<C>> {
         if (a.isZERO()) {
             return this;
         }
-        GenPolynomial<C> n = this.copy(); //new GenPolynomial<C>(ring, val); 
+        GenPolynomial<C> n = this.copy(); 
         SortedMap<ExpVector, C> nv = n.val;
         C x = nv.get(e);
         if (x != null) {
@@ -933,6 +956,193 @@ Iterable<Monomial<C>> {
      */
     public GenPolynomial<C> subtract(C a) {
         return subtract(a, ring.evzero);
+    }
+
+
+    /**
+     * GenPolynomial subtract a multiple.
+     * @param a coefficient.
+     * @param S GenPolynomial.
+     * @return this - a x<sup>e</sup> S.
+     */
+    public GenPolynomial<C> subtractMultiple(C a, GenPolynomial<C> S) {
+        if (a == null) {
+            return this;
+        }
+        if (a.isZERO()) {
+            return this;
+        }
+        if (S == null) {
+            return this;
+        }
+        if (S.isZERO()) {
+            return this;
+        }
+        if (this.isZERO()) {
+            return S.multiply(a.negate());
+        }
+        assert (ring.nvar == S.ring.nvar);
+        GenPolynomial<C> n = this.copy(); 
+        SortedMap<ExpVector, C> nv = n.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector f = me.getKey();
+            C y = me.getValue(); // assert y != null
+            y = a.multiply(y);
+            C x = nv.get(f);
+            if (x != null) {
+                x = x.subtract(y);
+                if (!x.isZERO()) {
+                    nv.put(f, x);
+                } else {
+                    nv.remove(f);
+                }
+            } else if ( !y.isZERO() ) {
+                nv.put(f, y.negate());
+            }
+        }
+        return n;
+    }
+
+
+    /**
+     * GenPolynomial subtract a multiple.
+     * @param a coefficient.
+     * @param e exponent.
+     * @param S GenPolynomial.
+     * @return this - a x<sup>e</sup> S.
+     */
+    public GenPolynomial<C> subtractMultiple(C a, ExpVector e, GenPolynomial<C> S) {
+        if (a == null) {
+            return this;
+        }
+        if (a.isZERO()) {
+            return this;
+        }
+        if (S == null) {
+            return this;
+        }
+        if (S.isZERO()) {
+            return this;
+        }
+        if (this.isZERO()) {
+            return S.multiply(a.negate(),e);
+        }
+        assert (ring.nvar == S.ring.nvar);
+        GenPolynomial<C> n = this.copy(); 
+        SortedMap<ExpVector, C> nv = n.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector f = me.getKey();
+            f = e.sum(f);
+            C y = me.getValue(); // assert y != null
+            y = a.multiply(y);
+            C x = nv.get(f);
+            if (x != null) {
+                x = x.subtract(y);
+                if (!x.isZERO()) {
+                    nv.put(f, x);
+                } else {
+                    nv.remove(f);
+                }
+            } else if ( !y.isZERO() ) {
+                nv.put(f, y.negate());
+            }
+        }
+        return n;
+    }
+
+
+    /**
+     * GenPolynomial scale and subtract a multiple.
+     * @param b scale factor.
+     * @param a coefficient.
+     * @param e exponent.
+     * @param S GenPolynomial.
+     * @return this * b - a x<sup>e</sup> S.
+     */
+    public GenPolynomial<C> scaleSubtractMultiple(C b, C a, ExpVector e, GenPolynomial<C> S) {
+        if (a == null || S == null) {
+            return this.multiply(b);
+        }
+        if (a.isZERO() || S.isZERO()) {
+            return this.multiply(b);
+        }
+        if (this.isZERO() || b == null || b.isZERO()) {
+            return S.multiply(a.negate(),e);
+        }
+        if (b.isONE()) {
+            return subtractMultiple(a,e,S);
+        }
+        assert (ring.nvar == S.ring.nvar);
+        GenPolynomial<C> n = this.multiply(b);
+        SortedMap<ExpVector, C> nv = n.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector f = me.getKey();
+            f = e.sum(f);
+            C y = me.getValue(); // assert y != null
+            y = a.multiply(y); // now y can be zero
+            C x = nv.get(f);
+            if (x != null) {
+                x = x.subtract(y);
+                if (!x.isZERO()) {
+                    nv.put(f, x);
+                } else {
+                    nv.remove(f);
+                }
+            } else if ( !y.isZERO() ) {
+                nv.put(f, y.negate());
+            }
+        }
+        return n;
+    }
+
+
+    /**
+     * GenPolynomial scale and subtract a multiple.
+     * @param b scale factor.
+     * @param g scale exponent.
+     * @param a coefficient.
+     * @param e exponent.
+     * @param S GenPolynomial.
+     * @return this * a x<sup>g</sup> - a x<sup>e</sup> S.
+     */
+    public GenPolynomial<C> scaleSubtractMultiple(C b, ExpVector g, C a, ExpVector e, GenPolynomial<C> S) {
+        if (a == null || S == null) {
+            return this.multiply(b,g);
+        }
+        if (a.isZERO() || S.isZERO()) {
+            return this.multiply(b,g);
+        }
+        if (this.isZERO() || b == null || b.isZERO()) {
+            return S.multiply(a.negate(),e);
+        }
+        if (b.isONE() && g.isZERO()) {
+            return subtractMultiple(a,e,S);
+        }
+        assert (ring.nvar == S.ring.nvar);
+        GenPolynomial<C> n = this.multiply(b,g);
+        SortedMap<ExpVector, C> nv = n.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector f = me.getKey();
+            f = e.sum(f);
+            C y = me.getValue(); // assert y != null
+            y = a.multiply(y); // y can be zero now
+            C x = nv.get(f);
+            if (x != null) {
+                x = x.subtract(y);
+                if (!x.isZERO()) {
+                    nv.put(f, x);
+                } else {
+                    nv.remove(f);
+                }
+            } else if ( !y.isZERO() ) {
+                nv.put(f, y.negate());
+            }
+        }
+        return n;
     }
 
 
@@ -983,7 +1193,7 @@ Iterable<Monomial<C>> {
         assert (ring.nvar == S.ring.nvar);
         if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
-            logger.warn("wrong method dispatch in JRE (S) - trying to fix");
+            logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
             GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
             GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
             return T.multiply(Sp);
@@ -1084,7 +1294,7 @@ Iterable<Monomial<C>> {
         }
         if (this instanceof GenSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
-            logger.warn("wrong method dispatch in JRE (s,e) - trying to fix");
+            logger.debug("warn: wrong method dispatch in JRE multiply(s,e) - trying to fix");
             GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
             return T.multiply(s, e);
         }
@@ -1115,7 +1325,7 @@ Iterable<Monomial<C>> {
         }
         if (this instanceof GenSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
-            logger.warn("wrong method dispatch in JRE (e) - trying to fix");
+            logger.debug("warn: wrong method dispatch in JRE multiply(e) - trying to fix");
             GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
             return T.multiply(e);
         }
@@ -1555,7 +1765,7 @@ Iterable<Monomial<C>> {
      *         return SortedMap
      */
     public Map<ExpVector, GenPolynomial<C>> contract(GenPolynomialRing<C> pfac) {
-        GenPolynomial<C> zero = pfac.getZERO();
+        GenPolynomial<C> zero = pfac.getZERO(); //not pfac.coFac;
         TermOrder t = new TermOrder(TermOrder.INVLEX);
         Map<ExpVector, GenPolynomial<C>> B = new TreeMap<ExpVector, GenPolynomial<C>>(t.getAscendComparator());
         if (this.isZERO()) {

@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomial.java 4144 2012-08-26 14:29:36Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -30,8 +30,8 @@ import edu.jas.structure.UnaryFunctor;
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
-public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWordPolynomial<C>>
-/*, Iterable<WordMonomial<C>>*/{
+public final class GenWordPolynomial<C extends RingElem<C>> 
+             implements RingElem<GenWordPolynomial<C>>, Iterable<WordMonomial<C>> {
 
 
     /**
@@ -43,7 +43,7 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
     /**
      * The data structure for polynomials.
      */
-    protected final SortedMap<Word, C> val; // do not change to TreeMap
+    final SortedMap<Word, C> val; // do not change to TreeMap
 
 
     private static final Logger logger = Logger.getLogger(GenWordPolynomial.class);
@@ -930,6 +930,36 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
 
 
     /**
+     * GenWordPolynomial multiplication. Product with coefficient ring element.
+     * @param s coefficient.
+     * @param t coefficient.
+     * @return s*this*t.
+     */
+    public GenWordPolynomial<C> multiply(C s, C t) {
+        if (s == null || t == null) {
+            return ring.getZERO();
+        }
+        if (s.isZERO()||t.isZERO()) {
+            return ring.getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        GenWordPolynomial<C> p = ring.getZERO().copy();
+        SortedMap<Word, C> pv = p.val;
+        for (Map.Entry<Word, C> m1 : val.entrySet()) {
+            C c1 = m1.getValue();
+            Word e = m1.getKey();
+            C c = s.multiply(c1).multiply(t); // check non zero if not domain
+            if (!c.isZERO()) {
+                pv.put(e, c); // or m1.setValue( c )
+            }
+        }
+        return p;
+    }
+
+
+    /**
      * GenWordPolynomial monic, i.e. leadingCoefficient == 1. If
      * leadingCoefficient is not invertible returns this unmodified.
      * @return monic(this).
@@ -982,6 +1012,32 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
     /**
      * GenWordPolynomial left and right multiplication. Product with
      * ring element and two words.
+     * @param e left word.
+     * @param f right word.
+     * @return e * this * f.
+     */
+    public GenWordPolynomial<C> multiply(Word e, Word f) {
+        if (this.isZERO()) {
+            return this;
+        }
+        if (e.isONE()) {
+            return multiply(f);
+        }
+        GenWordPolynomial<C> p = ring.getZERO().copy();
+        SortedMap<Word, C> pv = p.val;
+        for (Map.Entry<Word, C> m1 : val.entrySet()) {
+            C c = m1.getValue();
+            Word e1 = m1.getKey();
+            Word e2 = e.multiply(e1.multiply(f));
+            pv.put(e2, c);
+        }
+        return p;
+    }
+
+
+    /**
+     * GenWordPolynomial left and right multiplication. Product with
+     * ring element and two words.
      * @param s coefficient.
      * @param e left word.
      * @param f right word.
@@ -1000,14 +1056,38 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
         if (e.isONE()) {
             return multiply(s, f);
         }
+        C c = ring.coFac.getONE();
+        return multiply(c,e,s,f); // sic, history
+    }
+
+
+    /**
+     * GenWordPolynomial left and right multiplication. Product with
+     * ring element and two words.
+     * @param s coefficient.
+     * @param e left word.
+     * @param t coefficient.
+     * @param f right word.
+     * @return s * e * this * t * f.
+     */
+    public GenWordPolynomial<C> multiply(C s, Word e, C t, Word f) {
+        if (s == null) {
+            return ring.getZERO();
+        }
+        if (s.isZERO()) {
+            return ring.getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
         GenWordPolynomial<C> p = ring.getZERO().copy();
         SortedMap<Word, C> pv = p.val;
         for (Map.Entry<Word, C> m1 : val.entrySet()) {
             C c1 = m1.getValue();
-            Word e1 = m1.getKey();
-            C c = c1.multiply(s); // check non zero if not domain
+            C c = s.multiply(c1).multiply(t); // check non zero if not domain
             if (!c.isZERO()) {
-                Word e2 = e.multiply(e1.multiply(f));
+                Word e1 = m1.getKey();
+                Word e2 = e.multiply(e1).multiply(f);
                 pv.put(e2, c);
             }
         }
@@ -1107,6 +1187,7 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
             throw new ArithmeticException(this.getClass().getName() + " lbcf not invertible " + c);
         }
         C ci = c.inverse();
+        C one = ring.coFac.getONE();
         assert (ring.alphabet == S.ring.alphabet);
         WordFactory.WordComparator cmp = ring.alphabet.getDescendComparator();
         Word e = S.leadingWord();
@@ -1121,7 +1202,7 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
                 //logger.info("div: f = " + f + ", e = " + e + ", g = " + g[0] + ", " + g[1]);
                 a = a.multiply(ci);
                 q = q.sum(a, g[0].multiply(g[1]));
-                h = S.multiply(a, g[0], g[1]);
+                h = S.multiply(a, g[0], one, g[1]);
                 r = r.subtract(h);
                 Word fr = r.leadingWord();
                 if (cmp.compare(f, fr) > 0) { // non noetherian reduction
@@ -1168,6 +1249,7 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
             throw new ArithmeticException(this.getClass().getName() + " lbc not invertible " + c);
         }
         C ci = c.inverse();
+        C one = ring.coFac.getONE();
         assert (ring.alphabet == S.ring.alphabet);
         WordFactory.WordComparator cmp = ring.alphabet.getDescendComparator();
         Word e = S.leadingWord();
@@ -1180,7 +1262,7 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
                 Word[] g = f.divideWord(e); // divide not sufficient
                 //logger.info("rem: f = " + f + ", e = " + e + ", g = " + g[0] + ", " + g[1]);
                 a = a.multiply(ci);
-                h = S.multiply(a, g[0], g[1]);
+                h = S.multiply(a, g[0], one, g[1]);
                 r = r.subtract(h);
                 Word fr = r.leadingWord();
                 if (cmp.compare(f, fr) > 0) { // non noetherian reduction
@@ -1407,9 +1489,8 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
      * Iterator over monomials.
      * @return a PolyIterator.
      */
-    public Iterator<Monomial<C>> iterator() {
-        throw new UnsupportedOperationException("not implemented");
-        //return new PolyIterator<C>(val);
+    public Iterator<WordMonomial<C>> iterator() {
+        return new WordPolyIterator<C>(val);
     }
 
 
@@ -1419,17 +1500,16 @@ public class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWor
      * @return new polynomial with coefficients f(this(e)).
      */
     public GenWordPolynomial<C> map(final UnaryFunctor<? super C, C> f) {
-        throw new UnsupportedOperationException("not implemented");
-        //        GenWordPolynomial<C> n = ring.getZERO().copy();
-        //         SortedMap<Word, C> nv = n.val;
-        //         for (Monomial<C> m : this) {
-        //             //logger.info("m = " + m);
-        //             C c = f.eval(m.c);
-        //             if (c != null && !c.isZERO()) {
-        //                 nv.put(m.e, c);
-        //             }
-        //         }
-        //        return n;
+        GenWordPolynomial<C> n = ring.getZERO().copy();
+        SortedMap<Word, C> nv = n.val;
+        for (WordMonomial<C> m : this) {
+            //logger.info("m = " + m);
+            C c = f.eval(m.c);
+            if (c != null && !c.isZERO()) {
+                nv.put(m.e, c);
+            }
+        }
+        return n;
     }
 
 }

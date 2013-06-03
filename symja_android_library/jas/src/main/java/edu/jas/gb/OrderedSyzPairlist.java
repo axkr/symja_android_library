@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedSyzPairlist.java 4059 2012-07-27 11:16:42Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -278,7 +278,13 @@ public class OrderedSyzPairlist<C extends RingElem<C>> extends OrderedPairlist<C
                 break;
             }
         }
-        remCount++; // count only real pairs
+        if ( pair != null ) {
+            pair.maxIndex(P.size()-1);
+            remCount++; // count only real pairs
+            if ( logger.isDebugEnabled() ) {
+                logger.info("pair(" + pair.j + "," + pair.i + ")");
+            }
+        }
         return pair;
     }
 

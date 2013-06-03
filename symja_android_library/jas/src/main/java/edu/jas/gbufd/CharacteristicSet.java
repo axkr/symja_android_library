@@ -1,5 +1,5 @@
 /*
- * $Id: CharacteristicSet.java 3930 2012-05-06 11:44:55Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;

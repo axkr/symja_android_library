@@ -1,5 +1,5 @@
 /*
- * $Id: Pair.java 4098 2012-08-12 16:39:41Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -20,6 +20,7 @@ import edu.jas.poly.GenPolynomial;
 public class Pair<C extends RingElem<C> > extends AbstractPair<C>
              implements Comparable<Pair> {
 
+
     protected int n;
     protected boolean toZero = false;
     protected boolean useCriterion4 = true;
@@ -32,7 +33,9 @@ public class Pair<C extends RingElem<C> > extends AbstractPair<C>
      * @param b polynomial j.
      * @param i first index.
      * @param j second index.
+     * @deprecated obsolete since Java 1.5
      */
+    @Deprecated
     public Pair(Object a, GenPolynomial<C> b, int i, int j) {
         this( (GenPolynomial<C>)a, b, i, j); 
     }
@@ -47,9 +50,21 @@ public class Pair<C extends RingElem<C> > extends AbstractPair<C>
      */
     public Pair(GenPolynomial<C> a, GenPolynomial<C> b, 
                 int i, int j) {
-        super(a,b,i,j);
-        this.n = 0;
-        toZero = false; // ok
+        this(a,b,i,j,0);
+    }
+
+
+    /**
+     * Pair constructor.
+     * @param a polynomial i.
+     * @param b polynomial j.
+     * @param i first index.
+     * @param j second index.
+     * @param s maximal index.
+     */
+    public Pair(GenPolynomial<C> a, GenPolynomial<C> b, 
+                int i, int j, int s) {
+        this(a.leadingExpVector().lcm(b.leadingExpVector()),a,b,i,j,s);
     }
 
 
@@ -63,7 +78,22 @@ public class Pair<C extends RingElem<C> > extends AbstractPair<C>
      */
     public Pair(ExpVector lcm, GenPolynomial<C> a, GenPolynomial<C> b, 
                 int i, int j) {
-        super(lcm,a,b,i,j);
+        this(lcm,a,b,i,j,0);
+    }
+
+
+    /**
+     * Pair constructor.
+     * @param lcm of lt(a) lt(b).
+     * @param a polynomial i.
+     * @param b polynomial j.
+     * @param i first index.
+     * @param j second index.
+     * @param s maximal index.
+     */
+    public Pair(ExpVector lcm, GenPolynomial<C> a, GenPolynomial<C> b, 
+                int i, int j, int s) {
+        super(lcm,a,b,i,j,s);
         this.n = 0;
         toZero = false; // ok
     }
@@ -73,7 +103,7 @@ public class Pair<C extends RingElem<C> > extends AbstractPair<C>
      * toString.
      */
     @Override
-     public String toString() {
+    public String toString() {
         return super.toString() + "[" + n  
                            + ", r0=" + toZero  
                            + ", c4=" + useCriterion4  

@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoRecSeq.java 4061 2012-07-27 12:03:20Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;
@@ -29,6 +29,9 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
  * Groebner bases.
  * @param <C> base coefficient type
  * @author Heinz Kredel
+ *
+ * @see edu.jas.application.GBAlgorithmBuilder
+ * @see edu.jas.gbufd.GBFactory
  */
 
 public class GroebnerBasePseudoRecSeq<C extends GcdRingElem<C>> extends

@@ -1,5 +1,5 @@
 /*
- * $Id: ExecutableServer.java 4109 2012-08-19 12:01:24Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;
@@ -121,7 +121,7 @@ public class ExecutableServer extends Thread {
      */
     public void init() {
         this.start();
-        //logger.info("ExecutableServer at " + cf);
+        logger.info("ExecutableServer at " + cf);
     }
 
 
@@ -169,7 +169,7 @@ public class ExecutableServer extends Thread {
             } catch (InterruptedException e) {
                 goon = false;
                 Thread.currentThread().interrupt();
-                if (logger.isDebugEnabled()) {
+                if (debug) {
                     e.printStackTrace();
                 }
             }
@@ -225,6 +225,18 @@ public class ExecutableServer extends Thread {
         logger.debug("ExecuteServer terminated");
     }
 
+
+    /**
+     * String representation.
+     */
+    @Override
+    public String toString() {
+        StringBuffer s = new StringBuffer("ExecutableServer(");
+        s.append(cf.toString());
+        s.append(")");
+        return s.toString();
+    }
+
 }
 
 
@@ -237,7 +249,7 @@ class Executor extends Thread /*implements Runnable*/{
 
     private static final Logger logger = Logger.getLogger(Executor.class);
 
-    private final boolean debug = logger.isInfoEnabled();
+    private final boolean debug = logger.isDebugEnabled();
 
 
     protected final SocketChannel channel;
@@ -265,7 +277,7 @@ class Executor extends Thread /*implements Runnable*/{
                 if (this.isInterrupted()) {
                     goon = false;
                 } else {
-                    if (logger.isDebugEnabled()) {
+                    if (debug) {
                         logger.debug("receive: " + o + " from " + channel);
                     }
                     if (o instanceof String) {
@@ -282,18 +294,18 @@ class Executor extends Thread /*implements Runnable*/{
                     // check permission
                     if (o instanceof RemoteExecutable) {
                         re = (RemoteExecutable) o;
-                        if ( debug ) {
+                        if (debug) {
                             logger.info("running " + re);
                         }
                         try {
                             re.run();
                         } catch(Exception e) {
+                            logger.info("Exception on re.run()" + e);
                             e.printStackTrace();
-                            logger.info("Exception on re.run()", e);
                         } finally {
                             logger.info("finally re.run() " + re);
                         }
-                        if ( debug ) {
+                        if (debug) {
                             logger.info("finished " + re);
                         }
                         if (this.isInterrupted()) {
@@ -307,12 +319,14 @@ class Executor extends Thread /*implements Runnable*/{
                 }
             } catch (IOException e) {
                 goon = false;
-                //e.printStackTrace();
-                logger.info("IOException ", e);
+                logger.info("IOException " + e);
+                if (debug) {
+                    e.printStackTrace();
+                }
             } catch (ClassNotFoundException e) {
                 goon = false;
+                logger.info("ClassNotFoundException " + e);
                 e.printStackTrace();
-                logger.info("ClassNotFoundException ", e);
             } finally {
                 logger.info("finally " + this);
             }

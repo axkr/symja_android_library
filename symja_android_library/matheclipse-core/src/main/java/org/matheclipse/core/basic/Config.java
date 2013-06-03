@@ -59,7 +59,7 @@ public class Config {
 	 * If <code>true</code> the parser don't distinguish between lower- or
 	 * uppercase symbols (i.e. constants, function names,...)
 	 */
-	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
+	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = false;
 	
 	/**
 	 * Version string for console application

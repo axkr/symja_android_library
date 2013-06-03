@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4130 2012-08-22 21:41:29Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -686,17 +686,76 @@ public class PolyUtil {
 
 
     /**
+     * Extend coefficient variables. Extend all coefficient ExpVectors by i
+     * elements and multiply by x_j^k.
+     * @param pfac extended polynomial ring factory (by i variables in the
+     *            coefficients).
+     * @param j index of variable to be used for multiplication.
+     * @param k exponent for x_j.
+     * @return extended polynomial.
+     */
+    public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> 
+           extendCoefficients(GenSolvablePolynomialRing<GenPolynomial<C>> pfac, 
+                              GenSolvablePolynomial<GenPolynomial<C>> A, int j, long k) {
+        GenSolvablePolynomial<GenPolynomial<C>> Cp = pfac.getZERO().copy();
+        if (A.isZERO()) {
+            return Cp;
+        }
+        GenPolynomialRing<C> cfac = (GenPolynomialRing<C>) pfac.coFac;
+        //GenPolynomialRing<C> acfac = (GenPolynomialRing<C>) A.ring.coFac;
+        //int i = cfac.nvar - acfac.nvar;
+        Map<ExpVector, GenPolynomial<C>> CC = Cp.val; //getMap();
+        for (Map.Entry<ExpVector, GenPolynomial<C>> y : A.val.entrySet()) {
+            ExpVector e = y.getKey();
+            GenPolynomial<C> a = y.getValue();
+            GenPolynomial<C> f = a.extend(cfac, j, k);
+            CC.put(e, f);
+        }
+        return Cp;
+    }
+
+
+    /**
      * To recursive representation. Represent as polynomial in i+r variables
      * with coefficients in i variables. Works for arbitrary term orders.
      * @param <C> coefficient type.
      * @param rfac recursive polynomial ring factory.
      * @param A polynomial to be converted.
-     * @return Recursive represenations of this in the ring rfac.
+     * @return Recursive represenations of A in the ring rfac.
      */
     public static <C extends RingElem<C>> GenPolynomial<GenPolynomial<C>> toRecursive(
                     GenPolynomialRing<GenPolynomial<C>> rfac, GenPolynomial<C> A) {
 
         GenPolynomial<GenPolynomial<C>> B = rfac.getZERO().copy();
+        if (A.isZERO()) {
+            return B;
+        }
+        //int i = rfac.nvar;
+        //GenPolynomial<C> zero = rfac.getZEROCoefficient();
+        GenPolynomial<C> one = rfac.getONECoefficient();
+        Map<ExpVector, GenPolynomial<C>> Bv = B.val; //getMap();
+        for (Monomial<C> m : A) {
+            ExpVector e = m.e;
+            C a = m.c;
+            GenPolynomial<C> p = one.multiply(a);
+            Bv.put(e, p);
+        }
+        return B;
+    }
+
+
+    /**
+     * To recursive representation. Represent as solvable polynomial in i+r variables
+     * with coefficients in i variables. Works for arbitrary term orders.
+     * @param <C> coefficient type.
+     * @param rfac recursive solvable polynomial ring factory.
+     * @param A solvable polynomial to be converted.
+     * @return Recursive represenations of A in the ring rfac.
+     */
+    public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> toRecursive(
+                  GenSolvablePolynomialRing<GenPolynomial<C>> rfac, GenSolvablePolynomial<C> A) {
+
+        GenSolvablePolynomial<GenPolynomial<C>> B = rfac.getZERO().copy();
         if (A.isZERO()) {
             return B;
         }
@@ -1842,14 +1901,31 @@ public class PolyUtil {
      * @param dfac polynomial ring in n variables. C[x_1, x_2, ..., x_n]
      *            factory.
      * @param A polynomial to be evaluated.
-     * @param a = ( a_1, a_2, ..., a_n) a tuple of values to evaluate at.
-     * @return A( a_1, a_2, ..., a_n).
+     * @param a = (a_1, a_2, ..., a_n) a tuple of values to evaluate at.
+     * @return A(a_1, a_2, ..., a_n).
+     * @deprecated use evaluateAll() with three arguments
      */
+    @Deprecated
     public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac, GenPolynomialRing<C> dfac,
+                    GenPolynomial<C> A, List<C> a) {
+        return evaluateAll(cfac,A,a);
+    }
+
+
+    /**
+     * Evaluate all variables.
+     * @param <C> coefficient type.
+     * @param cfac coefficient ring factory.
+     * @param A polynomial to be evaluated.
+     * @param a = (a_1, a_2, ..., a_n) a tuple of values to evaluate at.
+     * @return A(a_1, a_2, ..., a_n).
+     */
+    public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac,
                     GenPolynomial<C> A, List<C> a) {
         if (A == null || A.isZERO()) {
             return cfac.getZERO();
         }
+        GenPolynomialRing<C> dfac = A.ring;
         if (a == null || a.size() != dfac.nvar) {
             throw new IllegalArgumentException("evaluate tuple size not equal to number of variables");
         }

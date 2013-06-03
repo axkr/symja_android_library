@@ -1,5 +1,5 @@
 /*
- * $Id: ExtensionFieldBuilder.java 3655 2011-06-02 18:20:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

@@ -1,5 +1,5 @@
 /*
- * $Id: PolynomialTaylorFunction.java 3596 2011-04-06 20:59:42Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

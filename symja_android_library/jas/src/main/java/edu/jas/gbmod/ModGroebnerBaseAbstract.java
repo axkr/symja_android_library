@@ -1,5 +1,5 @@
 /*
- * $Id: ModGroebnerBaseAbstract.java 3445 2010-12-25 17:24:04Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -36,6 +36,7 @@ public class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGro
     /**
      * Constructor.
      */
+    @Deprecated
     public ModGroebnerBaseAbstract() {
         bb = GBFactory.getImplementation();
     }

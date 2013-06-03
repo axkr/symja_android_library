@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -13,7 +13,7 @@ import edu.jas.structure.GcdRingElem;
 
 
 /**
- * Quotient, i.e. rational function, based on GenPolynomial with RingElem
+ * Quotient, that is a rational function, based on GenPolynomial with RingElem
  * interface. Objects of this class are immutable.
  * @author Heinz Kredel
  */
@@ -236,16 +236,18 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         if (this.isZERO()) {
             return -b.signum();
         }
+        // assume sign(den,b.den) > 0
         int s1 = num.signum();
         int s2 = b.num.signum();
         int t = (s1 - s2) / 2;
         if (t != 0) {
             return t;
         }
+        if ( den.compareTo(b.den) == 0 ) {
+            return num.compareTo(b.num);
+        }
         GenPolynomial<C> r = num.multiply(b.den);
         GenPolynomial<C> s = den.multiply(b.num);
-        //GenPolynomial<C> x = r.subtract( s );
-        //return x.signum();
         return r.compareTo(s);
     }
 
@@ -268,13 +270,13 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         if (a == null) {
             return false;
         }
-        //return ( 0 == compareTo( a ) );
-        return num.equals(a.num) && den.equals(a.den);
+        return compareTo( a ) == 0;
+        //return num.equals(a.num) && den.equals(a.den);
     }
 
 
     /**
-     * Hash code for this local.
+     * Hash code for this quotient.
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -317,12 +319,16 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         if (den.isONE()) {
             n = num.multiply(S.den);
             n = n.sum(S.num);
-            return new Quotient<C>(ring, n, S.den, true);
+            return new Quotient<C>(ring, n, S.den, false);
         }
         if (S.den.isONE()) {
             n = S.num.multiply(den);
             n = n.sum(num);
-            return new Quotient<C>(ring, n, den, true);
+            return new Quotient<C>(ring, n, den, false);
+        }
+        if ( den.compareTo(S.den) == 0 ) {
+            n = num.sum(S.num);
+            return new Quotient<C>(ring, n, den, false);
         }
         GenPolynomial<C> d;
         GenPolynomial<C> sd;
@@ -371,6 +377,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @return signum(this).
      */
     public int signum() {
+        // assume sign(den) > 0
         return num.signum();
     }
 
@@ -401,6 +408,9 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @return S with S = 1/this.
      */
     public Quotient<C> inverse() {
+        if (num.isZERO()) {
+            throw new ArithmeticException("element not invertible " + this);
+        }
         return new Quotient<C>(ring, den, num, true);
     }
 
@@ -439,7 +449,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         GenPolynomial<C> n;
         if (den.isONE() && S.den.isONE()) {
             n = num.multiply(S.num);
-            return new Quotient<C>(ring, n);
+            return new Quotient<C>(ring, n, den, true);
         }
         GenPolynomial<C> g;
         GenPolynomial<C> d;
@@ -455,6 +465,11 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
             n = ring.divide(S.num, g);
             d = ring.divide(den, g);
             n = n.multiply(num);
+            return new Quotient<C>(ring, n, d, true);
+        }
+        if ( den.compareTo(S.den) == 0 ) { // correct ?
+            d = den.multiply(den);
+            n = num.multiply(S.num);
             return new Quotient<C>(ring, n, d, true);
         }
         GenPolynomial<C> f;
@@ -534,10 +549,10 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
             return this;
         }
         lbc = lbc.inverse();
-        lbc = lbc.abs();
+        //lbc = lbc.abs();
         GenPolynomial<C> n = num.multiply(lbc);
-        GenPolynomial<C> d = den.multiply(lbc);
-        return new Quotient<C>(ring, n, d, true);
+        //GenPolynomial<C> d = den.multiply(lbc);
+        return new Quotient<C>(ring, n, den, true);
     }
 
 

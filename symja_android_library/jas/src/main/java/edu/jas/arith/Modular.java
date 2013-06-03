@@ -1,5 +1,5 @@
 /*
- * $Id: Modular.java 2934 2009-12-29 14:34:30Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;

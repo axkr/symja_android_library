@@ -1,5 +1,5 @@
 /*
- * $Id: FactorAbstract.java 4117 2012-08-19 14:01:57Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -20,6 +20,8 @@ import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
+import edu.jas.poly.OptimizedPolynomialList;
+import edu.jas.poly.TermOrderOptimization;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.util.KsubSet;
@@ -133,12 +135,74 @@ public abstract class FactorAbstract<C extends GcdRingElem<C>> implements Factor
 
 
     /**
+     * GenPolynomial factorization of a multivariate squarefree polynomial,
+     * using Kronecker substitution and variable order optimization.
+     * @param P squarefree and primitive! (respectively monic) multivariate
+     *            GenPolynomial over the ring C.
+     * @return [p_1,...,p_k] with P = prod_{i=1,...,r} p_i.
+     */
+    public List<GenPolynomial<C>> factorsSquarefreeOptimize(GenPolynomial<C> P) {
+        GenPolynomialRing<C> pfac = P.ring;
+        if (pfac.nvar <= 1) {
+            return baseFactorsSquarefree(P);
+        }
+        List<GenPolynomial<C>> topt = new ArrayList<GenPolynomial<C>>(1);
+        topt.add(P);
+        OptimizedPolynomialList<C> opt = TermOrderOptimization.<C> optimizeTermOrder(pfac,topt);
+        P = opt.list.get(0);
+        logger.info("optimized polynomial: " + P);
+        List<Integer> iperm = TermOrderOptimization.inversePermutation(opt.perm);
+        logger.info("optimize perm: " + opt.perm + ", de-optimize perm: " + iperm);
+
+        ExpVector degv = P.degreeVector();
+        int[] donv = degv.dependencyOnVariables();
+        List<GenPolynomial<C>> facs = null;
+        if (degv.length() == donv.length) { // all variables appear
+            logger.info("do.full factorsSquarefreeKronecker: " + P);
+            facs = factorsSquarefreeKronecker(P);
+        } else { // not all variables appear, remove unused variables
+            GenPolynomial<C> pu = PolyUtil.<C> removeUnusedUpperVariables(P);
+            //GenPolynomial<C> pl = PolyUtil.<C> removeUnusedLowerVariables(pu); // not useful after optimize
+            logger.info("do.sparse factorsSquarefreeKronecker: " + pu);
+            facs = factorsSquarefreeKronecker(pu); // pl
+            List<GenPolynomial<C>> fs = new ArrayList<GenPolynomial<C>>(facs.size());
+            GenPolynomialRing<C> pf = P.ring;
+            //GenPolynomialRing<C> pfu = pu.ring;
+            for (GenPolynomial<C> p : facs) {
+                //GenPolynomial<C> pel = p.extendLower(pfu, 0, 0L);
+                GenPolynomial<C> pe = p.extend(pf, 0, 0L); // pel
+                fs.add(pe);
+            }
+            //System.out.println("fs = " + fs);
+            facs = fs;
+        }
+        List<GenPolynomial<C>> iopt = TermOrderOptimization.<C> permutation(iperm, pfac,facs);
+        logger.info("de-optimized polynomials: " + iopt);
+        facs = normalizeFactorization(iopt);
+        return facs;
+    }
+
+
+    /**
      * GenPolynomial factorization of a squarefree polynomial, using Kronecker
      * substitution.
      * @param P squarefree and primitive! (respectively monic) GenPolynomial.
      * @return [p_1,...,p_k] with P = prod_{i=1,...,r} p_i.
      */
+    @Override
     public List<GenPolynomial<C>> factorsSquarefree(GenPolynomial<C> P) {
+        return factorsSquarefreeKronecker(P);
+        //return factorsSquarefreeOptimize(P);
+    }
+
+
+    /**
+     * GenPolynomial factorization of a squarefree polynomial, using Kronecker
+     * substitution.
+     * @param P squarefree and primitive! (respectively monic) GenPolynomial.
+     * @return [p_1,...,p_k] with P = prod_{i=1,...,r} p_i.
+     */
+    public List<GenPolynomial<C>> factorsSquarefreeKronecker(GenPolynomial<C> P) {
         if (P == null) {
             throw new IllegalArgumentException(this.getClass().getName() + " P != null");
         }

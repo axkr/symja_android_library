@@ -1,5 +1,5 @@
 /*
- * $Id: LocalRing.java 3358 2010-10-23 19:27:53Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

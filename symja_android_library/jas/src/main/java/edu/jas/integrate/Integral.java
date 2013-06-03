@@ -1,5 +1,5 @@
 /*
- * $Id: Integral.java 4046 2012-07-25 16:48:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.integrate;

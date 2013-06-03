@@ -1,5 +1,5 @@
 /*
- * $Id: ExecutableChannels.java 4078 2012-07-28 12:40:12Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

@@ -1,5 +1,5 @@
 /*
- * $Id: Residue.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;
@@ -40,7 +40,7 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
 
     /**
      * The constructor creates a Residue object from a ring factory.
-     * @param r ring factory.
+     * @param r residue ring factory.
      */
     public Residue(ResidueRing<C> r) {
         this(r, r.ring.getZERO(), 0);
@@ -50,8 +50,8 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
     /**
      * The constructor creates a Residue object from a ring factory and a
      * polynomial.
-     * @param r ring factory.
-     * @param a polynomial list.
+     * @param r residue ring factory.
+     * @param a polynomial.
      */
     public Residue(ResidueRing<C> r, GenPolynomial<C> a) {
         this(r, a, -1);
@@ -61,8 +61,8 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
     /**
      * The constructor creates a Residue object from a ring factory, a
      * polynomial and an indicator if a is a unit.
-     * @param r ring factory.
-     * @param a polynomial list.
+     * @param r residue ring factory.
+     * @param a polynomial.
      * @param u isunit indicator, -1, 0, 1.
      */
     public Residue(ResidueRing<C> r, GenPolynomial<C> a, int u) {
@@ -111,7 +111,6 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        // ??return val.equals( ring.ring.getZERO() );
         return val.isZERO();
     }
 
@@ -122,7 +121,6 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @see edu.jas.structure.RingElem#isONE()
      */
     public boolean isONE() {
-        // ?? return val.equals( ring.ring.getONE() );
         return val.isONE();
     }
 
@@ -234,12 +232,12 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
         if (a == null) {
             return false;
         }
-        return (0 == compareTo(a));
+        return compareTo(a) == 0;
     }
 
 
     /**
-     * Hash code for this local.
+     * Hash code for this residue.
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -391,6 +389,6 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @return [ gcd(this,b), c1, c2 ] with c1*this + c2*b = gcd(this,b).
      */
     public Residue<C>[] egcd(Residue<C> b) {
-        throw new UnsupportedOperationException("egcd not implemented " + this.getClass().getName());
+        throw new UnsupportedOperationException("egcd not implemented");
     }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: CPair.java 3426 2010-12-24 13:17:58Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;

@@ -1,6 +1,6 @@
 
 /*
- * $Id: PolyIterator.java 1809 2008-05-22 13:55:48Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

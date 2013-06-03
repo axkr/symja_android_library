@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 3365 2010-10-24 12:59:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

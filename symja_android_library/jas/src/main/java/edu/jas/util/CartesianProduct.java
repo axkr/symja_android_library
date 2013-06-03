@@ -1,5 +1,5 @@
 /*
- * $Id: CartesianProduct.java 4065 2012-07-27 15:17:38Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

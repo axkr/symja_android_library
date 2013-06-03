@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialTokenizer.java 4092 2012-08-12 10:41:35Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -701,7 +701,7 @@ public class GenPolynomialTokenizer {
                 if (tok.sval != null && tok.sval.length() > 0) {
                     if (digit(tok.sval.charAt(0))) {
                         BigInteger mo = new BigInteger(tok.sval);
-                        BigInteger lm = new BigInteger(Long.MAX_VALUE);
+                        BigInteger lm = new BigInteger(ModLongRing.MAX_LONG); //wrong: Long.MAX_VALUE);
                         if (mo.compareTo(lm) < 0) {
                             coeff = new ModLongRing(mo.getVal());
                         } else {
@@ -1156,7 +1156,7 @@ public class GenPolynomialTokenizer {
         //if (debug) logger.debug("comment = " + comments);
 
         RingFactory coeff = nextCoefficientRing();
-        logger.info("coeff = " + coeff);
+        logger.info("coeff = " + coeff.getClass().getSimpleName());
 
         vars = nextVariableList();
         logger.info("vars = " + Arrays.toString(vars));
@@ -1190,7 +1190,7 @@ public class GenPolynomialTokenizer {
         //if (debug) logger.debug("comment = " + comments);
 
         RingFactory coeff = nextCoefficientRing();
-        logger.info("coeff = " + coeff);
+        logger.info("coeff = " + coeff.getClass().getSimpleName());
 
         vars = nextVariableList();
         logger.info("vars = " + Arrays.toString(vars));
@@ -1268,7 +1268,7 @@ public class GenPolynomialTokenizer {
         //if (debug) logger.debug("comment = " + comments);
 
         RingFactory coeff = nextCoefficientRing();
-        logger.info("coeff = " + coeff);
+        logger.info("coeff = " + coeff.getClass().getSimpleName());
 
         vars = nextVariableList();
         logger.info("vars = " + Arrays.toString(vars));
@@ -1346,7 +1346,7 @@ public class GenPolynomialTokenizer {
         //if (debug) logger.debug("comment = " + comments);
 
         RingFactory coeff = nextCoefficientRing();
-        logger.info("coeff = " + coeff);
+        logger.info("coeff = " + coeff.getClass().getSimpleName());
 
         vars = nextVariableList();
         logger.info("vars = " + Arrays.toString(vars));

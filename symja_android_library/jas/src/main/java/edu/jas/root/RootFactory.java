@@ -1,5 +1,5 @@
 /*
- * $Id: RootFactory.java 3974 2012-07-01 12:29:44Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;

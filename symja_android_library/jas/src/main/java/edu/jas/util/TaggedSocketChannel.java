@@ -1,5 +1,5 @@
 /*
- * $Id: TaggedSocketChannel.java 3982 2012-07-12 21:00:59Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

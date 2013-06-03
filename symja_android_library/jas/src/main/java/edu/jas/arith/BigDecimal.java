@@ -1,5 +1,5 @@
 /*
- * $Id: BigDecimal.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;
@@ -36,11 +36,11 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     private final static Random random = new Random();
 
 
-    // should go to factory:
-    public static final int DEFAULT_PRECISION = 50;
+    //public static final int DEFAULT_PRECISION = 50;
+    //public static final MathContext DEFAULT_CONTEXT = new MathContext(DEFAULT_PRECISION);
 
-
-    public static final MathContext DEFAULT_CONTEXT = new MathContext(DEFAULT_PRECISION);
+    public static final MathContext DEFAULT_CONTEXT = MathContext.DECIMAL128;
+    public static final int DEFAULT_PRECISION = DEFAULT_CONTEXT.getPrecision();
 
 
     public final MathContext context;
@@ -150,7 +150,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @param mc MathContext.
      */
     public BigDecimal(BigRational a, MathContext mc) {
-        this((new java.math.BigDecimal(a.num)).divide(new java.math.BigDecimal(a.den), mc), mc);
+        this((new java.math.BigDecimal(a.num,mc)).divide(new java.math.BigDecimal(a.den,mc), mc), mc);
     }
 
 

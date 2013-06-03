@@ -1,5 +1,5 @@
 /*
- * $Id: Terminator.java 3979 2012-07-09 21:13:53Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

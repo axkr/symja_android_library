@@ -1,5 +1,5 @@
 /*
- * $Id: PrimeList.java 4054 2012-07-26 17:34:57Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;
@@ -28,7 +28,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * Range of probable primes.
      */
     public static enum Range {
-        small, medium, large, mersenne
+        small, low, medium, large, mersenne
     };
 
 
@@ -36,6 +36,9 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * Cache the val list for different size
      */
     private volatile static List<java.math.BigInteger> SMALL_LIST = null;
+
+
+    private volatile static List<java.math.BigInteger> LOW_LIST = null;
 
 
     private volatile static List<java.math.BigInteger> MEDIUM_LIST = null;
@@ -82,6 +85,15 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
                 val = new ArrayList<java.math.BigInteger>(50);
                 addSmall();
                 SMALL_LIST = val;
+            }
+            break;
+        case low:
+            if (LOW_LIST != null) {
+                val = LOW_LIST;
+            } else {
+                val = new ArrayList<java.math.BigInteger>(50);
+                addLow();
+                LOW_LIST = val;
             }
             break;
         default:
@@ -131,6 +143,36 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
         val.add(java.math.BigInteger.valueOf(17L));
         val.add(java.math.BigInteger.valueOf(19L));
         val.add(java.math.BigInteger.valueOf(23L));
+        val.add(java.math.BigInteger.valueOf(29L));
+    }
+
+
+    /**
+     * Add low sized primes.
+     */
+    private void addLow() {
+        // 2^15-x
+        val.add(getLongPrime(15, 19));
+        val.add(getLongPrime(15, 49));
+        val.add(getLongPrime(15, 51));
+        val.add(getLongPrime(15, 55));
+        val.add(getLongPrime(15, 61));
+        val.add(getLongPrime(15, 75));
+        val.add(getLongPrime(15, 81));
+        val.add(getLongPrime(15, 115));
+        val.add(getLongPrime(15, 121));
+        val.add(getLongPrime(15, 135));
+        // 2^16-x
+        val.add(getLongPrime(16, 15));
+        val.add(getLongPrime(16, 17));
+        val.add(getLongPrime(16, 39));
+        val.add(getLongPrime(16, 57));
+        val.add(getLongPrime(16, 87));
+        val.add(getLongPrime(16, 89));
+        val.add(getLongPrime(16, 99));
+        val.add(getLongPrime(16, 113));
+        val.add(getLongPrime(16, 117));
+        val.add(getLongPrime(16, 123));
     }
 
 
@@ -160,6 +202,17 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
         val.add(getLongPrime(29, 99));
         val.add(getLongPrime(29, 121));
         val.add(getLongPrime(29, 133));
+        // 2^32-x
+        val.add(getLongPrime(32, 5));
+        val.add(getLongPrime(32, 17));
+        val.add(getLongPrime(32, 65));
+        val.add(getLongPrime(32, 99));
+        val.add(getLongPrime(32, 107));
+        val.add(getLongPrime(32, 135));
+        val.add(getLongPrime(32, 153));
+        val.add(getLongPrime(32, 185));
+        val.add(getLongPrime(32, 209));
+        val.add(getLongPrime(32, 267));
     }
 
 
@@ -200,6 +253,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
         val.add(getLongPrime(63, 409));
         val.add(getLongPrime(63, 457));
         val.add(getLongPrime(63, 471));
+        // 2^64-x not possible
     }
 
 

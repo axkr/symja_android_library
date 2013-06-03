@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableSyzygyAbstract.java 4104 2012-08-18 10:00:59Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -691,6 +691,139 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
             Z.add(s);
         }
         return Z;
+    }
+
+
+    /**
+     * Test left Ore condition. 
+     * @param a solvable polynomial
+     * @param b solvable polynomial
+     * @param oc = [p,q] two solvable polynomials
+     * @return true if p*a = q*b, else false
+     */
+    public boolean isLeftOreCond(GenSolvablePolynomial<C> a, GenSolvablePolynomial<C> b, 
+                                 GenSolvablePolynomial<C>[] oc) {
+        GenSolvablePolynomial<C> c = oc[0].multiply(a);
+        GenSolvablePolynomial<C> d = oc[1].multiply(b);
+        return c.equals(d);
+    }
+
+
+    /**
+     * Test right Ore condition. 
+     * @param a solvable polynomial
+     * @param b solvable polynomial
+     * @param oc = [p,q] two solvable polynomials
+     * @return true if a*p = b*q, else false
+     */
+    public boolean isRightOreCond(GenSolvablePolynomial<C> a, GenSolvablePolynomial<C> b, 
+                                  GenSolvablePolynomial<C>[] oc) {
+        GenSolvablePolynomial<C> c = a.multiply(oc[0]);
+        GenSolvablePolynomial<C> d = b.multiply(oc[1]);
+        return c.equals(d);
+    }
+
+
+    /**
+     * Left Ore condition. 
+     * Generators for the left Ore condition of two solvable polynomials.
+     * @param a solvable polynomial
+     * @param b solvable polynomial
+     * @return [p,q] with p*a = q*b
+     */
+    public GenSolvablePolynomial<C>[] leftOreCond(GenSolvablePolynomial<C> a, GenSolvablePolynomial<C> b) {
+        if (a == null || a.isZERO() || b == null || b.isZERO()) {
+            throw new IllegalArgumentException("a and b must be non zero");
+        }
+        GenSolvablePolynomialRing<C> pfac = a.ring;
+        GenSolvablePolynomial<C>[] oc = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
+        if ( a.isConstant() ) {
+            oc[1] = pfac.getONE();
+            C c = a.leadingBaseCoefficient().inverse();
+            oc[0] = b.multiply(c);
+            return oc;
+        }
+        if ( b.isConstant() ) {
+            oc[0] = pfac.getONE();
+            C c = b.leadingBaseCoefficient().inverse();
+            oc[1] = a.multiply(c);
+            return oc;
+        }
+        List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(2);
+        F.add(a); F.add(b);
+        List<List<GenSolvablePolynomial<C>>> Gz = leftZeroRelationsArbitrary(F);
+        if ( Gz.size() < 0 ) {
+            System.out.println("Gz = " + Gz);
+        }
+        List<GenSolvablePolynomial<C>> G1 = null;
+        GenSolvablePolynomial<C> g1 = null;
+        for (List<GenSolvablePolynomial<C>> Gi : Gz ) {
+	    if ( Gi.get(0).isZERO() ) {
+                continue;
+            }
+            if ( G1 == null ) {
+                G1 = Gi;
+            }
+            if ( g1 == null ) {
+                g1 = G1.get(0);
+            } else if ( g1.compareTo(Gi.get(0)) > 0 ) {
+                G1 = Gi;
+                g1 = G1.get(0);
+            }
+        }
+        oc[0] = G1.get(0);
+        oc[1] = (GenSolvablePolynomial<C>) G1.get(1).negate();
+        return oc;
+    }
+
+
+    /**
+     * Right Ore condition. 
+     * Generators for the right Ore condition of two solvable polynomials.
+     * @param a solvable polynomial
+     * @param b solvable polynomial
+     * @return [p,q] with a*p = b*q
+     */
+    public GenSolvablePolynomial<C>[] rightOreCond(GenSolvablePolynomial<C> a, GenSolvablePolynomial<C> b) {
+        if (a == null || a.isZERO() || b == null || b.isZERO()) {
+            throw new IllegalArgumentException("a and b must be non zero");
+        }
+        GenSolvablePolynomialRing<C> pfac = a.ring;
+        GenSolvablePolynomial<C>[] oc = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
+        if ( a.isConstant() ) {
+            oc[1] = pfac.getONE();
+            C c = a.leadingBaseCoefficient().inverse();
+            oc[0] = b.multiply(c);
+            return oc;
+        }
+        if ( b.isConstant() ) {
+            oc[0] = pfac.getONE();
+            C c = b.leadingBaseCoefficient().inverse();
+            oc[1] = a.multiply(c);
+            return oc;
+        }
+        List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(2);
+        F.add(a); F.add(b);
+        List<List<GenSolvablePolynomial<C>>> Gz = rightZeroRelationsArbitrary(F);
+        List<GenSolvablePolynomial<C>> G1 = null;
+        GenSolvablePolynomial<C> g1 = null;
+        for (List<GenSolvablePolynomial<C>> Gi : Gz ) {
+	    if ( Gi.get(0).isZERO() ) {
+                continue;
+            }
+            if ( G1 == null ) {
+                G1 = Gi;
+            }
+            if ( g1 == null ) {
+                g1 = G1.get(0);
+            } else if ( g1.compareTo(Gi.get(0)) > 0 ) {
+                G1 = Gi;
+                g1 = G1.get(0);
+            }
+        }
+        oc[0] = G1.get(0);
+        oc[1] = (GenSolvablePolynomial<C>) G1.get(1).negate();
+        return oc;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: ExpVectorPair.java 1888 2008-07-12 13:37:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

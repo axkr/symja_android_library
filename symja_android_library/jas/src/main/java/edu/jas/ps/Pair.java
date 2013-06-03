@@ -1,5 +1,5 @@
 /*
- * $Id: Pair.java 3994 2012-07-15 11:50:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

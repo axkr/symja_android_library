@@ -1,5 +1,5 @@
 /*
- * $Id: RunSGB.java 4078 2012-07-28 12:40:12Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;
@@ -45,7 +45,7 @@ public class RunSGB {
      * main method to be called from commandline <br /> Usage: RunSGB
      * [seq|par|par+] [irr|left|right|two] &lt;file&gt; #procs
      */
-
+    @SuppressWarnings("unchecked")
     public static void main(java.lang.String[] args) {
 
         BasicConfigurator.configure();

@@ -1,5 +1,5 @@
 /*
- * $Id: DistributedListServer.java 4074 2012-07-28 10:04:58Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

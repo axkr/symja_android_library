@@ -1,5 +1,5 @@
 /*
- * $Id: WeylRelations.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -46,12 +46,12 @@ public class WeylRelations<C extends RingElem<C>> {
 
 
     /** Generates the relation table of this ring.
+     *  Block form: R{x1,...,xn,y1,...,yn; yi*xi = xi yi + 1}.
      */
     public void generate() {
         RelationTable<C> table = ring.table;
         int r = ring.nvar;
         int m =  r / 2;
-        //ExpVector z = ring.evzero;
         GenSolvablePolynomial<C> one  = ring.getONE().copy();
         GenSolvablePolynomial<C> zero = ring.getZERO().copy();
         for ( int i = m; i < r; i++ ) {
@@ -62,7 +62,44 @@ public class WeylRelations<C extends RingElem<C>> {
             GenSolvablePolynomial<C> b = one.multiply(ef);
             GenSolvablePolynomial<C> rel 
                 = (GenSolvablePolynomial<C>)b.sum(one);
-            //                = (GenSolvablePolynomial<C>)b.subtract(one);
+            //  = (GenSolvablePolynomial<C>)b.subtract(one);
+            if ( rel.isZERO() ) {
+               logger.info("ring = " + ring);
+               logger.info("one  = " + one);
+               logger.info("zero = " + zero);
+               logger.info("b    = " + b);
+               logger.info("rel  = " + rel);
+               //System.exit(1);
+               throw new RuntimeException("rel.isZERO()");
+            }
+            //System.out.println("rel = " + rel.toString(ring.vars));
+            table.update(e,f,rel);
+        }
+        if ( logger.isDebugEnabled() ) {
+           logger.debug("\nWeyl relations = " + table);
+        }
+        return;
+    }
+
+
+    /** Generates the relation table of this ring.
+     *  Iterated form: R{x1,y1,...,xn,yn; yi*xi = xi yi + 1}.
+     */
+    public void generateIterated() {
+        RelationTable<C> table = ring.table;
+        int r = ring.nvar;
+        int m =  r / 2;
+        GenSolvablePolynomial<C> one  = ring.getONE().copy();
+        GenSolvablePolynomial<C> zero = ring.getZERO().copy();
+        for ( int i = 1; i <= r; i += 2 ) {
+            ExpVector f = ExpVector.create(r,i,1); 
+            int j = i - 1;
+            ExpVector e = ExpVector.create(r,j,1);
+            ExpVector ef = e.sum(f);
+            GenSolvablePolynomial<C> b = one.multiply(ef);
+            GenSolvablePolynomial<C> rel 
+                = (GenSolvablePolynomial<C>)b.sum(one);
+            //  = (GenSolvablePolynomial<C>)b.subtract(one);
             if ( rel.isZERO() ) {
                logger.info("ring = " + ring);
                logger.info("one  = " + one);

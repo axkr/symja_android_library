@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPairlist.java 4095 2012-08-12 11:37:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -220,7 +220,11 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         if ( ! c ) {
             pair = null;
         } else {
+            pair.maxIndex(P.size()-1);
             remCount++; // count only real pairs
+            if ( logger.isDebugEnabled() ) {
+                logger.info("pair(" + pair.j + "," + pair.i + ")");
+            }
         }
         return pair; 
     }
@@ -241,6 +245,15 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      */
     public List<GenPolynomial<C>> getList() { 
         return P;
+    }
+
+
+    /**
+     * Get the size of the list of polynomials.
+     * @return size of the polynomial list.
+     */
+    public int size() {
+        return P.size();
     }
 
 
@@ -289,6 +302,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         P.clear();
         P.add(ring.getONE());
         red.clear();
+        logger.info("outOne " + this.toString());
         return P.size()-1;
     }
 

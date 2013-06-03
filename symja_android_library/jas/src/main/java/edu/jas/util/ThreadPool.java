@@ -1,5 +1,5 @@
 /*
- * $Id: ThreadPool.java 4065 2012-07-27 15:17:38Z kredel $
+ * $Id$
  */
 
 // package edu.unima.ky.parallel;
@@ -10,6 +10,7 @@ import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
+import edu.jas.kern.PreemptingException;
 
 /**
  * Thread pool using stack / list workpile.
@@ -140,10 +141,11 @@ public class ThreadPool {
      * number of worker threads.
      */
     public int getNumber() {
-        if (workers == null || workers.length < size) {
-            init(); // start threads
-        }
-        return workers.length; // not null
+        return size;
+        //if (workers == null || workers.length < size) {
+        //    init(); // start threads
+        //}
+        //return workers.length; // not null
     }
 
 
@@ -365,8 +367,12 @@ class PoolThread extends Thread {
                 Thread.currentThread().interrupt();
                 running = false;
                 isWorking = false;
+            } catch (PreemptingException e) {
+                logger.debug("catched " + e);
+                //e.printStackTrace();
             } catch (RuntimeException e) {
                 logger.warn("catched " + e);
+                e.printStackTrace();
             }
         }
         isWorking = false;

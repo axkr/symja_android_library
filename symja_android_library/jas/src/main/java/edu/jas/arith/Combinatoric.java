@@ -1,5 +1,5 @@
 /*
- * $Id: Combinatoric.java 3840 2011-12-28 18:28:55Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;

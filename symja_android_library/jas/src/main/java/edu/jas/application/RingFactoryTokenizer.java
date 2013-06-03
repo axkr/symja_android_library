@@ -1,5 +1,5 @@
 /*
- * $Id: RingFactoryTokenizer.java 4107 2012-08-18 10:42:35Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;
@@ -413,7 +413,7 @@ public class RingFactoryTokenizer {
                 if (tok.sval != null && tok.sval.length() > 0) {
                     if (digit(tok.sval.charAt(0))) {
                         BigInteger mo = new BigInteger(tok.sval);
-                        BigInteger lm = new BigInteger(Long.MAX_VALUE);
+                        BigInteger lm = new BigInteger(ModLongRing.MAX_LONG); //Long.MAX_VALUE);
                         if (mo.compareTo(lm) < 0) {
                             coeff = new ModLongRing(mo.getVal());
                         } else {

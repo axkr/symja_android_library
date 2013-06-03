@@ -1,5 +1,5 @@
 /*
- * $Id: OptimizedPolynomialList.java 3988 2012-07-14 12:07:13Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

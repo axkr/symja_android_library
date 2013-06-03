@@ -1,5 +1,5 @@
 /*
- * $Id: RealRootsAbstract.java 4063 2012-07-27 13:05:07Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;
@@ -481,7 +481,8 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
         }
         BigDecimal left = new BigDecimal(iv.left.getRational());
         BigDecimal right = new BigDecimal(iv.right.getRational());
-        BigDecimal e = new BigDecimal(eps.getRational());
+        BigRational reps = eps.getRational();
+        BigDecimal e = new BigDecimal(reps);
         BigDecimal q = new BigDecimal("0.25");
         //System.out.println("left  = " + left);
         //System.out.println("right = " + right);
@@ -509,7 +510,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
             }
             BigDecimal x = fx.divide(fpx);
             BigDecimal dx = d.subtract(x);
-            //System.out.println("dx = " + dx);
+            //System.out.println("dx = " + dx + ", d = " + d);
             if (d.subtract(dx).abs().compareTo(e) <= 0) {
                 return dx;
             }

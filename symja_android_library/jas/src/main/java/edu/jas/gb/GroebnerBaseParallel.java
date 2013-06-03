@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseParallel.java 4059 2012-07-27 11:16:42Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -25,6 +25,9 @@ import edu.jas.util.ThreadPool;
  * of Groebner bases.
  * @param <C> coefficient type
  * @author Heinz Kredel
+ *
+ * @see edu.jas.application.GBAlgorithmBuilder
+ * @see edu.jas.gbufd.GBFactory
  */
 
 public class GroebnerBaseParallel<C extends RingElem<C>> extends GroebnerBaseAbstract<C> {
@@ -69,6 +72,16 @@ public class GroebnerBaseParallel<C extends RingElem<C>> extends GroebnerBaseAbs
      */
     public GroebnerBaseParallel(int threads, Reduction<C> red) {
         this(threads, new ThreadPool(threads), red);
+    }
+
+
+   /**
+     * Constructor.
+     * @param threads number of threads to use.
+     * @param pl pair selection strategy
+     */
+    public GroebnerBaseParallel(int threads, PairList<C> pl) {
+        this(threads, new ThreadPool(threads), new ReductionPar<C>(), pl);
     }
 
 
@@ -398,7 +411,7 @@ class Reducer<C extends RingElem<C>> implements Runnable {
                 continue;
             }
             if (logger.isDebugEnabled()) {
-                logger.debug("ht(H) = " + H.leadingExpVector());
+                logger.info("ht(H) = " + H.leadingExpVector());
             }
 
             H = H.monic();

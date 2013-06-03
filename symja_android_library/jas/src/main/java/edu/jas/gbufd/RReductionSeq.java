@@ -1,5 +1,5 @@
 /*
- * $Id: RReductionSeq.java 4061 2012-07-27 12:03:20Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;
@@ -32,7 +32,7 @@ public class RReductionSeq<C extends RegularRingElem<C>> extends ReductionAbstra
     private static final Logger logger = Logger.getLogger(RReductionSeq.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -233,13 +233,17 @@ public class RReductionSeq<C extends RegularRingElem<C>> extends ReductionAbstra
             m = S.leadingMonomial();
             e = m.getKey();
             a = m.getValue();
+            if (debug) {
+                if ( a.isZERO() ) {
+                    throw new RuntimeException("a.isZERO(): S = " + S);
+                }
+            }
             for (i = 0; i < l; i++) {
                 mt = e.multipleOf(htl[i]);
                 if (mt) {
                     //r = a.multiply( lbc[i] );
                     //r = a.idempotent().multiply( lbc[i].idempotent() );
                     r = a.idempotentAnd(lbc[i]);
-                    //System.out.println("r = " + r);
                     mt = !r.isZERO(); // && mt
                     if (mt) {
                         b = a.divide(lbc[i]);

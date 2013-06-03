@@ -1,5 +1,5 @@
 /*
- * $Id: ResidueRing.java 3211 2010-07-05 12:54:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.application;
@@ -72,14 +72,18 @@ public class ResidueRing<C extends GcdRingElem<C> >
     public ResidueRing(Ideal<C> i, boolean isMaximal) {
         ideal = i.GB(); // cheap if isGB
         ring = ideal.list.ring;
-        if ( isMaximal ) {
-           isField = 1;
-        }
         //engine = GCDFactory.<C>getImplementation( ring.coFac );
         engine = GCDFactory.<C>getProxy( ring.coFac );
+        if ( isMaximal ) {
+           isField = 1;
+           return;
+        }
         //System.out.println("rr engine = " + engine.getClass().getName());
         //System.out.println("rr ring   = " + ring.getClass().getName());
         //System.out.println("rr cofac  = " + ring.coFac.getClass().getName());
+        if ( ideal.isONE() ) {
+           logger.warn("ideal is one, so all residues are 0");
+        }
     }
 
 
@@ -138,6 +142,12 @@ public class ResidueRing<C extends GcdRingElem<C> >
         List<Residue<C>> gens = new ArrayList<Residue<C>>( pgens.size() );
         for ( GenPolynomial<C> p : pgens ) {
             Residue<C> r = new Residue<C>( this, p );
+            if ( r.isZERO() ) {
+                continue;
+            }
+            if ( !r.isONE() && r.val.isConstant() ) {
+                continue;
+            }
             gens.add(r);
         }
         return gens;
@@ -149,7 +159,7 @@ public class ResidueRing<C extends GcdRingElem<C> >
      * @return true if this ring is commutative, else false.
      */
     public boolean isCommutative() {
-        return ring.isCommutative();
+        return ring.isCommutative(); 
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionSeq.java 3288 2010-08-25 21:46:14Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -83,31 +83,33 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
         ExpVector e;
         C a;
         boolean mt = false;
-        GenPolynomial<C> R = Ap.ring.getZERO();
+        GenPolynomial<C> R = Ap.ring.getZERO().copy();
 
         //GenPolynomial<C> T = null;
         GenPolynomial<C> Q = null;
-        GenPolynomial<C> S = Ap;
+        GenPolynomial<C> S = Ap.copy();
         while ( S.length() > 0 ) { 
               m = S.leadingMonomial();
               e = m.getKey();
               a = m.getValue();
               for ( i = 0; i < l; i++ ) {
-                  mt =  e.multipleOf( htl[i] );
+                  mt = e.multipleOf( htl[i] );
                   if ( mt ) break; 
               }
               if ( ! mt ) { 
                  //logger.debug("irred");
-                 //T = new OrderedMapPolynomial( a, e );
-                 R = R.sum( a, e );
-                 S = S.subtract( a, e ); 
+                 //R = R.sum( a, e );
+                 //S = S.subtract( a, e ); 
+                 R.doPutToMap(e,a);
+                 S.doRemoveFromMap(e,a); 
                  // System.out.println(" S = " + S);
               } else { 
                  e =  e.subtract( htl[i] );
                  //logger.info("red div = " + e);
                  a = a.divide( (C)lbc[i] );
-                 Q = p[i].multiply( a, e );
-                 S = S.subtract( Q );
+                 //Q = p[i].multiply( a, e );
+                 //S = S.subtract( Q );
+                 S = S.subtractMultiple(a,e,p[i]);
               }
         }
         return R;
@@ -164,24 +166,26 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
         C a;
         boolean mt = false;
         GenPolynomial<C> zero = Ap.ring.getZERO();
-        GenPolynomial<C> R = Ap.ring.getZERO();
+        GenPolynomial<C> R = Ap.ring.getZERO().copy();
 
         GenPolynomial<C> fac = null;
         // GenPolynomial<C> T = null;
         GenPolynomial<C> Q = null;
-        GenPolynomial<C> S = Ap;
+        GenPolynomial<C> S = Ap.copy();
         while ( S.length() > 0 ) { 
             m = S.leadingMonomial();
             e = m.getKey();
             a = m.getValue();
             for ( i = 0; i < l; i++ ) {
-                mt =  e.multipleOf( htl[i] );
+                mt = e.multipleOf( htl[i] );
                 if ( mt ) break; 
             }
             if ( ! mt ) { 
                 //logger.debug("irred");
-                R = R.sum( a, e );
-                S = S.subtract( a, e ); 
+                //R = R.sum( a, e );
+                //S = S.subtract( a, e ); 
+                R.doPutToMap(e,a);
+                S.doRemoveFromMap(e,a); 
                 // System.out.println(" S = " + S);
                 //throw new RuntimeException("Syzygy no GB");
             } else { 
@@ -189,8 +193,9 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 //logger.info("red div = " + e);
                 C c = (C) lbc[i];
                 a = a.divide( c );
-                Q = p[i].multiply( a, e );
-                S = S.subtract( Q );
+                //Q = p[i].multiply( a, e );
+                //S = S.subtract( Q );
+                S = S.subtractMultiple(a,e,p[i]);
                 fac = row.get(i);
                 if ( fac == null ) {
                     fac = zero.sum( a, e );

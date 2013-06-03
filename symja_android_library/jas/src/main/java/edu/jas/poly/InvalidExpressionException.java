@@ -1,5 +1,5 @@
 /*
- * $Id: InvalidExpressionException.java 3560 2011-03-12 11:30:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
