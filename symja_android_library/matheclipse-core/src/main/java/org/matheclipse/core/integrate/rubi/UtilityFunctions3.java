@@ -15,8 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class UtilityFunctions3 { 
   public static IAST RULES = List( 
-SetDelayed(SimpSum(u_,Times($p("v",true),Power(Cot(z_),C2))),
-    Condition(Times(u,Power(Csc(z),C2)),SameQ(u,v))),
 SetDelayed(SimpSum(u_,Times($p("v",true),Power(Sec(z_),C2))),
     Condition(Times(v,Power(Tan(z),C2)),SameQ(u,Times(CN1,v)))),
 SetDelayed(SimpSum(u_,Times($p("v",true),Power(Csc(z_),C2))),
@@ -50,7 +48,7 @@ SetDelayed(SimpSum(Times($p("u",true),Power($(f_,a_,b_),$p("n",true))),Times($p(
 SetDelayed(ExpandIntegrandQ(m_,n_,p_),
     And(And(And(IntIntegerQ(p),Greater(p,C0)),NonzeroQ(Plus(Plus(m,Times(CN1,n)),C1))),If(ZeroQ(Plus(n,Times(CN1,C1))),Or(Or(Not(IntIntegerQ(m)),And(Less(m,C0),Not(LessEqual(LessEqual(Plus(Plus(m,p),C2),C0),Plus(Plus(m,Times(C2,p)),C2))))),LessEqual(p,Plus(m,C2))),Or(Or(Equal(p,C2),Not(IntIntegerQ(Times(Plus(m,C1),Power(n,CN1))))),And(Not(And(Less(C0,Times(Plus(m,C1),Power(n,CN1))),LessEqual(Times(Plus(m,C1),Power(n,CN1)),C3))),Not(LessEqual(Times(Plus(m,C1),Power(n,CN1)),Times(CN1,Plus(p,C1))))))))),
 SetDelayed(ExpnExpand(u_,$p("x",$s("Symbol"))),
-    ExpnExpandAux(ExpandExpression(u,x),x)),
+    u),
 SetDelayed(ExpnExpandAux(Plus(Plus($p("u",true),Times($p("e",true),Power(x_,CN1))),Times($p("f",true),Power(Plus(c_,Times($p("d",true),x_)),CN1))),$p("x",$s("Symbol"))),
     Condition(Plus(ExpnExpandAux(u,x),Times(c,Times(e,Power(Times(x,Plus(c,Times(d,x))),CN1)))),And(FreeQ(List(c,d,e,f),x),ZeroQ(Plus(Times(d,e),f))))),
 SetDelayed(ExpnExpandAux(Plus(Plus($p("u",true),Times($p("e",true),Power(Plus(a_,Times($p("b",true),x_)),CN1))),Times($p("f",true),Power(Plus(c_,Times($p("d",true),x_)),CN1))),$p("x",$s("Symbol"))),
@@ -210,6 +208,8 @@ SetDelayed(FunctionOfInverseLinear(u_,$p("lst"),x_),
 SetDelayed(FunctionOfExponentialOfLinear(u_,$p("x",$s("Symbol"))),
     Module(List(Set($s("lst"),FunctionOfExponentialOfLinear(u,x,False,False,False)),a,b,f),If(Or(FalseQ($s("lst")),FalseQ(Part($s("lst"),C1))),False,CompoundExpression(CompoundExpression(CompoundExpression(CompoundExpression(Set(a,Part($s("lst"),C1)),Set(b,Part($s("lst"),C2))),Set(f,Part($s("lst"),C3))),If(And(MatchQ(u,Condition(Times(v_,Power(g_,Plus($p("c",true),Times(d_,x)))),And(FreeQ(List(c,d,g),x),Less(NumericFactor(d),C0)))),Greater(NumericFactor(b),C0)),CompoundExpression(Set(a,Times(CN1,a)),Set(b,Times(CN1,b))))),List(FunctionOfExponentialOfLinearSubst(u,a,b,f,x),a,b,f))))),
 SetDelayed(FunctionOfExponentialOfLinear(u_,x_,a_,b_,f_),
-    If(FreeQ(u,x),List(a,b,f),If(Or(SameQ(u,x),CalculusQ(u)),False,If(And(And(PowerQ(u),FreeQ(Part(u,C1),x)),LinearQ(Part(u,C2),x)),FunctionOfExponentialOfLinearAux(a,b,f,Coefficient(Part(u,C2),x,C0),Coefficient(Part(u,C2),x,C1),Part(u,C1)),If(And(HyperbolicQ(u),LinearQ(Part(u,C1),x)),FunctionOfExponentialOfLinearAux(a,b,f,Coefficient(Part(u,C1),x,C0),Coefficient(Part(u,C1),x,C1),E),Module(List($s("lst")),If(And(And(PowerQ(u),FreeQ(Part(u,C1),x)),SumQ(Part(u,C2))),CompoundExpression(Set($s("lst"),FunctionOfExponentialOfLinear(Power(Part(u,C1),First(Part(u,C2))),x,a,b,f)),If(SameQ($s("lst"),False),False,FunctionOfExponentialOfLinear(Power(Part(u,C1),Rest(Part(u,C2))),x,Part($s("lst"),C1),Part($s("lst"),C2),Part($s("lst"),C3)))),CompoundExpression(Set($s("lst"),List(a,b,f)),Catch(CompoundExpression(Scan(Function(CompoundExpression(Set($s("lst"),FunctionOfExponentialOfLinear(Slot1,x,Part($s("lst"),C1),Part($s("lst"),C2),Part($s("lst"),C3))),If(SameQ($s("lst"),False),Throw(False)))),u),$s("lst")))))))))))
+    If(FreeQ(u,x),List(a,b,f),If(Or(SameQ(u,x),CalculusQ(u)),False,If(And(And(PowerQ(u),FreeQ(Part(u,C1),x)),LinearQ(Part(u,C2),x)),FunctionOfExponentialOfLinearAux(a,b,f,Coefficient(Part(u,C2),x,C0),Coefficient(Part(u,C2),x,C1),Part(u,C1)),If(And(HyperbolicQ(u),LinearQ(Part(u,C1),x)),FunctionOfExponentialOfLinearAux(a,b,f,Coefficient(Part(u,C1),x,C0),Coefficient(Part(u,C1),x,C1),E),Module(List($s("lst")),If(And(And(PowerQ(u),FreeQ(Part(u,C1),x)),SumQ(Part(u,C2))),CompoundExpression(Set($s("lst"),FunctionOfExponentialOfLinear(Power(Part(u,C1),First(Part(u,C2))),x,a,b,f)),If(SameQ($s("lst"),False),False,FunctionOfExponentialOfLinear(Power(Part(u,C1),Rest(Part(u,C2))),x,Part($s("lst"),C1),Part($s("lst"),C2),Part($s("lst"),C3)))),CompoundExpression(Set($s("lst"),List(a,b,f)),Catch(CompoundExpression(Scan(Function(CompoundExpression(Set($s("lst"),FunctionOfExponentialOfLinear(Slot1,x,Part($s("lst"),C1),Part($s("lst"),C2),Part($s("lst"),C3))),If(SameQ($s("lst"),False),Throw(False)))),u),$s("lst"))))))))))),
+SetDelayed(FunctionOfExponentialOfLinearAux(a_,b_,f_,c_,d_,g_),
+    If(FalseQ(a),List(c,d,g),If(ZeroQ(Plus(Times(Log(f),NonnumericFactors(b)),Times(CN1,Times(Log(g),NonnumericFactors(d))))),Module(List(Set($s("gcd"),GCD(NumericFactor(b),NumericFactor(d)))),CompoundExpression(If(And(Less(NumericFactor(b),C0),Less(NumericFactor(d),C0)),Set($s("gcd"),Times(CN1,$s("gcd")))),If(Equal($s("gcd"),NumericFactor(b)),List(a,b,f),If(Equal($s("gcd"),NumericFactor(d)),List(c,d,g),List(C0,Times($s("gcd"),NonnumericFactors(b)),f))))),False)))
   );
 }

@@ -15,8 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class UtilityFunctions2 { 
   public static IAST RULES = List( 
-SetDelayed(TrigSimplifyAux(Times($p("u",true),Times(Power(Tan(v_),$p("n",true)),Power(Plus(a_,Times($p("b",true),Power(Sec(v_),$p("n",true)))),CN1)))),
-    Condition(Times(u,Times(Power(Sin(v),n),Power(Plus(b,Times(a,Power(Cos(v),n))),CN1))),And(And(IntIntegerQ(n),Greater(n,C0)),NonsumQ(a)))),
 SetDelayed(TrigSimplifyAux(Times($p("u",true),Times(Power(Cot(v_),$p("n",true)),Power(Plus(a_,Times($p("b",true),Power(Csc(v_),$p("n",true)))),CN1)))),
     Condition(Times(u,Times(Power(Cos(v),n),Power(Plus(b,Times(a,Power(Sin(v),n))),CN1))),And(And(IntIntegerQ(n),Greater(n,C0)),NonsumQ(a)))),
 SetDelayed(TrigSimplifyAux(Times(Power(Sin(v_),$p("m",true)),Power(Plus(Times($p("a",true),Power(Cos(v_),$p("n",true))),Times($p("b",true),Power(Sin(v_),$p("n",true)))),p_))),
@@ -208,6 +206,8 @@ SetDelayed(SimpSum(u_,Times($p("v",true),Power(Sin(z_),C2))),
 SetDelayed(SimpSum(u_,Times($p("v",true),Power(Cos(z_),C2))),
     Condition(Times(u,Power(Sin(z),C2)),SameQ(u,Times(CN1,v)))),
 SetDelayed(SimpSum(u_,Times($p("v",true),Power(Tan(z_),C2))),
-    Condition(Times(u,Power(Sec(z),C2)),SameQ(u,v)))
+    Condition(Times(u,Power(Sec(z),C2)),SameQ(u,v))),
+SetDelayed(SimpSum(u_,Times($p("v",true),Power(Cot(z_),C2))),
+    Condition(Times(u,Power(Csc(z),C2)),SameQ(u,v)))
   );
 }

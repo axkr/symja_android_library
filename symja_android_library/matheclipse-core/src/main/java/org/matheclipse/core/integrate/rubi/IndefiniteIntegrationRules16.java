@@ -15,10 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class IndefiniteIntegrationRules16 { 
   public static IAST RULES = List( 
-SetDelayed(Int(Times($p("u",true),Power(Times(Power(v_,$p("m",true)),Power(w_,$p("n",true))),p_)),$p("x",$s("Symbol"))),
-    Condition(Module(List(Set(r,Simplify(Times(Power(Times(Power(v,m),Power(w,n)),p),Power(Times(Power(v,Times(m,p)),Power(w,Times(n,p))),CN1)))),$s("lst")),Condition(CompoundExpression(Set($s("lst"),SplitFreeFactors(Times(Power(v,Times(m,p)),Power(w,Times(n,p))),x)),Times(Times(r,Part($s("lst"),C1)),Int(Regularize(Times(u,Part($s("lst"),C2)),x),x))),NonzeroQ(Plus(r,Times(CN1,C1))))),And(And(FreeQ(p,x),Not(PowerQ(v))),Not(PowerQ(w))))),
-SetDelayed(Int(Times(Times($p("u",true),Power(v_,m_)),Power(w_,n_)),$p("x",$s("Symbol"))),
-    Condition(Module(List(Set(q,Cancel(Times(v,Power(w,CN1))))),Condition(Times(Times(Times(Power(v,m),Power(w,n)),Power(Power(q,m),CN1)),Int(Times(u,Power(q,m)),x)),IntPolynomialQ(q,x))),And(And(FractionQ(List(m,n)),Equal(Plus(m,n),C0)),IntPolynomialQ(List(v,w),x)))),
 SetDelayed(Int(u_,$p("x",$s("Symbol"))),
     Module(List(Set($s("lst"),SubstForFractionalPowerOfLinear(u,x))),Condition(Dist(Times(Part($s("lst"),C2),Part($s("lst"),C4)),Subst(Int(Part($s("lst"),C1),x),x,Power(Part($s("lst"),C3),Times(C1,Power(Part($s("lst"),C2),CN1))))),NotFalseQ($s("lst"))))),
 SetDelayed(Int(Times($p("u",true),Power(Plus(a_,Times($p("b",true),Power(v_,C2))),CN1)),$p("x",$s("Symbol"))),

@@ -754,9 +754,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 			IExpr temp = expr.evaluate(this);
 			if (temp != null) {
-				if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
-					System.out.println(expr.toString());
-				}
+				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
+				// System.out.println(expr.toString());
+				// }
+				// if (expr.isAST(F.Integrate)) {
+				// System.out.println(expr.toString());
+				// System.out.println(" --> " + temp.toString());
+				// }
 				if (fTraceMode) {
 					fTraceStack.addIfEmpty(expr);
 					fTraceStack.add(temp);
@@ -766,9 +770,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				do {
 					temp = result.evaluate(this);
 					if (temp != null) {
-						if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
-							System.out.println(expr.toString());
-						}
+						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
+						// System.out.println(expr.toString());
+						// }
+						// if (result.isAST(F.Integrate)) {
+						// System.out.println(result.toString());
+						// System.out.println(" --> " + temp.toString());
+						// }
 						if (fTraceMode) {
 							fTraceStack.add(temp);
 						}

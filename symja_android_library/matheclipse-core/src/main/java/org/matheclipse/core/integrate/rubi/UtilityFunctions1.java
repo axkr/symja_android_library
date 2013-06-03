@@ -15,8 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class UtilityFunctions1 { 
   public static IAST RULES = List( 
-SetDelayed(BinomialQ(u_,$p("x",$s("Symbol"))),
-    NotFalseQ(BinomialTest(u,x))),
 SetDelayed(MonomialSumQ(u_,$p("x",$s("Symbol"))),
     And(SumQ(u),Catch(CompoundExpression(Scan(Function(If(Or(FreeQ(Slot1,x),MonomialQ(Part(SplitFreeFactors(Slot1,x),C2),x)),Null,Throw(False))),u),True)))),
 SetDelayed(PolynomialTermQ(u_,$p("x",$s("Symbol"))),
@@ -206,6 +204,8 @@ SetDelayed(TrigSimplifyAux(Times(Times($p("u",true),Power(Sec(v_),$p("m",true)))
 SetDelayed(TrigSimplifyAux(Times(Times($p("u",true),Power(Sin(v_),$p("m",true))),Power(Plus(Plus($p("a",true),Times($p("b",true),Power(Cot(v_),$p("n",true)))),Times($p("c",true),Power(Csc(v_),$p("n",true)))),$p("p",true)))),
     Condition(Times(Times(u,Power(Sin(v),Plus(m,Times(CN1,Times(n,p))))),Power(Plus(Plus(c,Times(b,Power(Cos(v),n))),Times(a,Power(Sin(v),n))),p)),IntIntegerQ(List(m,n,p)))),
 SetDelayed(TrigSimplifyAux(Times(Times($p("u",true),Power(Csc(v_),$p("m",true))),Power(Plus(Plus($p("a",true),Times($p("b",true),Power(Cot(v_),$p("n",true)))),Times($p("c",true),Power(Csc(v_),$p("n",true)))),$p("p",true)))),
-    Condition(Times(Times(u,Power(Csc(v),Plus(m,Times(n,p)))),Power(Plus(Plus(c,Times(b,Power(Cos(v),n))),Times(a,Power(Sin(v),n))),p)),IntIntegerQ(List(m,n,p))))
+    Condition(Times(Times(u,Power(Csc(v),Plus(m,Times(n,p)))),Power(Plus(Plus(c,Times(b,Power(Cos(v),n))),Times(a,Power(Sin(v),n))),p)),IntIntegerQ(List(m,n,p)))),
+SetDelayed(TrigSimplifyAux(Times($p("u",true),Times(Power(Tan(v_),$p("n",true)),Power(Plus(a_,Times($p("b",true),Power(Sec(v_),$p("n",true)))),CN1)))),
+    Condition(Times(u,Times(Power(Sin(v),n),Power(Plus(b,Times(a,Power(Cos(v),n))),CN1))),And(And(IntIntegerQ(n),Greater(n,C0)),NonsumQ(a))))
   );
 }

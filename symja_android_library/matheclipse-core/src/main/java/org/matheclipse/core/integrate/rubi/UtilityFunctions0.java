@@ -205,13 +205,13 @@ SetDelayed(SplitFactorsOfTerms(u_,$p("x",$s("Symbol"))),
     Module(List(Set($s("lst"),SplitFreeTerms(u,x)),v,w),CompoundExpression(CompoundExpression(CompoundExpression(Set(v,Part($s("lst"),C1)),Set(w,Part($s("lst"),C2))),If(ZeroQ(w),Set($s("lst"),List()),If(SumQ(w),CompoundExpression(CompoundExpression(Set($s("lst"),Map(Function(SplitFreeFactors(Slot1,x)),Apply($s("List"),w))),Set($s("lst"),Map(Function(Prepend(SplitFreeFactors(Regularize(Part(Slot1,C2),x),x),Part(Slot1,C1))),$s("lst")))),Set($s("lst"),Map(Function(List(Times(Part(Slot1,C1),Part(Slot1,C2)),Part(Slot1,C3))),$s("lst")))),CompoundExpression(CompoundExpression(Set($s("lst"),SplitFreeFactors(w,x)),Set($s("lst"),Prepend(SplitFreeFactors(Regularize(Part($s("lst"),C2),x),x),Part($s("lst"),C1)))),Set($s("lst"),List(List(Times(Part($s("lst"),C1),Part($s("lst"),C2)),Part($s("lst"),C3)))))))),If(ZeroQ(v),$s("lst"),Prepend($s("lst"),List(C1,v)))))),
 SetDelayed(SplitMonomialTerms(u_,$p("x",$s("Symbol"))),
     Map(Function(If(Or(FreeQ(Slot1,x),MatchQ(Slot1,Condition(Times($p("a",true),Power(x,$p("n",true))),FreeQ(List(a,n),x)))),List(Slot1,C0),List(C0,Slot1))),u)),
-SetDelayed(IntPolynomialQ($p("u",$s("List")),$p("x",$s("Symbol"))),
-    MapAnd($s("Integrate::IntPolynomialQ"),u,x)),
 SetDelayed(LinearQ(u_,$p("x",$s("Symbol"))),
     And(IntPolynomialQ(u,x),SameQ(Exponent(u,x),C1))),
 SetDelayed(QuadraticQ(u_,$p("x",$s("Symbol"))),
     And(IntPolynomialQ(u,x),SameQ(Exponent(u,x),C2))),
 SetDelayed(MonomialQ(u_,$p("x",$s("Symbol"))),
-    MatchQ(u,Condition(Power(x,$p("n",true)),FreeQ(n,x))))
+    MatchQ(u,Condition(Power(x,$p("n",true)),FreeQ(n,x)))),
+SetDelayed(BinomialQ(u_,$p("x",$s("Symbol"))),
+    NotFalseQ(BinomialTest(u,x)))
   );
 }
