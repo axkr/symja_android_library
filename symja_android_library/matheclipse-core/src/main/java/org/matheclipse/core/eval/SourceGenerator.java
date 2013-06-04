@@ -383,7 +383,7 @@ public class SourceGenerator {
 								}
 							}
 							if (i < files.length - 1) {
-								System.out.println(",");
+								System.out.println(',');
 							}
 						} catch (final ClassNotFoundException cnfex) {
 							System.err.println(cnfex);
@@ -459,7 +459,7 @@ public class SourceGenerator {
 								}
 							}
 							if (i < files.length - 1) {
-								System.out.println(",");
+								System.out.println(',');
 							}
 						} catch (final ClassNotFoundException cnfex) {
 							System.err.println(cnfex);

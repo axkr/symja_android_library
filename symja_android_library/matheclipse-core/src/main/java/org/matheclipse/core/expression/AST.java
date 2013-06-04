@@ -1502,9 +1502,6 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 	@Override
 	public IExpr abs() {
-		if (this instanceof INumber) {
-			return ((INumber) this).eabs();
-		}
 		throw new UnsupportedOperationException();
 	}
 

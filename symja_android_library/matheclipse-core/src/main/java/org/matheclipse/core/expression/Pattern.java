@@ -282,7 +282,7 @@ public class Pattern extends ExprImpl implements IPattern {
 				}
 			} else {
 				String symbolStr = fSymbol.toString();
-				if (symbolStr.length() == 1 && fCondition == null && fDefault == false) {
+				if (symbolStr.length() == 1 && fCondition == null && !fDefault) {
 					char ch = symbolStr.charAt(0);
 					if ('a' <= ch && ch <= 'z') {
 						return symbolStr + "_";
@@ -299,7 +299,7 @@ public class Pattern extends ExprImpl implements IPattern {
 					buffer.append(",true");
 				}
 			}
-			buffer.append(")");
+			buffer.append(')');
 			return buffer.toString();
 		}
 		return toString();

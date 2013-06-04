@@ -36,7 +36,7 @@ public class VisitorReplacePart extends AbstractVisitor<IExpr> {
 		if (index == fPositions.length - 1) {
 			result.set(position, fReplaceExpr);
 		} else {
-			IExpr arg = ((IAST) result).get(position);
+			IExpr arg = result.get(position);
 			if (arg.isAST()) {
 				result.set(position, visitIndex((IAST) arg, index + 1));
 			}

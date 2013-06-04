@@ -85,9 +85,7 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
 	public int[] next() {
 		if (result == null) {
 			result = new int[k];
-			for (int i = 0; i < k; i++) {
-				result[i] = multiset[i];
-			}
+			System.arraycopy(multiset, 0, result, 0, k);
 		} else { 
 			for (int i = k - 1; i >= 0; i--) {
 				if (result[i] < multiset[i + (n - k)]) {

@@ -29,7 +29,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * The BigInteger constant minus one.
 	 * 
 	 */
-	public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1l);
+	public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
 
 	/**
 	 * Be cautious with this method, no new internal BigInteger is created

@@ -141,7 +141,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 		}
 		if (obj instanceof PatternMatcherAndInvoker) {
 			// don't compare fInstance, fMethod, fTypes here
-			return super.equals(obj);
+			return super.equals((PatternMatcherAndInvoker)obj);
 		}
 
 		return false;

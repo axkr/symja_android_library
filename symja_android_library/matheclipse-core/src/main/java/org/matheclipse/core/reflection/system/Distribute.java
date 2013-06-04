@@ -61,12 +61,12 @@ public class Distribute extends AbstractFunctionEvaluator {
 			for (int i = 1; i < temp.size(); i++) {
 				IAST res2 = stepResult.clone();
 				res2.add(temp.get(i));
-				distributePosition(resultCollector, res2, head, (IAST) arg1, position + 1);
+				distributePosition(resultCollector, res2, head, arg1, position + 1);
 			}
 		} else {
 			IAST res2 = stepResult.clone();
 			res2.add(arg1.get(position));
-			distributePosition(resultCollector, res2, head, (IAST) arg1, position + 1);
+			distributePosition(resultCollector, res2, head, arg1, position + 1);
 		}
 
 	}

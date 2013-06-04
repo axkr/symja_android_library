@@ -2,16 +2,12 @@ package org.matheclipse.core.eval;
 
 import java.util.Stack;
 
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.patternmatching.PatternMatcher;
 
 import com.google.common.base.Predicate;
 
 final public class TraceStack {
-
-	private static final long serialVersionUID = 3939797221814484213L;
 
 	final Stack<IAST> fStack = new Stack<IAST>();
 	final Predicate<IExpr> fMatcher;

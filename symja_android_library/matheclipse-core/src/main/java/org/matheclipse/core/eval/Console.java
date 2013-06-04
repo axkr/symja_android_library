@@ -49,7 +49,7 @@ public class Console {
 				String line;
 				while ((line = f.readLine()) != null) {
 					buff.append(line);
-					buff.append("\n");
+					buff.append('\n');
 				}
 				f.close();
 				inputExpression = buff.toString();
@@ -240,7 +240,7 @@ public class Console {
 						if (s.length() > 1) {
 							input.append(s.substring(0, s.length() - 1));
 						} else {
-							input.append(" ");
+							input.append(' ');
 						}
 					}
 				}

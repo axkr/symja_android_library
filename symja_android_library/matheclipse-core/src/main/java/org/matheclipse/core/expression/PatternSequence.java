@@ -154,7 +154,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 					buffer.append(",true");
 				}
 			}
-			buffer.append(")");
+			buffer.append(')');
 			return buffer.toString();
 		}
 		return toString();
@@ -328,7 +328,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * {@inheritDoc}
 	 */
 	final public boolean isPatternSequence() {
-		return this instanceof IPatternSequence;
+		return true;
 	}
 	
 	/**

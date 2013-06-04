@@ -210,7 +210,7 @@ class QuineMcCluskyTerm {
 			temp = orAST.get(i);
 			ArrayList<Byte> t = new ArrayList<Byte>();
 			for (int j = 1; j < vars.size(); j++) {
-				t.add((byte) NIL);
+				t.add(NIL);
 			}
 			if (temp.isAST(F.And)) {
 				IAST andAST = (IAST) temp;
