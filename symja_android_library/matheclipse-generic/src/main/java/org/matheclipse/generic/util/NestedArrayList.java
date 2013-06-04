@@ -57,7 +57,7 @@ public class NestedArrayList<E extends IElement> extends ArrayList<E> implements
 			return true;
 		}
 		if (obj instanceof NestedArrayList) {
-			return super.equals(obj);
+			return super.equals((NestedArrayList)obj);
 		}
 		return false;
 	}
