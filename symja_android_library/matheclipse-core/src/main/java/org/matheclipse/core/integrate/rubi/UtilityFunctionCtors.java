@@ -23,17 +23,12 @@ public class UtilityFunctionCtors {
 	public static ISymbol INTEGRATE_SIMP = null;
 	public static ISymbol INTEGRATE_REAPLIST = null;
 
-	public static ISymbol $sDBG(final String symbolName) {
-		ISymbol sym = $s(symbolName);
+	private static ISymbol $sDBG(final String symbolName) {
+		return $s(symbolName, false);
+		// ISymbol sym = $s(symbolName, false);
 		// sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		return sym;
+		// return sym;
 	}
-
-	// public static ISymbol $sDBG_2(final String symbolName) {
-	// ISymbol sym = $s(symbolName);
-	// sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
-	// return sym;
-	// }
 
 	public static IAST AlgebraicFunctionQ(final IExpr a0, final IExpr a1) {
 		return binary($sDBG(INTEGRATE_PREFIX + "AlgebraicFunctionQ"), a0, a1);
@@ -718,8 +713,8 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST ReapList(final IExpr a0) {
-		if (INTEGRATE_REAPLIST==null){
-			INTEGRATE_REAPLIST=$sDBG(INTEGRATE_PREFIX + "ReapList");
+		if (INTEGRATE_REAPLIST == null) {
+			INTEGRATE_REAPLIST = $sDBG(INTEGRATE_PREFIX + "ReapList");
 			INTEGRATE_REAPLIST.setAttributes(ISymbol.HOLDFIRST);
 		}
 		return unary(INTEGRATE_REAPLIST, a0);

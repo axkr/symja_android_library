@@ -50,7 +50,7 @@ public class UtilityFunctions {
 
 	public static ISymbol $sDBG(final String symbolName) {
 		return $s(symbolName);
-		// ISymbol sym = $s(symbolName);
+		// ISymbol sym = $s(symbolName, false);
 		// sym.setAttributes(sym.getAttributes() | ISymbol.CONSOLE_OUTPUT);
 		// return sym;
 	}

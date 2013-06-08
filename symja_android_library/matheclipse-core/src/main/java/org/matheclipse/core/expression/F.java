@@ -2482,6 +2482,10 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol $s(final String symbolName) {
+		return $s(symbolName, true);
+	}
+
+	public static ISymbol $s(final String symbolName, boolean setEval) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			name = symbolName.toLowerCase();
@@ -2526,13 +2530,17 @@ public class F {
 		} else {
 			symbol = new Symbol(name);
 			PREDEFINED_SYMBOLS_MAP.put(name, symbol);
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				SystemNamespace.DEFAULT.setEvaluator(symbol);
+			if (!setEval) {
+				symbol.setEvaluator(Symbol.DUMMY_EVALUATOR);
 			} else {
-				if (Character.isUpperCase(name.charAt(0))) {
-					// probably a predefined function
-					// use reflection to setUp this symbol
+				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 					SystemNamespace.DEFAULT.setEvaluator(symbol);
+				} else {
+					if (Character.isUpperCase(name.charAt(0))) {
+						// probably a predefined function
+						// use reflection to setUp this symbol
+						SystemNamespace.DEFAULT.setEvaluator(symbol);
+					}
 				}
 			}
 		}

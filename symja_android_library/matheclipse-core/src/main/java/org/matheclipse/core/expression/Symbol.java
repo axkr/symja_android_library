@@ -120,7 +120,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		}
 	}
 
-	private static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
+	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
 	/* package private */String fSymbolName;
 
