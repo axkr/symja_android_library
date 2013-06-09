@@ -899,6 +899,8 @@ public class F {
 			PREDEFINED_INTERNAL_STRINGS.put("False", "False");
 			PREDEFINED_INTERNAL_STRINGS.put("True", "True");
 			PREDEFINED_INTERNAL_STRINGS.put("Null", "Null");
+			PREDEFINED_INTERNAL_STRINGS.put("Integer", "IntegerHead");
+			PREDEFINED_INTERNAL_STRINGS.put("Symbol", "SymbolHead");
 
 			Plus.setDefaultValue(C0);
 			Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
@@ -2329,6 +2331,21 @@ public class F {
 	public static IPattern $p(final String symbolName, boolean def) {
 		return $p($s(symbolName), null, def);
 	}
+	
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbolName
+	 * @param check
+	 *            additional condition which should be checked in
+	 *            pattern-matching
+	 * @param def
+	 *            use a default value for this pattern if necessary
+	 * @return IPattern
+	 */
+	public static IPattern $p(final ISymbol symbol, boolean def) {
+		return $p(symbol, null, def);
+	}
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -2409,14 +2426,16 @@ public class F {
 		if (temp != null) {
 			return temp;
 		}
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String lcSymbolName = symbolName.toLowerCase();
+			// use the lower case string here to use it as associated class name
+			// in package org.matheclipse.core.reflection.system
+			temp = new Symbol(lcSymbolName);
+			PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
+			return temp;
+		}
 		temp = new Symbol(symbolName);
-		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
-		// if (!skipEvaluatorSettings &&
-		// Character.isUpperCase(symbolName.charAt(0))) {
-		// // probably a predefined function use reflection to setUp this
-		// // symbol
-		// SystemNamespace.DEFAULT.setEvaluator(temp);
-		// }
+		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp); 
 		return temp;
 	}
 
@@ -2434,7 +2453,7 @@ public class F {
 	private static ISymbol initPredefinedSymbol(final String symbolName) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String lcSymbolName = symbolName.toLowerCase();
-			// use the upper case string here to use it as associated class name
+			// use the lower case string here to use it as associated class name
 			// in package org.matheclipse.core.reflection.system
 			ISymbol temp = new Symbol(lcSymbolName);
 			PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
@@ -2538,15 +2557,7 @@ public class F {
 			if (!setEval) {
 				symbol.setEvaluator(Symbol.DUMMY_EVALUATOR);
 			} else {
-				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-					SystemNamespace.DEFAULT.setEvaluator(symbol);
-				} else {
-					if (Character.isUpperCase(name.charAt(0))) {
-						// probably a predefined function
-						// use reflection to setUp this symbol
-						SystemNamespace.DEFAULT.setEvaluator(symbol);
-					}
-				}
+				symbol.getEvaluator();
 			}
 		}
 

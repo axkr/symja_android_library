@@ -282,13 +282,17 @@ public class Pattern extends ExprImpl implements IPattern {
 				}
 			} else {
 				String symbolStr = fSymbol.toString();
+				char ch = symbolStr.charAt(0);
 				if (symbolStr.length() == 1 && fCondition == null && !fDefault) {
-					char ch = symbolStr.charAt(0);
 					if ('a' <= ch && ch <= 'z') {
 						return symbolStr + "_";
 					}
 				}
-				buffer.append("\"" + symbolStr + "\"");
+				if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
+					buffer.append(symbolStr);
+				} else {
+					buffer.append("\"" + symbolStr + "\"");
+				}
 				if (fCondition != null) {
 					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 				}
