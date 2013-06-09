@@ -906,7 +906,8 @@ public class F {
 			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
 			Power.setDefaultValue(2, C1);
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
-//			Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+			// initialize only the utility function rules for Integrate
+			// other rules are "lazy loaded" on first use og Integrate function
 			final EvalEngine engine = EvalEngine.get();
 			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 			if (ruleList != null) {
