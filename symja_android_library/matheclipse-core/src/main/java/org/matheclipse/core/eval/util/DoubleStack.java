@@ -8,8 +8,7 @@ public class DoubleStack {
 	int top;
 
 	public DoubleStack(final int initialCapacity) {
-		Alloc alloc = Alloc.get();
-		stack = alloc.vector(initialCapacity);
+		stack = Alloc.vector(initialCapacity);
 		top = -1;
 	}
 
@@ -21,8 +20,7 @@ public class DoubleStack {
 			if (newCapacity < minCapacity) {
 				newCapacity = minCapacity;
 			}
-			Alloc alloc = Alloc.get();
-			stack = alloc.vector(newCapacity);
+			stack = Alloc.vector(newCapacity);
 			System.arraycopy(oldData, 0, stack, 0, oldCapacity);
 		}
 	}

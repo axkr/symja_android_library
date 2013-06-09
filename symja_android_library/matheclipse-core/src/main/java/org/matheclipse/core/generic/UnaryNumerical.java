@@ -38,14 +38,12 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 
 	public double value(double x) {
 		double result = 0.0;
-		Alloc alloc = Alloc.get();
-		final double[] stack = alloc.vector(10);
+		final double[] stack = Alloc.vector(10);
 		try {
 			fVariable.pushLocalVariable(Num.valueOf(x));
 			result = EvalDouble.eval(stack, 0, fFunction);
 		} finally {
 			fVariable.popLocalVariable();
-			alloc.freeVector(10);
 		}
 		return result;
 	}

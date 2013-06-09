@@ -52,8 +52,7 @@ public class EvalDouble extends DoubleEvaluator {
 			int newTop = top;
 			// fast evaluation path
 			if (top + ast.size() >= stack.length) {
-				Alloc alloc = Alloc.get();
-				stack = alloc.vector(ast.size() + 50);
+				stack = Alloc.vector(ast.size() + 50);
 			}
 			for (int i = 1; i < ast.size(); i++) {
 				++newTop;

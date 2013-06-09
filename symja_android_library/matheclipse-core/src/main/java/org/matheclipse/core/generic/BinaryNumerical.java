@@ -35,10 +35,8 @@ public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
 		try {
 			variable1.pushLocalVariable(Num.valueOf(x));
 			variable2.pushLocalVariable(Num.valueOf(y));
-			Alloc alloc = Alloc.get();
-			final double[] stack = alloc.vector(10);
+			final double[] stack = Alloc.vector(10);
 			result = EvalDouble.eval(stack, 0, fun);
-			alloc.freeVector(10);
 		} finally {
 			variable2.popLocalVariable();
 			variable1.popLocalVariable();

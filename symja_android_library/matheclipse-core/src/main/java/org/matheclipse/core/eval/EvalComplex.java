@@ -19,15 +19,14 @@ public class EvalComplex {
 		if (expr instanceof IAST) {
 			return evalAST(stack, top, (IAST) expr);
 		}
-		Alloc alloc = Alloc.get();
 		if (expr instanceof ISignedNumber) {
-			final double[] result = alloc.vector(2);
+			final double[] result = Alloc.vector(2);
 			result[0] = ((ISignedNumber) expr).doubleValue();
 			result[1] = 0.0;
 			return result;
 		}
 		if (expr instanceof ComplexNum) {
-			final double[] res = alloc.vector(2);
+			final double[] res = Alloc.vector(2);
 			res[0] = ((ComplexNum) expr).getRealPart();
 			res[1] = ((ComplexNum) expr).getImaginaryPart();
 			return res;
@@ -54,15 +53,14 @@ public class EvalComplex {
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(ast);
-		Alloc alloc = Alloc.get();
 		if (result instanceof ComplexNum) {
-			final double[] res = alloc.vector(2);
+			final double[] res = Alloc.vector(2);
 			res[0] = ((ComplexNum) result).getRealPart();
 			res[1] = ((ComplexNum) result).getImaginaryPart();
 			return res;
 		}
 		if (result instanceof Num) {
-			final double[] res = alloc.vector(2);
+			final double[] res = Alloc.vector(2);
 			res[0] = ((Num) result).doubleValue();
 			res[1] = 0.0;
 			return res;
@@ -71,17 +69,16 @@ public class EvalComplex {
 	}
 
 	public static double[] evalSymbol(final ISymbol symbol) {
-		Alloc alloc = Alloc.get();
 		if (symbol.hasLocalVariableStack()) {
 			final IExpr expr = symbol.get();
 			if (expr instanceof ISignedNumber) {
-				final double[] result = alloc.vector(2);
+				final double[] result = Alloc.vector(2);
 				result[0] = ((ISignedNumber) expr).doubleValue();
 				result[1] = 0.0;
 				return result;
 			}
 			if (expr instanceof ComplexNum) {
-				final double[] result = alloc.vector(2);
+				final double[] result = Alloc.vector(2);
 				result[0] = ((ComplexNum) expr).getRealPart();
 				result[1] = ((ComplexNum) expr).getImaginaryPart();
 				return result;
@@ -90,7 +87,7 @@ public class EvalComplex {
 		final IEvaluator module = symbol.getEvaluator();
 		if (module instanceof INumericConstant) {
 			// fast evaluation path
-			final double[] result = alloc.vector(2);
+			final double[] result = Alloc.vector(2);
 			result[0] = ((INumericConstant) module).evalReal();
 			result[1] = 0.0;
 			return result;
@@ -102,13 +99,13 @@ public class EvalComplex {
 		// slow evaluation path
 		final IExpr result = F.evaln(symbol);
 		if (result instanceof ComplexNum) {
-			final double[] res = alloc.vector(2);
+			final double[] res = Alloc.vector(2);
 			res[0] = ((ComplexNum) result).getRealPart();
 			res[1] = ((ComplexNum) result).getImaginaryPart();
 			return res;
 		}
 		if (result instanceof Num) {
-			final double[] res = alloc.vector(2);
+			final double[] res = Alloc.vector(2);
 			res[0] = ((Num) result).doubleValue();
 			res[1] = 0.0;
 			return res;
