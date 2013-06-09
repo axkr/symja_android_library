@@ -513,19 +513,16 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 	}
 
 	@Override
+	/**
+	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first time.
+	 * 
+	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
+	 */
 	public IAST getRuleAST() {
-
 		// TODO Integrate[] is currently not working properly in all cases!
-
 		// long start = System.currentTimeMillis();
 
 		IAST ast = F.ast(F.List, 10000, false);
-
-		ast.addAll(UtilityFunctions0.RULES);
-		ast.addAll(UtilityFunctions1.RULES);
-		ast.addAll(UtilityFunctions2.RULES);
-		ast.addAll(UtilityFunctions3.RULES);
-		ast.addAll(UtilityFunctions4.RULES);
 		ast.addAll(IndefiniteIntegrationRules0.RULES);
 		ast.addAll(IndefiniteIntegrationRules1.RULES);
 		ast.addAll(IndefiniteIntegrationRules2.RULES);
@@ -548,6 +545,23 @@ public class Integrate extends AbstractFunctionEvaluator implements IConstantHea
 		// long end = System.currentTimeMillis();
 		// System.out.println(end - start);
 		// }
+		return ast;
+
+	}
+
+	/**
+	 * Get the rules defined for Integrate utility functions. These rules are
+	 * loaded on system startup.
+	 * 
+	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
+	 */
+	public static IAST getUtilityFunctionsRuleAST() {
+		IAST ast = F.ast(F.List, 10000, false);
+		ast.addAll(UtilityFunctions0.RULES);
+		ast.addAll(UtilityFunctions1.RULES);
+		ast.addAll(UtilityFunctions2.RULES);
+		ast.addAll(UtilityFunctions3.RULES);
+		ast.addAll(UtilityFunctions4.RULES);
 		return ast;
 
 	}

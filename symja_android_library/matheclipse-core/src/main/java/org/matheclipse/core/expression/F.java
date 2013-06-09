@@ -906,8 +906,12 @@ public class F {
 			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
 			Power.setDefaultValue(2, C1);
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
-			Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-
+//			Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+			final EvalEngine engine = EvalEngine.get();
+			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+			if (ruleList != null) {
+				engine.addRules(ruleList);
+			}
 			// long end = System.currentTimeMillis();
 			// System.out.println("Init time: " + (end - start));
 		} catch (Throwable th) {
