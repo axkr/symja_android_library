@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.boole.QuineMcCluskyFormuala;
+import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -28,7 +28,7 @@ public class BooleanMinimize extends AbstractFunctionEvaluator implements IConst
 		if (ast.get(1).isASTSizeGE(F.Or, 3)) {
 			try {
 				// System.out.println(ast.get(1));
-				QuineMcCluskyFormuala f = QuineMcCluskyFormuala.read((IAST) ast.get(1));
+				QuineMcCluskyFormula f = QuineMcCluskyFormula.read((IAST) ast.get(1));
 				// System.out.println(f);
 				f.reduceToPrimeImplicants();
 				// System.out.println(f);

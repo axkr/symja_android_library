@@ -43,13 +43,13 @@ import org.matheclipse.core.interfaces.IExpr;
  * href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine
  * McCluskey algorithm</a>.
  */
-public class QuineMcCluskyFormuala {
+public class QuineMcCluskyFormula {
 
 	private List<QuineMcCluskyTerm> termList;
 	private List<QuineMcCluskyTerm> originalTermList;
 	private final IAST variables;
 
-	public QuineMcCluskyFormuala(List<QuineMcCluskyTerm> termList, IAST variables) {
+	public QuineMcCluskyFormula(List<QuineMcCluskyTerm> termList, IAST variables) {
 		this.termList = termList;
 		this.variables = variables;
 	}
@@ -144,28 +144,28 @@ public class QuineMcCluskyFormuala {
 		originalTermList = null;
 	}
 
-	public static QuineMcCluskyFormuala read(Reader reader) throws IOException {
+	public static QuineMcCluskyFormula read(Reader reader) throws IOException {
 		ArrayList<QuineMcCluskyTerm> terms = new ArrayList<QuineMcCluskyTerm>();
 		QuineMcCluskyTerm term;
 		while ((term = QuineMcCluskyTerm.read(reader)) != null) {
 			terms.add(term);
 		}
-		return new QuineMcCluskyFormuala(terms, null);
+		return new QuineMcCluskyFormula(terms, null);
 	}
 
-	public static QuineMcCluskyFormuala read(String str) {
+	public static QuineMcCluskyFormula read(String str) {
 		ArrayList<QuineMcCluskyTerm> terms = QuineMcCluskyTerm.read(str);
-		return new QuineMcCluskyFormuala(terms, null);
+		return new QuineMcCluskyFormula(terms, null);
 	}
 
-	public static QuineMcCluskyFormuala read(IAST orAST) throws BooleanFunctionConversionException {
+	public static QuineMcCluskyFormula read(IAST orAST) throws BooleanFunctionConversionException {
 		ExprVariables exVar = new ExprVariables(orAST);
 		IAST vars = exVar.getVarList();
 		if (vars.size() == 1) {
 			throw new BooleanFunctionConversionException();
 		}
 		ArrayList<QuineMcCluskyTerm> terms = QuineMcCluskyTerm.convertToTerms(orAST, vars);
-		return new QuineMcCluskyFormuala(terms, vars);
+		return new QuineMcCluskyFormula(terms, vars);
 	}
 
 	private int extractEssentialImplicant(boolean[][] table) {
@@ -230,7 +230,7 @@ public class QuineMcCluskyFormuala {
 	private final static String TEST3 = "11\n" + "01";
 
 	public static void main(String[] args) throws IOException {
-		QuineMcCluskyFormuala f = QuineMcCluskyFormuala.read(TEST2);
+		QuineMcCluskyFormula f = QuineMcCluskyFormula.read(TEST2);
 		f.reduceToPrimeImplicants();
 		System.out.println(f);
 		f.reducePrimeImplicantsToSubset();
