@@ -34,8 +34,7 @@ public class HornerScheme {
 		map = new TreeMap<ISignedNumber, IAST>(comp);
 	}
 
-	public IAST generate(boolean numericMode,
-			IAST poly, ISymbol sym) {
+	public IAST generate(boolean numericMode, IAST poly, ISymbol sym) {
 		if (numericMode) {
 			for (int i = 1; i < poly.size(); i++) {
 				collectTermN(sym, poly.get(i));
@@ -44,17 +43,14 @@ public class HornerScheme {
 			IAST startResult = result;
 			IAST temp;
 			ISignedNumber start = F.CD0;
-			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter
-					.hasNext();) {
+			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
 				IExpr coefficient = getCoefficient(exponent);
 				if (exponent.isLessThan(F.CD1)) {
 					if (exponent.compareTo(F.CD0) == 0) {
 						result.add(coefficient);
 					} else {
-						result
-								.add(F.Times(coefficient, F
-										.Power(sym, exponent)));
+						result.add(F.Times(coefficient, F.Power(sym, exponent)));
 					}
 				} else {
 					temp = F.Times();
@@ -80,17 +76,14 @@ public class HornerScheme {
 			IAST startResult = result;
 			IAST temp;
 			ISignedNumber start = F.C0;
-			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter
-					.hasNext();) {
+			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
 				IExpr coefficient = getCoefficient(exponent);
 				if (exponent.isLessThan(F.C1)) {
 					if (exponent.compareTo(F.C0) == 0) {
 						result.add(coefficient);
 					} else {
-						result
-								.add(F.Times(coefficient, F
-										.Power(sym, exponent)));
+						result.add(F.Times(coefficient, F.Power(sym, exponent)));
 					}
 				} else {
 					temp = F.Times();
@@ -125,31 +118,26 @@ public class HornerScheme {
 		return coefficient;
 	}
 
-	private void collectTerm(ISymbol sym,
-			IExpr expr) {
+	private void collectTerm(ISymbol sym, IExpr expr) {
 		if (expr instanceof IAST) {
 			IAST term = (IAST) expr;
 			if (term.isASTSizeGE(F.Times, 2)) {
 				for (int i = 1; i < term.size(); i++) {
 					if (sym.equals(term.get(i))) {
-						IAST temp = F.ast(term, F.Times, false, i,
-								i + 1);
+						IAST temp = F.ast(term, F.Times, false, i, i + 1);
 						addToMap(F.C1, temp);
 						return;
 					} else if (term.get(i).isAST(F.Power, 3)) {
 						IAST pow = (IAST) term.get(i);
-						if (pow.get(1).equals(sym)
-								&& pow.get(2) instanceof ISignedNumber) {
-							IAST temp = F.ast(term, F.Times, false,
-									i, i + 1);
+						if (pow.get(1).equals(sym) && pow.get(2) instanceof ISignedNumber) {
+							IAST temp = F.ast(term, F.Times, false, i, i + 1);
 							addToMap((ISignedNumber) pow.get(2), temp);
 							return;
 						}
 					}
 				}
 			} else if (term.isAST(F.Power, 3)) {
-				if (term.get(1).equals(sym)
-						&& term.get(2) instanceof ISignedNumber) {
+				if (term.get(1).equals(sym) && term.get(2) instanceof ISignedNumber) {
 					addToMap((ISignedNumber) term.get(2), F.C1);
 					return;
 				}
@@ -161,31 +149,26 @@ public class HornerScheme {
 		addToMap(F.C0, expr);
 	}
 
-	private void collectTermN(ISymbol sym,
-			IExpr expr) {
+	private void collectTermN(ISymbol sym, IExpr expr) {
 		if (expr instanceof IAST) {
 			IAST term = (IAST) expr;
 			if (term.isASTSizeGE(F.Times, 2)) {
 				for (int i = 1; i < term.size(); i++) {
 					if (sym.equals(term.get(i))) {
-						IAST temp = F.ast(term, F.Times, false, i,
-								i + 1);
+						IAST temp = F.ast(term, F.Times, false, i, i + 1);
 						addToMap(F.CD1, temp);
 						return;
 					} else if (term.get(i).isAST(F.Power, 3)) {
 						IAST pow = (IAST) term.get(i);
-						if (pow.get(1).equals(sym)
-								&& pow.get(2) instanceof ISignedNumber) {
-							IAST temp = F.ast(term, F.Times, false,
-									i, i + 1);
+						if (pow.get(1).equals(sym) && pow.get(2).isSignedNumber()) {
+							IAST temp = F.ast(term, F.Times, false, i, i + 1);
 							addToMap((ISignedNumber) pow.get(2), temp);
 							return;
 						}
 					}
 				}
 			} else if (term.isAST(F.Power, 3)) {
-				if (term.get(1).equals(sym)
-						&& term.get(2) instanceof ISignedNumber) {
+				if (term.get(1).equals(sym) && term.get(2).isSignedNumber()) {
 					addToMap((ISignedNumber) term.get(2), F.CD1);
 					return;
 				}
@@ -196,7 +179,7 @@ public class HornerScheme {
 		}
 		addToMap(F.CD0, expr);
 	}
-	
+
 	public IAST addToMap(final ISignedNumber key, final IExpr value) {
 		IAST temp = map.get(key);
 		if (temp == null) {
