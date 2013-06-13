@@ -1,6 +1,6 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import org.matheclipse.core.expression.IConstantHeaders;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 
@@ -19,7 +19,7 @@ public class Product extends AbstractConverter {
   public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
     if (f.size() >= 3) {
       for (int i = 2; i < f.size(); i++) {
-				if ((f.get(i) instanceof IAST) && ((IAST) f.get(i)).head().toString().equals(IConstantHeaders.List)) {
+				if ((f.get(i) instanceof IAST) && ((IAST) f.get(i)).head().toString().equals(AST2Expr.LIST_STRING)) {
         	final IAST list = (IAST) f.get(i);
         	buf.append("\\prod_{");
 

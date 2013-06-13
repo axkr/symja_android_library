@@ -3,13 +3,14 @@ package org.matheclipse.core.form.tex;
 import java.util.Hashtable;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
@@ -127,7 +128,14 @@ public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantH
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(sym.toString());
+		String headStr = sym.toString();
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			}
+		}
+		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
 		if (convertedSymbol == null) {
 			buf.append(sym.toString());
 		} else {
@@ -210,11 +218,20 @@ public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantH
 	}
 
 	public IConverter reflection(final String headString) {
-		final IConverter converter = operTab.get(headString);
+		String headStr = headString;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			} else {
+				return null;
+			}
+		}
+		final IConverter converter = operTab.get(headStr);
 		if (converter != null) {
 			return converter;
 		}
-		final String namespace = getReflectionNamespace() + headString;
+		final String namespace = getReflectionNamespace() + headStr;
 
 		Class clazz = null;
 		try {
