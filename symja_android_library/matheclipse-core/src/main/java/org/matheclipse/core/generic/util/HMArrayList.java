@@ -24,7 +24,6 @@ import java.io.ObjectStreamField;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -73,10 +72,11 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
+	 * Constructs a new instance of {@code ArrayList} with the specified
+	 * capacity.
 	 * 
 	 * @param capacity
-	 *          the initial capacity of this {@code ArrayList}.
+	 *            the initial capacity of this {@code ArrayList}.
 	 */
 	public HMArrayList(int capacity) {
 		if (capacity < 0) {
@@ -88,11 +88,11 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	/**
 	 * Constructs a new instance of {@code ArrayList} containing the elements of
-	 * the specified collection. The initial size of the {@code ArrayList} will be
-	 * 10% higher than the size of the specified collection.
+	 * the specified collection. The initial size of the {@code ArrayList} will
+	 * be 10% higher than the size of the specified collection.
 	 * 
 	 * @param collection
-	 *          the collection of elements to add.
+	 *            the collection of elements to add.
 	 */
 	public HMArrayList(Collection<? extends E> collection) {
 		firstIndex = 0;
@@ -112,15 +112,15 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	/**
 	 * Inserts the specified object into this {@code ArrayList} at the specified
 	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this {@code
-	 * ArrayList}, the object is added at the end.
+	 * specified location. If the location is equal to the size of this
+	 * {@code ArrayList}, the object is added at the end.
 	 * 
 	 * @param location
-	 *          the index at which to insert the object.
+	 *            the index at which to insert the object.
 	 * @param object
-	 *          the object to add.
+	 *            the object to add.
 	 * @throws IndexOutOfBoundsException
-	 *           when {@code location < 0 || > size()}
+	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
 	public void add(int location, E object) {
@@ -150,7 +150,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			// throw new IndexOutOfBoundsException(
 			// luni.0A=Index: {0}, Size: {1}
 			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex - firstIndex)));
+			// Integer.valueOf(location), Integer.valueOf(lastIndex -
+			// firstIndex)));
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
 					+ Integer.valueOf(lastIndex - firstIndex));
 		}
@@ -162,7 +163,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
 	 * @param object
-	 *          the object to add.
+	 *            the object to add.
 	 * @return always true
 	 */
 	@Override
@@ -177,17 +178,17 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	/**
 	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from the
-	 * collection's iterator.
+	 * in this List. The objects are added in the order they are returned from
+	 * the collection's iterator.
 	 * 
 	 * @param location
-	 *          the index at which to insert.
+	 *            the index at which to insert.
 	 * @param collection
-	 *          the collection of objects.
+	 *            the collection of objects.
 	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
 	 *         otherwise.
 	 * @throws IndexOutOfBoundsException
-	 *           when {@code location < 0 || > size()}
+	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
 	public boolean addAll(int location, Collection<? extends E> collection) {
@@ -196,7 +197,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			// throw new IndexOutOfBoundsException(
 			// luni.0A=Index: {0}, Size: {1}
 			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex - firstIndex)));
+			// Integer.valueOf(location), Integer.valueOf(lastIndex -
+			// firstIndex)));
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
 					+ Integer.valueOf(lastIndex - firstIndex));
 		}
@@ -246,7 +248,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * Adds the objects in the specified collection to this {@code ArrayList}.
 	 * 
 	 * @param collection
-	 *          the collection of objects.
+	 *            the collection of objects.
 	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
 	 *         otherwise.
 	 */
@@ -303,9 +305,9 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * Searches this {@code ArrayList} for the specified object.
 	 * 
 	 * @param object
-	 *          the object to search for.
-	 * @return {@code true} if {@code object} is an element of this {@code
-	 *         ArrayList}, {@code false} otherwise
+	 *            the object to search for.
+	 * @return {@code true} if {@code object} is an element of this
+	 *         {@code ArrayList}, {@code false} otherwise
 	 */
 	@Override
 	public boolean contains(Object object) {
@@ -330,7 +332,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * specified number of elements without further growing.
 	 * 
 	 * @param minimumCapacity
-	 *          the minimum capacity asked for.
+	 *            the minimum capacity asked for.
 	 */
 	public void ensureCapacity(int minimumCapacity) {
 		if (array.length < minimumCapacity) {
@@ -344,16 +346,17 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	@Override
 	public E get(int location) {
-		return array[firstIndex + location];
-//		if (0 <= location && location < (lastIndex - firstIndex)) {
-//			return array[firstIndex + location];
-//		}
+		if (0 <= location && location < (lastIndex - firstIndex)) {
+			return array[firstIndex + location];
+		}
 		// throw new IndexOutOfBoundsException(
 		// luni.0A=Index: {0}, Size: {1}
 		//            Messages.getString("luni.0A", //$NON-NLS-1$
-		// Integer.valueOf(location), Integer.valueOf(lastIndex - firstIndex)));
-//		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-//				+ Integer.valueOf(lastIndex - firstIndex));
+		// Integer.valueOf(location), Integer.valueOf(lastIndex -
+		// firstIndex)));
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
+				+ Integer.valueOf(lastIndex - firstIndex));
+
 	}
 
 	private void growAtEnd(int required) {
@@ -481,10 +484,10 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * Removes the object at the specified location from this list.
 	 * 
 	 * @param location
-	 *          the index of the object to remove.
+	 *            the index of the object to remove.
 	 * @return the removed object.
 	 * @throws IndexOutOfBoundsException
-	 *           when {@code location < 0 || >= size()}
+	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
 	public E remove(int location) {
@@ -515,7 +518,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			// throw new IndexOutOfBoundsException(
 			// luni.0A=Index: {0}, Size: {1}
 			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex - firstIndex)));
+			// Integer.valueOf(location), Integer.valueOf(lastIndex -
+			// firstIndex)));
 			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
 					+ Integer.valueOf(lastIndex - firstIndex));
 		}
@@ -539,11 +543,11 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * not including the end index.
 	 * 
 	 * @param start
-	 *          the index at which to start removing.
+	 *            the index at which to start removing.
 	 * @param end
-	 *          the index one after the end of the range to remove.
+	 *            the index one after the end of the range to remove.
 	 * @throws IndexOutOfBoundsException
-	 *           when {@code start < 0, start > end} or {@code end > size()}
+	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
 	@Override
 	protected void removeRange(int start, int end) {
@@ -579,12 +583,12 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * with the specified object.
 	 * 
 	 * @param location
-	 *          the index at which to put the specified object.
+	 *            the index at which to put the specified object.
 	 * @param object
-	 *          the object to add.
+	 *            the object to add.
 	 * @return the previous element at the index.
 	 * @throws IndexOutOfBoundsException
-	 *           when {@code location < 0 || >= size()}
+	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
 	public E set(int location, E object) {
@@ -608,8 +612,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this {@code
-	 * ArrayList}.
+	 * Returns a new array containing all elements contained in this
+	 * {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
@@ -622,19 +626,19 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns an array containing all elements contained in this {@code
-	 * ArrayList}. If the specified array is large enough to hold the elements,
-	 * the specified array is used, otherwise an array of the same type is
-	 * created. If the specified array is used and is larger than this {@code
-	 * ArrayList}, the array element following the collection elements is set to
-	 * null.
+	 * Returns an array containing all elements contained in this
+	 * {@code ArrayList}. If the specified array is large enough to hold the
+	 * elements, the specified array is used, otherwise an array of the same
+	 * type is created. If the specified array is used and is larger than this
+	 * {@code ArrayList}, the array element following the collection elements is
+	 * set to null.
 	 * 
 	 * @param contents
-	 *          the array.
+	 *            the array.
 	 * @return an array of the elements from this {@code ArrayList}.
 	 * @throws ArrayStoreException
-	 *           when the type of an element in this {@code ArrayList} cannot be
-	 *           stored in the type of the specified array.
+	 *             when the type of an element in this {@code ArrayList} cannot
+	 *             be stored in the type of the specified array.
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
