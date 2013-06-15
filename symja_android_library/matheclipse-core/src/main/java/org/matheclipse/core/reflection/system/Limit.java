@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -15,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Limit of a function. See <a
  * href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
-public class Limit extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class Limit extends AbstractFunctionEvaluator {
 	/**
 	 * Try L'hospitales rule. See <a
 	 * href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia

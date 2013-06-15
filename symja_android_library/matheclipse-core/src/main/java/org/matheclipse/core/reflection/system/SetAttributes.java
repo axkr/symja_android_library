@@ -6,7 +6,6 @@ import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -15,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Set the attributes for a symbol
  * 
  */
-public class SetAttributes extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class SetAttributes extends AbstractFunctionEvaluator {
 
 	public SetAttributes() {
 	}

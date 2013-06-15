@@ -1,10 +1,10 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.form.tex.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;

@@ -4,7 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.expression.IConstantHeaders;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -21,7 +21,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * Presentation generator generates MathML presentation output
  * 
  */
-public class MathMLFormFactory extends AbstractMathMLFormFactory implements IConstantHeaders {
+public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	class Operator {
 		String fOperator;
@@ -199,13 +199,20 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory implements ICon
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(sym.toString());
+		String headStr = sym.toString();
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			}
+		}
+		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
 		if (convertedSymbol == null) {
 			tagStart(buf, "mi");
 			buf.append(sym.toString());
 			tagEnd(buf, "mi");
 		} else {
-			if (convertedSymbol.equals(True)) {
+			if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
 				tagStart(buf, "mi");
 				buf.append('&');
 				buf.append(sym.toString());
@@ -240,7 +247,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory implements ICon
 		if (obj instanceof ISymbol) {
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
 			tagStart(buf, "mi");
-			if ((ho != null) && ho.equals(True)) {
+			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('&');
 			}
 			buf.append(((ISymbol) obj).toString());
@@ -338,12 +345,21 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory implements ICon
 	}
 
 	public IConverter reflection(final String headString) {
-		final AbstractConverter converter = operTab.get(headString);
+		String headStr = headString;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			} else {
+				return null;
+			}
+		}
+		final AbstractConverter converter = operTab.get(headStr);
 		if (converter != null) {
 			converter.setFactory(this);
 			return converter;
 		}
-		final String namespace = getReflectionNamespace() + headString;
+		final String namespace = getReflectionNamespace() + headStr;
 
 		Class clazz = null;
 		try {

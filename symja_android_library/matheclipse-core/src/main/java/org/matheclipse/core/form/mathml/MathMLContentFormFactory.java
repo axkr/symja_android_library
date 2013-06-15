@@ -4,8 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.IConstantHeaders;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -23,7 +22,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * See: <a href="http://www.w3.org/TR/MathML2/chapter4.html">MathML2</a>
  * 
  */
-public class MathMLContentFormFactory extends AbstractMathMLFormFactory implements IConstantHeaders {
+public class MathMLContentFormFactory extends AbstractMathMLFormFactory  {
 
 	class Operator {
 		String fOperator;
@@ -118,7 +117,14 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory implemen
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(sym.toString());
+		String headStr = sym.toString();
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			}
+		}
+		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
 		if (convertedSymbol == null) {
 			tagStart(buf, "ci");
 			buf.append(sym.toString());
@@ -146,9 +152,9 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory implemen
 	 * Description of the Method
 	 * 
 	 * @param buf
-	 *          Description of Parameter
+	 *            Description of Parameter
 	 * @param p
-	 *          Description of Parameter
+	 *            Description of Parameter
 	 */
 	// public void convertPattern(StringBuffer buf, HPattern p) {
 	// buf.append(" <mi>");
@@ -159,7 +165,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory implemen
 		if (obj instanceof ISymbol) {
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
 			tagStart(buf, "mi");
-			if ((ho != null) && ho.equals(True)) {
+			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('&');
 			}
 			buf.append(((ISymbol) obj).toString());
@@ -257,12 +263,21 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory implemen
 	}
 
 	public IConverter reflection(final String headString) {
-		final AbstractConverter converter = operTab.get(headString);
+		String headStr = headString;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			} else {
+				return null;
+			}
+		}
+		final AbstractConverter converter = operTab.get(headStr);
 		if (converter != null) {
 			converter.setFactory(this);
 			return converter;
 		}
-		final String namespace = getReflectionNamespace() + headString;
+		final String namespace = getReflectionNamespace() + headStr;
 
 		Class clazz = null;
 		try {
@@ -307,7 +322,8 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory implemen
 		// operTab.put(Times, new MMLTimes(this, "mrow", "&InvisibleTimes;",
 		// exprFactory));
 		// operTab.put(Power, new MMLOperator(this, "msup", ""));
-		// plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
+		// plusPrec =
+		// ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 
 		operTab.put("Plus", new MMLContentFunction(this, "plus"));
 		operTab.put("Times", new MMLContentFunction(this, "times"));

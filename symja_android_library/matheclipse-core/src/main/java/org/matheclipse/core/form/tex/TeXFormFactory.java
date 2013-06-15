@@ -4,7 +4,6 @@ import java.util.Hashtable;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -18,7 +17,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * PresentationGenerator generates MathML presentation output
  * 
  */
-public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantHeaders {
+public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	static class Operator {
 		String fOperator;
@@ -139,7 +138,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantH
 		if (convertedSymbol == null) {
 			buf.append(sym.toString());
 		} else {
-			if (convertedSymbol.equals(True)) {
+			if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
 				buf.append(sym.toString());
 			} else {
@@ -155,7 +154,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantH
 	public void convertHead(final StringBuffer buf, final Object obj) {
 		if (obj instanceof ISymbol) {
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
-			if ((ho != null) && ho.equals(True)) {
+			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
 			}
 			buf.append(((ISymbol) obj).toString());
@@ -294,59 +293,59 @@ public class TeXFormFactory extends AbstractTeXFormFactory implements IConstantH
 
 		CONSTANT_SYMBOLS.put("Pi", "\\pi");
 
-		CONSTANT_SYMBOLS.put("Alpha", True);
-		CONSTANT_SYMBOLS.put("Beta", True);
-		CONSTANT_SYMBOLS.put("Chi", True);
-		CONSTANT_SYMBOLS.put("Delta", True);
-		CONSTANT_SYMBOLS.put("Epsilon", True);
-		CONSTANT_SYMBOLS.put("Phi", True);
-		CONSTANT_SYMBOLS.put("Gamma", True);
-		CONSTANT_SYMBOLS.put("Eta", True);
-		CONSTANT_SYMBOLS.put("Iota", True);
-		CONSTANT_SYMBOLS.put("varTheta", True);
-		CONSTANT_SYMBOLS.put("Kappa", True);
-		CONSTANT_SYMBOLS.put("Lambda", True);
-		CONSTANT_SYMBOLS.put("Mu", True);
-		CONSTANT_SYMBOLS.put("Nu", True);
-		CONSTANT_SYMBOLS.put("Omicron", True);
+		CONSTANT_SYMBOLS.put("Alpha", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Beta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Chi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Delta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Epsilon", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Phi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Gamma", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Eta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Iota", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("varTheta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Kappa", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Lambda", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Mu", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Nu", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Omicron", AST2Expr.TRUE_STRING);
 
-		CONSTANT_SYMBOLS.put("Theta", True);
-		CONSTANT_SYMBOLS.put("Rho", True);
-		CONSTANT_SYMBOLS.put("Sigma", True);
-		CONSTANT_SYMBOLS.put("Tau", True);
-		CONSTANT_SYMBOLS.put("Upsilon", True);
-		CONSTANT_SYMBOLS.put("Omega", True);
-		CONSTANT_SYMBOLS.put("Xi", True);
-		CONSTANT_SYMBOLS.put("Psi", True);
-		CONSTANT_SYMBOLS.put("Zeta", True);
+		CONSTANT_SYMBOLS.put("Theta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Rho", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Sigma", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Tau", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Upsilon", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Omega", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Xi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Psi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("Zeta", AST2Expr.TRUE_STRING);
 
-		CONSTANT_SYMBOLS.put("alpha", True);
-		CONSTANT_SYMBOLS.put("beta", True);
-		CONSTANT_SYMBOLS.put("chi", True);
-		CONSTANT_SYMBOLS.put("selta", True);
-		CONSTANT_SYMBOLS.put("epsilon", True);
-		CONSTANT_SYMBOLS.put("phi", True);
-		CONSTANT_SYMBOLS.put("gamma", True);
-		CONSTANT_SYMBOLS.put("eta", True);
-		CONSTANT_SYMBOLS.put("iota", True);
-		CONSTANT_SYMBOLS.put("varphi", True);
-		CONSTANT_SYMBOLS.put("kappa", True);
-		CONSTANT_SYMBOLS.put("lambda", True);
-		CONSTANT_SYMBOLS.put("mu", True);
-		CONSTANT_SYMBOLS.put("nu", True);
-		CONSTANT_SYMBOLS.put("omicron", True);
+		CONSTANT_SYMBOLS.put("alpha", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("beta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("chi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("selta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("epsilon", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("phi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("gamma", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("eta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("iota", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("varphi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("kappa", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("lambda", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("mu", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("nu", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("omicron", AST2Expr.TRUE_STRING);
 		// see "Pi"
-		// CONSTANT_SYMBOLS.put("pi", True);
-		CONSTANT_SYMBOLS.put("theta", True);
-		CONSTANT_SYMBOLS.put("rho", True);
-		CONSTANT_SYMBOLS.put("sigma", True);
-		CONSTANT_SYMBOLS.put("tau", True);
-		CONSTANT_SYMBOLS.put("upsilon", True);
-		CONSTANT_SYMBOLS.put("varomega", True);
-		CONSTANT_SYMBOLS.put("omega", True);
-		CONSTANT_SYMBOLS.put("xi", True);
-		CONSTANT_SYMBOLS.put("psi", True);
-		CONSTANT_SYMBOLS.put("zeta", True);
+		// CONSTANT_SYMBOLS.put("pi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("theta", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("rho", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("sigma", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("tau", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("upsilon", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("varomega", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("omega", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("xi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("psi", AST2Expr.TRUE_STRING);
+		CONSTANT_SYMBOLS.put("zeta", AST2Expr.TRUE_STRING);
 
 	}
 

@@ -28,7 +28,7 @@ public class MathMLUtilities {
 
 	Parser fParser;
 
-	public MathMLUtilities(final EvalEngine evalEngine, final boolean msie) {
+	public MathMLUtilities(final EvalEngine evalEngine, final boolean msie, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance
 		startRequest();
@@ -37,7 +37,7 @@ public class MathMLUtilities {
 		} else {
 			fMathMLFactory = new MathMLFormFactory();
 		}
-		fParser = new Parser();
+		fParser = new Parser(relaxedSyntax);
 		fMSIE = msie;
 	}
 

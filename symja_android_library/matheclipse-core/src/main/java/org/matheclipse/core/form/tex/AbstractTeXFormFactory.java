@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.tex;
 
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IFraction;
@@ -12,7 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Abstract Factory for generating MathML output
  * 
  */
-abstract public class AbstractTeXFormFactory implements IConstantHeaders {
+abstract public class AbstractTeXFormFactory {
 
 	public final static boolean USE_IDENTIFIERS = false;
 

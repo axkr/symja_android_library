@@ -7,14 +7,13 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.generic.combinatoric.KPermutationsIterable;
 
-public class Expand extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class Expand extends AbstractFunctionEvaluator {
 	private static class Expander {
 		/**
 		 * Pattern which may be <code>null</code>

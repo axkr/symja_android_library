@@ -51,23 +51,23 @@ public class AST2Expr {
 			"Intersection", "Inverse", "InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "Khinchin",
 			"KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less", "LessEqual", "LetterQ", "Level",
 			"Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map",
-			"MapAll", "MapThread", "MatchQ", "MatrixForm","MatrixPower", "MatrixQ", "Max", "Mean", "Median", "MemberQ", "Min", "Mod", "Module",
-			"MoebiusMu", "Most", "Multinomial", "N", " Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
-			"NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm", "Not", "NRoots", "NSolve", "NumberQ", "Numerator",
-			"NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot",
-			"Part", "Partition", "Pattern", "Permutations", "Pi", "Plot", "Plot3D", "Plus", "PolynomialExtendedGCD",
-			"PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder",
-			"PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement",
-			"PreIncrement", "Prepend", "PrependTo", "PrimeQ", "PrimitiveRoots", "Print", "Product", "Quotient", "RandomInteger",
-			"RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest",
-			"Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots", "RotateLeft", "RotateRight", "Round", "Rule",
-			"RuleDelayed", "SameQ", "Scan", "Sec", "Select", "Set", "SetAttributes", "SetDelayed", "Sign", "SignCmp", "Simplify",
-			"Sin", "SingularValueDecomposition", "Sinh", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ",
-			"StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "Subsets", "SubtractFrom", "Sum",
-			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "Thread", "Through", "Throw", "Times", "TimesBy",
-			"Timing", "ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand",
-			"TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal", "Union", "UnitStep", "UnsameQ", "UpperCaseQ", "ValueQ",
-			"VandermondeMatrix", "Variables", "VectorQ", "While" };
+			"MapAll", "MapThread", "MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "Max", "Mean", "Median", "MemberQ", "Min",
+			"Mod", "Module", "MoebiusMu", "Most", "Multinomial", "N", " Negative", "Nest", "NestList", "NestWhile",
+			"NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm", "Not", "NRoots", "NSolve",
+			"NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft",
+			"PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations", "Pi", "Plot", "Plot3D", "Plus",
+			"PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
+			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power", "PowerExpand",
+			"PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "PrimeQ", "PrimitiveRoots", "Print", "Product",
+			"Quotient", "RandomInteger", "RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll",
+			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots",
+			"RotateLeft", "RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Select", "Set", "SetAttributes",
+			"SetDelayed", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh", "Solve", "Sort", "Sow",
+			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength",
+			"StringTake", "Subsets", "SubtractFrom", "Sum", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
+			"Thread", "Through", "Throw", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total",
+			"ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal", "Union",
+			"UnitStep", "UnsameQ", "UpperCaseQ", "ValueQ", "VandermondeMatrix", "Variables", "VectorQ", "While" };
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
@@ -75,7 +75,13 @@ public class AST2Expr {
 	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
 	public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
-
+	public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
+	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
+	public static final String PART_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
+	public static final String SLOT_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot";
+	public static final String HOLD_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold";
+	public static final String DIRECTEDINFINITY_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
+			: "DirectedInfinity";
 	static {
 		for (String str : FUNCTION_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);

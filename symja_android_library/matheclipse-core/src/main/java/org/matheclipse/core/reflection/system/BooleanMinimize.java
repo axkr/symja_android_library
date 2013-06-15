@@ -6,7 +6,6 @@ import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -15,7 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine
  * McCluskey algorithm</a>.
  */
-public class BooleanMinimize extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class BooleanMinimize extends AbstractFunctionEvaluator {
 
 	public BooleanMinimize() {
 		super();

@@ -8,7 +8,6 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -31,7 +30,7 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  * Converts an internal <code>IExpr</code> into a user readable string.
  * 
  */
-public class OutputFormFactory implements IConstantHeaders {
+public class OutputFormFactory {
 
 	private final boolean fRelaxedSyntax;
 
@@ -444,10 +443,10 @@ public class OutputFormFactory implements IConstantHeaders {
 					return;
 				}
 				if ((operator instanceof InfixOperator) && (list.size() > 2)) {
-					if (header.equals(Plus)) {
+					if (header.equals(AST2Expr.PLUS_STRING)) {
 						convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
 						return;
-					} else if (header.equals(Times)) {
+					} else if (header.equals(AST2Expr.TIMES_STRING)) {
 						convertTimesOperator(buf, list, (InfixOperator) operator, precedence);
 						return;
 					}
@@ -463,19 +462,19 @@ public class OutputFormFactory implements IConstantHeaders {
 				convertList(buf, list);
 				return;
 			}
-			if (header.equals(Part) && (list.size() >= 3)) {
+			if (header.equals(AST2Expr.PART_STRING) && (list.size() >= 3)) {
 				convertPart(buf, list);
 				return;
 			}
-			if (header.equals(Slot) && (list.size() == 2) && (list.get(1) instanceof IInteger)) {
+			if (header.equals(AST2Expr.SLOT_STRING) && (list.size() == 2) && (list.get(1) instanceof IInteger)) {
 				convertSlot(buf, list);
 				return;
 			}
-			if (header.equals(Hold) && (list.size() == 2)) {
+			if (header.equals(AST2Expr.HOLD_STRING) && (list.size() == 2)) {
 				convert(buf, list.get(1));
 				return;
 			}
-			if (header.equals(DirectedInfinity)) {
+			if (header.equals(AST2Expr.DIRECTEDINFINITY_STRING)) {
 				if (list.size() == 1) {
 					buf.write("ComplexInfinity");
 					return;

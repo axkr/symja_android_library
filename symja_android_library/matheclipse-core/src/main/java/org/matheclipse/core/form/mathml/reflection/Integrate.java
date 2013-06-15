@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.mathml.reflection;
 
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 
@@ -22,7 +23,7 @@ public class Integrate extends AbstractConverter {
       if (obj instanceof IAST) {
         list = (IAST) obj;
       }
-      if ((list != null) && (list.size() == 4) && list.head().toString().equals("List")) {
+      if ((list != null) && (list.size() == 4) && list.head().toString().equals(AST2Expr.LIST_STRING)) {
         fFactory.tagStart(buf, "msubsup");
         // &Integral;  &#x222B;
         fFactory.tag(buf, "mo", "&#x222B;");

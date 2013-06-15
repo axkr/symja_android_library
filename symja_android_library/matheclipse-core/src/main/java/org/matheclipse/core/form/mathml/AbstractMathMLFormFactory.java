@@ -2,7 +2,6 @@ package org.matheclipse.core.form.mathml;
 
 import java.util.Hashtable;
 
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  Abstract Factory for generating MathML output
  *
  */
-abstract public class AbstractMathMLFormFactory implements IConstantHeaders {
+abstract public class AbstractMathMLFormFactory {
 
   public final static boolean USE_IDENTIFIERS = false;
 

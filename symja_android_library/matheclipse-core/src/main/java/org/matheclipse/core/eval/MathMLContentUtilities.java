@@ -20,14 +20,14 @@ public class MathMLContentUtilities {
 
 	Parser fParser;
 
-	public MathMLContentUtilities(final EvalEngine evalEngine) {
+	public MathMLContentUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance
 		startRequest();
 
 		fMathMLFactory = new MathMLContentFormFactory();
 
-		fParser = new Parser();
+		fParser = new Parser(relaxedSyntax);
 	}
 
 	/**

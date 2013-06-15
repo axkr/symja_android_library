@@ -32,7 +32,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 	}
 
 	public TimeConstrainedEvaluator(final EvalEngine evalEngine, final boolean msie, final long milliSeconds, boolean relaxedSyntax) {
-		super(evalEngine, msie);
+		super(evalEngine, msie, relaxedSyntax);
 		fMilliSeconds = milliSeconds;
 		fRelaxedSyntax = relaxedSyntax;
 		fTraceEvaluation = false;

@@ -27,7 +27,6 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules0;
@@ -74,7 +73,7 @@ import edu.jas.ufd.SquarefreeFactory;
  * Integration of a function. See <a
  * href="http://en.wikipedia.org/wiki/Integral">Integral</a>
  */
-public class Integrate extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * Constructor for the singleton
 	 */

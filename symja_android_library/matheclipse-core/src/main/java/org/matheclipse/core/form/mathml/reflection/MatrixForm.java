@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.mathml.reflection;
 
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -77,7 +78,7 @@ public class MatrixForm extends AbstractConverter {
       return null;
     }
     final IAST list = (IAST) expr;
-    if (! list.topHead().toString().equals("List")) {
+    if (! list.topHead().toString().equals(AST2Expr.LIST_STRING)) {
       return null;
     }
     final int size = list.size();
@@ -90,7 +91,7 @@ public class MatrixForm extends AbstractConverter {
         return null;
       }
       final IAST subList = (IAST) temp;
-      if (!subList.topHead().toString().equals("List")) {
+      if (!subList.topHead().toString().equals(AST2Expr.LIST_STRING)) {
         return null;
       }
       if (subSize < 0) {
@@ -107,14 +108,14 @@ public class MatrixForm extends AbstractConverter {
       return null;
     }
     final IAST list = (IAST) expr;
-    if (!list.topHead().toString().equals("List")) {
+    if (!list.topHead().toString().equals(AST2Expr.LIST_STRING)) {
       return null;
     }
     final int size = list.size();
     IExpr temp;
     for (int i = 1; i < size; i++) {
 			temp = list.get(i);
-      if ((temp instanceof IAST) && (((IAST) temp).topHead().toString().equals("List"))) {
+      if ((temp instanceof IAST) && (((IAST) temp).topHead().toString().equals(AST2Expr.LIST_STRING))) {
         return null;
       }
     }

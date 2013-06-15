@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
@@ -30,7 +29,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator,
  * TrapezoidIntegrator</a> implementations.
  */
-public class NIntegrate extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class NIntegrate extends AbstractFunctionEvaluator {
 
 	public NIntegrate() {
 	}

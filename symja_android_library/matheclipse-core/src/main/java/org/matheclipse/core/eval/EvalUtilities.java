@@ -15,15 +15,15 @@ import com.google.common.base.Predicate;
 public class EvalUtilities extends MathMLUtilities {
 
 	public EvalUtilities() {
-		super(new EvalEngine(), false);
+		this(new EvalEngine(), false, false);
 	}
 
 	public EvalUtilities(final boolean msie) {
-		super(new EvalEngine(), msie);
+		this(new EvalEngine(), msie, false);
 	}
 
-	public EvalUtilities(final EvalEngine evalEngine, final boolean msie) {
-		super(evalEngine, msie);
+	public EvalUtilities(final EvalEngine evalEngine, final boolean msie, final boolean relaxedSyntax) {
+		super(evalEngine, msie, relaxedSyntax);
 	}
 
 	/**

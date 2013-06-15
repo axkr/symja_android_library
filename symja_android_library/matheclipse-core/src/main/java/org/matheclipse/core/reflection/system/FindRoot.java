@@ -17,12 +17,10 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IConstantHeaders;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -35,7 +33,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver,
  * RiddersSolver, SecantSolver</a> implementations.
  */
-public class FindRoot extends AbstractFunctionEvaluator implements IConstantHeaders {
+public class FindRoot extends AbstractFunctionEvaluator {
 
 	public FindRoot() {
 	}
