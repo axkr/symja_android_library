@@ -429,7 +429,8 @@ public class OutputFormFactory {
 	public void convert(final Writer buf, final IExpr o, final int precedence) throws IOException {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
-			String header = list.topHead().toString();
+			ISymbol head = list.topHead();
+			String header = head.toString();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
 				if (str != null) {
@@ -443,10 +444,10 @@ public class OutputFormFactory {
 					return;
 				}
 				if ((operator instanceof InfixOperator) && (list.size() > 2)) {
-					if (header.equals(AST2Expr.PLUS_STRING)) {
+					if (head.equals(F.Plus)) {
 						convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
 						return;
-					} else if (header.equals(AST2Expr.TIMES_STRING)) {
+					} else if (head.equals(F.Times)) {
 						convertTimesOperator(buf, list, (InfixOperator) operator, precedence);
 						return;
 					}
@@ -462,19 +463,19 @@ public class OutputFormFactory {
 				convertList(buf, list);
 				return;
 			}
-			if (header.equals(AST2Expr.PART_STRING) && (list.size() >= 3)) {
+			if (head.equals(F.Part) && (list.size() >= 3)) {
 				convertPart(buf, list);
 				return;
 			}
-			if (header.equals(AST2Expr.SLOT_STRING) && (list.size() == 2) && (list.get(1) instanceof IInteger)) {
+			if (head.equals(F.Slot) && (list.size() == 2) && (list.get(1) instanceof IInteger)) {
 				convertSlot(buf, list);
 				return;
 			}
-			if (header.equals(AST2Expr.HOLD_STRING) && (list.size() == 2)) {
+			if (head.equals(F.Hold) && (list.size() == 2)) {
 				convert(buf, list.get(1));
 				return;
 			}
-			if (header.equals(AST2Expr.DIRECTEDINFINITY_STRING)) {
+			if (head.equals(F.DirectedInfinity)) {
 				if (list.size() == 1) {
 					buf.write("ComplexInfinity");
 					return;

@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -294,28 +295,55 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer("Complex[");
+		StringBuffer buf = new StringBuffer("Complex");
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append('(');
+		} else {
+			buf.append('[');
+		}
 		if (_real.getDenominator().equals(BigInteger.ONE)) {
 			buf.append(_real.getNumerator().toString());
 		} else {
-			buf.append("Rational[");
+			buf.append("Rational");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
 			buf.append(_real.getNumerator().toString().toString());
 			buf.append(',');
 			buf.append(_real.getDenominator().toString().toString());
-			buf.append(']');
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(')');
+			} else {
+				buf.append(']');
+			}
 		}
 		buf.append(',');
 
 		if (_imaginary.getDenominator().equals(BigInteger.ONE)) {
 			buf.append(_imaginary.getNumerator().toString());
 		} else {
-			buf.append("Rational[");
+			buf.append("Rational");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
 			buf.append(_imaginary.getNumerator().toString().toString());
 			buf.append(',');
 			buf.append(_imaginary.getDenominator().toString().toString());
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(')');
+			} else {
+				buf.append(']');
+			}
+		}
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append(')');
+		} else {
 			buf.append(']');
 		}
-		buf.append(']');
 		return buf.toString();
 	}
 

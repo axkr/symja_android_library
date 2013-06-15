@@ -1075,7 +1075,11 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		} else {
 			text.append(temp.fullFormString());
 		}
-		text.append('[');
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			text.append('(');
+		} else {
+			text.append('[');
+		}
 		for (int i = 1; i < size(); i++) {
 			temp = get(i);
 			if (temp == null) {
@@ -1087,7 +1091,11 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 				}
 			}
 		}
-		text.append(']');
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			text.append(')');
+		} else {
+			text.append(']');
+		}
 		return text.toString();
 	}
 

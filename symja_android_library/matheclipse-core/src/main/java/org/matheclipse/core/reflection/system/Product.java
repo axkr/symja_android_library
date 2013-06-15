@@ -9,8 +9,6 @@ import static org.matheclipse.core.expression.F.Slot;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
-import java.util.HashMap;
-
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;

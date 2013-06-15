@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IExpr;
@@ -342,20 +343,43 @@ public class Pattern extends ExprImpl implements IPattern {
 	public String fullFormString() {
 		StringBuffer buf = new StringBuffer();
 		if (fSymbol == null) {
-			buf.append("Blank[");
+			buf.append("Blank");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
 			if (fCondition != null) {
 				buf.append(fCondition.fullFormString());
 			}
-			buf.append(']');
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(')');
+			} else {
+				buf.append(']');
+			}
 		} else {
-			buf.append("Pattern[");
+			buf.append("Pattern");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
 			buf.append(fSymbol.toString());
 			buf.append(", ");
-			buf.append("Blank[");
+			buf.append("Blank");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
 			if (fCondition != null) {
 				buf.append(fCondition.fullFormString());
 			}
-			buf.append("]]");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append("))");
+			} else {
+				buf.append("]]");
+			}
 		}
 
 		return buf.toString();

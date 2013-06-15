@@ -291,10 +291,10 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * Returns this number raised at the specified positive exponent.
 	 * 
 	 * @param exp
-	 *          the positive exponent.
+	 *            the positive exponent.
 	 * @return <code>this<sup>exp</sup></code>
 	 * @throws IllegalArgumentException
-	 *           if <code>exp &lt;= 0</code>
+	 *             if <code>exp &lt;= 0</code>
 	 */
 	public IFraction pow(int exp) {
 		if (exp <= 0)
@@ -370,28 +370,28 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public int toInt() throws ArithmeticException {
 		if (fRational.getDenominator().equals(BigInteger.ONE)) {
-		  return NumberUtil.toInt(fRational.getNumerator());
-		} 
+			return NumberUtil.toInt(fRational.getNumerator());
+		}
 		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
-		  return 0;
+			return 0;
 		}
 		throw new ArithmeticException("toInt: denominator != 1");
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public long toLong() throws ArithmeticException {
 		if (fRational.getDenominator().equals(BigInteger.ONE)) {
-		  return NumberUtil.toLong(fRational.getNumerator());
-		} 
+			return NumberUtil.toLong(fRational.getNumerator());
+		}
 		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
-		  return 0L;
+			return 0L;
 		}
 		throw new ArithmeticException("toLong: denominator != 1");
 	}
-	
+
 	@Override
 	public String toString() {
 		return fRational.getNumerator().toString() + "/" + fRational.getDenominator().toString();
@@ -399,11 +399,20 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer("Rational[");
+		StringBuffer buf = new StringBuffer("Rational");
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append('(');
+		} else {
+			buf.append('[');
+		}
 		buf.append(fRational.getNumerator().toString().toString());
 		buf.append(',');
 		buf.append(fRational.getDenominator().toString().toString());
-		buf.append(']');
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append(')');
+		} else {
+			buf.append(']');
+		}
 		return buf.toString();
 	}
 
@@ -442,8 +451,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {

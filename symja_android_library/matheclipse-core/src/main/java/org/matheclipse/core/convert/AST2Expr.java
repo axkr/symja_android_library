@@ -52,7 +52,7 @@ public class AST2Expr {
 			"KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less", "LessEqual", "LetterQ", "Level",
 			"Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map",
 			"MapAll", "MapThread", "MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "Max", "Mean", "Median", "MemberQ", "Min",
-			"Mod", "Module", "MoebiusMu", "Most", "Multinomial", "N", " Negative", "Nest", "NestList", "NestWhile",
+			"Mod", "Module", "MoebiusMu", "Most", "Multinomial", "N", "Negative", "Nest", "NestList", "NestWhile",
 			"NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm", "Not", "NRoots", "NSolve",
 			"NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft",
 			"PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations", "Pi", "Plot", "Plot3D", "Plus",
@@ -77,11 +77,11 @@ public class AST2Expr {
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
 	public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
 	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
-	public static final String PART_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
-	public static final String SLOT_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot";
-	public static final String HOLD_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold";
-	public static final String DIRECTEDINFINITY_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
-			: "DirectedInfinity";
+//	public static final String PART_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
+//	public static final String SLOT_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot";
+//	public static final String HOLD_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold";
+//	public static final String DIRECTEDINFINITY_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
+//			: "DirectedInfinity";
 	static {
 		for (String str : FUNCTION_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
