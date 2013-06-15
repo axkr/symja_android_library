@@ -15,18 +15,25 @@ import org.matheclipse.parser.client.ast.ASTNode;
 public class TeXUtilities {
 	protected EvalEngine fEvalEngine;
 
-//	protected ExprFactory fFactory;
+	// protected ExprFactory fFactory;
 
 	protected TeXFormFactory fTeXFactory;
 
 	Parser fParser;
 
-	public TeXUtilities(final EvalEngine evalEngine) {
+	/**
+	 * 
+	 * @param evalEngine
+	 * @param relaxedSyntax
+	 *            if <code>true</code> use '(...)' instead of '[...]' to
+	 *            parenthesize the arguments of a function.
+	 */
+	public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance
 		EvalEngine.set(evalEngine);
 		fTeXFactory = new TeXFormFactory();
-		fParser = new Parser();
+		fParser = new Parser(relaxedSyntax);
 	}
 
 	/**
