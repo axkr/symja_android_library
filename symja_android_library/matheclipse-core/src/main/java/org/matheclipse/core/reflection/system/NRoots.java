@@ -93,7 +93,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	private static IAST quadratic(double a, double b, double c) {
 		IAST result = F.List();
 		double discriminant = (b * b - (4 * a * c));
-		if (discriminant == 0.0) {
+		if (F.isZero(discriminant)) {
 			double bothEqual = ((-b / (2.0 * a)));
 			result.add(F.num(bothEqual));
 			result.add(F.num(bothEqual));
@@ -125,10 +125,10 @@ public class NRoots extends AbstractFunctionEvaluator {
 	 * @param d
 	 */
 	private static IAST cubic(double a, double b, double c, double d) {
-		if (a == 0) {
+		if (F.isZero(a)) {
 			return null;
 		}
-		if (d == 0) {
+		if (F.isZero(d)) {
 			return null;
 		}
 		IAST result = F.List();
@@ -159,7 +159,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 
 		// The remaining options are all real
 		double r13;
-		if (discriminant == 0) {
+		if (F.isZero(discriminant)) {
 			// All roots real, at least two are equal.
 			r13 = ((r < 0) ? -Math.pow(-r, (1.0 / 3.0)) : Math.pow(r, (1.0 / 3.0)));
 			result.add(F.num(-term1 + 2.0 * r13));
