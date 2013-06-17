@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.INumericConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.form.output.StringBufferWriter;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
@@ -529,14 +529,17 @@ public class Symbol extends ExprImpl implements ISymbol {
 		// dummy call to ensure, that the associated rules are loaded:
 		getEvaluator();
 
-		StringBufferWriter buf = new StringBufferWriter();
-		buf.setIgnoreNewLine(true);
+		StringWriter buf = new StringWriter();
+
+		OutputFormFactory off = OutputFormFactory.get();
+		off.setIgnoreNewLine(true);
 		List<IAST> list = definition();
 		buf.append("{");
 		for (int i = 0; i < list.size(); i++) {
-			OutputFormFactory.get().convert(buf, list.get(i));
+			off.convert(buf, list.get(i));
 			if (i < list.size() - 1) {
 				buf.append(",\n ");
+				off.setColumnCounter(0);
 			}
 		}
 		buf.append("}\n");

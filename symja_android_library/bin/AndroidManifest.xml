@@ -2,6 +2,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.matheclipse.android">
+       <uses-sdk android:targetSdkVersion="11" android:minSdkVersion="9"></uses-sdk>
     <application> 
     </application>
 </manifest>

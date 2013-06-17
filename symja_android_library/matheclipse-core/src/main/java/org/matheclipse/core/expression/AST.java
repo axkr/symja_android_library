@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.Util;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.generic.util.NestedFastTable;
@@ -1163,6 +1165,13 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 	@Override
 	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convert(sb, this);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+
 		try {
 			final StringBuffer buf = new StringBuffer();
 			if (size() > 0 && isList()) {

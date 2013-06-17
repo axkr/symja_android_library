@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -13,7 +14,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.StringBufferWriter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -115,8 +115,8 @@ public class Package implements IFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the
-	 * given <code>expr</code> and return the resulting expression.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in
+	 * the given <code>expr</code> and return the resulting expression.
 	 * 
 	 * @param expr
 	 * @param convertedSymbols
@@ -137,8 +137,8 @@ public class Package implements IFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the
-	 * given <code>ast</code> list and return the resulting list.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in
+	 * the given <code>ast</code> list and return the resulting list.
 	 * 
 	 * @param ast
 	 * @param convertedSymbols
@@ -176,18 +176,13 @@ public class Package implements IFunctionEvaluator {
 	 */
 	public static void loadPackage(final EvalEngine engine, final Reader is) {
 		String record = null;
-		final StringBufferWriter buf = new StringBufferWriter();
 		final BufferedReader r = new BufferedReader(is);// new
-		// InputStreamReader(is));
 		try {
 			StringBuilder builder = new StringBuilder(2048);
 			while ((record = r.readLine()) != null) {
 				builder.append(record);
 				builder.append('\n');
 			}
-			// EvalEngine engine = EvalEngine.get();
-
-			buf.setIgnoreNewLine(true);
 
 			IExpr parsedExpression = engine.parse(builder.toString());
 			if (parsedExpression != null && parsedExpression.isAST()) {
@@ -204,7 +199,6 @@ public class Package implements IFunctionEvaluator {
 			e.printStackTrace();
 		} finally {
 			try {
-				buf.close();
 				r.close();
 				is.close();
 			} catch (IOException e) {

@@ -2,13 +2,13 @@ package org.matheclipse.core.reflection.system;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringWriter;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.form.output.StringBufferWriter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -25,7 +25,7 @@ public class Print implements IFunctionEvaluator {
 			stream = System.out;
 		}
 		try {
-			final StringBufferWriter buf = new StringBufferWriter();
+			final StringBuilder buf = new StringBuilder();
 			for (int i = 1; i < ast.size(); i++) {
 				// TODO integrate the print statement in the different
 				// environments eclipse, console...
