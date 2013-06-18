@@ -690,13 +690,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			IAST resultList = ast;
 			IAST result;
-			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
-				// associative
-				if ((result = EvaluationSupport.flatten(ast)) != null) {
-					resultList = result;
-					ast = result;
-				}
-			}
+			
 			if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 				final int astSize = ast.size();
 				resultList = ast.clone();
@@ -719,6 +713,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			}
 			if (resultList.size() > 2) {
+				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
+					// associative
+					if ((result = EvaluationSupport.flatten(resultList)) != null) {
+						resultList = result;
+					}
+				}
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					EvaluationSupport.sort(resultList);
 				}
