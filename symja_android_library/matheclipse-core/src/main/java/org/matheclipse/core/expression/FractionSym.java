@@ -486,7 +486,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	public ISymbol head() {
-		return F.RationalHead;
+		return F.Rational;
 	}
 
 	/** {@inheritDoc} */

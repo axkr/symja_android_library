@@ -170,12 +170,12 @@ public class AST2Expr {
 				if (expr != null) {
 					return expr;
 				}
-			} else if (head.equals(F.ComplexHead)) {
+			} else if (head.equals(F.Complex)) {
 				final IExpr expr = Complex.CONST.evaluate(ast);
 				if (expr != null) {
 					return expr;
 				}
-			} else if (head.equals(F.RationalHead)) {
+			} else if (head.equals(F.Rational)) {
 				final IExpr expr = Rational.CONST.evaluate(ast);
 				if (expr != null) {
 					return expr;

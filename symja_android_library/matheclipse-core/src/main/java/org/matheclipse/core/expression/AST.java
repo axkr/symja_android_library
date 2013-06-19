@@ -247,14 +247,14 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 				return F.IntegerHead;
 			}
 			if (header instanceof IFraction) {
-				return F.RationalHead;
+				return F.Rational;
 			}
 		}
 		if (header instanceof IComplex) {
-			return F.ComplexHead;
+			return F.Complex;
 		}
 		if (header instanceof IComplexNum) {
-			return F.ComplexHead;
+			return F.Complex;
 		}
 		if (header instanceof IPattern) {
 			return F.PatternHead;

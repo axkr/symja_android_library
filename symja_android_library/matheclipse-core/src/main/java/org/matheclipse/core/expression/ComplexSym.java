@@ -408,7 +408,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public ISymbol head() {
-		return F.ComplexHead;
+		return F.Complex;
 	}
 
 	/** {@inheritDoc} */

@@ -529,7 +529,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public ISymbol head() {
-		return F.ComplexHead;
+		return F.Complex;
 	}
 
 	public Complex getComplex() {

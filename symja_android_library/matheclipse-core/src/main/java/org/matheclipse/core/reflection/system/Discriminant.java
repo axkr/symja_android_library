@@ -167,7 +167,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		IAST result = F.List();
 		IAST resultListDiff = F.List();
 		try {
-			long degree = CoefficientList.univariateCoefficientList(expr, (ISymbol) arg2, result, resultListDiff);
+			long degree = org.matheclipse.core.reflection.system.CoefficientList.univariateCoefficientList(expr, (ISymbol) arg2, result, resultListDiff);
 			if (degree >= Short.MAX_VALUE) {
 				throw new WrongArgumentType(ast, ast.get(1), 1, "Polynomial degree" + degree + " is larger than: " + Short.MAX_VALUE);
 			}
@@ -188,7 +188,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 				}
 
 			}
-			IExpr resultant = Resultant.resultant(result, resultListDiff);
+			IExpr resultant = org.matheclipse.core.reflection.system.Resultant.resultant(result, resultListDiff);
 			IExpr disc;
 			degree *= (degree - 1);
 			degree /= 2;
