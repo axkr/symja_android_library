@@ -191,22 +191,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(this.getClass().equals(obj.getClass()))) {
-			return false;
-		}
-		if (fSymbolName.equals(((Symbol) obj).fSymbolName)) {
-			if (Config.DEBUG) {
-				System.err.println(fSymbolName + " EQUALS " + ((Symbol) obj).fSymbolName);
-			}
-			return true;
-		}
-		return false;
+		// Symbols are unique objects
+		// Makes no sense to compare the symbol names.
+		return this == obj;
 	}
 
 	/** {@inheritDoc} */
