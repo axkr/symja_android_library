@@ -21,7 +21,9 @@ public class Rule extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		final EvalEngine engine = EvalEngine.get();
 		IExpr leftHandSide = ast.get(1);
-		leftHandSide = PatternMatcher.evalLeftHandSide(leftHandSide, engine);
+		if (leftHandSide.isAST()) {
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+		}
 		IExpr arg2 = engine.evalNull(ast.get(2));
 		if (arg2 == null) {
 			if (leftHandSide.equals(ast.get(1))) {

@@ -104,7 +104,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public final int IS_SORTED = 0x0200;
 
 	/**
-	 * This expression is an already flattende or sorted expression
+	 * This expression is an already flattened or sorted expression
 	 */
 	public final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
 

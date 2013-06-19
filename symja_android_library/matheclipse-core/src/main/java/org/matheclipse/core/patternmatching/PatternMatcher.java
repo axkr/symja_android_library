@@ -93,7 +93,8 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		}
 
 		/**
-		 * Match the entries of the stack recursively starting from the top entry.
+		 * Match the entries of the stack recursively starting from the top
+		 * entry.
 		 * 
 		 * @return <code>true</code> if all expressions could be matched.
 		 */
@@ -135,7 +136,8 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	}
 
 	/**
-	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code> .
+	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code>
+	 * .
 	 * 
 	 * @see ISymbol#ORDERLESS
 	 */
@@ -152,14 +154,14 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		private int[] fUsedIndex;
 
 		/**
-		 * Match a pattern expression against an evaluation expression, there the
-		 * arguments are commutative (i.e. the head of the AST expression has
-		 * attribute <code>Orderless</code>)
+		 * Match a pattern expression against an evaluation expression, there
+		 * the arguments are commutative (i.e. the head of the AST expression
+		 * has attribute <code>Orderless</code>)
 		 * 
 		 * @param lhsPatternAST
-		 *          the pattern AST
+		 *            the pattern AST
 		 * @param lhsEvalAST
-		 *          the evaluation AST
+		 *            the evaluation AST
 		 */
 		public OrderlessMatcher(final IAST lhsPatternAST, final IAST lhsEvalAST) {
 			this.fLHSPatternAST = lhsPatternAST;
@@ -173,10 +175,10 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		/**
 		 * 
 		 * @param lhsPosition
-		 *          the position in the LHS expression which should actually be
-		 *          matched.
+		 *            the position in the LHS expression which should actually
+		 *            be matched.
 		 * @param stackMatcher
-		 *          TODO
+		 *            TODO
 		 * @return
 		 */
 		public boolean matchOrderlessAST(int lhsPosition, StackMatcher stackMatcher) {
@@ -360,8 +362,8 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the given
-	 * expression
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the
+	 * given expression
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
@@ -507,7 +509,9 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		if (lhsPatternExpr.isCondition()) {
 			// expression /; test
 			lhsPatternExpr = fPatternMap.substitutePatternSymbols(lhsPatternExpr);
-			PatternMatcher.evalLeftHandSide(lhsPatternExpr);
+			if (lhsPatternExpr.isAST()) {
+				lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr);
+			}
 			final PatternMatcher matcher = new PatternMatcher(lhsPatternExpr);
 			if (matcher.apply(lhsEvalExpr)) {
 				matched = true;
@@ -590,7 +594,8 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	private boolean matchFlatAndFlatOrderlessAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST,
 			StackMatcher stackMatcher) {
 		if ((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
-			FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+			FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher,
+					fPatternMap);
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
 			return !iter.execute();
 		} else {
@@ -605,16 +610,18 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 
 	protected boolean matchAST(final IAST lhsPatternAST, final IExpr lhsEvalExpr, StackMatcher stackMatcher) {
 		if (lhsEvalExpr instanceof IAST) {
-			if ((!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN)) && (!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE))
-					&& lhsPatternAST.equals(lhsEvalExpr)) {
+			if ((!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN))
+					&& (!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) && lhsPatternAST.equals(lhsEvalExpr)) {
 				return stackMatcher.matchRest();
 			}
 
 			final IAST lhsEvalAST = (IAST) lhsEvalExpr;
 			final ISymbol sym = lhsPatternAST.topHead();
 			if (lhsPatternAST.size() <= lhsEvalAST.size()) {
-				if (((sym.getAttributes() & ISymbol.FLAT) == ISymbol.FLAT) && sym.equals(lhsEvalAST.topHead())
-						&& !(((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) && lhsPatternAST.size() == lhsEvalAST.size())) {
+				if (((sym.getAttributes() & ISymbol.FLAT) == ISymbol.FLAT)
+						&& sym.equals(lhsEvalAST.topHead())
+						&& !(((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) && lhsPatternAST.size() == lhsEvalAST
+								.size())) {
 					if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
 						return false;
 					}
@@ -628,12 +635,14 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 						}
 						int lastPosition = lhsPatternAST.size() - 1;
 						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
-							// TODO only the special case, where the last element is
+							// TODO only the special case, where the last
+							// element is
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
 							seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
 							if (matchPatternSequence((IPatternSequence) lhsPatternAST.get(lastPosition), seq)) {
-								return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition), stackMatcher);
+								return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
+										stackMatcher);
 							}
 						}
 					}
@@ -660,7 +669,8 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 			}
 
 			if (lhsPatternAST.isOrderlessAST()) {
-				// only pure Orderless things (without Flat) will be handled here:
+				// only pure Orderless things (without Flat) will be handled
+				// here:
 				// final OrderlessMatcher foMatcher = new
 				// OrderlessMatcher(lhsPatternAST, lhsEvalAST);
 				// return foMatcher.matchOrderlessAST(1, stackMatcher);
@@ -852,17 +862,15 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		fPatternCondition = condition;
 	}
 
-	public static IExpr evalLeftHandSide(final IExpr leftHandSide, final EvalEngine engine) {
-		if (leftHandSide instanceof IAST) {
-			final IExpr temp = engine.evalSetAttributes((IAST) leftHandSide);
-			if (temp != null) {
-				return temp;
-			}
+	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
+		final IExpr temp = engine.evalSetAttributes((IAST) leftHandSide);
+		if (temp != null) {
+			return temp;
 		}
 		return leftHandSide;
 	}
 
-	public static IExpr evalLeftHandSide(IExpr leftHandSide) {
+	public static IExpr evalLeftHandSide(IAST leftHandSide) {
 		return evalLeftHandSide(leftHandSide, EvalEngine.get());
 	}
 

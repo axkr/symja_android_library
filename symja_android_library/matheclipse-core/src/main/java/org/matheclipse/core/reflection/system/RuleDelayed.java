@@ -20,7 +20,9 @@ public class RuleDelayed extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		final EvalEngine engine = EvalEngine.get();
 		IExpr leftHandSide = ast.get(1);
-		leftHandSide = PatternMatcher.evalLeftHandSide(leftHandSide, engine);
+		if (leftHandSide.isAST()) {
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+		}
 		if (!leftHandSide.equals(ast.get(1))) {
 			return RuleDelayed(leftHandSide, ast.get(2));
 		}

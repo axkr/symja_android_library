@@ -58,8 +58,9 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 		final Object[] result = new Object[2];
 		final EvalEngine engine = EvalEngine.get();
 
-		leftHandSide = PatternMatcher.evalLeftHandSide(leftHandSide, engine);
-
+		if (leftHandSide.isAST()) {
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+		}
 		try {
 			rightHandSide = engine.evaluate(rightHandSide);
 		} catch (final ConditionException e) {

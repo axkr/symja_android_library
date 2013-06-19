@@ -1611,7 +1611,9 @@ public class F {
 	}
 
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
-
+		if (a0.isAST()) {
+			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK);
+		}
 		return binary(SetDelayed, a0, a1);
 	}
 
@@ -2331,7 +2333,7 @@ public class F {
 	public static IPattern $p(final String symbolName, boolean def) {
 		return $p($s(symbolName), null, def);
 	}
-	
+
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
@@ -2435,7 +2437,7 @@ public class F {
 			return temp;
 		}
 		temp = new Symbol(symbolName);
-		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp); 
+		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
 

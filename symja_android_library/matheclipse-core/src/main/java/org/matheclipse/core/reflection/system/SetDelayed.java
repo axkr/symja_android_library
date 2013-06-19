@@ -30,8 +30,9 @@ public class SetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
 		final Object[] result = new Object[2];
 		final EvalEngine engine = EvalEngine.get();
 
-		leftHandSide = PatternMatcher.evalLeftHandSide(leftHandSide, engine);
-
+		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+		}
 		result[0] = null;
 		result[1] = rightHandSide;
 		if (leftHandSide.isSymbol()) {
