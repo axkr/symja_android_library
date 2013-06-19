@@ -103,12 +103,6 @@ public class MethodSymbol extends Symbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAtom() {
-		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isTrue() {
 		return false;
 	}

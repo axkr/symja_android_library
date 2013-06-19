@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -348,12 +347,12 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return F.Times(this, that);
 	}
 
-	public boolean isList() {
-		return head().equals(F.List);
+	public final boolean isList() {
+		return isSameHeadSizeGE(F.List, 1);
 	}
 
-	public boolean isSequence() {
-		return head().equals(F.Sequence);
+	public final boolean isSequence() {
+		return isSameHeadSizeGE(F.Sequence, 1);
 	}
 
 	public boolean isListOfLists() {
@@ -369,113 +368,113 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
-	public boolean isPlus() {
-		return size() >= 3 && head().equals(F.Plus);
+	public final boolean isPlus() {
+		return isSameHeadSizeGE(F.Plus, 3);
 	}
 
-	public boolean isPower() {
-		return size() == 3 && head().equals(F.Power);
+	public final boolean isPower() {
+		return isSameHead(F.Power, 3);
 	}
 
-	public boolean isTimes() {
-		return size() >= 3 && head().equals(F.Times);
+	public final boolean isTimes() {
+		return isSameHeadSizeGE(F.Times, 3);
 	}
 
-	public boolean isSin() {
-		return size() == 2 && head().equals(F.Sin);
+	public final boolean isSin() {
+		return isSameHead(F.Sin, 2);
 	}
 
-	public boolean isCos() {
-		return size() == 2 && head().equals(F.Cos);
+	public final boolean isCos() {
+		return isSameHead(F.Cos, 2);
 	}
 
-	public boolean isTan() {
-		return size() == 2 && head().equals(F.Tan);
+	public final boolean isTan() {
+		return isSameHead(F.Tan, 2);
 	}
 
-	public boolean isArcSin() {
-		return size() == 2 && head().equals(F.ArcSin);
-	}
-
-	/** {@inheritDoc} */
-	public boolean isAnd() {
-		return size() >= 3 && head().equals(F.And);
-	}
-
-	public boolean isArcCos() {
-		return size() == 2 && head().equals(F.ArcCos);
-	}
-
-	public boolean isArcTan() {
-		return size() == 2 && head().equals(F.ArcTan);
-	}
-
-	public boolean isSinh() {
-		return size() == 2 && head().equals(F.Sinh);
-	}
-
-	public boolean isSlot() {
-		return size() == 2 && head().equals(F.Slot) && get(1).isInteger();
-	}
-
-	public boolean isSlotSequence() {
-		return size() == 2 && head().equals(F.SlotSequence) && get(1).isInteger();
-	}
-
-	public boolean isCosh() {
-		return size() == 2 && head().equals(F.Cosh);
-	}
-
-	public boolean isTanh() {
-		return size() == 2 && head().equals(F.Tanh);
-	}
-
-	public boolean isArcSinh() {
-		return size() == 2 && head().equals(F.ArcSinh);
-	}
-
-	public boolean isArcCosh() {
-		return size() == 2 && head().equals(F.ArcCosh);
-	}
-
-	public boolean isArcTanh() {
-		return size() == 2 && head().equals(F.ArcTanh);
-	}
-
-	public boolean isLog() {
-		return size() == 2 && head().equals(F.Log);
+	public final boolean isArcSin() {
+		return isSameHead(F.ArcSin, 2);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isOr() {
-		return size() >= 3 && head().equals(F.Or);
+	public final boolean isAnd() {
+		return isSameHeadSizeGE(F.And, 3);
 	}
 
-	public boolean isOne() {
+	public final boolean isArcCos() {
+		return isSameHead(F.ArcCos, 2);
+	}
+
+	public final boolean isArcTan() {
+		return isSameHead(F.ArcTan, 2);
+	}
+
+	public final boolean isSinh() {
+		return isSameHead(F.Sinh, 2);
+	}
+
+	public final boolean isSlot() {
+		return isSameHead(F.Slot, 2) && get(1).isInteger();
+	}
+
+	public final boolean isSlotSequence() {
+		return isSameHead(F.SlotSequence, 2) && get(1).isInteger();
+	}
+
+	public final boolean isCosh() {
+		return isSameHead(F.Cosh, 2);
+	}
+
+	public final boolean isTanh() {
+		return isSameHead(F.Tanh, 2);
+	}
+
+	public final boolean isArcSinh() {
+		return isSameHead(F.ArcSinh, 2);
+	}
+
+	public final boolean isArcCosh() {
+		return isSameHead(F.ArcCosh, 2);
+	}
+
+	public final boolean isArcTanh() {
+		return isSameHead(F.ArcTanh, 2);
+	}
+
+	public final boolean isLog() {
+		return isSameHead(F.Log, 2);
+	}
+
+	/** {@inheritDoc} */
+	public final boolean isOr() {
+		return isSameHeadSizeGE(F.Or, 3);
+	}
+
+	public final boolean isOne() {
 		return false;
 	}
 
-	public boolean isMinusOne() {
+	public final boolean isMinusOne() {
 		return false;
 	}
 
-	public boolean isZero() {
+	public final boolean isZero() {
 		return false;
 	}
 
-	public boolean isTrue() {
+	public final boolean isTrue() {
 		return false;
 	}
 
-	public boolean isFalse() {
+	public final boolean isFalse() {
 		return false;
 	}
 
-	public boolean isSame(IExpr expression) {
+	public final boolean isSame(IExpr expression) {
 		return equals(expression);
 	}
 
-	public boolean isSame(IExpr expression, double epsilon) {
+	public final boolean isSame(IExpr expression, double epsilon) {
 		return equals(expression);
 	}
 
@@ -522,7 +521,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return null;
 	}
 
-	public int isVector() {
+	public final int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
 			return size() - 1;
 		}
@@ -545,71 +544,71 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return -1;
 	}
 
-	public boolean isFraction() {
+	public final boolean isFraction() {
 		return false;
 	}
 
-	public boolean isPattern() {
+	public final boolean isPattern() {
 		return false;
 	}
 
-	public boolean isPatternSequence() {
+	public final boolean isPatternSequence() {
 		return false;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isCondition() {
+	public final boolean isCondition() {
 		return size() == 3 && head().equals(F.Condition);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isModule() {
+	public final boolean isModule() {
 		return size() == 3 && head().equals(F.Module);
 	}
 
-	public boolean isSymbol() {
+	public final boolean isSymbol() {
 		return false;
 	}
 
-	public boolean isComplex() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	public boolean isInteger() {
+	public final boolean isComplex() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isNumIntValue() {
+	public final boolean isInteger() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isRational() {
+	public final boolean isNumIntValue() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isSignedNumber() {
+	public final boolean isRational() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isNot() {
+	public final boolean isSignedNumber() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public final boolean isNot() {
 		return size() == 2 && head().equals(F.Not);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isNumeric() {
+	public final boolean isNumeric() {
 		return false;
 	}
 
-	public boolean isNumber() {
+	public final boolean isNumber() {
 		return false;
 	}
 
@@ -762,43 +761,43 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
-	final public boolean isAST() {
+	public final boolean isAST() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isOrderlessAST() {
+	public final boolean isOrderlessAST() {
 		return ((ISymbol.ORDERLESS & topHead().getAttributes()) == ISymbol.ORDERLESS);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isFlatAST() {
+	public final boolean isFlatAST() {
 		return ((ISymbol.FLAT & topHead().getAttributes()) == ISymbol.FLAT);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST(final IExpr header) {
-		return get(0).equals(header);
+	public final boolean isAST(final IExpr header) {
+		return isSameHead(header);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isAST(final IExpr header, final int length) {
-		return (size() == length) && get(0).equals(header);
+	public final boolean isAST(final IExpr header, final int length) {
+		return isSameHead(header, length);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isASTSizeGE(final IExpr header, final int length) {
-		return (size() >= length) && get(0).equals(header);
+	public final boolean isASTSizeGE(final IExpr header, final int length) {
+		return isSameHeadSizeGE(header, length);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isAST(final String symbol) {
+	public final boolean isAST(final String symbol) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			return get(0).toString().equals(symbol.toLowerCase());
 		}
@@ -808,7 +807,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isAST(final String symbol, final int length) {
+	public final boolean isAST(final String symbol, final int length) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			return (size() == length) && get(0).toString().equals(symbol.toLowerCase());
 		}
@@ -816,23 +815,23 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	public boolean isRuleAST() {
+	public final boolean isRuleAST() {
 		return size() == 3 && (head().equals(F.Rule) || head().equals(F.RuleDelayed));
 	}
 
 	/** {@inheritDoc} */
-	public boolean isFree(final IExpr pattern, boolean heads) {
+	public final boolean isFree(final IExpr pattern, boolean heads) {
 		final PatternMatcher matcher = new PatternMatcher(pattern);
 		return !isMember(matcher, heads);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isFree(Predicate<IExpr> predicate, boolean heads) {
+	public final boolean isFree(Predicate<IExpr> predicate, boolean heads) {
 		return !isMember(predicate, heads);
 	}
 
 	/** {@inheritDoc} */
-	public boolean isMember(Predicate<IExpr> predicate, boolean heads) {
+	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
 		if (predicate.apply(this)) {
 			return true;
 		}
@@ -851,7 +850,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean isFunction() {
+	public final boolean isFunction() {
 		return size() >= 2 && head().equals(F.Function);
 	}
 
@@ -1052,7 +1051,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return fPatternMatchingHashValue;
 	}
 
-	public boolean isAtom() {
+	public final boolean isAtom() {
 		return false;
 	}
 
@@ -1575,12 +1574,12 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	@Override
-	public boolean isONE() {
+	public final boolean isONE() {
 		return isOne();
 	}
 
 	@Override
-	public boolean isUnit() {
+	public final boolean isUnit() {
 		return isOne();
 	}
 

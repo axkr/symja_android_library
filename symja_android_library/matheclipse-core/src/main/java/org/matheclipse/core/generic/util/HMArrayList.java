@@ -344,6 +344,47 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		}
 	}
 
+	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same
+	 * object as <code>head</code> and if the size of the list equals
+	 * <code>length</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @return
+	 */
+	public final boolean isSameHead(E head) {
+		return array[firstIndex] == head;
+	}
+
+	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same
+	 * object as <code>head</code> and if the size of the list equals
+	 * <code>length</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @param length
+	 * @return
+	 */
+	public final boolean isSameHead(E head, int length) {
+		return array[firstIndex] == head && length == (lastIndex - firstIndex);
+	}
+
+	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same
+	 * object as <code>head</code> and if the size of the list is greater or
+	 * equal <code>length</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @param length
+	 * @return
+	 */
+	public final boolean isSameHeadSizeGE(E head, int length) {
+		return array[firstIndex] == head && length <= (lastIndex - firstIndex);
+	}
+
 	@Override
 	public E get(int location) {
 		if (0 <= location && location < (lastIndex - firstIndex)) {

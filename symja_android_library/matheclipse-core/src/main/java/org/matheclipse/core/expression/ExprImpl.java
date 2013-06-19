@@ -164,15 +164,15 @@ public abstract class ExprImpl implements IExpr {
 		return head();
 	}
 
-	public boolean isList() {
+	public final boolean isList() {
 		return false;
 	}
 
-	public boolean isSequence() {
+	public final boolean isSequence() {
 		return false;
 	}
 
-	public boolean isListOfLists() {
+	public final boolean isListOfLists() {
 		return false;
 	}
 
@@ -192,126 +192,126 @@ public abstract class ExprImpl implements IExpr {
 		return equals(expression);
 	}
 
-	public int[] isMatrix() {
+	public final int[] isMatrix() {
 		// default: no matrix
 		return null;
 	}
 
-	public int isVector() {
+	public final int isVector() {
 		// default: no vector
 		return -1;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST() {
+	public final boolean isAST() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isOrderlessAST() {
+	public final boolean isOrderlessAST() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isFlatAST() {
+	public final boolean isFlatAST() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST(final IExpr header) {
+	public final boolean isAST(final IExpr header) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST(final IExpr header, final int sz) {
+	public final boolean isAST(final IExpr header, final int sz) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isASTSizeGE(final IExpr header, final int length) {
+	public final boolean isASTSizeGE(final IExpr header, final int length) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST(final String symbol) {
+	public final boolean isAST(final String symbol) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isAST(final String symbol, final int length) {
+	public final boolean isAST(final String symbol, final int length) {
 		return false;
 	}
 
-	public boolean isPlus() {
+	public final boolean isPlus() {
 		return false;
 	}
 
-	public boolean isPower() {
+	public final boolean isPower() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
-	public boolean isRuleAST() {
+	public final boolean isRuleAST() {
 		return false;
 	}
 
-	public boolean isTimes() {
+	public final boolean isTimes() {
 		return false;
 	}
 
-	public boolean isSin() {
+	public final boolean isSin() {
 		return false;
 	}
 
-	public boolean isCos() {
+	public final boolean isCos() {
 		return false;
 	}
 
-	public boolean isTan() {
+	public final boolean isTan() {
 		return false;
 	}
 
-	public boolean isArcSin() {
+	public final boolean isArcSin() {
 		return false;
 	}
 
-	public boolean isAnd() {
+	public final boolean isAnd() {
 		return false;
 	}
 
-	public boolean isArcCos() {
+	public final boolean isArcCos() {
 		return false;
 	}
 
-	public boolean isArcTan() {
+	public final boolean isArcTan() {
 		return false;
 	}
 
-	public boolean isSinh() {
+	public final boolean isSinh() {
 		return false;
 	}
 
-	public boolean isCosh() {
+	public final boolean isCosh() {
 		return false;
 	}
 
-	public boolean isTanh() {
+	public final boolean isTanh() {
 		return false;
 	}
 
-	public boolean isArcSinh() {
+	public final boolean isArcSinh() {
 		return false;
 	}
 
-	public boolean isArcCosh() {
+	public final boolean isArcCosh() {
 		return false;
 	}
 
-	public boolean isArcTanh() {
+	public final boolean isArcTanh() {
 		return false;
 	}
 
-	public boolean isLog() {
+	public final boolean isLog() {
 		return false;
 	}
 
@@ -601,8 +601,8 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	/**
-	 * Signum functionality is used in JAS toString() method, don't use it as math
-	 * signum function.
+	 * Signum functionality is used in JAS toString() method, don't use it as
+	 * math signum function.
 	 * 
 	 * @deprecated
 	 */

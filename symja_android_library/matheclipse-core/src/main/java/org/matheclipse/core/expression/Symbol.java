@@ -369,7 +369,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAtom() {
+	public final boolean isAtom() {
 		return true;
 	}
 
