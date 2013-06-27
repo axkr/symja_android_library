@@ -130,23 +130,13 @@ public class Pattern extends ExprImpl implements IPattern {
 			return true;
 		}
 		if (obj instanceof Pattern) {
-			if (fHashValue != obj.hashCode()) {
-				return false;
-			}
 			Pattern pattern = (Pattern) obj;
-			if (fSymbol == null) {
+			if (fSymbol == pattern.fSymbol) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
-					return (pattern.fSymbol == null) && fCondition.equals(pattern.fCondition);
+					return fCondition.equals(pattern.fCondition);
 				}
-				return (pattern.fSymbol == null) && (fCondition == pattern.fCondition);
+				return fCondition == pattern.fCondition;
 			}
-			if (pattern.fSymbol == null) {
-				return false;
-			}
-			if ((fCondition != null) && (pattern.fCondition != null)) {
-				return fSymbol.equals(pattern.fSymbol) && fCondition.equals(pattern.fCondition);
-			}
-			return fSymbol.equals(pattern.fSymbol) && (fCondition == pattern.fCondition);
 		}
 		return false;
 	}

@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 
 /**
- * Compares two patterns.
+ * Compares two pattern objects.
  * 
  */
 public class PatternComparator implements Comparator<IPatternObject> {

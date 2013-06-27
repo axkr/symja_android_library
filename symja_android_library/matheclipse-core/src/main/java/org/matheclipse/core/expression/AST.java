@@ -976,7 +976,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		if (Config.DEBUG) {
 			System.out.println(toString());
 		}
-		Util.checkCanceled();
+//		Util.checkCanceled();
 		if (Config.SHOW_CONSOLE) {
 			IExpr temp = engine.evalAST(this);
 			if ((topHead().getAttributes() & ISymbol.CONSOLE_OUTPUT) == ISymbol.CONSOLE_OUTPUT) {

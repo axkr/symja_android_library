@@ -18,13 +18,13 @@ public class Take extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		
+
 		try {
 			if (ast.get(1).isAST()) {
 				final ISequence[] sequ = Sequence.createSequences(ast, 2);
 				final IAST arg1 = (IAST) ast.get(1);
 				if (sequ != null) {
-					return AST.COPY.take(arg1, 0, sequ);
+					return take(arg1, 0, sequ);
 				}
 			}
 		} catch (final Exception e) {
@@ -32,10 +32,26 @@ public class Take extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		
+
 		return null;
 	}
-	
+
+	public IAST take(final IAST list, final int level, final ISequence[] sequ) {
+		sequ[level].setListSize(list.size());
+		final IAST resultList = list.copyHead();
+		final int newLevel = level + 1;
+		for (int i = sequ[level].getStart(); i < sequ[level].getEnd(); i += sequ[level].getStep()) {
+			if (sequ.length > newLevel) {
+				if (list.get(i).isAST()) {
+					resultList.add(take((IAST) list.get(i), newLevel, sequ));
+				}
+			} else {
+				resultList.add(list.get(i));
+			}
+		}
+		return resultList;
+	}
+
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
 	}

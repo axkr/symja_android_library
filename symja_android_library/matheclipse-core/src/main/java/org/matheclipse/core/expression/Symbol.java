@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.core.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -112,7 +113,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		return null;
 	}
 
-	private Map<Integer, IExpr> fDefaultValues = null;
+	private OpenIntToIExprHashMap fDefaultValues = null;
 
 	static class DummyEvaluator implements IEvaluator {
 		public void setUp(ISymbol symbol) {
@@ -222,7 +223,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public int getAttributes() {
+	public final int getAttributes() {
 		return fAttributes;
 	}
 
@@ -275,7 +276,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public boolean isString(final String str) {
+	public final boolean isString(final String str) {
 		return fSymbolName.equals(str);
 	}
 
@@ -314,7 +315,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public void setEvaluator(final IEvaluator evaluator) {
+	public final void setEvaluator(final IEvaluator evaluator) {
 		fEvaluator = evaluator;
 		evaluator.setUp(this);
 	}
@@ -326,6 +327,11 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof Symbol) {
+			if (this == obj) {
+				// Symbols are unique objects
+				// Makes no sense to compare the symbol names, if they are equal
+				return 0;
+			}
 			return fSymbolName.compareTo(((Symbol) obj).fSymbolName);
 		}
 		if (obj instanceof AST) {
@@ -382,7 +388,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isValue() {
+	public final boolean isValue() {
 		return evaluate(EvalEngine.get()) != null;
 	}
 
@@ -410,7 +416,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public String getSymbol() {
+	public final String getSymbol() {
 		return fSymbolName;
 	}
 
@@ -497,7 +503,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public void setDefaultValue(IExpr expr) {
 		// special case for a general default value
 		if (fDefaultValues == null) {
-			fDefaultValues = new HashMap<Integer, IExpr>();
+			fDefaultValues = new OpenIntToIExprHashMap();
 		}
 		fDefaultValues.put(DEFAULT_VALUE_INDEX, expr);
 	}
@@ -506,7 +512,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public void setDefaultValue(int pos, IExpr expr) {
 		// default value at this position
 		if (fDefaultValues == null) {
-			fDefaultValues = new HashMap<Integer, IExpr>();
+			fDefaultValues = new OpenIntToIExprHashMap();
 		}
 		fDefaultValues.put(Integer.valueOf(pos), expr);
 	}

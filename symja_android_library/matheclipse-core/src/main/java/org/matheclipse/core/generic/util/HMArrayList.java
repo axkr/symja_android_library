@@ -294,7 +294,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	public Object clone() {
 		try {
 			HMArrayList<E> newList = (HMArrayList<E>) super.clone();
-			newList.array = array.clone();
+ 			newList.array = array.clone();
 			return newList;
 		} catch (CloneNotSupportedException e) {
 			return null;

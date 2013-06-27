@@ -10,8 +10,11 @@ import java.util.TreeMap;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -41,9 +44,17 @@ public class PatternMap implements Cloneable, Serializable {
 	private IExpr[] fPatternValuesArray;
 
 	public PatternMap() {
-		this.fPatternIndexMap = new TreeMap<IPatternObject, Integer>(PatternComparator.CONST);
+		this(new TreeMap<IPatternObject, Integer>(PatternComparator.CONST), new IExpr[0]);
+	}
+
+	private PatternMap(TreeMap<IPatternObject, Integer> map, IExpr[] exprArray) {
+		this.fPatternIndexMap = map;
 		this.fPatternCounter = 0;
-		this.fPatternValuesArray = new IExpr[0];
+		this.fPatternValuesArray = exprArray;
+	}
+
+	protected void allocValuesArray() {
+		this.fPatternValuesArray = new IExpr[fPatternCounter];
 	}
 
 	/**
@@ -53,7 +64,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param pattern
 	 * @param patternIndexMap
 	 */
-	public void addPattern(IPatternObject pattern) {
+	protected void addPattern(IPatternObject pattern) {
 		if (pattern.getSymbol() != null && fPatternIndexMap.get(pattern) != null) {
 			// for "named" patterns (i.e. "x_" or "x_IntegerQ")
 			return;
@@ -62,25 +73,69 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Allocate an array of <code>IExpr</code> with the length of the symbols
-	 * list.
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the
+	 * given expression
+	 * 
+	 * Increments this classes pattern counter.
+	 * 
+	 * @param lhsPatternExpr
+	 * @param patternIndexMap
 	 */
-	public void allocValuesArray() {
+	protected int determinePatterns(final IExpr lhsPatternExpr) {
+		if (lhsPatternExpr instanceof IAST) {
+			final IAST ast = (IAST) lhsPatternExpr;
+			int listEvalFlags = IAST.NO_FLAG;
+			listEvalFlags |= determinePatterns(ast.head());
+			for (int i = 1; i < ast.size(); i++) {
+				if (ast.get(i).isPattern()) {
+					IPattern pat = (IPattern) ast.get(i);
+					addPattern(pat);
+					if (pat.isDefault()) {
+						// the ast contains a pattern with default value (i.e.
+						// "x_.")
+						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
+					} else {
+						// the ast contains a pattern without value (i.e. "x_")
+						listEvalFlags |= IAST.CONTAINS_PATTERN;
+					}
+				} else if (ast.get(i).isPatternSequence()) {
+					IPatternSequence pat = (IPatternSequence) ast.get(i);
+					addPattern(pat);
+					// the ast contains a pattern sequence (i.e. "x__")
+					listEvalFlags |= IAST.CONTAINS_PATTERN_SEQUENCE;
+				} else {
+					listEvalFlags |= determinePatterns(ast.get(i));
+				}
+			}
+			ast.setEvalFlags(listEvalFlags);
+			// disable flag "pattern with default value"
+			listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
+			this.fPatternValuesArray = new IExpr[fPatternCounter];
+			return listEvalFlags;
+		} else {
+			if (lhsPatternExpr.isPattern()) {
+				addPattern((IPattern) lhsPatternExpr);
+				this.fPatternValuesArray = new IExpr[fPatternCounter];
+				return IAST.CONTAINS_PATTERN;
+			} else if (lhsPatternExpr.isPatternSequence()) {
+				addPattern((IPatternSequence) lhsPatternExpr);
+				this.fPatternValuesArray = new IExpr[fPatternCounter];
+				return IAST.CONTAINS_PATTERN_SEQUENCE;
+			}
+		}
 		this.fPatternValuesArray = new IExpr[fPatternCounter];
+		return IAST.NO_FLAG;
 	}
 
 	@Override
 	protected PatternMap clone() {
-		PatternMap result = null;
-		try {
-			result = (PatternMap) super.clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
+		PatternMap result = new PatternMap(null, null);
 		// avoid Arrays.copyOf because of Android version
 		result.fPatternValuesArray = new IExpr[fPatternValuesArray.length];
 		System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, fPatternValuesArray.length);
-		result.fPatternIndexMap = (TreeMap<IPatternObject, Integer>) fPatternIndexMap.clone();
+		// don't clone the map which is final after the #determinepatterns()
+		// mehtod
+		result.fPatternIndexMap = fPatternIndexMap;
 		result.fPatternCounter = fPatternCounter;
 		return result;
 	}
@@ -98,23 +153,21 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Copy the found pattern matches from the given <code>patternMap</code> back
-	 * to this maps pattern values.
+	 * Copy the found pattern matches from the given <code>patternMap</code>
+	 * back to this maps pattern values.
 	 * 
 	 * @param patternMap
 	 */
 	public void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
 		for (IPatternObject pattern : patternMap.fPatternIndexMap.keySet()) {
 			if (pattern.getSymbol() != null) {
-				Integer indx = getIndex(pattern);
-				if (indx != null) {
-					fPatternValuesArray[indx.intValue()] = patternMap.getValue(pattern);
-				}
+				int indx = getIndex(pattern);
+				fPatternValuesArray[indx] = patternMap.getValue(pattern);
 			}
 		}
 	}
 
-	public int getIndex(IPatternObject pattern) {
+	protected int getIndex(IPatternObject pattern) {
 		return fPatternIndexMap.get(pattern);
 	}
 
@@ -151,7 +204,7 @@ public class PatternMap implements Cloneable, Serializable {
 	/**
 	 * Set all values to <code>null</code>;
 	 */
-	public void initPattern() {
+	protected void initPattern() {
 		Arrays.fill(fPatternValuesArray, null);
 	}
 

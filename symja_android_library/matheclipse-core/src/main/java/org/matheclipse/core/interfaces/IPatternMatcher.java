@@ -2,8 +2,6 @@ package org.matheclipse.core.interfaces;
 
 import java.util.List;
 
-import org.matheclipse.core.patternmatching.PatternMatcher;
-
 import com.google.common.base.Predicate;
 
 /**
@@ -16,9 +14,9 @@ public abstract class IPatternMatcher<E> implements Predicate<E>, Cloneable {
 	 * 
 	 * 
 	 * @param resultList
-	 *          a list instance
+	 *            a list instance
 	 * @param patternExpr
-	 *          the expression which contains the pattern objects
+	 *            the expression which contains the pattern objects
 	 */
 	public abstract void getPatterns(List<E> resultList, E patternExpr);
 
@@ -35,7 +33,6 @@ public abstract class IPatternMatcher<E> implements Predicate<E>, Cloneable {
 	 * @return
 	 */
 	public abstract boolean apply(E evalExpr);
- 
 
 	/**
 	 * Match the given left-hand-side and return an evaluated expression
@@ -53,7 +50,8 @@ public abstract class IPatternMatcher<E> implements Predicate<E>, Cloneable {
 	 * @param thatMatcher
 	 * @return
 	 */
-//	public abstract boolean checkPatternMatcher(final PatternMatcher thatMatcher);
+	// public abstract boolean checkPatternMatcher(final PatternMatcher
+	// thatMatcher);
 
 	@Override
 	public Object clone() {

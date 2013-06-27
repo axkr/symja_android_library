@@ -3,6 +3,7 @@ package org.matheclipse.core.eval;
 import java.io.Writer;
 
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
@@ -28,6 +29,11 @@ public class MathMLUtilities {
 
 	Parser fParser;
 
+	static {
+		// initialize the global available symbols
+		F.initSymbols();
+	}
+	
 	public MathMLUtilities(final EvalEngine evalEngine, final boolean msie, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance

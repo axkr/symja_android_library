@@ -30,8 +30,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * 
 	 */
-	public static PatternSequence valueOf(final ISymbol symbol,
-			final IExpr check, final boolean def) {
+	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
 		PatternSequence p = new PatternSequence();
 		p.fSymbol = symbol;
 		p.fCondition = check;
@@ -80,23 +79,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 		if (obj instanceof PatternSequence) {
 			PatternSequence pattern = (PatternSequence) obj;
-			if (fSymbol == null) {
+			if (fSymbol == pattern.fSymbol) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
-					return (pattern.fSymbol == null)
-							&& fCondition.equals(pattern.fCondition);
+					return fCondition.equals(pattern.fCondition);
 				}
-				return (pattern.fSymbol == null)
-						&& (fCondition == pattern.fCondition);
+				return fCondition == pattern.fCondition;
 			}
-			if (pattern.fSymbol == null) {
-				return false;
-			}
-			if ((fCondition != null) && (pattern.fCondition != null)) {
-				return fSymbol.equals(pattern.fSymbol)
-						&& fCondition.equals(pattern.fCondition);
-			}
-			return fSymbol.equals(pattern.fSymbol)
-					&& (fCondition == pattern.fCondition);
 		}
 		return false;
 	}
@@ -115,9 +103,9 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	@Override
 	public int hashCode() {
 		if (fSymbol == null) {
-			return 199;
+			return 203;
 		}
-		return fSymbol.hashCode();
+		return 17 + fSymbol.hashCode();
 	}
 
 	/** {@inheritDoc} */
@@ -133,9 +121,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 			if (fSymbol == null) {
 				buffer.append("(ISymbol)null");
 				if (fCondition != null) {
-					buffer.append(","
-							+ fCondition.internalFormString(
-									symbolsAsFactoryMethod, 0));
+					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 				}
 				if (fDefault) {
 					if (fCondition == null) {
@@ -146,9 +132,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 			} else {
 				buffer.append("\"" + fSymbol.toString() + "\"");
 				if (fCondition != null) {
-					buffer.append(","
-							+ fCondition.internalFormString(
-									symbolsAsFactoryMethod, 0));
+					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 				}
 				if (fDefault) {
 					buffer.append(",true");
@@ -243,8 +227,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 				if (((PatternSequence) obj).fCondition == null) {
 					return 1;
 				} else {
-					return fCondition
-							.compareTo(((PatternSequence) obj).fCondition);
+					return fCondition.compareTo(((PatternSequence) obj).fCondition);
 				}
 			}
 		}
@@ -289,8 +272,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map,
-			final List<IExpr> variableList) {
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return null;
 	}
 
@@ -314,7 +296,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	/**
 	 * Use default value, if no matching was found.
 	 * 
@@ -330,7 +312,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	final public boolean isPatternSequence() {
 		return true;
 	}
-	
+
 	/**
 	 * Groovy operator overloading
 	 */

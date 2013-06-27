@@ -35,16 +35,17 @@ public final class ArrayUtils {
 	 * where the <code>-1</code> values are deleted.
 	 * 
 	 * @param multiset
-	 *          a multiset containing equals or greater than elements as the
-	 *          subset.
+	 *            a multiset containing equals or greater than elements as the
+	 *            subset.
 	 * @param subset
-	 *          a subset with the elements which should be deleted.
+	 *            a subset with the elements which should be deleted.
 	 * @return
 	 */
 	public static int[] deleteSubset(int[] multiset, int[] subset) {
-		int[] setClone = multiset.clone();
-		int k = 0;
 		int size = multiset.length;
+		int[] setClone = new int[size];// multiset.clone();
+		System.arraycopy(multiset, 0, setClone, 0, size);
+		int k = 0;
 		for (int j = 0; j < subset.length; j++) {
 			for (int i = k; i < setClone.length; i++) {
 				if (subset[j] == setClone[i]) {
@@ -55,7 +56,7 @@ public final class ArrayUtils {
 				}
 			}
 		}
-		
+
 		int[] result = new int[size];
 		k = 0;
 		for (int i = 0; i < setClone.length; i++) {
@@ -67,13 +68,13 @@ public final class ArrayUtils {
 	}
 
 	/**
-	 * Fills the given array with a[i] = i. For example, if a = int[4], then fills
-	 * <code>a</code> with <code>{ 0, 1, 2, 3 }</code>. Used throughout
+	 * Fills the given array with a[i] = i. For example, if a = int[4], then
+	 * fills <code>a</code> with <code>{ 0, 1, 2, 3 }</code>. Used throughout
 	 * permutation and combination generation as the first result
 	 * (lexicographically).
 	 * 
 	 * @param a
-	 *          an array
+	 *            an array
 	 */
 	public static void identityPermutation(final int[] a) {
 		for (int i = a.length - 1; i >= 0; --i) {
@@ -87,7 +88,7 @@ public final class ArrayUtils {
 	 * combination generation as the first result (lexicographically).
 	 * 
 	 * @param n
-	 *          the size of the array
+	 *            the size of the array
 	 * @return the initialized array
 	 */
 	public static int[] identityPermutation(final int n) {
@@ -98,9 +99,9 @@ public final class ArrayUtils {
 
 	/**
 	 * @param elements
-	 *          the elements to choose from
+	 *            the elements to choose from
 	 * @param indices
-	 *          the array of indices
+	 *            the array of indices
 	 * @return the mapped array
 	 */
 	public static char[] valuesAt(final char[] elements, final int[] indices) {
@@ -114,9 +115,9 @@ public final class ArrayUtils {
 
 	/**
 	 * @param elements
-	 *          the elements to choose from
+	 *            the elements to choose from
 	 * @param indices
-	 *          the array of indices
+	 *            the array of indices
 	 * @return the mapped array
 	 */
 	public static int[] valuesAt(final int[] elements, final int[] indices) {
@@ -130,11 +131,11 @@ public final class ArrayUtils {
 
 	/**
 	 * @param <T>
-	 *          a type
+	 *            a type
 	 * @param elements
-	 *          the elements to choose from
+	 *            the elements to choose from
 	 * @param indices
-	 *          the array of indices
+	 *            the array of indices
 	 * @return the mapped array
 	 */
 	public static <T> T[] valuesAt(final T[] elements, final int[] indices) {

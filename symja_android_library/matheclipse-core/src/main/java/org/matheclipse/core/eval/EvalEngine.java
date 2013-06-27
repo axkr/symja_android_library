@@ -690,7 +690,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			IAST resultList = ast;
 			IAST result;
-			
+
 			if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 				final int astSize = ast.size();
 				resultList = ast.clone();

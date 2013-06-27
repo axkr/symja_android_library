@@ -255,9 +255,10 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	 * @param headOffset
 	 * @return <code>true</code> if a sublist was flattened out
 	 */
-	public boolean flatten(final L argList, final Collection<? super T> resultList) {
-		return flatten(argList, resultList, 0);
-	}
+	// public boolean flatten(final L argList, final Collection<? super T>
+	// resultList) {
+	// return flatten(argList, resultList, 0);
+	// }
 
 	/**
 	 * Flatten out all sublists of <code>argList</code> into
@@ -268,32 +269,21 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	 * @param headOffset
 	 * @return <code>true</code> if a sublist was flattened out
 	 */
-	public boolean flatten(final L argList, final Collection<? super T> resultList, final int headOffset) {
-		boolean isEvaled = false;
-		final int astSize = argList.size();
-		for (int i = headOffset; i < astSize; i++) {
-			if (isInstance(argList.get(i))) {
-				isEvaled = true;
-				flatten(cast(argList.get(i)), resultList, headOffset);
-			} else {
-				resultList.add(argList.get(i));
-			}
-		}
-
-		return isEvaled;
-	}
-
-	/**
-	 * Flatten the list [i.e. the lists <code>get(0)</code> element has the same
-	 * head] example: suppose the head f should be flattened out:<br>
-	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
-	 * 
-	 * @param argList
-	 * @return <code>true</code> if a sublist was flattened out
-	 */
-	public boolean flatten(final T head, final L argList, final Collection<? super T> resultList) {
-		return flatten(head, argList, resultList, 0);
-	}
+	// public boolean flatten(final L argList, final Collection<? super T>
+	// resultList, final int headOffset) {
+	// boolean isEvaled = false;
+	// final int astSize = argList.size();
+	// for (int i = headOffset; i < astSize; i++) {
+	// if (isInstance(argList.get(i))) {
+	// isEvaled = true;
+	// flatten(cast(argList.get(i)), resultList, headOffset);
+	// } else {
+	// resultList.add(argList.get(i));
+	// }
+	// }
+	//
+	// return isEvaled;
+	// }
 
 	/**
 	 * Flatten the list [i.e. the lists <code>get(0)</code> element has the same
@@ -303,27 +293,41 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	 * @param argList
 	 * @return <code>true</code> if a sublist was flattened out
 	 */
-	public boolean flatten(final T head, final L argList, final Collection<? super T> resultList, final int headOffset) {
-		boolean isEvaled = false;
+	// public boolean flatten(final T head, final L argList, final Collection<?
+	// super T> resultList) {
+	// return flatten(head, argList, resultList, 0);
+	// }
 
-		L list;
-		final int astSize = argList.size();
-		for (int i = headOffset; i < astSize; i++) {
-			if (isInstance(argList.get(i))) {
-				list = cast(argList.get(i));
-				if (list.get(0).equals(head)) {
-					isEvaled = true;
-					flatten(head, list, resultList, headOffset);
-				} else {
-					resultList.add(argList.get(i));
-				}
-			} else {
-				resultList.add(argList.get(i));
-			}
-		}
-
-		return isEvaled;
-	}
+	/**
+	 * Flatten the list [i.e. the lists <code>get(0)</code> element has the same
+	 * head] example: suppose the head f should be flattened out:<br>
+	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * 
+	 * @param argList
+	 * @return <code>true</code> if a sublist was flattened out
+	 */
+	// public boolean flatten(final T head, final L argList, final Collection<?
+	// super T> resultList, final int headOffset) {
+	// boolean isEvaled = false;
+	//
+	// L list;
+	// final int astSize = argList.size();
+	// for (int i = headOffset; i < astSize; i++) {
+	// if (isInstance(argList.get(i))) {
+	// list = cast(argList.get(i));
+	// if (list.get(0).equals(head)) {
+	// isEvaled = true;
+	// flatten(head, list, resultList, headOffset);
+	// } else {
+	// resultList.add(argList.get(i));
+	// }
+	// } else {
+	// resultList.add(argList.get(i));
+	// }
+	// }
+	//
+	// return isEvaled;
+	// }
 
 	/**
 	 * Add all expressions according to the level specification
@@ -599,19 +603,20 @@ public abstract class NestedAlgorithms<T extends INestedListElement, L extends L
 	// return null;
 	// }
 
-	public L take(final L list, final int level, final ISequence[] sequ) {
-		sequ[level].setListSize(list.size());
-		final L resultList = newInstance(list);
-		final int newLevel = level + 1;
-		for (int i = sequ[level].getStart(); i < sequ[level].getEnd(); i += sequ[level].getStep()) {
-			if (sequ.length > newLevel) {
-				if (isInstance(list.get(i))) {
-					resultList.add(castList(take(cast(list.get(i)), newLevel, sequ)));
-				}
-			} else {
-				resultList.add(list.get(i));
-			}
-		}
-		return resultList;
-	}
+	// public L take(final L list, final int level, final ISequence[] sequ) {
+	// sequ[level].setListSize(list.size());
+	// final L resultList = newInstance(list);
+	// final int newLevel = level + 1;
+	// for (int i = sequ[level].getStart(); i < sequ[level].getEnd(); i +=
+	// sequ[level].getStep()) {
+	// if (sequ.length > newLevel) {
+	// if (isInstance(list.get(i))) {
+	// resultList.add(castList(take(cast(list.get(i)), newLevel, sequ)));
+	// }
+	// } else {
+	// resultList.add(list.get(i));
+	// }
+	// }
+	// return resultList;
+	// }
 }

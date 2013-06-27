@@ -670,26 +670,6 @@ public class F {
 	 */
 	public final static IInteger CN1 = IntegerSym.valueOf(-1);
 
-	// public static ISymbol IntegerHead;
-	//
-	// public static ISymbol RationalHead;
-	//
-	// public static ISymbol SymbolHead;
-	//
-	// public static ISymbol RealHead;
-	//
-	// public static ISymbol ComplexHead;
-	//
-	// public static ISymbol PatternHead;
-	//
-	// public static ISymbol BlankHead;
-	//
-	// public static ISymbol StringHead;
-	//
-	// public static ISymbol MethodHead;
-
-	// --- generated function symbols
-
 	static {
 
 		try {
@@ -701,22 +681,6 @@ public class F {
 			}
 			// long start = System.currentTimeMillis();
 
-			/**
-			 * Define the &quot;set symbols&quot; first, because of dependencies
-			 * in the predefined rules
-			 */
-
-			// IntegerHead = initPredefinedSymbol(IConstantHeaders.IntegerHead);
-			// RationalHead =
-			// initPredefinedSymbol(IConstantHeaders.RationalHead);
-			// SymbolHead = initPredefinedSymbol(IConstantHeaders.SymbolHead);
-			// RealHead = initPredefinedSymbol(IConstantHeaders.RealHead);
-			// ComplexHead = initPredefinedSymbol(IConstantHeaders.ComplexHead);
-			// PatternHead = initPredefinedSymbol(IConstantHeaders.PatternHead);
-			// BlankHead = initPredefinedSymbol(IConstantHeaders.BlankHead);
-			// StringHead = initPredefinedSymbol(IConstantHeaders.StringHead);
-			// MethodHead = initPredefinedSymbol(IConstantHeaders.MethodHead);
-
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
@@ -725,30 +689,6 @@ public class F {
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
 
-			// if (symbolObserver != null) {
-			// SYMBOL_OBSERVER = symbolObserver;
-			// }
-			//
-			// if (!noPackageLoading) {
-			// Reader reader = null;
-			// if (fileName != null) {
-			// try {
-			// reader = new FileReader(fileName);
-			// } catch (FileNotFoundException e) {
-			// e.printStackTrace();
-			// }
-			// }
-			// if (reader == null) {
-			// InputStream systemPackage =
-			// F.class.getResourceAsStream("/System.mep");
-			// if (systemPackage != null) {
-			// reader = new InputStreamReader(systemPackage);
-			// }
-			// }
-			// if (reader != null) {
-			// Package.loadPackage(EvalEngine.get(), reader);
-			// }
-			// }
 			PREDEFINED_INTERNAL_STRINGS.put("Pi", "Pi");
 			PREDEFINED_INTERNAL_STRINGS.put("E", "E");
 			PREDEFINED_INTERNAL_STRINGS.put("False", "False");
@@ -1080,7 +1020,7 @@ public class F {
 	 * 
 	 * @param fileName
 	 */
-	public synchronized static void initSymbols(String fileName) {
+	private synchronized static void initSymbols(String fileName) {
 		initSymbols(fileName, null, false);
 	}
 

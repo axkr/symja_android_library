@@ -2,11 +2,11 @@ package org.matheclipse.core.list.algorithms;
 
 import java.util.Comparator;
 
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
@@ -14,9 +14,9 @@ import org.matheclipse.core.interfaces.IExpr;
 public class EvaluationSupport {
 
 	/**
-	 * Flatten the list [i.e. the list getHeader() has the attribute ISymbol.FLAT]
-	 * example: suppose the Symbol f has the attribute ISymbol.FLAT
-	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * Flatten the list [i.e. the list getHeader() has the attribute
+	 * ISymbol.FLAT] example: suppose the Symbol f has the attribute
+	 * ISymbol.FLAT f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
 	 * 
 	 * @param ast
 	 * 
@@ -27,13 +27,44 @@ public class EvaluationSupport {
 			// already flattened
 			return null;
 		}
-		final IAST res = F.ast(ast.head());
+		final ISymbol sym = ast.topHead();
+		if (ast.isAST(sym)) {
+			final IAST res = F.ast(sym);
 
-		if (AST.COPY.flatten(ast.head(), ast, res, 1)) {
-			res.setEvalFlags(IAST.IS_FLATTENED);
-			return res;
+			if (flatten(sym, ast, res)) {
+				res.setEvalFlags(IAST.IS_FLATTENED);
+				return res;
+			}
 		}
 		return null;
+	}
+
+	/**
+	 * Flatten the list [i.e. the lists <code>get(0)</code> element has the same
+	 * head] example: suppose the head f should be flattened out:<br>
+	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * 
+	 * @param argList
+	 * @return <code>true</code> if a sublist was flattened out
+	 */
+	public static boolean flatten(final ISymbol head, final IAST argList, final IAST resultList) {
+		boolean isEvaled = false;
+		IAST list;
+		final int astSize = argList.size();
+		for (int i = 1; i < astSize; i++) {
+			if (argList.get(i).isAST()) {
+				list = (IAST) argList.get(i);
+				if (list.isAST(head)) {
+					isEvaled = true;
+					flatten(head, list, resultList);
+				} else {
+					resultList.add(list);
+				}
+			} else {
+				resultList.add(argList.get(i));
+			}
+		}
+		return isEvaled;
 	}
 
 	/**
@@ -72,13 +103,13 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Thread through all lists in the arguments of the IAST [i.e. the list header
-	 * has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
+	 * Thread through all lists in the arguments of the IAST [i.e. the list
+	 * header has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
 	 * {Sin[2],Sin[x],Sin[Pi]}
 	 * 
 	 * @param list
 	 * @param listLength
-	 *          the length of the list
+	 *            the length of the list
 	 * 
 	 * 
 	 * @return Description of the Returned Value
