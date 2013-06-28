@@ -272,8 +272,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	}
 
 	protected final void init(IExpr patternExpr) {
-		determinePatterns(patternExpr);
-		fPatternMap.allocValuesArray();
+		fPatternMap.determinePatterns(patternExpr);
 	}
 
 	/**
@@ -362,57 +361,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the
-	 * given expression
-	 * 
-	 * Increments this classes pattern counter.
-	 * 
-	 * @param lhsPatternExpr
-	 * @param patternIndexMap
-	 */
-	private int determinePatterns(final IExpr lhsPatternExpr) {
-		if (lhsPatternExpr instanceof IAST) {
-			final IAST ast = (IAST) lhsPatternExpr;
-			int listEvalFlags = IAST.NO_FLAG;
-			listEvalFlags |= determinePatterns(ast.head());
-			for (int i = 1; i < ast.size(); i++) {
-				if (ast.get(i).isPattern()) {
-					IPattern pat = (IPattern) ast.get(i);
-					fPatternMap.addPattern(pat);
-					if (pat.isDefault()) {
-						// the ast contains a pattern with default value (i.e.
-						// "x_.")
-						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
-					} else {
-						// the ast contains a pattern without value (i.e. "x_")
-						listEvalFlags |= IAST.CONTAINS_PATTERN;
-					}
-				} else if (ast.get(i).isPatternSequence()) {
-					IPatternSequence pat = (IPatternSequence) ast.get(i);
-					fPatternMap.addPattern(pat);
-					// the ast contains a pattern sequence (i.e. "x__")
-					listEvalFlags |= IAST.CONTAINS_PATTERN_SEQUENCE;
-				} else {
-					listEvalFlags |= determinePatterns(ast.get(i));
-				}
-			}
-			ast.setEvalFlags(listEvalFlags);
-			// disable flag "pattern with default value"
-			listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
-			return listEvalFlags;
-		} else {
-			if (lhsPatternExpr.isPattern()) {
-				fPatternMap.addPattern((IPattern) lhsPatternExpr);
-				return IAST.CONTAINS_PATTERN;
-			} else if (lhsPatternExpr.isPatternSequence()) {
-				fPatternMap.addPattern((IPatternSequence) lhsPatternExpr);
-				return IAST.CONTAINS_PATTERN_SEQUENCE;
-			}
-		}
-		return IAST.NO_FLAG;
-	}
-
-	/**
 	 * Get the right-hand-side expression. Override in derived classes. The
 	 * default implementation returns <code>null</code>.
 	 * 
@@ -433,7 +381,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		if (pExpr instanceof IAST) {
 			final IAST list = (IAST) pExpr;
 			getPatterns(resultList, list.head());
-			for (int i = 0; i < list.size(); i++) {
+			for (int i = 1; i < list.size(); i++) {
 				getPatterns(resultList, list.get(i));
 			}
 		} else {
@@ -774,12 +722,16 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 			return false;
 		}
 
-		final IExpr value = fPatternMap.getValue(pattern);
-		if (value != null) {
-			return expr.equals(value);
-		}
+		ISymbol sym = pattern.getSymbol();
 
-		fPatternMap.setValue(pattern, expr);
+		if (sym != null) {
+			final IExpr value = fPatternMap.getValue(pattern);
+			if (value != null) {
+				return expr.equals(value);
+			}
+
+			fPatternMap.setValue(pattern, expr);
+		}
 		return true;
 	}
 
@@ -788,12 +740,16 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 			return false;
 		}
 
-		final IExpr value = fPatternMap.getValue(pattern);
-		if (value != null) {
-			return sequence.equals(value);
-		}
+		ISymbol sym = pattern.getSymbol();
 
-		fPatternMap.setValue(pattern, sequence);
+		if (sym != null) {
+			final IExpr value = fPatternMap.getValue(pattern);
+			if (value != null) {
+				return sequence.equals(value);
+			}
+
+			fPatternMap.setValue(pattern, sequence);
+		}
 		return true;
 	}
 

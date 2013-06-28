@@ -28,9 +28,15 @@ public class PatternMap implements Cloneable, Serializable {
 	private static final long serialVersionUID = -5384429232269800438L;
 
 	/**
-	 * Count the number of patterns in the pattern map.
+	 * Count the number of patterns with associated symbols in the pattern map.
 	 */
 	private int fPatternCounter;
+
+	/**
+	 * Count the number of blank patterns without associated symbols in the
+	 * pattern map.
+	 */
+	private int fBlankPatternCounter;
 
 	/**
 	 * Map a pattern-object to an index in the <code>fPatternValuesArray</code>.
@@ -50,11 +56,8 @@ public class PatternMap implements Cloneable, Serializable {
 	private PatternMap(TreeMap<IPatternObject, Integer> map, IExpr[] exprArray) {
 		this.fPatternIndexMap = map;
 		this.fPatternCounter = 0;
+		this.fBlankPatternCounter = 0;
 		this.fPatternValuesArray = exprArray;
-	}
-
-	protected void allocValuesArray() {
-		this.fPatternValuesArray = new IExpr[fPatternCounter];
 	}
 
 	/**
@@ -65,11 +68,15 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param patternIndexMap
 	 */
 	protected void addPattern(IPatternObject pattern) {
-		if (pattern.getSymbol() != null && fPatternIndexMap.get(pattern) != null) {
-			// for "named" patterns (i.e. "x_" or "x_IntegerQ")
-			return;
+		if (pattern.getSymbol() != null) {
+			if (fPatternIndexMap.get(pattern) != null) {
+				// for "named" patterns (i.e. "x_" or "x_IntegerQ")
+				return;
+			}
+			fPatternIndexMap.put(pattern, Integer.valueOf(fPatternCounter++));
+		} else {
+			fBlankPatternCounter++;
 		}
-		fPatternIndexMap.put(pattern, Integer.valueOf(fPatternCounter++));
 	}
 
 	/**
@@ -137,6 +144,7 @@ public class PatternMap implements Cloneable, Serializable {
 		// mehtod
 		result.fPatternIndexMap = fPatternIndexMap;
 		result.fPatternCounter = fPatternCounter;
+		result.fBlankPatternCounter = fBlankPatternCounter;
 		return result;
 	}
 
@@ -167,7 +175,7 @@ public class PatternMap implements Cloneable, Serializable {
 		}
 	}
 
-	protected int getIndex(IPatternObject pattern) {
+	protected Integer getIndex(IPatternObject pattern) {
 		return fPatternIndexMap.get(pattern);
 	}
 
@@ -186,7 +194,12 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	public IExpr getValue(IPatternObject pattern) {
-		return fPatternValuesArray[getIndex(pattern)];
+		Integer indx = getIndex(pattern);
+		if (indx == null) {
+			return null;
+		}
+
+		return fPatternValuesArray[indx];
 	}
 
 	public List<IExpr> getValuesAsList() {
@@ -232,7 +245,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @return
 	 */
 	public boolean isRuleWithoutPatterns() {
-		return fPatternCounter == 0;
+		return fPatternCounter == 0 && fBlankPatternCounter == 0;
 	}
 
 	/**
@@ -246,7 +259,10 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	public void setValue(IPatternObject pattern, IExpr expr) {
-		fPatternValuesArray[getIndex(pattern)] = expr;
+		Integer indx = getIndex(pattern);
+		if (indx != null) {
+			fPatternValuesArray[indx] = expr;
+		}
 	}
 
 	public int size() {

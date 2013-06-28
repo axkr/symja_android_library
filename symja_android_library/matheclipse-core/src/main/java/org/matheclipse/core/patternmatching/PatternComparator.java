@@ -40,7 +40,7 @@ public class PatternComparator implements Comparator<IPatternObject> {
 			if (o2.getSymbol() == null) {
 				if (System.identityHashCode(o1) > System.identityHashCode(o2)) {
 					return 1;
-				}
+				} 
 			}
 			return -1;
 		}
