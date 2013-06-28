@@ -33,10 +33,9 @@ public class PatternMap implements Cloneable, Serializable {
 	private int fPatternCounter;
 
 	/**
-	 * Count the number of blank patterns without associated symbols in the
-	 * pattern map.
+	 * If <code>true</code> the rule contains no pattern.
 	 */
-	private int fBlankPatternCounter;
+	private boolean fRuleWithoutPattern;
 
 	/**
 	 * Map a pattern-object to an index in the <code>fPatternValuesArray</code>.
@@ -56,7 +55,7 @@ public class PatternMap implements Cloneable, Serializable {
 	private PatternMap(TreeMap<IPatternObject, Integer> map, IExpr[] exprArray) {
 		this.fPatternIndexMap = map;
 		this.fPatternCounter = 0;
-		this.fBlankPatternCounter = 0;
+		this.fRuleWithoutPattern = true;
 		this.fPatternValuesArray = exprArray;
 	}
 
@@ -68,14 +67,13 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param patternIndexMap
 	 */
 	protected void addPattern(IPatternObject pattern) {
+		fRuleWithoutPattern = false;
 		if (pattern.getSymbol() != null) {
 			if (fPatternIndexMap.get(pattern) != null) {
 				// for "named" patterns (i.e. "x_" or "x_IntegerQ")
 				return;
 			}
 			fPatternIndexMap.put(pattern, Integer.valueOf(fPatternCounter++));
-		} else {
-			fBlankPatternCounter++;
 		}
 	}
 
@@ -144,7 +142,7 @@ public class PatternMap implements Cloneable, Serializable {
 		// mehtod
 		result.fPatternIndexMap = fPatternIndexMap;
 		result.fPatternCounter = fPatternCounter;
-		result.fBlankPatternCounter = fBlankPatternCounter;
+		result.fRuleWithoutPattern = fRuleWithoutPattern;
 		return result;
 	}
 
@@ -245,7 +243,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @return
 	 */
 	public boolean isRuleWithoutPatterns() {
-		return fPatternCounter == 0 && fBlankPatternCounter == 0;
+		return fRuleWithoutPattern;
 	}
 
 	/**
