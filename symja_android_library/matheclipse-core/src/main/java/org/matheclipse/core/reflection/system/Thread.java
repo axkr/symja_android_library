@@ -54,7 +54,7 @@ public class Thread extends AbstractFunctionEvaluator {
 
     int listLength = 0;
 
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 1; i < list.size(); i++) {
       if ((list.get(i).isAST())
           && (((IAST) list.get(i)).head().equals(head))) {
         if (listLength == 0) {
