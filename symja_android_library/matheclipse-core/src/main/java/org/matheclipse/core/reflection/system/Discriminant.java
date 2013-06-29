@@ -189,6 +189,9 @@ public class Discriminant extends AbstractFunctionEvaluator {
 
 			}
 			IExpr resultant = org.matheclipse.core.reflection.system.Resultant.resultant(result, resultListDiff);
+			if (resultant==null) {
+			    return null;
+			}
 			IExpr disc;
 			degree *= (degree - 1);
 			degree /= 2;
