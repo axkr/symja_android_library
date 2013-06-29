@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
@@ -39,14 +40,18 @@ public class Expand extends AbstractFunctionEvaluator {
 				return null;
 			}
 			if (ast.isPower()) {
-				// (a+b)^exp
-				if ((ast.get(1).isPlus()) && (ast.get(2).isInteger())) {
-					int exp = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-					if (exp < 0) {
-						exp *= (-1);
-						return F.Power(expandPower((IAST) ast.get(1), exp), F.CN1);
+				try {
+					int exp = Validate.checkPowerExponent(ast);
+					// (a+b)^exp
+					if ((ast.get(1).isPlus())) {
+						if (exp < 0) {
+							exp *= (-1);
+							return F.Power(expandPower((IAST) ast.get(1), exp), F.CN1);
+						}
+						return expandPower((IAST) ast.get(1), exp);
 					}
-					return expandPower((IAST) ast.get(1), exp);
+				} catch (WrongArgumentType e) {
+					return null;
 				}
 			} else if (ast.isTimes()) {
 				// (a+b)*(c+d)...

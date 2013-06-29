@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -193,7 +195,11 @@ public class JASConvert<C extends RingElem<C>> {
 				final IExpr expr = ast.get(1);
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(expr)) {
-						int exponent = getExponent(ast);
+						int exponent = -1;
+						try {
+							exponent = Validate.checkPowerExponent(ast);
+						} catch (WrongArgumentType e) {
+						}
 						if (exponent < 0) {
 							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.get(2).toString());
 						}
@@ -270,7 +276,12 @@ public class JASConvert<C extends RingElem<C>> {
 				final IExpr expr = ast.get(1);
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(expr)) {
-						int exponent = getExponent(ast);
+						int exponent = -1;
+						try {
+							exponent = Validate.checkPowerExponent(ast);
+						} catch (WrongArgumentType e) {
+							//
+						}
 						if (exponent < 0) {
 							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.get(2).toString());
 						}
@@ -303,41 +314,6 @@ public class JASConvert<C extends RingElem<C>> {
 			}
 		}
 		throw new ClassCastException(exprPoly.toString());
-	}
-
-	/**
-	 * Get the positive exponent <code>int</code> value of the
-	 * <code>Power[x,exp]</code> expression. Return a negative exponent value if
-	 * the exponent isn't valid.
-	 * 
-	 * @param powerAST
-	 * @return the positive exponent <code>int</code> value of the
-	 *         <code>Power[x,exp]</code> expression. Return a negative exponent
-	 *         value if the exponent isn't valid.
-	 */
-	public static int getExponent(final IAST powerAST) {
-		int exponent = -1;
-		try {
-			// the following may throw ClassCastExcepion or ArithmeticException
-			if (powerAST.get(2) instanceof INum) {
-				exponent = ((INum) powerAST.get(2)).toInt();
-				if (exponent < 0) {
-					return -1;
-				}
-			} else if (powerAST.get(2) instanceof IInteger) {
-				if (((IInteger) powerAST.get(2)).isNegative()) {
-					return -1;
-					// throw new
-					// ArithmeticException("JASConvert:expr2Poly - negative exponent: "
-					// +
-					// powerAST.get(2).toString());
-				}
-				exponent = ((IInteger) powerAST.get(2)).toInt();
-			}
-		} catch (ArithmeticException ae) {
-
-		}
-		return exponent;
 	}
 
 	/**

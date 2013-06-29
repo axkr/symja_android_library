@@ -4,6 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -24,8 +25,36 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the argument, if it's a Java {@code int} value in the range [{@code
-	 * startValue}, Integer.MAX_VALUE]
+	 * Get the exponent <code>int</code> value of the <code>ast</code>
+	 * expressions, which is identified as a
+	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The
+	 * <code>int</code> value can be determined from an IInteger or INum
+	 * expression.
+	 * 
+	 * @param ast
+	 * @return the exponent <code>int</code> value of the
+	 *         <code>Power[&lt;something&gt;, exponent]</code> expression.
+	 * @throws WrongArgumentType
+	 */
+	public static int checkPowerExponent(final IAST ast) {
+		int exponent = 0;
+		try {
+			// the following may throw ArithmeticException
+			if (ast.get(2) instanceof IInteger) {
+				exponent = ((IInteger) ast.get(2)).toInt();
+			} else if (ast.get(2) instanceof INum) {
+				exponent = ((INum) ast.get(2)).toInt();
+			}
+			return exponent;
+		} catch (ArithmeticException ae) {
+			throw new WrongArgumentType(ast, ast.get(2), 2, "Trying to convert the argument into an integer exponent: "
+					+ ast.get(2));
+		}
+	}
+
+	/**
+	 * Check the argument, if it's a Java {@code int} value in the range [
+	 * {@code startValue}, Integer.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -39,8 +68,8 @@ public final class Validate {
 				}
 				return result;
 			} catch (ArithmeticException ae) {
-				throw new WrongArgumentType(ast, ast.get(pos), pos, "Trying to convert the argument into the integer range: " + startValue
-						+ " - " + Integer.MAX_VALUE);
+				throw new WrongArgumentType(ast, ast.get(pos), pos, "Trying to convert the argument into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
 			}
 		}
 		throw new WrongArgumentType(ast, ast.get(pos), pos, "Trying to convert the argument into the integer range: " + startValue
@@ -62,8 +91,8 @@ public final class Validate {
 			try {
 				int result = ((ISignedNumber) expr).toInt();
 				if (startValue > result) {
-					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: " + startValue + " - "
-							+ Integer.MAX_VALUE);
+					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: " + startValue
+							+ " - " + Integer.MAX_VALUE);
 				}
 				return result;
 			} catch (ArithmeticException ae) {
@@ -79,9 +108,9 @@ public final class Validate {
 	 * Check if the argument at the given position is a integer.
 	 * 
 	 * @param position
-	 *          the position which has to be a symbol.
+	 *            the position which has to be a symbol.
 	 * @throws WrongArgumentType
-	 *           if it's not a symbol.
+	 *             if it's not a symbol.
 	 */
 	public static IInteger checkIntegerType(IAST ast, int position) {
 		if (ast.get(position).isInteger()) {
@@ -95,19 +124,20 @@ public final class Validate {
 	 * exception.
 	 * 
 	 * @throws WrongNumberOfArguments
-	 *           if {@code size} is not in the range {@code from} to {@code
-	 *           Integer.MAX_VALUE}
+	 *             if {@code size} is not in the range {@code from} to
+	 *             {@code Integer.MAX_VALUE}
 	 */
 	public static IAST checkRange(IAST ast, int from) {
 		return checkRange(ast, from, Integer.MAX_VALUE);
 	}
 
 	/**
-	 * If {@code ast.size() < from || ast.size() > to} throw a {@code
-	 * WrongNumberOfArguments} exception.
+	 * If {@code ast.size() < from || ast.size() > to} throw a
+	 * {@code WrongNumberOfArguments} exception.
 	 * 
 	 * @throws WrongNumberOfArguments
-	 *           if {@code size} is not in the range {@code from} to {@code to}
+	 *             if {@code size} is not in the range {@code from} to
+	 *             {@code to}
 	 */
 	public static IAST checkRange(IAST ast, int from, int to) {
 		if (ast.size() < from) {
@@ -124,7 +154,7 @@ public final class Validate {
 	 * exception.
 	 * 
 	 * @throws WrongNumberOfArguments
-	 *           if {@code size} unequals the list size
+	 *             if {@code size} unequals the list size
 	 */
 	public static IAST checkSize(IAST ast, int size) {
 		if (ast.size() != size) {
@@ -134,13 +164,13 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is a single symbol or a list of
-	 * symbols.
+	 * Check if the argument at the given position is a single symbol or a list
+	 * of symbols.
 	 * 
 	 * @param position
-	 *          the position which has to be a symbol or list.
+	 *            the position which has to be a symbol or list.
 	 * @throws WrongArgumentType
-	 *           if it's not a symbol.
+	 *             if it's not a symbol.
 	 */
 	public static IAST checkSymbolOrSymbolList(IAST ast, int position) {
 		IAST vars = null;
@@ -159,9 +189,9 @@ public final class Validate {
 	 * Check if the argument at the given position is a symbol.
 	 * 
 	 * @param position
-	 *          the position which has to be a symbol.
+	 *            the position which has to be a symbol.
 	 * @throws WrongArgumentType
-	 *           if it's not a symbol.
+	 *             if it's not a symbol.
 	 */
 	public static ISymbol checkSymbolType(IAST ast, int position) {
 		if (ast.get(position).isSymbol()) {
@@ -174,9 +204,9 @@ public final class Validate {
 	 * Check if the argument at the given position is an AST.
 	 * 
 	 * @param position
-	 *          the position which has to be an AST.
+	 *            the position which has to be an AST.
 	 * @throws WrongArgumentType
-	 *           if it's not an AST.
+	 *             if it's not an AST.
 	 */
 	public static IAST checkASTType(IAST ast, int position) {
 		if (ast.get(position).isAST()) {
