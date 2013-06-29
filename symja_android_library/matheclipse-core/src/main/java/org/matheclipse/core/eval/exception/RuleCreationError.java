@@ -37,7 +37,7 @@ public class RuleCreationError extends MathException {
 		if (fRHS != null) {
 			return "Error in rule creation: " + fLHS.toString() + " " + fRHS.toString();
 		}
-		return "Not allowed left-hand-side expression in server mode: " + fLHS.toString()
+		return "Not allowed left-hand-side expression: \"" + fLHS.toString()+"\" in server mode! "
 				+ "\nUse variable names starting with a '$' character for assignments and be sure that you are logged in.";
 	}
 
