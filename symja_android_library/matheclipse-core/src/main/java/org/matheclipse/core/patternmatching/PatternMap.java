@@ -40,7 +40,7 @@ public class PatternMap implements Cloneable, Serializable {
 	/**
 	 * Map a pattern-object to an index in the <code>fPatternValuesArray</code>.
 	 */
-	private TreeMap<IPatternObject, Integer> fPatternIndexMap;
+	private TreeMap<ISymbol, Integer> fPatternIndexMap;
 
 	/**
 	 * Contains the current values of the patterns index stored in
@@ -49,10 +49,10 @@ public class PatternMap implements Cloneable, Serializable {
 	private IExpr[] fPatternValuesArray;
 
 	public PatternMap() {
-		this(new TreeMap<IPatternObject, Integer>(PatternComparator.CONST), new IExpr[0]);
+		this(new TreeMap<ISymbol, Integer>(), new IExpr[0]);
 	}
 
-	private PatternMap(TreeMap<IPatternObject, Integer> map, IExpr[] exprArray) {
+	private PatternMap(TreeMap<ISymbol, Integer> map, IExpr[] exprArray) {
 		this.fPatternIndexMap = map;
 		this.fPatternCounter = 0;
 		this.fRuleWithoutPattern = true;
@@ -68,12 +68,13 @@ public class PatternMap implements Cloneable, Serializable {
 	 */
 	protected void addPattern(IPatternObject pattern) {
 		fRuleWithoutPattern = false;
-		if (pattern.getSymbol() != null) {
-			if (fPatternIndexMap.get(pattern) != null) {
+		ISymbol sym = pattern.getSymbol();
+		if (sym != null) {
+			if (fPatternIndexMap.get(sym) != null) {
 				// for "named" patterns (i.e. "x_" or "x_IntegerQ")
 				return;
 			}
-			fPatternIndexMap.put(pattern, Integer.valueOf(fPatternCounter++));
+			fPatternIndexMap.put(sym, Integer.valueOf(fPatternCounter++));
 		}
 	}
 
@@ -165,24 +166,35 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param patternMap
 	 */
 	public void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
-		for (IPatternObject pattern : patternMap.fPatternIndexMap.keySet()) {
-			if (pattern.getSymbol() != null) {
+		for (ISymbol pattern : patternMap.fPatternIndexMap.keySet()) {
+			if (pattern != null) {
 				int indx = getIndex(pattern);
 				fPatternValuesArray[indx] = patternMap.getValue(pattern);
 			}
 		}
 	}
 
-	protected Integer getIndex(IPatternObject pattern) {
-		return fPatternIndexMap.get(pattern);
+	protected int getIndex(ISymbol pattern) {
+		Integer indx = fPatternIndexMap.get(pattern);
+		if (indx == null) {
+			return -1;
+		}
+		return indx;
+	}
+
+	protected int getIndex(IPatternObject pattern) {
+		ISymbol sym = pattern.getSymbol();
+		if (sym != null) {
+			return fPatternIndexMap.get(sym);
+		}
+		return -1;
 	}
 
 	private Map<ISymbol, IExpr> getRulesMap() {
 		final Map<ISymbol, IExpr> rulesMap = new HashMap<ISymbol, IExpr>();
-		for (IPatternObject pattern : fPatternIndexMap.keySet()) {
-			ISymbol sym = pattern.getSymbol();
+		for (ISymbol sym : fPatternIndexMap.keySet()) {
 			if (sym != null) {
-				Integer indx = fPatternIndexMap.get(pattern);
+				Integer indx = fPatternIndexMap.get(sym);
 				if (fPatternValuesArray[indx.intValue()] != null) {
 					rulesMap.put(sym, fPatternValuesArray[indx.intValue()]);
 				}
@@ -191,13 +203,26 @@ public class PatternMap implements Cloneable, Serializable {
 		return rulesMap;
 	}
 
-	public IExpr getValue(IPatternObject pattern) {
+	public IExpr getValue(ISymbol pattern) {
 		Integer indx = getIndex(pattern);
 		if (indx == null) {
 			return null;
 		}
 
 		return fPatternValuesArray[indx];
+	}
+
+	public IExpr getValue(IPatternObject pattern) {
+		ISymbol sym = pattern.getSymbol();
+		if (sym != null) {
+			Integer indx = getIndex(pattern);
+			if (indx == null) {
+				return null;
+			}
+
+			return fPatternValuesArray[indx];
+		}
+		return null;
 	}
 
 	public List<IExpr> getValuesAsList() {
@@ -256,7 +281,7 @@ public class PatternMap implements Cloneable, Serializable {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
-	public void setValue(IPatternObject pattern, IExpr expr) {
+	public void setValue(ISymbol pattern, IExpr expr) {
 		Integer indx = getIndex(pattern);
 		if (indx != null) {
 			fPatternValuesArray[indx] = expr;
@@ -282,4 +307,5 @@ public class PatternMap implements Cloneable, Serializable {
 		}
 		return expression;
 	}
+
 }

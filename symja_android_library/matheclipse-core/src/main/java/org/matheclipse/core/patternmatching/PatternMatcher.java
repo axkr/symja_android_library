@@ -723,14 +723,13 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		}
 
 		ISymbol sym = pattern.getSymbol();
-
 		if (sym != null) {
-			final IExpr value = fPatternMap.getValue(pattern);
+			final IExpr value = fPatternMap.getValue(sym);
 			if (value != null) {
 				return expr.equals(value);
 			}
 
-			fPatternMap.setValue(pattern, expr);
+			fPatternMap.setValue(sym, expr);
 		}
 		return true;
 	}
@@ -743,12 +742,12 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		ISymbol sym = pattern.getSymbol();
 
 		if (sym != null) {
-			final IExpr value = fPatternMap.getValue(pattern);
+			final IExpr value = fPatternMap.getValue(sym);
 			if (value != null) {
 				return sequence.equals(value);
 			}
 
-			fPatternMap.setValue(pattern, sequence);
+			fPatternMap.setValue(sym, sequence);
 		}
 		return true;
 	}
