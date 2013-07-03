@@ -14,21 +14,6 @@ import org.matheclipse.generic.nested.INestedListElement;
  * 
  */
 public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E> implements INestedList<E> {
-	/**
-	 * Holds the factory for this NestedList.
-	 */
-	// private static final ObjectFactory<NestedFastTable> FACTORY = new
-	// ObjectFactory<NestedFastTable>() {
-	// @Override
-	// public NestedFastTable create() {
-	// return new NestedFastTable(5, 0);
-	// }
-	//
-	// @Override
-	// public void cleanup(NestedFastTable obj) {
-	// obj.reset();
-	// }
-	// };
 
 	private static final long serialVersionUID = -8300867641898160542L;
 
@@ -45,9 +30,11 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	 */
 	protected NestedFastTable(final int initialCapacity, final int setLength) {
 		super(initialCapacity);
-		for (int i = 0; i < setLength; i++) {
-			add(null);
-		}
+		// for (int i = 0; i < setLength; i++) {
+		// add(null);
+		// }
+		lastIndex += setLength;
+		modCount++;
 	}
 
 	/**
@@ -61,7 +48,7 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	protected NestedFastTable(E[] es) {
 		super(es);
 	}
-	
+
 	public NestedFastTable(E ex, E... es) {
 		super(ex, es);
 	}
@@ -75,17 +62,19 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	}
 
 	/**
-	 * Constructs an empty NestedList with the specified initial capacity and head
-	 * symbol <code>null</code>
+	 * Constructs an empty NestedList with the specified initial capacity and
+	 * head symbol <code>null</code>
 	 * 
 	 * @param initialCapacity
-	 *          the initial capacity of the list.
+	 *            the initial capacity of the list.
 	 * @exception IllegalArgumentException
-	 *              if the specified initial capacity is negative
+	 *                if the specified initial capacity is negative
 	 */
 	public NestedFastTable(final int initialCapacity) {
 		super(initialCapacity);
-		add(null);
+		// add(null);
+		lastIndex++;
+		modCount++;
 	}
 
 	/**
@@ -94,29 +83,32 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	 * <code>null</code> to the header .
 	 * 
 	 * @param c
-	 *          the collection whose elements are to be placed into this list.
+	 *            the collection whose elements are to be placed into this list.
 	 * @throws NullPointerException
-	 *           if the specified collection is null.
+	 *             if the specified collection is null.
 	 */
 	public NestedFastTable(final Collection<E> c) {
 		super(c.size() + 1);
-		add(null);
+		// add(null);
+		lastIndex++;
+		modCount++;
 		addAll(c);
 	}
 
 	/**
 	 * Constructs a list containing the elements of the specified collection, in
-	 * the order they are returned by the collection's iterator and sets the given
-	 * header.
+	 * the order they are returned by the collection's iterator and sets the
+	 * given header.
 	 * 
 	 * @param c
-	 *          the collection whose elements are to be placed into this list.
+	 *            the collection whose elements are to be placed into this list.
 	 * @throws NullPointerException
-	 *           if the specified collection is null.
+	 *             if the specified collection is null.
 	 */
 	public NestedFastTable(final Collection<E> c, final E head) {
-		super(c.size() + 1);
-		add(head);
+		this(c);
+		// add(head);
+		set(0, head);
 		addAll(c);
 	}
 
@@ -133,22 +125,9 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 				return false;
 			}
 			return super.equals(obj);
-			// if (!head().equals(list.head())) {
-			// return false;
-			// }
-			// for (int i = 1; i < size(); i++) {
-			// if (!get(i).equals(list.get(i))) {
-			// return false;
-			// }
-			// }
-			// return true;
 		}
 		return false;
 	}
-
-	// public int hashCode() {
-	// return 31 * get(0).hashCode() + size();
-	// }
 
 	@Override
 	public int hashCode() {
@@ -164,71 +143,19 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 				fHashValue = 41;
 			}
 		}
-		// } else if (DEBUG_HASH) {
-		// int dHash = 0;
-		// if (size() >= 1) {
-		// if (size() == 1) {
-		// dHash = 17 * get(0).hashCode();
-		// } else {
-		// if (get(1) instanceof NestedList) {
-		// dHash = 31 * get(0).hashCode() +
-		// ((NestedList)get(1)).get(0).hashCode()
-		// + size();
-		// } else {
-		// dHash = 37 * get(0).hashCode() + get(1).hashCode() + size();
-		// }
-		// }
-		// }
-		// if (dHash != fHash) {
-		// throw new RuntimeException("Different hash values in AST class");
-		// }
 		return fHashValue;
 	}
-
-	/*
-	 * Recalculate the internal cached hash value; this might be necessary if the
-	 * order of the elements was rearranged in a special operation (for example in
-	 * a "sort operation")
-	 */
-	// public void rehashCode() {
-	// if (size() >= 1) {
-	// if (size() == 1) {
-	// fHash = 17 * get(0).hashCode();
-	// } else {
-	// if (get(1) instanceof NestedList) {
-	// fHash = 31 * get(0).hashCode() + ((NestedList)get(1)).get(0).hashCode() +
-	// size();
-	// } else {
-	// fHash = 37 * get(0).hashCode() + get(1).hashCode() + size();
-	// }
-	// }
-	// }
-	// }
+ 
 	@Override
 	public Object clone() {
-		final NestedFastTable<E> v = (NestedFastTable<E>) super.clone();// FACTORY.object();
+		final NestedFastTable<E> v = (NestedFastTable<E>) super.clone(); 
 		v.fHashValue = 0;
 		return v;
 	}
 
-	// @Override
-	// public boolean move(final ObjectSpace os) {
-	// if (super.move(os)) {
-	// for (int i = 0; i < size(); i++) {
-	// get(i).move(os);
-	// }
-	// return true;
-	// }
-	// return false;
-	// }
-
 	public final E head() {
 		return get(0);
 	}
-
-//	public final void setHeader(final E head) {
-//		set(0, head);
-//	}
 
 	@Override
 	public String toString() {
@@ -256,19 +183,7 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	}
 
 	protected static final class FastTableIterator implements ListIterator {
-
-		// private static final ObjectFactory<FastTableIterator> FACTORY = new
-		// ObjectFactory<FastTableIterator>() {
-		// protected FastTableIterator create() {
-		// return new FastTableIterator();
-		// }
-		//
-		// protected void cleanup(FastTableIterator obj) {
-		// FastTableIterator i = (FastTableIterator) obj;
-		// i._table = null;
-		// }
-		// };
-
+ 
 		private HMArrayList _table;
 
 		private int _currentIndex;
@@ -362,11 +277,5 @@ public class NestedFastTable<E extends INestedListElement> extends HMArrayList<E
 	public Iterator<E> iterator0() {
 		return super.iterator();
 	}
-
-	// @Override
-	// public void reset() {
-	// super.reset();
-	// fHash = 0;
-	// }
 
 }

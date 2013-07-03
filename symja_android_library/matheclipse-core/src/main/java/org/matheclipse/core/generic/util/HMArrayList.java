@@ -45,7 +45,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	private transient int firstIndex;
 
-	private transient int lastIndex;
+	protected transient int lastIndex;
 
 	private transient E[] array;
 

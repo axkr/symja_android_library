@@ -486,7 +486,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return resultList;
 			}
 
-			if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
+			if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE
+					&& !((ast.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
 				// thread over the lists
 				resultList = threadASTListArgs(ast);
 				if (resultList != null) {
@@ -531,16 +532,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					listLength = ((IAST) ast.get(i)).size() - 1;
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						listLength = 0;
-						break;
-						// for loop
+						ast.setEvalFlags(IAST.IS_LISTABLE_THREADED);
+						return null;
 					}
 				}
 			}
 		}
 		if ((listLength != 0) && ((result = EvaluationSupport.threadList(ast, listLength, 1)) != null)) {
+			result.setEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
+		ast.setEvalFlags(IAST.IS_LISTABLE_THREADED);
 		return null;
 	}
 

@@ -37,6 +37,7 @@ public class EvaluationSupport {
 				return res;
 			}
 		}
+		ast.setEvalFlags(IAST.IS_FLATTENED);
 		return null;
 	}
 
