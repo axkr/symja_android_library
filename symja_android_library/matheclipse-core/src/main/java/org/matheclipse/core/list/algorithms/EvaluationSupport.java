@@ -83,15 +83,38 @@ public class EvaluationSupport {
 		}
 		final int astSize = ast.size();
 		if (astSize > 2) {
-			if (astSize == 3) {
-				// optimize special case
+			IExpr temp;
+			switch (astSize) {
+			case 3:
 				if (ast.get(1).compareTo(ast.get(2)) > 0) {
 					// swap arguments
-					IExpr temp = ast.get(2);
+					temp = ast.get(2);
 					ast.set(2, ast.get(1));
 					ast.set(1, temp);
 				}
-			} else {
+				break;
+			case 4:
+				// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
+				if (ast.get(1).compareTo(ast.get(2)) > 0) {
+					// swap arguments
+					temp = ast.get(2);
+					ast.set(2, ast.get(1));
+					ast.set(1, temp);
+				}
+				if (ast.get(2).compareTo(ast.get(3)) > 0) {
+					// swap arguments
+					temp = ast.get(3);
+					ast.set(3, ast.get(2));
+					ast.set(2, temp);
+					if (ast.get(1).compareTo(ast.get(2)) > 0) {
+						// swap arguments
+						temp = ast.get(2);
+						ast.set(2, ast.get(1));
+						ast.set(1, temp);
+					}
+				}
+				break;
+			default:
 				ast.args().sort(ExprComparator.CONS);
 			}
 		}
