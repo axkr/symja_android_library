@@ -1437,9 +1437,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
-	public IInteger getInt(int index) {
-		if (get(index) instanceof IInteger) {
+	public final IInteger getInt(int index) {
+		try {
 			return (IInteger) get(index);
+		} catch (ClassCastException cce) {
 		}
 		throw new WrongArgumentType(this, get(index), index);
 	}
@@ -1453,9 +1454,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
-	public INumber getNumber(int index) {
-		if (get(index) instanceof INumber) {
+	public final INumber getNumber(int index) {
+		try {
 			return (INumber) get(index);
+		} catch (ClassCastException cce) {
 		}
 		throw new WrongArgumentType(this, get(index), index);
 	}
@@ -1469,9 +1471,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
-	public IAST getAST(int index) {
-		if (get(index) instanceof IAST) {
+	public final IAST getAST(int index) {
+		try {
 			return (IAST) get(index);
+		} catch (ClassCastException cce) {
 		}
 		throw new WrongArgumentType(this, get(index), index);
 	}
@@ -1484,11 +1487,12 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @return
 	 * @throws WrongArgumentType
 	 */
-	public IAST getList(int index) {
-		if (get(index).isList()) {
-			return (IAST) get(index);
+	public final IAST getList(int index) {
+		IExpr temp = get(index);
+		if (temp.isList()) {
+			return (IAST) temp;
 		}
-		throw new WrongArgumentType(this, get(index), index);
+		throw new WrongArgumentType(this, temp, index);
 	}
 
 	public List<IExpr> leaves() {
