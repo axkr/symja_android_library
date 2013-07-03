@@ -1,5 +1,6 @@
 package org.matheclipse.core.list.algorithms;
 
+import java.util.Collections;
 import java.util.Comparator;
 
 import org.matheclipse.core.expression.F;
@@ -78,9 +79,9 @@ public class EvaluationSupport {
 	 */
 	public final static void sort(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
-			// already sorted
 			return;
 		}
+		
 		final int astSize = ast.size();
 		if (astSize > 2) {
 			IExpr temp;
