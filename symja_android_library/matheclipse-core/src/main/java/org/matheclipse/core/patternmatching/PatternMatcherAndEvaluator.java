@@ -177,7 +177,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 				// is
 				// Orderless or Flat
 			}
-		}
+		} 
 		fPatternMap.initPattern();
 
 		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {

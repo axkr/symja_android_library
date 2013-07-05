@@ -262,7 +262,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	public PatternMatcher() {
 		this.fLhsPatternExpr = null;
 		this.fPatternCondition = null;
-		this.fPatternMap = null;
+		this.fPatternMap = new PatternMap();
 	}
 
 	public PatternMatcher(final IExpr patternExpr) {
@@ -278,9 +278,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 
 	protected final void init(IExpr patternExpr) {
 		fPatternMap.determinePatterns(patternExpr);
-		if (fPatternMap.isRuleWithoutPatterns()) {
-			fPatternMap = null;
-		}
 	}
 
 	/**
