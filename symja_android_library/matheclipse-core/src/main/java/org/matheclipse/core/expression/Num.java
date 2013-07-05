@@ -459,6 +459,9 @@ public class Num extends ExprImpl implements INum {
 		return F.RealHead;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		if (fDouble == (-0.0)) {

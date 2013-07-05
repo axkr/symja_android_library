@@ -7,6 +7,7 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.apache.commons.math3.fraction.FractionConversionException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -394,6 +395,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	@Override
 	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertFraction(sb, fRational, Integer.MIN_VALUE);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
 		return fRational.getNumerator().toString() + "/" + fRational.getDenominator().toString();
 	}
 

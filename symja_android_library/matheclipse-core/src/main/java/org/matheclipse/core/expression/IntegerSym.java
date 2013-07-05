@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -979,6 +980,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	@Override
 	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertInteger(sb, this, Integer.MIN_VALUE);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
 		return fInteger.toString();
 	}
 

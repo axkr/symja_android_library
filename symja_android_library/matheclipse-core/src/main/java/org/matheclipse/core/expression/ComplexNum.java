@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -188,13 +189,13 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr evaluate(EvalEngine engine){
+	public IExpr evaluate(EvalEngine engine) {
 		if (F.isZero(getImaginaryPart())) {
 			return F.num(getRealPart());
 		}
 		return null;
 	}
-	
+
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ComplexNum) {
 			return F.isZero(fComplex.getReal() - ((ComplexNum) expression).fComplex.getReal(), epsilon)
@@ -211,8 +212,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * Return the absolute value of this complex number.
 	 * <p>
 	 * Returns <code>NaN</code> if either real or imaginary part is
-	 * <code>NaN</code> and <code>Double.POSITIVE_INFINITY</code> if neither part
-	 * is <code>NaN</code>, but at least one part takes an infinite value.
+	 * <code>NaN</code> and <code>Double.POSITIVE_INFINITY</code> if neither
+	 * part is <code>NaN</code>, but at least one part takes an infinite value.
 	 * 
 	 * @return the absolute value
 	 */
@@ -459,15 +460,18 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 		return super.times(that);
 	}
+ 
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
+		return fComplex.toString();
+	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	// public String toString() {
-	// return fComplex.toString();
-	// }
 	/**
 	 * @return
 	 */
@@ -516,8 +520,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
@@ -554,7 +558,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	@Override
 	public boolean equalsInt(int i) {
 		return false;

@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -20,25 +21,7 @@ import org.matheclipse.core.visit.IVisitorInt;
  * 
  */
 public class ComplexSym extends ExprImpl implements IComplex {
-	//
-	// protected static final XmlFormat FRACTION_XML = new
-	// XmlFormat(ComplexImpl.class) {
-	// public void format(Object obj, XmlElement xml) {
-	// ComplexImpl expr = (ComplexImpl) obj;
-	// FastList list = xml.getContent();
-	// list.add(expr._real);
-	// list.add(expr._imaginary);
-	// }
-	//
-	// public Object parse(XmlElement xml) {
-	// ComplexImpl expr = (ComplexImpl) xml.object();
-	// FastList list = xml.getContent();
-	// expr._real = (IFraction) list.get(0);
-	// expr._imaginary = (IFraction) list.get(1);
-	// return expr;
-	// }
-	// };
-
+	
 	/**
 	 * 
 	 */
@@ -284,6 +267,13 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
 		final StringBuilder tb = new StringBuilder();
 		tb.append('(');
 		tb.append(_real.toString());

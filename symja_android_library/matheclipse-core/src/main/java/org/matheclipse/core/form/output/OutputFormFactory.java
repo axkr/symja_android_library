@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -233,19 +233,19 @@ public class OutputFormFactory {
 		append(buf, "\"");
 	}
 
-	public void convertSymbol(final Appendable buf, final ISymbol sym) throws IOException {
+	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(sym.toString());
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.toString());
 			if (str != null) {
 				append(buf, str);
 				return;
 			}
 		}
-		append(buf, sym.toString());
+		append(buf, symbol.toString());
 	}
 
-	public void convertPattern(final Appendable buf, final IPattern sym) throws IOException {
-		append(buf, sym.toString());
+	public void convertPattern(final Appendable buf, final IPatternObject pattern) throws IOException {
+		append(buf, pattern.toString());
 	}
 
 	public void convertHead(final Appendable buf, final IExpr obj) throws IOException {
@@ -512,8 +512,8 @@ public class OutputFormFactory {
 			convertSymbol(buf, (ISymbol) o);
 			return;
 		}
-		if (o instanceof IPattern) {
-			convertPattern(buf, (IPattern) o);
+		if (o instanceof IPatternObject) {
+			convertPattern(buf, (IPatternObject) o);
 			return;
 		}
 		// if (o instanceof BigFraction) {
