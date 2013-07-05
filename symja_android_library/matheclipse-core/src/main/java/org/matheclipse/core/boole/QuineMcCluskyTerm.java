@@ -178,13 +178,11 @@ class QuineMcCluskyTerm {
 
 	public static ArrayList<QuineMcCluskyTerm> read(String str) {
 		ArrayList<QuineMcCluskyTerm> terms = new ArrayList<QuineMcCluskyTerm>();
-		QuineMcCluskyTerm term;
 		int j = 0;
 
 		ArrayList<Byte> t = null;
 		do {
 			t = new ArrayList<Byte>();
-			term = null;
 			char c = '\0';
 			while (c != '\n' && j < str.length()) {
 				c = str.charAt(j++);
