@@ -123,10 +123,12 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 		if (result != null) {
 			if (!denom.isNumber()) {
-				// eliminate roots from the result list, which occur in the denominator
+				// eliminate roots from the result list, which occur in the
+				// denominator
 				int i = 1;
 				while (i < result.size()) {
-					if (F.eval(denom.replaceAll(F.Rule(variables.get(1), result.get(i)))).isZero()) {
+					IExpr temp = denom.replaceAll(F.Rule(variables.get(1), result.get(i)));
+					if (temp != null && F.eval(temp).isZero()) {
 						result.remove(i);
 						continue;
 					}
@@ -241,8 +243,10 @@ public class Roots extends AbstractFunctionEvaluator {
 		// if (temp1.equals(temp2)) {
 		// result.add(Times(CN1D3, Plus(a, Times(Plus(omega1, omega2), t1))));
 		// } else {
-		// result.add(Times(CN1D3, Plus(a, Times(omega2, t1), Times(omega1, t2))));
-		// result.add(Times(CN1D3, Plus(a, Times(omega1, t1), Times(omega2, t2))));
+		// result.add(Times(CN1D3, Plus(a, Times(omega2, t1), Times(omega1,
+		// t2))));
+		// result.add(Times(CN1D3, Plus(a, Times(omega1, t1), Times(omega2,
+		// t2))));
 		// }
 		// return F.eval(result);
 		// }
@@ -290,7 +294,8 @@ public class Roots extends AbstractFunctionEvaluator {
 				} else {
 					// 1 / (2*a)
 					IFraction rev2a = fraction(C1, a.multiply(C2));
-					// IAST discriminant = Plus(Sqr(b), Times(integer(-4), a, c));
+					// IAST discriminant = Plus(Sqr(b), Times(integer(-4), a,
+					// c));
 					IInteger discriminant = b.multiply(b).add(integer(-4).multiply(a).multiply(c));
 					if (discriminant.isNegative()) {
 						// 2 complex roots
@@ -304,31 +309,35 @@ public class Roots extends AbstractFunctionEvaluator {
 						result.add(Times(rev2a, Plus(b.negate(), sqrt.negative())));
 					}
 				}
-//			} else if (varDegree <= 3) {
-//				iPoly = iPoly.monic();
-//				// solve Cubic equation: x^3 + a*x^2 + b*x + c = 0
-//				a = C0;
-//				b = C0;
-//				c = C0;
-//				for (Monomial<edu.jas.arith.BigInteger> monomial : iPoly) {
-//					edu.jas.arith.BigInteger coeff = monomial.coefficient();
-//					long lExp = monomial.exponent().getVal(0);
-//					if (lExp == 2) {
-//						a = integer(coeff.getVal());
-//					} else if (lExp == 1) {
-//						b = integer(coeff.getVal());
-//					} else if (lExp == 0) {
-//						c = integer(coeff.getVal());
-//					} else if (lExp == 3) {
-//						if (!coeff.equals(edu.jas.arith.BigInteger.ONE)) {
-//							throw new ArithmeticException("Roots::Solution for cubic equation with leading coefficient: \"" + coeff.toString()
-//									+ "\" != 1 currently not implemented: ");
-//						}
-//					} else {
-//						throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
-//					}
-//				}
-//				cubicSolution(result, F.C1, a, b, c);
+				// } else if (varDegree <= 3) {
+				// iPoly = iPoly.monic();
+				// // solve Cubic equation: x^3 + a*x^2 + b*x + c = 0
+				// a = C0;
+				// b = C0;
+				// c = C0;
+				// for (Monomial<edu.jas.arith.BigInteger> monomial : iPoly) {
+				// edu.jas.arith.BigInteger coeff = monomial.coefficient();
+				// long lExp = monomial.exponent().getVal(0);
+				// if (lExp == 2) {
+				// a = integer(coeff.getVal());
+				// } else if (lExp == 1) {
+				// b = integer(coeff.getVal());
+				// } else if (lExp == 0) {
+				// c = integer(coeff.getVal());
+				// } else if (lExp == 3) {
+				// if (!coeff.equals(edu.jas.arith.BigInteger.ONE)) {
+				// throw new
+				// ArithmeticException("Roots::Solution for cubic equation with leading coefficient: \""
+				// + coeff.toString()
+				// + "\" != 1 currently not implemented: ");
+				// }
+				// } else {
+				// throw new
+				// ArithmeticException("Roots::Unexpected exponent value: " +
+				// lExp);
+				// }
+				// }
+				// cubicSolution(result, F.C1, a, b, c);
 			} else {
 				IExpr temp = Power(jas.integerPoly2Expr(iPoly), integer(val));
 				if (!numericSolutions) {
@@ -358,30 +367,32 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @param c
 	 * @param d
 	 */
-//	private static void cubicSolution(IAST result, IInteger a, IInteger b, IInteger c, IInteger d) {
-//		// m = 2*b^3 - 9*a*b*c + 27 * a^2 * d
-//		IInteger m = C2.multiply(b.pow(3)).subtract(a.multiply(b.multiply(c.multiply(integer(9))))).add(
-//				a.pow(2).multiply(d.multiply(integer(27))));
-//		// k = b^2 - 3*a*c
-//		IInteger k = b.pow(2).subtract(C3.multiply(a.multiply(c)));
-//		// n = m^2 - 4*k^3
-//		IInteger n = m.pow(2).subtract(C4.multiply(k.pow(3)));
-//
-//		// omega1 = -(1/2) + 1/2 * Sqrt[3] * I
-//		IExpr omega1 = Plus(CN1D2, Times(C1D2, Sqrt(C3), CI));
-//		// omega2 = -(1/2) - 1/2 * Sqrt[3] * I
-//		IExpr omega2 = Plus(CN1D2, Times(CN1D2, Sqrt(C3), CI));
-//
-//		// t1 = (1/2 * (m + n^(1/2))) ^ (1/3)
-//		IExpr t1 = Power(Times(C1D2, Plus(m, Sqrt(n))), C1D3);
-//		// t2 = (1/2 * (m - n^(1/2))) ^ (1/3)
-//		IExpr t2 = Power(Times(C1D2, Subtract(m, Sqrt(n))), C1D3);
-//
-//		// (-1) / (3*a)
-//		IFraction n1d3ta = F.fraction(F.CN1, C3.multiply(a));
-//		result.add(Times(n1d3ta, Plus(b, t1, t2)));
-//		result.add(Times(n1d3ta, Plus(b, Times(omega2, t1), Times(omega1, t2))));
-//		result.add(Times(n1d3ta, Plus(b, Times(omega1, t1), Times(omega2, t2))));
-//	}
+	// private static void cubicSolution(IAST result, IInteger a, IInteger b,
+	// IInteger c, IInteger d) {
+	// // m = 2*b^3 - 9*a*b*c + 27 * a^2 * d
+	// IInteger m =
+	// C2.multiply(b.pow(3)).subtract(a.multiply(b.multiply(c.multiply(integer(9))))).add(
+	// a.pow(2).multiply(d.multiply(integer(27))));
+	// // k = b^2 - 3*a*c
+	// IInteger k = b.pow(2).subtract(C3.multiply(a.multiply(c)));
+	// // n = m^2 - 4*k^3
+	// IInteger n = m.pow(2).subtract(C4.multiply(k.pow(3)));
+	//
+	// // omega1 = -(1/2) + 1/2 * Sqrt[3] * I
+	// IExpr omega1 = Plus(CN1D2, Times(C1D2, Sqrt(C3), CI));
+	// // omega2 = -(1/2) - 1/2 * Sqrt[3] * I
+	// IExpr omega2 = Plus(CN1D2, Times(CN1D2, Sqrt(C3), CI));
+	//
+	// // t1 = (1/2 * (m + n^(1/2))) ^ (1/3)
+	// IExpr t1 = Power(Times(C1D2, Plus(m, Sqrt(n))), C1D3);
+	// // t2 = (1/2 * (m - n^(1/2))) ^ (1/3)
+	// IExpr t2 = Power(Times(C1D2, Subtract(m, Sqrt(n))), C1D3);
+	//
+	// // (-1) / (3*a)
+	// IFraction n1d3ta = F.fraction(F.CN1, C3.multiply(a));
+	// result.add(Times(n1d3ta, Plus(b, t1, t2)));
+	// result.add(Times(n1d3ta, Plus(b, Times(omega2, t1), Times(omega1, t2))));
+	// result.add(Times(n1d3ta, Plus(b, Times(omega1, t1), Times(omega2, t2))));
+	// }
 
 }
