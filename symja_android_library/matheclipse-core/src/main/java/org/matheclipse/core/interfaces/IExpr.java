@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -687,6 +689,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * @return <code>null</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
+	@Nullable
 	public IExpr replaceAll(final Function<IExpr, IExpr> function);
 
 	/**
@@ -700,8 +703,9 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * @return <code>null</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
+	@Nullable
 	public IExpr replaceAll(final IAST astRules);
-
+ 
 	public IExpr replacePart(final IAST astRules);
 
 	/**

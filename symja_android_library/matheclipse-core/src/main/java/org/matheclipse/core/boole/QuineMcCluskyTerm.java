@@ -142,7 +142,7 @@ class QuineMcCluskyTerm {
 	}
 
 	public int hashCode() {
-		return varVals.hashCode();
+		return java.util.Arrays.hashCode(varVals);
 	}
 
 	boolean implies(QuineMcCluskyTerm term) {

@@ -247,6 +247,11 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	 */
 	protected IExpr fPatternCondition;
 
+	/**
+	 * A map from a pattern to a possibly found value during pattern-matching.
+	 * Will be set to <code>null</code> if the left-hand-side pattern expression
+	 * contains no pattern.
+	 */
 	protected PatternMap fPatternMap;
 
 	/**
@@ -257,7 +262,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	public PatternMatcher() {
 		this.fLhsPatternExpr = null;
 		this.fPatternCondition = null;
-		this.fPatternMap = new PatternMap();
+		this.fPatternMap = null;
 	}
 
 	public PatternMatcher(final IExpr patternExpr) {
@@ -273,6 +278,9 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 
 	protected final void init(IExpr patternExpr) {
 		fPatternMap.determinePatterns(patternExpr);
+		if (fPatternMap.isRuleWithoutPatterns()) {
+			fPatternMap = null;
+		}
 	}
 
 	/**
@@ -422,7 +430,7 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	 */
 	@Override
 	final public boolean isRuleWithoutPatterns() {
-		return fPatternMap.isRuleWithoutPatterns();
+		return fPatternMap == null;
 	}
 
 	@Override
