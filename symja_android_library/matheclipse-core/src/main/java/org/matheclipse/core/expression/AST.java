@@ -1,12 +1,12 @@
 package org.matheclipse.core.expression;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.Util;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -988,18 +988,9 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	@Override
 	public int hashCode() {
 		if (fHashValue == 0) {
-			final int sz = size();
-			if (sz > 2) {
-				fHashValue = (31 * get(0).hashCode() + 31) * get(1).hashCode() + get(2).hashCode() + sz;
-			} else if (sz == 2) {
-				fHashValue = 31 * get(0).hashCode() + get(1).hashCode();
-			} else {
-				if (sz == 1) {
-					fHashValue = (17 * get(0).hashCode());
-				} else {
-					// this case shouldn't happen
-					fHashValue = 41;
-				}
+			fHashValue = 1;
+			for (IExpr element : this) {
+				fHashValue = 31 * fHashValue + element.hashCode();
 			}
 		}
 		return fHashValue;
