@@ -178,12 +178,15 @@ public class ResidueRing<C extends GcdRingElem<C> >
      */
     public boolean isField() {
         if ( isField > 0 ) { 
-           return true;
+            return true;
         }
         if ( isField == 0 ) { 
-           return false;
+            return false;
         }
-        // ideal is prime or maximal ?
+        if ( ideal.isMaximal() ) { 
+            isField = 1;
+            return true;
+        }
         return false;
     }
 

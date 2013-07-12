@@ -150,10 +150,10 @@ public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactor
         for (GenPolynomial<C> p : pgens) {
             GenSolvablePolynomial<C> s = (GenSolvablePolynomial<C>) p;
             SolvableResidue<C> r = new SolvableResidue<C>(this, s);
-            if ( r.isZERO() ) {
+            if (r.isZERO()) {
                 continue;
             }
-            if ( !r.isONE() && r.val.isConstant() ) {
+            if (!r.isONE() && r.val.isConstant()) {
                 continue;
             }
 
@@ -192,7 +192,10 @@ public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactor
         if (isField == 0) {
             return false;
         }
-        // ideal is (complete) prime or maximal ?
+        if (ideal.isMaximal()) {
+            isField = 1;
+            return true;
+        }
         return false;
     }
 
@@ -292,7 +295,7 @@ public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactor
      * @return a random residue element.
      */
     public SolvableResidue<C> random(int n) {
-        GenSolvablePolynomial<C> x = (GenSolvablePolynomial<C>) ring.random(n).monic();
+        GenSolvablePolynomial<C> x = ring.random(n).monic();
         return new SolvableResidue<C>(this, x);
     }
 
@@ -306,7 +309,7 @@ public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactor
      * @return a random residue polynomial.
      */
     public SolvableResidue<C> random(int k, int l, int d, float q) {
-        GenSolvablePolynomial<C> x = (GenSolvablePolynomial<C>) ring.random(k, l, d, q).monic();
+        GenSolvablePolynomial<C> x = ring.random(k, l, d, q).monic();
         return new SolvableResidue<C>(this, x);
     }
 
@@ -318,7 +321,7 @@ public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactor
      * @return a random residue element.
      */
     public SolvableResidue<C> random(int n, Random rnd) {
-        GenSolvablePolynomial<C> x = (GenSolvablePolynomial<C>) ring.random(n, rnd).monic();
+        GenSolvablePolynomial<C> x = ring.random(n, rnd).monic();
         return new SolvableResidue<C>(this, x);
     }
 

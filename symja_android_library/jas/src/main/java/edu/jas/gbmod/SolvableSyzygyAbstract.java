@@ -749,6 +749,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
             oc[1] = a.multiply(c);
             return oc;
         }
+        logger.info("computing Ore condition");
         List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(2);
         F.add(a); F.add(b);
         List<List<GenSolvablePolynomial<C>>> Gz = leftZeroRelationsArbitrary(F);
@@ -802,6 +803,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
             oc[1] = a.multiply(c);
             return oc;
         }
+        logger.info("computing Ore condition");
         List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(2);
         F.add(a); F.add(b);
         List<List<GenSolvablePolynomial<C>>> Gz = rightZeroRelationsArbitrary(F);

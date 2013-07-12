@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import org.apache.log4j.Logger;
 
 import edu.jas.structure.RingElem;
+import edu.jas.structure.NotInvertibleException;
 
 
 /**
@@ -444,6 +445,31 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
             return ring.getZERO();
         }
         return multiplyLeft(m.getValue(), m.getKey());
+    }
+
+
+    /**
+     * GenSolvablePolynomial monic, i.e. leadingCoefficient == 1. If leadingCoefficient
+     * is not invertible returns this unmodified.
+     * @return monic(this).
+     */
+    public GenSolvablePolynomial<C> monic() {
+        if (this.isZERO()) {
+            return this;
+        }
+        C lc = leadingBaseCoefficient();
+        //System.out.println("lc = "+lc);
+        if (!lc.isUnit()) {
+            return this;
+        }
+        try {
+            C lm = lc.inverse();
+            //System.out.println("lm = "+lm);
+            return multiplyLeft(lm);
+        } catch(NotInvertibleException e) {
+            //e.printStackTrace();
+        }
+        return this;
     }
 
 }

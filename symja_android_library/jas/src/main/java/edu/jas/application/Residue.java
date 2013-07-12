@@ -76,9 +76,13 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
             isunit = 0;
             return;
         }
+        if (ring.isField()) {
+            isunit = 1;
+            return;
+        }
         if ( val.isUnit() ) {
            isunit = 1;
-        //} else { // not possible
+           //} else { // not possible
            //isunit = 0;
         }
         isunit = -1;

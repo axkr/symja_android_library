@@ -246,23 +246,19 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             return num.compareTo(b.num);
         }
         GenSolvablePolynomial<C> r, s;
-        if (den.isONE()) {
-            r = b.den.multiply(num);
-            s = b.num;
-            return r.compareTo(s);
-        }
-        if (b.den.isONE()) {
-            r = num;
-            s = den.multiply(b.num);
-            return r.compareTo(s);
-        }
-        logger.info("computing Ore condition");
+        // if (den.isONE()) {
+        //     r = b.den.multiply(num);
+        //     s = b.num;
+        //     return r.compareTo(s);
+        // }
+        // if (b.den.isONE()) {
+        //     r = num;
+        //     s = den.multiply(b.num);
+        //     return r.compareTo(s);
+        // }
         GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den,b.den);
         if (debug) {
-            System.out.println("den   = " + den);
-            System.out.println("b.den = " + b.den);
-            System.out.println("oc[0] = " + oc[0]);
-            System.out.println("oc[1] = " + oc[1]);
+            System.out.println("oc[0] den =<>= oc[1] b.den: (" + oc[0] + ") (" + den + ") = (" + oc[1] + ") (" + b.den + ")");
 	}
         r = oc[0].multiply(num);
         s = oc[1].multiply(b.num);
@@ -336,6 +332,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             n = (GenSolvablePolynomial<C>) num.sum(S.num);
             return new SolvableQuotient<C>(ring, n, den, true);
         }
+        /* wrong:
         if (den.isONE()) {
             n = S.den.multiply(num);
             n = (GenSolvablePolynomial<C>) n.sum(S.num);
@@ -346,6 +343,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             n = (GenSolvablePolynomial<C>) n.sum(num);
             return new SolvableQuotient<C>(ring, n, den, false);
         }
+        */
         if ( den.compareTo(S.den) == 0 ) { // correct ?
             //d = den.multiply(den);
             //n1 = den.multiply(S.num);
@@ -354,13 +352,9 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             return new SolvableQuotient<C>(ring, n, den, false);
         }
         // general case
-        logger.info("computing Ore condition");
         GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den,S.den);
         if (debug) {
-            System.out.println("den   = " + den);
-            System.out.println("S.den = " + S.den);
-            System.out.println("oc[0] = " + oc[0]);
-            System.out.println("oc[1] = " + oc[1]);
+            System.out.println("oc[0] den =sum= oc[1] S.den: (" + oc[0] + ") (" + den + ") = (" + oc[1] + ") (" + S.den + ")");
 	}
         d = oc[0].multiply(den);
         n1 = oc[0].multiply(num);
@@ -462,30 +456,28 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             n = num.multiply(S.num);
             return new SolvableQuotient<C>(ring, n, den, true);
         }
-        if (den.isONE()) {
+        /* wrong:
+        if (den.isONE()) { 
             d = S.den;
             n = num.multiply(S.num);
             return new SolvableQuotient<C>(ring, n, d, false);
         }
-        if (S.den.isONE()) {
+        if (S.den.isONE()) { 
             d = den;
             n = num.multiply(S.num);
             return new SolvableQuotient<C>(ring, n, d, false);
         }
+        */
         // if ( den.compareTo(S.den) == 0 ) { // not correct ?
         //     d = den.multiply(den);
         //     n = num.multiply(S.num);
         //     return new SolvableQuotient<C>(ring, n, d, false);
         // }
-        logger.info("computing Ore condition");
         GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(num,S.den);
         n = oc[1].multiply(S.num);
         d = oc[0].multiply(den);
         if (debug) {
-            System.out.println("num   = " + num);
-            System.out.println("S.den = " + S.den);
-            System.out.println("oc[0] = " + oc[0]);
-            System.out.println("oc[1] = " + oc[1]);
+            System.out.println("oc[0] num =mult= oc[1] S.den: (" + oc[0] + ") (" + num + ") = (" + oc[1] + ") (" + S.den + ")");
 	}
         return new SolvableQuotient<C>(ring, n, d, false);
     }

@@ -321,11 +321,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      */
     @Override
     public boolean isAssociative() {
-        GenSolvablePolynomial<C> Xi;
-        GenSolvablePolynomial<C> Xj;
-        GenSolvablePolynomial<C> Xk;
-        GenSolvablePolynomial<C> p;
-        GenSolvablePolynomial<C> q;
+        GenSolvablePolynomial<C> Xi, Xj, Xk, p, q;
         for (int i = 0; i < nvar; i++) {
             Xi = univariate(i);
             for (int j = i + 1; j < nvar; j++) {
@@ -335,7 +331,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (debug) {
+                        if (true||debug) { 
                             logger.info("Xi = " + Xi + ", Xj = " + Xj + ", Xk = " + Xk);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);

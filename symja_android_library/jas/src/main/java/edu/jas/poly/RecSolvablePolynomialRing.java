@@ -345,8 +345,8 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (true || debug) {
-                            logger.info("Xi = " + Xi + ", Xj = " + Xj + ", Xk = " + Xk);
+                        if (true|| debug) { 
+                            logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);
                         }

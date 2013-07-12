@@ -192,6 +192,7 @@ public class ThreadPool {
             synchronized (this) {
                 logger.info("jobs canceled: " + jobstack);
                 jobstack.clear();
+                notifyAll(); // for getJob
             }
         }
         int re = 0;
@@ -244,7 +245,7 @@ public class ThreadPool {
         while (jobstack.isEmpty()) {
             idleworkers++;
             logger.debug("waiting");
-            wait();
+            wait(1000);
             idleworkers--;
             if (shutdown) {
                 throw new InterruptedException("shutdown in getJob");

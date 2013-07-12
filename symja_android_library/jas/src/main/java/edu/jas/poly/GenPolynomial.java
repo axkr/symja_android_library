@@ -293,7 +293,8 @@ Iterable<Monomial<C>> {
                     ExpVector e = m.getKey();
                     if (!c.isONE() || e.isZERO()) {
                         String cs = c.toString();
-                        if (c instanceof GenPolynomial || c instanceof AlgebraicNumber) {
+                        //if (c instanceof GenPolynomial || c instanceof AlgebraicNumber) {
+                        if (cs.indexOf("-") >= 0 || cs.indexOf("+") >= 0) {
                             s.append("( ");
                             s.append(cs);
                             s.append(" )");
@@ -361,12 +362,6 @@ Iterable<Monomial<C>> {
         if (v == null) {
             v = GenPolynomialRing.newVars("x", ring.nvar);
         }
-        boolean parenthesis = false;
-        //if (ring.coFac instanceof GenPolynomialRing || ring.coFac instanceof AlgebraicNumberRing
-        //    || ring.coFac instanceof RealAlgebraicRing
-        //) {
-            // inactive: parenthesis = true;
-        //}
         boolean first = true;
         for (Map.Entry<ExpVector, C> m : val.entrySet()) {
             C c = m.getValue();
@@ -381,11 +376,13 @@ Iterable<Monomial<C>> {
                 }
             }
             ExpVector e = m.getKey();
+            String cs = c.toScript();
+            boolean parenthesis = (cs.indexOf("-") >= 0 || cs.indexOf("+") >= 0);
             if (!c.isONE() || e.isZERO()) {
                 if (parenthesis) {
                     s.append("( ");
                 }
-                s.append(c.toScript());
+                s.append(cs);
                 if (parenthesis) {
                     s.append(" )");
                 }

@@ -356,22 +356,22 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             ExpVector lp = p.leadingExpVector();
             if (!ef.equals(lp)) { // check for suitable term order
                 logger.error("relation term order = " + ring.tord);
-                throw new IllegalArgumentException("RelationTable update e*f != lt(p): " + ef + ", lp = "
-                                + lp);
+                throw new IllegalArgumentException("RelationTable update e*f != lt(p): " 
+                                                   + ef + ", lp = " + lp);
             }
         } else {
             ExpVector lp = p.leadingExpVector();
             if (!e.equals(lp)) { // check for suitable term order
                 logger.error("relation term order = " + ring.tord);
-                throw new IllegalArgumentException("Coefficient RelationTable update e != lt(p): " + e
-                                + ", lp = " + lp);
+                throw new IllegalArgumentException("Coefficient RelationTable update e != lt(p): "
+                                                   + e + ", lp = " + lp);
             }
             if (p.leadingBaseCoefficient() instanceof GenPolynomial) {
                 lp = ((GenPolynomial<C>) p.leadingBaseCoefficient()).leadingExpVector();
                 if (!f.equals(lp)) { // check for suitable term order
                     logger.error("relation term order = " + ring.tord);
-                    logger.error("Coefficient RelationTable update f != lt(lfcd(p)): " + e + ", f = " + f
-                                + ", p = " + p);
+                    logger.error("Coefficient RelationTable update f != lt(lfcd(p)): " 
+                                 + e + ", f = " + f + ", p = " + p);
                     //throw new IllegalArgumentException("Coefficient RelationTable update f != lt(lfcd(p)): "+ e + ", f = " + f + ", p = " + p);
                 }
             }
@@ -805,6 +805,43 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             }
         }
         return;
+    }
+
+
+    /**
+     * Convert relation table to list of polynomial triples.
+     * @return rel = (e1,f1,p1, ...) where ei * fi = pi are solvable relations.
+     */
+    @SuppressWarnings("unchecked")
+    public List<GenSolvablePolynomial<C>> relationList() {
+        List<GenSolvablePolynomial<C>> rels = new ArrayList<GenSolvablePolynomial<C>>();
+        C one = ring.getONECoefficient();
+        GenPolynomialRing<C> cofac = null; 
+        if (coeffTable) {
+            cofac = (GenPolynomialRing<C>) ring.coFac; // up cast
+        }
+        for (List<Integer> k : table.keySet()) {
+            List v = table.get(k);
+            for (Iterator jt = v.iterator(); jt.hasNext();) {
+                ExpVectorPair ep = (ExpVectorPair) jt.next();
+                ExpVector e = ep.getFirst();
+                GenSolvablePolynomial<C> pe = new GenSolvablePolynomial<C>(ring,one,e);
+                ExpVector f = ep.getSecond();
+                GenSolvablePolynomial<C> pf = null;
+                if (coeffTable) {
+                    GenPolynomial<C> cpf = cofac.getONE().multiply(f);
+                    C cf = (C) cpf; // down cast
+                    pf = new GenSolvablePolynomial<C>(ring,cf);
+                } else {
+                    pf = new GenSolvablePolynomial<C>(ring,one,f);
+                }
+                GenSolvablePolynomial<C> p = (GenSolvablePolynomial<C>) jt.next();
+                rels.add(pe);
+                rels.add(pf);
+                rels.add(p);
+            }
+        }
+        return rels;
     }
 
 }

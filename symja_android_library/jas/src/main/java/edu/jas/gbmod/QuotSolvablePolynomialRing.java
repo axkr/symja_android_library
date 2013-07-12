@@ -203,8 +203,21 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      * @param cf factory for coefficients of type C.
      * @param o other solvable polynomial ring.
      */
-    public QuotSolvablePolynomialRing(RingFactory<SolvableQuotient<C>> cf, QuotSolvablePolynomialRing o) {
+    public QuotSolvablePolynomialRing(RingFactory<SolvableQuotient<C>> cf, GenSolvablePolynomialRing o) {
         this(cf, o.nvar, o.tord, o.getVars(), null);
+    }
+
+
+    /**
+     * The constructor creates a solvable polynomial factory object with the the
+     * same term order, number of variables and variable names as the given
+     * polynomial factory, only the coefficient factories differ and the
+     * solvable multiplication relations are <b>empty</b>.
+     * @param cf factory for coefficients of type C.
+     * @param o other solvable polynomial ring.
+     */
+    public QuotSolvablePolynomialRing(RingFactory<SolvableQuotient<C>> cf, QuotSolvablePolynomialRing o) {
+        this(cf, (GenSolvablePolynomialRing)o);
     }
 
 
@@ -359,6 +372,9 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      */
     @Override
     public boolean isAssociative() {
+        if (! coFac.isAssociative() ) {
+            return false;
+        }
         QuotSolvablePolynomial<C> Xi, Xj, Xk, p, q;
         List<GenPolynomial<SolvableQuotient<C>>> gens = generators();
         int ngen = gens.size();
@@ -371,17 +387,18 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (true || debug) {
-                            logger.info("Xi = " + Xi + ", Xj = " + Xj + ", Xk = " + Xk);
+                        if (true || debug) { 
+                            logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);
+                            logger.info("q-p = " + p.subtract(q));
                         }
                         return false;
                     }
                 }
             }
         }
-        return coFac.isAssociative();
+        return true; //coFac.isAssociative();
     }
 
 
@@ -717,6 +734,34 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      * @return polynomial with type GenSolvablePolynomial<C> coefficients.
      */
     public RecSolvablePolynomial<C> toPolyCoefficients(QuotSolvablePolynomial<C> A) {
+        RecSolvablePolynomial<C> B = polCoeff.getZERO().copy();
+        if (A == null || A.isZERO()) {
+            return B;
+        }
+        for (Map.Entry<ExpVector, SolvableQuotient<C>> y : A.getMap().entrySet()) {
+            ExpVector e = y.getKey();
+            SolvableQuotient<C> a = y.getValue();
+            if (!a.den.isONE()) {
+                throw new IllegalArgumentException("den != 1 not supported: " + a);
+            }
+            GenPolynomial<C> p = a.num; // can not be zero
+            if (!p.isZERO()) {
+                //B = B.sum( p, e ); // inefficient
+                B.doPutToMap(e, p);
+            }
+        }
+        return B;
+    }
+
+
+    /**
+     * Integral function from rational polynomial coefficients. Represent as
+     * polynomial with type GenSolvablePolynomial<C> coefficients.
+     * @param A polynomial with rational polynomial coefficients to be
+     *            converted.
+     * @return polynomial with type GenSolvablePolynomial<C> coefficients.
+     */
+    public RecSolvablePolynomial<C> toPolyCoefficients(GenPolynomial<SolvableQuotient<C>> A) {
         RecSolvablePolynomial<C> B = polCoeff.getZERO().copy();
         if (A == null || A.isZERO()) {
             return B;

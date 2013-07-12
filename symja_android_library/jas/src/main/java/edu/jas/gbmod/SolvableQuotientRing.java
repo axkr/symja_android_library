@@ -33,7 +33,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     private static final Logger logger = Logger.getLogger(SolvableQuotientRing.class);
 
 
-    //private boolean debug = logger.isDebugEnabled();
+    private boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -189,7 +189,32 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @return true if this ring is associative, else false.
      */
     public boolean isAssociative() {
-        return ring.isAssociative();
+        if (!ring.isAssociative()) {
+            return false;
+        }
+        SolvableQuotient<C> Xi, Xj, Xk, p, q;
+        List<SolvableQuotient<C>> gens = generators();
+        int ngen = gens.size();
+        for (int i = 0; i < ngen; i++) {
+            Xi = (SolvableQuotient<C>) gens.get(i);
+            for (int j = i + 1; j < ngen; j++) {
+                Xj = (SolvableQuotient<C>) gens.get(j);
+                for (int k = j + 1; k < ngen; k++) {
+                    Xk = (SolvableQuotient<C>) gens.get(k);
+                    p = Xk.multiply(Xj).multiply(Xi);
+                    q = Xk.multiply(Xj.multiply(Xi));
+                    if (!p.equals(q)) {
+                        if (true || debug) {
+                            logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
+                            logger.info("p = ( Xk * Xj ) * Xi = " + p);
+                            logger.info("q = Xk * ( Xj * Xi ) = " + q);
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 

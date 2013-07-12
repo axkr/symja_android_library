@@ -17,6 +17,7 @@ import edu.jas.gb.SolvableGroebnerBaseAbstract;
 import edu.jas.gb.SolvableGroebnerBaseSeq;
 import edu.jas.gb.SolvableReduction;
 import edu.jas.gb.SolvableReductionSeq;
+import edu.jas.gbmod.SolvableSyzygyAbstract;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
@@ -27,9 +28,8 @@ import edu.jas.structure.NotInvertibleException;
 
 
 /**
- * Solvable Ideal implements some methods for ideal arithmetic, for example
- * sum, intersection, quotient.
- * <b>Note:</b> only left ideals at the moment.
+ * Solvable Ideal implements some methods for ideal arithmetic, for example sum,
+ * intersection, quotient. <b>Note:</b> only left ideals at the moment.
  * @author Heinz Kredel
  */
 public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<SolvableIdeal<C>>, Serializable {
@@ -208,7 +208,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param red Reduction engine
      */
     public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt,
-                         SolvableGroebnerBaseAbstract<C> bb, SolvableReduction<C> red) {
+                    SolvableGroebnerBaseAbstract<C> bb, SolvableReduction<C> red) {
         if (list == null || list.list == null) {
             throw new IllegalArgumentException("list and list.list may not be null");
         }
@@ -480,7 +480,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
             }
             GenSolvablePolynomial<C> z = red.leftNormalform(getList(), b);
             if (!z.isZERO()) {
-                //System.out.println("contains nf(b) != 0: " + b);
+                System.out.println("contains nf(b) != 0: " + b + ", z = " + z);
                 return false;
             }
         }
@@ -584,6 +584,32 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         }
         SolvableIdeal<C> I = new SolvableIdeal<C>(getRing(), c, false);
         if (isGB && B.isGB) {
+            I.doGB();
+        }
+        return I;
+    }
+
+
+    /**
+     * Left product. Generators for the product this by a polynomial.
+     * @param b solvable polynomial
+     * @return ideal(this*b)
+     */
+    public SolvableIdeal<C> product(GenSolvablePolynomial<C> b) {
+        if (b == null || b.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        List<GenSolvablePolynomial<C>> c;
+        c = new ArrayList<GenSolvablePolynomial<C>>(getList().size());
+        for (GenSolvablePolynomial<C> p : getList()) {
+            GenSolvablePolynomial<C> q = p.multiply(b);
+            c.add(q);
+        }
+        SolvableIdeal<C> I = new SolvableIdeal<C>(getRing(), c, false);
+        if (isGB) {
             I.doGB();
         }
         return I;
@@ -754,10 +780,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @return ideal(this : H), a Groebner base
      */
     public SolvableIdeal<C> quotient(SolvableIdeal<C> H) {
-        if (H == null) { // == (0)
-            return this;
-        }
-        if (H.isZERO()) {
+        if (H == null || H.isZERO()) { // == (0)
             return this;
         }
         if (this.isZERO()) {
@@ -791,7 +814,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         if (this.isZERO()) {
             return this;
         }
-        if ( ! getRing().isCommutative() ) {
+        if (!getRing().isCommutative()) {
             throw new UnsupportedOperationException("Rabinowich trick only for commutative polynomial rings");
         }
         SolvableIdeal<C> I = this.GB(); // should be already
@@ -1018,7 +1041,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
     /**
      * Normalform for list of solvable elements.
      * @param L solvable polynomial list
-     * @return list of left normalforms of the elements of L with respect to this
+     * @return list of left normalforms of the elements of L with respect to
+     *         this
      */
     public List<GenSolvablePolynomial<C>> normalform(List<GenSolvablePolynomial<C>> L) {
         if (L == null) {
@@ -1038,6 +1062,92 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
             }
         }
         return M;
+    }
+
+
+    /**
+     * Annihilator for element modulo this ideal.
+     * @param h solvable polynomial
+     * @return annihilator of h with respect to this
+     */
+    public SolvableIdeal<C> annihilator(GenSolvablePolynomial<C> h) {
+        if (h == null || h.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        doGB();
+        List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(1 + getList().size());
+        F.add(h);
+        F.addAll(getList());
+        //System.out.println("F = " + F);
+        SolvableSyzygyAbstract<C> syz = new SolvableSyzygyAbstract<C>();
+        List<List<GenSolvablePolynomial<C>>> S = syz.leftZeroRelationsArbitrary(F);
+        //System.out.println("S = " + S);
+        List<GenSolvablePolynomial<C>> gen = new ArrayList<GenSolvablePolynomial<C>>(S.size());
+        for (List<GenSolvablePolynomial<C>> rel : S) {
+            if (rel == null || rel.isEmpty()) {
+                continue;
+            }
+            GenSolvablePolynomial<C> p = rel.get(0);
+            if (p == null || p.isZERO()) {
+                continue;
+            }
+            gen.add(p);
+        }
+        SolvableIdeal<C> ann = new SolvableIdeal<C>(getRing(), gen);
+        //System.out.println("ann = " + ann);
+        return ann;
+    }
+
+
+    /**
+     * Test for annihilator of element modulo this ideal.
+     * @param h solvable polynomial
+     * @param A solvable ideal
+     * @return true, if A is the annihilator of h with respect to this
+     */
+    public boolean isAnnihilator(GenSolvablePolynomial<C> h, SolvableIdeal<C> A) {
+        SolvableIdeal<C> B = A.product(h);
+        return contains(B);
+    }
+
+
+    /**
+     * Annihilator for ideal modulo this ideal.
+     * @param H solvable ideal
+     * @return annihilator of H with respect to this
+     */
+    public SolvableIdeal<C> annihilator(SolvableIdeal<C> H) {
+        if (H == null || H.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        SolvableIdeal<C> ann = null;
+        for (GenSolvablePolynomial<C> h : H.getList()) {
+            SolvableIdeal<C> Hi = this.annihilator(h);
+            if (ann == null) {
+                ann = Hi;
+            } else {
+                ann = ann.intersect(Hi);
+            }
+        }
+        return ann;
+    }
+
+
+    /**
+     * Test for annihilator of ideal modulo this ideal.
+     * @param H solvable ideal
+     * @param A solvable ideal
+     * @return true, if A is the annihilator of H with respect to this
+     */
+    public boolean isAnnihilator(SolvableIdeal<C> H, SolvableIdeal<C> A) {
+        SolvableIdeal<C> B = A.product(H);
+        return contains(B);
     }
 
 
@@ -1077,17 +1187,17 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
             }
         }
         if (one == null) {
-            throw new NotInvertibleException("h = " + h);
+            throw new NotInvertibleException("one == null: h = " + h);
         }
         List<GenSolvablePolynomial<C>> row = x.G2F.get(i); // != -1
         //System.out.println("row = " + row);
         GenSolvablePolynomial<C> g = row.get(0);
         if (g == null || g.isZERO()) {
-            throw new NotInvertibleException("h = " + h);
+            throw new NotInvertibleException("g == 0: h = " + h);
         }
         GenSolvablePolynomial<C> gp = red.leftNormalform(getList(), g);
         if (gp.isZERO()) { // can happen with solvable rings
-            throw new NotInvertibleException("h = " + h + ", g = " + g);
+            throw new NotInvertibleException("solv|gp == 0: h = " + h + ", g = " + g);
         }
         // adjust leading coefficient of g to get g*h == 1
         GenSolvablePolynomial<C> f = g.multiply(h);

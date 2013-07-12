@@ -22,6 +22,7 @@ import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.Reduction;
 import edu.jas.gbufd.GBFactory;
 import edu.jas.gbufd.GroebnerBasePartial;
+import edu.jas.gbmod.SyzygyAbstract;
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.ExpVector;
@@ -633,6 +634,34 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
 
 
     /**
+     * Product. Generators for the product this ideal by a polynomial. 
+     * Note: if this ideal is a
+     * Groebner base, a Groebner base is returned.
+     * @param b polynomial
+     * @return ideal(this*b)
+     */
+    public Ideal<C> product(GenPolynomial<C> b) {
+        if (b == null || b.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        List<GenPolynomial<C>> c;
+        c = new ArrayList<GenPolynomial<C>>(getList().size());
+        for (GenPolynomial<C> p : getList()) {
+             GenPolynomial<C> q = p.multiply(b);
+             c.add(q);
+        }
+        Ideal<C> I = new Ideal<C>(getRing(), c, false);
+        if (isGB) {
+            I.doGB();
+        }
+        return I;
+    }
+
+
+    /**
      * Intersection. Generators for the intersection of ideals. Using an
      * iterative algorithm.
      * @param Bl list of ideals
@@ -1150,6 +1179,92 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
             }
         }
         return M;
+    }
+
+
+    /**
+     * Annihilator for element modulo this ideal.
+     * @param h polynomial
+     * @return annihilator of h with respect to this
+     */
+    public Ideal<C> annihilator(GenPolynomial<C> h) {
+        if (h == null || h.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        doGB();
+        List<GenPolynomial<C>> F = new ArrayList<GenPolynomial<C>>(1 + getList().size());
+        F.add(h);
+        F.addAll(getList());
+        //System.out.println("F = " + F);
+        SyzygyAbstract<C> syz = new SyzygyAbstract<C>();
+        List<List<GenPolynomial<C>>> S = syz.zeroRelationsArbitrary(F);
+        //System.out.println("S = " + S);
+        List<GenPolynomial<C>> gen = new ArrayList<GenPolynomial<C>>(S.size());
+        for (List<GenPolynomial<C>> rel : S) {
+            if (rel == null || rel.isEmpty()) {
+                continue;
+            }
+            GenPolynomial<C> p = rel.get(0);
+            if (p == null || p.isZERO()) {
+                continue;
+            }
+            gen.add(p);
+        }
+        Ideal<C> ann = new Ideal<C>(getRing(),gen);
+        //System.out.println("ann = " + ann);
+        return ann;
+    }
+
+
+    /**
+     * Test for annihilator of element modulo this ideal.
+     * @param h polynomial
+     * @param A ideal
+     * @return true, if A is the annihilator of h with respect to this
+     */
+    public boolean isAnnihilator(GenPolynomial<C> h, Ideal<C> A) {
+        Ideal<C> B = A.product(h);
+        return contains(B);
+    }
+
+
+    /**
+     * Annihilator for ideal modulo this ideal.
+     * @param H ideal
+     * @return annihilator of H with respect to this
+     */
+    public Ideal<C> annihilator(Ideal<C> H) {
+        if (H == null || H.isZERO()) {
+            return getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        Ideal<C> ann = null;
+        for (GenPolynomial<C> h : H.getList()) {
+            Ideal<C> Hi = this.annihilator(h);
+            if (ann == null) {
+                ann = Hi;
+            } else {
+                ann = ann.intersect(Hi);
+            }
+        }
+        return ann;
+    }
+
+
+    /**
+     * Test for annihilator of ideal modulo this ideal.
+     * @param H ideal
+     * @param A ideal
+     * @return true, if A is the annihilator of H with respect to this
+     */
+    public boolean isAnnihilator(Ideal<C> H, Ideal<C> A) {
+        Ideal<C> B = A.product(H);
+        return contains(B);
     }
 
 
