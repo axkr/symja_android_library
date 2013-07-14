@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.generic.interfaces.INumericFunction;
@@ -75,7 +76,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int NHOLDREST = 0x4000;
 
 	/**
-	 * ISymbol attribute for a function, which should not be evaluated numerically
+	 * ISymbol attribute for a function, which should not be evaluated
+	 * numerically
 	 * 
 	 */
 	public final static int NHOLDALL = NHOLDFIRST | NHOLDREST;
@@ -91,7 +93,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int NUMERICFUNCTION = 0x0400;
 
 	/**
-	 * ISymbol flag for a symbol which has already loaded it's package definition
+	 * ISymbol flag for a symbol which has already loaded it's package
+	 * definition
 	 */
 	public final static int PACKAGE_LOADED = 0x0800;
 
@@ -101,8 +104,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int ONEIDENTITY = 0x0001;
 
 	/**
-	 * ISymbol attribute for a commutative function transformation. The evaluation
-	 * of the function will sort the arguments.
+	 * ISymbol attribute for a commutative function transformation. The
+	 * evaluation of the function will sort the arguments.
 	 * 
 	 */
 	public final static int ORDERLESS = 0x0004;
@@ -114,8 +117,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int FLATORDERLESS = FLAT | ORDERLESS;
 
 	/**
-	 * The default priority when associating a new rule to a symbol. Lower numbers
-	 * have higher priorities
+	 * The default priority when associating a new rule to a symbol. Lower
+	 * numbers have higher priorities
 	 */
 	public final static int DEFAULT_RULE_PRIORITY = 100000;
 
@@ -153,14 +156,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean isValue(IAST ast);
 
 	/**
-	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's
-	 * evaluator is of instance <code>INumericConstant</code>, then apply the
-	 * constants double value to the given function and return the result,
-	 * otherwise return <code>null</code>.
+	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the
+	 * symbol's evaluator is of instance <code>INumericConstant</code>, then
+	 * apply the constants double value to the given function and return the
+	 * result, otherwise return <code>null</code>.
 	 * 
 	 * @param function
-	 *          applys the function to a <code>double</code> value, resulting in
-	 *          an object of type {@code IExpr}.
+	 *            applys the function to a <code>double</code> value, resulting
+	 *            in an object of type {@code IExpr}.
 	 * @return the resulting expression from the function or <code>null</code>.
 	 * @see org.matheclipse.core.reflection.system.Abs
 	 * @see org.matheclipse.core.reflection.system.Ceiling
@@ -179,7 +182,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
 	 * 
 	 * @param attributes
-	 *          the Attributes of this symbol
+	 *            the Attributes of this symbol
 	 */
 	public void setAttributes(int attributes);
 
@@ -190,8 +193,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void pushLocalVariable();
 
 	/**
-	 * Create a new variable placeholder on the symbols variable stack and set the
-	 * local value
+	 * Create a new variable placeholder on the symbols variable stack and set
+	 * the local value
 	 * 
 	 */
 	public void pushLocalVariable(IExpr localValue);
@@ -226,31 +229,32 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * Associate a new rule with default priority to this symbol.
 	 * 
 	 * @param equalRule
-	 *          <code>true</code> if the leftHandSide could be matched with
-	 *          equality
+	 *            <code>true</code> if the leftHandSide could be matched with
+	 *            equality
 	 * @param leftHandSide
 	 * @param rightHandSide
 	 * @return
 	 * 
 	 * @see ISymbol#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher<IExpr> putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide);
+	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide);
 
 	/**
 	 * Associate a new rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
 	 * 
 	 * @param equalRule
-	 *          <code>true</code> if the leftHandSide could be matched with
-	 *          equality
+	 *            <code>true</code> if the leftHandSide could be matched with
+	 *            equality
 	 * @param leftHandSide
 	 * @param rightHandSide
 	 * @param condition
-	 *          additional condition for rules containing patterns
+	 *            additional condition for rules containing patterns
 	 * @param moduleInitializer
-	 *          if the right-hand-side is a module, this is the initializer part
+	 *            if the right-hand-side is a module, this is the initializer
+	 *            part
 	 * @param priority
-	 *          the priority of the rule
+	 *            the priority of the rule
 	 * 
 	 * @return
 	 * 
@@ -275,9 +279,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 
 	/**
 	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code>
-	 * is the default value for <code>Times</code>, <code>0</code> is the default
-	 * value for <code>Plus</code>). The general default value is used in
-	 * pattern-matching for expressions like <code>a_. * b_. + c_</code>
+	 * is the default value for <code>Times</code>, <code>0</code> is the
+	 * default value for <code>Plus</code>). The general default value is used
+	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
 	 * 
 	 * @return the default value or <code>null</code> if undefined.
 	 */
@@ -290,19 +294,19 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * pattern-matching for expressions like <code>a ^ b_.</code>
 	 * 
 	 * @param position
-	 *          the position for the default value
+	 *            the position for the default value
 	 * @return the default value or <code>null</code> if undefined.
 	 */
 	public IExpr getDefaultValue(int position);
 
 	/**
 	 * Set the <i>general default value</i> for this symbol (i.e. <code>1</code>
-	 * is the default value for <code>Times</code>, <code>0</code> is the default
-	 * value for <code>Plus</code>). The general default value is used in
-	 * pattern-matching for expressions like <code>a_. * b_. + c_</code>
+	 * is the default value for <code>Times</code>, <code>0</code> is the
+	 * default value for <code>Plus</code>). The general default value is used
+	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
 	 * 
 	 * @param expr
-	 *          the general default value
+	 *            the general default value
 	 * @see ISymbol#getDefaultValue()
 	 */
 	public void setDefaultValue(IExpr expr);
@@ -314,9 +318,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * pattern-matching for expressions like <code>a ^ b_.</code>
 	 * 
 	 * @param position
-	 *          the position for the default value
+	 *            the position for the default value
 	 * @param expr
-	 *          the default value for the given position
+	 *            the default value for the given position
 	 * @see ISymbol#getDefaultValue(int)
 	 */
 	public void setDefaultValue(int position, IExpr expr);
@@ -326,7 +330,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * reassign the result value to the symbol.
 	 * 
 	 * @param function
-	 *          the function which should be applied
+	 *            the function which should be applied
 	 * @return an array with the currently assigned value of the symbol and the
 	 *         new calculated value of the symbol or <code>null</code> if the
 	 *         reassignment isn't possible.

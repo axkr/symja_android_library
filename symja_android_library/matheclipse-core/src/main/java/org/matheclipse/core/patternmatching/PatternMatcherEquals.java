@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -12,7 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * of this pattern matcher with the <code>equals()</code> method.
  * 
  */
-public class PatternMatcherEquals extends IPatternMatcher<IExpr> implements Serializable {
+public class PatternMatcherEquals extends IPatternMatcher implements Serializable {
 	/**
 	 * 
 	 */
@@ -22,7 +21,7 @@ public class PatternMatcherEquals extends IPatternMatcher<IExpr> implements Seri
 	 * Contains the "pattern-matching" expression
 	 * 
 	 */
-	protected IExpr fLhsPatternExpr;
+	// protected IExpr fLhsPatternExpr;
 
 	protected IExpr fRightHandSide;
 
@@ -44,7 +43,7 @@ public class PatternMatcherEquals extends IPatternMatcher<IExpr> implements Seri
 	 *            succeeds
 	 */
 	public PatternMatcherEquals(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
-		fLhsPatternExpr = leftHandSide;
+		super(leftHandSide);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
 	}
@@ -52,6 +51,14 @@ public class PatternMatcherEquals extends IPatternMatcher<IExpr> implements Seri
 	@Override
 	public boolean apply(IExpr lhsEvalExpr) {
 		return fLhsPatternExpr.equals(lhsEvalExpr);
+	}
+
+	@Override
+	public Object clone() {
+		PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
+		v.fRightHandSide = fRightHandSide;
+		v.fSetSymbol = fSetSymbol;
+		return v;
 	}
 
 	@Override
@@ -72,10 +79,6 @@ public class PatternMatcherEquals extends IPatternMatcher<IExpr> implements Seri
 
 	@Override
 	public void getPatterns(List<IExpr> resultList, IExpr patternExpr) {
-	}
-
-	public IExpr getLHS() {
-		return fLhsPatternExpr;
 	}
 
 	public IExpr getRHS() {

@@ -1,7 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.StringWriter; 
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -19,8 +19,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
@@ -29,7 +29,7 @@ import org.matheclipse.core.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
-import org.matheclipse.generic.interfaces.INumericFunction; 
+import org.matheclipse.generic.interfaces.INumericFunction;
 
 import com.google.common.base.Function;
 
@@ -78,19 +78,19 @@ public class Symbol extends ExprImpl implements ISymbol {
 			}
 
 		} else {
-//			Pair<ISymbol, IExpr> pair = fRulesData.getEqualRules().get(this);
-//			if (pair != null) {
-//				symbolValue = pair.getSecond();
-//				if (symbolValue != null) {
-//					result[0] = symbolValue;
-//					IExpr calculatedResult = function.apply(symbolValue);
-//					if (calculatedResult != null) {
-//						pair.setSecond(calculatedResult);
-//						result[1] = calculatedResult;
-//						return result;
-//					}
-//				}
-//			}
+			// Pair<ISymbol, IExpr> pair = fRulesData.getEqualRules().get(this);
+			// if (pair != null) {
+			// symbolValue = pair.getSecond();
+			// if (symbolValue != null) {
+			// result[0] = symbolValue;
+			// IExpr calculatedResult = function.apply(symbolValue);
+			// if (calculatedResult != null) {
+			// pair.setSecond(calculatedResult);
+			// result[1] = calculatedResult;
+			// return result;
+			// }
+			// }
+			// }
 			PatternMatcherEquals pme = fRulesData.getEqualRules().get(this);
 			if (pme != null) {
 				symbolValue = pme.getRHS();
@@ -268,13 +268,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public IPatternMatcher<IExpr> putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide,
-			final IExpr rightHandSide) {
+	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide, final IExpr rightHandSide) {
 		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
-	public PatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {

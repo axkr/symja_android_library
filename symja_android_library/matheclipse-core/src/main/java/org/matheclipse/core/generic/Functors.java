@@ -15,7 +15,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
-import org.matheclipse.core.interfaces.IPatternMatcher;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -30,7 +30,7 @@ public class Functors {
 		/**
 		 * 
 		 * @param ast
-		 *          the AST which should be cloned in the {@code apply} method
+		 *            the AST which should be cloned in the {@code apply} method
 		 */
 		public AppendFunctor(final IAST ast) {
 			fAST = ast;
@@ -70,7 +70,7 @@ public class Functors {
 		/**
 		 * 
 		 * @param ast
-		 *          the AST which should be cloned in the {@code apply} method
+		 *            the AST which should be cloned in the {@code apply} method
 		 */
 		public CollectFunctor(Collection<? super IExpr> resultCollection) {
 			this.resultCollection = resultCollection;
@@ -105,11 +105,11 @@ public class Functors {
 		/**
 		 * 
 		 * @param ast
-		 *          the complete AST which should be cloned in the {@code apply}
-		 *          method
+		 *            the complete AST which should be cloned in the
+		 *            {@code apply} method
 		 * @param position
-		 *          the position which should be replaced in the
-		 *          <code>apply()</code> method.
+		 *            the position which should be replaced in the
+		 *            <code>apply()</code> method.
 		 */
 		public ReplaceArgFunctor(final IAST ast, int position) {
 			fConstant = ast;
@@ -132,11 +132,11 @@ public class Functors {
 		/**
 		 * 
 		 * @param ast
-		 *          the complete AST which should be cloned in the {@code apply}
-		 *          method
+		 *            the complete AST which should be cloned in the
+		 *            {@code apply} method
 		 * @param position
-		 *          the position which should be replaced in the
-		 *          <code>apply()</code> method.
+		 *            the position which should be replaced in the
+		 *            <code>apply()</code> method.
 		 */
 		public ReplaceAllFunctor(final IAST ast, IExpr lhs) {
 			fConstant = ast;
@@ -156,11 +156,11 @@ public class Functors {
 		/**
 		 * 
 		 * @param plusAST
-		 *          the complete AST which should be cloned in the {@code apply}
-		 *          method
+		 *            the complete AST which should be cloned in the
+		 *            {@code apply} method
 		 * @param position
-		 *          the position which should be replaced in the
-		 *          <code>apply()</code> method.
+		 *            the position which should be replaced in the
+		 *            <code>apply()</code> method.
 		 */
 		public RulesFunctor(Map<? extends IExpr, ? extends IExpr> rulesMap) {
 			fEqualRules = rulesMap;
@@ -180,11 +180,11 @@ public class Functors {
 		/**
 		 * 
 		 * @param plusAST
-		 *          the complete AST which should be cloned in the {@code apply}
-		 *          method
+		 *            the complete AST which should be cloned in the
+		 *            {@code apply} method
 		 * @param position
-		 *          the position which should be replaced in the
-		 *          <code>apply()</code> method.
+		 *            the position which should be replaced in the
+		 *            <code>apply()</code> method.
 		 */
 		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers) {
 			fEqualRules = equalRules;
@@ -197,7 +197,7 @@ public class Functors {
 			if (temp != null) {
 				return temp;
 			}
-			IPatternMatcher<IExpr> matcher;
+			IPatternMatcher matcher;
 			for (int i = 0; i < fMatchers.size(); i++) {
 				temp = fMatchers.get(i).eval(arg);
 				if (temp != null) {
@@ -215,7 +215,7 @@ public class Functors {
 		/**
 		 * 
 		 * @param ast
-		 *          the AST which should be cloned in the {@code apply} method
+		 *            the AST which should be cloned in the {@code apply} method
 		 */
 		public ScanFunctor(final IAST ast, Collection<? super IExpr> resultCollection) {
 			fAST = ast;
@@ -238,9 +238,10 @@ public class Functors {
 	 * appended to the result collection.
 	 * 
 	 * @param ast
-	 *          the AST which should be cloned and appended to in the {@code apply} method 
+	 *            the AST which should be cloned and appended to in the
+	 *            {@code apply} method
 	 * @param resultCollection
-	 *          the collection to which the cloned AST will be appended
+	 *            the collection to which the cloned AST will be appended
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> scan(@Nonnull final IAST ast, @Nonnull Collection<? super IExpr> resultCollection) {
@@ -252,7 +253,7 @@ public class Functors {
 	 * the cloned AST in the <code>apply()</code> method.
 	 * 
 	 * @param ast
-	 *          the AST which should be cloned in the {@code apply} method
+	 *            the AST which should be cloned in the {@code apply} method
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> append(@Nonnull IAST ast) {
@@ -260,9 +261,9 @@ public class Functors {
 	}
 
 	/**
-	 * Return a function which clones the argument, if it is of type AST and sets
-	 * the header to the given <code>expr</code>. <code>expr</code> is typically a
-	 * symbol.
+	 * Return a function which clones the argument, if it is of type AST and
+	 * sets the header to the given <code>expr</code>. <code>expr</code> is
+	 * typically a symbol.
 	 * 
 	 * @param expr
 	 * @return
@@ -287,15 +288,15 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor, which replaces all (sub-)expressions in <code>ast</code>
-	 * which equals <code>lhs</code> with the argument of the functors
-	 * <code>apply()</code> method.
+	 * Create a functor, which replaces all (sub-)expressions in
+	 * <code>ast</code> which equals <code>lhs</code> with the argument of the
+	 * functors <code>apply()</code> method.
 	 * 
 	 * @param ast
-	 *          an AST which contains the <code>lhs</code> as a placeholder in
-	 *          it's subexpressions.
+	 *            an AST which contains the <code>lhs</code> as a placeholder in
+	 *            it's subexpressions.
 	 * @param lhs
-	 *          left-hand-side of a <code>Rule(lhs,...)</code>
+	 *            left-hand-side of a <code>Rule(lhs,...)</code>
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> replaceAll(@Nonnull IAST ast, @Nonnull IExpr lhs) {
@@ -303,13 +304,13 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor, which replaces the argument at the first position in the
-	 * <code>ast</code> with the argument of the functors <code>apply()</code>
-	 * method.
+	 * Create a functor, which replaces the argument at the first position in
+	 * the <code>ast</code> with the argument of the functors
+	 * <code>apply()</code> method.
 	 * 
 	 * @param ast
-	 *          an AST where the first argument is replaced with the argument of
-	 *          the functors <code>apply()</code> method.
+	 *            an AST where the first argument is replaced with the argument
+	 *            of the functors <code>apply()</code> method.
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> replace1st(@Nonnull IAST ast) {
@@ -317,13 +318,13 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor, which replaces the argument at the second position in the
-	 * <code>ast</code> with the argument of the functors <code>apply()</code>
-	 * method.
+	 * Create a functor, which replaces the argument at the second position in
+	 * the <code>ast</code> with the argument of the functors
+	 * <code>apply()</code> method.
 	 * 
 	 * @param ast
-	 *          an AST where the second argument is replaced with the argument of
-	 *          the functors <code>apply()</code> method.
+	 *            an AST where the second argument is replaced with the argument
+	 *            of the functors <code>apply()</code> method.
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> replace2nd(@Nonnull IAST ast) {
@@ -331,17 +332,17 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor, which replaces the argument at the given position in the
-	 * <code>ast</code> with the argument of the functors <code>apply()</code>
-	 * method.
+	 * Create a functor, which replaces the argument at the given position in
+	 * the <code>ast</code> with the argument of the functors
+	 * <code>apply()</code> method.
 	 * 
 	 * @param ast
-	 *          an AST where the element at the given <code>position</code> is
-	 *          replaced with the argument of the functors <code>apply()</code>
-	 *          method.
+	 *            an AST where the element at the given <code>position</code> is
+	 *            replaced with the argument of the functors
+	 *            <code>apply()</code> method.
 	 * @param position
-	 *          the position of the element, which should be replaced in the
-	 *          <code>ast</code>.
+	 *            the position of the element, which should be replaced in the
+	 *            <code>ast</code>.
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> replaceArg(@Nonnull IAST ast, int position) {
@@ -360,11 +361,11 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor from the given rules. All strings in <code>strRules</code>
-	 * are parsed in internal rules form.
+	 * Create a functor from the given rules. All strings in
+	 * <code>strRules</code> are parsed in internal rules form.
 	 * 
 	 * @param strRules
-	 *          array of rules of the form &quot;<code>x-&gt;y</code>&quot;
+	 *            array of rules of the form &quot;<code>x-&gt;y</code>&quot;
 	 * @return
 	 * @throws WrongArgumentType
 	 */
@@ -383,8 +384,8 @@ public class Functors {
 
 	/**
 	 * Create a functor from the given rules. If <code>astRules</code> is a
-	 * <code>List[]</code> object, the elements of the list are taken as the rules
-	 * of the form <code>Rule[lhs, rhs]</code>, otherwise the
+	 * <code>List[]</code> object, the elements of the list are taken as the
+	 * rules of the form <code>Rule[lhs, rhs]</code>, otherwise the
 	 * <code>astRules</code> itself is taken as the <code>Rule[lhs, rhs]</code>.
 	 * 
 	 * @param astRules

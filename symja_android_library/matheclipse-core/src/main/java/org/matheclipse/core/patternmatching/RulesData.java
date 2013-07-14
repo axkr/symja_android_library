@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
-import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -30,8 +29,8 @@ public class RulesData implements Serializable {
 
 	// private transient Map<IExpr, Pair<ISymbol, IExpr>> fEqualRules;
 	private transient Map<IExpr, PatternMatcherEquals> fEqualRules;
-	private transient ArrayListMultimap<Integer, IPatternMatcher<IExpr>> fSimplePatternRules;
-	private transient List<IPatternMatcher<IExpr>> fPatternRules;
+	private transient ArrayListMultimap<Integer, IPatternMatcher> fSimplePatternRules;
+	private transient List<IPatternMatcher> fPatternRules;
 
 	public RulesData() {
 		this.fEqualRules = null;
@@ -66,13 +65,13 @@ public class RulesData implements Serializable {
 		}
 
 		IExpr result;
-		IPatternMatcher<IExpr> pmEvaluator;
+		IPatternMatcher pmEvaluator;
 		if ((fSimplePatternRules != null) && (expression instanceof IAST)) {
 			final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
-			final List<IPatternMatcher<IExpr>> list = fSimplePatternRules.get(hash);
+			final List<IPatternMatcher> list = fSimplePatternRules.get(hash);
 			if (list != null) {
 				for (int i = 0; i < list.size(); i++) {
-					pmEvaluator = (IPatternMatcher<IExpr>) list.get(i).clone();
+					pmEvaluator = (IPatternMatcher) list.get(i).clone();
 					result = pmEvaluator.eval(expression);
 					if (result != null) {
 						return result;
@@ -83,7 +82,7 @@ public class RulesData implements Serializable {
 
 		if (fPatternRules != null) {
 			for (int i = 0; i < fPatternRules.size(); i++) {
-				pmEvaluator = (IPatternMatcher<IExpr>) fPatternRules.get(i).clone();
+				pmEvaluator = (IPatternMatcher) fPatternRules.get(i).clone();
 				result = pmEvaluator.eval(expression);
 				if (result != null) {
 					return result;
@@ -93,14 +92,15 @@ public class RulesData implements Serializable {
 		return null;
 	}
 
-	public PatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority) {
 		if (equalRule) {
 			fEqualRules = getEqualRules();
 			// fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol,
 			// rightHandSide));
-			fEqualRules.put(leftHandSide, new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide));
-			return null;
+			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+			fEqualRules.put(leftHandSide, pmEquals);
+			return pmEquals;
 		}
 
 		final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide);
@@ -109,8 +109,9 @@ public class RulesData implements Serializable {
 			fEqualRules = getEqualRules();
 			// fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol,
 			// rightHandSide));
-			fEqualRules.put(leftHandSide, new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide));
-			return null;
+			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+			fEqualRules.put(leftHandSide, pmEquals);
+			return pmEquals;
 		}
 
 		// pmEvaluator.setCondition(condition);
@@ -133,6 +134,7 @@ public class RulesData implements Serializable {
 			}
 			fPatternRules.add(pmEvaluator);
 			return pmEvaluator;
+
 		}
 
 	}
@@ -232,14 +234,14 @@ public class RulesData implements Serializable {
 		return fEqualRules;
 	}
 
-	private List<IPatternMatcher<IExpr>> getPatternRules() {
+	private List<IPatternMatcher> getPatternRules() {
 		if (fPatternRules == null) {
-			fPatternRules = new ArrayList<IPatternMatcher<IExpr>>();
+			fPatternRules = new ArrayList<IPatternMatcher>();
 		}
 		return fPatternRules;
 	}
 
-	private ArrayListMultimap<Integer, IPatternMatcher<IExpr>> getSimplePatternRules() {
+	private ArrayListMultimap<Integer, IPatternMatcher> getSimplePatternRules() {
 		if (fSimplePatternRules == null) {
 			fSimplePatternRules = ArrayListMultimap.create();
 		}
@@ -285,8 +287,8 @@ public class RulesData implements Serializable {
 			}
 		}
 		if (fSimplePatternRules != null && fSimplePatternRules.size() > 0) {
-			Iterator<IPatternMatcher<IExpr>> listIter = fSimplePatternRules.values().iterator();
-			IPatternMatcher<IExpr> elem;
+			Iterator<IPatternMatcher> listIter = fSimplePatternRules.values().iterator();
+			IPatternMatcher elem;
 			while (listIter.hasNext()) {
 				elem = listIter.next();
 				if (elem instanceof PatternMatcherAndEvaluator) {
@@ -397,7 +399,7 @@ public class RulesData implements Serializable {
 
 		len = stream.read();
 		if (len > 0) {
-			fPatternRules = new ArrayList<IPatternMatcher<IExpr>>();
+			fPatternRules = new ArrayList<IPatternMatcher>();
 			listLength = stream.read();
 			for (int j = 0; j < listLength; j++) {
 				astString = stream.readUTF();
@@ -463,8 +465,8 @@ public class RulesData implements Serializable {
 			stream.write(0);
 		} else {
 			stream.write(fSimplePatternRules.size());
-			Iterator<IPatternMatcher<IExpr>> listIter = fSimplePatternRules.values().iterator();
-			IPatternMatcher<IExpr> elem;
+			Iterator<IPatternMatcher> listIter = fSimplePatternRules.values().iterator();
+			IPatternMatcher elem;
 			while (listIter.hasNext()) {
 				elem = listIter.next();
 				pmEvaluator = (PatternMatcherAndEvaluator) elem;

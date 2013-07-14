@@ -37,11 +37,11 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	 * instance, if leftHandSide is matching.
 	 * 
 	 * @param leftHandSide
-	 *          could contain pattern expressions for "pattern-matching"
+	 *            could contain pattern expressions for "pattern-matching"
 	 * @param instance
-	 *          instance of an IFunctionEvaluator interface
+	 *            instance of an IFunctionEvaluator interface
 	 * @param method
-	 *          method to call
+	 *            method to call
 	 */
 	public PatternMatcherAndInvoker(final IExpr leftHandSide, IFunctionEvaluator instance, final String methodName) {
 		super(leftHandSide);
@@ -141,7 +141,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 		}
 		if (obj instanceof PatternMatcherAndInvoker) {
 			// don't compare fInstance, fMethod, fTypes here
-			return super.equals((PatternMatcherAndInvoker)obj);
+			return super.equals((PatternMatcherAndInvoker) obj);
 		}
 
 		return false;

@@ -13,11 +13,10 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
-import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializable {
+public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 	/**
 	 * 
@@ -235,12 +234,13 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		}
 	}
 
+
 	/**
 	 * Contains the "pattern-matching" expression
 	 * 
 	 */
-	protected IExpr fLhsPatternExpr;
-
+//	protected IExpr fLhsPatternExpr;
+	
 	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
 	 * 
@@ -260,12 +260,14 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	 * @param patternExpr
 	 */
 	public PatternMatcher() {
+		super(null);
 		this.fLhsPatternExpr = null;
 		this.fPatternCondition = null;
 		this.fPatternMap = new PatternMap();
 	}
 
 	public PatternMatcher(final IExpr patternExpr) {
+		super(patternExpr);
 		this.fLhsPatternExpr = patternExpr;
 		this.fPatternCondition = null;
 		if (patternExpr.isCondition()) {
@@ -363,16 +365,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 			return o1.equals(o2);
 		}
 		return patternExpr1.equals(patternExpr2);
-	}
-
-	/**
-	 * Get the right-hand-side expression. Override in derived classes. The
-	 * default implementation returns <code>null</code>.
-	 * 
-	 * @return <code>null</code>
-	 */
-	public IExpr getRightHandside() {
-		return null;
 	}
 
 	/**
@@ -757,10 +749,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 		return true;
 	}
 
-	public IExpr getLHS() {
-		return fLhsPatternExpr;
-	}
-
 	@Override
 	public IExpr eval(final IExpr leftHandSide) {
 		return null;
@@ -800,7 +788,6 @@ public class PatternMatcher extends IPatternMatcher<IExpr> implements Serializab
 	@Override
 	public Object clone() {
 		PatternMatcher v = (PatternMatcher) super.clone();
-		v.fLhsPatternExpr = fLhsPatternExpr;
 		v.fPatternCondition = fPatternCondition;
 		v.fPatternMap = fPatternMap.clone();
 		return v;
