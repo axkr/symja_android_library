@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,7 +16,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.interfaces.Pair;
 
 import com.google.common.collect.ArrayListMultimap;
 
@@ -30,7 +28,8 @@ public class RulesData implements Serializable {
 	 */
 	private static final long serialVersionUID = 8843909916823779295L;
 
-	private transient Map<IExpr, Pair<ISymbol, IExpr>> fEqualRules;
+	// private transient Map<IExpr, Pair<ISymbol, IExpr>> fEqualRules;
+	private transient Map<IExpr, PatternMatcherEquals> fEqualRules;
 	private transient ArrayListMultimap<Integer, IPatternMatcher<IExpr>> fSimplePatternRules;
 	private transient List<IPatternMatcher<IExpr>> fPatternRules;
 
@@ -51,11 +50,18 @@ public class RulesData implements Serializable {
 	}
 
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
-		Pair<ISymbol, IExpr> res;
+		// Pair<ISymbol, IExpr> res;
+		// if (fEqualRules != null) {
+		// res = fEqualRules.get(expression);
+		// if (res != null) {
+		// return res.getSecond();
+		// }
+		// }
+		PatternMatcherEquals res;
 		if (fEqualRules != null) {
 			res = fEqualRules.get(expression);
 			if (res != null) {
-				return res.getSecond();
+				return res.getRHS();
 			}
 		}
 
@@ -91,7 +97,9 @@ public class RulesData implements Serializable {
 			final IExpr rightHandSide, final int priority) {
 		if (equalRule) {
 			fEqualRules = getEqualRules();
-			fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol, rightHandSide));
+			// fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol,
+			// rightHandSide));
+			fEqualRules.put(leftHandSide, new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide));
 			return null;
 		}
 
@@ -99,7 +107,9 @@ public class RulesData implements Serializable {
 
 		if (pmEvaluator.isRuleWithoutPatterns()) {
 			fEqualRules = getEqualRules();
-			fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol, rightHandSide));
+			// fEqualRules.put(leftHandSide, new Pair<ISymbol, IExpr>(setSymbol,
+			// rightHandSide));
+			fEqualRules.put(leftHandSide, new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide));
 			return null;
 		}
 
@@ -127,6 +137,15 @@ public class RulesData implements Serializable {
 
 	}
 
+	/**
+	 * Create a pattern hash value for the left-hand-side expression and insert
+	 * the left-hand-side as a simple pattern rule to the
+	 * <code>fSimplePatternRules</code>.
+	 * 
+	 * @param leftHandSide
+	 * @param pmEvaluator
+	 * @return
+	 */
 	private PatternMatcher addSimplePatternRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
 		final Integer hash = Integer.valueOf(((IAST) leftHandSide).patternHashCode());
 		if (F.isSystemInitialized && fSimplePatternRules.containsEntry(hash, pmEvaluator)) {
@@ -200,9 +219,15 @@ public class RulesData implements Serializable {
 	/**
 	 * @return Returns the equalRules.
 	 */
-	public Map<IExpr, Pair<ISymbol, IExpr>> getEqualRules() {
+	// public Map<IExpr, Pair<ISymbol, IExpr>> getEqualRules() {
+	// if (fEqualRules == null) {
+	// fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
+	// }
+	// return fEqualRules;
+	// }
+	public Map<IExpr, PatternMatcherEquals> getEqualRules() {
 		if (fEqualRules == null) {
-			fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
+			fEqualRules = new HashMap<IExpr, PatternMatcherEquals>();
 		}
 		return fEqualRules;
 	}
@@ -225,7 +250,24 @@ public class RulesData implements Serializable {
 		ArrayList<IAST> definitionList = new ArrayList<IAST>();
 		Iterator<IExpr> iter;
 		IExpr key;
-		Pair<ISymbol, IExpr> pair;
+		// Pair<ISymbol, IExpr> pair;
+		// IExpr condition;
+		// ISymbol setSymbol;
+		// IAST ast;
+		// PatternMatcherAndEvaluator pmEvaluator;
+		// if (fEqualRules != null && fEqualRules.size() > 0) {
+		// iter = fEqualRules.keySet().iterator();
+		// while (iter.hasNext()) {
+		// key = iter.next();
+		// pair = fEqualRules.get(key);
+		// setSymbol = pair.getFirst();
+		// ast = F.ast(setSymbol);
+		// ast.add(key);
+		// ast.add(pair.getSecond());
+		// definitionList.add(ast);
+		// }
+		// }
+		PatternMatcherEquals pme;
 		IExpr condition;
 		ISymbol setSymbol;
 		IAST ast;
@@ -234,11 +276,11 @@ public class RulesData implements Serializable {
 			iter = fEqualRules.keySet().iterator();
 			while (iter.hasNext()) {
 				key = iter.next();
-				pair = fEqualRules.get(key);
-				setSymbol = pair.getFirst();
+				pme = fEqualRules.get(key);
+				setSymbol = pme.getSetSymbol();
 				ast = F.ast(setSymbol);
 				ast.add(key);
-				ast.add(pair.getSecond());
+				ast.add(pme.getRHS());
 				definitionList.add(ast);
 			}
 		}
@@ -297,7 +339,18 @@ public class RulesData implements Serializable {
 		ISymbol setSymbol;
 		int len = stream.read();
 		if (len > 0) {
-			fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
+			// fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
+			// for (int i = 0; i < len; i++) {
+			// astString = stream.readUTF();
+			// setSymbol = F.$s(astString);
+			//
+			// astString = stream.readUTF();
+			// key = engine.parse(astString);
+			// astString = stream.readUTF();
+			// value = engine.parse(astString);
+			// fEqualRules.put(key, new Pair<ISymbol, IExpr>(setSymbol, value));
+			// }
+			fEqualRules = new HashMap<IExpr, PatternMatcherEquals>();
 			for (int i = 0; i < len; i++) {
 				astString = stream.readUTF();
 				setSymbol = F.$s(astString);
@@ -306,7 +359,7 @@ public class RulesData implements Serializable {
 				key = engine.parse(astString);
 				astString = stream.readUTF();
 				value = engine.parse(astString);
-				fEqualRules.put(key, new Pair<ISymbol, IExpr>(setSymbol, value));
+				fEqualRules.put(key, new PatternMatcherEquals(setSymbol, key, value));
 			}
 		}
 
@@ -373,7 +426,23 @@ public class RulesData implements Serializable {
 		Iterator<IExpr> iter;
 		IExpr key;
 		IExpr condition;
-		Pair<ISymbol, IExpr> pair;
+		// Pair<ISymbol, IExpr> pair;
+		// ISymbol setSymbol;
+		// PatternMatcherAndEvaluator pmEvaluator;
+		// if (fEqualRules == null || fEqualRules.size() == 0) {
+		// stream.write(0);
+		// } else {
+		// stream.write(fEqualRules.size());
+		// iter = fEqualRules.keySet().iterator();
+		// while (iter.hasNext()) {
+		// key = iter.next();
+		// pair = fEqualRules.get(key);
+		// stream.writeUTF(pair.getFirst().toString());
+		// stream.writeUTF(key.fullFormString());
+		// stream.writeUTF(pair.getSecond().fullFormString());
+		// }
+		// }
+		PatternMatcherEquals pme;
 		ISymbol setSymbol;
 		PatternMatcherAndEvaluator pmEvaluator;
 		if (fEqualRules == null || fEqualRules.size() == 0) {
@@ -383,12 +452,13 @@ public class RulesData implements Serializable {
 			iter = fEqualRules.keySet().iterator();
 			while (iter.hasNext()) {
 				key = iter.next();
-				pair = fEqualRules.get(key);
-				stream.writeUTF(pair.getFirst().toString());
+				pme = fEqualRules.get(key);
+				stream.writeUTF(pme.getLHS().toString());
 				stream.writeUTF(key.fullFormString());
-				stream.writeUTF(pair.getSecond().fullFormString());
+				stream.writeUTF(pme.getRHS().fullFormString());
 			}
 		}
+
 		if (fSimplePatternRules == null || fSimplePatternRules.size() == 0) {
 			stream.write(0);
 		} else {

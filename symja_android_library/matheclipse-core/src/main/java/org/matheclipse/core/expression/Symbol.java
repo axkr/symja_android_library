@@ -1,8 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
+import java.io.StringWriter; 
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -24,13 +23,13 @@ import org.matheclipse.core.interfaces.IPatternMatcher;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
+import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
-import org.matheclipse.generic.interfaces.INumericFunction;
-import org.matheclipse.generic.interfaces.Pair;
+import org.matheclipse.generic.interfaces.INumericFunction; 
 
 import com.google.common.base.Function;
 
@@ -49,23 +48,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 
 	private static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
-
-	// protected static final XmlFormat<SymbolImpl> SYMBOL_XML = new
-	// XmlFormat<SymbolImpl>(SymbolImpl.class) {
-	// @Override
-	// public void format(SymbolImpl obj, XmlElement xml) {
-	// SymbolImpl expr = obj;
-	// xml.setAttribute("name", expr.fSymbolName);
-	// }
-	//
-	// @Override
-	// public SymbolImpl parse(XmlElement xml) {
-	// org.matheclipse.core.expression.ExprFactory factory =
-	// org.matheclipse.core.expression.ExprFactory.get();
-	// String name = xml.getAttribute("name", "");
-	// return (SymbolImpl) factory.createSymbol(name);
-	// }
-	// };
 
 	/**
 	 * The attribute values of the symbol represented by single bits.
@@ -96,14 +78,27 @@ public class Symbol extends ExprImpl implements ISymbol {
 			}
 
 		} else {
-			Pair<ISymbol, IExpr> pair = fRulesData.getEqualRules().get(this);
-			if (pair != null) {
-				symbolValue = pair.getSecond();
+//			Pair<ISymbol, IExpr> pair = fRulesData.getEqualRules().get(this);
+//			if (pair != null) {
+//				symbolValue = pair.getSecond();
+//				if (symbolValue != null) {
+//					result[0] = symbolValue;
+//					IExpr calculatedResult = function.apply(symbolValue);
+//					if (calculatedResult != null) {
+//						pair.setSecond(calculatedResult);
+//						result[1] = calculatedResult;
+//						return result;
+//					}
+//				}
+//			}
+			PatternMatcherEquals pme = fRulesData.getEqualRules().get(this);
+			if (pme != null) {
+				symbolValue = pme.getRHS();
 				if (symbolValue != null) {
 					result[0] = symbolValue;
 					IExpr calculatedResult = function.apply(symbolValue);
 					if (calculatedResult != null) {
-						pair.setSecond(calculatedResult);
+						pme.setRHS(calculatedResult);
 						result[1] = calculatedResult;
 						return result;
 					}
@@ -133,14 +128,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	public Symbol(final String symbolName) {
 		this(symbolName, null);
-	}
-
-	/**
-	 * do not use directly, needed for XML transformations
-	 * 
-	 */
-	private Symbol() {
-		this(null, null);
 	}
 
 	public Symbol(final String symbolName, final IEvaluator evaluator) {
