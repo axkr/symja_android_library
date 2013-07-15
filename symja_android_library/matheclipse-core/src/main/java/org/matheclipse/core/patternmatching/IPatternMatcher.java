@@ -17,6 +17,10 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	 */
 	protected IExpr fLhsPatternExpr;
 
+	protected IPatternMatcher() {
+		fLhsPatternExpr= null;
+	}
+	
 	public IPatternMatcher(IExpr lhsPatternExpr) {
 		fLhsPatternExpr= lhsPatternExpr;
 	}
