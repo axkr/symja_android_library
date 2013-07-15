@@ -14,6 +14,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.MethodSymbol;
@@ -450,6 +451,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return evalASTArg1(ast);
 		}
 
+		IExpr head = ast.head();
+		if (head instanceof ISymbol) {
+			final IEvaluator module = ((ISymbol)head).getEvaluator();
+			if (module instanceof ICoreFunctionEvaluator) {
+				// evaluate a built-in function.
+				if (fNumericMode) {
+					return ((ICoreFunctionEvaluator) module).numericEval(ast);
+				}
+				return ((ICoreFunctionEvaluator) module).evaluate(ast);
+			}
+		}
 		// first evaluate the header !
 		IExpr result = evalLoop(ast.head());
 		if (result != null) {

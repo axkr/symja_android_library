@@ -6,7 +6,6 @@ package org.matheclipse.core.interfaces;
  *
  */
 public interface IEvaluator {
-
 	/**
 	 * This method will be called every time a new ISymbol will be created.
 	 * In this method you can set ISymbol attributes or constants for the symbol

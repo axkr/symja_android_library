@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,13 +12,11 @@ public class Append extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if ((ast.size() == 3) && (ast.get(1).isAST())) {
-			final IAST f0 = ((IAST) ast.get(1)).clone();
-			f0.add(ast.get(2));
-			return f0; 
-		}
-
-		return null;
+		Validate.checkSize(ast, 3);
+		IAST arg1 = Validate.checkASTType(ast, 1);
+		final IAST f0 = (IAST) arg1.clone();
+		f0.add(ast.get(2));
+		return f0;
 	}
 
 }

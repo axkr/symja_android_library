@@ -16,12 +16,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
-		Validate.checkSize(functionList, 2);
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
 		// if (functionList.size() != 2) {
 		// throw new WrongNumberOfArguments(functionList, 1, functionList.size()-1);
 		// } else {
-		final IExpr arg0 = functionList.get(1);
+		final IExpr arg0 = ast.get(1);
 		final IExpr result = e1ObjArg(arg0);
 
 		if (result != null) {
@@ -31,25 +31,25 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 		if (arg0 instanceof IAST) {
 			e1FunArg((IAST) arg0);
 		}
-		final int hier = functionList.get(1).hierarchy();
+		final int hier = ast.get(1).hierarchy();
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
-					return e1DblArg((INum) functionList.get(1));
+					return e1DblArg((INum) ast.get(1));
 				}
-				return e1DblComArg((IComplexNum) functionList.get(1));
+				return e1DblComArg((IComplexNum) ast.get(1));
 			} else {
-				return e1IntArg((IInteger) functionList.get(1));
+				return e1IntArg((IInteger) ast.get(1));
 			}
 		} else {
 			if (hier <= IExpr.COMPLEXID) {
 				if (hier == IExpr.FRACTIONID) {
-					return e1FraArg((IFraction) functionList.get(1));
+					return e1FraArg((IFraction) ast.get(1));
 				}
-				return e1ComArg((IComplex) functionList.get(1));
+				return e1ComArg((IComplex) ast.get(1));
 			} else {
 				if (hier == IExpr.SYMBOLID) {
-					return e1SymArg((ISymbol) functionList.get(1));
+					return e1SymArg((ISymbol) ast.get(1));
 				}
 			}
 		}

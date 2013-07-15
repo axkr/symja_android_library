@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -34,13 +35,13 @@ public class PrependTo extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if ((ast.size() == 3) && (ast.get(1).isSymbol())) {
-			Function<IExpr, IExpr> function = new PrependToFunction(ast.get(2));
-			final ISymbol sym = (ISymbol) ast.get(1);
-			IExpr[] results = sym.reassignSymbolValue(function);
-			if (results != null) {
-				return results[1];
-			}
+		Validate.checkSize(ast, 3);
+		ISymbol sym = Validate.checkSymbolType(ast, 1);
+
+		Function<IExpr, IExpr> function = new PrependToFunction(ast.get(2));
+		IExpr[] results = sym.reassignSymbolValue(function);
+		if (results != null) {
+			return results[1];
 		}
 
 		return null;

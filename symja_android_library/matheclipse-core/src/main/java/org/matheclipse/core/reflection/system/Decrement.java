@@ -30,20 +30,6 @@ public class Decrement extends AbstractArg1 {
 			if (results != null) {
 				return getResult(results[0], results[1]);
 			}
-			// if (sym.hasLocalVariableStack()) {
-			// IExpr symbolValue = sym.get();
-			// IExpr calculatedResult = apply(symbolValue);
-			// sym.set(calculatedResult);
-			// return getResult(symbolValue, calculatedResult);
-			// } else {
-			// IExpr symbolValue = engine.evaluate(sym);
-			// if ((symbolValue != null) && !symbolValue.equals(sym)) {
-			// IExpr calculatedResult = apply(symbolValue);
-			// sym.putDownRule(F.Set, true, sym, calculatedResult);
-			// return getResult(symbolValue, calculatedResult);
-			// }
-			// }
-
 		}
 
 		return null;
@@ -62,9 +48,9 @@ public class Decrement extends AbstractArg1 {
 	 * subclasses.
 	 * 
 	 * @param assignedValue
-	 *          the value currently assigned to the symbol
+	 *            the value currently assigned to the symbol
 	 * @param engine
-	 *          the evaluation engine
+	 *            the evaluation engine
 	 * @return
 	 */
 	protected IExpr apply(final IExpr assignedValue) {

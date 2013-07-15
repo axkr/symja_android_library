@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -12,7 +13,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 import com.google.common.base.Function;
 
-public class Cases implements IFunctionEvaluator {
+public class Cases implements ICoreFunctionEvaluator {
 	private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
 		protected final PatternMatcher matcher;
 		protected IAST resultCollection;
@@ -59,7 +60,9 @@ public class Cases implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
-		if (ast.get(1).isAST()) {
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr arg1 = engine.evaluate(ast.get(1));
+		if (arg1.isAST()) {
 			if (ast.size() == 4) {
 
 				IAST result = F.List();
@@ -98,7 +101,7 @@ public class Cases implements IFunctionEvaluator {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDREST);
+		symbol.setAttributes(ISymbol.HOLDALL);
 	}
 
 }

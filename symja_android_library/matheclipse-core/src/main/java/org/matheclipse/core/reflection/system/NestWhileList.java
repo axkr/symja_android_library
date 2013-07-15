@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
-public class NestWhileList implements IFunctionEvaluator {
+public class NestWhileList implements ICoreFunctionEvaluator {
 
 	public NestWhileList() {
 	}

@@ -13,14 +13,10 @@ public class Prepend extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-
-		if (ast.get(1).isAST()) {
-			final IAST f0 = ((IAST) ast.get(1)).clone();
-			f0.add(1, ast.get(2));
-			return f0;
-		}
-
-		return null;
+		IAST arg1 = Validate.checkASTType(ast, 1);
+		final IAST f0 = (IAST) arg1.clone();
+		f0.add(1, ast.get(2));
+		return f0;
 	}
 
 }

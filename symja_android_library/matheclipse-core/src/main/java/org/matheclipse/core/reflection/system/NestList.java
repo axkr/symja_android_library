@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.Collection;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
-public class NestList implements IFunctionEvaluator {
+public class NestList implements ICoreFunctionEvaluator {
 
 	public NestList() {
 	}

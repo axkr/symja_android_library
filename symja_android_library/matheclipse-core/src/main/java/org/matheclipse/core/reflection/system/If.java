@@ -1,37 +1,38 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class If implements IFunctionEvaluator {
+public class If implements ICoreFunctionEvaluator {
 
 	public If() {
 	}
 
-	public IExpr evaluate(final IAST functionList) {
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkRange(ast, 3, 5);
 		final EvalEngine engine = EvalEngine.get();
-		if ((functionList.size() <= 5) && (functionList.size() >= 3)) {
-			final IExpr temp = engine.evaluate(functionList.get(1));
 
-			if (temp.equals(F.False)) {
-				if (functionList.size() >= 4) {
-					return functionList.get(3);
-				}
+		final IExpr temp = engine.evaluate(ast.get(1));
 
-				return F.Null;
+		if (temp.equals(F.False)) {
+			if (ast.size() >= 4) {
+				return ast.get(3);
 			}
 
-			if (temp.equals(F.True)) {
-				return functionList.get(2);
-			}
+			return F.Null;
+		}
 
-			if (functionList.size() == 5) {
-				return functionList.get(4);
-			}
+		if (temp.equals(F.True)) {
+			return ast.get(2);
+		}
+
+		if (ast.size() == 5) {
+			return ast.get(4);
 		}
 
 		return F.Null;

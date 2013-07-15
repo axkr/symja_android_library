@@ -8,7 +8,8 @@ import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -19,7 +20,7 @@ import org.matheclipse.generic.interfaces.IIterator;
 /**
  * 
  */
-public class Do implements IFunctionEvaluator {
+public class Do implements ICoreFunctionEvaluator {
 	public static class DoIterator {
 
 		final List<? extends IIterator<IExpr>> fIterList;
@@ -67,24 +68,23 @@ public class Do implements IFunctionEvaluator {
 	}
 
 	public IExpr evaluate(final IAST ast) {
+		Validate.checkRange(ast, 3);
 		try {
-			if (ast.size() >= 3) {
-				final EvalEngine engine = EvalEngine.get();
-				final List<Iterator> iterList = new ArrayList<Iterator>();
-				for (int i = 2; i < ast.size(); i++) {
-					iterList.add(new Iterator((IAST) ast.get(i), engine));
-				}
-				final DoIterator generator = new DoIterator(iterList);
-				return generator.doIt(ast.get(1));
+			final EvalEngine engine = EvalEngine.get();
+			final List<Iterator> iterList = new ArrayList<Iterator>();
+			for (int i = 2; i < ast.size(); i++) {
+				iterList.add(new Iterator((IAST) ast.get(i), engine));
 			}
+			final DoIterator generator = new DoIterator(iterList);
+			return generator.doIt(ast.get(1));
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
 		}
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
+	public IExpr numericEval(final IAST ast) {
+		return evaluate(ast);
 	}
 
 	public void setUp(final ISymbol symbol) {

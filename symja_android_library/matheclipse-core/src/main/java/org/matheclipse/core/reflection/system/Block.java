@@ -4,22 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Block extends AbstractFunctionEvaluator {
+public class Block implements ICoreFunctionEvaluator {
 	public Block() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		final EvalEngine engine = EvalEngine.get();
-		if ((ast.size() == 3) && (ast.get(1)).isList()) {
-			final IAST lst = (IAST) ast.get(1); 
+		Validate.checkSize(ast, 3);
+
+		if (ast.get(1).isList()) {
+			final EvalEngine engine = EvalEngine.get();
+			final IAST lst = (IAST) ast.get(1);
 			final List<IExpr> variables = new ArrayList<IExpr>();
 			IExpr result;
 
@@ -56,7 +59,13 @@ public class Block extends AbstractFunctionEvaluator {
 	}
 
 	@Override
+	public IExpr numericEval(IAST ast) {
+		return evaluate(ast);
+	}
+
+	@Override
 	public void setUp(ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}
+
 }
