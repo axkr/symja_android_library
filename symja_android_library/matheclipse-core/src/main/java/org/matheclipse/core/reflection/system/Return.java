@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -16,7 +17,7 @@ public class Return implements ICoreFunctionEvaluator {
 			throw new ReturnException();
 		}
 		if (ast.size() == 2) {
-			throw new ReturnException(ast.get(1));
+			throw new ReturnException(F.eval(ast.get(1)));
 		}
 
 		return null;

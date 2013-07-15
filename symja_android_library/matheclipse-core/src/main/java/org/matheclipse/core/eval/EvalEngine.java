@@ -445,15 +445,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return
 	 */
 	public IExpr evalAST(IAST ast) {
-
-		final int astSize = ast.size();
-		if (astSize == 2) {
-			return evalASTArg1(ast);
-		}
-
 		IExpr head = ast.head();
+		ISymbol symbol = null;
 		if (head instanceof ISymbol) {
-			final IEvaluator module = ((ISymbol)head).getEvaluator();
+			symbol = (ISymbol) head;
+			final IEvaluator module = symbol.getEvaluator();
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
@@ -461,16 +457,23 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 				return ((ICoreFunctionEvaluator) module).evaluate(ast);
 			}
+			
+		} else {
+			symbol = ast.topHead();
 		}
+
+		final int astSize = ast.size();
+		if (astSize == 2) {
+			return evalASTArg1(ast);
+		}
+
 		// first evaluate the header !
-		IExpr result = evalLoop(ast.head());
+		IExpr result = evalLoop(head);
 		if (result != null) {
 			IAST resultList = ast.clone();
 			resultList.set(0, result);
 			return resultList;
 		}
-
-		final ISymbol symbol = ast.topHead();
 
 		if (astSize != 1) {
 			final int attr = symbol.getAttributes();

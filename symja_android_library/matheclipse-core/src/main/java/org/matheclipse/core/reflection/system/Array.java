@@ -7,13 +7,12 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.generic.interfaces.IIterator;
 import org.matheclipse.generic.nested.TableGenerator;
@@ -21,7 +20,7 @@ import org.matheclipse.generic.nested.TableGenerator;
 /**
  * Array structure generator
  */
-public class Array implements IFunctionEvaluator {
+public class Array implements ICoreFunctionEvaluator {
 
 	public static class ArrayIterator implements IIterator<IExpr> {
 		int fCurrent;

@@ -2,12 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Sow extends AbstractFunctionEvaluator {
+public class Sow implements ICoreFunctionEvaluator {
 	public final double DEFAULT_CHOP_DELTA = 10E-10;
 
 	public Sow() {
@@ -25,8 +25,15 @@ public class Sow extends AbstractFunctionEvaluator {
 		}
 		return expr;
 	}
+	
+	@Override
+	public IExpr numericEval(IAST ast) {
+		return evaluate(ast);
+	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}
+
 }

@@ -2,13 +2,13 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Catch implements IFunctionEvaluator {
+public class Catch implements ICoreFunctionEvaluator {
 
 	public Catch() {
 		super();
