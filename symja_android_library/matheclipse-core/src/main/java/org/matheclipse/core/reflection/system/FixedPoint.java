@@ -3,18 +3,14 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.base.Function;
-
-public class FixedPoint extends AbstractFunctionEvaluator {
+public class FixedPoint implements ICoreFunctionEvaluator {
 
 	public FixedPoint() {
 	}
@@ -51,7 +47,15 @@ public class FixedPoint extends AbstractFunctionEvaluator {
 
 	}
 
+	@Override
+	public IExpr numericEval(IAST ast) {
+		return evaluate(ast);
+	}
+	
+	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}
+
+	
 }
