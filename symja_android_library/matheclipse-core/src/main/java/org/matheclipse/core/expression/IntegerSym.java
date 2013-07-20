@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
-
 
 /**
  * IInteger implementation which simply delegates most of the methods to the
@@ -63,19 +63,19 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Returns the IntegerImpl for the specified character sequence stated in the
-	 * specified radix. The characters must all be digits of the specified radix,
-	 * except the first character which may be a plus sign <code>'+'</code> or a
-	 * minus sign <code>'-'</code>.
+	 * Returns the IntegerImpl for the specified character sequence stated in
+	 * the specified radix. The characters must all be digits of the specified
+	 * radix, except the first character which may be a plus sign
+	 * <code>'+'</code> or a minus sign <code>'-'</code>.
 	 * 
 	 * @param chars
-	 *          the character sequence to parse.
+	 *            the character sequence to parse.
 	 * @param radix
-	 *          the radix to be used while parsing.
+	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
 	 * @throws NumberFormatException
-	 *           if the specified character sequence does not contain a parsable
-	 *           large integer.
+	 *             if the specified character sequence does not contain a
+	 *             parsable large integer.
 	 */
 	public static IntegerSym valueOf(final String integerString, final int radix) {
 		// IntegerSym z;
@@ -117,13 +117,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr evaluate(EvalEngine engine){
+	public IExpr evaluate(EvalEngine engine) {
 		if (engine.isNumericMode()) {
 			return F.num(this);
 		}
 		return null;
 	}
-	
+
 	public int hierarchy() {
 		return INTEGERID;
 	}
@@ -264,8 +264,8 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * 
 	 */
 	public IntegerSym lcm(final IntegerSym that) {
-		if (this.isZero()&&that.isZero()){
-			return (IntegerSym)F.C0;
+		if (this.isZero() && that.isZero()) {
+			return (IntegerSym) F.C0;
 		}
 		BigInteger a = fInteger.abs();
 		BigInteger b = that.fInteger.abs();
@@ -566,12 +566,10 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (sign() < 0) {
 			b = b.multiply(IntegerSym.valueOf(-1));
 			result.add(IntegerSym.valueOf(-1));
-		}
-		if (b.fInteger.equals(BigInteger.ZERO)) {
+		} else if (b.fInteger.equals(BigInteger.ZERO)) {
 			result.add(IntegerSym.valueOf(0));
 			return result;
-		}
-		if (b.fInteger.equals(BigInteger.ONE)) {
+		} else if (b.fInteger.equals(BigInteger.ONE)) {
 			result.add(IntegerSym.valueOf(1));
 			return result;
 		}
@@ -589,42 +587,39 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return result;
 		}
 		b = valueOf(rest);
-		if (b.fInteger.isProbablePrime(32)) {
-			result.add(b);
-			return result;
+
+		Map<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+		Primality.pollardRhoFactors(b.getBigNumerator(), bigMap);
+
+		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
+			BigInteger key = entry.getKey();
+			IntegerSym is = valueOf(key);
+			for (int i = 0; i < entry.getValue(); i++) {
+				result.add(is);
+			}
 		}
+		//
+		// if (b.fInteger.isProbablePrime(32)) {
+		// result.add(b);
+		// return result;
+		// }
+
 		// TODO improve performance
-		IntegerSym p = IntegerSym.valueOf(1023);
+		// IntegerSym p = IntegerSym.valueOf(1023);
 		// while (true) {
-		// // test only p==2
 		// final IntegerSym q[] = b.divideAndRemainder(p);
 		// if (q[0].compareTo(p) < 0) {
 		// result.add(b);
-		// return result;
+		// break;
 		// }
 		// if (q[1].sign() == 0) {
 		// result.add(p);
 		// b = q[0];
 		// } else {
-		// p = p.add(IntegerSym.valueOf(1));
-		// // leave with p==3
-		// break;
+		// // test only odd integers
+		// p = p.add(IntegerSym.valueOf(2));
 		// }
 		// }
-		while (true) {
-			final IntegerSym q[] = b.divideAndRemainder(p);
-			if (q[0].compareTo(p) < 0) {
-				result.add(b);
-				break;
-			}
-			if (q[1].sign() == 0) {
-				result.add(p);
-				b = q[0];
-			} else {
-				// test only odd integers
-				p = p.add(IntegerSym.valueOf(2));
-			}
-		}
 		return result;
 	}
 
@@ -829,7 +824,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * 
 	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>
 	 * @throws ArithmeticException
-	 *           if this integer is negative.
+	 *             if this integer is negative.
 	 */
 	public IInteger sqrt() {
 		return nthRoot(2);
@@ -840,7 +835,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * 
 	 * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
 	 * @throws ArithmeticException
-	 *           if this integer is negative and n is even.
+	 *             if this integer is negative and n is even.
 	 */
 	public IInteger nthRoot(int n) throws ArithmeticException {
 		if (sign() == 0) {
@@ -929,8 +924,8 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
