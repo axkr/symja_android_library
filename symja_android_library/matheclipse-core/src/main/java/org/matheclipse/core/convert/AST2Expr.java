@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.function.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Blank;
 import org.matheclipse.core.reflection.system.Complex;
 import org.matheclipse.core.reflection.system.Pattern;
 import org.matheclipse.core.reflection.system.Rational;

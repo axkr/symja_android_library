@@ -2,6 +2,8 @@ package org.matheclipse.core.patternmatching;
 
 import java.io.Serializable;
 
+import org.matheclipse.core.builtin.function.Condition;
+import org.matheclipse.core.builtin.function.Module;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -9,8 +11,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Condition;
-import org.matheclipse.core.reflection.system.Module;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Serializable {
 
