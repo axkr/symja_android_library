@@ -79,10 +79,14 @@ public class F {
 
 	public final static ISymbol Catalan = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
+	public final static ISymbol ComplexInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity"
+			: "ComplexInfinity", new org.matheclipse.core.builtin.constant.ComplexInfinity());
 	public final static ISymbol Degree = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree",
 			new org.matheclipse.core.builtin.constant.Degree());
 	public final static ISymbol E = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "e" : "E",
 			new org.matheclipse.core.builtin.constant.E());
+	public final static ISymbol EulerGamma = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma",
+			new org.matheclipse.core.builtin.constant.EulerGamma());
 	public final static ISymbol Glaisher = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "glaisher" : "Glaisher",
 			new org.matheclipse.core.builtin.constant.Glaisher());
 	public final static ISymbol GoldenRatio = F.initFinalSymbol(
@@ -90,6 +94,8 @@ public class F {
 			new org.matheclipse.core.builtin.constant.GoldenRatio());
 	public final static ISymbol I = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "i" : "I",
 			new org.matheclipse.core.builtin.constant.I());
+	public final static ISymbol Infinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity",
+			new org.matheclipse.core.builtin.constant.Infinity());
 	public final static ISymbol Khinchin = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "khinchin" : "Khinchin",
 			new org.matheclipse.core.builtin.constant.Khinchin());
 	public final static ISymbol Pi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pi" : "Pi",
@@ -110,9 +116,6 @@ public class F {
 	public final static ISymbol Second = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");
 	public final static ISymbol Indeterminate = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "indeterminate"
 			: "Indeterminate");
-	public final static ISymbol Infinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity");
-	public final static ISymbol ComplexInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity"
-			: "ComplexInfinity");
 	public final static ISymbol DirectedInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
 			: "DirectedInfinity");
 	public final static ISymbol Listable = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listable" : "Listable");

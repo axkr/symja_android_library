@@ -1,23 +1,20 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Infinity">Infinity</a>
+ * 
  */
-public class Infinity extends AbstractSymbolEvaluator {
-	public Infinity() {
+public class ComplexInfinity extends AbstractSymbolEvaluator {
+	public ComplexInfinity() {
 	}
 
 	@Override
 	public IExpr evaluate(final ISymbol symbol) {
-		IAST ast = F.ast(F.DirectedInfinity);
-		ast.add(F.C1);
-		return ast;
+		return F.ast(F.DirectedInfinity);
 	}
 
 	@Override
