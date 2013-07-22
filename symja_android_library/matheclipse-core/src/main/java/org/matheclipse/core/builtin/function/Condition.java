@@ -21,12 +21,15 @@ public class Condition implements ICoreFunctionEvaluator {
 		if (F.evalTrue(ast.get(2))) {
 			return F.eval(ast.get(1));
 		}
+		if (EvalEngine.get().isEvalLHSMode()) {
+			return null;
+		}
 		throw new ConditionException(ast);
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without evaluating
-	 * a result.
+	 * Check the (possible nested) condition in pattern matcher without
+	 * evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2

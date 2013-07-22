@@ -457,7 +457,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 				return ((ICoreFunctionEvaluator) module).evaluate(ast);
 			}
-			
+
 		} else {
 			symbol = ast.topHead();
 		}
@@ -889,6 +889,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return ast.getAST(1);
 		}
 		return ast;
+	}
+
+	/**
+	 * The engine evaluates the left-hand-side of a
+	 * <code>Set, SetDelayed,...</code> expression.
+	 * 
+	 * @return
+	 */
+	public boolean isEvalLHSMode() {
+		return fEvalLHSMode;
 	}
 
 	/**
