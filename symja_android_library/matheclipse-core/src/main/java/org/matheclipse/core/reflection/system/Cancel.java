@@ -75,7 +75,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 		IExpr arg = F.evalExpandAll(ast.get(1));
 		try {
 			if (arg.isPlus()) {
-				IAST result = ((IAST) arg).map(Functors.evalUnary(F.Cancel, EvalEngine.get()));
+				IAST result = ((IAST) arg).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
 				if (result == null) {
 					return arg;
 				}

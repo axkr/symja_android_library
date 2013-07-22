@@ -15,7 +15,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -64,29 +63,35 @@ public class Functors {
 
 	}
 
-	private static class EvalUnary implements Function<IExpr, IExpr> {
+	private static class EvalArgFunctor implements Function<IExpr, IExpr> {
 		EvalEngine fEngine;
 		IAST fAST;
+		int fPosition;
 
 		/**
-		 * Create a function which evaluates the argument as a function
-		 * <code>headSymbol[argument]</code>.
+		 * Create a functor which evaluates the given <code>ast</code> as a
+		 * function with the argument at the given <code>position</code>
+		 * replaced in the <code>apply()</code> method.
 		 * 
-		 * @param headSymbol
+		 * @param ast
+		 *            the function which should be evaluated
+		 * @param position
+		 *            the position at which the argument should be replaced
 		 * @param engine
 		 *            the current evaluation engine
 		 * @return
 		 */
-		public EvalUnary(ISymbol symbol, EvalEngine engine) {
+		public EvalArgFunctor(IAST ast, int position, EvalEngine engine) {
 			this.fEngine = engine;
-			this.fAST = F.ast(symbol);
-			this.fAST.add(F.Null); // placeholder for 1st argument
+			this.fAST = ast;
+			fPosition = position;
 		}
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			fAST.set(1, arg);
-			return fEngine.evaluate(fAST);
+			IAST ast = fAST.clone();
+			ast.set(fPosition, arg);
+			return fEngine.evaluate(ast);
 		}
 	}
 
@@ -223,7 +228,6 @@ public class Functors {
 			if (temp != null) {
 				return temp;
 			}
-			IPatternMatcher matcher;
 			for (int i = 0; i < fMatchers.size(); i++) {
 				temp = fMatchers.get(i).eval(arg);
 				if (temp != null) {
@@ -287,16 +291,20 @@ public class Functors {
 	}
 
 	/**
-	 * Return a function which evaluates the argument as a function
-	 * <code>headSymbol[argument]</code>.
+	 * Create a functor which evaluates the given <code>ast</code> as a function
+	 * with the argument at the given <code>position</code> replaced in the
+	 * <code>apply()</code> method.
 	 * 
-	 * @param headSymbol
+	 * @param ast
+	 *            the function which should be evaluated
+	 * @param position
+	 *            the position at which the argument should be replaced
 	 * @param engine
 	 *            the current evaluation engine
 	 * @return
 	 */
-	public static Function<IExpr, IExpr> evalUnary(@Nonnull ISymbol headSymbol, @Nonnull EvalEngine engine) {
-		return new EvalUnary(headSymbol, engine);
+	public static Function<IExpr, IExpr> evalArg(@Nonnull IAST ast, int position, @Nonnull EvalEngine engine) {
+		return new EvalArgFunctor(ast, position, engine);
 	}
 
 	/**
