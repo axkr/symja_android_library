@@ -14,7 +14,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
@@ -62,6 +62,32 @@ public class Functors {
 			return result;
 		}
 
+	}
+
+	private static class EvalUnary implements Function<IExpr, IExpr> {
+		EvalEngine fEngine;
+		IAST fAST;
+
+		/**
+		 * Create a function which evaluates the argument as a function
+		 * <code>headSymbol[argument]</code>.
+		 * 
+		 * @param headSymbol
+		 * @param engine
+		 *            the current evaluation engine
+		 * @return
+		 */
+		public EvalUnary(ISymbol symbol, EvalEngine engine) {
+			this.fEngine = engine;
+			this.fAST = F.ast(symbol);
+			this.fAST.add(F.Null); // placeholder for 1st argument
+		}
+
+		@Override
+		public IExpr apply(final IExpr arg) {
+			fAST.set(1, arg);
+			return fEngine.evaluate(fAST);
+		}
 	}
 
 	private static class CollectFunctor implements Function<IExpr, IExpr> {
@@ -258,6 +284,19 @@ public class Functors {
 	 */
 	public static Function<IExpr, IExpr> append(@Nonnull IAST ast) {
 		return new AppendFunctor(ast);
+	}
+
+	/**
+	 * Return a function which evaluates the argument as a function
+	 * <code>headSymbol[argument]</code>.
+	 * 
+	 * @param headSymbol
+	 * @param engine
+	 *            the current evaluation engine
+	 * @return
+	 */
+	public static Function<IExpr, IExpr> evalUnary(@Nonnull ISymbol headSymbol, @Nonnull EvalEngine engine) {
+		return new EvalUnary(headSymbol, engine);
 	}
 
 	/**

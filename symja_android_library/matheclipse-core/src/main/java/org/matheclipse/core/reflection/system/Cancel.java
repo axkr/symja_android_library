@@ -3,11 +3,13 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -72,7 +74,13 @@ public class Cancel extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 		IExpr arg = F.evalExpandAll(ast.get(1));
 		try {
-			if (arg.isTimes() || arg.isPower()) {
+			if (arg.isPlus()) {
+				IAST result = ((IAST) arg).map(Functors.evalUnary(F.Cancel, EvalEngine.get()));
+				if (result == null) {
+					return arg;
+				}
+				return result;
+			} else if (arg.isTimes() || arg.isPower()) {
 				IExpr[] parts = Apart.getFractionalParts(arg);
 				if (parts != null) {
 					if (parts[0].isPlus() && parts[1].isPlus()) {
@@ -104,9 +112,9 @@ public class Cancel extends AbstractFunctionEvaluator {
 	 * 
 	 * 
 	 * @param poly1
-	 *          univariate polynomial
+	 *            univariate polynomial
 	 * @param poly2
-	 *          univariate polynomial
+	 *            univariate polynomial
 	 * @return <code>null</code> if the expressions couldn't be converted to JAS
 	 *         polynomials
 	 */
