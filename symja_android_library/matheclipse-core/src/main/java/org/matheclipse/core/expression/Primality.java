@@ -118,11 +118,16 @@ public class Primality {
 	public static void pollardRhoFactors(final BigInteger val, Map<BigInteger, Integer> map) {
 		BigInteger factor;
 		BigInteger temp = val;
+		int iterationCounter = 0;
 		Integer count;
 		while (!temp.isProbablePrime(32)) {
 			factor = rho(temp);
 			if (factor.equals(temp)) {
-				break;
+				if (iterationCounter++ > 4) {
+					break;
+				}
+			} else {
+				iterationCounter = 1;
 			}
 			count = map.get(factor);
 			if (count == null) {
