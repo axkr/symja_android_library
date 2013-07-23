@@ -18,8 +18,11 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Predicate;
 
+import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.ufd.GCDFactory;
+import edu.jas.ufd.GreatestCommonDivisor;
 
 /**
  * Greatest common divisor of two polynomials. See: <a href=
@@ -28,8 +31,8 @@ import edu.jas.poly.GenPolynomial;
  */
 public class Cancel extends AbstractFunctionEvaluator {
 	/**
-	 * this predicate identifies polynomial expressions. It requires that the
-	 * given expression is already expanded for <code>Plus,Power,Times</code>
+	 * This predicate identifies polynomial expressions. It requires that the
+	 * given expression is already expanded for <code>Plus,Power and Times</code>
 	 * operations.
 	 * 
 	 */
@@ -107,14 +110,15 @@ public class Cancel extends AbstractFunctionEvaluator {
 	/**
 	 * Calculate the result array
 	 * <code>[ poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code>
-	 * if the given expressions <code>poly1</code> and <code>poly2</code> are
-	 * univariate polynomials with equal variable name.
+	 * for the given expressions <code>poly1</code> and <code>poly2</code>.
 	 * 
 	 * 
 	 * @param poly1
-	 *            univariate polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted
+	 *            to JAS polynomial
 	 * @param poly2
-	 *            univariate polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted
+	 *            to JAS polynomial
 	 * @return <code>null</code> if the expressions couldn't be converted to JAS
 	 *         polynomials
 	 */
@@ -123,23 +127,25 @@ public class Cancel extends AbstractFunctionEvaluator {
 		try {
 			ExprVariables eVar = new ExprVariables(poly1);
 			eVar.addVarList(poly2);
-			if (!eVar.isSize(1)) {
-				// gcd only possible for univariate polynomials
-				return null;
-			}
 
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
 			GenPolynomial<BigRational> p1 = jas.expr2JAS(poly1);
 			GenPolynomial<BigRational> p2 = jas.expr2JAS(poly2);
-			GenPolynomial<BigRational> gcd = p1.gcd(p2);
-			IExpr[] result = new IExpr[2];
+
+			BigRational cofac = new BigRational();
+			GreatestCommonDivisor<BigRational> engine;
+			engine = GCDFactory.getImplementation(cofac);
+			GenPolynomial<BigRational> gcd = engine.gcd(p1, p2);
+			IAST[] result = new IAST[2];
 			if (gcd.isONE()) {
 				result[0] = jas.rationalPoly2Expr(p1);
 				result[1] = jas.rationalPoly2Expr(p2);
 			} else {
-				result[0] = jas.rationalPoly2Expr(p1.divide(gcd));
-				result[1] = jas.rationalPoly2Expr(p2.divide(gcd));
+				Object[] objects = jas.factorTerms(p1.divide(gcd));
+				result[0] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
+				objects = jas.factorTerms(p2.divide(gcd));
+				result[1] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
 			}
 			return result;
 		} catch (Exception e) {
