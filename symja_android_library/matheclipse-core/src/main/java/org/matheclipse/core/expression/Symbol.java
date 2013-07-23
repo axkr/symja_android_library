@@ -184,6 +184,13 @@ public class Symbol extends ExprImpl implements ISymbol {
 		return this == obj;
 	}
 
+	public boolean isSymbolName(String name) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			return fSymbolName.equalsIgnoreCase(name);
+		}
+		return fSymbolName.equals(name);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {

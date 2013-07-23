@@ -2300,7 +2300,7 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
-	private static ISymbol initFinalSymbol(final String symbolName) {
+	public static ISymbol initFinalSymbol(final String symbolName) {
 		ISymbol temp = new Symbol(symbolName);
 		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;

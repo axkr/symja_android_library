@@ -6,12 +6,14 @@ import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.apache.commons.math3.analysis.solvers.BisectionSolver;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
+import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
 import org.apache.commons.math3.analysis.solvers.MullerSolver;
 import org.apache.commons.math3.analysis.solvers.NewtonSolver;
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
 import org.apache.commons.math3.analysis.solvers.RegulaFalsiSolver;
 import org.apache.commons.math3.analysis.solvers.RiddersSolver;
 import org.apache.commons.math3.analysis.solvers.SecantSolver;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -29,11 +31,14 @@ import org.matheclipse.core.interfaces.ISymbol;
  * href="http://en.wikipedia.org/wiki/Root-finding_algorithm">numerically
  * finding roots</a> of a univariate real function.
  * 
- * Uses the <a href="http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
+ * Uses the <a href=
+ * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
  * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver,
  * RiddersSolver, SecantSolver</a> implementations.
  */
 public class FindRoot extends AbstractFunctionEvaluator {
+
+	public final static ISymbol Newton = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "newton" : "Newton");
 
 	public FindRoot() {
 	}
@@ -42,7 +47,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		String method = "Newton";
+		ISymbol method = Newton;
 		int maxIterations = 100;
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3);
@@ -52,10 +57,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			}
 			IExpr optionMethod = options.getOption("Method");
 			if (optionMethod != null && optionMethod.isSymbol()) {
-				method = ((ISymbol) optionMethod).toString();
+				method = ((ISymbol) optionMethod);
 			} else {
 				if (ast.get(3).isSymbol()) {
-					method = ast.get(3).toString();
+					method = (ISymbol) ast.get(3);
 				}
 			}
 		}
@@ -72,36 +77,37 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private double findRoot(String method, int maxIterations, IAST list, IExpr function) {
+	private double findRoot(ISymbol method, int maxIterations, IAST list, IExpr function) {
 		ISymbol xVar = (ISymbol) list.get(1);
 		ISignedNumber min = (ISignedNumber) list.get(2);
 		ISignedNumber max = (ISignedNumber) list.get(3);
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
-		DifferentiableUnivariateFunction f = new UnaryNumerical(function, xVar, engine);
+		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
 		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-		if (method.equalsIgnoreCase("Bisection")) {
+		if (method.isSymbolName("Bisection")) {
 			solver = new BisectionSolver();
-		} else if (method.equalsIgnoreCase("Brent")) {
+		} else if (method.isSymbolName("Brent")) {
 			solver = new BrentSolver();
-			// } else if (method.equalsIgnoreCase("Laguerre")) {
+			// } else if (method.isSymbolName("Laguerre")) {
 			// solver = new LaguerreSolver();
-		} else if (method.equalsIgnoreCase("Muller")) {
+		} else if (method.isSymbolName("Muller")) {
 			solver = new MullerSolver();
-		} else if (method.equalsIgnoreCase("Ridders")) {
+		} else if (method.isSymbolName("Ridders")) {
 			solver = new RiddersSolver();
-		} else if (method.equalsIgnoreCase("Secant")) {
+		} else if (method.isSymbolName("Secant")) {
 			solver = new SecantSolver();
-		} else if (method.equalsIgnoreCase("RegulaFalsi")) {
+		} else if (method.isSymbolName("RegulaFalsi")) {
 			solver = new RegulaFalsiSolver();
-		} else if (method.equalsIgnoreCase("Illinois")) {
+		} else if (method.isSymbolName("Illinois")) {
 			solver = new IllinoisSolver();
-		} else if (method.equalsIgnoreCase("Pegasus")) {
+		} else if (method.isSymbolName("Pegasus")) {
 			solver = new PegasusSolver();
 		} else {
 			// default: NewtonSolver
+			DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
 			BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
-			return solver2.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+			return solver2.solve(maxIterations, fNewton, min.doubleValue(), max.doubleValue());
 		}
 		return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 

@@ -1,13 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
-import org.apache.commons.math3.analysis.integration.BaseAbstractUnivariateIntegrator;
-import org.apache.commons.math3.analysis.integration.LegendreGaussIntegrator;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.RombergIntegrator;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
+import org.apache.commons.math3.analysis.integration.gauss.GaussIntegrator;
+import org.apache.commons.math3.analysis.integration.gauss.GaussIntegratorFactory;
 import org.apache.commons.math3.exception.ConvergenceException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -25,7 +26,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
  * integration</a> of univariate real functions.
  * 
- * Uses the <a href="http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html"
+ * Uses the <a href=
+ * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html"
  * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator,
  * TrapezoidIntegrator</a> implementations.
  */
@@ -34,13 +36,16 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	public NIntegrate() {
 	}
 
+	public final static ISymbol LegendreGauss = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendregauss"
+			: "LegendreGauss");
+
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		String method = "Trapezoid";
+		ISymbol method = LegendreGauss;
 		if (ast.size() == 4 && ast.get(3).isSymbol()) {
-			method = ast.get(3).toString();
+			method = (ISymbol) ast.get(3);
 		}
 		if ((ast.get(2).isList())) {
 			IAST list = (IAST) ast.get(2);
@@ -65,24 +70,31 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private double integrate(String method, IAST list, IExpr function) throws ConvergenceException {
+	private double integrate(ISymbol method, IAST list, IExpr function) throws ConvergenceException {
+		GaussIntegratorFactory factory = new GaussIntegratorFactory();
+
 		ISymbol xVar = (ISymbol) list.get(1);
 		ISignedNumber min = (ISignedNumber) list.get(2);
 		ISignedNumber max = (ISignedNumber) list.get(3);
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
-		DifferentiableUnivariateFunction f = new UnaryNumerical(function, xVar, engine);
-		UnivariateIntegrator integrator = new TrapezoidIntegrator();
-		if (method.equals("Simpson")) {
+		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
+		if (method.isSymbolName("LegendreGauss")) {
+			GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
+			return integ.integrate(f);
+		}
+
+		UnivariateIntegrator integrator = null;
+		if (method.isSymbolName("Simpson")) {
 			integrator = new SimpsonIntegrator();
-		} else if (method.equals("LegendreGauss")) {
-			integrator = new LegendreGaussIntegrator(3, BaseAbstractUnivariateIntegrator.DEFAULT_RELATIVE_ACCURACY,
-					BaseAbstractUnivariateIntegrator.DEFAULT_ABSOLUTE_ACCURACY,
-					BaseAbstractUnivariateIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, 64);
-		} else if (method.equals("Romberg")) {
+		} else if (method.isSymbolName("Romberg")) {
 			integrator = new RombergIntegrator();
+		} else if (method.isSymbolName("Trapezoid")) {
+			integrator = new TrapezoidIntegrator();
 		} else {
-			// default: TrapezoidIntegrator
+			// default: LegendreGauss
+			GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
+			return integ.integrate(f);
 		}
 		return integrator.integrate(10000, f, min.doubleValue(), max.doubleValue());
 

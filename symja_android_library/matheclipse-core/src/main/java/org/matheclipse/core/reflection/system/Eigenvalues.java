@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * See: <a
  * href="http://en.wikipedia.org/wiki/Eigenvalue,_eigenvector_and_eigenspace"
- * >Eigenvalue, eigenvector and eigenspace</a>
+ * >Wikipedia - Eigenvalue, eigenvector and eigenspace</a>
  */
 public class Eigenvalues extends AbstractMatrix1Expr {
 
@@ -33,11 +33,11 @@ public class Eigenvalues extends AbstractMatrix1Expr {
 	public IAST realMatrixEval(RealMatrix matrix) {
 		try {
 			IAST list = F.List();
-			EigenDecomposition ed = new EigenDecomposition(matrix, Precision.SAFE_MIN);
+			EigenDecomposition ed = new EigenDecomposition(matrix);
 			double[] realValues = ed.getRealEigenvalues();
 			double[] imagValues = ed.getImagEigenvalues();
 			for (int i = 0; i < realValues.length; i++) {
-				if (imagValues[i] == 0.0d) {
+				if (F.isZero(imagValues[i])) {
 					list.add(F.num(realValues[i]));
 				} else {
 					list.add(F.complexNum(realValues[i], imagValues[i]));

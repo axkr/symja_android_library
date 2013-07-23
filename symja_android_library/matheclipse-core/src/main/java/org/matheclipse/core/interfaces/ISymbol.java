@@ -144,6 +144,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean isString(String symbolName);
 
 	/**
+	 * Returns <code>true</code>, if this symbol has the given name. The
+	 * comparison of the symbols name with the given name is done according to
+	 * the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> setting.
+	 * 
+	 */
+	public boolean isSymbolName(String name);
+
+	/**
 	 * Returns <code>true</code>, if this symbol is bound to a value.
 	 * 
 	 */
