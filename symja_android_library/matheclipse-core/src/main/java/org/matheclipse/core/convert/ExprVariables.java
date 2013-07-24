@@ -17,14 +17,14 @@ import org.matheclipse.core.visit.VisitorCollectionBoolean;
  * 
  */
 public class ExprVariables {
-	
+
 	public static class VariablesVisitor extends VisitorCollectionBoolean {
 		public VariablesVisitor(int hOffset, Collection<IExpr> collection) {
 			super(hOffset, collection);
 		}
 
 		public boolean visit(ISymbol symbol) {
-			if ((symbol.getAttributes() & ISymbol.CONSTANT) == ISymbol.CONSTANT) {
+			if (symbol.isConstant()) {
 				return false;
 			}
 			return true;
@@ -34,8 +34,8 @@ public class ExprVariables {
 	private final Set<IExpr> set = new TreeSet<IExpr>();
 
 	/**
-   * Determine the variable symbols from a Symja expression.
-   */
+	 * Determine the variable symbols from a Symja expression.
+	 */
 	public ExprVariables(final IExpr expression) {
 		super();
 		expression.accept(new VariablesVisitor(1, set));

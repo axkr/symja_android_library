@@ -30,7 +30,7 @@ public class DivideOperator extends InfixOperator {
 			if (lhs instanceof IntegerNode) {
 				return new FractionNode((IntegerNode) lhs, (IntegerNode) rhs);
 			}
-			return factory.createFunction(factory.createSymbol("Times"), lhs, new FractionNode(IntegerNode.C1, (IntegerNode) rhs));
+			return factory.createFunction(factory.createSymbol("Times"), new FractionNode(IntegerNode.C1, (IntegerNode) rhs), lhs);
 		}
 		if (lhs.equals(IntegerNode.C1)) {
 			return factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1));

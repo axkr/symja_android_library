@@ -472,7 +472,7 @@ public class OutputFormFactory {
 				convert(buf, list.get(1));
 				return;
 			}
-			if (head.equals(F.DirectedInfinity)) {
+			if (list.isDirectedInfinity()){ //head.equals(F.DirectedInfinity)) {
 				if (list.size() == 1) {
 					append(buf, "ComplexInfinity");
 					return;

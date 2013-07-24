@@ -373,6 +373,11 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	public boolean isConstant() {
+		return (fAttributes & CONSTANT) == CONSTANT;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {
 		return this.equals(F.True);
@@ -571,7 +576,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 * {@inheritDoc}
 	 */
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
-		if ((getAttributes() & ISymbol.CONSTANT) == ISymbol.CONSTANT) {
+		if (isConstant()) {
 			IEvaluator evaluator = getEvaluator();
 			if (evaluator instanceof INumericConstant) {
 				INumericConstant numericConstant = (INumericConstant) evaluator;

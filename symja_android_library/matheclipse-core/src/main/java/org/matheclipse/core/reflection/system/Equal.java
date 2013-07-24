@@ -54,8 +54,7 @@ public class Equal extends AbstractFunctionEvaluator {
 			return 1;
 		}
 
-		if ((o0.isSymbol()) && ((ISymbol.CONSTANT & ((ISymbol) o0).getAttributes()) == ISymbol.CONSTANT) && (o1.isSymbol())
-				&& ((ISymbol.CONSTANT & ((ISymbol) o1).getAttributes()) == ISymbol.CONSTANT)) {
+		if (o0.isConstant() && o1.isConstant()) {
 			return -1;
 		}
 

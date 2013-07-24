@@ -67,14 +67,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (o0.isZero()) {
-			if (o1.isAST(F.DirectedInfinity, 2)) {
+			if (o1.isDirectedInfinity()) {
 				return F.Indeterminate;
 			}
 			return F.C0;
 		}
 
 		if (o1.isZero()) {
-			if (o0.isAST(F.DirectedInfinity, 2)) {
+			if (o0.isDirectedInfinity()) {
 				return F.Indeterminate;
 			}
 			return F.C0;
@@ -92,9 +92,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return F.Power(o0, F.C2);
 		}
 
-		if (o0.isAST(F.DirectedInfinity, 2)) {
+		if (o0.isInfinity()||o0.isNegativeInfinity()) {
 			temp = eInfinity(o0, o1);
-		} else if (o1.isAST(F.DirectedInfinity, 2)) {
+		} else if (o1.isInfinity()||o1.isNegativeInfinity()) {
 			temp = eInfinity(o1, o0);
 		}
 		if (temp != null) {

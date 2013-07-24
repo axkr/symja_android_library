@@ -33,11 +33,13 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Csc extends AbstractTrigArg1 implements INumeric {
 	/**
 	 * <pre>
+	 *      Csc[0]=ComplexInfinity,
 	 *      Csc[x_NumberQ*y_]:=(-1)*Csc[(-1)*x*y]/;SignCmp[x]<0,
 	 *      Csc[x_NumberQ]:=(-1)*Csc[(-1)*x]/;SignCmp[x]<0
 	 * </pre>
 	 */
 	final static IAST RULES = List(
+			Set(Csc(F.C0), F.ComplexInfinity),
 			SetDelayed(Csc($p("x",$s("NumberQ"))),Condition(Times(CN1,Csc(Times(CN1,$s("x")))),Less(SignCmp($s("x")),C0))),
 			SetDelayed(Csc(Times($p("x",$s("NumberQ")),$p("y"))),Condition(Times(CN1,Csc(Times(Times(CN1,$s("x")),$s("y")))),Less(SignCmp($s("x")),C0)))
 	);

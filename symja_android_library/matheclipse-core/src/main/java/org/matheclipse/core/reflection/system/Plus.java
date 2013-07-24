@@ -75,9 +75,9 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 
 		IExpr temp = null;
-		if (o0.isAST(F.DirectedInfinity, 2)) {
+		if (o0.isInfinity() || o0.isNegativeInfinity()) {
 			temp = eInfinity(o0, o1);
-		} else if (o1.isAST(F.DirectedInfinity, 2)) {
+		} else if (o1.isInfinity() || o1.isNegativeInfinity()) {
 			temp = eInfinity(o1, o0);
 		}
 		if (temp != null) {
@@ -140,20 +140,20 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	}
 
 	private IExpr eInfinity(IExpr inf, IExpr o1) {
-		if (inf.equals(F.CInfinity)) {
-			if (o1.equals(F.CInfinity)) {
+		if (inf.isInfinity()) {
+			if (o1.isInfinity()) {
 				return F.CInfinity;
-			} else if (o1.equals(F.CNInfinity)) {
+			} else if (o1.isNegativeInfinity()) {
 				EvalEngine.get().getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
 				return F.Indeterminate;
 			} else if (o1.isSignedNumber()) {
 				return F.CInfinity;
 			}
-		} else if (inf.equals(F.CNInfinity)) {
-			if (o1.equals(F.CInfinity)) {
+		} else if (inf.isNegativeInfinity()) {
+			if (o1.isInfinity()) {
 				EvalEngine.get().getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
 				return F.Indeterminate;
-			} else if (o1.equals(F.CNInfinity)) {
+			} else if (o1.isNegativeInfinity()) {
 				return F.CNInfinity;
 			} else if (o1.isSignedNumber()) {
 				return F.CNInfinity;

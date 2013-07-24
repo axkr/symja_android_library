@@ -37,11 +37,13 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Sec extends AbstractTrigArg1 implements INumeric {
 	/**
 	 * <pre>
+	 *      Sec[Pi/2]=ComplexInfinity,
 	 *      Sec[x_NumberQ*y_]:=Sec[(-1)*x*y]/;SignCmp[x]<0,
 	 *      Sec[x_NumberQ]:=Sec[(-1)*x]/;SignCmp[x]<0
 	 * </pre>
 	 */
 	final static IAST RULES = List(
+			Set(Sec(Times(F.C1D2,F.Pi)),ComplexInfinity),
 			SetDelayed(Sec(Times($p("x",$s("NumberQ")),$p("y"))),Condition(Sec(Times(Times(CN1,$s("x")),$s("y"))),Less(SignCmp($s("x")),C0))),
 			SetDelayed(Sec($p("x",$s("NumberQ"))),Condition(Sec(Times(CN1,$s("x"))),Less(SignCmp($s("x")),C0)))				
 	);

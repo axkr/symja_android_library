@@ -713,9 +713,32 @@ public class F {
 	 */
 	public final static INum CD1 = Num.valueOf(1.0);
 
+	/**
+	 * Represents <code>Infinity</code> (i.e.
+	 * <code>Infinity->DirectedInfinity[1]</code>)
+	 */
 	public static IAST CInfinity;
+
+	/**
+	 * Represents <code>-Infinity</code> (i.e.
+	 * <code>-Infinity->DirectedInfinity[-1]</code>)
+	 */
 	public static IAST CNInfinity;
+
+	/**
+	 * Represents <code>ComplexInfinity</code> (i.e.
+	 * <code>ComplexInfinity->DirectedInfinity[</code>)
+	 */
+	public static IAST CComplexInfinity;
+
+	/**
+	 * Represents <code>#1</code>
+	 */
 	public static IAST Slot1;
+
+	/**
+	 * Represents <code>#2</code>
+	 */
 	public static IAST Slot2;
 
 	/**
@@ -739,6 +762,8 @@ public class F {
 
 			CInfinity = $(DirectedInfinity, C1);
 			CNInfinity = $(DirectedInfinity, CN1);
+			CComplexInfinity = $(DirectedInfinity);
+			
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
 

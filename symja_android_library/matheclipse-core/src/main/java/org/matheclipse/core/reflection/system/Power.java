@@ -58,14 +58,21 @@ public class Power extends AbstractArg2 implements INumeric {
 	 *      Sin[x_]^(n_IntegerQ):=Csc[x]^(-n)/;(n<0),
 	 * </pre>
 	 */
-	final static IAST RULES = List(Set(Power(E, Times(CI, Pi)), CN1), SetDelayed(Power(E, Log($p("x"))), $s("x")), SetDelayed(Power(
-			Tan($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(Cot($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))), SetDelayed(
-			Power(Cot($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(Tan($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Sec($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(Cos($s("x")), Times(CN1, $s("n"))),
-					Less($s("n"), C0))), SetDelayed(Power(Cos($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(Sec($s("x")), Times(CN1,
-					$s("n"))), Less($s("n"), C0))), SetDelayed(Power(Csc($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(Sin($s("x")),
-					Times(CN1, $s("n"))), Less($s("n"), C0))), SetDelayed(Power(Sin($p("x")), $p("n", $s("IntegerQ"))), Condition(Power(
-					Csc($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))));
+	final static IAST RULES = List(
+			Set(Power(E, Times(CI, Pi)), CN1),
+			SetDelayed(Power(E, Log($p("x"))), $s("x")),
+			SetDelayed(Power(Tan($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Cot($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
+			SetDelayed(Power(Cot($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Tan($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
+			SetDelayed(Power(Sec($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Cos($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
+			SetDelayed(Power(Cos($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Sec($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
+			SetDelayed(Power(Csc($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Sin($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
+			SetDelayed(Power(Sin($p("x")), $p("n", $s("IntegerQ"))),
+					Condition(Power(Csc($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))));
 
 	@Override
 	public IAST getRuleAST() {
@@ -154,16 +161,15 @@ public class Power extends AbstractArg2 implements INumeric {
 			return F.C1;
 		}
 
-		if (o0.isAST(F.DirectedInfinity, 2) && o1.isSignedNumber()) {
+		if (o1.isSignedNumber()) {
 			ISignedNumber is = (ISignedNumber) o1;
-			if (o0.equals(F.CInfinity)) {
+			if (o0.isInfinity()) {
 				if (is.isNegative()) {
 					return F.C0;
 				} else {
 					return F.CInfinity;
 				}
-			}
-			if (o0.equals(F.CNInfinity) && o1.isInteger()) {
+			} else if (o0.isNegativeInfinity() && o1.isInteger()) {
 				IInteger ii = (IInteger) o1;
 				if (ii.isNegative()) {
 					return F.C0;

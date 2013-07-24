@@ -43,8 +43,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	 * Create a LevelSpecification from an IInteger or IAST list-object.<br>
 	 * <br>
 	 * 
-	 * An <code>expr</code> is interpreted as a <i>level specification</i> for the
-	 * allowed levels in an AST.<br>
+	 * An <code>expr</code> is interpreted as a <i>level specification</i> for
+	 * the allowed levels in an AST.<br>
 	 * If <code>expr</code> is a non-negative IInteger iValue set Level
 	 * {1,iValue};<br>
 	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0};<br>
@@ -52,14 +52,14 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	 * i1Value};<br>
 	 * 
 	 * @param function
-	 *          the function which should be applied for an element
+	 *            the function which should be applied for an element
 	 * @param expr
-	 *          the given <i>level specification</i>
+	 *            the given <i>level specification</i>
 	 * @param includeHeads
-	 *          set to <code>true</code>, if the header of an AST expression
-	 *          should be included
+	 *            set to <code>true</code>, if the header of an AST expression
+	 *            should be included
 	 * @throws MathException
-	 *           if the <code>expr</code> is not a <i>level specification</i>
+	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 * @see
 	 */
 	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr expr, boolean includeHeads) {
@@ -133,7 +133,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 							fToLevel = i1.getBigNumerator().intValue();
 						}
 						return;
-					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).equals(F.CInfinity))) {
+					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).isInfinity())) {
 						final IInteger i0 = (IInteger) lst.get(1);
 						if (i0.isNegative()) {
 							throw new MathException("Invalid Level specification: " + expr.toString());
@@ -175,7 +175,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	// }
 
 	/**
-	 * Define a level specification for all elements on level <code>level</code>.
+	 * Define a level specification for all elements on level <code>level</code>
+	 * .
 	 * 
 	 * @param level
 	 */
@@ -205,15 +206,15 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	 * <code>toDepth = -1;</code><br>
 	 * 
 	 * @param function
-	 *          the function which should be applied for an element
+	 *            the function which should be applied for an element
 	 * @param fromLevel
 	 * @param toLevel
 	 * @param fromDepth
 	 * @param toDepth
 	 * @param includeHeads
 	 */
-	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel, final int toLevel, final int fromDepth,
-			final int toDepth, final boolean includeHeads) {
+	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel, final int toLevel,
+			final int fromDepth, final int toDepth, final boolean includeHeads) {
 		fFunction = function;
 		fFromLevel = fromLevel;
 		fToLevel = toLevel;

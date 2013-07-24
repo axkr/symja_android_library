@@ -164,6 +164,41 @@ public abstract class ExprImpl implements IExpr {
 		return head();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isConstant() {
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isComplexInfinity() {
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isDirectedInfinity() {
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isInfinity() {
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isNegativeInfinity() {
+		return false;
+	}
+
 	public final boolean isList() {
 		return false;
 	}
@@ -431,6 +466,11 @@ public abstract class ExprImpl implements IExpr {
 	/** {@inheritDoc} */
 	public boolean isNumeric() {
 		return this instanceof INum || this instanceof IComplexNum;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isNumericFunction() {
+		return isNumber() || isConstant();
 	}
 
 	/** {@inheritDoc} */

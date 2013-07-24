@@ -31,7 +31,7 @@ public class Limit extends AbstractFunctionEvaluator {
 		int limit = engine.getRecursionLimit();
 		if (limit > 0) {
 			IExpr expr = F.eval(F.Times(F.D(numerator, sym), F.Power(F.D(denominator, sym), F.CN1)));
-			return limit(expr, sym, lim, rule);
+			return limit(expr, sym, lim, rule, false);
 		}
 		try {
 			if (limit <= 0) {
@@ -39,7 +39,7 @@ public class Limit extends AbstractFunctionEvaluator {
 				engine.setRecursionLimit(128);
 			}
 			IExpr expr = F.eval(F.Times(F.D(numerator, sym), F.Power(F.D(denominator, sym), F.CN1)));
-			return limit(expr, sym, lim, rule);
+			return limit(expr, sym, lim, rule, false);
 		} catch (RecursionLimitExceeded rle) {
 			engine.setRecursionLimit(limit);
 		} finally {
@@ -48,17 +48,37 @@ public class Limit extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public static IExpr limit(final IExpr expr, ISymbol sym, IExpr lim, IAST rule) {
-		if (expr.isFree(sym, true)) {
-			// Limit[a_,sym->lim] -> a
-			return expr;
+	public static IExpr limit(final IExpr expr, ISymbol sym, IExpr lim, IAST rule, boolean evalExpr) {
+		IExpr expression = expr;
+		if (evalExpr) {
+			IExpr result = F.eval(expression);
+			if (result.isNumericFunction()) {
+				return result;
+			}
+			if (!result.equals(F.Indeterminate)) {
+				expression = result;
+			}
+
+			if (lim.isNumericFunction()) {
+				result = expression.replaceAll(rule);
+				if (result != null) {
+					result = F.eval(result);
+					if (result.isNumericFunction()) {
+						return result;
+					}
+				}
+			}
 		}
-		if (expr.equals(sym)) {
+		if (expression.isFree(sym, true)) {
+			// Limit[a_,sym->lim] -> a
+			return expression;
+		}
+		if (expression.equals(sym)) {
 			// Limit[x_,x_->lim] -> lim
 			return lim;
 		}
-		if (expr.isAST()) {
-			final IAST arg1 = (IAST) expr;
+		if (expression.isAST()) {
+			final IAST arg1 = (IAST) expression;
 			final IExpr header = arg1.head();
 			if (arg1.size() == 2) {
 				if (header.equals(F.Sin) || header.equals(F.Cos)) {
@@ -83,7 +103,25 @@ public class Limit extends AbstractFunctionEvaluator {
 					// Limit[a_^n_,sym->lim] -> Limit[a,sym->lim]^n
 					IInteger n = (IInteger) arg1.get(2);
 					IExpr temp = F.eval(F.Limit(arg1.get(1), rule));
-					if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
+					if (temp.isInfinity()) {
+						if (n.isPositive()) {
+							return temp;
+						} else if (n.isNegative()) {
+							return F.C0;
+						}
+						return null;
+					} else if (temp.isNegativeInfinity()) {
+						if (n.isPositive()) {
+							if (n.isEven()) {
+								return F.CInfinity;
+							} else {
+								return F.CNInfinity;
+							}
+						} else if (n.isNegative()) {
+							return F.C0;
+						}
+						return null;
+					} else if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
 						return null;
 					}
 					if (n.isPositive()) {
@@ -139,9 +177,9 @@ public class Limit extends AbstractFunctionEvaluator {
 					return lHospitalesRule(numerator, denominator, sym, lim, rule);
 				}
 				return null;
-			} else if (F.CNInfinity.equals(denValue)) {
+			} else if (denValue.isNegativeInfinity()) {
 				numValue = F.evalBlock(numerator, sym, lim);
-				if (F.CNInfinity.equals(numValue)) {
+				if (numValue.isNegativeInfinity()) {
 					return lHospitalesRule(numerator, denominator, sym, lim, rule);
 				}
 				return null;
@@ -151,8 +189,8 @@ public class Limit extends AbstractFunctionEvaluator {
 	}
 
 	private String[] RULES = { "Limit[x_^n_IntegerQ, x_Symbol->Infinity]:= 0 /; Negative[n]",
-			"Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n]", "Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E",
-			"Limit[(1-x_^(-1))^x_, x_Symbol->Infinity]=E^(-1)", };
+			"Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n]",
+			"Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E", "Limit[(1-x_^(-1))^x_, x_Symbol->Infinity]=E^(-1)", };
 
 	public Limit() {
 	}
@@ -175,7 +213,7 @@ public class Limit extends AbstractFunctionEvaluator {
 		} else {
 			return null;
 		}
-		return limit(ast.get(1), sym, lim, rule);
+		return limit(ast.get(1), sym, lim, rule, true);
 	}
 
 	@Override
@@ -183,4 +221,8 @@ public class Limit extends AbstractFunctionEvaluator {
 		return RULES;
 	}
 
+	public void setUp(ISymbol symbol) {
+		symbol.setAttributes(ISymbol.HOLDFIRST);
+		super.setUp(symbol);
+	}
 }

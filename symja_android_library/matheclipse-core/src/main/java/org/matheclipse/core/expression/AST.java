@@ -362,6 +362,34 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isComplexInfinity() {
+		return isSameHead(F.DirectedInfinity, 1);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isDirectedInfinity() {
+		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isInfinity() {
+		return this.equals(F.CInfinity);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isNegativeInfinity() {
+		return this.equals(F.CNInfinity);
+	}
+
 	public final boolean isPlus() {
 		return isSameHeadSizeGE(F.Plus, 3);
 	}
@@ -568,6 +596,13 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isConstant() {
+		return false;
+	}
+
 	public final boolean isComplex() {
 		return false;
 	}
@@ -599,6 +634,21 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	public final boolean isNumeric() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isNumericFunction() {
+		ISymbol symbol = topHead();
+		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
+			// check if all arguments are &quot;numeric&quot;
+			for (int i = 1; i < size(); i++) {
+				if (!get(i).isNumericFunction()) {
+					return false;
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 
@@ -1087,10 +1137,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final String sep = ",";
 		final IExpr temp = head();
-		if (this.equals(F.CInfinity)) {
+		if (isInfinity()) {
 			return "CInfinity";
 		}
-		if (this.equals(F.CNInfinity)) {
+		if (isNegativeInfinity()) {
 			return "CNInfinity";
 		}
 		if (this.equals(F.Slot1)) {

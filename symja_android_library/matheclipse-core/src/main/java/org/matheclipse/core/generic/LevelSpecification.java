@@ -111,7 +111,7 @@ public class LevelSpecification extends LevelSpec {
 							fToLevel = i1.getBigNumerator().intValue();
 						}
 						return;
-					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).equals(F.CInfinity))) {
+					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).isInfinity())) {
 						final IInteger i0 = (IInteger) lst.get(1);
 						if (i0.isNegative()) {
 							throw new MathException("Invalid Level specification: " + expr.toString());

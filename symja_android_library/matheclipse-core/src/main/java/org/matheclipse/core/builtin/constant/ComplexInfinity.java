@@ -14,11 +14,11 @@ public class ComplexInfinity extends AbstractSymbolEvaluator {
 
 	@Override
 	public IExpr evaluate(final ISymbol symbol) {
-		return F.ast(F.DirectedInfinity);
+		return F.CComplexInfinity;
 	}
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.CONSTANT);
+		// don't set CONSTANT attribute !
 	}
 }

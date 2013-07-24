@@ -21,83 +21,34 @@ import com.google.common.base.Predicate;
  * value.
  * 
  */
-public class NumericQ extends AbstractFunctionEvaluator implements
-    Predicate<IExpr> {
-  
-  public static class NumericQVisitor extends AbstractVisitorBoolean {
-    public NumericQVisitor() {
-      super();
-    }
+public class NumericQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
 
-    @Override
-    public boolean visit(IAST list) {
-      ISymbol symbol = list.topHead();
-      if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
-        // check if all arguments are &quot;numeric&quot;
-        for (int i = 1; i < list.size(); i++) {
-          if (!list.get(i).accept(this)) {
-            return false;
-          }
-        }
-        return true;
-      }
-      return false;
-    }
+	/**
+	 * Constructor for the unary predicate
+	 */
+	public final static NumericQ CONST = new NumericQ();
 
-    public boolean visit(IComplex element) {
-      return true;
-    }
+	public NumericQ() {
+		// System.out.println(getClass().getCanonicalName());
+	}
 
-    public boolean visit(IComplexNum element) {
-      return true;
-    }
+	@Override
+	public boolean apply(IExpr arg0) {
+		return arg0.isNumericFunction();
+	}
 
-    public boolean visit(IFraction element) {
-      return true;
-    }
+	/**
+	 * Returns <code>True</code> if the first argument is a numeric object;
+	 * <code>False</code> otherwise
+	 */
+	@Override
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
+		return F.bool(apply(ast.get(1)));
+	}
 
-    public boolean visit(IInteger element) {
-      return true;
-    }
-
-    public boolean visit(INum element) {
-      return true;
-    }
-
-    public boolean visit(ISymbol symbol) {
-      if ((symbol.getAttributes() & ISymbol.CONSTANT) == ISymbol.CONSTANT) {
-        return true;
-      }
-      return false;
-    }
-  }
-
-  /**
-   * Constructor for the unary predicate
-   */
-  public final static NumericQ CONST = new NumericQ();
-
-  public NumericQ() {
-    // System.out.println(getClass().getCanonicalName());
-  }
-
-  @Override
-  public boolean apply(IExpr arg0) {
-    return arg0.accept(new NumericQVisitor());
-  }
-
-  /**
-   * Returns <code>True</code> if the first argument is a numeric object;
-   * <code>False</code> otherwise
-   */
-  @Override
-  public IExpr evaluate(final IAST ast) {
-  	Validate.checkSize(ast, 2);
-    return F.bool(apply(ast.get(1)));
-  }
-
-  @Override
-  public void setUp(ISymbol symbol) throws SyntaxError {
-    symbol.setAttributes(ISymbol.HOLDALL);
-  }
+	@Override
+	public void setUp(ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.HOLDALL);
+	}
 }

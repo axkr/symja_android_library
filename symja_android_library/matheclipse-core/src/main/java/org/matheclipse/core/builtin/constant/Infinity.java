@@ -22,6 +22,6 @@ public class Infinity extends AbstractSymbolEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.CONSTANT);
+		// don't set CONSTANT attribute !
 	}
 }
