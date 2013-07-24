@@ -21,22 +21,22 @@ import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.ast.IntegerNode;
 
 public class DivideOperator extends InfixOperator {
-	public DivideOperator(final String oper, final String functionName,
-			final int precedence, final int grouping) {
+	public DivideOperator(final String oper, final String functionName, final int precedence, final int grouping) {
 		super(oper, functionName, precedence, grouping);
 	}
 
-	public ASTNode createFunction(final IParserFactory factory,
-			final ASTNode lhs, final ASTNode rhs) {
+	public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 		if (rhs instanceof IntegerNode) {
 			if (lhs instanceof IntegerNode) {
 				return new FractionNode((IntegerNode) lhs, (IntegerNode) rhs);
 			}
-			return factory.createFunction(factory.createSymbol("Times"), lhs,
-					new FractionNode(IntegerNode.C1, (IntegerNode) rhs));
+			return factory.createFunction(factory.createSymbol("Times"), lhs, new FractionNode(IntegerNode.C1, (IntegerNode) rhs));
+		}
+		if (lhs.equals(IntegerNode.C1)) {
+			return factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1));
 		}
 		return factory.createFunction(factory.createSymbol("Times"), lhs,
-				factory.createFunction(factory.createSymbol("Power"), rhs,
-						factory.createInteger(-1)));
+				factory.createFunction(factory.createSymbol("Power"), rhs, factory.createInteger(-1)));
+
 	}
 }
