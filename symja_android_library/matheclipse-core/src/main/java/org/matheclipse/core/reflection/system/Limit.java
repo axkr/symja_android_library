@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -91,6 +92,15 @@ public class Limit extends AbstractFunctionEvaluator {
 				return mapLimit(arg1, rule);
 			} else if (header == F.Times) {
 				IExpr[] parts = Apart.getFractionalPartsTimes(arg1, false);
+				if (parts != null) {
+					IAST plusResult = Apart.apart(parts, F.List(sym));
+					if (plusResult != null) {
+						// OneIdentity if plusResult.size() == 2
+						if (plusResult.size() > 2) {
+							return mapLimit(plusResult, rule);
+						}
+					}
+				}
 				IExpr numerator = parts[0];
 				IExpr denominator = parts[1];
 				IExpr temp = timesLimit(numerator, denominator, sym, lim, rule);
@@ -165,7 +175,9 @@ public class Limit extends AbstractFunctionEvaluator {
 		}
 		if (!denominator.isNumber() || denominator.isZero()) {
 			denValue = F.evalBlock(denominator, sym, lim);
-			if (denValue.isZero()) {
+			if (denValue.equals(F.Indeterminate)) {
+				return null;
+			} else if (denValue.isZero()) {
 				numValue = F.evalBlock(numerator, sym, lim);
 				if (numValue.isZero()) {
 					return lHospitalesRule(numerator, denominator, sym, lim, rule);
