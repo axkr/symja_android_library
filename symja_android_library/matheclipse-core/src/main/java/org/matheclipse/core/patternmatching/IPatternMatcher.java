@@ -65,14 +65,14 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	public abstract IExpr eval(final IExpr leftHandSide);
 
 	@Override
-	public Object clone() {
-		try {
+	public Object clone() throws CloneNotSupportedException {
+//		try {
 			IPatternMatcher v = (IPatternMatcher) super.clone();
 			v.fLhsPatternExpr = fLhsPatternExpr;
 			return v;
-		} catch (CloneNotSupportedException e) {
-			// this shouldn't happen, since we are Cloneable
-			throw new InternalError();
-		}
+//		} catch (CloneNotSupportedException e) {
+//			// this shouldn't happen, since we are Cloneable
+//			throw new InternalError();
+//		}
 	}
 }

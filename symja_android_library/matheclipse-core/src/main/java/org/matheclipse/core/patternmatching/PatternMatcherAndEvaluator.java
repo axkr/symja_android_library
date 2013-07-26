@@ -40,7 +40,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	@Override
-	public Object clone() {
+	public Object clone() throws CloneNotSupportedException {
 		PatternMatcherAndEvaluator v = (PatternMatcherAndEvaluator) super.clone();
 		v.fRightHandSide = fRightHandSide;
 		v.fSetSymbol = fSetSymbol;

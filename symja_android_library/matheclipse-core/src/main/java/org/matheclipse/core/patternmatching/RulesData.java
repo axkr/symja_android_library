@@ -64,30 +64,34 @@ public class RulesData implements Serializable {
 			}
 		}
 
-		IExpr result;
-		IPatternMatcher pmEvaluator;
-		if ((fSimplePatternRules != null) && (expression instanceof IAST)) {
-			final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
-			final List<IPatternMatcher> list = fSimplePatternRules.get(hash);
-			if (list != null) {
-				for (int i = 0; i < list.size(); i++) {
-					pmEvaluator = (IPatternMatcher) list.get(i).clone();
+		try {
+			IExpr result;
+			IPatternMatcher pmEvaluator;
+			if ((fSimplePatternRules != null) && (expression instanceof IAST)) {
+				final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
+				final List<IPatternMatcher> list = fSimplePatternRules.get(hash);
+				if (list != null) {
+					for (int i = 0; i < list.size(); i++) {
+						pmEvaluator = (IPatternMatcher) list.get(i).clone();
+						result = pmEvaluator.eval(expression);
+						if (result != null) {
+							return result;
+						}
+					}
+				}
+			}
+
+			if (fPatternRules != null) {
+				for (int i = 0; i < fPatternRules.size(); i++) {
+					pmEvaluator = (IPatternMatcher) fPatternRules.get(i).clone();
 					result = pmEvaluator.eval(expression);
 					if (result != null) {
 						return result;
 					}
 				}
 			}
-		}
-
-		if (fPatternRules != null) {
-			for (int i = 0; i < fPatternRules.size(); i++) {
-				pmEvaluator = (IPatternMatcher) fPatternRules.get(i).clone();
-				result = pmEvaluator.eval(expression);
-				if (result != null) {
-					return result;
-				}
-			}
+		} catch (CloneNotSupportedException cnse) {
+			cnse.printStackTrace();
 		}
 		return null;
 	}

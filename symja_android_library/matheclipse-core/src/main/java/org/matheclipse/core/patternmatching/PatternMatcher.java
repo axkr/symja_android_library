@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -86,9 +87,8 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				return matchPattern((IPattern) patternExpr, evalExpr);
 			} else if (patternExpr.isPatternSequence()) {
 				return matchPatternSequence((IPatternSequence) patternExpr, F.Sequence(evalExpr));
-			} else {
-				return patternExpr.equals(evalExpr);
 			}
+			return patternExpr.equals(evalExpr);
 		}
 
 		/**
@@ -234,13 +234,12 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		}
 	}
 
-
 	/**
 	 * Contains the "pattern-matching" expression
 	 * 
 	 */
-//	protected IExpr fLhsPatternExpr;
-	
+	// protected IExpr fLhsPatternExpr;
+
 	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
 	 * 
@@ -451,44 +450,47 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	protected boolean matchExpr(IExpr lhsPatternExpr, final IExpr lhsEvalExpr, StackMatcher stackMatcher) {
 		boolean matched = false;
-		if (lhsPatternExpr.isCondition()) {
-			// expression /; test
-			lhsPatternExpr = fPatternMap.substitutePatternSymbols(lhsPatternExpr);
-			if (lhsPatternExpr.isAST()) {
-				lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr);
-			}
-			final PatternMatcher matcher = new PatternMatcher(lhsPatternExpr);
-			if (matcher.apply(lhsEvalExpr)) {
-				matched = true;
-				fPatternMap.copyPatternValuesFromPatternMatcher(matcher.fPatternMap);
-			}
-		} else if (lhsPatternExpr instanceof IAST) {
-			IAST lhsPatternAST = (IAST) lhsPatternExpr;
-			IExpr[] patternValues = fPatternMap.copyPattern();
-			try {
-				matched = matchAST(lhsPatternAST, lhsEvalExpr, stackMatcher);
-				if ((lhsPatternAST.getEvalFlags() & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
-					if (!matched) {
-						IExpr temp = null;
-						ISymbol symbol = lhsPatternAST.topHead();
-						int attr = symbol.getAttributes();
-						fPatternMap.resetPattern(patternValues);
-						temp = matchDefaultAST(symbol, attr, lhsPatternAST);
-						if (temp != null) {
-							matched = matchExpr(temp, lhsEvalExpr, stackMatcher);
+		if (lhsPatternExpr.isAST()) {
+			if (lhsPatternExpr.isCondition()) {
+				// expression /; test
+				lhsPatternExpr = fPatternMap.substitutePatternSymbols(lhsPatternExpr);
+				if (lhsPatternExpr.isAST()) {
+					lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr);
+				}
+				final PatternMatcher matcher = new PatternMatcher(lhsPatternExpr);
+				if (matcher.apply(lhsEvalExpr)) {
+					matched = true;
+					fPatternMap.copyPatternValuesFromPatternMatcher(matcher.fPatternMap);
+				}
+			} else {
+				IAST lhsPatternAST = (IAST) lhsPatternExpr;
+				IExpr[] patternValues = fPatternMap.copyPattern();
+				try {
+					matched = matchAST(lhsPatternAST, lhsEvalExpr, stackMatcher);
+					if ((lhsPatternAST.getEvalFlags() & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
+						if (!matched) {
+							IExpr temp = null;
+							ISymbol symbol = lhsPatternAST.topHead();
+							int attr = symbol.getAttributes();
+							fPatternMap.resetPattern(patternValues);
+							temp = matchDefaultAST(symbol, attr, lhsPatternAST);
+							if (temp != null) {
+								matched = matchExpr(temp, lhsEvalExpr, stackMatcher);
+							}
 						}
 					}
-				}
-			} finally {
-				if (!matched) {
-					fPatternMap.resetPattern(patternValues);
+				} finally {
+					if (!matched) {
+						fPatternMap.resetPattern(patternValues);
+					}
 				}
 			}
-
-		} else if (lhsPatternExpr.isPattern()) {
-			matched = matchPattern((IPattern) lhsPatternExpr, lhsEvalExpr);
-		} else if (lhsPatternExpr.isPatternSequence()) {
-			matched = matchPatternSequence((IPatternSequence) lhsPatternExpr, F.Sequence(lhsEvalExpr));
+		} else if (lhsPatternExpr instanceof IPatternObject) {
+			if (lhsPatternExpr.isPattern()) {
+				matched = matchPattern((IPattern) lhsPatternExpr, lhsEvalExpr);
+			} else if (lhsPatternExpr.isPatternSequence()) {
+				matched = matchPatternSequence((IPatternSequence) lhsPatternExpr, F.Sequence(lhsEvalExpr));
+			}
 		} else {
 			matched = lhsPatternExpr.equals(lhsEvalExpr);
 		}
@@ -547,9 +549,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
 			NumberPartitionsIterator iter = new NumberPartitionsIterator(visitor, lhsEvalAST.size() - 1, lhsPatternAST.size() - 1);
 			return !iter.execute();
-			// final FlatMatcher fMatcher = new FlatMatcher(sym, lhsPatternAST,
-			// lhsEvalAST);
-			// return fMatcher.matchFlatAST(stackMatcher);
 		}
 	}
 
@@ -563,10 +562,8 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			final IAST lhsEvalAST = (IAST) lhsEvalExpr;
 			final ISymbol sym = lhsPatternAST.topHead();
 			if (lhsPatternAST.size() <= lhsEvalAST.size()) {
-				if (((sym.getAttributes() & ISymbol.FLAT) == ISymbol.FLAT)
-						&& sym.equals(lhsEvalAST.topHead())
-						&& !(((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) && lhsPatternAST.size() == lhsEvalAST
-								.size())) {
+				if ((lhsPatternAST.isFlatAST()) && sym.equals(lhsEvalAST.topHead())
+						&& !(lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() == lhsEvalAST.size())) {
 					if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
 						return false;
 					}
@@ -786,7 +783,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	@Override
-	public Object clone() {
+	public Object clone() throws CloneNotSupportedException {
 		PatternMatcher v = (PatternMatcher) super.clone();
 		v.fPatternCondition = fPatternCondition;
 		v.fPatternMap = fPatternMap.clone();

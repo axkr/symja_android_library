@@ -54,7 +54,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	}
 
 	@Override
-	public Object clone() {
+	public Object clone() throws CloneNotSupportedException {
 		PatternMatcherEquals v = (PatternMatcherEquals) super.clone();
 		v.fRightHandSide = fRightHandSide;
 		v.fSetSymbol = fSetSymbol;

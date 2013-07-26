@@ -24,7 +24,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	private transient IFunctionEvaluator fInstance;
 
 	@Override
-	public Object clone() {
+	public Object clone() throws CloneNotSupportedException {
 		PatternMatcherAndInvoker v = (PatternMatcherAndInvoker) super.clone();
 		v.fMethod = fMethod;
 		v.fTypes = fTypes;
