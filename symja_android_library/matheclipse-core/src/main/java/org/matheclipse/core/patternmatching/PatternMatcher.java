@@ -341,7 +341,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				return false;
 			}
 			for (int i = 1; i < l1.size(); i++) {
-
 				if (!equivalent(l1.get(i), l2.get(i), pm1, pm2)) {
 					return false;
 				}
@@ -374,16 +373,14 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	@Override
 	public void getPatterns(final List<IExpr> resultList, final IExpr pExpr) {
-		if (pExpr instanceof IAST) {
+		if (pExpr.isAST()) {
 			final IAST list = (IAST) pExpr;
 			getPatterns(resultList, list.head());
 			for (int i = 1; i < list.size(); i++) {
 				getPatterns(resultList, list.get(i));
 			}
-		} else {
-			if (pExpr.isPattern()) {
-				resultList.add(fPatternMap.getValue((IPattern) pExpr));
-			}
+		} else if (pExpr.isPattern()) {
+			resultList.add(fPatternMap.getValue((IPattern) pExpr));
 		}
 	}
 
@@ -393,23 +390,21 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @param resultList
 	 * @param pExpr
 	 */
-	public void setPatternValue2Local(final IExpr pExpr) {
-		if (pExpr instanceof IAST) {
-			final IAST list = (IAST) pExpr;
-			setPatternValue2Local(list.head());
-			for (int i = 0; i < list.size(); i++) {
-				setPatternValue2Local(list.get(i));
-			}
-		} else {
-			if (pExpr.isPattern()) {
-				ISymbol sym = ((IPattern) pExpr).getSymbol();
-				if (!sym.hasLocalVariableStack()) {
-					throw new UnsupportedOperationException("Pattern symbol has to be defined with local stack");
-				}
-				sym.set(fPatternMap.getValue((IPattern) pExpr));
-			}
-		}
-	}
+//	public void setPatternValue2Local(final IExpr pExpr) {
+//		if (pExpr.isAST()) {
+//			final IAST list = (IAST) pExpr;
+//			setPatternValue2Local(list.head());
+//			for (int i = 0; i < list.size(); i++) {
+//				setPatternValue2Local(list.get(i));
+//			}
+//		} else if (pExpr.isPattern()) {
+//			ISymbol sym = ((IPattern) pExpr).getSymbol();
+//			if (!sym.hasLocalVariableStack()) {
+//				throw new UnsupportedOperationException("Pattern symbol has to be defined with local stack");
+//			}
+//			sym.set(fPatternMap.getValue((IPattern) pExpr));
+//		}
+//	}
 
 	/**
 	 * Returns true if the given expression contains no patterns

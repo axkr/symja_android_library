@@ -238,7 +238,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Set all values to <code>null</code>;
+	 * Set all pattern values to <code>null</code>;
 	 */
 	protected void initPattern() {
 		Arrays.fill(fPatternValuesArray, null);

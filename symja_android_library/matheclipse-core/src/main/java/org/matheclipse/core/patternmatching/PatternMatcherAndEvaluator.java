@@ -178,9 +178,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 				// Orderless or Flat
 			}
 		} 
-		fPatternMap.initPattern();
-
+		
 		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {
+			fPatternMap.initPattern();
 			IExpr result = evalAST((IAST) fLhsPatternExpr, (IAST) lhsEvalExpr, fRightHandSide, new StackMatcher());
 			if (result != null) {
 				return result;
@@ -208,7 +208,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			// result.toString());
 			// }
 			return result;
-		}
+		} 
 		return null;
 	}
 

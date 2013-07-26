@@ -2556,32 +2556,32 @@ public class F {
 	 * @param b
 	 * @return
 	 */
-	public static boolean isCase(IExpr a, IExpr b) {
-		if (a instanceof IAST) {
-			final PatternMatcher matcher = new PatternMatcher(a);
-			if (matcher.apply(b)) {
-				matcher.setPatternValue2Local(a);
-				return true;
-			}
-		}
-		return equals(a, b);
-	}
-
-	public static boolean isCase(IExpr a, Integer i) {
-		return isCase(a, integer(i.longValue()));
-	}
-
-	public static boolean isCase(Integer i, IExpr b) {
-		return equals(i, b);
-	}
-
-	public static boolean isCase(IExpr a, java.math.BigInteger i) {
-		return isCase(a, integer(i));
-	}
-
-	public static boolean isCase(java.math.BigInteger i, IExpr b) {
-		return equals(i, b);
-	}
+//	public static boolean isCase(IExpr a, IExpr b) {
+//		if (a instanceof IAST) {
+//			final PatternMatcher matcher = new PatternMatcher(a);
+//			if (matcher.apply(b)) {
+//				matcher.setPatternValue2Local(a);
+//				return true;
+//			}
+//		}
+//		return equals(a, b);
+//	}
+//
+//	public static boolean isCase(IExpr a, Integer i) {
+//		return isCase(a, integer(i.longValue()));
+//	}
+//
+//	public static boolean isCase(Integer i, IExpr b) {
+//		return equals(i, b);
+//	}
+//
+//	public static boolean isCase(IExpr a, java.math.BigInteger i) {
+//		return isCase(a, integer(i));
+//	}
+//
+//	public static boolean isCase(java.math.BigInteger i, IExpr b) {
+//		return equals(i, b);
+//	}
 
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
