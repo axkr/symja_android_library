@@ -277,7 +277,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
 			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
-
+			
 			// get factors
 			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
 			SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
@@ -301,7 +301,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 					result.add(F.Integrate(temp, x));
 				}
-				for (int i = 0; i < Ai.size(); i++) {
+				for (int i = 1; i < Ai.size(); i++) {
 					List<GenPolynomial<BigRational>> list = Ai.get(i);
 					long j = 0L;
 					for (GenPolynomial<BigRational> genPolynomial : list) {
@@ -317,7 +317,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 										// JavaForm[Log[b*x+c]/b]
 										result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
 									} else {
-										// compute b^2-4*a*c from (a*x^2+b*x+c)
+										// compute b^2-4*a*c from
+										// (a*x^2+b*x+c)
 										BigRational cmp = denom[1].multiply(denom[1]).subtract(
 												BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
 										int cmpTo = cmp.compareTo(BigRational.ZERO);
@@ -342,9 +343,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 									IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
 									IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
 									isQuadratic(D.get(i - 1), denom);
-									// IFraction a =
-									// F.fraction(denom[2].numerator(),
-									// denom[2].denominator());
 									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
 									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
 									if (A.isZero()) {
@@ -412,6 +410,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 				return result;
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
