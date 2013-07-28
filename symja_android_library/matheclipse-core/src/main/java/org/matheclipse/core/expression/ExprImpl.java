@@ -402,6 +402,11 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	public boolean isPatternExpr() {
+		return false;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

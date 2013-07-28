@@ -306,9 +306,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return fDefault;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	public final boolean isPatternExpr() {
+		return true;
+	}
+	
+	/** {@inheritDoc} */
 	final public boolean isPatternSequence() {
 		return true;
 	}

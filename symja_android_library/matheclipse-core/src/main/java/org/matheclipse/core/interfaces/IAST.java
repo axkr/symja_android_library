@@ -50,12 +50,12 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public final int NO_FLAG = 0x0000;
 
 	/**
-	 * The head or one of the arguments of the list contains a pattern object
+	 * The head or one of the arguments of the list or sublists contains a pattern object
 	 */
 	public final int CONTAINS_PATTERN = 0x0001;
 
 	/**
-	 * The head or one of the arguments of the list contains a pattern object
+	 * The head or one of the arguments of the list or sublists contains a pattern object
 	 */
 	public final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
 
@@ -64,6 +64,13 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	 * set to a default value.
 	 */
 	public final int CONTAINS_DEFAULT_PATTERN = 0x0004;
+
+	/**
+	 * One of the arguments of the list or sublists contains a pattern object.
+	 * Combination of
+	 * <code>CONTAINS_PATTERN, CONTAINS_PATTERN_SEQUENCE, CONTAINS_DEFAULT_PATTERN</code>
+	 */
+	public final int CONTAINS_PATTERN_EXPR = 0x0007;
 
 	/**
 	 * Negative flag mask for CONTAINS_DEFAULT_PATTERN

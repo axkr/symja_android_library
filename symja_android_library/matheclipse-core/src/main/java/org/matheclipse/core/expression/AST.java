@@ -570,17 +570,22 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	public final boolean isPattern() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	public boolean isPatternExpr() {
+		return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
+	}
+
+	/** {@inheritDoc} */
 	public final boolean isPatternSequence() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	public final boolean isCondition() {
 		return size() == 3 && head().equals(F.Condition);
 	}

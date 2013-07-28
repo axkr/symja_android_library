@@ -477,13 +477,16 @@ public class Pattern extends ExprImpl implements IPattern {
 		return fDefault;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	final public boolean isPattern() {
 		return true;
 	}
 
+	/** {@inheritDoc} */
+	public final boolean isPatternExpr() {
+		return true;
+	}
+	
 	/**
 	 * Groovy operator overloading
 	 */

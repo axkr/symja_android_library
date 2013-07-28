@@ -76,17 +76,18 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		}
 
 		public boolean push(IExpr patternExpr, IExpr evalExpr) {
-			if (patternExpr.isAST()
-					&& (((IAST) patternExpr).isEvalFlagOn(IAST.CONTAINS_PATTERN) || ((IAST) patternExpr)
-							.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE))) {
-				// insert for delayed evaluation in matchRest() method
-				fStack.add(new Entry(patternExpr, evalExpr));
-				return true;
-			}
-			if (patternExpr.isPattern()) {
-				return matchPattern((IPattern) patternExpr, evalExpr);
-			} else if (patternExpr.isPatternSequence()) {
-				return matchPatternSequence((IPatternSequence) patternExpr, F.Sequence(evalExpr));
+			if (patternExpr.isPatternExpr()) {
+				if (patternExpr.isAST()) {
+					// insert for delayed evaluation in matchRest() method
+					fStack.add(new Entry(patternExpr, evalExpr));
+					return true;
+				}
+				if (patternExpr.isPattern()) {
+					return matchPattern((IPattern) patternExpr, evalExpr);
+				} else if (patternExpr.isPatternSequence()) {
+					return matchPatternSequence((IPatternSequence) patternExpr, F.Sequence(evalExpr));
+				}
+				throw new UnsupportedOperationException("Object doesn't support pattern-matching");
 			}
 			return patternExpr.equals(evalExpr);
 		}
@@ -390,21 +391,22 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @param resultList
 	 * @param pExpr
 	 */
-//	public void setPatternValue2Local(final IExpr pExpr) {
-//		if (pExpr.isAST()) {
-//			final IAST list = (IAST) pExpr;
-//			setPatternValue2Local(list.head());
-//			for (int i = 0; i < list.size(); i++) {
-//				setPatternValue2Local(list.get(i));
-//			}
-//		} else if (pExpr.isPattern()) {
-//			ISymbol sym = ((IPattern) pExpr).getSymbol();
-//			if (!sym.hasLocalVariableStack()) {
-//				throw new UnsupportedOperationException("Pattern symbol has to be defined with local stack");
-//			}
-//			sym.set(fPatternMap.getValue((IPattern) pExpr));
-//		}
-//	}
+	// public void setPatternValue2Local(final IExpr pExpr) {
+	// if (pExpr.isAST()) {
+	// final IAST list = (IAST) pExpr;
+	// setPatternValue2Local(list.head());
+	// for (int i = 0; i < list.size(); i++) {
+	// setPatternValue2Local(list.get(i));
+	// }
+	// } else if (pExpr.isPattern()) {
+	// ISymbol sym = ((IPattern) pExpr).getSymbol();
+	// if (!sym.hasLocalVariableStack()) {
+	// throw new
+	// UnsupportedOperationException("Pattern symbol has to be defined with local stack");
+	// }
+	// sym.set(fPatternMap.getValue((IPattern) pExpr));
+	// }
+	// }
 
 	/**
 	 * Returns true if the given expression contains no patterns
@@ -549,8 +551,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 	protected boolean matchAST(final IAST lhsPatternAST, final IExpr lhsEvalExpr, StackMatcher stackMatcher) {
 		if (lhsEvalExpr instanceof IAST) {
-			if ((!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN))
-					&& (!lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) && lhsPatternAST.equals(lhsEvalExpr)) {
+			if (!lhsPatternAST.isPatternExpr() && lhsPatternAST.equals(lhsEvalExpr)) {
 				return stackMatcher.matchRest();
 			}
 
@@ -622,6 +623,19 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		return false;
 	}
 
+	/**
+	 * Match all sub-expresions which contain no pattern objects if possible
+	 * (i.e. no FLAT or Orderless expressions,...)
+	 * 
+	 * Distinguishes between "equally" matched list-expressions and list
+	 * expressions with <code>expr.isPatternExpr()==true</code>.
+	 * 
+	 * @param lhsPatternAST
+	 * @param lhsEvalAST
+	 * @param lhsEvalOffset
+	 * @param stackMatcher
+	 * @return
+	 */
 	private boolean matchASTSequence(final IAST lhsPatternAST, final IAST lhsEvalAST, final int lhsEvalOffset,
 			StackMatcher stackMatcher) {
 		// distinguish between "equally" matched list-expressions and

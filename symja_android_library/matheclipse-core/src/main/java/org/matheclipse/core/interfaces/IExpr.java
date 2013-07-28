@@ -554,6 +554,14 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	public boolean isPattern();
 
 	/**
+	 * Test if this expression or a subexpression is a pattern object. Used in
+	 * pattern-matching; checks flags in <code>IAST</code> with flag
+	 * <code>IAST.CONTAINS_PATTERN_EXPR</code>.
+	 * 
+	 */
+	public boolean isPatternExpr();
+
+	/**
 	 * Test if this expression is a pattern sequence object
 	 * 
 	 */
