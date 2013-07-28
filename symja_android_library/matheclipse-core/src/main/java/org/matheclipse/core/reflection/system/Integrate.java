@@ -60,6 +60,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Predicate;
 
+import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -256,6 +257,31 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
+	 * coefficients.
+	 * 
+	 * @param poly
+	 * @return <code>null</code> if the polynomials degree > 2 and number of
+	 *         variables <> 1
+	 */
+	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
+		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
+			result[0] = BigInteger.ZERO;
+			result[1] = BigInteger.ZERO;
+			result[2] = BigInteger.ZERO;
+			for (Monomial<BigInteger> monomial : poly) {
+				BigInteger coeff = monomial.coefficient();
+				ExpVector exp = monomial.exponent();
+				for (int i = 0; i < exp.length(); i++) {
+					result[(int) exp.getVal(i)] = coeff;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Returns an AST with head <code>Plus</code>, which contains the partial
 	 * fraction decomposition of the numerator and denominator parts.
 	 * 
@@ -277,7 +303,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
 			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
-			
+
 			// get factors
 			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
 			SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
@@ -308,8 +334,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (!genPolynomial.isZERO()) {
 							boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
 							if (isDegreeLE2 && j == 1L) {
-								if (genPolynomial.isONE()) {
-									isQuadratic(D.get(i - 1), denom);
+								Object[] objects = jas.factorTerms(genPolynomial);
+								java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+								java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+								GenPolynomial<edu.jas.arith.BigInteger> genPolynomial2 = ((GenPolynomial<edu.jas.arith.BigInteger>) objects[2])
+										.multiply(edu.jas.arith.BigInteger.valueOf(gcd));
+								GenPolynomial<BigRational> Di_1 = D.get(i - 1).multiply(BigRational.valueOf(lcm));
+								if (genPolynomial2.isONE()) {
+									isQuadratic(Di_1, denom);
 									IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
 									IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
 									IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
@@ -358,6 +390,27 @@ public class Integrate extends AbstractFunctionEvaluator {
 														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 									}
 									result.add(F.eval(temp));
+									
+//									edu.jas.arith.BigInteger[] numer2 = new edu.jas.arith.BigInteger[3];
+//									isQuadratic(genPolynomial2, numer2);
+//									IInteger A = F.integer(numer2[1].getVal());
+//									IInteger B = F.integer(numer2[0].getVal());
+//									isQuadratic(Di_1, denom);
+//									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
+//									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
+//									if (A.isZero()) {
+//										// JavaForm[B*Log[p*x+q]/p]
+//										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
+//									} else {
+//										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+//										temp = Plus(
+//												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+//												Times(ArcTan(Times(Plus(p, Times(C2, x)),
+//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
+//														Plus(Times(C2, B), Times(CN1, A, p)),
+//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+//									}
+//									result.add(F.eval(temp));
 								}
 							} else if (isDegreeLE2 && j > 1L) {
 								isQuadratic(genPolynomial, numer);
