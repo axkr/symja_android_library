@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PartialFractionGenerator;
 
 /**
  * Limit of a function. See <a
@@ -93,7 +94,7 @@ public class Limit extends AbstractFunctionEvaluator {
 			} else if (header == F.Times) {
 				IExpr[] parts = Apart.getFractionalPartsTimes(arg1, false);
 				if (parts != null) {
-					IAST plusResult = Apart.apart(parts, F.List(sym));
+					IAST plusResult = Apart.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, sym);
 					if (plusResult != null) {
 						// OneIdentity if plusResult.size() == 2
 						if (plusResult.size() > 2) {

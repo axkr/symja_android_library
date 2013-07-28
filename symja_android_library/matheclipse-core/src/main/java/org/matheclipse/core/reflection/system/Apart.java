@@ -17,6 +17,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.IPartialFractionGenerator;
+import org.matheclipse.core.polynomials.PartialFractionGenerator;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
@@ -57,7 +60,8 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (arg.isTimes() || arg.isPower()) {
 			IExpr[] parts = Apart.getFractionalParts(ast.get(1));
 			if (parts != null) {
-				IAST plusResult = apartBigRational(parts, variableList);
+				IAST plusResult = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+						(ISymbol) variableList.get(1));
 				if (plusResult != null) {
 					if (plusResult.size() == 2) {
 						// OneIdentity
@@ -77,12 +81,13 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * Returns an AST with head <code>Plus</code>, which contains the partial
 	 * fraction decomposition of the numerator and denominator parts.
 	 * 
+	 * @deprecated untested at the moment
 	 * @param parts
 	 * @param variableList
 	 * @return <code>null</code> if the partial fraction decomposition wasn't
 	 *         constructed
 	 */
-	public static IAST apartBigInteger(IExpr[] parts, IAST variableList) {
+	public static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
 		try {
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
@@ -153,8 +158,9 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * @return <code>null</code> if the partial fraction decomposition wasn't
 	 *         constructed
 	 */
-	public static IAST apartBigRational(IExpr[] parts, IAST variableList) {
+	public static IAST partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
 		try {
+			IAST variableList = F.List(x);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
 			ASTRange r = new ASTRange(variableList, 1);
@@ -178,72 +184,24 @@ public class Apart extends AbstractFunctionEvaluator {
 			// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
 
 			if (Ai.size() > 0) {
-				IAST result = F.Plus();
-				IExpr temp;
+				// IAST result = F.Plus();
+				pf.setJAS(jas);
 				if (!Ai.get(0).get(0).isZERO()) {
-					temp = F.eval(jas.poly2Expr(Ai.get(0).get(0), null));
-					if (temp.isAST()) {
-						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-					}
-					result.add(temp);
+					pf.addNonFractionalPart(Ai.get(0).get(0));
 				}
 				for (int i = 1; i < Ai.size(); i++) {
 					List<GenPolynomial<BigRational>> list = Ai.get(i);
 					int j = 0;
 					for (GenPolynomial<BigRational> genPolynomial : list) {
 						if (!genPolynomial.isZERO()) {
-							Object[] objects = jas.factorTerms(genPolynomial);
-							java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-							java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-							GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-							if (j == 1) {
-								temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly),
-										F.Power(jas.poly2Expr(D.get(i - 1).multiply(BigRational.valueOf(lcm)), null), F.CN1)));
-							} else {
-								temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly),
-										F.Power(F.integer(lcm), F.integer(-1L)),
-										F.Power(jas.poly2Expr(D.get(i - 1), null), F.integer(j * (-1L)))));
-							}
-							// if (genPolynomial.isConstant()) {
-							// // BigRational br =
-							// // genPolynomial.leadingBaseCoefficient();
-							// // if (j == 1) {
-							// // poly = D.get(i -
-							// //
-							// 1).multiply(BigRational.valueOf(br.denominator()));
-							// // temp =
-							// // F.eval(F.Times(F.integer(br.numerator()),
-							// // F.Power(jas.poly2Expr(poly, null),
-							// // F.integer(-1L))));
-							// // } else {
-							// temp =
-							// F.eval(F.Times(jas.poly2Expr(genPolynomial,
-							// null),
-							// F.Power(jas.poly2Expr(D.get(i - 1), null),
-							// F.integer(j * (-1L)))));
-							// // }
-							// // poly = genPolynomial.multiply(D.get(i -
-							// // 1).power(j));
-							//
-							// } else {
-							// temp =
-							// F.eval(F.Times(jas.poly2Expr(genPolynomial,
-							// null),
-							// F.Power(jas.poly2Expr(D.get(i - 1), null),
-							// F.integer(j * (-1L)))));
-							// }
-							if (!temp.isZero()) {
-								if (temp.isAST()) {
-									((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-								}
-								result.add(temp);
-							}
+							GenPolynomial<BigRational> Di_1 = D.get(i - 1);
+							pf.addSinglePartialFraction(genPolynomial, Di_1, j);
 						}
 						j++;
 					}
 
 				}
-				return result;
+				return pf.getResult();
 			}
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {

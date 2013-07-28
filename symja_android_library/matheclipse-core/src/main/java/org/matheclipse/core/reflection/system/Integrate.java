@@ -57,6 +57,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
 import com.google.common.base.Predicate;
 
@@ -197,7 +198,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (!arg1.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.get(2).isSymbol()) {
 							IExpr[] parts = Apart.getFractionalParts(arg1);
 							if (parts != null) {
-								IAST apartPlus = integrateByPartialFractions(parts, symbol);
+								// IAST apartPlus =
+								// integrateByPartialFractions(parts, symbol);
+								IAST apartPlus = Apart.partialFractionDecompositionRational(new PartialFractionIntegrateGenerator(
+										symbol), parts, symbol);
+
 								if (apartPlus != null && apartPlus.size() > 1) {
 									if (apartPlus.size() == 2) {
 										if (ast.equals(apartPlus.get(1))) {
@@ -316,8 +321,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 			// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
 
 			if (Ai.size() > 0) {
-				BigRational[] numer = new BigRational[3];
-				BigRational[] denom = new BigRational[3];
 				IAST result = F.Plus();
 				IExpr temp;
 				if (!Ai.get(0).get(0).isZERO()) {
@@ -332,6 +335,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 					long j = 0L;
 					for (GenPolynomial<BigRational> genPolynomial : list) {
 						if (!genPolynomial.isZERO()) {
+							BigRational[] numer = new BigRational[3];
+							BigRational[] denom = new BigRational[3];
 							boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
 							if (isDegreeLE2 && j == 1L) {
 								Object[] objects = jas.factorTerms(genPolynomial);
@@ -390,27 +395,39 @@ public class Integrate extends AbstractFunctionEvaluator {
 														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 									}
 									result.add(F.eval(temp));
-									
-//									edu.jas.arith.BigInteger[] numer2 = new edu.jas.arith.BigInteger[3];
-//									isQuadratic(genPolynomial2, numer2);
-//									IInteger A = F.integer(numer2[1].getVal());
-//									IInteger B = F.integer(numer2[0].getVal());
-//									isQuadratic(Di_1, denom);
-//									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
-//									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
-//									if (A.isZero()) {
-//										// JavaForm[B*Log[p*x+q]/p]
-//										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
-//									} else {
-//										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-//										temp = Plus(
-//												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
-//												Times(ArcTan(Times(Plus(p, Times(C2, x)),
-//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-//														Plus(Times(C2, B), Times(CN1, A, p)),
-//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
-//									}
-//									result.add(F.eval(temp));
+
+									// edu.jas.arith.BigInteger[] numer2 = new
+									// edu.jas.arith.BigInteger[3];
+									// isQuadratic(genPolynomial2, numer2);
+									// IInteger A =
+									// F.integer(numer2[1].getVal());
+									// IInteger B =
+									// F.integer(numer2[0].getVal());
+									// isQuadratic(Di_1, denom);
+									// IFraction p =
+									// F.fraction(denom[1].numerator(),
+									// denom[1].denominator());
+									// IFraction q =
+									// F.fraction(denom[0].numerator(),
+									// denom[0].denominator());
+									// if (A.isZero()) {
+									// // JavaForm[B*Log[p*x+q]/p]
+									// temp = Times(B, Log(Plus(q, Times(p,
+									// x))), Power(p, CN1));
+									// } else {
+									// //
+									// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+									// temp = Plus(
+									// Times(C1D2, A, Log(Plus(q, Times(p, x),
+									// Power(x, C2)))),
+									// Times(ArcTan(Times(Plus(p, Times(C2, x)),
+									// Power(Plus(Times(CN1, Power(p, C2)),
+									// Times(C4, q)), CN1D2))),
+									// Plus(Times(C2, B), Times(CN1, A, p)),
+									// Power(Plus(Times(CN1, Power(p, C2)),
+									// Times(C4, q)), CN1D2)));
+									// }
+									// result.add(F.eval(temp));
 								}
 							} else if (isDegreeLE2 && j > 1L) {
 								isQuadratic(genPolynomial, numer);
@@ -478,6 +495,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
 	 * Integration by parts</a>
 	 * 
+	 * @deprecated use method Apart#partialFractionDecompositionRational()
+	 *             instead
 	 * @param f
 	 * @param g
 	 * @param symbol
