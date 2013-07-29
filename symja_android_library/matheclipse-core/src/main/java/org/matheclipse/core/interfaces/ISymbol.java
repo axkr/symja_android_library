@@ -234,7 +234,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void set(IExpr value);
 
 	/**
-	 * Associate a new rule with default priority to this symbol.
+	 * Associate a new &quot;down value&quot; rule with default priority to this
+	 * symbol.
 	 * 
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with
@@ -277,13 +278,64 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
 	/**
-	 * Evaluate the given expression for the rules associated with this symbol
+	 * Associate a new &quot;up value&quot; rule with default priority to this
+	 * symbol.
+	 * 
+	 * @param equalRule
+	 *            <code>true</code> if the leftHandSide could be matched with
+	 *            equality
+	 * @param leftHandSide
+	 * @param rightHandSide
+	 * @return
+	 * 
+	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 */
+	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
+
+	/**
+	 * Associate a new &quot;up value&quot; rule with the given priority to this
+	 * symbol.<br/>
+	 * Rules with lower numbers have higher priorities.
+	 * 
+	 * @param equalRule
+	 *            <code>true</code> if the leftHandSide could be matched with
+	 *            equality
+	 * @param leftHandSide
+	 * @param rightHandSide
+	 * @param condition
+	 *            additional condition for rules containing patterns
+	 * @param moduleInitializer
+	 *            if the right-hand-side is a module, this is the initializer
+	 *            part
+	 * @param priority
+	 *            the priority of the rule
+	 * 
+	 * @return
+	 * 
+	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 */
+	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
+			final IExpr rightHandSide, final int priority);
+
+	/**
+	 * Evaluate the given expression for the &quot;down value&quot; rules
+	 * associated with this symbol
 	 * 
 	 * @param engine
 	 * @param expression
 	 * @return
 	 */
 	public IExpr evalDownRule(IEvaluationEngine engine, IExpr expression);
+
+	/**
+	 * Evaluate the given expression for the &quot;up value&quot; rules
+	 * associated with this symbol
+	 * 
+	 * @param engine
+	 * @param expression
+	 * @return
+	 */
+	public IExpr evalUpRule(IEvaluationEngine engine, IExpr expression);
 
 	/**
 	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code>

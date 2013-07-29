@@ -67,7 +67,7 @@ public class AST2Expr {
 			"StringTake", "Subsets", "SubtractFrom", "Sum", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
 			"Thread", "Through", "Throw", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total",
 			"ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal", "Union",
-			"UnitStep", "UnsameQ", "UpperCaseQ", "ValueQ", "VandermondeMatrix", "Variables", "VectorQ", "Which", "While" };
+			"UnitStep", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorQ", "Which", "While" };
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 

@@ -28,7 +28,6 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.PatternMatcher;
 
 import com.google.common.base.Function;
 
@@ -513,6 +512,7 @@ public class F {
 	public final static ISymbol Sec = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
 	public final static ISymbol Select = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
 	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set");
+
 	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes"
 			: "SetAttributes");
 	public final static ISymbol SetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed");
@@ -572,6 +572,9 @@ public class F {
 	public final static ISymbol UnitStep = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unitstep" : "UnitStep");
 	public final static ISymbol UnsameQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unsameq" : "UnsameQ");
 	public final static ISymbol UpperCaseQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ");
+	public final static ISymbol UpSet = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet");
+	public final static ISymbol UpSetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed"
+			: "UpSetDelayed");
 	public final static ISymbol ValueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ");
 	public final static ISymbol VandermondeMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vandermondematrix"
 			: "VandermondeMatrix");
@@ -605,32 +608,32 @@ public class F {
 	public final static ISymbol y = initFinalSymbol("y");
 	public final static ISymbol z = initFinalSymbol("z");
 
-//	public final static IPattern a_ = initPredefinedPattern(a);
-//	public final static IPattern b_ = initPredefinedPattern(b);
-//	public final static IPattern c_ = initPredefinedPattern(c);
-//	public final static IPattern d_ = initPredefinedPattern(d);
-//	public final static IPattern e_ = initPredefinedPattern(e);
-//	public final static IPattern f_ = initPredefinedPattern(f);
-//	public final static IPattern g_ = initPredefinedPattern(g);
-//	public final static IPattern h_ = initPredefinedPattern(h);
-//	public final static IPattern i_ = initPredefinedPattern(i);
-//	public final static IPattern j_ = initPredefinedPattern(j);
-//	public final static IPattern k_ = initPredefinedPattern(k);
-//	public final static IPattern l_ = initPredefinedPattern(l);
-//	public final static IPattern m_ = initPredefinedPattern(m);
-//	public final static IPattern n_ = initPredefinedPattern(n);
-//	public final static IPattern o_ = initPredefinedPattern(o);
-//	public final static IPattern p_ = initPredefinedPattern(p);
-//	public final static IPattern q_ = initPredefinedPattern(q);
-//	public final static IPattern r_ = initPredefinedPattern(r);
-//	public final static IPattern s_ = initPredefinedPattern(s);
-//	public final static IPattern t_ = initPredefinedPattern(t);
-//	public final static IPattern u_ = initPredefinedPattern(u);
-//	public final static IPattern v_ = initPredefinedPattern(v);
-//	public final static IPattern w_ = initPredefinedPattern(w);
-//	public final static IPattern x_ = initPredefinedPattern(x);
-//	public final static IPattern y_ = initPredefinedPattern(y);
-//	public final static IPattern z_ = initPredefinedPattern(z);
+	// public final static IPattern a_ = initPredefinedPattern(a);
+	// public final static IPattern b_ = initPredefinedPattern(b);
+	// public final static IPattern c_ = initPredefinedPattern(c);
+	// public final static IPattern d_ = initPredefinedPattern(d);
+	// public final static IPattern e_ = initPredefinedPattern(e);
+	// public final static IPattern f_ = initPredefinedPattern(f);
+	// public final static IPattern g_ = initPredefinedPattern(g);
+	// public final static IPattern h_ = initPredefinedPattern(h);
+	// public final static IPattern i_ = initPredefinedPattern(i);
+	// public final static IPattern j_ = initPredefinedPattern(j);
+	// public final static IPattern k_ = initPredefinedPattern(k);
+	// public final static IPattern l_ = initPredefinedPattern(l);
+	// public final static IPattern m_ = initPredefinedPattern(m);
+	// public final static IPattern n_ = initPredefinedPattern(n);
+	// public final static IPattern o_ = initPredefinedPattern(o);
+	// public final static IPattern p_ = initPredefinedPattern(p);
+	// public final static IPattern q_ = initPredefinedPattern(q);
+	// public final static IPattern r_ = initPredefinedPattern(r);
+	// public final static IPattern s_ = initPredefinedPattern(s);
+	// public final static IPattern t_ = initPredefinedPattern(t);
+	// public final static IPattern u_ = initPredefinedPattern(u);
+	// public final static IPattern v_ = initPredefinedPattern(v);
+	// public final static IPattern w_ = initPredefinedPattern(w);
+	// public final static IPattern x_ = initPredefinedPattern(x);
+	// public final static IPattern y_ = initPredefinedPattern(y);
+	// public final static IPattern z_ = initPredefinedPattern(z);
 
 	/**
 	 * * Constant integer &quot;0&quot;
@@ -763,7 +766,7 @@ public class F {
 			CInfinity = $(DirectedInfinity, C1);
 			CNInfinity = $(DirectedInfinity, CN1);
 			CComplexInfinity = $(DirectedInfinity);
-			
+
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
 
@@ -1474,7 +1477,6 @@ public class F {
 	}
 
 	public static IAST Set(final IExpr a0, final IExpr a1) {
-
 		return binary(Set, a0, a1);
 	}
 
@@ -1604,6 +1606,14 @@ public class F {
 
 	public static IAST Trunc(final IExpr a0) {
 		return unary(Trunc, a0);
+	}
+
+	public static IAST UpSet(final IExpr a0, final IExpr a1) {
+		return binary(UpSet, a0, a1);
+	}
+
+	public static IAST UpSetDelayed(final IExpr a0, final IExpr a1) {
+		return binary(UpSetDelayed, a0, a1);
 	}
 
 	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
@@ -2556,32 +2566,32 @@ public class F {
 	 * @param b
 	 * @return
 	 */
-//	public static boolean isCase(IExpr a, IExpr b) {
-//		if (a instanceof IAST) {
-//			final PatternMatcher matcher = new PatternMatcher(a);
-//			if (matcher.apply(b)) {
-//				matcher.setPatternValue2Local(a);
-//				return true;
-//			}
-//		}
-//		return equals(a, b);
-//	}
-//
-//	public static boolean isCase(IExpr a, Integer i) {
-//		return isCase(a, integer(i.longValue()));
-//	}
-//
-//	public static boolean isCase(Integer i, IExpr b) {
-//		return equals(i, b);
-//	}
-//
-//	public static boolean isCase(IExpr a, java.math.BigInteger i) {
-//		return isCase(a, integer(i));
-//	}
-//
-//	public static boolean isCase(java.math.BigInteger i, IExpr b) {
-//		return equals(i, b);
-//	}
+	// public static boolean isCase(IExpr a, IExpr b) {
+	// if (a instanceof IAST) {
+	// final PatternMatcher matcher = new PatternMatcher(a);
+	// if (matcher.apply(b)) {
+	// matcher.setPatternValue2Local(a);
+	// return true;
+	// }
+	// }
+	// return equals(a, b);
+	// }
+	//
+	// public static boolean isCase(IExpr a, Integer i) {
+	// return isCase(a, integer(i.longValue()));
+	// }
+	//
+	// public static boolean isCase(Integer i, IExpr b) {
+	// return equals(i, b);
+	// }
+	//
+	// public static boolean isCase(IExpr a, java.math.BigInteger i) {
+	// return isCase(a, integer(i));
+	// }
+	//
+	// public static boolean isCase(java.math.BigInteger i, IExpr b) {
+	// return equals(i, b);
+	// }
 
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
@@ -2883,5 +2893,5 @@ public class F {
 	public static IExpr or(java.math.BigInteger i, IExpr b) {
 		return Or(integer(i), b);
 	}
-	
+
 }

@@ -64,6 +64,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function) {
 		IExpr[] result = new IExpr[2];
 		IExpr symbolValue;
@@ -91,7 +92,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 			// }
 			// }
 			// }
-			PatternMatcherEquals pme = fRulesData.getEqualRules().get(this);
+			PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
 			if (pme != null) {
 				symbolValue = pme.getRHS();
 				if (symbolValue != null) {
@@ -111,6 +112,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	private OpenIntToIExprHashMap fDefaultValues = null;
 
 	static class DummyEvaluator implements IEvaluator {
+		@Override
 		public void setUp(ISymbol symbol) {
 
 		}
@@ -144,23 +146,27 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void pushLocalVariable() {
 		pushLocalVariable(null);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void pushLocalVariable(final IExpr expression) {
 		final Stack<IExpr> localVariableStack = EvalEngine.localStackCreate(fSymbolName);
 		localVariableStack.push(expression);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void popLocalVariable() {
 		final Stack<IExpr> fLocalVariableStack = EvalEngine.localStack(fSymbolName);
 		fLocalVariableStack.pop();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void clear(EvalEngine engine) {
 		if (!engine.isPackageMode()) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
@@ -171,6 +177,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void clearAll(EvalEngine engine) {
 		clear(engine);
 		fAttributes = NOATTRIBUTE;
@@ -184,6 +191,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		return this == obj;
 	}
 
+	@Override
 	public boolean isSymbolName(String name) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			return fSymbolName.equalsIgnoreCase(name);
@@ -212,16 +220,25 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
 		return fRulesData.evalDownRule(ee, expression);
 	}
 
 	/** {@inheritDoc} */
+	@Override
+	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
+		return fRulesData.evalUpRule(ee, expression);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final int getAttributes() {
 		return fAttributes;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IEvaluator getEvaluator() {
 		if (fEvaluator == null) {
 			fEvaluator = DUMMY_EVALUATOR;
@@ -237,12 +254,14 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean hasLocalVariableStack() {
 		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
 		return (localVariableStack != null) && !(localVariableStack.isEmpty());
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IExpr get() {
 		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
 		if (localVariableStack == null) {
@@ -252,6 +271,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void set(final IExpr value) {
 		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
 
@@ -265,21 +285,25 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int hierarchy() {
 		return SYMBOLID;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isString(final String str) {
 		return fSymbolName.equals(str);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide, final IExpr rightHandSide) {
 		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
@@ -294,11 +318,34 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		return fRulesData.putDownRule(pmEvaluator);
 	}
 
 	/** {@inheritDoc} */
+	@Override
+	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
+		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
+			final IExpr rightHandSide, final int priority) {
+		EvalEngine engine = EvalEngine.get();
+		if (!engine.isPackageMode()) {
+			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+				throw new RuleCreationError(leftHandSide);
+			}
+
+			engine.addModifiedVariable(this);
+		}
+		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public void setAttributes(final int attributes) {
 		fAttributes = attributes;
 		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
@@ -308,6 +355,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final void setEvaluator(final IEvaluator evaluator) {
 		fEvaluator = evaluator;
 		evaluator.setUp(this);
@@ -318,6 +366,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof Symbol) {
 			if (this == obj) {
@@ -373,6 +422,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isConstant() {
 		return (fAttributes & CONSTANT) == CONSTANT;
 	}
@@ -475,11 +525,13 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public List<IAST> definition() {
 		return fRulesData.definition();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IExpr getDefaultValue() {
 		// special case for a general default value
 		if (fDefaultValues == null) {
@@ -489,6 +541,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IExpr getDefaultValue(int pos) {
 		// default value at this position
 		if (fDefaultValues == null) {
@@ -498,6 +551,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void setDefaultValue(IExpr expr) {
 		// special case for a general default value
 		if (fDefaultValues == null) {
@@ -507,6 +561,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void setDefaultValue(int pos, IExpr expr) {
 		// default value at this position
 		if (fDefaultValues == null) {
@@ -516,6 +571,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public String definitionToString() throws IOException {
 		// dummy call to ensure, that the associated rules are loaded:
 		getEvaluator();
@@ -538,6 +594,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
@@ -545,6 +602,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
@@ -554,6 +612,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
@@ -561,6 +620,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
@@ -568,6 +628,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
@@ -575,6 +636,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
 		if (isConstant()) {
 			IEvaluator evaluator = getEvaluator();

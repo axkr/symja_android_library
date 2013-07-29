@@ -5,6 +5,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -198,6 +199,28 @@ public final class Validate {
 			return (ISymbol) ast.get(position);
 		}
 		throw new WrongArgumentType(ast, ast.get(position), position, "Symbol expected!");
+	}
+
+	/**
+	 * Check if the argument at the given position is an AST.
+	 * 
+	 * @param position
+	 *            the position which has to be an AST.
+	 * @throws WrongArgumentType
+	 *             if it's not an AST.
+	 */
+	public static IAST checkASTUpRuleType(IExpr expr) {
+		if (expr.isAST()) {
+			IAST ast = (IAST) expr;
+//			for (int i = 0; i < ast.size(); i++) {
+//				if (!(ast.get(i) instanceof IPatternObject)) {
+//					throw new WrongArgumentType(ast, ast.get(i), i,
+//							"Pattern objects are not allowed in left-hand-side of UpSet[] or UpSetDelayed[]!");
+//				}
+//			}
+			return ast;
+		}
+		throw new WrongArgumentType(expr, "Function(AST)  in left-hand-side of UpSet[] or UpSetDelayed[] expected!");
 	}
 
 	/**

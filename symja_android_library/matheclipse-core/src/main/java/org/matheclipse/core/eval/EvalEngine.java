@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.parser.client.Parser;
@@ -434,6 +435,19 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
+		if (!(ast.get(1) instanceof IPatternObject)) {
+			final IExpr arg1 = ast.get(1);
+			ISymbol lhsSymbol = null;
+			if (arg1.isSymbol()) {
+				lhsSymbol = (ISymbol) arg1;
+			} else {
+				lhsSymbol = arg1.topHead();
+			}
+			if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
+				return result;
+			}
+		}
+
 		return evalASTBuiltinFunction(symbol, ast);
 	}
 
@@ -513,6 +527,21 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (astSize > 2 && (ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 				// commutative symbol
 				EvaluationSupport.sort(ast);
+			}
+		}
+
+		for (int i = 1; i < ast.size(); i++) {
+			if (!(ast.get(i) instanceof IPatternObject)) {
+				final IExpr arg = ast.get(i);
+				ISymbol lhsSymbol = null;
+				if (arg.isSymbol()) {
+					lhsSymbol = (ISymbol) arg;
+				} else {
+					lhsSymbol = arg.topHead();
+				}
+				if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
+					return result;
+				}
 			}
 		}
 

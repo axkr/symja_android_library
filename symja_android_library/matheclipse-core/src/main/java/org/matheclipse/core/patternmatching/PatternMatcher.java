@@ -409,7 +409,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	@Override
 	final public boolean isRuleWithoutPatterns() {
-		return fPatternMap == null;
+		return fPatternMap.isRuleWithoutPatterns();
 	}
 
 	@Override
