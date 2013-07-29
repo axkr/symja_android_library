@@ -30,18 +30,15 @@ public class UpRulesData implements Serializable {
 
 	private transient Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private transient ArrayListMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
-	private transient List<IPatternMatcher> fPatternUpRules;
 
 	public UpRulesData() {
 		this.fEqualUpRules = null;
 		this.fSimplePatternUpRules = null;
-		this.fPatternUpRules = null;
 	}
 
 	public void clear() {
 		fEqualUpRules = null;
 		fSimplePatternUpRules = null;
-		fPatternUpRules = null;
 	}
 
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
@@ -70,15 +67,6 @@ public class UpRulesData implements Serializable {
 				}
 			}
 
-			if (fPatternUpRules != null) {
-				for (int i = 0; i < fPatternUpRules.size(); i++) {
-					pmEvaluator = (IPatternMatcher) fPatternUpRules.get(i).clone();
-					result = pmEvaluator.eval(expression);
-					if (result != null) {
-						return result;
-					}
-				}
-			}
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
 		}
@@ -103,24 +91,8 @@ public class UpRulesData implements Serializable {
 			return pmEquals;
 		}
 
-		if (!isComplicatedPatternRule(leftHandSide)) {
-			fSimplePatternUpRules = getSimplePatternUpRules();
-			return addSimplePatternUpRule(leftHandSide, pmEvaluator);
-		} else {
-
-			fPatternUpRules = getPatternUpRules();
-			if (F.isSystemInitialized) {
-				for (int i = 0; i < fPatternUpRules.size(); i++) {
-					if (pmEvaluator.equals(fPatternUpRules.get(i))) {
-						fPatternUpRules.set(i, pmEvaluator);
-						return pmEvaluator;
-					}
-				}
-			}
-			fPatternUpRules.add(pmEvaluator);
-			return pmEvaluator;
-
-		}
+		fSimplePatternUpRules = getSimplePatternUpRules();
+		return addSimplePatternUpRule(leftHandSide, pmEvaluator);
 
 	}
 
@@ -191,13 +163,6 @@ public class UpRulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	private List<IPatternMatcher> getPatternUpRules() {
-		if (fPatternUpRules == null) {
-			fPatternUpRules = new ArrayList<IPatternMatcher>();
-		}
-		return fPatternUpRules;
-	}
-
 	private ArrayListMultimap<Integer, IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
 			fSimplePatternUpRules = ArrayListMultimap.create();
@@ -249,24 +214,6 @@ public class UpRulesData implements Serializable {
 				// don't show internal methods associated with a pattern
 				// }
 			}
-		}
-		if (fPatternUpRules != null && fPatternUpRules.size() > 0) {
-			for (int i = 0; i < fPatternUpRules.size(); i++) {
-				if (fPatternUpRules.get(i) instanceof PatternMatcherAndEvaluator) {
-					pmEvaluator = (PatternMatcherAndEvaluator) fPatternUpRules.get(i);
-					setSymbol = pmEvaluator.getSetSymbol();
-					ast = F.ast(setSymbol);
-					ast.add(pmEvaluator.getLHS());
-					condition = pmEvaluator.getCondition();
-					if (condition != null) {
-						ast.add(F.Condition(pmEvaluator.getRHS(), condition));
-					} else {
-						ast.add(pmEvaluator.getRHS());
-					}
-					definitionList.add(ast);
-				}
-			}
-
 		}
 
 		return definitionList;
@@ -336,54 +283,13 @@ public class UpRulesData implements Serializable {
 			}
 
 		}
-
-		len = stream.read();
-		if (len > 0) {
-			fPatternUpRules = new ArrayList<IPatternMatcher>();
-			listLength = stream.read();
-			for (int j = 0; j < listLength; j++) {
-				astString = stream.readUTF();
-				setSymbol = F.$s(astString);
-
-				astString = stream.readUTF();
-				lhs = engine.parse(astString);
-				astString = stream.readUTF();
-				rhs = engine.parse(astString);
-				pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
-
-				condLength = stream.read();
-				if (condLength == 0) {
-					condition = null;
-				} else {
-					astString = stream.readUTF();
-					condition = engine.parse(astString);
-					pmEvaluator.setCondition(condition);
-				}
-				addSimplePatternUpRule(lhs, pmEvaluator);
-			}
-		}
 	}
 
 	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		Iterator<IExpr> iter;
 		IExpr key;
 		IExpr condition;
-		// Pair<ISymbol, IExpr> pair;
-		// ISymbol setSymbol;
-		// PatternMatcherAndEvaluator pmEvaluator;
-		// if (fEqualRules == null || fEqualRules.size() == 0) {
-		// stream.write(0);
-		// } else {
-		// stream.write(fEqualRules.size());
-		// iter = fEqualRules.keySet().iterator();
-		// while (iter.hasNext()) {
-		// key = iter.next();
-		// pair = fEqualRules.get(key);
-		// stream.writeUTF(pair.getFirst().toString());
-		// stream.writeUTF(key.fullFormString());
-		// stream.writeUTF(pair.getSecond().fullFormString());
-		// }
-		// }
+
 		PatternMatcherEquals pme;
 		ISymbol setSymbol;
 		PatternMatcherAndEvaluator pmEvaluator;
@@ -422,27 +328,6 @@ public class UpRulesData implements Serializable {
 					stream.writeUTF(condition.fullFormString());
 				}
 			}
-		}
-		if (fPatternUpRules == null || fPatternUpRules.size() == 0) {
-			stream.write(0);
-		} else {
-			stream.write(fPatternUpRules.size());
-
-			for (int i = 0; i < fPatternUpRules.size(); i++) {
-				pmEvaluator = (PatternMatcherAndEvaluator) fPatternUpRules.get(i);
-				setSymbol = pmEvaluator.getSetSymbol();
-				stream.writeUTF(setSymbol.toString());
-				stream.writeUTF(pmEvaluator.getLHS().fullFormString());
-				stream.writeUTF(pmEvaluator.getRHS().fullFormString());
-				condition = pmEvaluator.getCondition();
-				if (condition == null) {
-					stream.write(0);
-				} else {
-					stream.write(1);
-					stream.writeUTF(condition.fullFormString());
-				}
-			}
-
 		}
 	}
 }
