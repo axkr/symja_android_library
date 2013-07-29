@@ -116,7 +116,7 @@ public class HashedOrderlessMatcher {
 								continue;
 							}
 						}
-						RulesData rulesData = hashRule.getRulesData();
+						DownRulesData rulesData = hashRule.getRulesData();
 						if ((temp = rulesData.evalDownRule(F.List(orderlessAST.get(i + 1), orderlessAST.get(j + 1)))) != null) {
 							hashValues[i] = 0;
 							hashValues[j] = 0;

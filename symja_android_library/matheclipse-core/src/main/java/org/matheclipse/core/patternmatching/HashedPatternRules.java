@@ -16,7 +16,7 @@ import org.matheclipse.core.visit.HashValueVisitor;
 public class HashedPatternRules {
 	private int hash1;
 	private int hash2;
-	private RulesData fRulesData = null;
+	private DownRulesData fRulesData = null;
 	private final IExpr fLHSPattern1;
 	private final IExpr fLHSPattern2;
 	// private final IExpr fCondition;
@@ -132,9 +132,9 @@ public class HashedPatternRules {
 	 * 
 	 * @return
 	 */
-	public RulesData getRulesData() {
+	public DownRulesData getRulesData() {
 		if (fRulesData == null) {
-			fRulesData = new RulesData();
+			fRulesData = new DownRulesData();
 			fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), fRHS, 0);
 		}
 		return fRulesData;

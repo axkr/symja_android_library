@@ -21,37 +21,28 @@ import com.google.common.collect.ArrayListMultimap;
 /**
  * The pattern matching rules associated with a symbol.
  */
-public class RulesData implements Serializable {
+public class DownRulesData implements Serializable {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 8843909916823779295L;
+	private static final long serialVersionUID = 6438521796226265180L;
 
 	// private transient Map<IExpr, Pair<ISymbol, IExpr>> fEqualRules;
 	private transient Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 	private transient ArrayListMultimap<Integer, IPatternMatcher> fSimplePatternDownRules;
 	private transient List<IPatternMatcher> fPatternDownRules;
 
-	private transient Map<IExpr, PatternMatcherEquals> fEqualUpRules;
-	private transient ArrayListMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
-	private transient List<IPatternMatcher> fPatternUpRules;
-
-	public RulesData() {
+	public DownRulesData() {
 		this.fEqualDownRules = null;
 		this.fSimplePatternDownRules = null;
 		this.fPatternDownRules = null;
-		this.fEqualUpRules = null;
-		this.fSimplePatternUpRules = null;
-		this.fPatternUpRules = null;
 	}
 
 	public void clear() {
 		fEqualDownRules = null;
 		fSimplePatternDownRules = null;
 		fPatternDownRules = null;
-		fEqualUpRules = null;
-		fSimplePatternUpRules = null;
-		fPatternUpRules = null;
 	}
 
 	public IExpr evalDownRule(final IExpr expression) {
@@ -146,86 +137,6 @@ public class RulesData implements Serializable {
 
 	}
 
-	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
-		PatternMatcherEquals res;
-		if (fEqualUpRules != null) {
-			res = fEqualUpRules.get(expression);
-			if (res != null) {
-				return res.getRHS();
-			}
-		}
-
-		try {
-			IExpr result;
-			IPatternMatcher pmEvaluator;
-			if ((fSimplePatternUpRules != null) && (expression.isAST())) {
-				final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
-				final List<IPatternMatcher> list = fSimplePatternUpRules.get(hash);
-				if (list != null) {
-					for (int i = 0; i < list.size(); i++) {
-						pmEvaluator = (IPatternMatcher) list.get(i).clone();
-						result = pmEvaluator.eval(expression);
-						if (result != null) {
-							return result;
-						}
-					}
-				}
-			}
-
-			if (fPatternUpRules != null) {
-				for (int i = 0; i < fPatternUpRules.size(); i++) {
-					pmEvaluator = (IPatternMatcher) fPatternUpRules.get(i).clone();
-					result = pmEvaluator.eval(expression);
-					if (result != null) {
-						return result;
-					}
-				}
-			}
-		} catch (CloneNotSupportedException cnse) {
-			cnse.printStackTrace();
-		}
-		return null;
-	}
-
-	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
-			final IExpr rightHandSide, final int priority) {
-		if (equalRule) {
-			fEqualUpRules = getEqualUpRules();
-			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-			fEqualUpRules.put(leftHandSide, pmEquals);
-			return pmEquals;
-		}
-
-		final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide);
-
-		if (pmEvaluator.isRuleWithoutPatterns()) {
-			fEqualUpRules = getEqualUpRules();
-			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-			fEqualUpRules.put(leftHandSide, pmEquals);
-			return pmEquals;
-		}
-
-		if (!isComplicatedPatternRule(leftHandSide)) {
-			fSimplePatternUpRules = getSimplePatternUpRules();
-			return addSimplePatternUpRule(leftHandSide, pmEvaluator);
-		} else {
-
-			fPatternUpRules = getPatternUpRules();
-			if (F.isSystemInitialized) {
-				for (int i = 0; i < fPatternUpRules.size(); i++) {
-					if (pmEvaluator.equals(fPatternUpRules.get(i))) {
-						fPatternUpRules.set(i, pmEvaluator);
-						return pmEvaluator;
-					}
-				}
-			}
-			fPatternUpRules.add(pmEvaluator);
-			return pmEvaluator;
-
-		}
-
-	}
-
 	/**
 	 * Create a pattern hash value for the left-hand-side expression and insert
 	 * the left-hand-side as a simple pattern rule to the
@@ -241,24 +152,6 @@ public class RulesData implements Serializable {
 			fSimplePatternDownRules.remove(hash, pmEvaluator);
 		}
 		fSimplePatternDownRules.put(hash, pmEvaluator);
-		return pmEvaluator;
-	}
-
-	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert
-	 * the left-hand-side as a simple pattern rule to the
-	 * <code>fSimplePatternRules</code>.
-	 * 
-	 * @param leftHandSide
-	 * @param pmEvaluator
-	 * @return
-	 */
-	private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
-		final Integer hash = Integer.valueOf(((IAST) leftHandSide).patternHashCode());
-		if (F.isSystemInitialized && fSimplePatternUpRules.containsEntry(hash, pmEvaluator)) {
-			fSimplePatternUpRules.remove(hash, pmEvaluator);
-		}
-		fSimplePatternUpRules.put(hash, pmEvaluator);
 		return pmEvaluator;
 	}
 
@@ -345,30 +238,6 @@ public class RulesData implements Serializable {
 			fSimplePatternDownRules = ArrayListMultimap.create();
 		}
 		return fSimplePatternDownRules;
-	}
-
-	/**
-	 * @return Returns the equalRules.
-	 */
-	public Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
-		if (fEqualUpRules == null) {
-			fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
-		}
-		return fEqualUpRules;
-	}
-
-	private List<IPatternMatcher> getPatternUpRules() {
-		if (fPatternUpRules == null) {
-			fPatternUpRules = new ArrayList<IPatternMatcher>();
-		}
-		return fPatternUpRules;
-	}
-
-	private ArrayListMultimap<Integer, IPatternMatcher> getSimplePatternUpRules() {
-		if (fSimplePatternUpRules == null) {
-			fSimplePatternUpRules = ArrayListMultimap.create();
-		}
-		return fSimplePatternUpRules;
 	}
 
 	public List<IAST> definition() {

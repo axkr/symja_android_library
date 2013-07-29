@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -20,11 +21,12 @@ import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.DownRulesData;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
-import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.core.patternmatching.UpRulesData;
 import org.matheclipse.core.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -38,10 +40,11 @@ import com.google.common.base.Function;
  * 
  */
 public class Symbol extends ExprImpl implements ISymbol {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 7416359407349683408L;
+	private static final long serialVersionUID = -4991038487281911261L;
 
 	/**
 	 * 
@@ -57,9 +60,16 @@ public class Symbol extends ExprImpl implements ISymbol {
 	private transient IEvaluator fEvaluator;
 
 	/**
-	 * The pattern matching rules associated with this symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this
+	 * symbol.
 	 */
-	private transient RulesData fRulesData = new RulesData();
+	private transient DownRulesData fDownRulesData = new DownRulesData();
+
+	/**
+	 * The pattern matching &quot;up value&quot; rules associated with this
+	 * symbol.
+	 */
+	private transient UpRulesData fUpRulesData = new UpRulesData();
 
 	/**
 	 * {@inheritDoc}
@@ -92,16 +102,18 @@ public class Symbol extends ExprImpl implements ISymbol {
 			// }
 			// }
 			// }
-			PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-			if (pme != null) {
-				symbolValue = pme.getRHS();
-				if (symbolValue != null) {
-					result[0] = symbolValue;
-					IExpr calculatedResult = function.apply(symbolValue);
-					if (calculatedResult != null) {
-						pme.setRHS(calculatedResult);
-						result[1] = calculatedResult;
-						return result;
+			if (fDownRulesData != null) {
+				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					symbolValue = pme.getRHS();
+					if (symbolValue != null) {
+						result[0] = symbolValue;
+						IExpr calculatedResult = function.apply(symbolValue);
+						if (calculatedResult != null) {
+							pme.setRHS(calculatedResult);
+							result[1] = calculatedResult;
+							return result;
+						}
 					}
 				}
 			}
@@ -173,7 +185,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 				throw new RuleCreationError(null);
 			}
 		}
-		fRulesData.clear();
+		if (fDownRulesData != null) {
+			fDownRulesData.clear();
+		}
 	}
 
 	/** {@inheritDoc} */
@@ -222,15 +236,21 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
-		return fRulesData.evalDownRule(ee, expression);
+		if (fDownRulesData == null) {
+			return null;
+		}
+		return fDownRulesData.evalDownRule(ee, expression);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
-		return fRulesData.evalUpRule(ee, expression);
+		if (fUpRulesData == null) {
+			return null;
+		}
+		return fUpRulesData.evalUpRule(ee, expression);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final int getAttributes() {
@@ -314,13 +334,19 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 			engine.addModifiedVariable(this);
 		}
-		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		if (fDownRulesData == null) {
+			fDownRulesData = new DownRulesData();
+		}
+		return fDownRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
-		return fRulesData.putDownRule(pmEvaluator);
+		if (fDownRulesData == null) {
+			fDownRulesData = new DownRulesData();
+		}
+		return fDownRulesData.putDownRule(pmEvaluator);
 	}
 
 	/** {@inheritDoc} */
@@ -341,7 +367,10 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 			engine.addModifiedVariable(this);
 		}
-		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		if (fUpRulesData == null) {
+			fUpRulesData = new UpRulesData();
+		}
+		return fUpRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
 
 	/** {@inheritDoc} */
@@ -527,7 +556,10 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	@Override
 	public List<IAST> definition() {
-		return fRulesData.definition();
+		if (fDownRulesData == null) {
+			return new ArrayList<IAST>();
+		}
+		return fDownRulesData.definition();
 	}
 
 	/** {@inheritDoc} */
@@ -598,7 +630,14 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
-		fRulesData.readSymbol(stream);
+		boolean hasDownRulesData = stream.readBoolean();
+		if (hasDownRulesData) {
+			fDownRulesData.readSymbol(stream);
+		}
+		boolean hasUpRulesData = stream.readBoolean();
+		if (hasUpRulesData) {
+			fUpRulesData.readSymbol(stream);
+		}
 	}
 
 	/** {@inheritDoc} */
@@ -606,7 +645,18 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
-		fRulesData.writeSymbol(stream);
+		if (fDownRulesData == null) {
+			stream.writeBoolean(false);
+		} else {
+			stream.writeBoolean(true);
+			fDownRulesData.writeSymbol(stream);
+		}
+		if (fUpRulesData == null) {
+			stream.writeBoolean(false);
+		} else {
+			stream.writeBoolean(true);
+			fUpRulesData.writeSymbol(stream);
+		}
 	}
 
 	/**
