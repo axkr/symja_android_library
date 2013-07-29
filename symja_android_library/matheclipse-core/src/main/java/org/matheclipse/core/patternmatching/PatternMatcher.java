@@ -236,12 +236,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Contains the "pattern-matching" expression
-	 * 
-	 */
-	// protected IExpr fLhsPatternExpr;
-
-	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
 	 * 
 	 */
