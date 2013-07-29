@@ -69,6 +69,13 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 */
 	boolean fDefault = false;
 
+	/**
+	 * Index for the pattern-matcher
+	 * 
+	 * @see org.matheclipse.core.patternmatching.PatternMatcher
+	 */
+	int fIndex = -1;
+
 	private PatternSequence() {
 	}
 
@@ -91,6 +98,13 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 
 	public IExpr getCondition() {
 		return fCondition;
+	}
+
+	/**
+	 * @return
+	 */
+	public int getIndex() {
+		return fIndex;
 	}
 
 	/**
@@ -143,7 +157,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 		return toString();
 	}
-
+	
+	@Override
+	public void setIndex(final int i) {
+		fIndex = i;
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuffer buffer = new StringBuffer();
@@ -310,7 +329,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	public final boolean isPatternExpr() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	final public boolean isPatternSequence() {
 		return true;

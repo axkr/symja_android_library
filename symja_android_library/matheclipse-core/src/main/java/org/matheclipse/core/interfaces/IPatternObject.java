@@ -8,4 +8,17 @@ public interface IPatternObject {
 	 */
 	public ISymbol getSymbol();
 
+	/**
+	 * Get the pattern-matchers index in the <code>PatternMap</code>
+	 * 
+	 * @return
+	 */
+	public int getIndex();
+
+	/**
+	 * Set the pattern-matchers index in the <code>PatternMap</code>
+	 * 
+	 * @return
+	 */
+	public void setIndex(final int i);
 }

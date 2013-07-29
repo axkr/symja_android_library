@@ -605,32 +605,32 @@ public class F {
 	public final static ISymbol y = initFinalSymbol("y");
 	public final static ISymbol z = initFinalSymbol("z");
 
-	public final static IPattern a_ = initPredefinedPattern(a);
-	public final static IPattern b_ = initPredefinedPattern(b);
-	public final static IPattern c_ = initPredefinedPattern(c);
-	public final static IPattern d_ = initPredefinedPattern(d);
-	public final static IPattern e_ = initPredefinedPattern(e);
-	public final static IPattern f_ = initPredefinedPattern(f);
-	public final static IPattern g_ = initPredefinedPattern(g);
-	public final static IPattern h_ = initPredefinedPattern(h);
-	public final static IPattern i_ = initPredefinedPattern(i);
-	public final static IPattern j_ = initPredefinedPattern(j);
-	public final static IPattern k_ = initPredefinedPattern(k);
-	public final static IPattern l_ = initPredefinedPattern(l);
-	public final static IPattern m_ = initPredefinedPattern(m);
-	public final static IPattern n_ = initPredefinedPattern(n);
-	public final static IPattern o_ = initPredefinedPattern(o);
-	public final static IPattern p_ = initPredefinedPattern(p);
-	public final static IPattern q_ = initPredefinedPattern(q);
-	public final static IPattern r_ = initPredefinedPattern(r);
-	public final static IPattern s_ = initPredefinedPattern(s);
-	public final static IPattern t_ = initPredefinedPattern(t);
-	public final static IPattern u_ = initPredefinedPattern(u);
-	public final static IPattern v_ = initPredefinedPattern(v);
-	public final static IPattern w_ = initPredefinedPattern(w);
-	public final static IPattern x_ = initPredefinedPattern(x);
-	public final static IPattern y_ = initPredefinedPattern(y);
-	public final static IPattern z_ = initPredefinedPattern(z);
+//	public final static IPattern a_ = initPredefinedPattern(a);
+//	public final static IPattern b_ = initPredefinedPattern(b);
+//	public final static IPattern c_ = initPredefinedPattern(c);
+//	public final static IPattern d_ = initPredefinedPattern(d);
+//	public final static IPattern e_ = initPredefinedPattern(e);
+//	public final static IPattern f_ = initPredefinedPattern(f);
+//	public final static IPattern g_ = initPredefinedPattern(g);
+//	public final static IPattern h_ = initPredefinedPattern(h);
+//	public final static IPattern i_ = initPredefinedPattern(i);
+//	public final static IPattern j_ = initPredefinedPattern(j);
+//	public final static IPattern k_ = initPredefinedPattern(k);
+//	public final static IPattern l_ = initPredefinedPattern(l);
+//	public final static IPattern m_ = initPredefinedPattern(m);
+//	public final static IPattern n_ = initPredefinedPattern(n);
+//	public final static IPattern o_ = initPredefinedPattern(o);
+//	public final static IPattern p_ = initPredefinedPattern(p);
+//	public final static IPattern q_ = initPredefinedPattern(q);
+//	public final static IPattern r_ = initPredefinedPattern(r);
+//	public final static IPattern s_ = initPredefinedPattern(s);
+//	public final static IPattern t_ = initPredefinedPattern(t);
+//	public final static IPattern u_ = initPredefinedPattern(u);
+//	public final static IPattern v_ = initPredefinedPattern(v);
+//	public final static IPattern w_ = initPredefinedPattern(w);
+//	public final static IPattern x_ = initPredefinedPattern(x);
+//	public final static IPattern y_ = initPredefinedPattern(y);
+//	public final static IPattern z_ = initPredefinedPattern(z);
 
 	/**
 	 * * Constant integer &quot;0&quot;
@@ -2883,5 +2883,5 @@ public class F {
 	public static IExpr or(java.math.BigInteger i, IExpr b) {
 		return Or(integer(i), b);
 	}
-
+	
 }

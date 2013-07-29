@@ -70,10 +70,13 @@ public class PatternMap implements Cloneable, Serializable {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
-			if (fPatternIndexMap.get(sym) != null) {
+			Integer i = fPatternIndexMap.get(sym);
+			if (i != null) {
 				// for "named" patterns (i.e. "x_" or "x_IntegerQ")
+				pattern.setIndex(i.intValue());
 				return;
 			}
+			pattern.setIndex(fPatternCounter);
 			fPatternIndexMap.put(sym, Integer.valueOf(fPatternCounter++));
 		}
 	}
@@ -182,13 +185,13 @@ public class PatternMap implements Cloneable, Serializable {
 		return indx;
 	}
 
-	protected int getIndex(IPatternObject pattern) {
-		ISymbol sym = pattern.getSymbol();
-		if (sym != null) {
-			return fPatternIndexMap.get(sym);
-		}
-		return -1;
-	}
+	// protected int getIndex(IPatternObject pattern) {
+	// ISymbol sym = pattern.getSymbol();
+	// if (sym != null) {
+	// return fPatternIndexMap.get(sym);
+	// }
+	// return -1;
+	// }
 
 	private Map<ISymbol, IExpr> getRulesMap() {
 		final Map<ISymbol, IExpr> rulesMap = new HashMap<ISymbol, IExpr>();
@@ -213,16 +216,21 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	public IExpr getValue(IPatternObject pattern) {
-		ISymbol sym = pattern.getSymbol();
-		if (sym != null) {
-			Integer indx = getIndex(pattern);
-			if (indx == null) {
-				return null;
-			}
-
+		int indx = pattern.getIndex();
+		if (indx >= 0) {
 			return fPatternValuesArray[indx];
 		}
 		return null;
+		// ISymbol sym = pattern.getSymbol();
+		// if (sym != null) {
+		// Integer indx = getIndex(pattern);
+		// if (indx == null) {
+		// return null;
+		// }
+		//
+		// return fPatternValuesArray[indx];
+		// }
+		// return null;
 	}
 
 	public List<IExpr> getValuesAsList() {
@@ -279,6 +287,13 @@ public class PatternMap implements Cloneable, Serializable {
 	 */
 	public void resetPattern(IExpr[] patternValuesArray) {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
+	}
+
+	public void setValue(IPatternObject pattern, IExpr expr) {
+		int indx = pattern.getIndex();
+		if (indx >= 0) {
+			fPatternValuesArray[indx] = expr;
+		}
 	}
 
 	public void setValue(ISymbol pattern, IExpr expr) {

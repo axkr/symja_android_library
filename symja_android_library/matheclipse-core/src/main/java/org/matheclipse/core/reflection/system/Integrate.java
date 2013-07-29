@@ -52,6 +52,7 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctions1;
 import org.matheclipse.core.integrate.rubi.UtilityFunctions2;
 import org.matheclipse.core.integrate.rubi.UtilityFunctions3;
 import org.matheclipse.core.integrate.rubi.UtilityFunctions4;
+import org.matheclipse.core.integrate.rubi.UtilityFunctions5;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -633,6 +634,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast.addAll(UtilityFunctions2.RULES);
 		ast.addAll(UtilityFunctions3.RULES);
 		ast.addAll(UtilityFunctions4.RULES);
+		ast.addAll(UtilityFunctions5.RULES);
 		return ast;
 
 	}

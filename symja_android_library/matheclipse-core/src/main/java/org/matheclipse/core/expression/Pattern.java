@@ -26,20 +26,6 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	private static Pattern NULL_PATTERN = new Pattern(null);
 
-	//
-	// private static final ObjectFactory<Pattern> FACTORY = new
-	// ObjectFactory<Pattern>() {
-	// @Override
-	// protected Pattern create() {
-	// if (Config.SERVER_MODE && currentQueue().getSize() >=
-	// Config.PATTERN_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("PatternImpl",
-	// currentQueue().getSize());
-	// }
-	// return new Pattern();
-	// }
-	// };
-
 	/**
 	 * 
 	 */
@@ -67,10 +53,10 @@ public class Pattern extends ExprImpl implements IPattern {
 		if (symbol == null) {
 			return NULL_PATTERN;
 		}
-		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
-		if (value != null) {
-			return value;
-		}
+		// IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
+		// if (value != null) {
+		// return value;
+		// }
 		return new Pattern(symbol);
 	}
 
@@ -84,7 +70,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * 
 	 * @see org.matheclipse.core.patternmatching.PatternMatcher
 	 */
-	// int fIndex = 0;
+	int fIndex = -1;
 
 	/**
 	 * The hash value of this object computed in the constructor.
@@ -148,9 +134,9 @@ public class Pattern extends ExprImpl implements IPattern {
 	/**
 	 * @return
 	 */
-	// public int getIndex() {
-	// return fIndex;
-	// }
+	public int getIndex() {
+		return fIndex;
+	}
 
 	/**
 	 * @return
@@ -180,9 +166,9 @@ public class Pattern extends ExprImpl implements IPattern {
 	// return fSymbol.toString().equals(str);
 	// }
 
-	// public void setIndex(final int i) {
-	// fIndex = i;
-	// }
+	public void setIndex(final int i) {
+		fIndex = i;
+	}
 
 	// public String toString() {
 	// if (fCheck == null) {
@@ -191,70 +177,6 @@ public class Pattern extends ExprImpl implements IPattern {
 	// return fSymbol.toString() + "_" + fCheck.toString();
 	// }
 
-	// @Override
-	// public boolean move(final ObjectSpace os) {
-	// if (super.move(os)) {
-	// if (fSymbol != null) {
-	// fSymbol.move(os);
-	// }
-	// if (fCondition != null) {
-	// fCondition.move(os);
-	// }
-	// }
-	// return false;
-	// }
-	// public Pattern copy() {
-	// // Pattern p;
-	// // if (Config.SERVER_MODE) {
-	// // p = FACTORY.object();
-	// // } else {
-	// // p = new Pattern();
-	// // }
-	// Pattern p= new Pattern();
-	// p.fSymbol = fSymbol;
-	// if (fCondition != null) {
-	// p.fCondition = fCondition.copy();
-	// } else {
-	// p.fCondition = null;
-	// }
-	// return p;
-	// }
-	//
-	// public Pattern copyNew() {
-	// Pattern r = new Pattern();
-	// r.fSymbol = fSymbol;
-	// if (fCondition != null) {
-	// r.fCondition = fCondition.copyNew();
-	// } else {
-	// r.fCondition = null;
-	// }
-	// return r;
-	// }
-
-	// public void recycle() {
-	// if (fCondition != null) {
-	// fCondition.recycle();
-	// }
-	// FACTORY.recycle(this);
-	// }
-
-	// public Text toText() {
-	// final TextBuilder tb = TextBuilder.newInstance();
-	// if (fSymbol == null) {
-	// if (fCondition == null) {
-	// tb.append("_");
-	// } else {
-	// tb.append("_" + fCondition.toString());
-	// }
-	// } else {
-	// if (fCondition == null) {
-	// tb.append(fSymbol.toString() + "_");
-	// } else {
-	// tb.append(fSymbol.toString() + "_" + fCondition.toString());
-	// }
-	// }
-	// return tb.toText();
-	// }
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
@@ -276,7 +198,7 @@ public class Pattern extends ExprImpl implements IPattern {
 				char ch = symbolStr.charAt(0);
 				if (symbolStr.length() == 1 && fCondition == null && !fDefault) {
 					if ('a' <= ch && ch <= 'z') {
-						return symbolStr + "_";
+						return "$p(" + symbolStr + ")";
 					}
 				}
 				if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
@@ -486,7 +408,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	public final boolean isPatternExpr() {
 		return true;
 	}
-	
+
 	/**
 	 * Groovy operator overloading
 	 */

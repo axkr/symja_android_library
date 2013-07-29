@@ -328,7 +328,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @param pm2
 	 * @return
 	 */
-	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1, final PatternMap pm2) {
+	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2) {
 		if (patternExpr1 == patternExpr2) {
 			return true;
 		}
@@ -338,11 +338,11 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			if (l1.size() != l2.size()) {
 				return false;
 			}
-			if (!equivalent(l1.head(), l2.head(), pm1, pm2)) {
+			if (!equivalent(l1.head(), l2.head())) {
 				return false;
 			}
 			for (int i = 1; i < l1.size(); i++) {
-				if (!equivalent(l1.get(i), l2.get(i), pm1, pm2)) {
+				if (!equivalent(l1.get(i), l2.get(i))) {
 					return false;
 				}
 			}
@@ -352,7 +352,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			// test if the pattern indices are equal
 			final IPattern p1 = (IPattern) patternExpr1;
 			final IPattern p2 = (IPattern) patternExpr2;
-			if (pm1.getIndex(p1) != pm2.getIndex(p2)) {
+			if (p1.getIndex() != p2.getIndex()) {
 				return false;
 			}
 			// test if the "check" expressions are equal
@@ -725,16 +725,22 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			return false;
 		}
 
-		ISymbol sym = pattern.getSymbol();
-		if (sym != null) {
-			final IExpr value = fPatternMap.getValue(sym);
-			if (value != null) {
-				return expr.equals(value);
-			}
-
-			fPatternMap.setValue(sym, expr);
+		IExpr value = fPatternMap.getValue(pattern);
+		if (value != null) {
+			return expr.equals(value);
 		}
+		fPatternMap.setValue(pattern, expr);
 		return true;
+		// ISymbol sym = pattern.getSymbol();
+		// if (sym != null) {
+		// final IExpr value = fPatternMap.getValue(sym);
+		// if (value != null) {
+		// return expr.equals(value);
+		// }
+		//
+		// fPatternMap.setValue(sym, expr);
+		// }
+		// return true;
 	}
 
 	private boolean matchPatternSequence(final IPatternSequence pattern, final IAST sequence) {
@@ -742,17 +748,23 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			return false;
 		}
 
-		ISymbol sym = pattern.getSymbol();
-
-		if (sym != null) {
-			final IExpr value = fPatternMap.getValue(sym);
-			if (value != null) {
-				return sequence.equals(value);
-			}
-
-			fPatternMap.setValue(sym, sequence);
+		IExpr value = fPatternMap.getValue(pattern);
+		if (value != null) {
+			return sequence.equals(value);
 		}
+		fPatternMap.setValue(pattern, sequence);
 		return true;
+		// ISymbol sym = pattern.getSymbol();
+		//
+		// if (sym != null) {
+		// final IExpr value = fPatternMap.getValue(sym);
+		// if (value != null) {
+		// return sequence.equals(value);
+		// }
+		//
+		// fPatternMap.setValue(sym, sequence);
+		// }
+		// return true;
 	}
 
 	@Override
@@ -773,7 +785,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			if (isRuleWithoutPatterns()) {
 				return fLhsPatternExpr.equals(pm.fLhsPatternExpr);
 			}
-			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
+			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr)) {
 				if ((fPatternCondition != null) && (pm.fPatternCondition != null)) {
 					return fPatternCondition.equals(pm.fPatternCondition);
 				}

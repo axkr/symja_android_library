@@ -108,7 +108,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			return false;
 		}
 		// TODO refine equivalent for RHS symbols which are patterns on the LHS.
-		return equivalent(patternExpr1, patternExpr2, pm1, pm2);
+		return equivalent(patternExpr1, patternExpr2);
 	}
 
 	@Override
