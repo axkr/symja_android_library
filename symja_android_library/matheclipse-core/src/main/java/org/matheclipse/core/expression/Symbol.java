@@ -556,10 +556,15 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	@Override
 	public List<IAST> definition() {
-		if (fDownRulesData == null) {
-			return new ArrayList<IAST>();
+		ArrayList<IAST> result = new ArrayList<IAST>();
+		if (fDownRulesData != null) {
+			result.addAll(fDownRulesData.definition());
 		}
-		return fDownRulesData.definition();
+		if (fUpRulesData == null) {
+			return result;
+		}
+		result.addAll(fUpRulesData.definition());
+		return result;
 	}
 
 	/** {@inheritDoc} */

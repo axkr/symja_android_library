@@ -93,7 +93,9 @@ public class Package implements IFunctionEvaluator {
 	private static void determineRuleHead(IAST rule, HashSet<ISymbol> unprotectedSymbolSet,
 			HashMap<ISymbol, ISymbol> convertedSymbolMap) {
 		ISymbol lhsHead;
-		if (rule.size() > 1 && (rule.head().equals(F.Set) || rule.head().equals(F.SetDelayed))) {
+		if (rule.size() > 1
+				&& (rule.head().equals(F.Set) || rule.head().equals(F.SetDelayed) || rule.head().equals(F.UpSet) || rule.head()
+						.equals(F.UpSetDelayed))) {
 			// determine the head to which this rule is associated
 			lhsHead = null;
 			if (rule.get(1).isAST()) {

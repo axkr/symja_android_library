@@ -605,7 +605,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// evaluation then initializing rules for predefined symbols
 				// (i.e. Sin,
 				// Cos,...)
-				if (!(symbol.equals(F.Set) || symbol.equals(F.SetDelayed))) {
+				if (!(symbol.equals(F.Set) || symbol.equals(F.SetDelayed) || symbol.equals(F.UpSet) || symbol
+						.equals(F.UpSetDelayed))) {
 					return null;
 				}
 			} else {
