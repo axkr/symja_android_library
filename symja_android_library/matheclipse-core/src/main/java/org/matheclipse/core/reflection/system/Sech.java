@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Secant function
+ * Hyperbolic Secant function
  * 
  * See <a
  * href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic

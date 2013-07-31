@@ -24,10 +24,10 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Cosecant function
+ * Hyperbolic Cosecant function
  * 
  * See <a
- * href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * functions</a>
  */
 public class Csch extends AbstractTrigArg1 implements INumeric {
