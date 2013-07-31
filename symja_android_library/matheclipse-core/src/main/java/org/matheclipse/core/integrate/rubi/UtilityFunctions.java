@@ -437,14 +437,6 @@ public class UtilityFunctions {
 		return unary($s("TrigReduce"), v);
 	}
 
-	public static IAST Csch(final IExpr a) {
-		return unary($s("Csch"), a);
-	}
-
-	public static IAST Sech(final IExpr a) {
-		return unary($s("Sech"), a);
-	}
-
 	public static IAST FractionalPart(final IExpr a) {
 		return unary($s("FractionalPart"), a);
 	}

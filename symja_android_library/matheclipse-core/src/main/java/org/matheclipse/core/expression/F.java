@@ -272,6 +272,7 @@ public class F {
 	public final static ISymbol Count = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count");
 	public final static ISymbol Cross = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cross" : "Cross");
 	public final static ISymbol Csc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
+	public final static ISymbol Csch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
 	public final static ISymbol Curl = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "curl" : "Curl");
 	public final static ISymbol D = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "d" : "D");
 	public final static ISymbol Decrement = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "decrement" : "Decrement");
@@ -510,6 +511,7 @@ public class F {
 	public final static ISymbol SameQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sameq" : "SameQ");
 	public final static ISymbol Scan = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "scan" : "Scan");
 	public final static ISymbol Sec = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
+	public final static ISymbol Sech = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sech" : "Sech");
 	public final static ISymbol Select = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
 	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set");
 
@@ -915,6 +917,10 @@ public class F {
 		return unary(Sec, a0);
 	}
 
+	public static IAST Sech(final IExpr a0) {
+		return unary(Sech, a0);
+	}
+	
 	public static IAST Sequence() {
 		return ast(Sequence);
 	}
@@ -1518,6 +1524,10 @@ public class F {
 		return unary(Csc, a0);
 	}
 
+	public static IAST Csch(final IExpr a0) {
+		return unary(Csch, a0);
+	}
+	
 	public static IAST Slot(final IExpr a0) {
 		return unary(Slot, a0);
 	}
