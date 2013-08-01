@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.generic.interfaces.INumericFunction;
@@ -32,15 +33,15 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		}
 	}
 
-	private final class FloorNumericFunction implements INumericFunction<IExpr> {
-		public IExpr apply(double value) {
-			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-				long result = Math.round(Math.floor(value));
-				return F.integer(result);
-			}
-			return null;
-		}
-	}
+//	private final class FloorNumericFunction implements INumericFunction<IExpr> {
+//		public IExpr apply(double value) {
+//			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+//				long result = Math.round(Math.floor(value));
+//				return F.integer(result);
+//			}
+//			return null;
+//		}
+//	}
 
 	public Floor() {
 	}
@@ -60,9 +61,14 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		if (arg1.isSignedNumber()) {
 			return ((ISignedNumber) arg1).floor();
 		}
-		if (arg1.isSymbol()) {
-			ISymbol sym = (ISymbol) arg1;
-			return sym.mapConstantDouble(new FloorNumericFunction());
+		if (NumericQ.CONST.apply(arg1)) {
+			IExpr result = F.evaln(arg1);
+			if (result.isSignedNumber()) {
+				result = ((ISignedNumber) result).floor();
+				if (result.isNumIntValue()) {
+					return F.integer(((INum) result).intValue());
+				}
+			}
 		}
 
 		if (arg1.isPlus()) {

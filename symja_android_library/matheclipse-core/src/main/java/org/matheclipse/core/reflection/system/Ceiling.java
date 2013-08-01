@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.generic.interfaces.INumericFunction;
@@ -33,15 +34,16 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		}
 	}
 
-	private final class CeilingNumericFunction implements INumericFunction<IExpr> {
-		public IExpr apply(double value) {
-			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-				long result = Math.round(Math.ceil(value));
-				return F.integer(result);
-			}
-			return null;
-		}
-	}
+	// private final class CeilingNumericFunction implements
+	// INumericFunction<IExpr> {
+	// public IExpr apply(double value) {
+	// if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+	// long result = Math.round(Math.ceil(value));
+	// return F.integer(result);
+	// }
+	// return null;
+	// }
+	// }
 
 	public Ceiling() {
 	}
@@ -61,9 +63,14 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		if (arg1.isSignedNumber()) {
 			return ((ISignedNumber) arg1).ceil();
 		}
-		if (arg1.isSymbol()) {
-			ISymbol sym = (ISymbol) arg1;
-			return sym.mapConstantDouble(new CeilingNumericFunction());
+		if (NumericQ.CONST.apply(arg1)) {
+			IExpr result = F.evaln(arg1);
+			if (result.isSignedNumber()) {
+				result = ((ISignedNumber) result).ceil();
+				if (result.isNumIntValue()) {
+					return F.integer(((INum) result).intValue());
+				}
+			}
 		}
 		if (arg1.isPlus()) {
 			IAST[] result = ((IAST) arg1).split(new CeilingPlusFunction());

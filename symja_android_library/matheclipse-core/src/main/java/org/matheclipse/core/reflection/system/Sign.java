@@ -1,17 +1,21 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Gets the signum value of a number
- *
- * @return 0 for <code>this == 0</code>;<br/> +1 for <code>real(this) &gt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &gt; 0 )</code>;<br/>
- * -1 for <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
+ * Gets the sign value of a number. See <a
+ * href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign
+ * function</a>
+ * 
  */
 public class Sign implements IFunctionEvaluator {
 
@@ -19,12 +23,31 @@ public class Sign implements IFunctionEvaluator {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 2) {
-			return null;
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.get(1);
+		if (arg1.isNumber()) {
+			return numberSign((INumber) arg1);
 		}
-		if (ast.get(1).isSignedNumber()) {
-			final int signum = ((ISignedNumber) ast.get(1)).sign();
+		if (NumericQ.CONST.apply(arg1)) {
+			IExpr result = F.evaln(arg1);
+			if (result.isSignedNumber()) {
+				return numberSign((INumber) result);
+			}
+		}
+		return null;
+	}
+
+	public IExpr numberSign(INumber arg1) {
+		if (arg1.isSignedNumber()) {
+			final int signum = ((ISignedNumber) arg1).sign();
 			return F.integer(signum);
+		} else if (arg1.isComplex()) {
+			IComplex c = (IComplex) arg1;
+			return F.Times(c, F.Power(c.eabs(), F.CN1));
+		} else if (arg1.isComplexNumeric()) {
+			IComplexNum c = (IComplexNum) arg1;
+			return c.divide(F.num(c.dabs()));
 		}
 		return null;
 	}

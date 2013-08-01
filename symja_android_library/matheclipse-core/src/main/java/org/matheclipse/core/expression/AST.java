@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -227,6 +226,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will
 	 * recursively call head().
 	 */
+	@Override
 	public ISymbol topHead() {
 		IExpr header = head();
 		if (header instanceof ISymbol) {
@@ -270,22 +270,27 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @see org.matheclipse.parser.interfaces.IExpr#hierarchy()
 	 */
+	@Override
 	public final int hierarchy() {
 		return ASTID;
 	}
 
+	@Override
 	public final boolean isLTOrdered(final IExpr obj) {
 		return compareTo(obj) < 0;
 	}
 
+	@Override
 	public final boolean isLEOrdered(final IExpr obj) {
 		return compareTo(obj) <= 0;
 	}
 
+	@Override
 	public final boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
 
+	@Override
 	public final boolean isGEOrdered(final IExpr obj) {
 		return compareTo(obj) >= 0;
 	}
@@ -293,6 +298,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * @return
 	 */
+	@Override
 	public final int getEvalFlags() {
 		return fEvalFlags;
 	}
@@ -300,6 +306,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * Set the flags to this value
 	 */
+	@Override
 	public final void setEvalFlags(final int i) {
 		fEvalFlags = i;
 	}
@@ -307,6 +314,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * Add a new flag to the existing flags
 	 */
+	@Override
 	public final void addEvalFlags(final int i) {
 		fEvalFlags |= i;
 	}
@@ -314,6 +322,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * @return
 	 */
+	@Override
 	public final boolean isEvalFlagOn(final int i) {
 		return (fEvalFlags & i) == i;
 	}
@@ -321,6 +330,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * @return
 	 */
+	@Override
 	public final boolean isEvalFlagOff(final int i) {
 		return (fEvalFlags & i) == 0;
 	}
@@ -329,26 +339,32 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return F.Times(F.CN1, this);
 	}
 
+	@Override
 	public IExpr plus(final IExpr that) {
 		return F.Plus(this, that);
 	}
 
+	@Override
 	public IExpr inverse() {
 		return F.Power(this, F.CN1);
 	}
 
+	@Override
 	public IExpr times(final IExpr that) {
 		return F.Times(this, that);
 	}
 
+	@Override
 	public final boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
 
+	@Override
 	public final boolean isSequence() {
 		return isSameHeadSizeGE(F.Sequence, 1);
 	}
 
+	@Override
 	public boolean isListOfLists() {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
@@ -365,6 +381,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isComplexInfinity() {
 		return isSameHead(F.DirectedInfinity, 1);
 	}
@@ -372,6 +389,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isDirectedInfinity() {
 		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
 	}
@@ -379,6 +397,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isInfinity() {
 		return this.equals(F.CInfinity);
 	}
@@ -386,116 +405,144 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isNegativeInfinity() {
 		return this.equals(F.CNInfinity);
 	}
 
+	@Override
 	public final boolean isPlus() {
 		return isSameHeadSizeGE(F.Plus, 3);
 	}
 
+	@Override
 	public final boolean isPower() {
 		return isSameHead(F.Power, 3);
 	}
 
+	@Override
 	public final boolean isTimes() {
 		return isSameHeadSizeGE(F.Times, 3);
 	}
 
+	@Override
 	public final boolean isSin() {
 		return isSameHead(F.Sin, 2);
 	}
 
+	@Override
 	public final boolean isCos() {
 		return isSameHead(F.Cos, 2);
 	}
 
+	@Override
 	public final boolean isTan() {
 		return isSameHead(F.Tan, 2);
 	}
 
+	@Override
 	public final boolean isArcSin() {
 		return isSameHead(F.ArcSin, 2);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isAnd() {
 		return isSameHeadSizeGE(F.And, 3);
 	}
 
+	@Override
 	public final boolean isArcCos() {
 		return isSameHead(F.ArcCos, 2);
 	}
 
+	@Override
 	public final boolean isArcTan() {
 		return isSameHead(F.ArcTan, 2);
 	}
 
+	@Override
 	public final boolean isSinh() {
 		return isSameHead(F.Sinh, 2);
 	}
 
+	@Override
 	public final boolean isSlot() {
 		return isSameHead(F.Slot, 2) && get(1).isInteger();
 	}
 
+	@Override
 	public final boolean isSlotSequence() {
 		return isSameHead(F.SlotSequence, 2) && get(1).isInteger();
 	}
 
+	@Override
 	public final boolean isCosh() {
 		return isSameHead(F.Cosh, 2);
 	}
 
+	@Override
 	public final boolean isTanh() {
 		return isSameHead(F.Tanh, 2);
 	}
 
+	@Override
 	public final boolean isArcSinh() {
 		return isSameHead(F.ArcSinh, 2);
 	}
 
+	@Override
 	public final boolean isArcCosh() {
 		return isSameHead(F.ArcCosh, 2);
 	}
 
+	@Override
 	public final boolean isArcTanh() {
 		return isSameHead(F.ArcTanh, 2);
 	}
 
+	@Override
 	public final boolean isLog() {
 		return isSameHead(F.Log, 2);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isOr() {
 		return isSameHeadSizeGE(F.Or, 3);
 	}
 
+	@Override
 	public final boolean isOne() {
 		return false;
 	}
 
+	@Override
 	public final boolean isMinusOne() {
 		return false;
 	}
 
+	@Override
 	public final boolean isZero() {
 		return false;
 	}
 
+	@Override
 	public final boolean isTrue() {
 		return false;
 	}
 
+	@Override
 	public final boolean isFalse() {
 		return false;
 	}
 
+	@Override
 	public final boolean isSame(IExpr expression) {
 		return equals(expression);
 	}
 
+	@Override
 	public final boolean isSame(IExpr expression, double epsilon) {
 		return equals(expression);
 	}
@@ -503,6 +550,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int[] isMatrix() {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
@@ -543,6 +591,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return null;
 	}
 
+	@Override
 	public final int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
 			return size() - 1;
@@ -566,83 +615,102 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return -1;
 	}
 
+	@Override
 	public final boolean isFraction() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isPattern() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isPatternExpr() {
 		return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isPatternSequence() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isCondition() {
 		return size() == 3 && head().equals(F.Condition);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isModule() {
 		return size() == 3 && head().equals(F.Module);
 	}
 
+	@Override
 	public final boolean isSymbol() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
 	public boolean isConstant() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isComplex() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
+	public boolean isComplexNumeric() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isInteger() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isNumIntValue() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isRational() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isSignedNumber() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isNot() {
 		return size() == 2 && head().equals(F.Not);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isNumeric() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isNumericFunction() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
@@ -657,20 +725,24 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
+	@Override
 	public final boolean isNumber() {
 		return false;
 	}
 
+	@Override
 	public IAST apply(final IExpr head) {
 		final IAST ast = clone();
 		ast.set(0, head);
 		return ast;
 	}
 
+	@Override
 	public final IAST apply(final IExpr head, final int start) {
 		return apply(head, start, size());
 	}
 
+	@Override
 	public IAST apply(final IExpr head, final int start, final int end) {
 		final IAST ast = F.ast(head);
 		for (int i = start; i < end; i++) {
@@ -679,12 +751,14 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return ast;
 	}
 
+	@Override
 	public IExpr apply(List<? extends IExpr> leaves) {
 		final IAST ast = F.ast(head());
 		addAll(leaves);
 		return ast;
 	}
 
+	@Override
 	public IExpr apply(IExpr... leaves) {
 		final IAST ast = F.ast(head());
 		Collections.addAll(ast, leaves);
@@ -694,6 +768,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IAST map(final Function<IExpr, IExpr> function) {
 		return map(clone(), function);
 	}
@@ -701,6 +776,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
 		final IAST f = clone();
 		f.set(0, head);
@@ -710,6 +786,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
@@ -724,6 +801,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
 		for (int i = 1; i < size(); i++) {
 			resultAST.add(function.apply(get(i), secondAST.get(i)));
@@ -734,6 +812,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IExpr replaceAll(final IAST astRules) {
 		return this.accept(new VisitorReplaceAll(astRules));
 	}
@@ -741,6 +820,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IExpr replaceAll(final Function<IExpr, IExpr> function) {
 		return this.accept(new VisitorReplaceAll(function));
 	}
@@ -748,6 +828,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IExpr replacePart(final IAST astRules) {
 		return this.accept(new VisitorReplacePart(astRules));
 	}
@@ -755,6 +836,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IExpr replaceRepeated(final IAST astRules) {
 		return ExprImpl.replaceRepeated(this, new VisitorReplaceAll(astRules));
 	}
@@ -762,10 +844,12 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
 		return ExprImpl.replaceRepeated(this, new VisitorReplaceAll(function));
 	}
 
+	@Override
 	public final IExpr replaceSlots(final IAST astSlots) {
 		return this.accept(new VisitorReplaceSlots(astSlots));
 	}
@@ -773,6 +857,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IAST filter(IAST filterAST, Predicate<IExpr> predicate) {
 		return (new ASTRange(this, 1, size())).filter(filterAST, predicate);
 	}
@@ -780,6 +865,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate) {
 		return (new ASTRange(this, 1, size())).filter(filterAST, restAST, predicate);
 	}
@@ -787,6 +873,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IAST[] split(Predicate<IExpr> predicate) {
 		IAST[] result = new IAST[2];
 		result[0] = copyHead();
@@ -798,6 +885,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IAST[] split(final Function<IExpr, IExpr> function) {
 		IAST[] result = new IAST[2];
 		result[0] = copyHead();
@@ -809,21 +897,25 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isAST() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isOrderlessAST() {
 		return ((ISymbol.ORDERLESS & topHead().getAttributes()) == ISymbol.ORDERLESS);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isFlatAST() {
 		return ((ISymbol.FLAT & topHead().getAttributes()) == ISymbol.FLAT);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isAST(final IExpr header) {
 		return isSameHead(header);
 	}
@@ -831,6 +923,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isAST(final IExpr header, final int length) {
 		return isSameHead(header, length);
 	}
@@ -838,6 +931,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isASTSizeGE(final IExpr header, final int length) {
 		return isSameHeadSizeGE(header, length);
 	}
@@ -845,6 +939,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isAST(final String symbol) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			return get(0).toString().equals(symbol.toLowerCase());
@@ -855,6 +950,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isAST(final String symbol, final int length) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			return (size() == length) && get(0).toString().equals(symbol.toLowerCase());
@@ -863,22 +959,26 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isRuleAST() {
 		return size() == 3 && (head().equals(F.Rule) || head().equals(F.RuleDelayed));
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isFree(final IExpr pattern, boolean heads) {
 		final PatternMatcher matcher = new PatternMatcher(pattern);
 		return !isMember(matcher, heads);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isFree(Predicate<IExpr> predicate, boolean heads) {
 		return !isMember(predicate, heads);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
 		if (predicate.apply(this)) {
 			return true;
@@ -898,6 +998,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean isFunction() {
 		return size() >= 2 && head().equals(F.Function);
 	}
@@ -965,6 +1066,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * expression is canonical less than, equal to, or greater than the
 	 * specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof AST) {
 			final AST ast = (AST) expr;
@@ -1055,6 +1157,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * Calculate a special hash value to find a matching rule in a hash table
 	 * 
 	 */
+	@Override
 	final public int patternHashCode() {
 		if (fPatternMatchingHashValue == 0) {
 			if (size() > 1) {
@@ -1090,22 +1193,27 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return fPatternMatchingHashValue;
 	}
 
+	@Override
 	public final boolean isAtom() {
 		return false;
 	}
 
+	@Override
 	public final IAST copyHead() {
 		return newInstance(get(0));
 	}
 
+	@Override
 	public final IAST copyUntil(int index) {
 		return newInstance(this, index);
 	}
 
+	@Override
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return AST.COPY.replaceAll(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableList));
 	}
 
+	@Override
 	public String fullFormString() {
 		final String sep = ", ";
 		IExpr temp = head();
@@ -1139,6 +1247,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return text.toString();
 	}
 
+	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final String sep = ",";
 		final IExpr temp = head();
@@ -1252,6 +1361,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final boolean addAll(List<? extends IExpr> ast) {
 		return addAll(ast, 1, ast.size());
 	}
@@ -1259,6 +1369,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
 		if (ast.size() > 0 && startPosition < endPosition) {
 			ensureCapacity(size() + (endPosition - startPosition));
@@ -1273,6 +1384,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public final ASTRange args() {
 		return new ASTRange(this, 1);
 	}
@@ -1282,6 +1394,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @return
 	 */
+	@Override
 	public final ASTRange range() {
 		return new ASTRange(this, 0, size());
 	}
@@ -1291,6 +1404,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @return
 	 */
+	@Override
 	public final ASTRange range(final int start) {
 		return new ASTRange(this, start, size());
 	}
@@ -1300,6 +1414,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @return
 	 */
+	@Override
 	public final ASTRange range(final int start, final int end) {
 		return new ASTRange(this, start, end);
 	}
@@ -1379,16 +1494,19 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
@@ -1399,10 +1517,12 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @return
 	 */
+	@Override
 	public final IExpr negative() {
 		return opposite();
 	}
 
+	@Override
 	public IExpr minus(final IExpr that) {
 		return F.Plus(this, F.Times(F.CN1, that));
 	}
@@ -1414,38 +1534,47 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @param that
 	 * @return
 	 */
+	@Override
 	public final IExpr multiply(final IExpr that) {
 		return times(that);
 	}
 
+	@Override
 	public final IExpr power(final Integer n) {
 		return F.Power(this, F.integer(n));
 	}
 
+	@Override
 	public final IExpr power(final IExpr that) {
 		return F.Power(this, that);
 	}
 
+	@Override
 	public IExpr div(final IExpr that) {
 		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
 
+	@Override
 	public IExpr mod(final IExpr that) {
 		return F.Mod(this, that);
 	}
 
+	@Override
 	public IExpr and(final IExpr that) {
 		return F.And(this, that);
 	}
 
+	@Override
 	public IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
 
+	@Override
 	public final IExpr getAt(final int index) {
 		return get(index);
 	}
 
+	@Override
 	public Object asType(Class clazz) {
 		if (clazz.equals(Boolean.class)) {
 			IExpr temp = F.eval(this);
@@ -1483,6 +1612,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
+	@Override
 	public final IInteger getInt(int index) {
 		try {
 			return (IInteger) get(index);
@@ -1500,6 +1630,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
+	@Override
 	public final INumber getNumber(int index) {
 		try {
 			return (INumber) get(index);
@@ -1517,6 +1648,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @throws WrongArgumentType
 	 *             if the cast is not possible
 	 */
+	@Override
 	public final IAST getAST(int index) {
 		try {
 			return (IAST) get(index);
@@ -1533,6 +1665,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * @return
 	 * @throws WrongArgumentType
 	 */
+	@Override
 	public final IAST getList(int index) {
 		IExpr temp = get(index);
 		if (temp.isList()) {
@@ -1541,6 +1674,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		throw new WrongArgumentType(this, temp, index);
 	}
 
+	@Override
 	public List<IExpr> leaves() {
 		int sz = size();
 		if (sz < 2) {
@@ -1575,6 +1709,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated
 	@Override
 	public int signum() {
 		if (isTimes()) {

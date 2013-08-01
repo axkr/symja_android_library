@@ -296,10 +296,16 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	public boolean isAtom();
 
 	/**
-	 * Test if this expression is a complex number
+	 * Test if this expression is a symbolic complex number
 	 * 
 	 */
 	public boolean isComplex();
+
+	/**
+	 * Test if this expression is a numeric complex number
+	 * 
+	 */
+	public boolean isComplexNumeric();
 
 	/**
 	 * Test if this expression is a symbol with attribute <code>Constant</code>:

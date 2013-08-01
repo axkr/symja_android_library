@@ -85,6 +85,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
+	@Override
 	public double getImaginaryPart() {
 		double temp = fComplex.getImaginary();
 		if (temp == (-0.0)) {
@@ -96,6 +97,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
+	@Override
 	public double getRealPart() {
 		double temp = fComplex.getReal();
 		if (temp == (-0.0)) {
@@ -104,14 +106,17 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return temp;
 	}
 
+	@Override
 	public boolean isZero() {
 		return (fComplex.getReal() == 0.0) && (fComplex.getImaginary() == 0.0);
 	}
 
+	@Override
 	public int hierarchy() {
 		return DOUBLECOMPLEXID;
 	}
 
+	@Override
 	public IComplexNum add(final IComplexNum val) {
 		return newInstance(fComplex.add(((ComplexNum) val).fComplex));
 	}
@@ -120,10 +125,12 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return newInstance(fComplex.add(that.fComplex));
 	}
 
+	@Override
 	public IComplexNum multiply(final IComplexNum val) {
 		return newInstance(fComplex.multiply(((ComplexNum) val).fComplex));
 	}
 
+	@Override
 	public IComplexNum pow(final IComplexNum val) {
 		return newInstance(fComplex.pow(((ComplexNum) val).fComplex));
 	}
@@ -139,6 +146,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
+	@Override
 	public IComplexNum conjugate() {
 		return newInstance(fComplex.conjugate());
 	}
@@ -196,6 +204,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return null;
 	}
 
+	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ComplexNum) {
 			return F.isZero(fComplex.getReal() - ((ComplexNum) expression).fComplex.getReal(), epsilon)
@@ -208,15 +217,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return false;
 	}
 
-	/**
-	 * Return the absolute value of this complex number.
-	 * <p>
-	 * Returns <code>NaN</code> if either real or imaginary part is
-	 * <code>NaN</code> and <code>Double.POSITIVE_INFINITY</code> if neither
-	 * part is <code>NaN</code>, but at least one part takes an infinite value.
-	 * 
-	 * @return the absolute value
-	 */
+	/** {@inheritDoc} */
+	@Override
 	public double dabs() {
 		if (isNaN()) {
 			return Double.NaN;
@@ -241,6 +243,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 	}
 
+	@Override
 	public Num eabs() {
 		return Num.valueOf(dabs());
 	}
@@ -366,6 +369,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
+	@Override
 	public ComplexNum negate() {
 		return newInstance(fComplex.negate());
 	}
@@ -461,6 +465,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return super.times(that);
 	}
  
+	@Override
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
@@ -479,6 +484,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	// public Text toText() {
 	// return fComplex.toText();
 	// }
+	@Override
 	public int complexSign() {
 		final int i = (int) Math.signum(fComplex.getReal());
 		if (i == 0) {
@@ -524,6 +530,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof ComplexNum) {
 			return compareTo(((ComplexNum) obj).fComplex);
@@ -532,6 +539,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return (hierarchy() - (obj).hierarchy());
 	}
 
+	@Override
 	public ISymbol head() {
 		return F.Complex;
 	}
@@ -545,16 +553,19 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}

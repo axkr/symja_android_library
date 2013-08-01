@@ -1,8 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigInteger;
-
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -63,30 +60,37 @@ public class Num extends ExprImpl implements INum {
 		fDouble = value;
 	}
 
+	@Override
 	public int hierarchy() {
 		return DOUBLEID;
 	}
 
+	@Override
 	public boolean isNumIntValue() {
 		return fDouble == Math.floor(fDouble);
 	}
 
+	@Override
 	public boolean isNegative() {
 		return fDouble < 0.0;
 	}
 
+	@Override
 	public boolean isPositive() {
 		return fDouble > 0.0;
 	}
 
+	@Override
 	public boolean equalsInt(final int i) {
 		return fDouble == i;
 	}
 
+	@Override
 	public INum add(final INum val) {
 		return valueOf(fDouble + val.getRealPart());
 	}
 
+	@Override
 	public INum multiply(final INum val) {
 		return valueOf(fDouble * val.getRealPart());
 	}
@@ -98,6 +102,7 @@ public class Num extends ExprImpl implements INum {
 	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.interfaces
 	 * .IDouble)
 	 */
+	@Override
 	public INum pow(final INum val) {
 		return valueOf(Math.pow(fDouble, val.getRealPart()));
 	}
@@ -136,6 +141,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * @return
 	 */
+	@Override
 	public Num eabs() {
 		return newInstance(Math.abs(fDouble));
 	}
@@ -156,6 +162,7 @@ public class Num extends ExprImpl implements INum {
 		return super.plus(that);
 	}
 
+	@Override
 	public ISignedNumber minus(ISignedNumber that) {
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
@@ -185,6 +192,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * @return
 	 */
+	@Override
 	public double doubleValue() {
 		return fDouble;
 	}
@@ -225,6 +233,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * @return
 	 */
+	@Override
 	public int intValue() {
 		return Double.valueOf(fDouble).intValue();
 	}
@@ -323,6 +332,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * @return
 	 */
+	@Override
 	public ISignedNumber negate() {
 		return newInstance(-fDouble);
 	}
@@ -390,6 +400,7 @@ public class Num extends ExprImpl implements INum {
 	// public Text toText() {
 	// return fDouble.toText();
 	// }
+	@Override
 	public double getRealPart() {
 		double temp = fDouble;
 		if (temp == (-0.0)) {
@@ -414,23 +425,28 @@ public class Num extends ExprImpl implements INum {
 		return F.isZero(fDouble + 1.0);
 	}
 
+	@Override
 	public ISignedNumber round() {
 		return valueOf(Math.rint(fDouble));
 	}
 
+	@Override
 	public int sign() {
 		return (int) Math.signum(fDouble);
 	}
 
+	@Override
 	public int complexSign() {
 		return sign();
 	}
 
+	@Override
 	public ISignedNumber ceil() {
 		return valueOf(Math.ceil(fDouble));
 	}
 
-	public ISignedNumber floor() {
+	@Override
+	public Num floor() {
 		return valueOf(Math.floor(fDouble));
 	}
 
@@ -439,6 +455,7 @@ public class Num extends ExprImpl implements INum {
 	 * negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof Num) {
 			return Double.compare(fDouble, ((Num) obj).fDouble);
@@ -446,10 +463,12 @@ public class Num extends ExprImpl implements INum {
 		return (hierarchy() - (obj).hierarchy());
 	}
 
+	@Override
 	public boolean isLessThan(ISignedNumber that) {
 		return fDouble < that.doubleValue();
 	}
 
+	@Override
 	public boolean isGreaterThan(ISignedNumber that) {
 		return fDouble > that.doubleValue();
 	}
@@ -473,6 +492,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
@@ -480,6 +500,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
@@ -487,6 +508,7 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
