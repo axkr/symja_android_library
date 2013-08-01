@@ -19,22 +19,6 @@ public class Num extends ExprImpl implements INum {
 
 	double fDouble;
 
-	// Double d;
-
-	// private static final ObjectFactory<Num> FACTORY = new ObjectFactory<Num>()
-	// {
-	// @Override
-	// protected Num create() {
-	// if (Config.SERVER_MODE && currentQueue().getSize() >=
-	// Config.DOUBLE_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("DoubleImpl",
-	// currentQueue().getSize());
-	// }
-	// return new Num(0.0);
-	// }
-	//
-	// };
-
 	/**
 	 * Be cautious with this method, no new internal rational is created
 	 * 
@@ -67,7 +51,8 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public boolean isNumIntValue() {
-		return fDouble == Math.floor(fDouble);
+		return F.isNumIntValue(fDouble);
+		// return fDouble == Math.floor(fDouble);
 	}
 
 	@Override
@@ -99,8 +84,8 @@ public class Num extends ExprImpl implements INum {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.interfaces
-	 * .IDouble)
+	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.
+	 * interfaces .IDouble)
 	 */
 	@Override
 	public INum pow(final INum val) {
@@ -253,7 +238,7 @@ public class Num extends ExprImpl implements INum {
 	public long toLong() throws ArithmeticException {
 		return NumberUtil.toLong(fDouble);
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -451,8 +436,8 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override

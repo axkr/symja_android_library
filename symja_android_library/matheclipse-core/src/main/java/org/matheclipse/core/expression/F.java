@@ -922,7 +922,7 @@ public class F {
 	public static IAST Sech(final IExpr a0) {
 		return unary(Sech, a0);
 	}
-	
+
 	public static IAST Sequence() {
 		return ast(Sequence);
 	}
@@ -1529,7 +1529,7 @@ public class F {
 	public static IAST Csch(final IExpr a0) {
 		return unary(Csch, a0);
 	}
-	
+
 	public static IAST Slot(final IExpr a0) {
 		return unary(Slot, a0);
 	}
@@ -2604,6 +2604,14 @@ public class F {
 	// public static boolean isCase(java.math.BigInteger i, IExpr b) {
 	// return equals(i, b);
 	// }
+
+	public static boolean isNumIntValue(double value) {
+		return isZero(value - Math.round(value), Config.DOUBLE_TOLERANCE);
+	}
+
+	public static boolean isNumIntValue(double value, double epsilon) {
+		return isZero(value - Math.round(value), epsilon);
+	}
 
 	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.

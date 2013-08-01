@@ -83,6 +83,11 @@ public class Config {
 	 * Machine epsilon</a>
 	 */
 	public static double DOUBLE_EPSILON = Precision.EPSILON;
+	
+	/**
+     * The double tolerance used for comparisons.
+     */
+	public final static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
 
 	/**
 	 * Maximum size of the BigInteger words in <i>server mode</i>.
