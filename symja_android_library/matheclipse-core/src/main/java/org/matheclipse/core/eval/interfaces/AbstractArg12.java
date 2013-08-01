@@ -60,7 +60,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr e1DblComArg(final IComplexNum d) {
+	public IExpr e1DblComArg(final IComplexNum c) {
 		return null;
 	}
 

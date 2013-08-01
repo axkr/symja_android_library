@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexUtils;
@@ -27,7 +28,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (isNegativeExpression(arg1)) {
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Sinh(Times(CN1, arg1)));
 		}
 		return null;

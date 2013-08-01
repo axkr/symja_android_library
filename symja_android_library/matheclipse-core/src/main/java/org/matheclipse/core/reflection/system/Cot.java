@@ -24,6 +24,7 @@ import static org.matheclipse.core.expression.F.SignCmp;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
@@ -74,7 +75,7 @@ public class Cot extends AbstractTrigArg1 implements INumeric {
 	
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (isNegativeExpression(arg1)) { 
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) { 
 			return Times(CN1, Cot(Times(CN1, arg1)));
 		}
 		return null;

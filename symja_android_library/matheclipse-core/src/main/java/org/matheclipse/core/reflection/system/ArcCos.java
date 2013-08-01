@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.*;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexUtils;
@@ -32,8 +33,6 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric {
 	// "ArcCos[1/4*6^(1/2)*(1-1/3*3^(1/2))]=5/12*Pi", "ArcCos[Cosh[1]]=I",
 	// "ArcCos[1/4*5^(1/2)-1/4]=2/5*Pi",
 	// "ArcCos[1/4*2^(1/2)*(5+5^(1/2))^(1/2)]=1/10*Pi", "ArcCos[1/2]=1/3*Pi",
-	// // "ArcCos[x_NumberQ]:= Pi-ArcCos[-x] /; SignCmp[x]<0 ",
-	// // "ArcCos[x_NumberQ*y_]:= Pi-ArcCos[-x*y] /; SignCmp[x]<0"
 	// };
 
 	/**
@@ -75,17 +74,12 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric {
 	}
 
 	public ArcCos() {
-	}
-
-	// @Override
-	// public String[] getRules() {
-	// return RULES;
-	// }
+	} 
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (isNegativeExpression(arg1)) {
-			return Plus(ArcSin(Times(CN1, arg1)), Times(C1D2, Pi));
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Plus(Times(CN1, Pi), ArcCos(Times(CN1, arg1)));
 		}
 		return null;
 	}

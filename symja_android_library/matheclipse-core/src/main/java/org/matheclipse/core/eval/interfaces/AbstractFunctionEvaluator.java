@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.parser.client.Parser;
@@ -96,6 +97,35 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	public void createRuleFromMethod(ISymbol symbol, String patternString, String methodName) {
 		PatternMatcherAndInvoker pm = new PatternMatcherAndInvoker(patternString, this, methodName);
 		symbol.putDownRule(pm);
+	}
+
+	/**
+	 * Check if the expression is canonical negative.
+	 * 
+	 * @return <code>true</code> if the first argument is canonical negative
+	 */
+	public static boolean isNegativeExpression(final IExpr expr) {
+		if (expr.isNumber()) {
+			if (((INumber) expr).complexSign() < 0) {
+				return true;
+			}
+		} else if (expr.isTimes()) {
+			IAST times = (IAST) expr;
+			if (times.get(1).isNumber()) {
+				if (((INumber) times.get(1)).complexSign() < 0) {
+					return true;
+				}
+			}
+		} else if (expr.isPlus()) {
+			IAST plus = (IAST) expr;
+			if (plus.get(1).isNumber()) {
+				if (((INumber) plus.get(1)).complexSign() < 0) {
+					return true;
+				}
+			}
+		}
+	
+		return false;
 	}
 
 }

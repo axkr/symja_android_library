@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.*;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,16 +16,18 @@ import org.matheclipse.parser.client.SyntaxError;
  * Inverse_trigonometric functions</a>
  */
 public class ArcCot extends AbstractTrigArg1 {
-	/**
-	 * <pre>
-	 *   ArcCot[0]=0,
-	 *   ArcCot[1]=1/4*Pi
-	 * </pre>
+	/*
+{
+ArcCot[0]=0,
+ArcCot[1]=1/4*Pi,
+ArcCot[ComplexInfinity]=0
+}
 	 */
 	final static IAST RULES = List(
-			Set(ArcCot(C0), Times(C1D2, Pi)),
-			Set(ArcCot(C1), Times(C1D4, Pi))
-	);
+			Set(ArcCot(C0),C0),
+			Set(ArcCot(C1),Times(C1D4,Pi)),
+			Set(ArcCot(CComplexInfinity),C0)
+			);
 	
 	@Override
 	public IAST getRuleAST() {
@@ -36,8 +39,8 @@ public class ArcCot extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (isNegativeExpression(arg1)) {
-			return Times(CN1, ArcCot(Times(CN1, arg1)));
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Plus(Times(CN1, Pi), ArcCot(Times(CN1, arg1)));
 		}
 		return null;
 	}

@@ -54,7 +54,7 @@ public class F {
 	 * The map for predefined strings for the
 	 * {@link IExpr#internalFormString(boolean, int)} method.
 	 */
-	public final static Map<String, String> PREDEFINED_INTERNAL_STRINGS = new HashMap<String, String>(61);
+	public final static Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS = new HashMap<String, String>(61);
 
 	public final static Map<String, IPattern> PREDEFINED_PATTERN_MAP = new HashMap<String, IPattern>(61);
 
@@ -772,13 +772,15 @@ public class F {
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
 
-			PREDEFINED_INTERNAL_STRINGS.put("Pi", "Pi");
-			PREDEFINED_INTERNAL_STRINGS.put("E", "E");
-			PREDEFINED_INTERNAL_STRINGS.put("False", "False");
-			PREDEFINED_INTERNAL_STRINGS.put("True", "True");
-			PREDEFINED_INTERNAL_STRINGS.put("Null", "Null");
-			PREDEFINED_INTERNAL_STRINGS.put("Integer", "IntegerHead");
-			PREDEFINED_INTERNAL_STRINGS.put("Symbol", "SymbolHead");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Pi", "Pi");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("E", "E");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("False", "False");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("True", "True");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Null", "Null");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Integer", "IntegerHead");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Symbol", "SymbolHead");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Infinity", "CInfinity");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("ComplexInfinity", "CComplexInfinity");
 
 			Plus.setDefaultValue(C0);
 			Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);

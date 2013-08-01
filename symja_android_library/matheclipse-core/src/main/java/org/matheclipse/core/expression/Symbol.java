@@ -519,7 +519,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 				}
 			}
 			if (Character.isUpperCase(fSymbolName.charAt(0))) {
-				String alias = F.PREDEFINED_INTERNAL_STRINGS.get(fSymbolName);
+				String alias = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(fSymbolName);
 				if (alias != null) {
 					if (alias.contains("::")) {
 						return "$s(\"" + alias + "\")";
