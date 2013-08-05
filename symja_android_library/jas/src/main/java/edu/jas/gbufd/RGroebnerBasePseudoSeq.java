@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RGroebnerBasePseudoSeq.java 4521 2013-07-27 10:16:36Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -319,7 +319,7 @@ public class RGroebnerBasePseudoSeq<C extends RegularRingElem<C>> extends RGroeb
      * Minimal ordered Groebner basis. 
      * @param Gp a Groebner base. 
      * @return a reduced Groebner base of Gp. 
-     * @todo use primitivePart
+     * TODO: use primitivePart
      */
     List<GenPolynomial<C>> minimalGBtesting(List<GenPolynomial<C>> Gp) {
         if (Gp == null || Gp.size() <= 1) {

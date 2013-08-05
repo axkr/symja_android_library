@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableIdeal.java 4499 2013-07-24 14:20:23Z kredel $
  */
 
 package edu.jas.application;
@@ -392,6 +392,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         List<GenSolvablePolynomial<C>> G = getList();
         logger.info("GB computing = " + G);
         G = bb.leftGB(G);
+        //G = bb.twosidedGB(G);
         //if (isTopt) {
         //    List<Integer> perm = ((OptimizedPolynomialList<C>) list).perm;
         //    list = new OptimizedPolynomialList<C>(perm, getRing(), G);

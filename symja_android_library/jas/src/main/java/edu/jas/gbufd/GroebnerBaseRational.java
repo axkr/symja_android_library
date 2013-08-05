@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseRational.java 4291 2012-11-04 18:16:27Z kredel $
  */
 
 package edu.jas.gbufd;

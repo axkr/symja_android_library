@@ -1,12 +1,11 @@
 /*
- * $Id$
+ * $Id: EReductionSeq.java 4501 2013-07-24 15:04:19Z kredel $
  */
 
 package edu.jas.gb;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,6 @@ import org.apache.log4j.Logger;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
-
 import edu.jas.structure.RingElem;
 
 
@@ -114,7 +112,7 @@ public class EReductionSeq<C extends RingElem<C>> extends DReductionSeq<C> imple
         l = j;
         boolean mt = false;
         Map<ExpVector, C> Am = Ap.getMap();
-        for (Map.Entry<ExpVector,C> me : Am.entrySet()) {
+        for (Map.Entry<ExpVector, C> me : Am.entrySet()) {
             ExpVector e = me.getKey();
             C a = me.getValue(); //Am.get(e);
             for (i = 0; i < l; i++) {
@@ -180,45 +178,45 @@ public class EReductionSeq<C extends RingElem<C>> extends DReductionSeq<C> imple
         C b = null;
         C r = null;
         GenPolynomial<C> R = Ap.ring.getZERO();
-        GenPolynomial<C> T = Ap.ring.getZERO();
+        //GenPolynomial<C> T = Ap.ring.getZERO();
         GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap;
         //try { // required to avoid a compiler error in the while loop
-            while (S.length() > 0) {
-                boolean mt = false;
-                m = S.leadingMonomial();
-                e = m.getKey();
-                a = m.getValue();
-                for (i = 0; i < l; i++) {
-                    mt = e.multipleOf(htl[i]);
-                    if (mt) {
-                        f = e.subtract(htl[i]);
-                        //logger.info("red div = " + f);
-                        r = a.remainder(lbc[i]);
-                        b = a.divide(lbc[i]);
-                        if (f == null) { // compiler produced this case
-                            System.out.println("f = null: " + e + ", " + htl[i]);
-                            Q = p[i].multiply(b);
-                        } else {
-                            Q = p[i].multiply(b, f);
-                        }
-                        S = S.subtract(Q); // ok also with reductum
-                        //System.out.println(" r = " + r);
-                        a = r;
-                        if (r.isZERO()) {
-                            break;
-                        }
+        while (S.length() > 0) {
+            boolean mt = false;
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt) {
+                    f = e.subtract(htl[i]);
+                    //logger.info("red div = " + f);
+                    r = a.remainder(lbc[i]);
+                    b = a.divide(lbc[i]);
+                    if (f == null) { // compiler produced this case
+                        System.out.println("f = null: " + e + ", " + htl[i]);
+                        Q = p[i].multiply(b);
+                    } else {
+                        Q = p[i].multiply(b, f);
+                    }
+                    S = S.subtract(Q); // ok also with reductum
+                    //System.out.println(" r = " + r);
+                    a = r;
+                    if (r.isZERO()) {
+                        break;
                     }
                 }
-                if (!a.isZERO()) { //! mt ) { 
-                    //logger.debug("irred");
-                    R = R.sum(a, e);
-                    //S = S.subtract( a, e ); 
-                    S = S.reductum();
-                }
-                //System.out.println(" R = " + R);
-                //System.out.println(" S = " + S);
             }
+            if (!a.isZERO()) { //! mt ) { 
+                //logger.debug("irred");
+                R = R.sum(a, e);
+                //S = S.subtract( a, e ); 
+                S = S.reductum();
+            }
+            //System.out.println(" R = " + R);
+            //System.out.println(" S = " + S);
+        }
         //} catch (Exception ex) {
         //    System.out.println("R = " + R);
         //    System.out.println("S = " + S);
@@ -242,7 +240,7 @@ public class EReductionSeq<C extends RingElem<C>> extends DReductionSeq<C> imple
     @SuppressWarnings("unchecked")
     // not jet working
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
-            GenPolynomial<C> Ap) {
+                    GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
@@ -347,7 +345,7 @@ public class EReductionSeq<C extends RingElem<C>> extends DReductionSeq<C> imple
         C c;
         C d;
         GenPolynomial<C> a;
-        Iterator<GenPolynomial<C>> it;
+        //Iterator<GenPolynomial<C>> it;
         logger.debug("irr = ");
         while (irr != l) {
             //it = P.listIterator(); 

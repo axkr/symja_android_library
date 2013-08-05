@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BigQuaternion.java 4125 2012-08-19 19:05:22Z kredel $
  */
 
 package edu.jas.arith;

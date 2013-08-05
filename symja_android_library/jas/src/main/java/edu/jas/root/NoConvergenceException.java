@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: NoConvergenceException.java 3019 2010-03-05 18:42:41Z kredel $
  */
 
 package edu.jas.root;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Factorization.java 3068 2010-04-11 17:27:16Z kredel $
  */
 
 package edu.jas.ufd;

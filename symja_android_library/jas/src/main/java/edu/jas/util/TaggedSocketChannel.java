@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TaggedSocketChannel.java 4523 2013-07-27 10:54:39Z kredel $
  */
 
 package edu.jas.util;
@@ -213,6 +213,7 @@ public class TaggedSocketChannel extends Thread {
      * @see java.lang.Thread#run()
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void run() {
         if (sc == null) {
             isRunning = false;
@@ -351,6 +352,7 @@ public class TaggedSocketChannel extends Thread {
     /**
      * Terminate the TaggedSocketChannel.
      */
+    @SuppressWarnings("unchecked")
     public void terminate() {
         isRunning = false;
         this.interrupt();

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RecSolvablePolynomial.java 4442 2013-05-26 17:43:16Z kredel $
  */
 
 package edu.jas.poly;

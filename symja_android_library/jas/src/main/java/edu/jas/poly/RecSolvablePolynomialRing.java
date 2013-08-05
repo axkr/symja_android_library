@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RecSolvablePolynomialRing.java 4523 2013-07-27 10:54:39Z kredel $
  */
 
 package edu.jas.poly;
@@ -266,13 +266,13 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
         if (oring == null) {
             return false;
         }
-        // @todo check same base relations
-        //if ( ! table.equals(oring.table) ) {
+        // check same base relations
+        //if ( ! table.equals(oring.table) ) { // done in super
         //    return false;
         //}
-        //if ( ! coeffTable.equals(oring.coeffTable) ) {
-        //    return false;
-        //}
+        if (!coeffTable.equals(oring.coeffTable)) {
+            return false;
+        }
         return true;
     }
 
@@ -535,6 +535,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
      * @return List(X_1,...,X_n) a list of univariate polynomials.
      */
     //todo Override
+    @SuppressWarnings("unchecked")
     public List<RecSolvablePolynomial<C>> recUnivariateList() {
         //return castToSolvableList( super.univariateList() );
         return (List<RecSolvablePolynomial<C>>) (Object) univariateList(0, 1L);
@@ -547,6 +548,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
      * @return List(X_1,...,X_n) a list of univariate polynomials.
      */
     //todo Override
+    @SuppressWarnings("unchecked")
     public List<RecSolvablePolynomial<C>> recUnivariateList(int modv) {
         return (List<RecSolvablePolynomial<C>>) (Object) univariateList(modv, 1L);
     }

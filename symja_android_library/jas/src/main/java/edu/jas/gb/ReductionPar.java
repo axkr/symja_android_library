@@ -1,14 +1,12 @@
 /*
- * $Id$
+ * $Id: ReductionPar.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gb;
 
-import java.util.Collection;
+
 import java.util.List;
 import java.util.Map;
-
-//import org.apache.log4j.Logger;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -16,14 +14,13 @@ import edu.jas.structure.RingElem;
 
 
 /**
- * Polynomial Reduction parallel usable algorithm.
- * Implements normalform.
+ * Polynomial Reduction parallel usable algorithm. Implements normalform.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public class ReductionPar<C extends RingElem<C>>
-    extends ReductionAbstract<C> {
+public class ReductionPar<C extends RingElem<C>> extends ReductionAbstract<C> {
+
 
     //private static final Logger logger = Logger.getLogger(ReductionPar.class);
 
@@ -41,13 +38,11 @@ public class ReductionPar<C extends RingElem<C>>
      * @param Pp polynomial list, concurrent modification allowed.
      * @return nf(Ap) with respect to Pp.
      */
-    public GenPolynomial<C> 
-        normalform(List<GenPolynomial<C>> Pp, 
-                   GenPolynomial<C> Ap) {  
-        if ( Pp == null || Pp.isEmpty() ) {
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
+        if (Ap == null || Ap.isZERO()) {
             return Ap;
         }
         int l;
@@ -56,13 +51,13 @@ public class ReductionPar<C extends RingElem<C>>
             l = Pp.size();
             P = (GenPolynomial<C>[]) new GenPolynomial[l];
             //P = Pp.values().toArray();
-            for ( int i = 0; i < Pp.size(); i++ ) {
+            for (int i = 0; i < Pp.size(); i++) {
                 P[i] = Pp.get(i);
             }
         }
 
-        Map.Entry<ExpVector,C> m;
-        Map.Entry<ExpVector,C> m1;
+        Map.Entry<ExpVector, C> m;
+        Map.Entry<ExpVector, C> m1;
         ExpVector e;
         ExpVector f = null;
         C a;
@@ -70,51 +65,52 @@ public class ReductionPar<C extends RingElem<C>>
         GenPolynomial<C> Rz = Ap.ring.getZERO();
         GenPolynomial<C> R = Rz.copy();
         GenPolynomial<C> p = null;
-        GenPolynomial<C> Q = null;
+        //GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap.copy();
-        while ( S.length() > 0 ) { 
-            if ( Pp.size() != l ) { 
+        while (S.length() > 0) {
+            if (Pp.size() != l) {
                 //long t = System.currentTimeMillis();
                 synchronized (Pp) { // required, bad in parallel
                     l = Pp.size();
-                    P = (GenPolynomial<C>[]) new GenPolynomial[ l ];
+                    P = (GenPolynomial<C>[]) new GenPolynomial[l];
                     //P = Pp.toArray();
-                    for ( int i = 0; i < Pp.size(); i++ ) {
+                    for (int i = 0; i < Pp.size(); i++) {
                         P[i] = Pp.get(i);
                     }
                 }
                 //t = System.currentTimeMillis()-t;
                 //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
                 S = Ap.copy(); // S.add(R)? // restart reduction ?
-                R = Rz.copy(); 
+                R = Rz.copy();
             }
             m = S.leadingMonomial();
             e = m.getKey();
             a = m.getValue();
             //System.out.println("S.e = " + e);
-            for ( int i = 0; i < P.length ; i++ ) {
+            for (int i = 0; i < P.length; i++) {
                 p = P[i];
                 f = p.leadingExpVector();
-                if ( f != null ) {
-                    mt =  e.multipleOf( f );
-                    if ( mt ) break; 
+                if (f != null) {
+                    mt = e.multipleOf(f);
+                    if (mt)
+                        break;
                 }
             }
-            if ( ! mt ) { 
+            if (!mt) {
                 //logger.debug("irred");
                 //R = R.sum( a, e );
                 //S = S.subtract( a, e ); 
-                R.doPutToMap(e,a);
-                S.doRemoveFromMap(e,a); 
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
                 //System.out.println("R = " + R);
-            } else { 
+            } else {
                 //logger.debug("red");
                 m1 = p.leadingMonomial();
-                e =  e.subtract( f );
-                a = a.divide( m1.getValue() );
+                e = e.subtract(f);
+                a = a.divide(m1.getValue());
                 //Q = p.multiply( a, e );
                 //S = S.subtract( Q );
-                S = S.subtractMultiple(a,e,p);
+                S = S.subtractMultiple(a, e, p);
             }
             //System.out.println("S = " + S);
         }
@@ -129,10 +125,8 @@ public class ReductionPar<C extends RingElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
      */
-    public GenPolynomial<C> 
-        normalform(List<GenPolynomial<C>> row,
-                   List<GenPolynomial<C>> Pp, 
-                   GenPolynomial<C> Ap) {  
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap) {
         throw new RuntimeException("normalform with recording not implemented");
     }
 
@@ -140,15 +134,16 @@ public class ReductionPar<C extends RingElem<C>>
     /**
      * Normalform. Allows concurrent modification of the DHT.
      * @param Ap polynomial.
-     * @param mp a map from Integers to polynomials, e.g. a distributed hash table, concurrent modification allowed.
+     * @param mp a map from Integers to polynomials, e.g. a distributed hash
+     *            table, concurrent modification allowed.
      * @return nf(Ap) with respect to Pp.
      */
     @SuppressWarnings("unchecked")
-    public GenPolynomial<C> normalform(Map<Integer,GenPolynomial<C>> mp, GenPolynomial<C> Ap) {  
-        if ( mp == null || mp.isEmpty() ) {
+    public GenPolynomial<C> normalform(Map<Integer, GenPolynomial<C>> mp, GenPolynomial<C> Ap) {
+        if (mp == null || mp.isEmpty()) {
             return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
+        if (Ap == null || Ap.isZERO()) {
             return Ap;
         }
         int l;
@@ -160,8 +155,8 @@ public class ReductionPar<C extends RingElem<C>>
         l = P.length;
         //}
 
-        Map.Entry<ExpVector,C> m;
-        Map.Entry<ExpVector,C> m1;
+        Map.Entry<ExpVector, C> m;
+        Map.Entry<ExpVector, C> m1;
         ExpVector e;
         ExpVector f = null;
         C a;
@@ -169,10 +164,10 @@ public class ReductionPar<C extends RingElem<C>>
         GenPolynomial<C> Rz = Ap.ring.getZERO();
         GenPolynomial<C> R = Rz.copy();
         GenPolynomial<C> p = null;
-        GenPolynomial<C> Q = null;
+        //GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap.copy();
-        while ( S.length() > 0 ) { 
-            if ( mp.size() != l ) { 
+        while (S.length() > 0) {
+            if (mp.size() != l) {
                 //long t = System.currentTimeMillis();
                 //synchronized ( mp ) { // no more required, ok in distributed
                 P = mp.values().toArray(P);
@@ -182,35 +177,36 @@ public class ReductionPar<C extends RingElem<C>>
                 //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
                 //logger.info("Pp.toArray() size() = " + l);
                 S = Ap.copy(); // S.add(R)? // restart reduction ?
-                R = Rz.copy(); 
+                R = Rz.copy();
             }
 
             m = S.leadingMonomial();
             e = m.getKey();
             a = m.getValue();
-            for ( int i = 0; i < P.length ; i++ ) {
+            for (int i = 0; i < P.length; i++) {
                 p = P[i];
                 f = p.leadingExpVector();
-                if ( f != null ) {
-                    mt =  e.multipleOf( f );
-                    if ( mt ) break; 
+                if (f != null) {
+                    mt = e.multipleOf(f);
+                    if (mt)
+                        break;
                 }
             }
-            if ( ! mt ) { 
+            if (!mt) {
                 //logger.debug("irred");
                 //R = R.sum( a, e );
                 //S = S.subtract( a, e ); 
-                R.doPutToMap(e,a);
-                S.doRemoveFromMap(e,a); 
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
-            } else { 
+            } else {
                 //logger.debug("red");
                 m1 = p.leadingMonomial();
-                e =  e.subtract( f );
-                a = a.divide( m1.getValue() );
+                e = e.subtract(f);
+                a = a.divide(m1.getValue());
                 //Q = p.multiply( a, e );
                 //S = S.subtract( Q );
-                S = S.subtractMultiple(a,e,p);
+                S = S.subtractMultiple(a, e, p);
             }
         }
         return R;

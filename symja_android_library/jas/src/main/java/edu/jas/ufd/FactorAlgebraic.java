@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: FactorAlgebraic.java 4028 2012-07-24 18:42:16Z kredel $
  */
 
 package edu.jas.ufd;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TaylorFunctionAdapter.java 3342 2010-10-06 19:55:37Z kredel $
  */
 
 package edu.jas.ps;

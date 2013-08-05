@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolynomialList.java 4553 2013-08-03 19:13:48Z kredel $
  */
 
 package edu.jas.poly;
@@ -227,7 +227,8 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
             } else {
                 s.append(", ");
             }
-            s.append("( " + sa + " )");
+            //s.append("( " + sa + " )");
+            s.append(sa);
         }
         s.append("])");
         return s.toString();
@@ -266,7 +267,7 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
             if (p != null) {
                 Map<ExpVector, GenPolynomial<C>> r = p.contract(pfac);
                 //System.out.println("r = " + r ); 
-                List<GenPolynomial<C>> row = (ArrayList<GenPolynomial<C>>) zr.clone();
+                List<GenPolynomial<C>> row = new ArrayList<GenPolynomial<C>>(zr); //zr.clone();
                 for (Map.Entry<ExpVector, GenPolynomial<C>> me : r.entrySet()) {
                     ExpVector e = me.getKey();
                     int[] dov = e.dependencyOnVariables();
@@ -286,6 +287,15 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
             }
         }
         return new ModuleList<C>(pfac, vecs);
+    }
+
+
+    /**
+     * Get list. 
+     * @return list from this.
+     */
+    public List<GenPolynomial<C>> getList() {
+        return list;
     }
 
 

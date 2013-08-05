@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: HenselUtil.java 4520 2013-07-27 10:02:52Z kredel $
  */
 
 package edu.jas.ufd;
@@ -1006,6 +1006,7 @@ public class HenselUtil {
      * @param k desired approximation exponent p^k.
      * @return [s,t] with s A + t B = 1 mod p^k.
      */
+    @SuppressWarnings("unchecked")
     public static <MOD extends GcdRingElem<MOD> & Modular> GenPolynomial<MOD>[] liftExtendedEuclidean(
             GenPolynomial<MOD> A, GenPolynomial<MOD> B, long k) throws NoLiftingException {
         if (A == null || A.isZERO() || B == null || B.isZERO()) {
@@ -1534,6 +1535,7 @@ public class HenselUtil {
      * @param k approximation exponent.
      * @return [g_0,...,g_{n-1}] with C = prod_{0,...,n-1} g_i mod p^k.
      */
+    @SuppressWarnings("unchecked")
     public static <MOD extends GcdRingElem<MOD> & Modular> 
         List<GenPolynomial<MOD>> liftHenselMonic(GenPolynomial<BigInteger> C, List<GenPolynomial<MOD>> F, long k) 
                                                  throws NoLiftingException {
@@ -1675,6 +1677,7 @@ public class HenselUtil {
      * @param g leading coefficient.
      * @return [g_0,...,g_{n-1}] with C = prod_{0,...,n-1} g_i mod p^k.
      */
+    @SuppressWarnings("unchecked")
     public static <MOD extends GcdRingElem<MOD> & Modular> 
         List<GenPolynomial<MOD>> liftHensel(GenPolynomial<BigInteger> C, List<GenPolynomial<MOD>> F, long k, BigInteger g) 
                                             throws NoLiftingException {

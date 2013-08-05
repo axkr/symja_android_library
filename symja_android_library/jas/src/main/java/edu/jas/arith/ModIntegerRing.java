@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ModIntegerRing.java 4533 2013-07-28 15:05:39Z kredel $
  */
 
 package edu.jas.arith;
@@ -37,10 +37,10 @@ public final class ModIntegerRing implements ModularRingFactory<ModInteger>, Ite
     private int isField = -1; // initially unknown
 
 
-    /**
+    /*
      * Certainty if module is probable prime.
      */
-    private int certainty = 10;
+    //private int certainty = 10;
 
 
     /**

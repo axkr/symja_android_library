@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableQuotientRing.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -12,6 +12,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
+import edu.jas.application.SolvableIdeal;
 import edu.jas.kern.StringUtil;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
@@ -19,12 +20,10 @@ import edu.jas.poly.PolynomialList;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
-import edu.jas.application.SolvableIdeal;
-
 
 /**
- * SolvableQuotient ring factory based on GenPolynomial with RingElem interface. Objects
- * of this class are immutable.
+ * SolvableQuotient ring factory based on GenPolynomial with RingElem interface.
+ * Objects of this class are immutable.
  * @author Heinz Kredel
  */
 public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFactory<SolvableQuotient<C>> {
@@ -33,7 +32,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     private static final Logger logger = Logger.getLogger(SolvableQuotientRing.class);
 
 
-    private boolean debug = logger.isDebugEnabled();
+    //private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -49,7 +48,8 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
 
     /**
-     * The constructor creates a SolvableQuotientRing object from a GenSolvablePolynomialRing.
+     * The constructor creates a SolvableQuotientRing object from a
+     * GenSolvablePolynomialRing.
      * @param r solvable polynomial ring.
      */
     public SolvableQuotientRing(GenSolvablePolynomialRing<C> r) {
@@ -60,13 +60,12 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
 
     /**
-     * Least common multiple. 
+     * Least common multiple.
      * @param n first solvable polynomial.
      * @param d second solvable polynomial.
      * @return lcm(n,d)
      */
-    protected GenSolvablePolynomial<C> syzLcm(GenSolvablePolynomial<C> n, 
-                                              GenSolvablePolynomial<C> d) {
+    protected GenSolvablePolynomial<C> syzLcm(GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         List<GenSolvablePolynomial<C>> list = new ArrayList<GenSolvablePolynomial<C>>(1);
         list.add(n);
         SolvableIdeal<C> N = new SolvableIdeal<C>(n.ring, list, true);
@@ -83,13 +82,12 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
 
     /**
-     * Greatest common divisor. 
+     * Greatest common divisor.
      * @param n first solvable polynomial.
      * @param d second solvable polynomial.
      * @return gcd(n,d)
      */
-    protected GenSolvablePolynomial<C> syzGcd(GenSolvablePolynomial<C> n, 
-                                              GenSolvablePolynomial<C> d) {
+    protected GenSolvablePolynomial<C> syzGcd(GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         if (n.isZERO()) {
             return d;
         }
@@ -109,7 +107,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
         Q.add(ring.getZERO());
         List<GenSolvablePolynomial<C>> V = new ArrayList<GenSolvablePolynomial<C>>(1);
         V.add(lcm);
-        GenSolvablePolynomial<C> x = engine.sred.leftNormalform(Q,V, p);
+        GenSolvablePolynomial<C> x = engine.sred.leftNormalform(Q, V, p);
         GenSolvablePolynomial<C> y = Q.get(0);
         // GenSolvablePolynomial<C> gcd = divide(p, lcm);
         return y;
@@ -161,12 +159,12 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      */
     public List<SolvableQuotient<C>> generators() {
         List<GenSolvablePolynomial<C>> pgens = PolynomialList.<C> castToSolvableList(ring.generators());
-        List<SolvableQuotient<C>> gens = new ArrayList<SolvableQuotient<C>>(pgens.size()*2-1);
+        List<SolvableQuotient<C>> gens = new ArrayList<SolvableQuotient<C>>(pgens.size() * 2 - 1);
         GenSolvablePolynomial<C> one = ring.getONE();
         for (GenSolvablePolynomial<C> p : pgens) {
             SolvableQuotient<C> q = new SolvableQuotient<C>(this, p);
             gens.add(q);
-            if ( !p.isONE() ) {
+            if (!p.isONE()) {
                 q = new SolvableQuotient<C>(this, one, p);
                 gens.add(q);
             }
@@ -196,15 +194,15 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
         List<SolvableQuotient<C>> gens = generators();
         int ngen = gens.size();
         for (int i = 0; i < ngen; i++) {
-            Xi = (SolvableQuotient<C>) gens.get(i);
+            Xi = gens.get(i);
             for (int j = i + 1; j < ngen; j++) {
-                Xj = (SolvableQuotient<C>) gens.get(j);
+                Xj = gens.get(j);
                 for (int k = j + 1; k < ngen; k++) {
-                    Xk = (SolvableQuotient<C>) gens.get(k);
+                    Xk = gens.get(k);
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (true || debug) {
+                        if (logger.isInfoEnabled()) {
                             logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);
@@ -261,7 +259,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @see java.lang.Object#toString()
      */
     @Override
-        public String toString() {
+    public String toString() {
         String s = null;
         if (ring.coFac.characteristic().signum() == 0) {
             s = "RatFunc";
@@ -311,7 +309,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @see java.lang.Object#hashCode()
      */
     @Override
-        public int hashCode() {
+    public int hashCode() {
         int h;
         h = ring.hashCode();
         return h;
@@ -324,11 +322,11 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @return a random quotient element.
      */
     public SolvableQuotient<C> random(int n) {
-        GenSolvablePolynomial<C> r = (GenSolvablePolynomial<C>) ring.random(n).monic();
-        GenSolvablePolynomial<C> s = (GenSolvablePolynomial<C>) ring.random(n).monic();
-        while (s.isZERO()) {
-            s = (GenSolvablePolynomial<C>) ring.random(n).monic();
-        }
+        GenSolvablePolynomial<C> r = ring.random(n).monic();
+        GenSolvablePolynomial<C> s;
+        do {
+            s = ring.random(n).monic();
+        } while (s.isZERO());
         return new SolvableQuotient<C>(this, r, s, false);
     }
 
@@ -342,11 +340,11 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @return a random quotient.
      */
     public SolvableQuotient<C> random(int k, int l, int d, float q) {
-        GenSolvablePolynomial<C> r = (GenSolvablePolynomial<C>) ring.random(k, l, d, q).monic();
-        GenSolvablePolynomial<C> s = (GenSolvablePolynomial<C>) ring.random(k, l, d, q).monic();
-        while (s.isZERO()) {
-            s = (GenSolvablePolynomial<C>) ring.random(k, l, d, q).monic();
-        }
+        GenSolvablePolynomial<C> r = ring.random(k, l, d, q).monic();
+        GenSolvablePolynomial<C> s = ring.random(k, l, d, q).monic();
+        do {
+            s = ring.random(k, l, d, q).monic();
+        } while (s.isZERO());
         return new SolvableQuotient<C>(this, r, s, false);
     }
 
@@ -358,18 +356,18 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      * @return a random quotient element.
      */
     public SolvableQuotient<C> random(int n, Random rnd) {
-        GenSolvablePolynomial<C> r = (GenSolvablePolynomial<C>) ring.random(n, rnd).monic();
-        GenSolvablePolynomial<C> s = (GenSolvablePolynomial<C>) ring.random(n, rnd).monic();
-        while (s.isZERO()) {
-            s = (GenSolvablePolynomial<C>) ring.random(n, rnd).monic();
-        }
+        GenSolvablePolynomial<C> r = ring.random(n, rnd).monic();
+        GenSolvablePolynomial<C> s = ring.random(n, rnd).monic();
+        do {
+            s = ring.random(n, rnd).monic();
+        } while (s.isZERO());
         return new SolvableQuotient<C>(this, r, s, false);
     }
 
 
     /**
-     * Parse SolvableQuotient from String. Syntax: "{ polynomial | polynomial }" or
-     * "{ polynomial }" or " polynomial | polynomial " or " polynomial "
+     * Parse SolvableQuotient from String. Syntax: "{ polynomial | polynomial }"
+     * or "{ polynomial }" or " polynomial | polynomial " or " polynomial "
      * @param s String.
      * @return SolvableQuotient from s.
      */

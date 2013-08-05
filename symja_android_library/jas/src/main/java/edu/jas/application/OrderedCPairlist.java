@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: OrderedCPairlist.java 4127 2012-08-19 19:27:47Z kredel $
  */
 
 package edu.jas.application;

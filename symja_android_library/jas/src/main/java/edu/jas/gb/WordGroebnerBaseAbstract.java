@@ -1,40 +1,33 @@
 /*
- * $Id$
+ * $Id: WordGroebnerBaseAbstract.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gb;
 
+
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import edu.jas.poly.GenWordPolynomial;
-import edu.jas.poly.GenWordPolynomialRing;
-import edu.jas.poly.TermOrder;
-import edu.jas.poly.PolyUtil;
 import edu.jas.structure.RingElem;
-import edu.jas.structure.RingFactory;
-import edu.jas.poly.Word;
 
 
 /**
- * Non-commutative Groebner Bases abstract class.
- * Implements common Groebner bases and GB test methods.
+ * Non-commutative Groebner Bases abstract class. Implements common Groebner
+ * bases and GB test methods.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> 
-                      implements WordGroebnerBase<C> {
+public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements WordGroebnerBase<C> {
+
 
     private static final Logger logger = Logger.getLogger(WordGroebnerBaseAbstract.class);
+
+
     private final boolean debug = logger.isDebugEnabled();
 
 
@@ -54,7 +47,7 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * Constructor.
      */
     public WordGroebnerBaseAbstract() {
-        this( new WordReductionSeq<C>() );
+        this(new WordReductionSeq<C>());
     }
 
 
@@ -63,7 +56,7 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * @param red Word Reduction engine
      */
     public WordGroebnerBaseAbstract(WordReduction<C> red) {
-        this(red, new OrderedWordPairlist<C>() );
+        this(red, new OrderedWordPairlist<C>());
     }
 
 
@@ -83,23 +76,23 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * @param F Word polynomial list.
      * @return true, if F is a Groebner base, else false.
      */
-    public boolean isGB(List<GenWordPolynomial<C>> F) {  
-        if ( F == null || F.isEmpty() ) {
-           return true;
+    public boolean isGB(List<GenWordPolynomial<C>> F) {
+        if (F == null || F.isEmpty()) {
+            return true;
         }
-        for ( int i = 0; i < F.size(); i++ ) {
+        for (int i = 0; i < F.size(); i++) {
             GenWordPolynomial<C> pi = F.get(i);
-            for ( int j = i+1; j < F.size(); j++ ) {
+            for (int j = i + 1; j < F.size(); j++) {
                 GenWordPolynomial<C> pj = F.get(j);
-                List<GenWordPolynomial<C>> S = red.SPolynomials( pi, pj );
-                if ( S.isEmpty() ) {
-                   continue;
+                List<GenWordPolynomial<C>> S = red.SPolynomials(pi, pj);
+                if (S.isEmpty()) {
+                    continue;
                 }
-                for ( GenWordPolynomial<C> s : S ) {
-                    GenWordPolynomial<C> h = red.normalform( F, s );
-                    if ( ! h.isZERO() ) {
+                for (GenWordPolynomial<C> s : S) {
+                    GenWordPolynomial<C> h = red.normalform(F, s);
+                    if (!h.isZERO()) {
                         logger.info("no GB: pi = " + pi + ", pj = " + pj);
-                        logger.info("s  = " + s  + ", h = " + h);
+                        logger.info("s  = " + s + ", h = " + h);
                         return false;
                     }
                 }
@@ -114,7 +107,7 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * @param F polynomial list.
      * @return GB(F) a Groebner base of F.
      */
-    public abstract List<GenWordPolynomial<C>> GB( List<GenWordPolynomial<C>> F );
+    public abstract List<GenWordPolynomial<C>> GB(List<GenWordPolynomial<C>> F);
 
 
     /**
@@ -122,65 +115,64 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * @param Gp a Groebner base.
      * @return a reduced Groebner base of Gp.
      */
-    public List<GenWordPolynomial<C>> minimalGB(List<GenWordPolynomial<C>> Gp) {  
-        if ( Gp == null || Gp.size() <= 1 ) {
+    public List<GenWordPolynomial<C>> minimalGB(List<GenWordPolynomial<C>> Gp) {
+        if (Gp == null || Gp.size() <= 1) {
             return Gp;
         }
         // remove zero polynomials
-        List<GenWordPolynomial<C>> G
-            = new ArrayList<GenWordPolynomial<C>>( Gp.size() );
-        for ( GenWordPolynomial<C> a : Gp ) { 
-            if ( a != null && !a.isZERO() ) { // always true in GB()
-               // already positive a = a.abs();
-               G.add( a );
+        List<GenWordPolynomial<C>> G = new ArrayList<GenWordPolynomial<C>>(Gp.size());
+        for (GenWordPolynomial<C> a : Gp) {
+            if (a != null && !a.isZERO()) { // always true in GB()
+                // already positive a = a.abs();
+                G.add(a);
             }
         }
-        if ( G.size() <= 1 ) {
-           return G;
+        if (G.size() <= 1) {
+            return G;
         }
         // remove top reducible polynomials
         GenWordPolynomial<C> a;
         List<GenWordPolynomial<C>> F;
-        F = new ArrayList<GenWordPolynomial<C>>( G.size() );
-        while ( G.size() > 0 ) {
+        F = new ArrayList<GenWordPolynomial<C>>(G.size());
+        while (G.size() > 0) {
             a = G.remove(0);
-            if ( red.isTopReducible(G,a) || red.isTopReducible(F,a) ) {
-               // drop polynomial 
-               if ( debug ) {
-                  System.out.println("dropped " + a);
-                  List<GenWordPolynomial<C>> ff;
-                  ff = new ArrayList<GenWordPolynomial<C>>( G );
-                  ff.addAll(F);
-                  a = red.normalform( ff, a );
-                  if ( !a.isZERO() ) {
-                     System.out.println("error, nf(a) " + a);
-                  }
-               }
+            if (red.isTopReducible(G, a) || red.isTopReducible(F, a)) {
+                // drop polynomial 
+                if (debug) {
+                    System.out.println("dropped " + a);
+                    List<GenWordPolynomial<C>> ff;
+                    ff = new ArrayList<GenWordPolynomial<C>>(G);
+                    ff.addAll(F);
+                    a = red.normalform(ff, a);
+                    if (!a.isZERO()) {
+                        System.out.println("error, nf(a) " + a);
+                    }
+                }
             } else {
                 F.add(a);
             }
         }
         G = F;
-        if ( G.size() <= 1 ) {
-           return G;
+        if (G.size() <= 1) {
+            return G;
         }
         // reduce remaining polynomials
         Collections.reverse(G); // important for lex GB
         int len = G.size();
-        if ( debug ) {
+        if (debug) {
             System.out.println("#G " + len);
             for (GenWordPolynomial<C> aa : G) {
                 System.out.println("aa = " + aa.length() + ", lt = " + aa.getMap().keySet());
             }
         }
         int i = 0;
-        while ( i < len ) {
+        while (i < len) {
             a = G.remove(0);
-            if ( debug ) {
+            if (debug) {
                 System.out.println("doing " + a.length() + ", lt = " + a.leadingWord());
             }
-            a = red.normalform( G, a );
-            G.add( a ); // adds as last
+            a = red.normalform(G, a);
+            G.add(a); // adds as last
             i++;
         }
         return G;
@@ -192,13 +184,13 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
      * @param Gp an ideal base.
      * @return true, if Gp is a reduced minimal Groebner base.
      */
-    public boolean isMinimalGB(List<GenWordPolynomial<C>> Gp) {  
-        if ( Gp == null || Gp.size() == 0 ) {
+    public boolean isMinimalGB(List<GenWordPolynomial<C>> Gp) {
+        if (Gp == null || Gp.size() == 0) {
             return true;
         }
         // test for zero polynomials
-        for ( GenWordPolynomial<C> a : Gp ) { 
-            if ( a == null || a.isZERO() ) { 
+        for (GenWordPolynomial<C> a : Gp) {
+            if (a == null || a.isZERO()) {
                 if (debug) {
                     logger.debug("zero polynomial " + a);
                 }
@@ -206,35 +198,34 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>>
             }
         }
         // test for top reducible polynomials
-        List<GenWordPolynomial<C>> G = new ArrayList<GenWordPolynomial<C>>( Gp );
-        List<GenWordPolynomial<C>> F = new ArrayList<GenWordPolynomial<C>>( G.size() );
-        while ( G.size() > 0 ) {
+        List<GenWordPolynomial<C>> G = new ArrayList<GenWordPolynomial<C>>(Gp);
+        List<GenWordPolynomial<C>> F = new ArrayList<GenWordPolynomial<C>>(G.size());
+        while (G.size() > 0) {
             GenWordPolynomial<C> a = G.remove(0);
-            if ( red.isTopReducible(G,a) || red.isTopReducible(F,a) ) {
+            if (red.isTopReducible(G, a) || red.isTopReducible(F, a)) {
                 if (debug) {
                     logger.debug("top reducible polynomial " + a);
                 }
                 return false;
-            } else {
-                F.add(a);
             }
+            F.add(a);
         }
         G = F;
-        if ( G.size() <= 1 ) {
-           return true;
+        if (G.size() <= 1) {
+            return true;
         }
         // test reducibility of polynomials
         int len = G.size();
         int i = 0;
-        while ( i < len ) {
+        while (i < len) {
             GenWordPolynomial<C> a = G.remove(0);
-            if ( ! red.isNormalform( G, a ) ) {
+            if (!red.isNormalform(G, a)) {
                 if (debug) {
                     logger.debug("reducible polynomial " + a);
                 }
                 return false;
             }
-            G.add( a ); // re-adds as last
+            G.add(a); // re-adds as last
             i++;
         }
         return true;

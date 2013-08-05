@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ColorPolynomial.java 3984 2012-07-12 21:36:16Z kredel $
  */
 
 package edu.jas.application;

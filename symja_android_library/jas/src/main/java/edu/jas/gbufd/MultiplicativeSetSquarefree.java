@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MultiplicativeSetSquarefree.java 4061 2012-07-27 12:03:20Z kredel $
  */
 
 package edu.jas.gbufd;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ChannelFactory.java 4229 2012-10-03 17:19:36Z kredel $
  */
 
 //package edu.unima.ky.parallel;

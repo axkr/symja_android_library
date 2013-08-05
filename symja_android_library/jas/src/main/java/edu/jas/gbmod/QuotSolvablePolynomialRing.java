@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: QuotSolvablePolynomialRing.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -77,7 +77,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
     private static final Logger logger = Logger.getLogger(QuotSolvablePolynomialRing.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    //private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -217,7 +217,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      * @param o other solvable polynomial ring.
      */
     public QuotSolvablePolynomialRing(RingFactory<SolvableQuotient<C>> cf, QuotSolvablePolynomialRing o) {
-        this(cf, (GenSolvablePolynomialRing)o);
+        this(cf, (GenSolvablePolynomialRing) o);
     }
 
 
@@ -293,10 +293,6 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
         if (!(other instanceof QuotSolvablePolynomialRing)) {
             return false;
         }
-        // do a super.equals( )
-        if (!super.equals(other)) {
-            return false;
-        }
         QuotSolvablePolynomialRing<C> oring = null;
         try {
             oring = (QuotSolvablePolynomialRing<C>) other;
@@ -305,13 +301,17 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
         if (oring == null) {
             return false;
         }
-        // @todo check same base relations
-        //if ( ! table.equals(oring.table) ) {
+        // do a super.equals( )
+        if (!super.equals(other)) {
+            return false;
+        }
+        // check same base relations
+        //if ( ! table.equals(oring.table) ) { // done in super
         //    return false;
         //}
-        //if ( ! coeffTable.equals(oring.coeffTable) ) {
-        //    return false;
-        //}
+        if (!coeffTable.equals(oring.coeffTable)) {
+            return false;
+        }
         return true;
     }
 
@@ -372,7 +372,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      */
     @Override
     public boolean isAssociative() {
-        if (! coFac.isAssociative() ) {
+        if (!coFac.isAssociative()) {
             return false;
         }
         QuotSolvablePolynomial<C> Xi, Xj, Xk, p, q;
@@ -387,7 +387,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (true || debug) { 
+                        if (logger.isInfoEnabled()) {
                             logger.info("Xk = " + Xk + ", Xj = " + Xj + ", Xi = " + Xi);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);
@@ -578,6 +578,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      * @return List(X_1,...,X_n) a list of univariate polynomials.
      */
     //todo Override
+    @SuppressWarnings("unchecked")
     public List<QuotSolvablePolynomial<C>> recUnivariateList() {
         //return castToSolvableList( super.univariateList() );
         return (List<QuotSolvablePolynomial<C>>) (Object) univariateList(0, 1L);
@@ -590,6 +591,7 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
      * @return List(X_1,...,X_n) a list of univariate polynomials.
      */
     //todo Override
+    @SuppressWarnings("unchecked")
     public List<QuotSolvablePolynomial<C>> recUnivariateList(int modv) {
         return (List<QuotSolvablePolynomial<C>>) (Object) univariateList(modv, 1L);
     }

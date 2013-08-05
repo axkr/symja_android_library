@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: CriticalPair.java 4052 2012-07-25 19:20:25Z kredel $
  */
 
 package edu.jas.gb;

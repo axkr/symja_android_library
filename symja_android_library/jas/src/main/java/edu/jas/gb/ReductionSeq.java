@@ -1,29 +1,27 @@
 /*
- * $Id$
+ * $Id: ReductionSeq.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gb;
 
+
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.log4j.Logger;
-
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
-
 import edu.jas.structure.RingElem;
 
 
 /**
- * Polynomial Reduction sequential use algorithm.
- * Implements normalform.
+ * Polynomial Reduction sequential use algorithm. Implements normalform.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
 public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
-             extends ReductionAbstract<C> {
+                extends ReductionAbstract<C> {
+
 
     //private static final Logger logger = Logger.getLogger(ReductionSeq.class);
 
@@ -41,42 +39,41 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
      * @param Pp polynomial list.
      * @return nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings("unchecked") 
-    public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, 
-                                       GenPolynomial<C> Ap) {  
-        if ( Pp == null || Pp.isEmpty() ) {
-           return Ap;
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
-           return Ap;
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
         }
-        if ( ! Ap.ring.coFac.isField() ) {
-           throw new IllegalArgumentException("coefficients not from a field");
+        if (!Ap.ring.coFac.isField()) {
+            throw new IllegalArgumentException("coefficients not from a field");
         }
-        Map.Entry<ExpVector,C> m;
+        Map.Entry<ExpVector, C> m;
         int l;
         GenPolynomial<C>[] P;
         synchronized (Pp) {
             l = Pp.size();
             P = new GenPolynomial[l];
             //P = Pp.toArray();
-            for ( int i = 0; i < Pp.size(); i++ ) {
+            for (int i = 0; i < Pp.size(); i++) {
                 P[i] = Pp.get(i);
             }
         }
-        ExpVector[] htl = new ExpVector[ l ];
-        Object[] lbc = new Object[ l ]; // want C[]
-        GenPolynomial<C>[] p = new GenPolynomial[ l ];
+        ExpVector[] htl = new ExpVector[l];
+        Object[] lbc = new Object[l]; // want C[]
+        GenPolynomial<C>[] p = new GenPolynomial[l];
         int i;
         int j = 0;
-        for ( i = 0; i < l; i++ ) { 
+        for (i = 0; i < l; i++) {
             p[i] = P[i];
             m = p[i].leadingMonomial();
-            if ( m != null ) { 
-               p[j] = p[i];
-               htl[j] = m.getKey();
-               lbc[j] = m.getValue();
-               j++;
+            if (m != null) {
+                p[j] = p[i];
+                htl[j] = m.getKey();
+                lbc[j] = m.getValue();
+                j++;
             }
         }
         l = j;
@@ -86,31 +83,32 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
         GenPolynomial<C> R = Ap.ring.getZERO().copy();
 
         //GenPolynomial<C> T = null;
-        GenPolynomial<C> Q = null;
+        //GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap.copy();
-        while ( S.length() > 0 ) { 
-              m = S.leadingMonomial();
-              e = m.getKey();
-              a = m.getValue();
-              for ( i = 0; i < l; i++ ) {
-                  mt = e.multipleOf( htl[i] );
-                  if ( mt ) break; 
-              }
-              if ( ! mt ) { 
-                 //logger.debug("irred");
-                 //R = R.sum( a, e );
-                 //S = S.subtract( a, e ); 
-                 R.doPutToMap(e,a);
-                 S.doRemoveFromMap(e,a); 
-                 // System.out.println(" S = " + S);
-              } else { 
-                 e =  e.subtract( htl[i] );
-                 //logger.info("red div = " + e);
-                 a = a.divide( (C)lbc[i] );
-                 //Q = p[i].multiply( a, e );
-                 //S = S.subtract( Q );
-                 S = S.subtractMultiple(a,e,p[i]);
-              }
+        while (S.length() > 0) {
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                //R = R.sum( a, e );
+                //S = S.subtract( a, e ); 
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
+                // System.out.println(" S = " + S);
+            } else {
+                e = e.subtract(htl[i]);
+                //logger.info("red div = " + e);
+                a = a.divide((C) lbc[i]);
+                //Q = p[i].multiply( a, e );
+                //S = S.subtract( Q );
+                S = S.subtractMultiple(a, e, p[i]);
+            }
         }
         return R;
     }
@@ -123,38 +121,36 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
      */
-    @SuppressWarnings("unchecked") 
-    public GenPolynomial<C> 
-        normalform(List<GenPolynomial<C>> row,
-                   List<GenPolynomial<C>> Pp, 
-                   GenPolynomial<C> Ap) {  
-        if ( Pp == null || Pp.isEmpty() ) {
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
+        if (Ap == null || Ap.isZERO()) {
             return Ap;
         }
-        if ( ! Ap.ring.coFac.isField() ) {
-           throw new IllegalArgumentException("coefficients not from a field");
+        if (!Ap.ring.coFac.isField()) {
+            throw new IllegalArgumentException("coefficients not from a field");
         }
         int l = Pp.size();
         GenPolynomial<C>[] P = new GenPolynomial[l];
         synchronized (Pp) {
             //P = Pp.toArray();
-            for ( int i = 0; i < Pp.size(); i++ ) {
+            for (int i = 0; i < Pp.size(); i++) {
                 P[i] = Pp.get(i);
             }
         }
-        ExpVector[] htl = new ExpVector[ l ];
-        Object[] lbc = new Object[ l ]; // want C[]
-        GenPolynomial<C>[] p = new GenPolynomial[ l ];
-        Map.Entry<ExpVector,C> m;
+        ExpVector[] htl = new ExpVector[l];
+        Object[] lbc = new Object[l]; // want C[]
+        GenPolynomial<C>[] p = new GenPolynomial[l];
+        Map.Entry<ExpVector, C> m;
         int j = 0;
         int i;
-        for ( i = 0; i < l; i++ ) { 
+        for (i = 0; i < l; i++) {
             p[i] = P[i];
             m = p[i].leadingMonomial();
-            if ( m != null ) { 
+            if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
                 lbc[j] = m.getValue();
@@ -170,39 +166,40 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
 
         GenPolynomial<C> fac = null;
         // GenPolynomial<C> T = null;
-        GenPolynomial<C> Q = null;
+        //GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap.copy();
-        while ( S.length() > 0 ) { 
+        while (S.length() > 0) {
             m = S.leadingMonomial();
             e = m.getKey();
             a = m.getValue();
-            for ( i = 0; i < l; i++ ) {
-                mt = e.multipleOf( htl[i] );
-                if ( mt ) break; 
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
             }
-            if ( ! mt ) { 
+            if (!mt) {
                 //logger.debug("irred");
                 //R = R.sum( a, e );
                 //S = S.subtract( a, e ); 
-                R.doPutToMap(e,a);
-                S.doRemoveFromMap(e,a); 
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
                 //throw new RuntimeException("Syzygy no GB");
-            } else { 
-                e =  e.subtract( htl[i] );
+            } else {
+                e = e.subtract(htl[i]);
                 //logger.info("red div = " + e);
                 C c = (C) lbc[i];
-                a = a.divide( c );
+                a = a.divide(c);
                 //Q = p[i].multiply( a, e );
                 //S = S.subtract( Q );
-                S = S.subtractMultiple(a,e,p[i]);
+                S = S.subtractMultiple(a, e, p[i]);
                 fac = row.get(i);
-                if ( fac == null ) {
-                    fac = zero.sum( a, e );
+                if (fac == null) {
+                    fac = zero.sum(a, e);
                 } else {
-                    fac = fac.sum( a, e );
+                    fac = fac.sum(a, e);
                 }
-                row.set(i,fac);
+                row.set(i, fac);
             }
         }
         return R;

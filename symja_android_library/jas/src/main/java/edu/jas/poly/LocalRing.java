@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: LocalRing.java 3367 2010-10-24 13:05:02Z kredel $
  */
 
 package edu.jas.poly;

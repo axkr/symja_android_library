@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ComplexRing.java 3882 2012-02-05 17:53:12Z kredel $
  */
 
 package edu.jas.poly;

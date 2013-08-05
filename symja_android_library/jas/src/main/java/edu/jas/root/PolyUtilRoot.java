@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolyUtilRoot.java 4063 2012-07-27 13:05:07Z kredel $
  */
 
 package edu.jas.root;

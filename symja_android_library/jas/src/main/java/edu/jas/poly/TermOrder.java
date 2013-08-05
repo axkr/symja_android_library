@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TermOrder.java 4389 2013-04-27 21:07:05Z kredel $
  */
 
 package edu.jas.poly;

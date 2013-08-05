@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseParallel.java 4543 2013-07-30 12:24:09Z kredel $
  */
 
 package edu.jas.gb;
@@ -25,7 +25,7 @@ import edu.jas.util.ThreadPool;
  * of Groebner bases.
  * @param <C> coefficient type
  * @author Heinz Kredel
- *
+ * 
  * @see edu.jas.application.GBAlgorithmBuilder
  * @see edu.jas.gbufd.GBFactory
  */
@@ -75,7 +75,7 @@ public class GroebnerBaseParallel<C extends RingElem<C>> extends GroebnerBaseAbs
     }
 
 
-   /**
+    /**
      * Constructor.
      * @param threads number of threads to use.
      * @param pl pair selection strategy
@@ -201,9 +201,8 @@ public class GroebnerBaseParallel<C extends RingElem<C>> extends GroebnerBaseAbs
         logger.info("start " + pairlist);
 
         Terminator fin = new Terminator(threads);
-        Reducer<C> R;
         for (int i = 0; i < threads; i++) {
-            R = new Reducer<C>(fin, G, pairlist);
+            Reducer<C> R = new Reducer<C>(fin, G, pairlist);
             pool.addJob(R);
         }
         fin.waitDone();
@@ -324,10 +323,10 @@ class Reducer<C extends RingElem<C>> implements Runnable {
 
     Reducer(Terminator fin, List<GenPolynomial<C>> G, PairList<C> L) {
         this.fin = fin;
+        this.fin.initIdle(1);
         this.G = G;
         pairlist = L;
         red = new ReductionPar<C>();
-        fin.initIdle(1);
     }
 
 
@@ -362,6 +361,16 @@ class Reducer<C extends RingElem<C>> implements Runnable {
                     }
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
+                    fin.allIdle();
+                    logger.info("shutdown " + fin + " after: " + e);
+                    //throw new RuntimeException("interrupt 1 in pairlist.hasNext loop");
+                    break;
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    //fin.initIdle(1);
+                    fin.allIdle();
+                    logger.info("shutdown after .isInterrupted(): " + fin);
+                    //throw new RuntimeException("interrupt 2 in pairlist.hasNext loop");
                     break;
                 }
                 if (!fin.hasJobs()) {

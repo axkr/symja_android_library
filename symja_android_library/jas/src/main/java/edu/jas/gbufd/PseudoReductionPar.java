@@ -1,12 +1,12 @@
 /*
- * $Id$
+ * $Id: PseudoReductionPar.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gbufd;
 
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -55,11 +55,11 @@ public class PseudoReductionPar<C extends RingElem<C>> extends ReductionAbstract
         }
         GenPolynomial<C>[] P = new GenPolynomial[0];
         List<GenPolynomial<C>> Ppp;
-        synchronized (Pp) { 
-           Ppp = new ArrayList<GenPolynomial<C>>(Pp); // sic
+        synchronized (Pp) {
+            Ppp = new ArrayList<GenPolynomial<C>>(Pp); // sic
         }
         P = Ppp.toArray(P);
-        int ll = Ppp.size(); 
+        int ll = Ppp.size();
         GenPolynomial<C> Rz = Ap.ring.getZERO();
         GenPolynomial<C> R = Rz.copy();
 
@@ -68,11 +68,11 @@ public class PseudoReductionPar<C extends RingElem<C>> extends ReductionAbstract
             if (Pp.size() != ll) {
                 //System.out.println("Pp.size() = " + Pp.size() + ", ll = " + ll);
                 //long t = System.currentTimeMillis();
-                synchronized (Pp) { 
+                synchronized (Pp) {
                     Ppp = new ArrayList<GenPolynomial<C>>(Pp); // sic
                 }
                 P = Ppp.toArray(P);
-                ll = Ppp.size(); 
+                ll = Ppp.size();
                 //ll = P.length; // wrong
                 //t = System.currentTimeMillis()-t;
                 //logger.info("Pp.toArray(): size() = " + l + ", ll = " + ll);
@@ -141,16 +141,16 @@ public class PseudoReductionPar<C extends RingElem<C>> extends ReductionAbstract
         }
         GenPolynomial<C>[] P = new GenPolynomial[0];
         List<GenPolynomial<C>> Ppp;
-        synchronized (Pp) { 
-             Ppp = new ArrayList<GenPolynomial<C>>(Pp); // sic
+        synchronized (Pp) {
+            Ppp = new ArrayList<GenPolynomial<C>>(Pp); // sic
         }
         P = Ppp.toArray(P);
-        int l = Ppp.size(); 
+        int l = Ppp.size();
         boolean mt = false;
         GenPolynomial<C> Rz = Ap.ring.getZERO();
         GenPolynomial<C> R = Rz.copy();
         //GenPolynomial<C> T = null;
-        GenPolynomial<C> Q = null;
+        //GenPolynomial<C> Q = null;
         GenPolynomial<C> S = Ap.copy();
         while (S.length() > 0) {
             if (Pp.size() != l) {

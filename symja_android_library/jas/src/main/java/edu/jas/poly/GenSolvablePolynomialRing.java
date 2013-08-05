@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenSolvablePolynomialRing.java 4525 2013-07-27 11:16:28Z kredel $
  */
 
 package edu.jas.poly;
@@ -182,6 +182,36 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
 
     /**
+     * Generate the relation table of the solvable polynomial ring 
+     * from a relation generator.
+     * @param rg relation generator.
+     */
+//    public void addRelations(RelationGenerator<C> rg) {
+//        rg.generate(this);
+//    }
+
+
+    /**
+     * Generate the relation table of the solvable polynomial ring 
+     * from a polynomial list of relations.
+     * @param rel polynomial list of relations [..., ei, fj, pij, ... ] with ei * fj = pij.
+     */
+    public void addRelations(List<GenPolynomial<C>> rel) {
+        table.addRelations(rel);
+    }
+
+
+    /**
+     * Generate the relation table of the solvable polynomial ring 
+     * from a solvable polynomial list of relations.
+     * @param rel solvable polynomial list of relations [..., ei, fj, pij, ... ] with ei * fj = pij.
+     */
+    public void addSolvRelations(List<GenSolvablePolynomial<C>> rel) {
+        table.addSolvRelations(rel);
+    }
+
+
+    /**
      * Get the String representation.
      * @see java.lang.Object#toString()
      */
@@ -247,10 +277,6 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         if (!(other instanceof GenSolvablePolynomialRing)) {
             return false;
         }
-        // do a super.equals( )
-        if (!super.equals(other)) {
-            return false;
-        }
         GenSolvablePolynomialRing<C> oring = null;
         try {
             oring = (GenSolvablePolynomialRing<C>) other;
@@ -259,10 +285,14 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         if (oring == null) {
             return false;
         }
-        // @todo check same base relations
-        //if ( ! table.equals(oring.table) ) {
-        //    return false;
-        //}
+        // do a super.equals( )
+        if (!super.equals(other)) {
+            return false;
+        }
+        // check same base relations
+        if (! table.equals(oring.table)) {
+            return false;
+        }
         return true;
     }
 

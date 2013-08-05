@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Terminator.java 4543 2013-07-30 12:24:09Z kredel $
  */
 
 package edu.jas.util;
@@ -26,7 +26,7 @@ public class Terminator {
     private final int workers;
 
 
-    private int idler = 0;
+    private int idler;
 
 
     private final Semaphore fin;
@@ -43,6 +43,7 @@ public class Terminator {
         this.workers = workers;
         fin = new Semaphore(0);
         done = false;
+        idler = 0;
         logger.info("constructor, workers = " + workers);
     }
 

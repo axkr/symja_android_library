@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ArrayUtil.java 3681 2011-07-12 13:55:10Z kredel $
  */
 
 package edu.jas.util;

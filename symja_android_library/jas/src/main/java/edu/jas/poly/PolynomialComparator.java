@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolynomialComparator.java 3994 2012-07-15 11:50:54Z kredel $
  */
 
 package edu.jas.poly;

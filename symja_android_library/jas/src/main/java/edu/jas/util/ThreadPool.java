@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ThreadPool.java 4543 2013-07-30 12:24:09Z kredel $
  */
 
 // package edu.unima.ky.parallel;
@@ -209,6 +209,7 @@ public class ThreadPool {
                     }
                     re++;
                     //if ( re > 3 * workers.length ) {
+                    //    logger.info("give up on: " + workers[i]);
                     //    break; // give up
                     //}
                     workers[i].join(100);
@@ -363,6 +364,11 @@ class PoolThread extends Thread {
                 done++;
                 if (debug) {
                     logger.info("done");
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    running = false;
+                    isWorking = false;
+                    //throw new RuntimeException("interrupt in while(running) loop");
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableSyzygyAbstract.java 4541 2013-07-29 19:50:47Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -49,7 +49,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
     /**
      * Solvable reduction engine.
      */
-    protected SolvableReduction<C> sred;
+    public final SolvableReduction<C> sred;
 
 
     /**
@@ -111,8 +111,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
                     continue;
                 }
                 // if ( ! red.criterion4( pi, pj ) ) continue;
-                ArrayList<GenSolvablePolynomial<C>> row = (ArrayList<GenSolvablePolynomial<C>>) S.clone();
-
+                List<GenSolvablePolynomial<C>> row = new ArrayList<GenSolvablePolynomial<C>>(S);
                 s = sred.leftSPolynomial(row, i, pi, j, pj);
                 //logger.info("row = " + row);
                 if (s.isZERO()) {

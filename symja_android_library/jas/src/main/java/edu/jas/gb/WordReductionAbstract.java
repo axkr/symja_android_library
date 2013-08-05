@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordReductionAbstract.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gb;
@@ -12,10 +12,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.poly.Word;
 import edu.jas.poly.GenWordPolynomial;
-import edu.jas.poly.OverlapList;
 import edu.jas.poly.Overlap;
+import edu.jas.poly.OverlapList;
+import edu.jas.poly.Word;
 import edu.jas.structure.RingElem;
 
 
@@ -32,7 +32,7 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
     private static final Logger logger = Logger.getLogger(WordReductionAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    //private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -48,21 +48,20 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
      * @param Bp word polynomial.
      * @return list of all spol(Ap,Bp) the S-polynomials of Ap and Bp.
      */
-    public List<GenWordPolynomial<C>> SPolynomials(GenWordPolynomial<C> Ap, 
-                                                   GenWordPolynomial<C> Bp) {
-	List<GenWordPolynomial<C>> sp = new ArrayList<GenWordPolynomial<C>>();
+    public List<GenWordPolynomial<C>> SPolynomials(GenWordPolynomial<C> Ap, GenWordPolynomial<C> Bp) {
+        List<GenWordPolynomial<C>> sp = new ArrayList<GenWordPolynomial<C>>();
         Map.Entry<Word, C> ma = Ap.leadingMonomial();
         Map.Entry<Word, C> mb = Bp.leadingMonomial();
         Word e = ma.getKey();
         Word f = mb.getKey();
         C a = ma.getValue();
         C b = mb.getValue();
-        OverlapList oll = e.overlap(f); 
-        if ( oll.ols.isEmpty() ) {
+        OverlapList oll = e.overlap(f);
+        if (oll.ols.isEmpty()) {
             return sp;
         }
-        for ( Overlap ol : oll.ols ) {
-	    GenWordPolynomial<C> s = SPolynomial(ol, b, Ap, a, Bp);
+        for (Overlap ol : oll.ols) {
+            GenWordPolynomial<C> s = SPolynomial(ol, b, Ap, a, Bp);
             sp.add(s);
         }
         return sp;
@@ -81,12 +80,12 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
      * @param r2 word.
      * @return list of all spol(Ap,Bp) the S-polynomials of Ap and Bp.
      */
-    public GenWordPolynomial<C> SPolynomial(C a, Word l1, GenWordPolynomial<C> A, Word r1,
-                                            C b, Word l2, GenWordPolynomial<C> B, Word r2) {
+    public GenWordPolynomial<C> SPolynomial(C a, Word l1, GenWordPolynomial<C> A, Word r1, C b, Word l2,
+                    GenWordPolynomial<C> B, Word r2) {
         C one = A.ring.coFac.getONE();
-	GenWordPolynomial<C> s1 = A.multiply(a,l1,one,r1);
-	GenWordPolynomial<C> s2 = B.multiply(b,l2,one,r2);
-	GenWordPolynomial<C> s = s1.subtract(s2);
+        GenWordPolynomial<C> s1 = A.multiply(a, l1, one, r1);
+        GenWordPolynomial<C> s2 = B.multiply(b, l2, one, r2);
+        GenWordPolynomial<C> s = s1.subtract(s2);
         return s;
     }
 
@@ -100,12 +99,12 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
      * @param B word polynomial.
      * @return list of all spol(Ap,Bp) the S-polynomials of Ap and Bp.
      */
-    public GenWordPolynomial<C> SPolynomial(Overlap ol, C a, GenWordPolynomial<C> A,
-                                                        C b, GenWordPolynomial<C> B) {
+    public GenWordPolynomial<C> SPolynomial(Overlap ol, C a, GenWordPolynomial<C> A, C b,
+                    GenWordPolynomial<C> B) {
         C one = A.ring.coFac.getONE();
-	GenWordPolynomial<C> s1 = A.multiply(a,ol.l1,one,ol.r1);
-	GenWordPolynomial<C> s2 = B.multiply(b,ol.l2,one,ol.r2);
-	GenWordPolynomial<C> s = s1.subtract(s2);
+        GenWordPolynomial<C> s1 = A.multiply(a, ol.l1, one, ol.r1);
+        GenWordPolynomial<C> s2 = B.multiply(b, ol.l2, one, ol.r2);
+        GenWordPolynomial<C> s = s1.subtract(s2);
         return s;
     }
 
@@ -313,9 +312,8 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
      * @param Np nf(Pp,Ap), a normal form of Ap wrt. Pp.
      * @return true, if Np + sum( row[i]*Pp[i] ) == Ap, else false.
      */
-    public boolean isReductionNF(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow, 
-                                 List<GenWordPolynomial<C>> Pp, 
-                                 GenWordPolynomial<C> Ap, GenWordPolynomial<C> Np) {
+    public boolean isReductionNF(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow,
+                    List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap, GenWordPolynomial<C> Np) {
         if (lrow == null && rrow == null && Pp == null) {
             if (Ap == null) {
                 return (Np == null);
@@ -338,9 +336,9 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
             p = Pp.get(m);
             if (rl != null && rr != null && p != null) {
                 if (t == null) {
-                    t = p.multiply(rl,rr);
+                    t = p.multiply(rl, rr);
                 } else {
-                    t = t.sum(p.multiply(rl,rr));
+                    t = t.sum(p.multiply(rl, rr));
                 }
             }
             //System.out.println("r = " + r );

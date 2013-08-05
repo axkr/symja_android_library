@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableQuotient.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -8,14 +8,15 @@ package edu.jas.gbmod;
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.PrettyPrint;
-import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.ExpVector;
+import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.GcdRingElem;
 
 
 /**
- * SolvableQuotient, that is a (left) rational function, based on GenSolvablePolynomial 
- * with RingElem interface. Objects of this class are immutable.
+ * SolvableQuotient, that is a (left) rational function, based on
+ * GenSolvablePolynomial with RingElem interface. Objects of this class are
+ * immutable.
  * @author Heinz Kredel
  */
 public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<SolvableQuotient<C>> {
@@ -55,8 +56,8 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
 
 
     /**
-     * The constructor creates a SolvableQuotient object from a ring factory and a
-     * numerator polynomial. The denominator is assumed to be 1.
+     * The constructor creates a SolvableQuotient object from a ring factory and
+     * a numerator polynomial. The denominator is assumed to be 1.
      * @param r ring factory.
      * @param n numerator solvable polynomial.
      */
@@ -66,8 +67,8 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
 
 
     /**
-     * The constructor creates a SolvableQuotient object from a ring factory and a
-     * numerator and denominator solvable polynomial.
+     * The constructor creates a SolvableQuotient object from a ring factory and
+     * a numerator and denominator solvable polynomial.
      * @param r ring factory.
      * @param n numerator polynomial.
      * @param d denominator polynomial.
@@ -78,16 +79,15 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
 
 
     /**
-     * The constructor creates a SolvableQuotient object from a ring factory and a
-     * numerator and denominator polynomial.
+     * The constructor creates a SolvableQuotient object from a ring factory and
+     * a numerator and denominator polynomial.
      * @param r ring factory.
      * @param n numerator polynomial.
      * @param d denominator polynomial.
      * @param isred <em>unused at the moment</em>.
      */
-    protected SolvableQuotient(SolvableQuotientRing<C> r, 
-                               GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d, 
-                               boolean isred) {
+    protected SolvableQuotient(SolvableQuotientRing<C> r, GenSolvablePolynomial<C> n,
+                    GenSolvablePolynomial<C> d, boolean isred) {
         if (d == null || d.isZERO()) {
             throw new IllegalArgumentException("denominator may not be zero");
         }
@@ -105,13 +105,13 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             n = n.multiply(lc);
             d = d.multiply(lc);
         }
-        if ( n.compareTo(d) == 0 ) {
+        if (n.compareTo(d) == 0) {
             n = ring.ring.getONE();
             d = ring.ring.getONE();
-	}
-        if ( n.isZERO() ) {
+        }
+        if (n.isZERO()) {
             d = ring.ring.getONE();
-	}
+        }
         num = n;
         den = d;
     }
@@ -242,7 +242,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
         if (t != 0) {
             return t;
         }
-        if ( den.compareTo(b.den) == 0 ) {
+        if (den.compareTo(b.den) == 0) {
             return num.compareTo(b.num);
         }
         GenSolvablePolynomial<C> r, s;
@@ -256,10 +256,11 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
         //     s = den.multiply(b.num);
         //     return r.compareTo(s);
         // }
-        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den,b.den);
+        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den, b.den);
         if (debug) {
-            System.out.println("oc[0] den =<>= oc[1] b.den: (" + oc[0] + ") (" + den + ") = (" + oc[1] + ") (" + b.den + ")");
-	}
+            System.out.println("oc[0] den =<>= oc[1] b.den: (" + oc[0] + ") (" + den + ") = (" + oc[1]
+                            + ") (" + b.den + ")");
+        }
         r = oc[0].multiply(num);
         s = oc[1].multiply(b.num);
         //System.out.println("r = " + r);
@@ -286,7 +287,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
         if (a == null) {
             return false;
         }
-        return compareTo( a ) == 0;
+        return compareTo(a) == 0;
         //return num.equals(a.num) && den.equals(a.den);
     }
 
@@ -344,7 +345,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             return new SolvableQuotient<C>(ring, n, den, false);
         }
         */
-        if ( den.compareTo(S.den) == 0 ) { // correct ?
+        if (den.compareTo(S.den) == 0) { // correct ?
             //d = den.multiply(den);
             //n1 = den.multiply(S.num);
             //n2 = S.den.multiply(num);
@@ -352,10 +353,11 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             return new SolvableQuotient<C>(ring, n, den, false);
         }
         // general case
-        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den,S.den);
+        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(den, S.den);
         if (debug) {
-            System.out.println("oc[0] den =sum= oc[1] S.den: (" + oc[0] + ") (" + den + ") = (" + oc[1] + ") (" + S.den + ")");
-	}
+            System.out.println("oc[0] den =sum= oc[1] S.den: (" + oc[0] + ") (" + den + ") = (" + oc[1]
+                            + ") (" + S.den + ")");
+        }
         d = oc[0].multiply(den);
         n1 = oc[0].multiply(num);
         n2 = oc[1].multiply(S.num);
@@ -473,12 +475,13 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
         //     n = num.multiply(S.num);
         //     return new SolvableQuotient<C>(ring, n, d, false);
         // }
-        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(num,S.den);
+        GenSolvablePolynomial<C>[] oc = ring.engine.leftOreCond(num, S.den);
         n = oc[1].multiply(S.num);
         d = oc[0].multiply(den);
         if (debug) {
-            System.out.println("oc[0] num =mult= oc[1] S.den: (" + oc[0] + ") (" + num + ") = (" + oc[1] + ") (" + S.den + ")");
-	}
+            System.out.println("oc[0] num =mult= oc[1] S.den: (" + oc[0] + ") (" + num + ") = (" + oc[1]
+                            + ") (" + S.den + ")");
+        }
         return new SolvableQuotient<C>(ring, n, d, false);
     }
 
@@ -554,7 +557,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
         }
         lbc = lbc.inverse();
         //lbc = lbc.abs();
-        GenSolvablePolynomial<C> n = (GenSolvablePolynomial<C>) num.multiply(lbc);
+        GenSolvablePolynomial<C> n = num.multiply(lbc);
         //GenSolvablePolynomial<C> d = (GenSolvablePolynomial<C>) den.multiply(lbc);
         return new SolvableQuotient<C>(ring, n, den, true);
     }

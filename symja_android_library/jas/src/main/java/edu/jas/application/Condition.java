@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Condition.java 4058 2012-07-26 21:03:53Z kredel $
  */
 
 package edu.jas.application;

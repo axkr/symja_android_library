@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GreatestCommonDivisorModular.java 4520 2013-07-27 10:02:52Z kredel $
  */
 
 package edu.jas.ufd;
@@ -106,6 +106,7 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
      * @return gcd(P,S).
      */
     @Override
+    @SuppressWarnings("unchecked")
     public GenPolynomial<BigInteger> gcd(GenPolynomial<BigInteger> P, GenPolynomial<BigInteger> S) {
         if (S == null || S.isZERO()) {
             return P;
@@ -374,6 +375,7 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
      * @return res(P,S).
      */
     @Override
+    @SuppressWarnings("unchecked")
     public GenPolynomial<BigInteger> resultant(GenPolynomial<BigInteger> P, GenPolynomial<BigInteger> S) {
         if (S == null || S.isZERO()) {
             return S;

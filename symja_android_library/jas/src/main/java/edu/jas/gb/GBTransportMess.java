@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GBTransportMess.java 4501 2013-07-24 15:04:19Z kredel $
  */
 
 package edu.jas.gb;
@@ -12,9 +12,9 @@ import edu.jas.structure.RingElem;
 
 
 /**
- * Distributed GB transport message.  This class and its subclasses
- * are used for transport of polynomials and pairs and as markers in
- * distributed GB algorithms.
+ * Distributed GB transport message. This class and its subclasses are used for
+ * transport of polynomials and pairs and as markers in distributed GB
+ * algorithms.
  */
 
 public class GBTransportMess implements Serializable {
@@ -132,7 +132,7 @@ final class GBTransportMessPairIndex extends GBTransportMess {
     public final int j;
 
 
-    public final int s; 
+    public final int s;
 
 
     /**
@@ -140,7 +140,7 @@ final class GBTransportMessPairIndex extends GBTransportMess {
      * @param p pair for transport.
      */
     public GBTransportMessPairIndex(Pair p) {
-        this(p.i,p.j,p.s);
+        this(p.i, p.j, p.s);
     }
 
 
@@ -151,7 +151,7 @@ final class GBTransportMessPairIndex extends GBTransportMess {
      */
     @Deprecated
     public GBTransportMessPairIndex(int i, int j) {
-        this(i,j,0);
+        this(i, j, 0);
     }
 
 
@@ -164,8 +164,8 @@ final class GBTransportMessPairIndex extends GBTransportMess {
     public GBTransportMessPairIndex(int i, int j, int s) {
         this.i = i;
         this.j = j;
-        s = Math.max(this.i,s);
-        s = Math.max(this.j,s);
+        s = Math.max(this.i, s);
+        s = Math.max(this.j, s);
         this.s = s;
     }
 
@@ -177,7 +177,7 @@ final class GBTransportMessPairIndex extends GBTransportMess {
      * @param s maximal index.
      */
     public GBTransportMessPairIndex(Integer i, Integer j, Integer s) {
-        this(i.intValue(),j.intValue(),s.intValue());
+        this(i.intValue(), j.intValue(), s.intValue());
     }
 
 

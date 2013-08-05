@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: FactorRational.java 4067 2012-07-27 16:17:35Z kredel $
  */
 
 package edu.jas.ufd;

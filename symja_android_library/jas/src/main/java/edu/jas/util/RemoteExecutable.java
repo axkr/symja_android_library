@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RemoteExecutable.java 1263 2007-07-29 10:21:40Z kredel $
  */
 
 package edu.jas.util;

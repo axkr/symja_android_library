@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: NoLiftingException.java 2952 2009-12-31 16:48:39Z kredel $
  */
 
 package edu.jas.ufd;

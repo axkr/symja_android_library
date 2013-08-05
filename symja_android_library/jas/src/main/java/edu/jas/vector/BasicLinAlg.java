@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BasicLinAlg.java 3584 2011-03-26 11:39:39Z kredel $
  */
 
 package edu.jas.vector;

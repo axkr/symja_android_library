@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExtensionFieldBuilder.java 4518 2013-07-27 08:27:16Z kredel $
  */
 
 package edu.jas.application;
@@ -79,6 +79,7 @@ public class ExtensionFieldBuilder implements Serializable {
      * Transcendent field extension.
      * @param vars names for the transcendent generators.
      */
+    @SuppressWarnings("unchecked")
     public ExtensionFieldBuilder transcendentExtension(String vars) {
         String[] variables = GenPolynomialTokenizer.variableList(vars);
         GenPolynomialRing pfac = new GenPolynomialRing(factory, variables);
@@ -92,6 +93,7 @@ public class ExtensionFieldBuilder implements Serializable {
      * Polynomial ring extension.
      * @param vars names for the polynomial ring generators.
      */
+    @SuppressWarnings("unchecked")
     public ExtensionFieldBuilder polynomialExtension(String vars) {
         String[] variables = GenPolynomialTokenizer.variableList(vars);
         GenPolynomialRing pfac = new GenPolynomialRing(factory, variables);
@@ -106,6 +108,7 @@ public class ExtensionFieldBuilder implements Serializable {
      * @param expr generating expresion, a univariate or multivariate polynomial
      *            in vars.
      */
+    @SuppressWarnings("unchecked")
     public ExtensionFieldBuilder algebraicExtension(String var, String expr) {
         String[] variables = GenPolynomialTokenizer.variableList(var);
         if (variables.length < 1) {
@@ -150,6 +153,7 @@ public class ExtensionFieldBuilder implements Serializable {
      * @param expr generating expresion, a univariate polynomial in var.
      * @param root isolating interval for a real root.
      */
+    @SuppressWarnings("unchecked")
     public ExtensionFieldBuilder realAlgebraicExtension(String var, String expr, String root) {
         String[] variables = new String[] { var };
         RingElem one = (RingElem) factory.getONE();
@@ -174,6 +178,7 @@ public class ExtensionFieldBuilder implements Serializable {
      * @param expr generating expresion, a univariate polynomial in var.
      * @param root isolating rectangle for a complex root.
      */
+    @SuppressWarnings("unchecked")
     public ExtensionFieldBuilder complexAlgebraicExtension(String var, String expr, String root) {
         String[] variables = new String[] { var };
         RingElem one = (RingElem) factory.getONE();

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ResidueRing.java 3366 2010-10-24 13:02:14Z kredel $
  */
 
 package edu.jas.poly;

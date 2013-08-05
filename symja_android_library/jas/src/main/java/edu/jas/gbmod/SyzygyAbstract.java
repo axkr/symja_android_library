@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SyzygyAbstract.java 4541 2013-07-29 19:50:47Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -288,8 +288,9 @@ public class SyzygyAbstract<C extends GcdRingElem<C>> implements Syzygy<C> {
      * @param F a polynomial list of a Groebner basis.
      * @return a resolution of F.
      */
+    @SuppressWarnings("unchecked")
     public List // <ResPart<C>|ResPolPart<C>>
-    resolution(PolynomialList<C> F) {
+      resolution(PolynomialList<C> F) {
         List<List<GenPolynomial<C>>> Z;
         ModuleList<C> Zm;
         List<GenPolynomial<C>> G;
@@ -312,8 +313,9 @@ public class SyzygyAbstract<C extends GcdRingElem<C>> implements Syzygy<C> {
      * @param F a polynomial list of an arbitrary basis.
      * @return a resolution of F.
      */
+    @SuppressWarnings("unchecked")
     public List // <ResPart<C>|ResPolPart<C>>
-    resolutionArbitrary(PolynomialList<C> F) {
+      resolutionArbitrary(PolynomialList<C> F) {
         List<List<GenPolynomial<C>>> Z;
         ModuleList<C> Zm;
         //List<GenPolynomial<C>> G;

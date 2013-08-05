@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordReductionSeq.java 4152 2012-09-02 11:15:48Z kredel $
  */
 
 package edu.jas.gb;

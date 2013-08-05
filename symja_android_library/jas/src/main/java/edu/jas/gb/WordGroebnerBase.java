@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordGroebnerBase.java 4150 2012-09-01 09:18:23Z kredel $
  */
 
 package edu.jas.gb;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RootUtil.java 4527 2013-07-27 13:40:35Z kredel $
  */
 
 package edu.jas.root;
@@ -123,15 +123,15 @@ public class RootUtil {
             k = s.indexOf(" ");
         }
         if (k < 0) {
-            Complex mid = fac.parse(iv);
+            Complex<C> mid = fac.parse(iv);
             return new Rectangle<C>(mid);
         }
         //System.out.println("k  = " + k + ", len = " + iv.length());
         String ls = iv.substring(0, k).trim();
         String rs = iv.substring(k + 1, iv.length()).trim();
         //System.out.println("ls = " + ls + ", rs = " + rs);
-        Complex sw = fac.parse(ls);
-        Complex ne = fac.parse(rs);
+        Complex<C> sw = fac.parse(ls);
+        Complex<C> ne = fac.parse(rs);
         if (debug) {
             logger.debug("Rectangle: sw = " + sw + ", ne = " + ne);
         }

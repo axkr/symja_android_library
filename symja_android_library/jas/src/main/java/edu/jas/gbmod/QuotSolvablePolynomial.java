@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: QuotSolvablePolynomial.java 4461 2013-06-23 10:54:02Z kredel $
  */
 
 package edu.jas.gbmod;

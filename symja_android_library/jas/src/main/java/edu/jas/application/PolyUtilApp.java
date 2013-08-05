@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolyUtilApp.java 4535 2013-07-28 15:45:50Z kredel $
  */
 
 package edu.jas.application;
@@ -425,7 +425,7 @@ public class PolyUtilApp<C extends RingElem<C>> {
     public static <D extends GcdRingElem<D> & Rational> List<List<Complex<BigDecimal>>> complexRoots(
                     Ideal<D> I, List<GenPolynomial<D>> univs, D eps) {
         List<List<Complex<BigDecimal>>> croots = new ArrayList<List<Complex<BigDecimal>>>();
-        RingFactory<D> cf = (RingFactory<D>) I.list.ring.coFac;
+        RingFactory<D> cf = I.list.ring.coFac;
         ComplexRing<D> cr = new ComplexRing<D>(cf);
         ComplexRootsAbstract<D> cra = new ComplexRootsSturm<D>(cr);
         List<GenPolynomial<Complex<D>>> cunivs = new ArrayList<GenPolynomial<Complex<D>>>();
@@ -1707,6 +1707,7 @@ class ReAlgFromRealCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
+    @SuppressWarnings("unchecked") 
     public edu.jas.root.RealAlgebraicNumber<C> eval(edu.jas.application.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return afac.getZERO();
@@ -1734,6 +1735,7 @@ class RealFromReAlgCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
+    @SuppressWarnings("unchecked") 
     public edu.jas.application.RealAlgebraicNumber<C> eval(edu.jas.root.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return rfac.getZERO();

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: OrderedPairlist.java 4095 2012-08-12 11:37:17Z kredel $
  */
 
 package edu.jas.ps;

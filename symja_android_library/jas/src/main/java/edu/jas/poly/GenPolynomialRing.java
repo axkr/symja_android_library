@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenPolynomialRing.java 4518 2013-07-27 08:27:16Z kredel $
  */
 
 package edu.jas.poly;
@@ -1096,6 +1096,7 @@ class GenPolynomialIterator<C extends RingElem<C>> implements Iterator<GenPolyno
     /**
      * Polynomial iterator constructor.
      */
+    @SuppressWarnings("unchecked")
     public GenPolynomialIterator(GenPolynomialRing<C> fac) {
         ring = fac;
         LongIterable li = new LongIterable();
@@ -1268,6 +1269,7 @@ class GenPolynomialMonomialIterator<C extends RingElem<C>> implements Iterator<G
      * Get next polynomial.
      * @return next polynomial.
      */
+    @SuppressWarnings("unchecked")
     public synchronized GenPolynomial<C> next() {
         GenPolynomial<C> res = current;
 

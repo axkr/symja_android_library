@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GCDFactory.java 4521 2013-07-27 10:16:36Z kredel $
  */
 
 package edu.jas.ufd;
@@ -21,9 +21,6 @@ import edu.jas.structure.RingFactory;
 /**
  * Greatest common divisor algorithms factory. Select appropriate GCD engine
  * based on the coefficient types.
- * @todo Base decision also an degree vectors and number of variables of
- *       polynomials. Incorporate also number of CPUs / threads available (done
- *       with GCDProxy).
  * @author Heinz Kredel
  * @usage To create objects that implement the
  *        <code>GreatestCommonDivisor</code> interface use the
@@ -61,6 +58,9 @@ import edu.jas.structure.RingFactory;
  * 
  * @see edu.jas.ufd.GreatestCommonDivisor#gcd(edu.jas.poly.GenPolynomial P,
  *      edu.jas.poly.GenPolynomial S)
+ * <b>Todo:</b> Base decision also on degree vectors and number of variables of
+ *       polynomials. Incorporate also number of CPUs / threads available (done
+ *       with GCDProxy).
  */
 
 public class GCDFactory {

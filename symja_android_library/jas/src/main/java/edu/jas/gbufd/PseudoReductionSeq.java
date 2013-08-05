@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PseudoReductionSeq.java 4290 2012-11-04 14:47:45Z kredel $
  */
 
 package edu.jas.gbufd;

@@ -1,6 +1,6 @@
 
 /*
- * $Id$
+ * $Id: WordMonomial.java 4155 2012-09-02 16:51:12Z kredel $
  */
 
 package edu.jas.poly;

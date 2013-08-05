@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RingFactoryTokenizer.java 4267 2012-10-22 20:45:10Z kredel $
  */
 
 package edu.jas.application;

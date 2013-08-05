@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PreemptingException.java 4055 2012-07-26 17:37:29Z kredel $
  */
 
 package edu.jas.kern;

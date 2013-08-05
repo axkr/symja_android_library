@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenMatrixRing.java 4541 2013-07-29 19:50:47Z kredel $
  */
 
 package edu.jas.vector;
@@ -101,7 +101,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
         }
         ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(rows);
         for (int i = 0; i < rows; i++) {
-            m.add((ArrayList<C>) z.clone());
+            m.add( new ArrayList<C>(z) ); // z.clone();
         }
         ZERO = new GenMatrix<C>(this, m);
         m = new ArrayList<ArrayList<C>>(rows);
@@ -109,7 +109,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
         ArrayList<C> v;
         for (int i = 0; i < rows; i++) {
             if (i < cols) {
-                v = (ArrayList<C>) z.clone();
+                v = new ArrayList<C>(z); // z.clone();
                 v.set(i, one);
                 m.add(v);
             }

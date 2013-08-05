@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseAbstract.java 4385 2013-04-27 13:34:38Z kredel $
  */
 
 package edu.jas.gb;

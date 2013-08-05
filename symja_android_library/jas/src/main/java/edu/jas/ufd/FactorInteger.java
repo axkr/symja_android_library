@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: FactorInteger.java 4520 2013-07-27 10:02:52Z kredel $
  */
 
 package edu.jas.ufd;
@@ -76,6 +76,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
      * Constructor.
      * @param cfac coefficient ring factory.
      */
+    @SuppressWarnings("unchecked")
     public FactorInteger(RingFactory<BigInteger> cfac) {
         super(cfac);
         ModularRingFactory<MOD> mcofac = (ModularRingFactory<MOD>) (Object) new ModLongRing(13, true); // hack
@@ -698,6 +699,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
      *            GenPolynomial over the integers.
      * @return [p_1,...,p_k] with P = prod_{i=1,...,r} p_i.
      */
+    @SuppressWarnings("unchecked")
     public List<GenPolynomial<BigInteger>> factorsSquarefreeHensel(GenPolynomial<BigInteger> P) {
         if (P == null) {
             throw new IllegalArgumentException(this.getClass().getName() + " P != null");

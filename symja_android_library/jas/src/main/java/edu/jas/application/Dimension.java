@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Dimension.java 3058 2010-03-27 11:05:23Z kredel $
  */
 
 package edu.jas.application;

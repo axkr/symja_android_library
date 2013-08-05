@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenVectorModul.java 4541 2013-07-29 19:50:47Z kredel $
  */
 
 package edu.jas.vector;
@@ -70,7 +70,7 @@ public class GenVectorModul<C extends RingElem<C>> implements ModulFactory<GenVe
         ArrayList<C> v;
         for (int i = 0; i < cols; i++) {
             for (C g : cgens) {
-                v = (ArrayList<C>) z.clone();
+                v = new ArrayList<C>(z);// z.clone();
                 v.set(i, g);
                 BASIS.add(new GenVector<C>(this, v));
             }

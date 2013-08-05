@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ModuleList.java 3992 2012-07-14 21:32:18Z kredel $
  */
 
 package edu.jas.poly;

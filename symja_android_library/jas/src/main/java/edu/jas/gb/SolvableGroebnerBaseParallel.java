@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableGroebnerBaseParallel.java 4548 2013-07-31 08:43:51Z kredel $
  */
 
 package edu.jas.gb;
@@ -428,6 +428,16 @@ class LeftSolvableReducer<C extends RingElem<C>> implements Runnable {
                     }
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
+                    pool.allIdle();
+                    logger.info("shutdown " + pool + " after: " + e);
+                    //throw new RuntimeException("interrupt 1 in pairlist.hasNext loop");
+                    break;
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    //pool.initIdle(1);
+                    pool.allIdle();
+                    logger.info("shutdown after .isInterrupted(): " + pool);
+                    //throw new RuntimeException("interrupt 2 in pairlist.hasNext loop");
                     break;
                 }
                 if (!pool.hasJobs()) {

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: AlgebraicNumberRing.java 4518 2013-07-27 08:27:16Z kredel $
  */
 
 package edu.jas.poly;
@@ -557,6 +557,7 @@ class AlgebraicNumberIterator<C extends RingElem<C>> implements Iterator<Algebra
      * CartesianProduct iterator constructor.
      * @param aring AlgebraicNumberRing components of the Cartesian product.
      */
+    @SuppressWarnings("unchecked")
     public AlgebraicNumberIterator(AlgebraicNumberRing<C> aring) {
         RingFactory<C> cf = aring.ring.coFac;
         this.aring = aring;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Word.java 4198 2012-09-16 20:57:16Z kredel $
  */
 
 package edu.jas.poly;

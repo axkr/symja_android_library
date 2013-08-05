@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TermOrderOptimization.java 4162 2012-09-08 10:41:51Z kredel $
  */
 
 package edu.jas.poly;

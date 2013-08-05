@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MonoidElem.java 4056 2012-07-26 17:44:13Z kredel $
  */
 
 package edu.jas.structure;

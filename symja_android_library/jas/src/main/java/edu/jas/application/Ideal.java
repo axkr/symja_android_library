@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Ideal.java 4454 2013-06-13 20:58:00Z kredel $
  */
 
 package edu.jas.application;

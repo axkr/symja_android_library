@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExpVectorPair.java 4505 2013-07-24 19:05:03Z kredel $
  */
 
 package edu.jas.poly;
@@ -45,6 +45,14 @@ public class ExpVectorPair implements Serializable {
      */
     public ExpVector getSecond() {
         return e2;
+    } 
+
+
+    /**
+     * @return total degree of both parts.
+     */
+    public long totalDeg() {
+        return e1.totalDeg() + e2.totalDeg();
     } 
 
 

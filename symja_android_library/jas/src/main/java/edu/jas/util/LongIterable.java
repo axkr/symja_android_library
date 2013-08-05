@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: LongIterable.java 4094 2012-08-12 10:59:52Z kredel $
  */
 
 package edu.jas.util;

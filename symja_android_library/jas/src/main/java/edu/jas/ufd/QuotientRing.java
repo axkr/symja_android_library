@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: QuotientRing.java 4406 2013-04-30 10:07:39Z kredel $
  */
 
 package edu.jas.ufd;

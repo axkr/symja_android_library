@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Local.java 4549 2013-08-01 17:21:51Z kredel $
  */
 
 package edu.jas.application;
@@ -8,6 +8,7 @@ package edu.jas.application;
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.PrettyPrint;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
@@ -17,8 +18,8 @@ import edu.jas.structure.RingElem;
  * Local ring element based on GenPolynomial with RingElem interface. Objects of
  * this class are (nearly) immutable.
  * @author Heinz Kredel
- * @fix Not jet working because of monic GBs.
  */
+// To be fixed?: Not jet working because of monic GBs.
 public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
 
 
@@ -112,9 +113,30 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
             throw new IllegalArgumentException("denominator may not be in ideal");
         }
         //d = p; cant do this
+        C lc = d.leadingBaseCoefficient();
+        if (!lc.isONE() && lc.isUnit()) {
+            lc = lc.inverse();
+            n = n.multiply(lc);
+            d = d.multiply(lc);
+        }
+        if (n.compareTo(d) == 0) {
+            num = ring.ring.getONE();
+            den = ring.ring.getONE();
+            return;
+        }
+        if (n.negate().compareTo(d) == 0) {
+            num = ring.ring.getONE().negate();
+            den = ring.ring.getONE();
+            return;
+        }
+        if (n.isZERO()) {
+            num = n;
+            den = ring.ring.getONE();
+            return;
+        }
         // must reduce to lowest terms
         //GenPolynomial<C> gcd = ring.ring.getONE();
-        GenPolynomial<C> gcd = gcd(n, d);
+        GenPolynomial<C> gcd = ring.engine.gcd(n, d);
         if (debug) {
             logger.info("gcd = " + gcd);
         }
@@ -132,42 +154,6 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
             den = d.divide(gcd);
             //}
         }
-    }
-
-
-    /**
-     * Least common multiple.
-     * @param n first polynomial.
-     * @param d second polynomial.
-     * @return lcm(n,d)
-     */
-    protected GenPolynomial<C> lcm(GenPolynomial<C> n, GenPolynomial<C> d) {
-        GenPolynomial<C> lcm = ring.engine.lcm(n, d);
-        return lcm;
-    }
-
-
-    /**
-     * Greatest common divisor. Just for fun, is not efficient.
-     * @param n first polynomial.
-     * @param d second polynomial.
-     * @return gcd(n,d)
-     */
-    protected GenPolynomial<C> gcd(GenPolynomial<C> n, GenPolynomial<C> d) {
-        if (n.isZERO()) {
-            return d;
-        }
-        if (d.isZERO()) {
-            return n;
-        }
-        if (n.isONE()) {
-            return n;
-        }
-        if (d.isONE()) {
-            return d;
-        }
-        GenPolynomial<C> gcd = ring.engine.gcd(n, d);
-        return gcd;
     }
 
 
@@ -240,6 +226,15 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
 
 
     /**
+     * Is Qoutient a constant.
+     * @return true, if this has constant numerator and denominator, else false.
+     */
+    public boolean isConstant() {
+        return num.isConstant() && den.isConstant();
+    }
+
+
+    /**
      * Get the String representation as RingElem.
      * @see java.lang.Object#toString()
      */
@@ -261,7 +256,7 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         if (den.isONE()) {
@@ -276,7 +271,7 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -288,15 +283,30 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      * @param b Local.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Local<C> b) {
         if (b == null || b.isZERO()) {
             return this.signum();
         }
+        if (this.isZERO()) {
+            return -b.signum();
+        }
+        // assume sign(den,b.den) > 0
+        int s1 = num.signum();
+        int s2 = b.num.signum();
+        int t = (s1 - s2) / 2;
+        if (t != 0) {
+            System.out.println("compareTo: t = " + t);
+            return t;
+        }
+        if (den.compareTo(b.den) == 0) {
+            return num.compareTo(b.num);
+        }
         GenPolynomial<C> r = num.multiply(b.den);
         GenPolynomial<C> s = den.multiply(b.num);
-        GenPolynomial<C> x = r.subtract(s);
-        return x.signum();
+        return r.compareTo(s);
+        //GenPolynomial<C> x = r.subtract(s);
+        //return x.signum();
     }
 
 
@@ -305,7 +315,6 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @SuppressWarnings("unchecked")
-    // not jet working
     @Override
     public boolean equals(Object b) {
         if (!(b instanceof Local)) {
@@ -319,7 +328,7 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
         if (a == null) {
             return false;
         }
-        return (0 == compareTo(a));
+        return compareTo(a) == 0;
     }
 
 
@@ -431,9 +440,6 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      * @return this - (this/S)*S.
      */
     public Local<C> remainder(Local<C> S) {
-        if (num.isZERO()) {
-            throw new ArithmeticException("element not invertible " + this);
-        }
         if (S.isUnit()) {
             return ring.getZERO();
         }
@@ -466,6 +472,63 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
 
 
     /**
+     * Local multiplication by GenPolynomial.
+     * @param b GenPolynomial.
+     * @return this*b.
+     */
+    public Local<C> multiply(GenPolynomial<C> b) {
+        if (b == null || b.isZERO()) {
+            return ring.getZERO();
+        }
+        if (num.isZERO()) {
+            return this;
+        }
+        if (b.isONE()) {
+            return this;
+        }
+        GenPolynomial<C> n = num.multiply(b);
+        return new Local<C>(ring, n, den, false);
+    }
+
+
+    /**
+     * Local multiplication by coefficient.
+     * @param b coefficient.
+     * @return this*b.
+     */
+    public Local<C> multiply(C b) {
+        if (b == null || b.isZERO()) {
+            return ring.getZERO();
+        }
+        if (num.isZERO()) {
+            return this;
+        }
+        if (b.isONE()) {
+            return this;
+        }
+        GenPolynomial<C> n = num.multiply(b);
+        return new Local<C>(ring, n, den, false);
+    }
+
+
+    /**
+     * Local multiplication by exponent.
+     * @param e exponent vector.
+     * @return this*b.
+     */
+    public Local<C> multiply(ExpVector e) {
+        if (e == null || e.isZERO()) {
+            return this;
+        }
+        if (num.isZERO()) {
+            return this;
+        }
+        GenPolynomial<C> n = num.multiply(e);
+        return new Local<C>(ring, n, den, false);
+    }
+
+
+    /**
      * Local monic.
      * @return this with monic value part.
      */
@@ -473,11 +536,13 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
         if (num.isZERO()) {
             return this;
         }
-        C lbc = num.leadingBaseCoefficient();
-        lbc = lbc.inverse();
-        GenPolynomial<C> n = num.multiply(lbc);
-        GenPolynomial<C> d = den.multiply(lbc);
-        return new Local<C>(ring, n, d, true);
+        return this;
+        // non sense:
+        //C lbc = num.leadingBaseCoefficient();
+        //lbc = lbc.inverse();
+        //GenPolynomial<C> n = num.multiply(lbc);
+        //GenPolynomial<C> d = den.multiply(lbc);
+        //return new Local<C>(ring, n, d, true);
     }
 
 
@@ -490,7 +555,6 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
         GenPolynomial<C> x = ring.engine.gcd(num, b.num);
         GenPolynomial<C> y = ring.engine.gcd(den, b.den);
         return new Local<C>(ring, x, y, true);
-        // throw new UnsupportedOperationException("gcd not implemented " + this.getClass().getName());
     }
 
 

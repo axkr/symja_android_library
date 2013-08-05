@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenWordPolynomialRing.java 4523 2013-07-27 10:54:39Z kredel $
  */
 
 package edu.jas.poly;
@@ -116,7 +116,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
      * The constructor creates a polynomial factory object.
      * @param fac polynomial ring.
      */
-    public GenWordPolynomialRing(GenPolynomialRing fac) {
+    public GenWordPolynomialRing(GenPolynomialRing<C> fac) {
         this(fac.coFac, new WordFactory(fac.vars));
     }
 

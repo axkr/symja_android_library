@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableGroebnerBaseSeq.java 4538 2013-07-29 16:31:14Z kredel $
  */
 
 package edu.jas.gb;
@@ -420,7 +420,8 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                     // pairlist = new OrderedPairlist<C>( modv, p.ring );
                     pairlist = strategy.create(modv, p.ring);
                     if ( ! p.ring.coFac.isField() ) {
-                        throw new IllegalArgumentException("coefficients not from a field");
+                        //throw new IllegalArgumentException("coefficients not from a field");
+                        logger.warn("coefficients not from a field " + p.ring.coFac);
                     }
                 }
                 // putOne not required

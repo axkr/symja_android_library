@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PrimeList.java 4262 2012-10-21 13:24:47Z kredel $
  */
 
 package edu.jas.arith;
