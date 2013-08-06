@@ -34,7 +34,7 @@ public class AST2Expr {
 	private final static String[] FUNCTION_STRINGS = { "ArcCosh", "ArcSinh", "ArcTanh", "DirectedInfinity", "False", "Flat",
 			"HoldAll", "HoldFirst", "HoldRest", "Indeterminate", "Integer", "List", "Listable", "Modulus", "NumericFunction",
 			"OneIdentity", "Orderless", "Real", "Slot", "SlotSequence", "String", "Symbol", "True", "Abs", "AddTo", "And", "Apart",
-			"Append", "AppendTo", "Apply", "ArcCos", "ArcCot", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "Binomial", "Blank",
+			"Append", "AppendTo", "Apply", "ArcCos", "ArcCot", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "BernoulliB", "Binomial", "Blank",
 			"Block", "Boole", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "Catalan", "CatalanNumber",
 			"Catch", "Ceiling", "CharacteristicPolynomial", "ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient",
 			"CoefficientList", "Complement", "Complex", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition",
