@@ -1,21 +1,21 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D4;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.ComplexInfinity;
-import static org.matheclipse.core.expression.F.Cot;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.CComplexInfinity;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Set;
+import static org.matheclipse.core.expression.F.SetDelayed;
+import static org.matheclipse.core.expression.F.SignCmp;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
@@ -35,25 +35,51 @@ import org.matheclipse.parser.client.SyntaxError;
  * functions</a>
  */
 public class Sec extends AbstractTrigArg1 implements INumeric {
-	/**
-	 * <pre>
-	 *      Sec[Pi/2]=ComplexInfinity,
-	 *      Sec[x_NumberQ*y_]:=Sec[(-1)*x*y]/;SignCmp[x]<0,
-	 *      Sec[x_NumberQ]:=Sec[(-1)*x]/;SignCmp[x]<0
-	 * </pre>
-	 */
+
+//	 {
+//	 Sec[Pi/2]=ComplexInfinity,
+//	 Sec[Pi/3]=2,
+//	 Sec[Pi/4]=Sqrt[2],
+//   Sec[Pi/5]=Sqrt[5]-1,
+//	 Sec[Pi/6]=2/3*Sqrt[3],
+//	 Sec[Pi/8]=Sqrt[4-2*Sqrt[2]],
+//	 Sec[Pi/10]=1/5*Sqrt[50-10*Sqrt[5]],
+//   Sec[Pi/12]=Sqrt[6]-Sqrt[2],
+//	 Sec[3/8*Pi]=Sqrt[4+2*Sqrt[2]],	
+//	 Sec[3/10*Pi]=1/5*Sqrt[50+10*Sqrt[5]],
+//	 Sec[2/5*Pi]=1+Sqrt[5],
+//	 Sec[5/12*Pi]=Sqrt[6]+Sqrt[2]
+//	 }
+
 	final static IAST RULES = List(
-			Set(Sec(Times(F.C1D2,F.Pi)),ComplexInfinity),
-			SetDelayed(Sec(Times($p("x",$s("NumberQ")),$p("y"))),Condition(Sec(Times(Times(CN1,$s("x")),$s("y"))),Less(SignCmp($s("x")),C0))),
-			SetDelayed(Sec($p("x",$s("NumberQ"))),Condition(Sec(Times(CN1,$s("x"))),Less(SignCmp($s("x")),C0)))				
-	);
+			Set(Sec(Times(C1D2,Pi)),CComplexInfinity),
+			Set(Sec(Times(C1D3,Pi)),C2),
+			Set(Sec(Times(C1D4,Pi)),Sqrt(C2)),
+			Set(Sec(Times(fraction(1L,5L),Pi)),Plus(Sqrt(C5),Times(CN1,C1))),
+			Set(Sec(Times(fraction(1L,6L),Pi)),Times(fraction(2L,3L),Sqrt(C3))),
+			Set(Sec(Times(fraction(1L,8L),Pi)),Sqrt(Plus(C4,Times(CN1,Times(C2,Sqrt(C2)))))),
+			Set(Sec(Times(fraction(1L,10L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(50L),Times(CN1,Times(integer(10L),Sqrt(C5))))))),
+			Set(Sec(Times(fraction(1L,12L),Pi)),Plus(Sqrt(integer(6L)),Times(CN1,Sqrt(C2)))),
+			Set(Sec(Times(fraction(3L,8L),Pi)),Sqrt(Plus(C4,Times(C2,Sqrt(C2))))),
+			Set(Sec(Times(fraction(3L,10L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(50L),Times(integer(10L),Sqrt(C5)))))),
+			Set(Sec(Times(fraction(2L,5L),Pi)),Plus(C1,Sqrt(C5))),
+			Set(Sec(Times(fraction(5L,12L),Pi)),Plus(Sqrt(integer(6L)),Sqrt(C2)))
+			);
 
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
 	}
-	
+
 	public Sec() {
+	}
+
+	@Override
+	public IExpr evaluateArg1(final IExpr arg1) {
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Sec(Times(CN1, arg1));
+		}
+		return null;
 	}
 
 	@Override

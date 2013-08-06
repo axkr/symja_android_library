@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.$s;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
@@ -31,18 +32,36 @@ import org.matheclipse.parser.client.SyntaxError;
  * functions</a>
  */
 public class Csc extends AbstractTrigArg1 implements INumeric {
-	/**
-	 * <pre>
-	 *      Csc[0]=ComplexInfinity,
-	 *      Csc[x_NumberQ*y_]:=(-1)*Csc[(-1)*x*y]/;SignCmp[x]<0,
-	 *      Csc[x_NumberQ]:=(-1)*Csc[(-1)*x]/;SignCmp[x]<0
-	 * </pre>
-	 */
+ 
+//	 {
+//	        Csc[0]=ComplexInfinity,
+//	        Csc[Pi/3]=2/3*Sqrt[3],
+//	        Csc[Pi/4]=Sqrt[2],
+//          Csc[Pi/5]=1/5*Sqrt[50+10*Sqrt[5]],
+//	        Csc[Pi/6]=2,
+//	        Csc[Pi/8]=Sqrt[4+2*Sqrt[2]],
+//	        Csc[Pi/10]=1+Sqrt[5],
+//	        Csc[Pi/12]=Sqrt[6]+Sqrt[2],
+//	        Csc[3/8*Pi]=Sqrt[4-2*Sqrt[2]],
+//	        Csc[3/10*Pi]=Sqrt[5]-1,
+//	        Csc[2/5*Pi]=1/5*Sqrt[50-10*Sqrt[5]],
+//			Csc[5/12*Pi]=Sqrt[6]-Sqrt[2]
+//	 }
+	 
 	final static IAST RULES = List(
-			Set(Csc(F.C0), F.ComplexInfinity),
-			SetDelayed(Csc($p("x",$s("NumberQ"))),Condition(Times(CN1,Csc(Times(CN1,$s("x")))),Less(SignCmp($s("x")),C0))),
-			SetDelayed(Csc(Times($p("x",$s("NumberQ")),$p("y"))),Condition(Times(CN1,Csc(Times(Times(CN1,$s("x")),$s("y")))),Less(SignCmp($s("x")),C0)))
-	);
+			Set(Csc(C0),CComplexInfinity),
+			Set(Csc(Times(C1D3,Pi)),Times(fraction(2L,3L),Sqrt(C3))),
+			Set(Csc(Times(C1D4,Pi)),Sqrt(C2)),
+			Set(Csc(Times(fraction(1L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(50L),Times(integer(10L),Sqrt(C5)))))),
+			Set(Csc(Times(fraction(1L,6L),Pi)),C2),
+			Set(Csc(Times(fraction(1L,8L),Pi)),Sqrt(Plus(C4,Times(C2,Sqrt(C2))))),
+			Set(Csc(Times(fraction(1L,10L),Pi)),Plus(C1,Sqrt(C5))),
+			Set(Csc(Times(fraction(1L,12L),Pi)),Plus(Sqrt(integer(6L)),Sqrt(C2))),
+			Set(Csc(Times(fraction(3L,8L),Pi)),Sqrt(Plus(C4,Times(CN1,Times(C2,Sqrt(C2)))))),
+			Set(Csc(Times(fraction(3L,10L),Pi)),Plus(Sqrt(C5),Times(CN1,C1))),
+			Set(Csc(Times(fraction(2L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(50L),Times(CN1,Times(integer(10L),Sqrt(C5))))))),
+			Set(Csc(Times(fraction(5L,12L),Pi)),Plus(Sqrt(integer(6L)),Times(CN1,Sqrt(C2))))
+			);
 
 	@Override
 	public IAST getRuleAST() {
@@ -50,6 +69,14 @@ public class Csc extends AbstractTrigArg1 implements INumeric {
 	}
 	
 	public Csc() {
+	}
+	
+	@Override
+	public IExpr evaluateArg1(final IExpr arg1) {
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Times(CN1, Csc(Times(CN1, arg1)));
+		}
+		return null;
 	}
 
 	@Override
