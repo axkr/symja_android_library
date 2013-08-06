@@ -25,7 +25,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Wikipedia Multiplication</a>
  */
 public class Product extends Table {
-	// private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
+	// private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr,
+	// IExpr>();
 	// static {
 	// }
 
@@ -35,7 +36,7 @@ public class Product extends Table {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		
+
 		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
 			IAST list = (IAST) ast.get(2);
 			if (ast.get(1).isTimes()) {
@@ -65,13 +66,14 @@ public class Product extends Table {
 					// }
 				}
 				if (from.isPositive()) {
-					return F.Divide(F.Product(ast.get(1), F.List(var, C0, to)), F.Product(ast.get(1), F.List(var, C0, from.minus(F.C1))));
+					return F.Divide(F.Product(ast.get(1), F.List(var, C0, to)),
+							F.Product(ast.get(1), F.List(var, C0, from.minus(F.C1))));
 				}
 			}
 		}
 		IAST resultList = Times();
 		IExpr temp = evaluateTable(ast, resultList, C0);
-		if (temp.equals(resultList)) {
+		if (temp == null || temp.equals(resultList)) {
 			return null;
 		}
 		return temp;

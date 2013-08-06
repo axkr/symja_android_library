@@ -20,12 +20,13 @@ import com.google.common.base.Predicate;
  * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
  */
 public class Sum extends Table {
-	// private static HashMap<IExpr, IExpr> MAP_1_N = new HashMap<IExpr, IExpr>();
+	// private static HashMap<IExpr, IExpr> MAP_1_N = new HashMap<IExpr,
+	// IExpr>();
 	private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
 	static {
 		// #^2 -> 1/6*(#+(#+1)*(2*#+1))
-		MAP_0_N.put(Power(Slot(C1), C2), Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)), Plus(Times(C2, Slot(C1)),
-				C1))));
+		MAP_0_N.put(Power(Slot(C1), C2),
+				Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)), Plus(Times(C2, Slot(C1)), C1))));
 		// #^3 -> 1/4*(#*(#+1))^2
 		MAP_0_N.put(Power(Slot(C1), C3), Times(C1D4, Power(Times(Slot(C1), Plus(Slot(C1), C1)), C2)));
 		// Binomial[#2,#] -> 2^#
@@ -40,7 +41,7 @@ public class Sum extends Table {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		
+
 		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
 			IAST list = (IAST) ast.get(2);
 			if (ast.get(1).isPlus()) {
@@ -95,7 +96,7 @@ public class Sum extends Table {
 		}
 		IAST resultList = Plus();
 		IExpr temp = evaluateTable(ast, resultList, C0);
-		if (temp.equals(resultList)) {
+		if (temp == null || temp.equals(resultList)) {
 			return null;
 		}
 		return temp;
