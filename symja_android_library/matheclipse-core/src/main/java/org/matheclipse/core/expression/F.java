@@ -868,6 +868,11 @@ public class F {
 		return binary(ArcTan, a0, a1);
 	}
 
+	public static IAST BernoulliB(final IExpr a0) {
+
+		return unary($s("BernoulliB"), a0);
+	}
+
 	public static IAST Binomial(final IExpr a0, final IExpr a1) {
 
 		return binary($s("Binomial"), a0, a1);

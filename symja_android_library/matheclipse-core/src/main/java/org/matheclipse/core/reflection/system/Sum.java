@@ -1,6 +1,19 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.BernoulliB;
+import static org.matheclipse.core.expression.F.Binomial;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.ExpandAll;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Slot;
+import static org.matheclipse.core.expression.F.Sum;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.k;
 
 import java.util.HashMap;
 
@@ -25,10 +38,12 @@ public class Sum extends Table {
 	private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
 	static {
 		// #^2 -> 1/6*(#+(#+1)*(2*#+1))
-		MAP_0_N.put(Power(Slot(C1), C2),
-				Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)), Plus(Times(C2, Slot(C1)), C1))));
+		// MAP_0_N.put(Power(Slot(C1), C2),
+		// Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)),
+		// Plus(Times(C2, Slot(C1)), C1))));
 		// #^3 -> 1/4*(#*(#-1))^2
-		MAP_0_N.put(Power(Slot(C1), C3), Times(C1D4, Power(Times(Slot(C1), Plus(Slot(C1), C1)), C2)));
+		// MAP_0_N.put(Power(Slot(C1), C3), Times(C1D4, Power(Times(Slot(C1),
+		// Plus(Slot(C1), C1)), C2)));
 		// Binomial[#2,#] -> 2^#
 		MAP_0_N.put(Binomial(Slot(C2), Slot(C1)), Power(C2, Slot(C1)));
 		// #*Binomial[#2,#] -> #*2^(#-1)
@@ -82,6 +97,11 @@ public class Sum extends Table {
 					}
 
 					if (from.equals(F.C0)) {
+						if (ast.get(1).isPower()) {
+							return sumPower((IAST) ast.get(1), var, to);
+						} else if (ast.get(1).equals(var)) {
+							return sumPowerFormula(to, F.C1);
+						}
 						IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
 						if (repl != null) {
 							IExpr temp = MAP_0_N.get(repl);
@@ -116,8 +136,11 @@ public class Sum extends Table {
 					}
 					return filterCollector;
 				}
+			} else if (ast.get(1).isPower()) {
+				return sumPower((IAST) ast.get(1), var, var);
+			} else if (ast.get(1).equals(var)) {
+				return sumPowerFormula(var, F.C1);
 			}
-			
 			IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
 			if (repl != null) {
 				IExpr temp = MAP_0_N.get(repl);
@@ -132,5 +155,34 @@ public class Sum extends Table {
 			return null;
 		}
 		return temp;
+	}
+
+	/**
+	 * See <a href="https://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
+	 * Summation#Some_summations_of_polynomial_expressions</a>.
+	 * 
+	 * @param powAST
+	 *            an AST of the form <code>Power[var^i]</code>
+	 * @param var
+	 * @param to
+	 * @return
+	 */
+	public IExpr sumPower(final IAST powAST, final ISymbol var, final IExpr to) {
+		if (powAST.get(1).equals(var) && powAST.get(2).isInteger()) {
+			IInteger p = (IInteger) powAST.get(2);
+			if (p.isPositive()) {
+				return sumPowerFormula(to, p);
+			}
+		}
+		return null;
+	}
+
+	public IExpr sumPowerFormula(final IExpr to, IInteger p) {
+		// Sum[var ^ p, var] :=
+		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
+		return F.eval(ExpandAll(Plus(
+				Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
+				Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
+						Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
 	}
 }
