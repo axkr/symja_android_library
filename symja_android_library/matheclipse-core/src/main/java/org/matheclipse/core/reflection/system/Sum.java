@@ -27,7 +27,7 @@ public class Sum extends Table {
 		// #^2 -> 1/6*(#+(#+1)*(2*#+1))
 		MAP_0_N.put(Power(Slot(C1), C2),
 				Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)), Plus(Times(C2, Slot(C1)), C1))));
-		// #^3 -> 1/4*(#*(#+1))^2
+		// #^3 -> 1/4*(#*(#-1))^2
 		MAP_0_N.put(Power(Slot(C1), C3), Times(C1D4, Power(Times(Slot(C1), Plus(Slot(C1), C1)), C2)));
 		// Binomial[#2,#] -> 2^#
 		MAP_0_N.put(Binomial(Slot(C2), Slot(C1)), Power(C2, Slot(C1)));
@@ -42,11 +42,13 @@ public class Sum extends Table {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
+		if (ast.get(1).isPlus()) {
+			IAST sum = ast.clone();
+			sum.set(1, F.Null);
+			return ((IAST) ast.get(1)).map(Functors.replace1st(sum));
+		}
 		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
 			IAST list = (IAST) ast.get(2);
-			if (ast.get(1).isPlus()) {
-				return ((IAST) ast.get(1)).map(Functors.replace1st(F.Sum(F.Null, ast.get(2))));
-			}
 			if (list.get(1).isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
 				final ISymbol var = (ISymbol) list.get(1);
 				final IInteger from = (IInteger) list.get(2);
@@ -91,6 +93,36 @@ public class Sum extends Table {
 				}
 				if (from.isPositive()) {
 					return F.Subtract(F.Sum(ast.get(1), F.List(var, C0, to)), F.Sum(ast.get(1), F.List(var, C0, from.minus(F.C1))));
+				}
+			}
+		} else if (ast.size() == 3 && ast.get(2).isSymbol()) {
+			// indefinite sum
+			final ISymbol var = (ISymbol) ast.get(2);
+			if (ast.get(1).isTimes()) {
+				// Sum[ Times[a,b,c,...], var ]
+				IAST filterCollector = F.Times();
+				IAST restCollector = F.Times();
+				((IAST) ast.get(1)).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+					@Override
+					public boolean apply(IExpr input) {
+						return input.isFree(var, true);
+					}
+				});
+				if (filterCollector.size() > 1) {
+					if (restCollector.size() == 2) {
+						filterCollector.add(F.Sum(restCollector.get(1), var));
+					} else {
+						filterCollector.add(F.Sum(restCollector, var));
+					}
+					return filterCollector;
+				}
+			}
+			
+			IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
+			if (repl != null) {
+				IExpr temp = MAP_0_N.get(repl);
+				if (temp != null) {
+					return temp.replaceAll(F.Rule(F.Slot(F.C1), var));
 				}
 			}
 		}

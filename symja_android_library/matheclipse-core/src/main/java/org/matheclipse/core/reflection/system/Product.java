@@ -37,11 +37,13 @@ public class Product extends Table {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
+		if (ast.get(1).isTimes()) {
+			IAST prod = ast.clone();
+			prod.set(1, F.Null);
+			return ((IAST) ast.get(1)).map(Functors.replace1st(prod));
+		}
 		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
 			IAST list = (IAST) ast.get(2);
-			if (ast.get(1).isTimes()) {
-				return ((IAST) ast.get(1)).map(Functors.replace1st(F.Product(F.Null, ast.get(2))));
-			}
 			if (list.get(1).isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
 				final ISymbol var = (ISymbol) list.get(1);
 				final IInteger from = (IInteger) list.get(2);

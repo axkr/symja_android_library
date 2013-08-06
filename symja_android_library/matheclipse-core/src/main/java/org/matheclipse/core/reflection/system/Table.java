@@ -31,8 +31,10 @@ public class Table implements IFunctionEvaluator {
 	}
 
 	/**
+	 * Generate a table.
 	 * 
-	 * @param ast an AST with at least 3 arguments
+	 * @param ast
+	 *            an AST with at least 3 arguments
 	 * @param resultList
 	 * @param defaultValue
 	 * @return
@@ -45,8 +47,8 @@ public class Table implements IFunctionEvaluator {
 				iterList.add(new Iterator((IAST) ast.get(i), engine));
 			}
 
-			final TableGenerator<IExpr, IAST> generator = new TableGenerator<IExpr, IAST>(iterList, resultList, new UnaryArrayFunction(
-					engine, ast.get(1)), AST.COPY, defaultValue);
+			final TableGenerator<IExpr, IAST> generator = new TableGenerator<IExpr, IAST>(iterList, resultList,
+					new UnaryArrayFunction(engine, ast.get(1)), AST.COPY, defaultValue);
 			return generator.table();
 
 		} catch (final ClassCastException e) {
