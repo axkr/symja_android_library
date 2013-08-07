@@ -33,17 +33,9 @@ import com.google.common.base.Predicate;
  * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
  */
 public class Sum extends Table {
-	// private static HashMap<IExpr, IExpr> MAP_1_N = new HashMap<IExpr,
-	// IExpr>();
 	private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
+
 	static {
-		// #^2 -> 1/6*(#+(#+1)*(2*#+1))
-		// MAP_0_N.put(Power(Slot(C1), C2),
-		// Times(fraction(1L, 6L), Times(Times(Slot(C1), Plus(Slot(C1), C1)),
-		// Plus(Times(C2, Slot(C1)), C1))));
-		// #^3 -> 1/4*(#*(#-1))^2
-		// MAP_0_N.put(Power(Slot(C1), C3), Times(C1D4, Power(Times(Slot(C1),
-		// Plus(Slot(C1), C1)), C2)));
 		// Binomial[#2,#] -> 2^#
 		MAP_0_N.put(Binomial(Slot(C2), Slot(C1)), Power(C2, Slot(C1)));
 		// #*Binomial[#2,#] -> #*2^(#-1)
@@ -56,101 +48,31 @@ public class Sum extends Table {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
+		IExpr arg1 = ast.get(1);
 
-		if (ast.get(1).isPlus()) {
+		if (arg1.isPlus()) {
 			IAST sum = ast.clone();
 			sum.set(1, F.Null);
-			return ((IAST) ast.get(1)).map(Functors.replace1st(sum));
+			return ((IAST) arg1).map(Functors.replace1st(sum));
 		}
-		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
-			IAST list = (IAST) ast.get(2);
+		IExpr arg2 = ast.get(2);
+		IExpr temp;
+		if (ast.size() == 3 && arg2.isList() && ((IAST) arg2).size() == 4) {
+			IAST list = (IAST) arg2;
 			if (list.get(1).isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
-				final ISymbol var = (ISymbol) list.get(1);
-				final IInteger from = (IInteger) list.get(2);
-				final ISymbol to = (ISymbol) list.get(3);
-				if (ast.get(1).isFree(var, true) && ast.get(1).isFree(to, true)) {
-					if (from.equals(F.C1)) {
-						return F.Times(to, ast.get(1));
-					}
-					if (from.equals(F.C0)) {
-						return F.Times(Plus(to, C1), ast.get(1));
-					}
-				} else {
-					if (ast.get(1).isTimes()) {
-						// Sum[ Times[a,b,c,...], {var, from, to} ]
-						IAST filterCollector = F.Times();
-						IAST restCollector = F.Times();
-						((IAST) ast.get(1)).filter(filterCollector, restCollector, new Predicate<IExpr>() {
-							@Override
-							public boolean apply(IExpr input) {
-								return input.isFree(var, true) && input.isFree(to, true);
-							}
-						});
-						if (filterCollector.size() > 1) {
-							if (restCollector.size() == 2) {
-								filterCollector.add(F.Sum(restCollector.get(1), ast.get(2)));
-							} else {
-								filterCollector.add(F.Sum(restCollector, ast.get(2)));
-							}
-							return filterCollector;
-						}
-					}
-
-					if (from.equals(F.C0)) {
-						if (ast.get(1).isPower()) {
-							return sumPower((IAST) ast.get(1), var, to);
-						} else if (ast.get(1).equals(var)) {
-							return sumPowerFormula(to, F.C1);
-						}
-						IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
-						if (repl != null) {
-							IExpr temp = MAP_0_N.get(repl);
-							if (temp != null) {
-								return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
-							}
-						}
-					}
-				}
-				if (from.isPositive()) {
-					return F.Subtract(F.Sum(ast.get(1), F.List(var, C0, to)), F.Sum(ast.get(1), F.List(var, C0, from.minus(F.C1))));
-				}
-			}
-		} else if (ast.size() == 3 && ast.get(2).isSymbol()) {
-			// indefinite sum
-			final ISymbol var = (ISymbol) ast.get(2);
-			if (ast.get(1).isTimes()) {
-				// Sum[ Times[a,b,c,...], var ]
-				IAST filterCollector = F.Times();
-				IAST restCollector = F.Times();
-				((IAST) ast.get(1)).filter(filterCollector, restCollector, new Predicate<IExpr>() {
-					@Override
-					public boolean apply(IExpr input) {
-						return input.isFree(var, true);
-					}
-				});
-				if (filterCollector.size() > 1) {
-					if (restCollector.size() == 2) {
-						filterCollector.add(F.Sum(restCollector.get(1), var));
-					} else {
-						filterCollector.add(F.Sum(restCollector, var));
-					}
-					return filterCollector;
-				}
-			} else if (ast.get(1).isPower()) {
-				return sumPower((IAST) ast.get(1), var, var);
-			} else if (ast.get(1).equals(var)) {
-				return sumPowerFormula(var, F.C1);
-			}
-			IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
-			if (repl != null) {
-				IExpr temp = MAP_0_N.get(repl);
+				temp = definiteSum(arg1, list);
 				if (temp != null) {
-					return temp.replaceAll(F.Rule(F.Slot(F.C1), var));
+					return temp;
 				}
+			}
+		} else if (ast.size() == 3 && arg2.isSymbol()) {
+			temp = indefiniteSum(arg1, (ISymbol) arg2);
+			if (temp != null) {
+				return temp;
 			}
 		}
 		IAST resultList = Plus();
-		IExpr temp = evaluateTable(ast, resultList, C0);
+		temp = evaluateTable(ast, resultList, C0);
 		if (temp == null || temp.equals(resultList)) {
 			return null;
 		}
@@ -158,7 +80,110 @@ public class Sum extends Table {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
+	 * Evaluate the definite sum: <code>Sum[arg1, {var, from, to}]</code>
+	 * 
+	 * @param arg1
+	 *            the first argument of the <code>Sum[]</code> function.
+	 * @param list
+	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
+	 * @return
+	 */
+	public IExpr definiteSum(IExpr arg1, final IAST list) {
+		final ISymbol var = (ISymbol) list.get(1);
+		final IInteger from = (IInteger) list.get(2);
+		final ISymbol to = (ISymbol) list.get(3);
+		if (arg1.isFree(var, true) && arg1.isFree(to, true)) {
+			if (from.equals(F.C1)) {
+				return F.Times(to, arg1);
+			}
+			if (from.equals(F.C0)) {
+				return F.Times(Plus(to, C1), arg1);
+			}
+		} else {
+			if (arg1.isTimes()) {
+				// Sum[ Times[a,b,c,...], {var, from, to} ]
+				IAST filterCollector = F.Times();
+				IAST restCollector = F.Times();
+				((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+					@Override
+					public boolean apply(IExpr input) {
+						return input.isFree(var, true) && input.isFree(to, true);
+					}
+				});
+				if (filterCollector.size() > 1) {
+					if (restCollector.size() == 2) {
+						filterCollector.add(F.Sum(restCollector.get(1), list));
+					} else {
+						filterCollector.add(F.Sum(restCollector, list));
+					}
+					return filterCollector;
+				}
+			}
+
+			if (from.equals(F.C0)) {
+				if (arg1.isPower()) {
+					return sumPower((IAST) arg1, var, to);
+				} else if (arg1.equals(var)) {
+					return sumPowerFormula(to, F.C1);
+				}
+				IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
+				if (repl != null) {
+					IExpr temp = MAP_0_N.get(repl);
+					if (temp != null) {
+						return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
+					}
+				}
+			}
+		}
+		if (from.isPositive()) {
+			return F.Subtract(F.Sum(arg1, F.List(var, C0, to)), F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
+		}
+		return null;
+	}
+
+	/**
+	 * Evaluate the indefinite sum: <code>Sum[arg1, var]</code>
+	 * 
+	 * @param arg1
+	 * @param var
+	 * @return
+	 */
+	public IExpr indefiniteSum(IExpr arg1, final ISymbol var) {
+		if (arg1.isTimes()) {
+			// Sum[ Times[a,b,c,...], var ]
+			IAST filterCollector = F.Times();
+			IAST restCollector = F.Times();
+			((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+				@Override
+				public boolean apply(IExpr input) {
+					return input.isFree(var, true);
+				}
+			});
+			if (filterCollector.size() > 1) {
+				if (restCollector.size() == 2) {
+					filterCollector.add(F.Sum(restCollector.get(1), var));
+				} else {
+					filterCollector.add(F.Sum(restCollector, var));
+				}
+				return filterCollector;
+			}
+		} else if (arg1.isPower()) {
+			return sumPower((IAST) arg1, var, var);
+		} else if (arg1.equals(var)) {
+			return sumPowerFormula(var, F.C1);
+		}
+		IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
+		if (repl != null) {
+			IExpr temp = MAP_0_N.get(repl);
+			if (temp != null) {
+				return temp.replaceAll(F.Rule(F.Slot(F.C1), var));
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * See <a href="http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
 	 * Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param powAST
@@ -178,6 +203,7 @@ public class Sum extends Table {
 	}
 
 	public IExpr sumPowerFormula(final IExpr to, IInteger p) {
+		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
 		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
 		return F.eval(ExpandAll(Plus(

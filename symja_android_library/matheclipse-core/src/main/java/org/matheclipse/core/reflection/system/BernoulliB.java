@@ -16,8 +16,7 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Compute the Bernoulli number of the first kind.
  * 
- * See <a href="en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli
- * number</a>. <br/>
+ * See <a href="en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
  * For better performing implementations see <a href=
  * "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
  * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
@@ -72,6 +71,8 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 			return BigFraction.ONE;
 		} else if (n == 1) {
 			return new BigFraction(-1, 2);
+		} else if (n % 2 != 0) {
+			return BigFraction.ZERO;
 		}
 		BigFraction[] bernoulli = new BigFraction[n + 1];
 		bernoulli[0] = BigFraction.ONE;
@@ -79,8 +80,10 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 		for (int k = 2; k <= n; k++) {
 			bernoulli[k] = BigFraction.ZERO;
 			for (int i = 0; i < k; i++) {
-				BigFraction bin = new BigFraction(Binomial.binomial(k + 1, k + 1 - i));
-				bernoulli[k] = bernoulli[k].subtract(bin.multiply(bernoulli[i]));
+				if (!bernoulli[i].equals(BigFraction.ZERO)) {
+					BigFraction bin = new BigFraction(Binomial.binomial(k + 1, k + 1 - i));
+					bernoulli[k] = bernoulli[k].subtract(bin.multiply(bernoulli[i]));
+				}
 			}
 			bernoulli[k] = bernoulli[k].divide(new BigFraction(k + 1));
 		}
