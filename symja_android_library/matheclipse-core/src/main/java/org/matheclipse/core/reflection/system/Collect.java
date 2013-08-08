@@ -23,31 +23,16 @@ public class Collect extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-
 		try {
 			if (!ast.get(2).isList()) {
 				IExpr arg1 = F.evalExpandAll(ast.get(1));
-				if (arg1.isAST()) {
-					Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
-					IAST poly = (IAST) arg1;
-					IAST rest = F.Plus();
-					IExpr arg2 = ast.get(2);
-					PatternMatcher matcher = new PatternMatcher(arg2);
-					collectToMap(poly, matcher, map, rest);
-					for (IExpr key : map.keySet()) {
-						IAST value = map.get(key);
-						if (value.size() == 2) {
-							rest.add(F.Times(key, value.get(1)));
-						} else {
-							rest.add(F.Times(key, value));
-						}
-					}
-					if (rest.size() == 2) {
-						return rest.get(1);
-					}
-					return rest;
-				}
-				return arg1;
+				IExpr arg2 = ast.get(2);
+				return collectSingleVariable(arg1, arg2, F.List(), 1);
+			}
+			IExpr arg1 = F.evalExpandAll(ast.get(1));
+			IAST list = (IAST) ast.get(2);
+			if (list.size() > 1) {
+				return collectSingleVariable(arg1, list.get(1), (IAST) ast.get(2), 2);
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -55,6 +40,45 @@ public class Collect extends AbstractFunctionEvaluator {
 			}
 		}
 		return null;
+	}
+
+	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos) {
+		if (arg1.isAST()) {
+			Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
+			IAST poly = (IAST) arg1;
+			IAST rest = F.Plus();
+
+			PatternMatcher matcher = new PatternMatcher(arg2);
+			collectToMap(poly, matcher, map, rest);
+			if (pos < list.size()) {
+				// collect next pattern in sub-expressions
+				IAST result = F.Plus();
+				if (rest.size() > 1) {
+					result.add(collectSingleVariable(rest, list.get(pos), list, pos + 1));
+				}
+				for (IExpr key : map.keySet()) {
+					IAST value = map.get(key);
+					IExpr temp;
+					if (value.size() == 2) {
+						temp = collectSingleVariable(value.get(1), list.get(pos), list, pos + 1);
+					} else {
+						temp = collectSingleVariable(value, list.get(pos), list, pos + 1);
+					}
+					result.add(F.Times(key,temp));
+				}
+				return result;
+			}
+
+			for (IExpr key : map.keySet()) {
+				IAST value = map.get(key);
+				rest.add(F.Times(key).addOneIdentity(value));
+			}
+			if (rest.size() == 2) {
+				return rest.get(1);
+			}
+			return rest;
+		}
+		return arg1;
 	}
 
 	public void collectToMap(IExpr expr, PatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {
@@ -79,33 +103,16 @@ public class Collect extends AbstractFunctionEvaluator {
 				}
 			}
 			if (clone.size() > 1) {
-				if (clone.size() == 2) {
-					rest.add(clone.get(1));
-				} else {
-					rest.add(clone);
-				}
+				rest.addOneIdentity(clone);
 			}
 			return;
 		} else if (expr.isTimes()) {
 			IAST timesAST = (IAST) expr;
 			for (int i = 1; i < timesAST.size(); i++) {
-				if (matcher.apply(timesAST.get(i))) {
+				if (matcher.apply(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
 					IAST clone = timesAST.clone();
 					clone.remove(i);
-					if (clone.size() == 2) {
-						addPowerFactor(timesAST.get(i), clone.get(1), map);
-					} else {
-						addPowerFactor(timesAST.get(i), clone, map);
-					}
-					return;
-				} else if (isPowerMatched(timesAST.get(i), matcher)) {
-					IAST clone = timesAST.clone();
-					clone.remove(i);
-					if (clone.size() == 2) {
-						addPowerFactor(timesAST.get(i), clone.get(1), map);
-					} else {
-						addPowerFactor(timesAST.get(i), clone, map);
-					}
+					addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 					return;
 				}
 			}
@@ -128,23 +135,10 @@ public class Collect extends AbstractFunctionEvaluator {
 		} else if (expr.isTimes()) {
 			IAST timesAST = (IAST) expr;
 			for (int i = 1; i < timesAST.size(); i++) {
-				if (matcher.apply(timesAST.get(i))) {
+				if (matcher.apply(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
 					IAST clone = timesAST.clone();
 					clone.remove(i);
-					if (clone.size() == 2) {
-						addPowerFactor(timesAST.get(i), clone.get(1), map);
-					} else {
-						addPowerFactor(timesAST.get(i), clone, map);
-					}
-					return true;
-				} else if (isPowerMatched(timesAST.get(i), matcher)) {
-					IAST clone = timesAST.clone();
-					clone.remove(i);
-					if (clone.size() == 2) {
-						addPowerFactor(timesAST.get(i), clone.get(1), map);
-					} else {
-						addPowerFactor(timesAST.get(i), clone, map);
-					}
+					addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 					return true;
 				}
 			}
@@ -153,15 +147,22 @@ public class Collect extends AbstractFunctionEvaluator {
 		return false;
 	}
 
+	public void addOneIdentityPowerFactor(IExpr key, IAST subAST, Map<IExpr, IAST> map) {
+		IAST resultList = map.get(key);
+		if (resultList == null) {
+			resultList = F.Plus();
+			map.put(key, resultList);
+		}
+		resultList.addOneIdentity(subAST);
+	}
+
 	public void addPowerFactor(IExpr key, IExpr value, Map<IExpr, IAST> map) {
 		IAST resultList = map.get(key);
 		if (resultList == null) {
 			resultList = F.Plus();
-			resultList.add(value);
 			map.put(key, resultList);
-		} else {
-			resultList.add(value);
 		}
+		resultList.add(value);
 	}
 
 	public boolean isPowerMatched(IExpr poly, PatternMatcher matcher) {

@@ -45,27 +45,21 @@ import edu.jas.structure.ElemFactory;
  * </p>
  * 
  * <p>
- * In MathEclipse, an abstract syntax tree (AST), is a tree representation of
- * the abstract syntactic structure of the MathEclipse source code. Each node of
- * the tree denotes a construct occurring in the source code. The syntax is
- * 'abstract' in the sense that it does not represent every detail that appears
- * in the real syntax. For instance, grouping parentheses are implicit in the
- * tree structure, and a syntactic construct such as a <code>Sin[x]</code>
- * expression will be denoted by an AST with 2 nodes. One node for the header
- * <code>Sin</code> and one node for the argument <code>x</code>.
+ * In MathEclipse, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the MathEclipse
+ * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that
+ * it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree
+ * structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node
+ * for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which
- * contains
+ * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
- * Inverse, Plus, Times,...) at index <code>0</code> and</li>
- * <li>the <code>n</code> arguments of a function in the index
- * <code>0 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
+ * and</li>
+ * <li>the <code>n</code> arguments of a function in the index <code>0 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
- * syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
 public class AST extends NestedFastTable<IExpr> implements IAST {
 	private final static IAST AST_DUMMY_INSTANCE = new AST();
@@ -78,8 +72,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	private static final long serialVersionUID = 4295200630292148027L;
 
 	/**
-	 * Flags for controlling evaluation and left-hand-side pattern-matching
-	 * expressions
+	 * Flags for controlling evaluation and left-hand-side pattern-matching expressions
 	 * 
 	 */
 	transient private int fEvalFlags = 0;
@@ -87,8 +80,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	transient protected int fPatternMatchingHashValue = 0;
 
 	/**
-	 * simple parser to simplify unit tests. The parser assumes that the String
-	 * contains no syntax errors.
+	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
 	 * 
 	 * Example &quot;List[x,List[y]]&quot;
 	 */
@@ -149,11 +141,9 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * Constructs an empty list with the specified initial capacity.
 	 * 
 	 * @param initialCapacity
-	 *            the initial capacity (i.e. number of arguments without the
-	 *            header element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param setLength
-	 *            if <code>true</code>, sets the array's size to
-	 *            initialCapacity.
+	 *            if <code>true</code>, sets the array's size to initialCapacity.
 	 */
 	private AST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity + 1, setLength ? initialCapacity + 1 : 0);
@@ -181,8 +171,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Returns a shallow copy of this <tt>AST</tt> instance. (The elements
-	 * themselves are not copied.)
+	 * Returns a shallow copy of this <tt>AST</tt> instance. (The elements themselves are not copied.)
 	 * 
 	 * @return a clone of this <tt>AST</tt> instance.
 	 */
@@ -223,8 +212,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will
-	 * recursively call head().
+	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
 	 */
 	@Override
 	public ISymbol topHead() {
@@ -317,6 +305,16 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	@Override
 	public final void addEvalFlags(final int i) {
 		fEvalFlags |= i;
+	}
+
+	/** {@inheritDoc} */
+	public IAST addOneIdentity(IAST value) {
+		if (value.size() == 2) {
+			add(value.get(1));
+		} else {
+			add(value);
+		}
+		return this;
 	}
 
 	/**
@@ -1004,9 +1002,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Compares this (Times) AST with the specified AST for order. Returns a
-	 * negative integer, zero, or a positive integer as this (Times) AST is
-	 * canonical less than, equal to, or greater than the specified AST.
+	 * Compares this (Times) AST with the specified AST for order. Returns a negative integer, zero, or a positive integer as this
+	 * (Times) AST is canonical less than, equal to, or greater than the specified AST.
 	 */
 	private int compareToTimes(final AST ast) {
 		final IExpr astHeader = ast.head();
@@ -1061,10 +1058,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for canonical
-	 * order. Returns a negative integer, zero, or a positive integer as this
-	 * expression is canonical less than, equal to, or greater than the
-	 * specified expression.
+	 * Compares this expression with the specified expression for canonical order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -1422,8 +1417,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/**
 	 * 
 	 * @param intialCapacity
-	 *            the initial capacity (i.e. number of arguments without the
-	 *            header element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param head
 	 * @return
 	 */
@@ -1455,8 +1449,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Constructs a list with header <i>symbol</i> and the arguments containing
-	 * the given DoubleImpl values.
+	 * Constructs a list with header <i>symbol</i> and the arguments containing the given DoubleImpl values.
 	 * 
 	 * @see Num
 	 */
@@ -1479,8 +1472,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Constructs a list with header <i>symbol</i> and the arguments containing
-	 * the given DoubleImpl matrix values as <i>List</i> rows
+	 * Constructs a list with header <i>symbol</i> and the arguments containing the given DoubleImpl matrix values as <i>List</i>
+	 * rows
 	 * 
 	 * @see Num
 	 */
@@ -1512,8 +1505,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Additional <code>negative</code> method, which works like opposite to
-	 * fulfill groovy's method signature
+	 * Additional <code>negative</code> method, which works like opposite to fulfill groovy's method signature
 	 * 
 	 * @return
 	 */
@@ -1528,8 +1520,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Additional multiply method, which works like times to fulfill groovy's
-	 * method signature
+	 * Additional multiply method, which works like times to fulfill groovy's method signature
 	 * 
 	 * @param that
 	 * @return
@@ -1604,8 +1595,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>IInteger</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IInteger</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -1622,8 +1612,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>INumber</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -1640,8 +1629,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>IAST</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -1658,8 +1646,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Casts an <code>IExpr</code> which is a list at position
-	 * <code>index</code> to an <code>IAST</code>.
+	 * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -1704,8 +1691,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	}
 
 	/**
-	 * Signum functionality is used in JAS toString() method, don't use it as
-	 * math signum function.
+	 * Signum functionality is used in JAS toString() method, don't use it as math signum function.
 	 * 
 	 * @deprecated
 	 */

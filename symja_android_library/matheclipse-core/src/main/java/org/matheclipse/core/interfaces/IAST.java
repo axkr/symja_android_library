@@ -21,27 +21,21 @@ import com.google.common.base.Predicate;
  * </p>
  * 
  * <p>
- * In MathEclipse, an abstract syntax tree (AST), is a tree representation of
- * the abstract syntactic structure of the MathEclipse source code. Each node of
- * the tree denotes a construct occurring in the source code. The syntax is
- * 'abstract' in the sense that it does not represent every detail that appears
- * in the real syntax. For instance, grouping parentheses are implicit in the
- * tree structure, and a syntactic construct such as a <code>Sin[x]</code>
- * expression will be denoted by an AST with 2 nodes. One node for the header
- * <code>Sin</code> and one node for the argument <code>x</code>.
+ * In MathEclipse, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the MathEclipse
+ * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that
+ * it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree
+ * structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node
+ * for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which
- * contains
+ * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
- * Inverse, Plus, Times,...) at index <code>0</code> and</li>
- * <li>the <code>n</code> arguments of a function in the index
- * <code>0 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
+ * and</li>
+ * <li>the <code>n</code> arguments of a function in the index <code>0 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
- * syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
 public interface IAST extends IExpr, INestedList<IExpr> {
 	/**
@@ -60,14 +54,12 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
 
 	/**
-	 * One of the arguments of the list contains a pattern object which can be
-	 * set to a default value.
+	 * One of the arguments of the list contains a pattern object which can be set to a default value.
 	 */
 	public final int CONTAINS_DEFAULT_PATTERN = 0x0004;
 
 	/**
-	 * One of the arguments of the list or sublists contains a pattern object.
-	 * Combination of
+	 * One of the arguments of the list or sublists contains a pattern object. Combination of
 	 * <code>CONTAINS_PATTERN, CONTAINS_PATTERN_SEQUENCE, CONTAINS_DEFAULT_PATTERN</code>
 	 */
 	public final int CONTAINS_PATTERN_EXPR = 0x0007;
@@ -88,8 +80,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public final int IS_VECTOR = 0x0040;
 
 	/**
-	 * This expression represents a matrix or vector if one of the following
-	 * bits is set.
+	 * This expression represents a matrix or vector if one of the following bits is set.
 	 */
 	public final int IS_MATRIX_OR_VECTOR = 0x0060;
 
@@ -111,8 +102,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public final int IS_SORTED = 0x0200;
 
 	/**
-	 * This expression has already applied the Listable attribute to its
-	 * argument expressions
+	 * This expression has already applied the Listable attribute to its argument expressions
 	 */
 	public final int IS_LISTABLE_THREADED = 0x0400;
 
@@ -129,11 +119,9 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public int getEvalFlags();
 
 	/**
-	 * Returns the header. If the header itself is an ISymbol it will return the
-	 * symbol object. If the header itself is an IAST it will recursively call
-	 * headSymbol(). If the head is of type INumbers, the head will return one
-	 * of these headers: "DoubleComplex", "Double", "Integer", "Fraction",
-	 * "Complex". All other objects return <code>null</code>.
+	 * Returns the header. If the header itself is an ISymbol it will return the symbol object. If the header itself is an IAST it
+	 * will recursively call headSymbol(). If the head is of type INumbers, the head will return one of these headers:
+	 * "DoubleComplex", "Double", "Integer", "Fraction", "Complex". All other objects return <code>null</code>.
 	 */
 	public ISymbol topHead();
 
@@ -166,8 +154,17 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public void addEvalFlags(int i);
 
 	/**
-	 * Appends all elements from offset <code>startPosition</code> to
-	 * <code>endPosition</code> in the specified AST to the end of this AST.
+	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for example Plus[] or Times[].
+	 * 
+	 * @param subAST
+	 *            an ast with attribute <code>OneIdentity</code>.
+	 * @return <code>this</code> ast after adding the subAST
+	 */
+	public IAST addOneIdentity(IAST subAST);
+	
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to the end of
+	 * this AST.
 	 * 
 	 * @param ast
 	 *            AST containing elements to be added to this AST
@@ -181,8 +178,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition);
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the
-	 * specified AST to the end of this AST.
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
 	 * @param ast
 	 *            AST containing elements to be added to this AST
@@ -214,16 +210,14 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public boolean isTimes();
 
 	/**
-	 * Returns an iterator over the elements in this list starting with offset
-	 * <b>1</b>.
+	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
 	 * 
 	 * @return an iterator over this list values.
 	 */
 	public Iterator<IExpr> iterator();
 
 	/**
-	 * Returns an iterator over the elements in this list starting with offset
-	 * <b>0</b>.
+	 * Returns an iterator over the elements in this list starting with offset <b>0</b>.
 	 * 
 	 * 
 	 * @return an iterator over this list values.
@@ -231,8 +225,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public Iterator<IExpr> iterator0();
 
 	/**
-	 * Apply the given head to this expression (i.e. create a list clone and
-	 * replace the old head with the given one)
+	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
 	 * 
 	 * @param head
 	 * @return
@@ -240,8 +233,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST apply(IExpr head);
 
 	/**
-	 * Apply the given head to this expression (i.e. create a sublist clone
-	 * starting from index start and replacing the old head with the given one)
+	 * Apply the given head to this expression (i.e. create a sublist clone starting from index start and replacing the old head
+	 * with the given one)
 	 * 
 	 * @param head
 	 * @return
@@ -249,8 +242,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST apply(IExpr head, int start);
 
 	/**
-	 * Apply the given head to this expression (i.e. create a sublist clone from
-	 * index start to end, and replacing the old head with the given one)
+	 * Apply the given head to this expression (i.e. create a sublist clone from index start to end, and replacing the old head with
+	 * the given one)
 	 * 
 	 * @param head
 	 * @return
@@ -258,13 +251,13 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST apply(IExpr head, int start, int end);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function
-	 * returns <code>null</code> the original element is used.
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element is
+	 * used.
 	 * 
 	 * <br />
 	 * <br />
-	 * Example for mapping with <code>Functors#replace1st()</code>, where the
-	 * first argument will be replaced by the current argument of this AST:
+	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the current
+	 * argument of this AST:
 	 * 
 	 * <pre>
 	 * plusAST.map(Functors.replace1st(F.D(F.Null, dAST.get(2))));
@@ -277,9 +270,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST map(final Function<IExpr, IExpr> functor);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function
-	 * returns <code>null</code> the original element of the result list is
-	 * used.
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the
+	 * result list is used.
 	 * 
 	 * @param head
 	 *            the new head element of the result list
@@ -290,13 +282,11 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function
-	 * returns <code>null</code> the original element of the result list is
-	 * used.
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the
+	 * result list is used.
 	 * 
 	 * @param clonedResultAST
-	 *            a list which is cloned from <code>this</code> list or greater
-	 *            or equal in size of <code>this</code> list.
+	 *            a list which is cloned from <code>this</code> list or greater or equal in size of <code>this</code> list.
 	 * @param functor
 	 *            a unary function
 	 * @return
@@ -304,8 +294,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> functor);
 
 	/**
-	 * Maps the elements of this IAST with the elements of the
-	 * <code>secondAST</code>.
+	 * Maps the elements of this IAST with the elements of the <code>secondAST</code>.
 	 * 
 	 * @param functor
 	 *            a binary function
@@ -316,8 +305,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
 
 	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append
-	 * the elements which satisfy the predicate to the <code>filterAST</code>.
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>filterAST</code>.
 	 * 
 	 * @param filterAST
 	 *            the elements which satisfy the predicate
@@ -328,9 +317,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST filter(IAST filterAST, Predicate<IExpr> predicate);
 
 	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append
-	 * the elements which satisfy the predicate to the <code>filterAST</code>,
-	 * or otherwise append it to the <code>restAST</code>.
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>filterAST</code>, or otherwise append it to the <code>restAST</code>.
 	 * 
 	 * @param filterAST
 	 *            the elements satisfy match the predicate
@@ -343,10 +331,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate);
 
 	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append
-	 * the elements which satisfy the predicate to the <code>0th element</code>
-	 * of the result array, or otherwise append it to the
-	 * <code>1st element</code> of the result array.
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the result array.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each element in the range
@@ -355,14 +341,12 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST[] split(Predicate<IExpr> predicate);
 
 	/**
-	 * Apply the function to each element in this <code>AST</code> and append
-	 * the result elements for which the function returns non-null elements to
-	 * the <code>0th element</code> of the result array, or otherwise append it
-	 * to the <code>1st element</code> of the result array.
+	 * Apply the function to each element in this <code>AST</code> and append the result elements for which the function returns
+	 * non-null elements to the <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code>
+	 * of the result array.
 	 * 
 	 * @param function
-	 *            the function which filters each element in the range by
-	 *            returning a non-null result.
+	 *            the function which filters each element in the range by returning a non-null result.
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
 	public IAST[] split(final Function<IExpr, IExpr> function);
@@ -373,31 +357,27 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	// public void setHeader(IExpr expr);
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
-	 * themselves are not copied).
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
 	public IAST clone();
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
-	 * themselves are not copied) and set the <code>expr</code> at the given
-	 * <code>position</code>.
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
+	 * <code>expr</code> at the given <code>position</code>.
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
 	public IAST cloneSet(int position, IExpr expr);
 
 	/**
-	 * Create a copy of this <code>IAST</code>, which only contains the head
-	 * element of the list (i.e. the element with index 0).
+	 * Create a copy of this <code>IAST</code>, which only contains the head element of the list (i.e. the element with index 0).
 	 */
 	public IAST copyHead();
 
 	/**
-	 * Create a copy of this <code>IAST</code>, which contains alls elements up
-	 * to <code>index</code> (exclusive).
+	 * Create a copy of this <code>IAST</code>, which contains alls elements up to <code>index</code> (exclusive).
 	 */
 	public IAST copyUntil(int index);
 
@@ -409,16 +389,15 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public int patternHashCode();
 
 	/**
-	 * Get the range of elements [1..ast.size()[. These range elements are the
-	 * arguments of a function (represented as an AST).
+	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
 	 * 
 	 * @return
 	 */
 	public ASTRange args();
 
 	/**
-	 * Get the range of elements [0..ast.size()[ of the AST. This range elements
-	 * are the head of the function prepended by the arguments of a function.
+	 * Get the range of elements [0..ast.size()[ of the AST. This range elements are the head of the function prepended by the
+	 * arguments of a function.
 	 * 
 	 * @return
 	 */
@@ -439,8 +418,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public ASTRange range(int start, int end);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>IInteger</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IInteger</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -450,8 +428,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IInteger getInt(int index);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>INumber</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -461,8 +438,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public INumber getNumber(int index);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an
-	 * <code>IAST</code>.
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
 	 * @return
@@ -472,8 +448,7 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST getAST(int index);
 
 	/**
-	 * Casts an <code>IExpr</code> which is a list at position
-	 * <code>index</code> to an <code>IAST</code>.
+	 * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST</code>.
 	 * 
 	 * @param index
 	 * @return
