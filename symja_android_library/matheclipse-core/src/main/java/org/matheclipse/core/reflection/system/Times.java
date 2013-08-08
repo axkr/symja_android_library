@@ -92,9 +92,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return F.Power(o0, F.C2);
 		}
 
-		if (o0.isInfinity()||o0.isNegativeInfinity()) {
+		if (o0.isInfinity() || o0.isNegativeInfinity()) {
 			temp = eInfinity(o0, o1);
-		} else if (o1.isInfinity()||o1.isNegativeInfinity()) {
+		} else if (o1.isInfinity() || o1.isNegativeInfinity()) {
 			temp = eInfinity(o1, o0);
 		}
 		if (temp != null) {
@@ -226,8 +226,8 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 
 			if (evaled) {
-				if ((result.size() == 2) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
-					return result.get(1);
+				if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY && result.size() > 1) {
+					return result.getOneIdentity(F.C0);
 				}
 
 				return result;

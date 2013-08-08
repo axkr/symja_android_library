@@ -30,11 +30,9 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 /**
- * Evaluate the partial fraction decomposition of a univariate polynomial
- * fraction.
+ * Evaluate the partial fraction decomposition of a univariate polynomial fraction.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia -
- * Partial fraction decomposition</a>
+ * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia - Partial fraction decomposition</a>
  */
 public class Apart extends AbstractFunctionEvaluator {
 
@@ -63,11 +61,7 @@ public class Apart extends AbstractFunctionEvaluator {
 				IAST plusResult = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
 						(ISymbol) variableList.get(1));
 				if (plusResult != null) {
-					if (plusResult.size() == 2) {
-						// OneIdentity
-						return plusResult.get(1);
-					}
-					return plusResult;
+					return plusResult.getOneIdentity(F.C0);
 				}
 			}
 		} else {
@@ -78,14 +72,13 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial
-	 * fraction decomposition of the numerator and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and
+	 * denominator parts.
 	 * 
 	 * @deprecated untested at the moment
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't
-	 *         constructed
+	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
 	public static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
 		try {
@@ -150,13 +143,12 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial
-	 * fraction decomposition of the numerator and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and
+	 * denominator parts.
 	 * 
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't
-	 *         constructed
+	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
 	public static IAST partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
 		try {
@@ -212,8 +204,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating
-	 * positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
 	 * 
 	 * @param arg
 	 * @return the numerator and denominator expression
@@ -267,8 +258,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Return the numerator and denominator for the given
-	 * <code>Times[...]</code> AST, by separating positive and negative powers.
+	 * Return the numerator and denominator for the given <code>Times[...]</code> AST, by separating positive and negative powers.
 	 * 
 	 * @param ast
 	 *            a times expression (a*b*c....)
@@ -329,24 +319,8 @@ public class Apart extends AbstractFunctionEvaluator {
 			}
 			numerator.add(arg);
 		}
-		if (numerator.size() == 1) {
-			// no factor collected
-			result[0] = F.C1;
-		} else if (numerator.size() == 2) {
-			// OneIdentity - use 1st argument
-			result[0] = numerator.get(1);
-		} else {
-			result[0] = numerator;
-		}
-		if (denominator.size() == 1) {
-			// no factor collected
-			result[1] = F.C1;
-		} else if (denominator.size() == 2) {
-			// OneIdentity - use 1st argument
-			result[1] = denominator.get(1);
-		} else {
-			result[1] = denominator;
-		}
+		result[0] = numerator.getOneIdentity(F.C1);
+		result[1] = denominator.getOneIdentity(F.C1);
 		return result;
 
 	}

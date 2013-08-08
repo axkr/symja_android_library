@@ -180,11 +180,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 					}
 				}
 				if (basicPlus.size() > 1) {
-					if (basicPlus.size() == 2) {
-						temp = tryTransformations(basicPlus.get(1));
-					} else {
-						temp = tryTransformations(basicPlus);
-					}
+					temp = tryTransformations(basicPlus.getOneIdentity(F.C0));
 					if (temp != null) {
 						if (restPlus.size() == 1) {
 							return temp;
@@ -225,11 +221,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 				}
 
 				if (basicTimes.size() > 1) {
-					if (basicTimes.size() == 2) {
-						temp = tryTransformations(basicTimes.get(1));
-					} else {
-						temp = tryTransformations(basicTimes);
-					}
+					temp = tryTransformations(basicTimes.getOneIdentity(F.C0));
 					if (temp != null) {
 						if (restTimes.size() == 1) {
 							return temp;

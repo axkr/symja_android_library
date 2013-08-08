@@ -317,6 +317,17 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return this;
 	}
 
+	/** {@inheritDoc} */
+	public IExpr getOneIdentity(IExpr defaultValue) {
+		if (size() > 2) {
+			return this;
+		}
+		if (size() == 2) {
+			return get(1);
+		}
+		return defaultValue;
+	}
+
 	/**
 	 * @return
 	 */

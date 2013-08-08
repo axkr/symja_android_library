@@ -58,13 +58,8 @@ public class Collect extends AbstractFunctionEvaluator {
 				}
 				for (IExpr key : map.keySet()) {
 					IAST value = map.get(key);
-					IExpr temp;
-					if (value.size() == 2) {
-						temp = collectSingleVariable(value.get(1), list.get(pos), list, pos + 1);
-					} else {
-						temp = collectSingleVariable(value, list.get(pos), list, pos + 1);
-					}
-					result.add(F.Times(key,temp));
+					IExpr temp = collectSingleVariable(value.getOneIdentity(F.C0), list.get(pos), list, pos + 1);
+					result.add(F.Times(key, temp));
 				}
 				return result;
 			}
@@ -73,10 +68,7 @@ public class Collect extends AbstractFunctionEvaluator {
 				IAST value = map.get(key);
 				rest.add(F.Times(key).addOneIdentity(value));
 			}
-			if (rest.size() == 2) {
-				return rest.get(1);
-			}
-			return rest;
+			return rest.getOneIdentity(F.C0);
 		}
 		return arg1;
 	}

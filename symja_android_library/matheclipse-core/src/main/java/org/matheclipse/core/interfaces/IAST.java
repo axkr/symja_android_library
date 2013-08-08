@@ -161,7 +161,17 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	 * @return <code>this</code> ast after adding the subAST
 	 */
 	public IAST addOneIdentity(IAST subAST);
-	
+
+	/**
+	 * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>size() > 2</code> (useful for
+	 * ASTs with attribute <code>OneIdentity</code> for example Plus[] or Times[]).
+	 * 
+	 * @param defaultValue
+	 *            default value, if the <code>size() < 2</code>.
+	 * @return
+	 */
+	public IExpr getOneIdentity(IExpr defaultValue);
+
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to the end of
 	 * this AST.

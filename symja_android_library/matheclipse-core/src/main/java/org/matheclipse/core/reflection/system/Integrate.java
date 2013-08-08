@@ -73,8 +73,7 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 /**
- * Integration of a function. See <a
- * href="http://en.wikipedia.org/wiki/Integral">Integral</a>
+ * Integration of a function. See <a href="http://en.wikipedia.org/wiki/Integral">Integral</a>
  */
 public class Integrate extends AbstractFunctionEvaluator {
 	/**
@@ -177,11 +176,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					});
 					if (filterCollector.size() > 1) {
 						if (restCollector.size() > 1) {
-							if (restCollector.size() == 2) {
-								filterCollector.add(F.Integrate(restCollector.get(1), symbol));
-							} else {
-								filterCollector.add(F.Integrate(restCollector, symbol));
-							}
+							filterCollector.add(F.Integrate(restCollector.getOneIdentity(F.C0), symbol));
 						}
 						return filterCollector;
 					}
@@ -238,12 +233,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
@@ -263,12 +256,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
@@ -288,13 +279,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial
-	 * fraction decomposition of the numerator and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and
+	 * denominator parts.
 	 * 
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't
-	 *         constructed
+	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
 	private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x) {
 		try {
@@ -492,12 +482,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * See <a
-	 * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
-	 * Integration by parts</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @deprecated use method Apart#partialFractionDecompositionRational()
-	 *             instead
+	 * @deprecated use method Apart#partialFractionDecompositionRational() instead
 	 * @param f
 	 * @param g
 	 * @param symbol
@@ -525,9 +512,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * See <a
-	 * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia-
-	 * Integration by parts</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
 	 * @param f
 	 * @param g
@@ -557,8 +542,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Collect all found polynomial terms into <code>fTimes</code> and the rest
-	 * into <code>gTimes</code>.
+	 * Collect all found polynomial terms into <code>fTimes</code> and the rest into <code>gTimes</code>.
 	 * 
 	 * @param timesAST
 	 *            an AST representing a <code>Times[...]</code> expression.
@@ -622,8 +606,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the rules defined for Integrate utility functions. These rules are
-	 * loaded on system startup.
+	 * Get the rules defined for Integrate utility functions. These rules are loaded on system startup.
 	 * 
 	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
 	 */
