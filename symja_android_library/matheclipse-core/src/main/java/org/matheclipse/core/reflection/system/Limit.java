@@ -1,6 +1,27 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.ExprVariables;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.CInfinity;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CNInfinity;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.E;
+import static org.matheclipse.core.expression.F.Limit;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Negative;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Rule;
+import static org.matheclipse.core.expression.F.Set;
+import static org.matheclipse.core.expression.F.SetDelayed;
+import static org.matheclipse.core.expression.F.SymbolHead;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.n;
+import static org.matheclipse.core.expression.F.x;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -13,14 +34,25 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 
 /**
- * Limit of a function. See <a
- * href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+ * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
 public class Limit extends AbstractFunctionEvaluator {
+
+	// {
+	// Limit[x_^n_IntegerQ, x_Symbol->Infinity]:= 0 /; Negative[n],
+	// Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n],
+	// Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E,
+	// Limit[(1-x_^(-1))^x_, x_Symbol->Infinity]=E^(-1)
+	// }
+
+	final static IAST RULES = List(
+			SetDelayed(Limit(Power($p(x), $p(n, $s("IntegerQ"))), Rule($p(x, SymbolHead), CInfinity)), Condition(C0, Negative(n))),
+			SetDelayed(Limit(Power($p(x), $p(n, $s("IntegerQ"))), Rule($p(x, SymbolHead), CNInfinity)), Condition(C0, Negative(n))),
+			Set(Limit(Power(Plus(C1, Power($p(x), CN1)), $p(x)), Rule($p(x, SymbolHead), CInfinity)), E),
+			Set(Limit(Power(Plus(C1, Times(CN1, Power($p(x), CN1))), $p(x)), Rule($p(x, SymbolHead), CInfinity)), Power(E, CN1)));
+
 	/**
-	 * Try L'hospitales rule. See <a
-	 * href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia
-	 * L'Hôpital's rule</a>
+	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia L'Hôpital's rule</a>
 	 * 
 	 * @param numerator
 	 * @param denominator
@@ -92,9 +124,10 @@ public class Limit extends AbstractFunctionEvaluator {
 				// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
 				return mapLimit(arg1, rule);
 			} else if (header == F.Times) {
-				IExpr[] parts = Apart.getFractionalPartsTimes(arg1, false);
+				IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false);
 				if (parts != null) {
-					IAST plusResult = Apart.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, sym);
+					IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
+							new PartialFractionGenerator(), parts, sym);
 					if (plusResult != null) {
 						// OneIdentity if plusResult.size() == 2
 						if (plusResult.size() > 2) {
@@ -201,10 +234,6 @@ public class Limit extends AbstractFunctionEvaluator {
 		return F.Times(F.Limit(numerator, rule), F.Power(F.Limit(denominator, rule), F.CN1));
 	}
 
-	private String[] RULES = { "Limit[x_^n_IntegerQ, x_Symbol->Infinity]:= 0 /; Negative[n]",
-			"Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n]",
-			"Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E", "Limit[(1-x_^(-1))^x_, x_Symbol->Infinity]=E^(-1)", };
-
 	public Limit() {
 	}
 
@@ -230,7 +259,7 @@ public class Limit extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public String[] getRules() {
+	public IAST getRuleAST() {
 		return RULES;
 	}
 

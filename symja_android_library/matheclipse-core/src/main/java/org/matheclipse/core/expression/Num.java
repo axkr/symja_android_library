@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -83,9 +84,7 @@ public class Num extends ExprImpl implements INum {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.
-	 * interfaces .IDouble)
+	 * @see org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser. interfaces .IDouble)
 	 */
 	@Override
 	public INum pow(final INum val) {
@@ -411,8 +410,8 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	@Override
-	public ISignedNumber round() {
-		return valueOf(Math.rint(fDouble));
+	public IInteger round() {
+		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));
 	}
 
 	@Override
@@ -420,25 +419,27 @@ public class Num extends ExprImpl implements INum {
 		return (int) Math.signum(fDouble);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int complexSign() {
 		return sign();
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber ceil() {
-		return valueOf(Math.ceil(fDouble));
+	public IInteger ceil() {
+		return F.integer(NumberUtil.toLong(Math.ceil(fDouble)));
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public Num floor() {
-		return valueOf(Math.floor(fDouble));
+	public IInteger floor() {
+		return F.integer(NumberUtil.toLong(Math.floor(fDouble)));
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {

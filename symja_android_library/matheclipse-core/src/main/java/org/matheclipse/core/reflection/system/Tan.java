@@ -38,7 +38,7 @@ public class Tan extends AbstractTrigArg1 implements INumeric {
 //  Tan[Pi/2]=ComplexInfinity,
 //  Tan[I]=I*Tanh[1],
 //  Tan[ArcSin[x_]]:=x*(1-x^2)^(1/2)^(-1),
-//  Tan[Pi*x_NumberQ]:=If[x<1,(-1)*Tan[(1-x)*Pi],If[x<2,Tan[(x-1)*Pi],Tan[(x-2*Quotient[Trunc[x],2])*Pi]]]/;x>1/2,
+//  Tan[Pi*x_NumberQ]:=If[x<1,(-1)*Tan[(1-x)*Pi],If[x<2,Tan[(x-1)*Pi],Tan[(x-2*Quotient[IntegerPart[x],2])*Pi]]]/;x>1/2,
 //  Tan[ArcTan[x_]]:=x,
 //  Tan[ArcCos[x_]]:=(1-x^2)^(1/2)*x^(-1),
 //  Tan[ArcCot[x_]]:=x^(-1)
@@ -61,7 +61,7 @@ public class Tan extends AbstractTrigArg1 implements INumeric {
 			Set(Tan(Times(C1D2,Pi)),CComplexInfinity),
 			Set(Tan(CI),Times(CI,Tanh(C1))),
 			SetDelayed(Tan(ArcSin($p(x))),Times(x,Power(Plus(C1,Times(CN1,Power(x,C2))),Power(C1D2,CN1)))),
-			SetDelayed(Tan(Times(Pi,$p(x,$s("NumberQ")))),Condition(If(Less(x,C1),Times(CN1,Tan(Times(Plus(C1,Times(CN1,x)),Pi))),If(Less(x,C2),Tan(Times(Plus(x,Times(CN1,C1)),Pi)),Tan(Times(Plus(x,Times(CN1,Times(C2,Quotient(Trunc(x),C2)))),Pi)))),Greater(x,C1D2))),
+			SetDelayed(Tan(Times(Pi,$p(x,$s("NumberQ")))),Condition(If(Less(x,C1),Times(CN1,Tan(Times(Plus(C1,Times(CN1,x)),Pi))),If(Less(x,C2),Tan(Times(Plus(x,Times(CN1,C1)),Pi)),Tan(Times(Plus(x,Times(CN1,Times(C2,Quotient(IntegerPart(x),C2)))),Pi)))),Greater(x,C1D2))),
 			SetDelayed(Tan(ArcTan($p(x))),x),
 			SetDelayed(Tan(ArcCos($p(x))),Times(Power(Plus(C1,Times(CN1,Power(x,C2))),C1D2),Power(x,CN1))),
 			SetDelayed(Tan(ArcCot($p(x))),Power(x,CN1))

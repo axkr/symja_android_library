@@ -444,17 +444,17 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/** {@inheritDoc} */
-	public ISignedNumber ceil() {
+	public IInteger ceil() {
 		return IntegerSym.valueOf(NumberUtil.ceiling(fRational));
 	}
 
 	/** {@inheritDoc} */
-	public ISignedNumber floor() {
+	public IInteger floor() {
 		return IntegerSym.valueOf(NumberUtil.floor(fRational));
 	}
 
 	/** {@inheritDoc} */
-	public ISignedNumber round() {
+	public IInteger round() {
 		return IntegerSym.valueOf(NumberUtil.round(fRational, BigDecimal.ROUND_HALF_EVEN));
 	}
 

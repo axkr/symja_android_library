@@ -361,6 +361,7 @@ public class F {
 	public final static ISymbol Im = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
 	public final static ISymbol Increment = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "increment" : "Increment");
 	public final static ISymbol Inner = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inner" : "Inner");
+	public final static ISymbol IntegerPart = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpart" : "IntegerPart");
 	public final static ISymbol IntegerPartitions = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpartitions"
 			: "IntegerPartitions");
 	public final static ISymbol IntegerQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
@@ -568,7 +569,6 @@ public class F {
 	public final static ISymbol TrigReduce = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trigreduce" : "TrigReduce");
 	public final static ISymbol TrigToExp = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trigtoexp" : "TrigToExp");
 	public final static ISymbol TrueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trueq" : "TrueQ");
-	public final static ISymbol Trunc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trunc" : "Trunc");
 	public final static ISymbol Unequal = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unequal" : "Unequal");
 	public final static ISymbol Union = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "union" : "Union");
 	public final static ISymbol UnitStep = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unitstep" : "UnitStep");
@@ -1341,6 +1341,10 @@ public class F {
 		return binary(Times, CN1, a);
 	}
 
+	public static IAST Negative(final IExpr a0) {
+		return unary(Negative, a0);
+	}
+	
 	//
 	// public static IAST NumberPartitions(final IExpr a0) {
 	//
@@ -1621,8 +1625,8 @@ public class F {
 		return unary(Transpose, a0);
 	}
 
-	public static IAST Trunc(final IExpr a0) {
-		return unary(Trunc, a0);
+	public static IAST IntegerPart(final IExpr a0) {
+		return unary(IntegerPart, a0);
 	}
 
 	public static IAST UpSet(final IExpr a0, final IExpr a1) {

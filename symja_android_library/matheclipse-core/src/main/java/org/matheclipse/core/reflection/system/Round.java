@@ -1,12 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Round;
+import static org.matheclipse.core.expression.F.Times;
+
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -15,9 +18,7 @@ import com.google.common.base.Function;
 /**
  * Round a given value to nearest integer.
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia -
- * Floor and ceiling functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and ceiling functions</a>
  */
 public class Round extends AbstractFunctionEvaluator implements INumeric {
 
@@ -30,17 +31,6 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		}
 	}
 
-	// private final class RoundNumericFunction implements
-	// INumericFunction<IExpr> {
-	// public IExpr apply(double value) {
-	// if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-	// long result = Math.round(value);
-	// return F.integer(result);
-	// }
-	// return null;
-	// }
-	// }
-
 	public Round() {
 	}
 
@@ -52,35 +42,33 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 2) {
-			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
-		}
-		IExpr arg1 = ast.get(1);
-		if (arg1.isSignedNumber()) {
-			return ((ISignedNumber) arg1).round();
-		}
-		if (NumericQ.CONST.apply(arg1)) {
-			IExpr result = F.evaln(arg1);
-			if (result.isSignedNumber()) {
-				result = ((ISignedNumber) result).round();
-				if (result.isNumIntValue()) {
-					return F.integer(((INum) result).intValue());
-				}
-			}
-		}
-		// if (arg1.isSymbol()) {
-		// ISymbol sym = (ISymbol) arg1;
-		// return sym.mapConstantDouble(new RoundNumericFunction());
-		// }
+		Validate.checkSize(ast, 2);
 
-		if (arg1.isPlus()) {
-			IAST[] result = ((IAST) arg1).split(new RoundPlusFunction());
-			if (result[0].size() > 1) {
-				if (result[1].size() > 1) {
-					result[0].add(F.Round(result[1]));
-				}
-				return result[0];
+		try {
+			IExpr arg1 = ast.get(1);
+			if (arg1.isSignedNumber()) {
+				return ((ISignedNumber) arg1).round();
 			}
+			if (NumericQ.CONST.apply(arg1)) {
+				IExpr result = F.evaln(arg1);
+				if (result.isSignedNumber()) {
+					return ((ISignedNumber) result).round();
+				}
+			}
+			if (arg1.isPlus()) {
+				IAST[] result = ((IAST) arg1).split(new RoundPlusFunction());
+				if (result[0].size() > 1) {
+					if (result[1].size() > 1) {
+						result[0].add(F.Round(result[1]));
+					}
+					return result[0];
+				}
+			}
+			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+				return Times(CN1, Round(Times(CN1, arg1)));
+			}
+		} catch (ArithmeticException ae) {
+			// ISignedNumber#round() may throw ArithmeticException
 		}
 		return null;
 	}
@@ -90,7 +78,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 }

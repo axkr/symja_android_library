@@ -24,18 +24,16 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber negate();
 
 	/**
-	 * Subtract <code>that</code> signed number from <code>this</code> signed
-	 * number
+	 * Subtract <code>that</code> signed number from <code>this</code> signed number
 	 * 
 	 * @param that
-	 *          a signed number
+	 *            a signed number
 	 * @return
 	 */
 	public ISignedNumber minus(ISignedNumber that);
 
 	/**
-	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value
-	 * of this number is negative, zero or positive).
+	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of this number is negative, zero or positive).
 	 * 
 	 * @return -1 if this is a negative number;<br/>
 	 *         0 if this is a zero;<br/>
@@ -43,61 +41,54 @@ public interface ISignedNumber extends INumber {
 	 */
 	public int sign();
 
-
 	/**
-	 * Converts this number to <code>int</code>; unlike {@link #intValue}
-	 * this method raises {@link ArithmeticException} if this number cannot be
-	 * represented by an <code>int</code> type.
+	 * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises {@link ArithmeticException} if this
+	 * number cannot be represented by an <code>int</code> type.
 	 * 
-	 * @return the numeric value represented by this integer after conversion to
-	 *         type <code>int</code>.
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
 	 * @throws ArithmeticException
-	 *           if conversion to <code>int</code> is not possible.
+	 *             if conversion to <code>int</code> is not possible.
 	 */
 	public int toInt() throws ArithmeticException;
-	
+
 	/**
-	 * Converts this number to <code>long</code>; unlike {@link #longValue}
-	 * this method raises {@link ArithmeticException} if this number cannot be
-	 * represented by an <code>long</code> type.
+	 * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises {@link ArithmeticException} if this
+	 * number cannot be represented by an <code>long</code> type.
 	 * 
-	 * @return the numeric value represented by this integer after conversion to
-	 *         type <code>long</code>.
+	 * @return the numeric value represented by this integer after conversion to type <code>long</code>.
 	 * @throws ArithmeticException
-	 *           if conversion to <code>int</code> is not possible.
+	 *             if conversion to <code>int</code> is not possible.
 	 */
 	public long toLong() throws ArithmeticException;
 
 	/**
-	 * Returns the smallest (closest to negative infinity)
-	 * <code>ISignedNumber</code> value that is not less than <code>this</code>
-	 * and is equal to a mathematical integer.
+	 * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
+	 * is equal to a mathematical integer. This method raises {@link ArithmeticException} if a numeric value cannot be represented
+	 * by an <code>long</code> type.
 	 * 
-	 * @return the smallest (closest to negative infinity)
-	 *         <code>ISignedNumber</code> value that is not less than
-	 *         <code>this</code> and is equal to a mathematical integer.
+	 * @return the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
+	 *         is equal to a mathematical integer.
 	 */
-	public ISignedNumber ceil();
+	public IInteger ceil() throws ArithmeticException;
 
 	/**
-	 * Returns the largest (closest to positive infinity)
-	 * <code>ISignedNumber</code> value that is not greater than <code>this</code>
-	 * and is equal to a mathematical integer.
+	 * Returns the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
+	 * is equal to a mathematical integer. <br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
 	 * 
-	 * @return the largest (closest to positive infinity)
-	 *         <code>ISignedNumber</code> value that is not greater than
-	 *         <code>this</code> and is equal to a mathematical integer.
+	 * @return the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
+	 *         is equal to a mathematical integer.
 	 */
-	public ISignedNumber floor();
+	public IInteger floor() throws ArithmeticException;
 
 	/**
-	 * Answers the double conversion of the result of rounding the argument to an
-	 * integer.
+	 * Returns the closest <code>IInteger</code> to the argument. The result is rounded to an integer by adding 1/2 and taking the
+	 * floor of the result.<br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
 	 * 
-	 * @return the closest integer to the argument (as an IInteger in symbolic
-	 *         mode or a INum in numeric mode).
+	 * @return the closest integer to the argument.
 	 */
-	public ISignedNumber round();
+	public IInteger round();
 
 	public IExpr inverse();
 

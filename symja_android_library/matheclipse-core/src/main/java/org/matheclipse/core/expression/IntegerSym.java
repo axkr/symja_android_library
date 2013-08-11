@@ -938,17 +938,17 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	@Override
-	public ISignedNumber ceil() {
+	public IInteger ceil() {
 		return this;
 	}
 
 	@Override
-	public ISignedNumber floor() {
+	public IInteger floor() {
 		return this;
 	}
 
 	@Override
-	public ISignedNumber round() {
+	public IInteger round() {
 		return this;
 	}
 

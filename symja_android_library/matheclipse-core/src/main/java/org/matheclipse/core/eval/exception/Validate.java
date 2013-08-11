@@ -5,19 +5,17 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Simple static methods to be called at the start of your own methods to verify
- * correct arguments and state.
+ * Static methods to be called at the start of the built-in <code>IFunctionEvaluator#evaluate()</code> methods to verify correct
+ * arguments and state.
  * 
  */
 public final class Validate {
 	/**
-	 * Check the argument, if it's a Java {@code int} value in the range [0,
-	 * Integer.MAX_VALUE]
+	 * Check the argument, if it's a Java {@code int} value in the range [0, Integer.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -26,15 +24,12 @@ public final class Validate {
 	}
 
 	/**
-	 * Get the exponent <code>int</code> value of the <code>ast</code>
-	 * expressions, which is identified as a
-	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The
-	 * <code>int</code> value can be determined from an IInteger or INum
-	 * expression.
+	 * Get the exponent <code>int</code> value of the <code>ast</code> expressions, which is identified as a
+	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The <code>int</code> value can be determined from an IInteger or
+	 * INum expression.
 	 * 
 	 * @param ast
-	 * @return the exponent <code>int</code> value of the
-	 *         <code>Power[&lt;something&gt;, exponent]</code> expression.
+	 * @return the exponent <code>int</code> value of the <code>Power[&lt;something&gt;, exponent]</code> expression.
 	 * @throws WrongArgumentType
 	 */
 	public static int checkPowerExponent(final IAST ast) {
@@ -54,8 +49,7 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the argument, if it's a Java {@code int} value in the range [
-	 * {@code startValue}, Integer.MAX_VALUE]
+	 * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -82,8 +76,7 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the expression, if it's a Java {@code int} value in the range [
-	 * {@code startValue}, Integer.MAX_VALUE]
+	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -121,24 +114,20 @@ public final class Validate {
 	}
 
 	/**
-	 * If {@code ast.size() < from} throw a {@code WrongNumberOfArguments}
-	 * exception.
+	 * If {@code ast.size() < from} throw a {@code WrongNumberOfArguments} exception.
 	 * 
 	 * @throws WrongNumberOfArguments
-	 *             if {@code size} is not in the range {@code from} to
-	 *             {@code Integer.MAX_VALUE}
+	 *             if {@code size} is not in the range {@code from} to {@code Integer.MAX_VALUE}
 	 */
 	public static IAST checkRange(IAST ast, int from) {
 		return checkRange(ast, from, Integer.MAX_VALUE);
 	}
 
 	/**
-	 * If {@code ast.size() < from || ast.size() > to} throw a
-	 * {@code WrongNumberOfArguments} exception.
+	 * If {@code ast.size() < from || ast.size() > to} throw a {@code WrongNumberOfArguments} exception.
 	 * 
 	 * @throws WrongNumberOfArguments
-	 *             if {@code size} is not in the range {@code from} to
-	 *             {@code to}
+	 *             if {@code size} is not in the range {@code from} to {@code to}
 	 */
 	public static IAST checkRange(IAST ast, int from, int to) {
 		if (ast.size() < from) {
@@ -151,8 +140,7 @@ public final class Validate {
 	}
 
 	/**
-	 * If {@code ast.size() != size} throw a {@code WrongNumberOfArguments}
-	 * exception.
+	 * If {@code ast.size() != size} throw a {@code WrongNumberOfArguments} exception.
 	 * 
 	 * @throws WrongNumberOfArguments
 	 *             if {@code size} unequals the list size
@@ -165,8 +153,7 @@ public final class Validate {
 	}
 
 	/**
-	 * Check if the argument at the given position is a single symbol or a list
-	 * of symbols.
+	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
 	 * @param position
 	 *            the position which has to be a symbol or list.
@@ -212,12 +199,12 @@ public final class Validate {
 	public static IAST checkASTUpRuleType(IExpr expr) {
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
-//			for (int i = 0; i < ast.size(); i++) {
-//				if (!(ast.get(i) instanceof IPatternObject)) {
-//					throw new WrongArgumentType(ast, ast.get(i), i,
-//							"Pattern objects are not allowed in left-hand-side of UpSet[] or UpSetDelayed[]!");
-//				}
-//			}
+			// for (int i = 0; i < ast.size(); i++) {
+			// if (!(ast.get(i) instanceof IPatternObject)) {
+			// throw new WrongArgumentType(ast, ast.get(i), i,
+			// "Pattern objects are not allowed in left-hand-side of UpSet[] or UpSetDelayed[]!");
+			// }
+			// }
 			return ast;
 		}
 		throw new WrongArgumentType(expr, "Function(AST)  in left-hand-side of UpSet[] or UpSetDelayed[] expected!");

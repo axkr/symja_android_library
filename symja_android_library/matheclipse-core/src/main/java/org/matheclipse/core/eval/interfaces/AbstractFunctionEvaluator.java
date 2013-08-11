@@ -14,23 +14,25 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
+ * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates to the <code>evaluate()</code>
  * 
  */
 public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 
+	/** {@inheritDoc} */
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
 	/**
-	 * Get the predefined rules for this function symbol. If no rules are
-	 * available return <code>null</code>
+	 * Get the predefined rules for this function symbol. If no rules are available return <code>null</code>.
 	 * 
 	 * @return
 	 */
-	public String[] getRules() {
-		return null;
-	}
+//	public String[] getRules() {
+//		return null;
+//	}
 
 	public IAST getRuleAST() {
 		return null;
@@ -40,38 +42,39 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	 * Evaluate built-in rules and define Attributes for a function.
 	 * 
 	 */
+	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		IAST ruleList;
 		final EvalEngine engine = EvalEngine.get();
 		if ((ruleList = getRuleAST()) != null) {
 			engine.addRules(ruleList);
 		}
-		String[] rules;
-		if ((rules = getRules()) != null) {
-			final Parser parser = new Parser();
-
-			boolean oldPackageMode = engine.isPackageMode();
-			boolean oldTraceMode = engine.isTraceMode();
-			try {
-				engine.setPackageMode(true);
-				engine.setTraceMode(false);
-				// if (session != null) {
-				// parser.setFactory(ExpressionFactory.get());
-				// }
-				if (Config.DEBUG) {
-					try {
-						setUpRules(rules, parser, engine);
-					} catch (final Throwable th) {
-						th.printStackTrace();
-					}
-				} else {
-					setUpRules(rules, parser, engine);
-				}
-			} finally {
-				engine.setPackageMode(oldPackageMode);
-				engine.setTraceMode(oldTraceMode);
-			}
-		}
+//		String[] rules;
+//		if ((rules = getRules()) != null) {
+//			final Parser parser = new Parser();
+//
+//			boolean oldPackageMode = engine.isPackageMode();
+//			boolean oldTraceMode = engine.isTraceMode();
+//			try {
+//				engine.setPackageMode(true);
+//				engine.setTraceMode(false);
+//				// if (session != null) {
+//				// parser.setFactory(ExpressionFactory.get());
+//				// }
+//				if (Config.DEBUG) {
+//					try {
+//						setUpRules(rules, parser, engine);
+//					} catch (final Throwable th) {
+//						th.printStackTrace();
+//					}
+//				} else {
+//					setUpRules(rules, parser, engine);
+//				}
+//			} finally {
+//				engine.setPackageMode(oldPackageMode);
+//				engine.setTraceMode(oldTraceMode);
+//			}
+//		}
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
 	}
 
@@ -85,6 +88,8 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	abstract public IExpr evaluate(final IAST ast);
 
 	/**
@@ -124,7 +129,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				}
 			}
 		}
-	
+
 		return false;
 	}
 

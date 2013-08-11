@@ -42,7 +42,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric {
 //	 Sin[ArcCos[x_]]:=(1-x^2)^(1/2),
 //	 Sin[ArcTan[x_]]:=x/(1+x^2)^(1/2),
 //	 Sin[x_NumberQ*Pi]:=If[x<1, Sin[(1-x)*Pi],If[x<2,-Sin[(2-x)*Pi],
-//	 Sin[(x-2*Quotient[Trunc[x],2])*Pi] ] ] /; x>=1/2 
+//	 Sin[(x-2*Quotient[IntegerPart[x],2])*Pi] ] ] /; x>=1/2 
 //	 }
 
 	final static IAST RULES = 
@@ -65,7 +65,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric {
 					SetDelayed(Sin(ArcSin($p(x))),x),
 					SetDelayed(Sin(ArcCos($p(x))),Power(Plus(C1,Times(CN1,Power(x,C2))),C1D2)),
 					SetDelayed(Sin(ArcTan($p(x))),Times(x,Power(Power(Plus(C1,Power(x,C2)),C1D2),CN1))),
-					SetDelayed(Sin(Times($p(x,$s("NumberQ")),Pi)),Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,Times(C2,Quotient(Trunc(x),C2)))),Pi)))),GreaterEqual(x,C1D2)))
+					SetDelayed(Sin(Times($p(x,$s("NumberQ")),Pi)),Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,Times(C2,Quotient(IntegerPart(x),C2)))),Pi)))),GreaterEqual(x,C1D2)))
 					);
 				
 	public Sin() {

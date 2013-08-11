@@ -32,12 +32,11 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 	public StirlingS2() {
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
+		
 		if (ast.get(1).isInteger() && ast.get(2).isInteger()) {
 			if (ast.get(1).equals(ast.get(2))) {
 				// {n,n}==1

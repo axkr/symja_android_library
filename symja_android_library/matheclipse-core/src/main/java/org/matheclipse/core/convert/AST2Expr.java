@@ -25,8 +25,7 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
 /**
- * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
- * expression into an IExpr expression
+ * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr expression
  * 
  */
 public class AST2Expr {
@@ -34,23 +33,24 @@ public class AST2Expr {
 	private final static String[] FUNCTION_STRINGS = { "ArcCosh", "ArcSinh", "ArcTanh", "DirectedInfinity", "False", "Flat",
 			"HoldAll", "HoldFirst", "HoldRest", "Indeterminate", "Integer", "List", "Listable", "Modulus", "NumericFunction",
 			"OneIdentity", "Orderless", "Real", "Slot", "SlotSequence", "String", "Symbol", "True", "Abs", "AddTo", "And", "Apart",
-			"Append", "AppendTo", "Apply", "ArcCos", "ArcCot", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "BernoulliB", "Binomial", "Blank",
-			"Block", "Boole", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "Catalan", "CatalanNumber",
-			"Catch", "Ceiling", "CharacteristicPolynomial", "ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient",
-			"CoefficientList", "Collect", "Complement", "Complex", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition",
-			"Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "Cot",
-			"Coth", "Count", "Cross", "Csc", "Csch", "Curl", "D", "Decrement", "Default", "Definition", "Degree", "Delete", "Denominator",
-			"Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ", "Dimensions", "Discriminant", "Distribute", "Divergence",
-			"DivideBy", "Do", "Dot", "Drop", "E", "Eigenvalues", "Eigenvectors", "Equal", "Erf", "EuclidianDistance", "EulerGamma",
-			"EulerPhi", "EvenQ", "Exp", "Expand", "ExpandAll", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial",
-			"Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Fibonacci", "FindRoot",
-			"First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FrobeniusSolve",
-			"FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean",
-			"Glaisher", "GoldenRatio", "Greater", "GreaterEqual", "GroebnerBasis", "HarmonicNumber", "Head", "HilbertMatrix",
-			"Hold", "Horner", "I", "IdentityMatrix", "If", "Im", "Increment", "Infinity", "Inner", "IntegerPartitions", "IntegerQ",
-			"Integrate", "InterpolatingFunction", "Intersection", "Inverse", "InverseFunction", "JacobiMatrix", "JacobiSymbol",
-			"JavaForm", "Join", "Khinchin", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less",
-			"LessEqual", "LetterQ", "Level", "Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition",
+			"Append", "AppendTo", "Apply", "ArcCos", "ArcCot", "ArcSin", "ArcTan", "Arg", "Array", "AtomQ", "BernoulliB",
+			"Binomial", "Blank", "Block", "Boole", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "Catalan",
+			"CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChessboardDistance", "Chop", "Clear", "ClearAll",
+			"Coefficient", "CoefficientList", "Collect", "Complement", "Complex", "ComplexInfinity", "ComposeList",
+			"CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction",
+			"CoprimeQ", "Cos", "Cosh", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "D", "Decrement", "Default",
+			"Definition", "Degree", "Delete", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
+			"Dimensions", "Discriminant", "Distribute", "Divergence", "DivideBy", "Do", "Dot", "Drop", "E", "Eigenvalues",
+			"Eigenvectors", "Equal", "Erf", "EuclidianDistance", "EulerGamma", "EulerPhi", "EvenQ", "Exp", "Expand", "ExpandAll",
+			"Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree",
+			"FactorSquareFreeList", "FactorTerms", "Fibonacci", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold",
+			"FoldList", "For", "FractionalPart", "FreeQ", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
+			"FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Glaisher", "GoldenRatio", "Greater",
+			"GreaterEqual", "GroebnerBasis", "HarmonicNumber", "Head", "HilbertMatrix", "Hold", "Horner", "I", "IdentityMatrix",
+			"If", "Im", "Increment", "Infinity", "Inner", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate",
+			"InterpolatingFunction", "Intersection", "Inverse", "InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm",
+			"Join", "Khinchin", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less", "LessEqual",
+			"LetterQ", "Level", "Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition",
 			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "Max", "Mean",
 			"Median", "MemberQ", "Min", "Mod", "Module", "MoebiusMu", "Most", "Multinomial", "N", "Negative", "Nest", "NestList",
 			"NestWhile", "NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm", "Not",
@@ -61,16 +61,27 @@ public class AST2Expr {
 			"PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "PrimeQ", "PrimitiveRoots", "Print", "Product",
 			"Quotient", "RandomInteger", "RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll",
 			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots",
-			"RotateLeft", "RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Set", "SetAttributes",
-			"SetDelayed", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh", "Solve", "Sort", "Sow",
-			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength",
-			"StringTake", "Subsets", "SubtractFrom", "Sum", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh",
-			"Taylor", "Thread", "Through", "Throw", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString",
-			"Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Trunc", "Unequal",
-			"Union", "UnitStep", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"VectorQ", "Which", "While" };
+			"RotateLeft", "RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Set",
+			"SetAttributes", "SetDelayed", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh", "Solve",
+			"Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
+			"StringLength", "StringTake", "Subsets", "SubtractFrom", "Sum", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take",
+			"Tan", "Tanh", "Taylor", "Thread", "Through", "Throw", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together",
+			"ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ",
+			"Unequal", "Union", "UnitStep", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix",
+			"Variables", "VectorQ", "Which", "While" };
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
+
+	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff", "I", "Infinity",
+			"Int", "Trunc" };
+
+	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh, F.D, F.CI,
+			F.CInfinity, F.Integrate, F.IntegerPart };
+
+	/**
+	 * Aliases which are mapped to the standard function symbols.
+	 */
+	public static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
 
 	public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
 	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
@@ -91,7 +102,11 @@ public class AST2Expr {
 		for (String str : FUNCTION_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
 		}
-
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
+				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(), ALIASES_SYMBOLS[i]);
+			}
+		}
 	}
 	/**
 	 * Typical instance of an ASTNode to IExpr converter
@@ -192,36 +207,10 @@ public class AST2Expr {
 			String nodeStr = node.getString();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				nodeStr = nodeStr.toLowerCase();
-				// String temp = PREDEFINED_SYMBOLS_MAP.get(nodeStr);
-				// if (temp != null) {
-				// nodeStr = temp;
-				// }
-				if (nodeStr.equalsIgnoreCase("I")) {
-					// special - convert on input
-					return F.CI;
-				} else if (nodeStr.equalsIgnoreCase("Infinity")) {
-					// special - convert on input
-					return F.CInfinity;
-				} else if (nodeStr.equalsIgnoreCase("Diff")) {
-					return F.D;
-				} else if (nodeStr.equalsIgnoreCase("ASin")) {
-					return F.ArcSin;
-				} else if (nodeStr.equalsIgnoreCase("ACos")) {
-					return F.ArcCos;
-				} else if (nodeStr.equalsIgnoreCase("ATan")) {
-					return F.ArcTan;
-				} else if (nodeStr.equalsIgnoreCase("ASinh")) {
-					return F.ArcSinh;
-				} else if (nodeStr.equalsIgnoreCase("ACosh")) {
-					return F.ArcCosh;
-				} else if (nodeStr.equalsIgnoreCase("ATanh")) {
-					return F.ArcTanh;
-				} else if (nodeStr.equalsIgnoreCase("Diff")) {
-					return F.D;
-				} else if (nodeStr.equalsIgnoreCase("Int")) {
-					return F.Integrate;
+				IExpr temp = PREDEFINED_ALIASES_MAP.get(nodeStr);
+				if (temp != null) {
+					return temp;
 				}
-
 				return F.$s(nodeStr);
 			} else {
 				if (fLowercaseEnabled) {
@@ -279,8 +268,8 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Convert less or greter relations on input. Example: convert expressions
-	 * like <code>a<b<=c</code> to <code>Less[a,b]&&LessEqual[b,c]</code>.
+	 * Convert less or greter relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
 	 * @param compareHead
