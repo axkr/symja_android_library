@@ -12,7 +12,8 @@ public interface ICreatePatternMatcher {
 	 * 
 	 * @param leftHandSide
 	 * @param rightHandSide
+	 * @param packageMode TODO
 	 * @return
 	 */
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide);
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode);
 }

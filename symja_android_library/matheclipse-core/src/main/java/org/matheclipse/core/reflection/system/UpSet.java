@@ -34,11 +34,11 @@ public class UpSet implements IFunctionEvaluator, ICreatePatternMatcher {
 				return F.eval(temp);
 			}
 		}
-		Object[] result = createPatternMatcher(leftHandSide, rightHandSide);
+		Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false);
 		return (IExpr) result[1];
 	}
 
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 		final Object[] result = new Object[2];
 		final EvalEngine engine = EvalEngine.get();
 

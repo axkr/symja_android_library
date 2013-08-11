@@ -60,14 +60,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 	private transient IEvaluator fEvaluator;
 
 	/**
-	 * The pattern matching &quot;down value&quot; rules associated with this
-	 * symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
 	private transient DownRulesData fDownRulesData = new DownRulesData();
 
 	/**
-	 * The pattern matching &quot;up value&quot; rules associated with this
-	 * symbol.
+	 * The pattern matching &quot;up value&quot; rules associated with this symbol.
 	 */
 	private transient UpRulesData fUpRulesData = new UpRulesData();
 
@@ -318,22 +316,30 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide, final IExpr rightHandSide) {
-		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY);
+	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide,
+			final IExpr rightHandSide, boolean packageMode) {
+		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY, packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
-			final IExpr rightHandSide, final int priority) {
-		EvalEngine engine = EvalEngine.get();
-		if (!engine.isPackageMode()) {
+			final IExpr rightHandSide, final int priority, boolean packageMode) {
+		if (!packageMode) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
 				throw new RuleCreationError(leftHandSide);
 			}
 
-			engine.addModifiedVariable(this);
+			EvalEngine.get().addModifiedVariable(this);
 		}
+//		EvalEngine engine = EvalEngine.get();
+//		if (!engine.isPackageMode()) {
+//			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+//				throw new RuleCreationError(leftHandSide);
+//			}
+//
+//			engine.addModifiedVariable(this);
+//		}
 		if (fDownRulesData == null) {
 			fDownRulesData = new DownRulesData();
 		}
@@ -391,9 +397,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {

@@ -30,9 +30,9 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	 * 
 	 * @return
 	 */
-//	public String[] getRules() {
-//		return null;
-//	}
+	// public String[] getRules() {
+	// return null;
+	// }
 
 	public IAST getRuleAST() {
 		return null;
@@ -49,32 +49,33 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		if ((ruleList = getRuleAST()) != null) {
 			engine.addRules(ruleList);
 		}
-//		String[] rules;
-//		if ((rules = getRules()) != null) {
-//			final Parser parser = new Parser();
-//
-//			boolean oldPackageMode = engine.isPackageMode();
-//			boolean oldTraceMode = engine.isTraceMode();
-//			try {
-//				engine.setPackageMode(true);
-//				engine.setTraceMode(false);
-//				// if (session != null) {
-//				// parser.setFactory(ExpressionFactory.get());
-//				// }
-//				if (Config.DEBUG) {
-//					try {
-//						setUpRules(rules, parser, engine);
-//					} catch (final Throwable th) {
-//						th.printStackTrace();
-//					}
-//				} else {
-//					setUpRules(rules, parser, engine);
-//				}
-//			} finally {
-//				engine.setPackageMode(oldPackageMode);
-//				engine.setTraceMode(oldTraceMode);
-//			}
-//		}
+
+		// String[] rules;
+		// if ((rules = getRules()) != null) {
+		// final Parser parser = new Parser();
+		//
+		// boolean oldPackageMode = engine.isPackageMode();
+		// boolean oldTraceMode = engine.isTraceMode();
+		// try {
+		// engine.setPackageMode(true);
+		// engine.setTraceMode(false);
+		// // if (session != null) {
+		// // parser.setFactory(ExpressionFactory.get());
+		// // }
+		// if (Config.DEBUG) {
+		// try {
+		// setUpRules(rules, parser, engine);
+		// } catch (final Throwable th) {
+		// th.printStackTrace();
+		// }
+		// } else {
+		// setUpRules(rules, parser, engine);
+		// }
+		// } finally {
+		// engine.setPackageMode(oldPackageMode);
+		// engine.setTraceMode(oldTraceMode);
+		// }
+		// }
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
 	}
 

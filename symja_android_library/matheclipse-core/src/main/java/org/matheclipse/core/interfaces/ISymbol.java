@@ -236,40 +236,41 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	/**
 	 * Associate a new &quot;down value&quot; rule with default priority to this
 	 * symbol.
-	 * 
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with
 	 *            equality
 	 * @param leftHandSide
 	 * @param rightHandSide
+	 * @param packageMode TODO
+	 * 
 	 * @return
 	 * 
 	 * @see ISymbol#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide);
+	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode);
 
 	/**
 	 * Associate a new rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
-	 * 
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with
 	 *            equality
 	 * @param leftHandSide
 	 * @param rightHandSide
+	 * @param priority
+	 *            the priority of the rule
+	 * @param packageMode TODO
 	 * @param condition
 	 *            additional condition for rules containing patterns
 	 * @param moduleInitializer
 	 *            if the right-hand-side is a module, this is the initializer
 	 *            part
-	 * @param priority
-	 *            the priority of the rule
 	 * 
 	 * @return
 	 * 
 	 * @see ISymbol#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide, int priority);
+	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide, int priority, boolean packageMode);
 
 	/**
 	 * Associate a new rule, which invokes a method, to this symbol.

@@ -41,8 +41,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private static final long serialVersionUID = 407328682800652434L;
 
 	/**
-	 * Associate a symbol name in this ThreadLocal with the symbol created in
-	 * this thread
+	 * Associate a symbol name in this ThreadLocal with the symbol created in this thread
 	 * 
 	 * @see ExprFactory.fSymbolMap for global symbol names
 	 */
@@ -151,8 +150,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	};
 
 	/**
-	 * Removes the current thread's value for the EvalEngine's thread-local
-	 * variable.
+	 * Removes the current thread's value for the EvalEngine's thread-local variable.
 	 * 
 	 * @see java.lang.ThreadLocal#remove()
 	 */
@@ -214,8 +212,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param sessionID
 	 *            an ID which uniquely identifies this session
 	 * @param recursionLimit
-	 *            the maximum allowed recursion limit (if set to zero, no limit
-	 *            will be proofed)
+	 *            the maximum allowed recursion limit (if set to zero, no limit will be proofed)
 	 * @param out
 	 * @param relaxedSyntax
 	 * @see javax.servlet.http.HttpSession#getID()
@@ -254,8 +251,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an object without resetting the numeric mode after the
-	 * evaluation step. If evaluation is not possible return the input object,
+	 * Evaluate an object without resetting the numeric mode after the evaluation step. If evaluation is not possible return the
+	 * input object,
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
@@ -269,8 +266,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * 
-	 * Evaluate an object and reset the numeric mode to the value before the
-	 * evaluation step. If evaluation is not possible return the input object.
+	 * Evaluate an object and reset the numeric mode to the value before the evaluation step. If evaluation is not possible return
+	 * the input object.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
@@ -295,8 +292,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * Test if <code>expr</code> could be evaluated to <code>True</code>. If a
-	 * <code>org.matheclipse.parser.client.math.MathException</code> occurs
-	 * during evaluation, return <code>False</code>.
+	 * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>False</code>.
 	 * 
 	 * @param expr
 	 * @return
@@ -313,8 +309,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an expression. If evaluation is not possible return the input
-	 * object.
+	 * Evaluate an expression. If evaluation is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
@@ -327,13 +322,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * 
-	 * Evaluate an object and reset the numeric mode to the value before the
-	 * evaluation step. If evaluation is not possible return <code>null</code>.
+	 * Evaluate an object and reset the numeric mode to the value before the evaluation step. If evaluation is not possible return
+	 * <code>null</code>.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return the evaluated object of <code>null</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object of <code>null</code> if no evaluation was possible
 	 */
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;
@@ -345,13 +339,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an expression. If evaluation is not possible return the input
-	 * object.
+	 * Evaluate an expression. If evaluation is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object or <code>null</code> if no evaluation was possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
 	public static final IExpr evalNull(final IExpr expr) {
@@ -359,18 +351,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate the expression and return the <code>Trace[expr]</code> (i.e. all
-	 * (sub-)expressions needed to calculate the result).
+	 * Evaluate the expression and return the <code>Trace[expr]</code> (i.e. all (sub-)expressions needed to calculate the result).
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated.
 	 * @param matcher
-	 *            a filter which determines the expressions which should be
-	 *            traced, If the matcher is set to <code>null</code>, all
+	 *            a filter which determines the expressions which should be traced, If the matcher is set to <code>null</code>, all
 	 *            expressions are traced.
 	 * @param list
-	 *            an IAST object which will be cloned for containing the traced
-	 *            expressions. Typically a <code>F.List()</code> will be used.
+	 *            an IAST object which will be cloned for containing the traced expressions. Typically a <code>F.List()</code> will
+	 *            be used.
 	 * @return
 	 */
 	public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher, IAST list) {
@@ -385,8 +375,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an AST with only one argument (i.e. <code>head[arg1]</code>).
-	 * The evaluation steps are controlled by the header attributes.
+	 * Evaluate an AST with only one argument (i.e. <code>head[arg1]</code>). The evaluation steps are controlled by the header
+	 * attributes.
 	 * 
 	 * @param ast
 	 * @return
@@ -452,8 +442,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an AST. The evaluation steps are controlled by the header
-	 * attributes.
+	 * Evaluate an AST. The evaluation steps are controlled by the header attributes.
 	 * 
 	 * @param ast
 	 * @return
@@ -639,8 +628,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate the arguments of the given ast, taking the attributes HoldFirst,
-	 * HoldRest into account.
+	 * Evaluate the arguments of the given ast, taking the attributes HoldFirst, HoldRest into account.
 	 * 
 	 * @param ast
 	 * @param attr
@@ -716,9 +704,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Transform the ast recursively, according to the attributes Flat, HoldAll,
-	 * HoldFirst, HoldRest, Orderless for the left-hand-side of a Set[] or
-	 * SetDelayed[] expression
+	 * Transform the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless for the
+	 * left-hand-side of a Set[] or SetDelayed[] expression
 	 * 
 	 * @param ast
 	 * @return
@@ -777,13 +764,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an object, if evaluation is not possible return
-	 * <code>null</code>.
+	 * Evaluate an object, if evaluation is not possible return <code>null</code>.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated expression or <code>null</code> is evasluation
-	 *         isn't possible
+	 * @return the evaluated expression or <code>null</code> is evasluation isn't possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
 	public IExpr evalLoop(final IExpr expr) {
@@ -870,9 +855,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * If the trace mode is set the system writes an evaluation trace list or if
-	 * additionally the <i>stop after evaluation mode</i> is set returns the
-	 * first evaluated result.
+	 * If the trace mode is set the system writes an evaluation trace list or if additionally the <i>stop after evaluation mode</i>
+	 * is set returns the first evaluated result.
 	 * 
 	 * @return
 	 * @see org.matheclipse.core.reflection.system.Trace
@@ -922,8 +906,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * The engine evaluates the left-hand-side of a
-	 * <code>Set, SetDelayed,...</code> expression.
+	 * The engine evaluates the left-hand-side of a <code>Set, SetDelayed,...</code> expression.
 	 * 
 	 * @return
 	 */
@@ -1000,8 +983,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * For every evaluation store the list of modified variables in an internal
-	 * list.
+	 * For every evaluation store the list of modified variables in an internal list.
 	 * 
 	 * @param arg0
 	 * @return
@@ -1025,8 +1007,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	// }
 
 	/**
-	 * Parse the given <code>expression String</code> into an IExpr without
-	 * evaluation.
+	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
 	 * 
 	 * @param astString
 	 *            an expression in math formula notation
@@ -1047,8 +1028,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> into an IExpr and evaluate
-	 * it.
+	 * Parse the given <code>expression String</code> into an IExpr and evaluate it.
 	 * 
 	 * @param astString
 	 *            an expression in math formula notation
@@ -1068,8 +1048,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol name. If the local
-	 * variable stack doesn't exist, return <code>null</code>
+	 * Get the local variable stack for a given symbol name. If the local variable stack doesn't exist, return <code>null</code>
 	 * 
 	 * @param symbolName
 	 * @return <code>null</code> if the stack doesn't exist
@@ -1079,8 +1058,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol name. If the local
-	 * variable stack doesn't exist, create a new one for the symbol.
+	 * Get the local variable stack for a given symbol name. If the local variable stack doesn't exist, create a new one for the
+	 * symbol.
 	 * 
 	 * @param symbolName
 	 * @return
@@ -1097,8 +1076,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get a local user symbol name in this ThreadLocal associated with the
-	 * symbol created in this thread.
+	 * Get a local user symbol name in this ThreadLocal associated with the symbol created in this thread.
 	 * 
 	 * @see ExprFactory.fSymbolMap for global symbol names
 	 */
@@ -1132,7 +1110,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			setTraceMode(false);
 			final int ruleSize = ruleList.size();
 			for (int i = 1; i < ruleSize; i++) {
-				evaluate(ruleList.get(i));
+				if (ruleList.get(i) != null) {
+					evaluate(ruleList.get(i));
+				}
 			}
 		} finally {
 			setPackageMode(oldPackageMode);

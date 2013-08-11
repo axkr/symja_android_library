@@ -12,9 +12,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.parser.client.math.MathException;
 
 public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
+	public final static Set CONST = new Set();
+
 	public Set() {
 	}
 
@@ -48,16 +49,14 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 		// result = createPatternMatcher(leftHandSide, rightHandSide, null, null);
 		// }
 		// } else {
-		result = createPatternMatcher(leftHandSide, rightHandSide);
+		result = createPatternMatcher(leftHandSide, rightHandSide, EvalEngine.get().isPackageMode());
 		// }
 		return (IExpr) result[1];
 	}
 
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide)
-			throws RuleCreationError {
-		final Object[] result = new Object[2];
-		final EvalEngine engine = EvalEngine.get();
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 
+		final EvalEngine engine = EvalEngine.get();
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
@@ -67,25 +66,22 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 			System.out.println("Condition[] in right-hand-side of Set[]");
 		} catch (final ReturnException e) {
 			rightHandSide = e.getValue();
-		}  
+		}
 
-		result[0] = null; // IPatternMatcher
-		result[1] = rightHandSide;
+		final Object[] result = new Object[] { null, rightHandSide };
+		if (leftHandSide.isAST()) {
+			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+			result[0] = lhsSymbol.putDownRule(F.Set, false, leftHandSide, rightHandSide, packageMode);
+			return result;
+		}
 		if (leftHandSide.isSymbol()) {
 			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 
 			if (lhsSymbol.hasLocalVariableStack()) {
 				lhsSymbol.set(rightHandSide);
 				return result;
-			} else {
-				result[0] = lhsSymbol.putDownRule(F.Set, true, leftHandSide, rightHandSide);
-				return result;
 			}
-		}
-
-		if (leftHandSide.isAST()) {
-			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-			result[0] = lhsSymbol.putDownRule(F.Set, false, leftHandSide, rightHandSide);
+			result[0] = lhsSymbol.putDownRule(F.Set, true, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 

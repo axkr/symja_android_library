@@ -13,53 +13,52 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 
 public class SetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
 
+	public final static SetDelayed CONST = new SetDelayed();
+
 	public SetDelayed() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final IExpr leftHandSide = ast.get(1);
 		final IExpr rightHandSide = ast.get(2);
 
-		createPatternMatcher(leftHandSide, rightHandSide);
+		createPatternMatcher(leftHandSide, rightHandSide, EvalEngine.get().isPackageMode());
 
 		return F.Null;
 	}
 
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide) throws RuleCreationError {
-		final Object[] result = new Object[2];
-		final EvalEngine engine = EvalEngine.get();
-
+	@Override
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
 		}
-		result[0] = null;
-		result[1] = rightHandSide;
+		final Object[] result = new Object[] { null, rightHandSide };
+		if (leftHandSide.isAST()) {
+			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+
+			result[0] = lhsSymbol.putDownRule(F.SetDelayed, false, leftHandSide, rightHandSide, packageMode);
+			return result;
+		}
 		if (leftHandSide.isSymbol()) {
 			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 			if (lhsSymbol.hasLocalVariableStack()) {
 				lhsSymbol.set(rightHandSide);
 				return result;
-			} else {
-				result[0] = lhsSymbol.putDownRule(F.SetDelayed, true, leftHandSide, rightHandSide);
-				return result;
 			}
-		}
-
-		if (leftHandSide.isAST()) {
-			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-
-			result[0] = lhsSymbol.putDownRule(F.SetDelayed, false, leftHandSide, rightHandSide);
+			result[0] = lhsSymbol.putDownRule(F.SetDelayed, true, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
-
 		throw new RuleCreationError(leftHandSide);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

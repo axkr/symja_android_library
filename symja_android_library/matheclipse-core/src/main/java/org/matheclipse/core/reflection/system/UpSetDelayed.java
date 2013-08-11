@@ -22,12 +22,12 @@ public class UpSetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
 		final IExpr leftHandSide = ast.get(1);
 		final IExpr rightHandSide = ast.get(2);
 
-		createPatternMatcher(leftHandSide, rightHandSide);
+		createPatternMatcher(leftHandSide, rightHandSide, false);
 
 		return F.Null;
 	}
 
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 		final Object[] result = new Object[2];
 		final EvalEngine engine = EvalEngine.get();
 

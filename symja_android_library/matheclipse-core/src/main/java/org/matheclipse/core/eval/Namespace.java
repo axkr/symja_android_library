@@ -82,6 +82,11 @@ public class Namespace {
 					// wrong written functionnames (i.e. PLot, PROduct)
 					// not a predefined function
 					clazz = null;
+				} catch (final Throwable se) {
+					if (Config.SHOW_STACKTRACE) {
+						se.printStackTrace();
+					}
+					clazz = null;
 				}
 
 				if (clazz == null) {
