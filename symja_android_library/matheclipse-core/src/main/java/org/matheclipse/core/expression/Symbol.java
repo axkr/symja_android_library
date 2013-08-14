@@ -332,14 +332,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 			EvalEngine.get().addModifiedVariable(this);
 		}
-//		EvalEngine engine = EvalEngine.get();
-//		if (!engine.isPackageMode()) {
-//			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
-//				throw new RuleCreationError(leftHandSide);
-//			}
-//
-//			engine.addModifiedVariable(this);
-//		}
 		if (fDownRulesData == null) {
 			fDownRulesData = new DownRulesData();
 		}
