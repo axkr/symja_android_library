@@ -93,8 +93,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		}
 
 		/**
-		 * Match the entries of the stack recursively starting from the top
-		 * entry.
+		 * Match the entries of the stack recursively starting from the top entry.
 		 * 
 		 * @return <code>true</code> if all expressions could be matched.
 		 */
@@ -136,8 +135,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code>
-	 * .
+	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code> .
 	 * 
 	 * @see ISymbol#ORDERLESS
 	 */
@@ -148,15 +146,13 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		private IAST fLHSEvalAST;
 
 		/**
-		 * The used (i.e. matched) expression indexes in the LHS evaluation
-		 * expression; <code>-1</code> indicates an unused index.
+		 * The used (i.e. matched) expression indexes in the LHS evaluation expression; <code>-1</code> indicates an unused index.
 		 */
 		private int[] fUsedIndex;
 
 		/**
-		 * Match a pattern expression against an evaluation expression, there
-		 * the arguments are commutative (i.e. the head of the AST expression
-		 * has attribute <code>Orderless</code>)
+		 * Match a pattern expression against an evaluation expression, there the arguments are commutative (i.e. the head of the
+		 * AST expression has attribute <code>Orderless</code>)
 		 * 
 		 * @param lhsPatternAST
 		 *            the pattern AST
@@ -175,8 +171,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		/**
 		 * 
 		 * @param lhsPosition
-		 *            the position in the LHS expression which should actually
-		 *            be matched.
+		 *            the position in the LHS expression which should actually be matched.
 		 * @param stackMatcher
 		 *            TODO
 		 * @return
@@ -242,9 +237,8 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	protected IExpr fPatternCondition;
 
 	/**
-	 * A map from a pattern to a possibly found value during pattern-matching.
-	 * Will be set to <code>null</code> if the left-hand-side pattern expression
-	 * contains no pattern.
+	 * A map from a pattern to a possibly found value during pattern-matching. Will be set to <code>null</code> if the
+	 * left-hand-side pattern expression contains no pattern.
 	 */
 	protected PatternMap fPatternMap;
 
@@ -277,8 +271,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides
-	 * <code>Module[] or Condition[]</code> expressions evaluates to
+	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>. Override it in subclasses.
 	 * 
 	 * @return <code>true</code>
@@ -289,8 +282,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Check if the condition for this pattern matcher evaluates to
-	 * <code>true</code>.
+	 * Check if the condition for this pattern matcher evaluates to <code>true</code>.
 	 */
 	public boolean checkCondition() {
 
@@ -313,8 +305,8 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
-	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -323,24 +315,27 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @return
 	 */
 	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2) {
-		if (patternExpr1 == patternExpr2) {
-			return true;
+		if (!patternExpr1.isPatternExpr() || !patternExpr2.isPatternExpr()) {
+			return patternExpr1.equals(patternExpr2);
 		}
-		if ((patternExpr1.isAST()) && (patternExpr2.isAST())) {
-			final IAST l1 = (IAST) patternExpr1;
-			final IAST l2 = (IAST) patternExpr2;
-			if (l1.size() != l2.size()) {
-				return false;
-			}
-			if (!equivalent(l1.head(), l2.head())) {
-				return false;
-			}
-			for (int i = 1; i < l1.size(); i++) {
-				if (!equivalent(l1.get(i), l2.get(i))) {
+		if (patternExpr1.isAST()) {
+			if (patternExpr2.isAST()) {
+				final IAST l1 = (IAST) patternExpr1;
+				final IAST l2 = (IAST) patternExpr2;
+				if (l1.size() != l2.size()) {
 					return false;
 				}
+				if (!equivalent(l1.head(), l2.head())) {
+					return false;
+				}
+				for (int i = 1; i < l1.size(); i++) {
+					if (!equivalent(l1.get(i), l2.get(i))) {
+						return false;
+					}
+				}
+				return true;
 			}
-			return true;
+			return false;
 		}
 		if (patternExpr1.isPattern() && patternExpr2.isPattern()) {
 			// test if the pattern indices are equal
@@ -618,11 +613,9 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Match all sub-expresions which contain no pattern objects if possible
-	 * (i.e. no FLAT or Orderless expressions,...)
+	 * Match all sub-expresions which contain no pattern objects if possible (i.e. no FLAT or Orderless expressions,...)
 	 * 
-	 * Distinguishes between "equally" matched list-expressions and list
-	 * expressions with <code>expr.isPatternExpr()==true</code>.
+	 * Distinguishes between "equally" matched list-expressions and list expressions with <code>expr.isPatternExpr()==true</code>.
 	 * 
 	 * @param lhsPatternAST
 	 * @param lhsEvalAST

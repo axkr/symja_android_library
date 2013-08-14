@@ -38,14 +38,13 @@ public class PatternMap implements Cloneable, Serializable {
 	private boolean fRuleWithoutPattern;
 
 	/**
-	 * Contains the symbols of the patterns. The corresponding value (or
-	 * <code>null</code>) is stored in <code>fPatternValuesArray</code>.
+	 * Contains the symbols of the patterns. The corresponding value (or <code>null</code>) is stored in
+	 * <code>fPatternValuesArray</code>.
 	 */
 	private ISymbol[] fSymbolsArray;
 
 	/**
-	 * Contains the current values of the pattern symbols. The corresponding
-	 * symbol is stored in <code>fSymbolsArray</code>.
+	 * Contains the current values of the pattern symbols. The corresponding symbol is stored in <code>fSymbolsArray</code>.
 	 */
 	private IExpr[] fPatternValuesArray;
 
@@ -60,8 +59,8 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Set the index of <code>fPatternSymbolsArray</code> where the
-	 * <code>pattern</code> stores it's assigned value during pattern matching.
+	 * Set the index of <code>fPatternSymbolsArray</code> where the <code>pattern</code> stores it's assigned value during pattern
+	 * matching.
 	 * 
 	 * @param pattern
 	 * @param patternIndexMap
@@ -94,14 +93,12 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the
-	 * given expression
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
 	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern
-	 *            objects.
+	 *            the (left-hand-side) expression which could contain pattern objects.
 	 */
 	protected void determinePatterns(final IExpr lhsPatternExpr) {
 		if (lhsPatternExpr instanceof IAST) {
@@ -119,15 +116,13 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the
-	 * given expression
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
 	 * @param patternIndexMap
 	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern
-	 *            objects.
+	 *            the (left-hand-side) expression which could contain pattern objects.
 	 */
 	private int determinePatternsRecursive(TreeMap<ISymbol, Integer> patternIndexMap, final IAST lhsPatternExpr) {
 		final IAST ast = (IAST) lhsPatternExpr;
@@ -190,8 +185,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Copy the found pattern matches from the given <code>patternMap</code>
-	 * back to this maps pattern values.
+	 * Copy the found pattern matches from the given <code>patternMap</code> back to this maps pattern values.
 	 * 
 	 * @param patternMap
 	 */
@@ -208,7 +202,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	private Map<ISymbol, IExpr> getRulesMap() {
-		final Map<ISymbol, IExpr> rulesMap = new HashMap<ISymbol, IExpr>(fSymbolsArray.length*2);
+		final Map<ISymbol, IExpr> rulesMap = new HashMap<ISymbol, IExpr>(fSymbolsArray.length * 2);
 		for (int i = 0; i < fSymbolsArray.length; i++) {
 			if (fPatternValuesArray[i] != null) {
 				rulesMap.put(fSymbolsArray[i], fPatternValuesArray[i]);
@@ -245,8 +239,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Check if all symbols in the symbols array have corresponding values
-	 * assigned.
+	 * Check if all symbols in the symbols array have corresponding values assigned.
 	 * 
 	 * @return
 	 */
@@ -293,8 +286,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Substitute all symbols in the given expression with the current value of
-	 * the given arrays
+	 * Substitute all symbols in the given expression with the current value of the given arrays
 	 * 
 	 * @param expression
 	 * 
