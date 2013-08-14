@@ -261,8 +261,8 @@ public interface IAST extends IExpr, INestedList<IExpr> {
 	public IAST apply(IExpr head, int start, int end);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element is
-	 * used.
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element is used
+	 * (i.e. the functor didn't modified this AST).
 	 * 
 	 * <br />
 	 * <br />
