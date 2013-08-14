@@ -26,17 +26,16 @@ import edu.jas.ufd.GreatestCommonDivisor;
 
 /**
  * Greatest common divisor of two polynomials. See: <a href=
- * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials"
- * >Wikipedia:Greatest common divisor of two polynomials</a>
+ * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common divisor of two
+ * polynomials</a>
  */
 public class Cancel extends AbstractFunctionEvaluator {
 	/**
-	 * This predicate identifies polynomial expressions. It requires that the
-	 * given expression is already expanded for <code>Plus,Power and Times</code>
-	 * operations.
+	 * This predicate identifies polynomial expressions. It requires that the given expression is already expanded for
+	 * <code>Plus,Power and Times</code> operations.
 	 * 
 	 */
-	private final class PolynomialPredicate implements Predicate<IExpr> {
+	private final static class PolynomialPredicate implements Predicate<IExpr> {
 
 		public boolean apply(IExpr expr) {
 			if (expr.isRational()) {
@@ -84,20 +83,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 				}
 				return result;
 			} else if (arg.isTimes() || arg.isPower()) {
-				IExpr[] parts = Apart.getFractionalParts(arg);
-				if (parts != null) {
-					if (parts[0].isPlus() && parts[1].isPlus()) {
-						IAST[] numParts = ((IAST) parts[0]).split(new PolynomialPredicate());
-						IAST[] denParts = ((IAST) parts[1]).split(new PolynomialPredicate());
-						IExpr denParts0 = F.eval(denParts[0]);
-						if (!denParts0.equals(F.C1)) {
-							IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);
-							if (result != null) {
-								return F.Times(result[0], numParts[1], F.Power(F.Times(result[1], denParts[1]), F.CN1));
-							}
-						}
-					}
-				}
+				return cancelPowerTimes(arg);
 			}
 		} catch (JASConversionException jce) {
 			if (Config.DEBUG) {
@@ -108,19 +94,40 @@ public class Cancel extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Calculate the result array
-	 * <code>[ poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code>
-	 * for the given expressions <code>poly1</code> and <code>poly2</code>.
+	 * 
+	 * @param powerTimesAST
+	 *            an <code>Times[...] or Power[...]</code> AST, where common factors should be canceled out.
+	 * @return
+	 * @throws JASConversionException
+	 */
+	public static IExpr cancelPowerTimes(IExpr powerTimesAST) throws JASConversionException {
+		IExpr[] parts = Apart.getFractionalParts(powerTimesAST);
+		if (parts != null) {
+			if (parts[0].isPlus() && parts[1].isPlus()) {
+				IAST[] numParts = ((IAST) parts[0]).split(new PolynomialPredicate());
+				IAST[] denParts = ((IAST) parts[1]).split(new PolynomialPredicate());
+				IExpr denParts0 = F.eval(denParts[0]);
+				if (!denParts0.equals(F.C1)) {
+					IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);
+					if (result != null) {
+						return F.Times(result[0], numParts[1], F.Power(F.Times(result[1], denParts[1]), F.CN1));
+					}
+				}
+			}
+		}
+		return powerTimesAST;
+	}
+
+	/**
+	 * Calculate the result array <code>[ poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code> for the given
+	 * expressions <code>poly1</code> and <code>poly2</code>.
 	 * 
 	 * 
 	 * @param poly1
-	 *            a <code>BigRational</code> polynomial which could be converted
-	 *            to JAS polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
 	 * @param poly2
-	 *            a <code>BigRational</code> polynomial which could be converted
-	 *            to JAS polynomial
-	 * @return <code>null</code> if the expressions couldn't be converted to JAS
-	 *         polynomials
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
+	 * @return <code>null</code> if the expressions couldn't be converted to JAS polynomials
 	 */
 	public static IExpr[] cancelGCD(IExpr poly1, IExpr poly2) throws JASConversionException {
 

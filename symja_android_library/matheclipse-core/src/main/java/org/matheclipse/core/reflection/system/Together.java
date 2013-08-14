@@ -39,6 +39,14 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 			if (astTemp.isPlus()) {
 				return visitPlus(astTemp);
+			} else if (astTemp.isTimes() || astTemp.isPower()) {
+				try {
+					return Cancel.cancelPowerTimes(astTemp);
+				} catch (JASConversionException jce) {
+					if (Config.DEBUG) {
+						jce.printStackTrace();
+					}
+				}
 			}
 
 			return astTemp;
