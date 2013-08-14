@@ -40,19 +40,7 @@ public class Expand extends AbstractFunctionEvaluator {
 				return null;
 			}
 			if (ast.isPower()) {
-				try {
-					int exp = Validate.checkPowerExponent(ast);
-					// (a+b)^exp
-					if ((ast.get(1).isPlus())) {
-						if (exp < 0) {
-							exp *= (-1);
-							return F.Power(expandPower((IAST) ast.get(1), exp), F.CN1);
-						}
-						return expandPower((IAST) ast.get(1), exp);
-					}
-				} catch (WrongArgumentType e) {
-					return null;
-				}
+				return expandPowerNull(ast);
 			} else if (ast.isTimes()) {
 				// (a+b)*(c+d)...
 
@@ -94,10 +82,26 @@ public class Expand extends AbstractFunctionEvaluator {
 			return null;
 		}
 
+		public IExpr expandPowerNull(final IAST powerAST) {
+			try {
+				int exp = Validate.checkPowerExponent(powerAST);
+				// (a+b)^exp
+				if ((powerAST.get(1).isPlus())) {
+					if (exp < 0) {
+						exp *= (-1);
+						return F.Power(expandPower((IAST) powerAST.get(1), exp), F.CN1);
+					}
+					return expandPower((IAST) powerAST.get(1), exp);
+				}
+			} catch (WrongArgumentType e) {
+				return null;
+			}
+			return null;
+		}
+
 		/**
 		 * Expand a polynomial power with the multinomial theorem. See <a
-		 * href="http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia -
-		 * Multinomial theorem</a>
+		 * href="http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia - Multinomial theorem</a>
 		 * 
 		 * @param plusAST
 		 * @param n
@@ -120,8 +124,22 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		private IExpr expandTimes(final IAST timesAST) {
 			IExpr result = timesAST.get(1);
+			IExpr temp;
+			if (result.isPower()) {
+				temp = expandPowerNull((IAST) result);
+				if (temp != null) {
+					result = temp;
+				}
+			}
 			for (int i = 2; i < timesAST.size(); i++) {
-				result = expandTimesBinary(result, timesAST.get(i));
+				temp = timesAST.get(i);
+				if (temp.isPower()) {
+					temp = expandPowerNull((IAST) temp);
+					if (temp == null) {
+						temp = timesAST.get(i);
+					}
+				}
+				result = expandTimesBinary(result, temp);
 			}
 			return result;
 		}
@@ -200,12 +218,19 @@ public class Expand extends AbstractFunctionEvaluator {
 			IAST temp;
 			for (int[] indices : perm) {
 				final IAST timesAST = times.clone();
-				timesAST.add(multinomial);
+				if (!multinomial.isOne()) {
+					timesAST.add(multinomial);
+				}
 				for (int k = 0; k < m; k++) {
 					if (indices[k] != 0) {
 						temp = precalculatedPowerASTs.getAST(k + 1).clone();
-						temp.set(2, F.integer(indices[k]));
-						timesAST.add(temp);
+						if (indices[k] == 1) {
+							timesAST.add(temp.get(1));
+						} else {
+							temp.set(2, F.integer(indices[k]));
+							timesAST.add(temp);
+						}
+
 					}
 				}
 				expandedResult.add(timesAST);
