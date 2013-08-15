@@ -15,5 +15,10 @@ and the JAS - Java Algebra System:
     http://krum.rz.uni-mannheim.de/jas/ 
     http://code.google.com/p/java-algebra-system/
 	
-Symja is the underlying library for the SymjaDroid Android app:
-    https://bitbucket.org/axelclk/symjadroid
+Symja is the underlying library for the following projects:
+* SymjaDroid Android app:
+    https://bitbucket.org/axelclk/symjadroid   
+* Symja AJAX web interface:
+    https://bitbucket.org/axelclk/symja.ajax
+* Symja Java Swing GUI:
+    https://bitbucket.org/axelclk/symjaswing
