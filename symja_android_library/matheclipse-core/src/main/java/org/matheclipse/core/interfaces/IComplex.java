@@ -17,8 +17,6 @@ public interface IComplex extends IBigNumber {
 	 * @return imaginary part
 	 */
 	public BigFraction getImaginaryPart();
-
-	public IFraction getIm();
 	
 	/**
 	 * Returns the real part of a complex number
@@ -26,8 +24,6 @@ public interface IComplex extends IBigNumber {
 	 * @return real part
 	 */
 	public BigFraction getRealPart();
-	
-	public IFraction getRe(); 
 	
 	public IComplex multiply(IComplex val);
 

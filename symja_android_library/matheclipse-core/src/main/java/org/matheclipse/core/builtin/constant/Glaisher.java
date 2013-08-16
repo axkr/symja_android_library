@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class Glaisher extends AbstractSymbolEvaluator implements
-		INumericConstant {
+		ISignedNumberConstant {
 	final static public double GLAISHER = 1.2824271291006226368753425688697917277676889273250;
 	
 	public Glaisher() {

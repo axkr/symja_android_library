@@ -3,7 +3,7 @@ package org.matheclipse.core.eval;
 import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.interfaces.INumericComplex;
 import org.matheclipse.core.eval.interfaces.INumericComplexConstant;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.util.DoubleStack;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -85,10 +85,10 @@ public class EvalComplex {
 			}
 		}
 		final IEvaluator module = symbol.getEvaluator();
-		if (module instanceof INumericConstant) {
+		if (module instanceof ISignedNumberConstant) {
 			// fast evaluation path
 			final double[] result = Alloc.vector(2);
-			result[0] = ((INumericConstant) module).evalReal();
+			result[0] = ((ISignedNumberConstant) module).evalReal();
 			result[1] = 0.0;
 			return result;
 		} else if (module instanceof INumericComplexConstant) {

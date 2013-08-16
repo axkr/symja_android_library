@@ -12,7 +12,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -692,8 +692,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
 		if (isConstant()) {
 			IEvaluator evaluator = getEvaluator();
-			if (evaluator instanceof INumericConstant) {
-				INumericConstant numericConstant = (INumericConstant) evaluator;
+			if (evaluator instanceof ISignedNumberConstant) {
+				ISignedNumberConstant numericConstant = (ISignedNumberConstant) evaluator;
 				double value = numericConstant.evalReal();
 				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
 					return function.apply(value);

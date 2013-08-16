@@ -816,6 +816,10 @@ public class F {
 		return unary(ArcCosh, a0);
 	}
 
+	public static IAST Arg(final IExpr a0) {
+		return unary(Arg, a0);
+	}
+	
 	public static IAST Append(final IExpr a0, final IExpr a1) {
 
 		return binary(Append, a0, a1);

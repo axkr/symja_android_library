@@ -42,8 +42,7 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	/**
-	 * Additional negative method, which works like opposite to fulfill groovy's
-	 * method signature
+	 * Additional negative method, which works like opposite to fulfill groovy's method signature
 	 * 
 	 * @return
 	 */
@@ -88,8 +87,7 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	/**
-	 * Additional multiply method which works like times to fulfill groovy's
-	 * method signature
+	 * Additional multiply method which works like times to fulfill groovy's method signature
 	 * 
 	 * @param that
 	 * @return
@@ -313,6 +311,12 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST(IExpr header, int length, IExpr... args) {
+		return false;
+	}
+
 	@Override
 	public final boolean isPlus() {
 		return false;
@@ -513,7 +517,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isComplexNumeric() {
 		return this instanceof IComplexNum;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFraction() {
@@ -560,6 +564,12 @@ public abstract class ExprImpl implements IExpr {
 	@Override
 	public boolean isNumericFunction() {
 		return isNumber() || isConstant();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealFunction() {
+		return isSignedNumber() || isConstant();
 	}
 
 	/** {@inheritDoc} */
@@ -748,8 +758,7 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	/**
-	 * Signum functionality is used in JAS toString() method, don't use it as
-	 * math signum function.
+	 * Signum functionality is used in JAS toString() method, don't use it as math signum function.
 	 * 
 	 * @deprecated
 	 */

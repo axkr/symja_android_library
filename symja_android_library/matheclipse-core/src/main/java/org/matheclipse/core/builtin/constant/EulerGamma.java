@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler–Mascheroni constant</a>
  */
 public class EulerGamma extends AbstractSymbolEvaluator implements
-		INumericConstant {
+		ISignedNumberConstant {
 	final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 	
 	public EulerGamma() {

@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Euler constant E
  *
  */
-public class E extends AbstractSymbolEvaluator implements INumericConstant {
+public class E extends AbstractSymbolEvaluator implements ISignedNumberConstant {
   public E() {
   }
 

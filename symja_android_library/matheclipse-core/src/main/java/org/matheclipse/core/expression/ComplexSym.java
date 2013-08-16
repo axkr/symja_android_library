@@ -171,7 +171,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return _imaginary;
 	}
 
-	public IFraction getIm() {
+	public IExpr getIm() {
 		return FractionSym.valueOf(_imaginary);
 	}
 
@@ -184,7 +184,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return _real;
 	}
 
-	public IFraction getRe() {
+	public IExpr getRe() {
 		return FractionSym.valueOf(_real);
 	}
 

@@ -334,11 +334,9 @@ public class Power extends AbstractArg2 implements INumeric {
 	}
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest factor&quot;
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
 	 * 
-	 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the
-	 *         root is not available
+	 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 	 */
 	private IInteger[] calculateRoot(IInteger a, IInteger root) {
 		try {

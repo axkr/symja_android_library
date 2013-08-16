@@ -4,7 +4,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * See: <a href="http://en.wikipedia.org/wiki/Degree_(angle)">Degree (angle)</a>
  * 
  */
-public class Degree extends AbstractSymbolEvaluator implements INumericConstant {
+public class Degree extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 	final static public double DEGREE = 0.017453292519943295769236907684886127134428718885417;
 
 	public Degree() {

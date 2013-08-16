@@ -734,6 +734,21 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealFunction() {
+		if (isPlus()||isTimes()) {
+			// check if all arguments are &quot;real values&quot;
+			for (int i = 1; i < size(); i++) {
+				if (!get(i).isRealFunction()) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public final boolean isNumber() {
 		return false;
@@ -935,6 +950,22 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	@Override
 	public final boolean isAST(final IExpr header, final int length) {
 		return isSameHead(header, length);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST(IExpr header, int length, IExpr... args) {
+		if (isSameHead(header, length)) {
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] != null) {
+					if (!get(i + 1).equals(args[i])) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**

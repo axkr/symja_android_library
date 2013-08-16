@@ -464,7 +464,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 		return super.times(that);
 	}
- 
+
 	@Override
 	public String toString() {
 		try {
@@ -526,9 +526,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {
@@ -573,5 +572,17 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public boolean equalsInt(int i) {
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr getIm() {
+		return F.C0;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr getRe() {
+		return this;
 	}
 }

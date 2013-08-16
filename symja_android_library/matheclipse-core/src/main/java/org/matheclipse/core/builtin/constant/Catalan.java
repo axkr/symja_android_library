@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class Catalan extends AbstractSymbolEvaluator implements
-		INumericConstant {
+		ISignedNumberConstant {
 	final static public double CATALAN = 0.91596559417721901505460351493238411077414937428167;
 	
 	public Catalan() {

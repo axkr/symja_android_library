@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Golden_ratio">Wikipedia:Golden ratio</a>
  */
-public class GoldenRatio extends AbstractSymbolEvaluator implements INumericConstant {
+public class GoldenRatio extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 	final static public double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
 
 	public GoldenRatio() {

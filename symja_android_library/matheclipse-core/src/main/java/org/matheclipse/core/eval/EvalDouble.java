@@ -2,7 +2,7 @@ package org.matheclipse.core.eval;
 
 import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.eval.interfaces.INumericConstant;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
@@ -73,9 +73,9 @@ public class EvalDouble extends DoubleEvaluator {
 			return ((ISignedNumber) symbol.get()).doubleValue();
 		}
 		final IEvaluator module = symbol.getEvaluator();
-		if (module instanceof INumericConstant) {
+		if (module instanceof ISignedNumberConstant) {
 			// fast evaluation path
-			return ((INumericConstant) module).evalReal();
+			return ((ISignedNumberConstant) module).evalReal();
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(symbol);

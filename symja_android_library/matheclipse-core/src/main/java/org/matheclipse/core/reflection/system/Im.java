@@ -1,13 +1,28 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import static org.matheclipse.core.expression.F.Arg;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.E;
+import static org.matheclipse.core.expression.F.Im;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Times;
+
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -20,25 +35,81 @@ public class Im implements IFunctionEvaluator {
 	public Im() {
 	}
 
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 2) {
-			throw new WrongNumberOfArguments(functionList, 1, functionList.size() - 1);
-		}
-		IExpr expr = functionList.get(1);
-		if (expr.isSignedNumber()) {
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.get(1);
+		if (arg1.isSignedNumber()) {
 			return F.C0;
 		}
-		if (expr.isComplex()) {
-			return ((IComplex) expr).getIm();
+		if (arg1.isComplex()) {
+			return ((IComplex) arg1).getIm();
 		}
-		if (expr instanceof IComplexNum) {
-			return F.num(((IComplexNum) expr).getImaginaryPart());
+		if (arg1 instanceof IComplexNum) {
+			return F.num(((IComplexNum) arg1).getImaginaryPart());
+		}
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Times(CN1, Im(Times(CN1, arg1)));
+		}
+		if (arg1.isTimes()) {
+			if (arg1.getAt(1).isSignedNumber()) {
+				IAST temp = ((IAST) arg1).clone();
+				temp.remove(1);
+				return F.Times(arg1.getAt(1), F.Im(temp));
+			}
+			if (arg1.getAt(1).equals(F.CI)) {
+				// Im(I*temp) -> Re(temp)
+				IAST temp = ((IAST) arg1).clone();
+				temp.remove(1);
+				return F.Re(temp);
+			}
+		}
+		if (arg1.isPlus()) {
+			return ((IAST) arg1).map(Functors.replace1st(F.Im(F.Null)));
+		}
+		if (arg1.isPower()) {
+			IAST astPower = (IAST) arg1;
+			if (astPower.get(1).isRealFunction()) {
+				// test for x^(a+I*b)
+				IExpr x = astPower.get(1);
+				if (astPower.get(2).isNumber()) {
+					// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
+					IExpr a = ((INumber) astPower.get(2)).getRe();
+					IExpr b = ((INumber) astPower.get(2)).getIm();
+					return imPowerComplex(x, a, b);
+				}
+				if (astPower.get(2).isNumericFunction()) {
+					// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
+					IExpr a = F.eval(F.Re(astPower.get(2)));
+					IExpr b = F.eval(F.Im(astPower.get(2)));
+					return imPowerComplex(x, a, b);
+				}
+			}
 		}
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
+	/**
+	 * Evaluate <code>Im(x^(a+I*b))</code>
+	 * 
+	 * @param x
+	 * @param a
+	 *            the real part of the exponent
+	 * @param b
+	 *            the imaginary part of the exponent
+	 * @return
+	 */
+	private IExpr imPowerComplex(IExpr x, IExpr a, IExpr b) {
+		if (x.equals(F.E)) {
+			// Im(E^(a+I*b)) -> E^a*Sin[b]
+			return Times(Power(F.E, a), Sin(b));
+		}
+		return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Times(CN1, b), Arg(x)))),
+				Sin(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
+	}
+
+	public IExpr numericEval(final IAST ast) {
+		return evaluate(ast);
 	}
 
 	public void setUp(final ISymbol symbol) {

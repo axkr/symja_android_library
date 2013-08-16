@@ -32,4 +32,19 @@ public interface INumber extends IExpr {
 	public boolean equalsInt(int i);
 	
 	public IExpr opposite();
+	
+
+	/**
+	 * Returns the imaginary part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public IExpr getIm();
+	
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public IExpr getRe(); 
 }

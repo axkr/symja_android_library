@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
-public interface INumericConstant {
+public interface ISignedNumberConstant {
 	/**
 	 * Evaluate the symbol to a double number
 	 *
