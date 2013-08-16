@@ -30,6 +30,9 @@ public class Tanh extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Tanh(Times(CN1, arg1)));
 		}
+		if (arg1.isZero()){
+			return F.C0;
+		}
 		return null;
 	}
 	

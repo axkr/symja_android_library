@@ -16,6 +16,7 @@ import static org.matheclipse.core.expression.F.Set;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
@@ -35,25 +36,33 @@ import org.matheclipse.parser.client.SyntaxError;
  * functions</a>
  */
 public class Sech extends AbstractTrigArg1 implements INumeric {
+
 	/*
  {
 Sech[x_NumberQ*y_]:=Sech[(-1)*x*y]/;SignCmp[x]<0,
 Sech[x_NumberQ]:=Sech[(-1)*x]/;SignCmp[x]<0
 }
 	 */
-	final static IAST RULES = List(
-			SetDelayed(Sech(Times($p(x,$s("NumberQ")),$p(y))),Condition(Sech(Times(Times(CN1,x),y)),Less(SignCmp(x),C0))),
-			SetDelayed(Sech($p(x,$s("NumberQ"))),Condition(Sech(Times(CN1,x)),Less(SignCmp(x),C0)))
-			);
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+//	final static IAST RULES = List(
+//			SetDelayed(Sech(Times($p(x,$s("NumberQ")),$p(y))),Condition(Sech(Times(Times(CN1,x),y)),Less(SignCmp(x),C0))),
+//			SetDelayed(Sech($p(x,$s("NumberQ"))),Condition(Sech(Times(CN1,x)),Less(SignCmp(x),C0)))
+//			);
+ 
 	
 	public Sech() {
 	}
 
+	@Override
+	public IExpr evaluateArg1(IExpr arg1) {
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			return Sech(Times(CN1, arg1));
+		}
+		if (arg1.isZero()){
+			return F.C0;
+		}
+		return null;
+	}
+	
 	@Override
 	public IExpr numericEvalD1(final Num arg1) {
 		return F.num(1.0D / Math.cosh(arg1.getRealPart()));

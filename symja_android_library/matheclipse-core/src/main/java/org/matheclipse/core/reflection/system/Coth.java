@@ -30,6 +30,9 @@ public class Coth extends AbstractTrigArg1 {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Coth(Times(CN1, arg1)));
 		}
+		if (arg1.isZero()){
+			return F.CComplexInfinity;
+		}
 		return null;
 	}
   

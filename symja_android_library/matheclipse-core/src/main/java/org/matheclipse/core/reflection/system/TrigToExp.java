@@ -29,6 +29,7 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -81,19 +82,20 @@ public class TrigToExp implements IFunctionEvaluator {
 			}
 			if (head.equals(Cosh)) {
 				// JavaForm[(E^x+E^(-x))/2]
-				return Times(C1D2,Plus(Power(E,x),Power(E,Times(CN1,x))));
+				return Times(C1D2, Plus(Power(E, x), Power(E, Times(CN1, x))));
 			}
 			if (head.equals(Csch)) {
 				// JavaForm[2/(E^x-E^(-x))]
-				return Times(C2,Power(Plus(Power(E,x),Times(CN1,Power(E,Times(CN1,x)))),CN1));
+				return Times(C2, Power(Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x)))), CN1));
 			}
 			if (head.equals(Coth)) {
 				// JavaForm[((E^(-x))+E^x)/((-E^(-x))+E^x)]
-				return Times(Plus(Power(E,x),Power(E,Times(CN1,x))),Power(Plus(Power(E,x),Times(CN1,Power(E,Times(CN1,x)))),CN1));
+				return Times(Plus(Power(E, x), Power(E, Times(CN1, x))),
+						Power(Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x)))), CN1));
 			}
 			if (head.equals(Sech)) {
 				// JavaForm[2/(E^x+E^(-x))]
-				return Times(C2,Power(Plus(Power(E,x),Power(E,Times(CN1,x))),CN1));
+				return Times(C2, Power(Plus(Power(E, x), Power(E, Times(CN1, x))), CN1));
 			}
 			if (head.equals(Sinh)) {
 				// JavaForm[(E^x-E^(-x))/2]
@@ -111,16 +113,15 @@ public class TrigToExp implements IFunctionEvaluator {
 		}
 	}
 
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 2) {
-			throw new WrongNumberOfArguments(functionList, 1, functionList.size() - 1);
-		}
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
+
 		TrigToExpVisitor tteVisitor = new TrigToExpVisitor();
-		IExpr result = functionList.get(1).accept(tteVisitor);
+		IExpr result = ast.get(1).accept(tteVisitor);
 		if (result != null) {
 			return result;
 		}
-		return functionList.get(1);
+		return ast.get(1);
 	}
 
 	public IExpr numericEval(final IAST functionList) {
