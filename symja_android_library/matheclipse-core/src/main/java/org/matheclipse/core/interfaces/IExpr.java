@@ -129,7 +129,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * @param symbolsAsFactoryMethod
 	 *            if <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
 	 * @param depth
-	 *            the recursion depth of this call
+	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
 	 */
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth);
 

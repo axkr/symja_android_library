@@ -737,7 +737,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isRealFunction() {
-		if (isPlus()||isTimes()) {
+		if (isPlus() || isTimes()) {
 			// check if all arguments are &quot;real values&quot;
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isRealFunction()) {
@@ -748,7 +748,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public final boolean isNumber() {
 		return false;
@@ -1328,23 +1328,47 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 		text.append(temp.internalFormString(false, 0));
 		text.append('(');
-		if (depth == 0 && isList()) {
-			text.append('\n');
-		}
-		for (int i = 1; i < size(); i++) {
-			text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
-			if (i < size() - 1) {
-				text.append(sep);
-				if (depth == 0 && isList()) {
-					text.append('\n');
+		if (isTimes() || isPlus()) {
+			if (depth == 0 && isList()) {
+				text.append('\n');
+			}
+			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth);
+			if (depth == 0 && isList()) {
+				text.append('\n');
+			}
+		} else {
+			if (depth == 0 && isList()) {
+				text.append('\n');
+			}
+			for (int i = 1; i < size(); i++) {
+				text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+				if (i < size() - 1) {
+					text.append(sep);
+					if (depth == 0 && isList()) {
+						text.append('\n');
+					}
 				}
 			}
-		}
-		if (depth == 0 && isList()) {
-			text.append('\n');
+			if (depth == 0 && isList()) {
+				text.append('\n');
+			}
 		}
 		text.append(')');
 		return text.toString();
+	}
+
+	private static void internalFormOrderless(IAST ast, StringBuffer text, final String sep, boolean symbolsAsFactoryMethod,
+			int depth) {
+		for (int i = 1; i < ast.size(); i++) {
+			if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
+				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, depth);
+			} else {
+				text.append(ast.get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+			}
+			if (i < ast.size() - 1) {
+				text.append(sep);
+			}
+		}
 	}
 
 	@Override

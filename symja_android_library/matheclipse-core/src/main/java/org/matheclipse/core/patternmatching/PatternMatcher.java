@@ -814,12 +814,20 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		fPatternCondition = condition;
 	}
 
+	/**
+	 * Transform the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless for the
+	 * left-hand-side of a Set[] or SetDelayed[] expression. Delegates to <code>EvalEngine#evalSetAttributes()</code>method
+	 * 
+	 * @param ast
+	 * @return
+	 * @see org.matheclipse.core.eval.EvalEngine#evalSetAttributes()
+	 */
 	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
-		final IExpr temp = engine.evalSetAttributes((IAST) leftHandSide);
-		if (temp != null) {
-			return temp;
-		}
-		return leftHandSide;
+		return engine.evalSetAttributes((IAST) leftHandSide);
+		// if (temp != null) {
+		// return temp;
+		// }
+		// return leftHandSide;
 	}
 
 	public static IExpr evalLeftHandSide(IAST leftHandSide) {

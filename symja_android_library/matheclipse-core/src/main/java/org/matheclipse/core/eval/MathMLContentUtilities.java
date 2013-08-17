@@ -5,6 +5,7 @@ import java.io.Writer;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.MathMLContentFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.JavaForm;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -31,8 +32,7 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -53,8 +53,7 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
@@ -84,7 +83,8 @@ public class MathMLContentUtilities {
 			try {
 				node = fParser.parse(inputExpression);
 				parsedExpression = AST2Expr.CONST.convert(node);
-				out.write(parsedExpression.internalFormString(strictJava, 0));
+				out.write(JavaForm.javaForm(parsedExpression, strictJava));
+				// out.write(parsedExpression.internalFormString(strictJava, 0));
 			} catch (final Throwable e) {
 				return;
 				// parsedExpression == null ==> fError occured
@@ -93,8 +93,8 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Assign the associated EvalEngine to the current thread. Every subsequent
-	 * action evaluation in this thread affects the EvalEngine in this class.
+	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects the
+	 * EvalEngine in this class.
 	 */
 	public void startRequest() {
 		EvalEngine.set(fEvalEngine);
