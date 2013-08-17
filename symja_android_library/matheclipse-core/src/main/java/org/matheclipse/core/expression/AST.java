@@ -1,8 +1,11 @@
 package org.matheclipse.core.expression;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.basic.Config;
@@ -11,7 +14,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
-import org.matheclipse.core.generic.util.NestedFastTable;
+import org.matheclipse.core.generic.util.HMArrayList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -61,7 +64,7 @@ import edu.jas.structure.ElemFactory;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
-public class AST extends NestedFastTable<IExpr> implements IAST {
+public class AST extends HMArrayList<IExpr> implements IAST {
 	private final static IAST AST_DUMMY_INSTANCE = new AST();
 
 	public final static ASTCopy COPY = new ASTCopy((Class<IAST>) AST_DUMMY_INSTANCE.getClass());
@@ -78,6 +81,8 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	transient private int fEvalFlags = 0;
 
 	transient protected int fPatternMatchingHashValue = 0;
+
+	transient protected int fHashValue = 0;
 
 	/**
 	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
@@ -146,7 +151,13 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 *            if <code>true</code>, sets the array's size to initialCapacity.
 	 */
 	private AST(final int initialCapacity, final boolean setLength) {
-		super(initialCapacity + 1, setLength ? initialCapacity + 1 : 0);
+		// super(initialCapacity + 1, setLength ? initialCapacity + 1 : 0);
+		super(initialCapacity + 1);
+		// for (int i = 0; i < setLength; i++) {
+		// add(null);
+		// }
+		lastIndex += (setLength ? initialCapacity + 1 : 0);
+		modCount++;
 	}
 
 	/**
@@ -154,7 +165,11 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	 * 
 	 */
 	public AST() {
+		// super(0);
 		super(0);
+		// add(null);
+		lastIndex++;
+		modCount++;
 	}
 
 	/**
@@ -180,6 +195,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 		AST ast = (AST) super.clone();
 		ast.fEvalFlags = 0;
 		ast.fPatternMatchingHashValue = 0;
+		ast.fHashValue = 0;
 		return ast;
 	}
 
@@ -1149,8 +1165,14 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 
 	@Override
 	public boolean equals(final Object obj) {
+		if (obj == this) {
+			return true;
+		}
 		if (obj instanceof AST) {
 			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (size() != ((AST) obj).size()) {
 				return false;
 			}
 			return super.equals(obj);
@@ -1397,7 +1419,7 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 				try {
 					final int slot = ((ISignedNumber) get(1)).toInt();
 					if (slot <= 0) {
-						return super.toString();
+						return toFullFormString();
 					}
 					if (slot == 1) {
 						return "#";
@@ -1406,10 +1428,10 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 				} catch (final ArithmeticException e) {
 					// fall through
 				}
-				return super.toString();
+				return toFullFormString();
 
 			} else {
-				return super.toString();
+				return toFullFormString();
 			}
 		} catch (NullPointerException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -1417,6 +1439,30 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 			}
 			throw e;
 		}
+	}
+
+	private String toFullFormString() {
+		final String sep = ", ";
+		IExpr temp = null;
+		if (size() > 0) {
+			temp = head();
+		}
+		StringBuffer text;
+		if (temp == null) {
+			text = new StringBuffer("<null-tag>");
+		} else {
+			text = new StringBuffer(temp.toString());
+		}
+		text.append('[');
+		for (int i = 1; i < size(); i++) {
+			final IExpr o = get(i);
+			text = text.append(o == this ? "(this AST)" : o.toString());
+			if (i < size() - 1) {
+				text.append(sep);
+			}
+		}
+		text.append(']');
+		return text.toString();
 	}
 
 	/**
@@ -1821,6 +1867,106 @@ public class AST extends NestedFastTable<IExpr> implements IAST {
 	@Override
 	public final IExpr negate() {
 		return opposite();
+	}
+
+	@Override
+	public final IExpr head() {
+		return get(0);
+	}
+
+	protected static final class ASTIterator implements ListIterator<IExpr> {
+
+		private HMArrayList<IExpr> _table;
+
+		private int _currentIndex;
+
+		private int _start; // Inclusive.
+
+		private int _end; // Exclusive.
+
+		private int _nextIndex;
+
+		public boolean hasNext() {
+			return (_nextIndex != _end);
+		}
+
+		public IExpr next() {
+			if (_nextIndex == _end)
+				throw new NoSuchElementException();
+			return _table.get(_currentIndex = _nextIndex++);
+		}
+
+		public int nextIndex() {
+			return _nextIndex;
+		}
+
+		public boolean hasPrevious() {
+			return _nextIndex != _start;
+		}
+
+		public IExpr previous() {
+			if (_nextIndex == _start)
+				throw new NoSuchElementException();
+			return _table.get(_currentIndex = --_nextIndex);
+		}
+
+		public int previousIndex() {
+			return _nextIndex - 1;
+		}
+
+		public void add(IExpr o) {
+			_table.add(_nextIndex++, o);
+			_end++;
+			_currentIndex = -1;
+		}
+
+		public void set(IExpr o) {
+			if (_currentIndex >= 0) {
+				_table.set(_currentIndex, o);
+			} else {
+				throw new IllegalStateException();
+			}
+		}
+
+		public void remove() {
+			if (_currentIndex >= 0) {
+				_table.remove(_currentIndex);
+				_end--;
+				if (_currentIndex < _nextIndex) {
+					_nextIndex--;
+				}
+				_currentIndex = -1;
+			} else {
+				throw new IllegalStateException();
+			}
+		}
+	}
+
+	/**
+	 * Returns an iterator over the elements in this <code>IAST</code> starting with offset <b>1</b>.
+	 * 
+	 * @return an iterator over this <code>IAST</code>s argument values from <code>1..(size-1)</code>.
+	 */
+	@Override
+	public Iterator<IExpr> iterator() {
+		ASTIterator i = new ASTIterator();
+		i._table = this;
+		i._start = 1;
+		i._end = this.size();
+		i._nextIndex = 1;
+		i._currentIndex = 0;
+		return i;
+	}
+
+	@Override
+	/**
+	 * Returns an iterator over the elements in this list starting with offset
+	 * <b>0</b>.
+	 * 
+	 * @return an iterator over this list values.
+	 */
+	public Iterator<IExpr> iterator0() {
+		return super.iterator();
 	}
 
 }

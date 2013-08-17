@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
-import org.matheclipse.core.generic.util.INestedList;
 import org.matheclipse.core.reflection.system.Apart;
 import org.matheclipse.generic.interfaces.BiFunction;
 
@@ -37,7 +36,7 @@ import com.google.common.base.Predicate;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
-public interface IAST extends IExpr, INestedList<IExpr> {
+public interface IAST extends IExpr,  List<IExpr>, Cloneable {
 	/**
 	 * NO_FLAG ACTIVATED
 	 */
