@@ -38,14 +38,15 @@ public final class Validate {
 			// the following may throw ArithmeticException
 			if (ast.get(2) instanceof IInteger) {
 				exponent = ((IInteger) ast.get(2)).toInt();
+				return exponent;
 			} else if (ast.get(2) instanceof INum) {
 				exponent = ((INum) ast.get(2)).toInt();
+				return exponent;
 			}
-			return exponent;
 		} catch (ArithmeticException ae) {
-			throw new WrongArgumentType(ast, ast.get(2), 2, "Trying to convert the argument into an integer exponent: "
-					+ ast.get(2));
+			//
 		}
+		throw new WrongArgumentType(ast, ast.get(2), 2, "Trying to convert the argument into an integer exponent: " + ast.get(2));
 	}
 
 	/**
