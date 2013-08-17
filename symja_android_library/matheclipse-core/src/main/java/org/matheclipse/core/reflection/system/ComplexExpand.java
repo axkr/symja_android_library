@@ -30,8 +30,7 @@ import org.matheclipse.core.visit.VisitorExpr;
 /**
  * Exponential definitions for trigonometric functions
  * 
- * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions">List of trigonometric
- * identities - Exponential definitions</a>
+ * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of trigonometric identities</a>
  */
 public class ComplexExpand implements IFunctionEvaluator {
 
@@ -76,43 +75,36 @@ public class ComplexExpand implements IFunctionEvaluator {
 
 			if (head.equals(Cos)) {
 				// Cosh[Im[x]]*Cos[Re[x]]+I*Sinh[Im[x]]*Sin[Re[x]]
-				return Plus(Times(Cosh(imX), Cos(reX)), Times(Times(CI, Sinh(imX)), Sin(reX)));
+				return Plus(Times(Cos(reX), Cosh(imX)), Times(CI, Sin(reX), Sinh(imX)));
 			}
 			if (head.equals(Cot)) {
 				// -(Sin[2*Re[x]]/(Cos[2*Re[x]]-Cosh[2*Im[x]]))+(I*Sinh[2*Im[x]])/(Cos[2*Re[x]]-Cosh[2*Im[x]])
 				return Plus(
-						Times(CN1,
-								Times(Sin(Times(C2, reX)),
-										Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1))),
-						Times(Times(CI, Sinh(Times(C2, imX))),
-								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
+						Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
+						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Csc)) {
-				// (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) + ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]] -
-				// Cosh[2 Im[x]])
+				// (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) + ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2
+				// Im[x]])
 				return Plus(
-						Times(Times(Times(integer(-2L), Cosh(imX)), Sin(reX)),
+						Times(integer(-2L), Cosh(imX), Sin(reX),
 								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
-						Times(Times(Times(Times(C2, CI), Cos(reX)), Sinh(imX)),
-								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
+						Times(C2, CI, Cos(reX), Sinh(imX), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Sec)) {
 				// (2 Cos[Re[x]] Cosh[Im[x]])/(Cos[2 Re[x]] + Cosh[2 Im[x]]) + ((2 I) Sin[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]] + Cosh[2
 				// Im[x]])
-				return Plus(
-						Times(Times(Times(C2, Cos(reX)), Cosh(imX)),
-								Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-						Times(Times(Times(Times(C2, CI), Sin(reX)), Sinh(imX)),
-								Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
+				return Plus(Times(C2, Cos(reX), Cosh(imX), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
+						Times(C2, CI, Sin(reX), Sinh(imX), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
 			}
 			if (head.equals(Sin)) {
 				// Cosh[Im[x]]*Sin[Re[x]]+I*Sinh[Im[x]]*Cos[Re[x]]
-				return Plus(Times(Cosh(imX), Sin(reX)), Times(Times(CI, Sinh(imX)), Cos(reX)));
+				return Plus(Times(Cosh(imX), Sin(reX)), Times(CI, Sinh(imX), Cos(reX)));
 			}
 			if (head.equals(Tan)) {
 				// Sin[2*Re[x]]/(Cos[2*Re[x]] + Cosh[2*Im[x]]) + (I*Sinh[2*Im[x]])/(Cos[2*Re[x]] + Cosh[2*Im[x]])
 				return Plus(Times(Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-						Times(Times(CI, Sinh(Times(C2, imX))), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
+						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
 			}
 			if (result != null) {
 				return $(head, result);
