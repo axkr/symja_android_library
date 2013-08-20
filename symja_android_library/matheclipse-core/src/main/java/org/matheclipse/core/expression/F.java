@@ -745,6 +745,26 @@ public class F {
 	 */
 	public final static IInteger CN1 = IntegerSym.valueOf(-1);
 
+	/**
+	 * Constant integer &quot;-2&quot;
+	 */
+	public final static IInteger CN2 = IntegerSym.valueOf(-2);
+
+	/**
+	 * Constant integer &quot;-3&quot;
+	 */
+	public final static IInteger CN3 = IntegerSym.valueOf(-3);
+
+	/**
+	 * Constant integer &quot;-4&quot;
+	 */
+	public final static IInteger CN4 = IntegerSym.valueOf(-4);
+
+	/**
+	 * Constant integer &quot;-5&quot;
+	 */
+	public final static IInteger CN5 = IntegerSym.valueOf(-5);
+
 	static {
 
 		try {
@@ -819,7 +839,7 @@ public class F {
 	public static IAST Arg(final IExpr a0) {
 		return unary(Arg, a0);
 	}
-	
+
 	public static IAST Append(final IExpr a0, final IExpr a1) {
 
 		return binary(Append, a0, a1);

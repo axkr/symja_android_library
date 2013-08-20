@@ -21,8 +21,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 
 /**
- * IInteger implementation which simply delegates most of the methods to the
- * BigInteger methods
+ * IInteger implementation which simply delegates most of the methods to the BigInteger methods
  */
 public class IntegerSym extends ExprImpl implements IInteger {
 	/**
@@ -62,10 +61,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Returns the IntegerImpl for the specified character sequence stated in
-	 * the specified radix. The characters must all be digits of the specified
-	 * radix, except the first character which may be a plus sign
-	 * <code>'+'</code> or a minus sign <code>'-'</code>.
+	 * Returns the IntegerImpl for the specified character sequence stated in the specified radix. The characters must all be digits
+	 * of the specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus sign <code>'-'</code>
+	 * .
 	 * 
 	 * @param chars
 	 *            the character sequence to parse.
@@ -73,8 +71,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
 	 * @throws NumberFormatException
-	 *             if the specified character sequence does not contain a
-	 *             parsable large integer.
+	 *             if the specified character sequence does not contain a parsable large integer.
 	 */
 	public static IntegerSym valueOf(final String integerString, final int radix) {
 		// IntegerSym z;
@@ -246,8 +243,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	// }
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one
-	 * specified.
+	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 */
 	public IntegerSym gcd(final IntegerSym that) {
@@ -255,8 +251,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one
-	 * specified.
+	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 */
 	@Override
@@ -265,8 +260,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one
-	 * specified.
+	 * Returns the least common multiple of this large integer and the one specified.
 	 * 
 	 */
 	public IntegerSym lcm(final IntegerSym that) {
@@ -281,8 +275,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one
-	 * specified.
+	 * Returns the least common multiple of this large integer and the one specified.
 	 * 
 	 */
 	@Override
@@ -885,8 +878,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest factor&quot;
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
 	 * 
 	 * @return <code>{nth-root, rest factor}</code>
 	 */
@@ -953,9 +945,8 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {
@@ -1023,6 +1014,14 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		switch (value) {
 		case -1:
 			return "CN1";
+		case -2:
+			return "CN2";
+		case -3:
+			return "CN3";
+		case -4:
+			return "CN4";
+		case -5:
+			return "CN5";
 		case 0:
 			return "C0";
 		case 1:
@@ -1062,7 +1061,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
 
 	/** {@inheritDoc} */
 	@Override

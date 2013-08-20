@@ -41,15 +41,12 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            If <code>true</code> use paranthesis instead of square
-	 *            brackets and ignore case for functions, i.e. sin() instead of
-	 *            Sin[]. If <code>true</code> use single square brackets instead
-	 *            of double square brackets for extracting parts of an
-	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            If <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e. sin() instead
+	 *            of Sin[]. If <code>true</code> use single square brackets instead of double square brackets for extracting parts
+	 *            of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax) {
@@ -57,9 +54,8 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string, with <code>relaxedSyntax</code> set
-	 * to false.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string, with
+	 * <code>relaxedSyntax</code> set to false.
 	 * 
 	 * @return
 	 * @see #get(boolean)
@@ -69,6 +65,10 @@ public class OutputFormFactory {
 	}
 
 	public void convertDouble(final Appendable buf, final INum d, final int precedence) throws IOException {
+		if (d.isZero()) {
+			convertDoubleValue(buf, "0.0", precedence, false);
+			return;
+		}
 		final boolean isNegative = d.isNegative();
 
 		convertDoubleValue(buf, d.toString(), precedence, isNegative);
@@ -90,10 +90,25 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		double realPart = dc.getRealPart();
-		append(buf, String.valueOf(realPart));
-		append(buf, "+I*");
-		final boolean isNegative = dc.getImaginaryPart() < 0;
-		convertDoubleValue(buf, String.valueOf(dc.getImaginaryPart()), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+		double imaginaryPart = dc.getImaginaryPart();
+		boolean realZero = F.isZero(realPart);
+		boolean imaginaryZero = F.isZero(imaginaryPart);
+		if (realZero && imaginaryZero) {
+			convertDoubleValue(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+		} else {
+			if (!realZero) {
+				append(buf, String.valueOf(realPart));
+				if (!imaginaryZero) {
+					append(buf, "+I*");
+					final boolean isNegative = dc.getImaginaryPart() < 0;
+					convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				}
+			} else {
+				append(buf, "I*");
+				final boolean isNegative = dc.getImaginaryPart() < 0;
+				convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+			}
+		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			append(buf, ")");
 		}
@@ -472,7 +487,7 @@ public class OutputFormFactory {
 				convert(buf, list.get(1));
 				return;
 			}
-			if (list.isDirectedInfinity()){ //head.equals(F.DirectedInfinity)) {
+			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity)) {
 				if (list.size() == 1) {
 					append(buf, "ComplexInfinity");
 					return;
@@ -555,8 +570,7 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.size() == 3</code> and the
-	 * head equals "Part".
+	 * This method will only be called if <code>list.size() == 3</code> and the head equals "Part".
 	 * 
 	 * @param buf
 	 * @param list
