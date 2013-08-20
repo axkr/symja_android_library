@@ -51,8 +51,6 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 				temp = expandAll(ast.get(i), patt);
 				if (temp != null) {
 					result.set(i, temp);
-				} else {
-					result.set(i, ast.get(i));
 				}
 			}
 		}
