@@ -842,7 +842,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @throws ArithmeticException
 	 *             if this integer is negative.
 	 */
-	public IInteger sqrt() {
+	public IInteger sqrt() throws ArithmeticException {
 		return nthRoot(2);
 	}
 
@@ -878,9 +878,10 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so that
+	 * <code>this== (nth-root)^n + rest</code>
 	 * 
-	 * @return <code>{nth-root, rest factor}</code>
+	 * @return <code>{nth-root, rest}</code>
 	 */
 	@Override
 	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
@@ -904,22 +905,24 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		IntegerSym b = this;
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes1021(b.fInteger, map);
-		result[0] = IntegerSym.valueOf(1);
-		result[1] = IntegerSym.valueOf(rest);
+		IntegerSym nthRoot = IntegerSym.valueOf(1);
+		IntegerSym restFactors = IntegerSym.valueOf(rest);
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			IntegerSym is = valueOf(entry.getKey());
-			int val = entry.getValue();
-			int div = val / n;
-			int mod = val % n;
+			IntegerSym primeLE1021 = valueOf(entry.getKey());
+			int primeCounter = entry.getValue();
+			int div = primeCounter / n;
 			if (div > 0) {
-				// nth-root
-				result[0] = result[0].multiply(is.pow(div));
+				// build nth-root
+				nthRoot = nthRoot.multiply(primeLE1021.pow(div));
 			}
+			int mod = primeCounter % n;
 			if (mod > 0) {
-				// rest factor
-				result[1] = result[1].multiply(is.pow(mod));
+				// build rest factor
+				restFactors = restFactors.multiply(primeLE1021.pow(mod));
 			}
 		}
+		result[0] = nthRoot;
+		result[1] = restFactors;
 		return result;
 
 	}
@@ -984,16 +987,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	@Override
 	public ISymbol head() {
 		return F.IntegerHead;
-	}
-
-	public static void main(final String[] args) {
-		// final IntegerImpl num = IntegerImpl.valueOf(-32536);
-		// final List<IntegerImpl> list = num.factorize();
-		// System.out.println(list.toString());
-		IInteger i = valueOf(84);
-		IInteger r = i.nthRoot(4);
-		System.out.println(r);
-
 	}
 
 	@Override
