@@ -215,7 +215,7 @@ public class OutputFormFactory {
 				append(buf, "+I");
 			}
 		} else if (isImMinusOne) {
-			append(buf, "-I");
+			append(buf, "-I"); 
 		} else {
 			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 				append(buf, "(");
@@ -275,6 +275,7 @@ public class OutputFormFactory {
 
 		IExpr temp;
 		int size = plusAST.size() - 1;
+		// print Plus[] in reverse order (i.e. numbers at last)
 		for (int i = size; i > 0; i--) {
 			temp = plusAST.get(i);
 
@@ -284,7 +285,7 @@ public class OutputFormFactory {
 				final IAST multFun = (IAST) temp;
 				IExpr temp1 = multFun.get(1);
 
-				if ((temp1 instanceof INumber) && (((INumber) temp1).complexSign() < 0)) {
+				if (temp1.isNumber() && (((INumber) temp1).complexSign() < 0)) {
 					// ((ISignedNumber) temp1).isNegative()) {
 					if (((INumber) temp1).equalsInt(1)) {
 						flag = true;
@@ -314,7 +315,7 @@ public class OutputFormFactory {
 
 				}
 			} else {
-				if ((temp instanceof ISignedNumber) && ((ISignedNumber) temp).isNegative()) {
+				if (temp.isNumber() && (((INumber) temp).complexSign() < 0)) {
 					// special case negative number:
 					convert(buf, temp);
 				} else {
