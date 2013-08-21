@@ -24,10 +24,14 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
+import java.math.BigInteger;
+
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -249,8 +253,8 @@ public class Power extends AbstractArg2 implements INumeric {
 				f0Temp = (IFraction) f0Temp.negate();
 			}
 			if (f1.isNegative()) {
-				b = f0Temp.getNumerator();
 				a = f0Temp.getDenominator();
+				b = f0Temp.getNumerator();
 			} else {
 				a = f0Temp.getNumerator();
 				b = f0Temp.getDenominator();
@@ -345,21 +349,9 @@ public class Power extends AbstractArg2 implements INumeric {
 			if (n > 0) {
 				if (a.equals(F.C1)) {
 					return null;
-					// result[0] = F.C1;
-					// result[1] = F.C1;
-					// return result;
 				}
 				if (a.equals(F.CN1)) {
 					return null;
-					// if (n % 2 == 0) {
-					// // // even exponent n
-					// return null;
-					// } else {
-					// // odd exponent n
-					// result[0] = F.CN1;
-					// result[1] = F.C1;
-					// return result;
-					// }
 				}
 				result = a.nthRootSplit(n);
 				if (result[1].equals(a)) {
@@ -367,10 +359,6 @@ public class Power extends AbstractArg2 implements INumeric {
 					return null;
 				}
 				return result;
-				// IInteger probe = result.pow(n);
-				// if (probe.equals(a)) {
-				// return result;
-				// }
 			}
 		} catch (ArithmeticException e) {
 
@@ -389,6 +377,29 @@ public class Power extends AbstractArg2 implements INumeric {
 		}
 
 		return c0.pow(i1.getBigNumerator().intValue());
+	}
+
+	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
+		if (i1.equals(F.C1D2) && c0.getRealPart().equals(BigFraction.ZERO)) {
+			// square root of pure imaginary number
+			BigFraction im = c0.getImaginaryPart();
+			boolean negative = false;
+			im = im.divide(BigInteger.valueOf(2L));
+			if (NumberUtil.isNegative(im)) {
+				im = im.negate();
+				negative = true;
+			}
+			if (NumberUtil.isPerfectSquare(im)) {
+				IExpr temp = F.Sqrt(F.fraction(im));
+				if (negative) {
+					// Sqrt(im.negate()) - I * Sqrt(im);
+					return F.Plus(temp, F.Times(F.CNI, temp));
+				}
+				// Sqrt(im.negate()) + I * Sqrt(im);
+				return F.Plus(temp, F.Times(F.CI, temp));
+			}
+		}
+		return null;
 	}
 
 	/** {@inheritDoc} */
