@@ -115,6 +115,9 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 			if (o1 instanceof IInteger) {
 				return eComIntArg((IComplex) o0, (IInteger) o1);
 			}
+			if (o1 instanceof IFraction) {
+				return eComFraArg((IComplex) o0, (IFraction) o1);
+			}
 			if (o1 instanceof IComplex) {
 				return e2ComArg((IComplex) o0, (IComplex) o1);
 			}
@@ -167,6 +170,10 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		return null;
+	}
+
+	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
 		return null;
 	}
 
