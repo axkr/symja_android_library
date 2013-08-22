@@ -1397,7 +1397,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convert(sb, this);
+			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this);
 			return sb.toString();
 		} catch (Exception e1) {
 		}

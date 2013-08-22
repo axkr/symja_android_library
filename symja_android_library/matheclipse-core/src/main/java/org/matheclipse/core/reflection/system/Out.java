@@ -8,8 +8,16 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 
+/**
+ * Get the specified history line fro the <code>EvalEngine's</code> history list. <br />
+ * <b>Note</b> that the history maybe disabled in the <code>EvalEngine</code>.
+ */
 public class Out extends AbstractArg1 {
 
+	/**
+	 * Get the specified history line fro the <code>EvalEngine's</code> history list. <br />
+	 * <b>Note</b> that the history maybe disabled in the <code>EvalEngine</code>.
+	 */
 	@Override
 	public IExpr e1DblArg(final INum iNum) {
 		try {
@@ -28,6 +36,10 @@ public class Out extends AbstractArg1 {
 		return null;
 	}
 
+	/**
+	 * Get the specified history line fro the <code>EvalEngine's</code> history list. <br />
+	 * <b>Note</b> that the history maybe disabled in the <code>EvalEngine</code>.
+	 */
 	@Override
 	public IExpr e1IntArg(final IInteger ii) {
 		try {
