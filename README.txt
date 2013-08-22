@@ -9,6 +9,9 @@ Features:
 * pattern matching
 * linear algebra
 
+Online demo: 
+    http://symjaweb.appspot.com/
+    
 Include the symja_android_library.jar in your classpath and start coding.
 
 Example 1:
