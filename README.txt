@@ -9,16 +9,11 @@ Features:
 * pattern matching
 * linear algebra
 
-Include the **symja_android_library.jar** in your classpath and start coding.
+Include the symja_android_library.jar in your classpath and start coding.
 
 Example 1:
 
 ```
-#!java
-import org.matheclipse.core.eval.EvalUtilities;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.SyntaxError;
-
 public class DifferentiationExample {
 	public static void main(String[] args) {
 		try {
@@ -39,8 +34,8 @@ public class DifferentiationExample {
 ...
 
 
+Example 2:
 ```
-#!java
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
