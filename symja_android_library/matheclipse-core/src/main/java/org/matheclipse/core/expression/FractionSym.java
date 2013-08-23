@@ -47,6 +47,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated
 	public static FractionSym valueOf(final BigFraction rat) {
 		FractionSym r = new FractionSym();
 		r.fRational = new BigFraction(rat.getNumerator(), rat.getDenominator());
@@ -93,11 +94,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isZero() {
 		return fRational.getNumerator().equals(BigInteger.ZERO);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean equalsInt(final int i) {
 		return fRational.getNumerator().equals(BigInteger.valueOf(i)) && fRational.getDenominator().equals(BigInteger.ONE);
 	}
@@ -107,6 +110,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @return denominator
 	 */
+	@Override
 	public BigInteger getBigDenominator() {
 		return fRational.getDenominator();
 	}
@@ -116,6 +120,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @return numerator
 	 */
+	@Override
 	public BigInteger getBigNumerator() {
 		return fRational.getNumerator();
 	}
@@ -125,6 +130,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @return denominator
 	 */
+	@Override
 	public IInteger getDenominator() {
 		return IntegerSym.valueOf(fRational.getDenominator());
 	}
@@ -134,32 +140,41 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @return numerator
 	 */
+	@Override
 	public IInteger getNumerator() {
 		return IntegerSym.valueOf(fRational.getNumerator());
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int hierarchy() {
 		return FRACTIONID;
 	}
 
+	@Override
 	public IFraction add(final IFraction parm1) {
 		return newInstance(fRational.add(((FractionSym) parm1).fRational));
 	}
 
+	@Override
 	public IFraction multiply(final IFraction parm1) {
 		return newInstance(fRational.multiply(((FractionSym) parm1).fRational));
 	}
-
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNegative() {
 		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == -1);
 	}
-
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPositive() {
 		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == 1);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public FractionSym eabs() {
 		return newInstance(fRational.abs());
 	}
@@ -183,6 +198,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/**
 	 * @return
 	 */
+	@Override
 	public double doubleValue() {
 		return fRational.doubleValue();
 	}
@@ -247,6 +263,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/**
 	 * @return
 	 */
+	@Override
 	public ISignedNumber negate() {
 		return newInstance(fRational.negate());
 	}
@@ -275,6 +292,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public ISignedNumber minus(ISignedNumber that) {
 		if (that instanceof FractionSym) {
 			return this.add((FractionSym) that.negate());
@@ -297,6 +315,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * @throws IllegalArgumentException
 	 *             if <code>exp &lt;= 0</code>
 	 */
+	@Override
 	public IFraction pow(int exp) {
 		if (exp <= 0)
 			throw new IllegalArgumentException("exp: " + exp + " should be a positive number");
@@ -339,6 +358,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		int numerator = fRational.getNumerator().intValue();
 		int denominator = fRational.getDenominator().intValue();
@@ -429,31 +449,37 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * 
 	 * @see org.matheclipse.parser.interfaces.IFraction#getRational()
 	 */
+	@Override
 	public BigFraction getRational() {
 		return fRational;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int sign() {
 		return fRational.getNumerator().signum();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int complexSign() {
 		return sign();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IInteger ceil() {
 		return IntegerSym.valueOf(NumberUtil.ceiling(fRational));
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IInteger floor() {
 		return IntegerSym.valueOf(NumberUtil.floor(fRational));
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IInteger round() {
 		return IntegerSym.valueOf(NumberUtil.round(fRational, BigDecimal.ROUND_HALF_EVEN));
 	}
@@ -463,6 +489,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof FractionSym) {
 			return fRational.compareTo(((FractionSym) obj).fRational);
@@ -473,6 +500,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return (hierarchy() - (obj).hierarchy());
 	}
 
+	@Override
 	public boolean isLessThan(ISignedNumber obj) {
 		if (obj instanceof FractionSym) {
 			return fRational.compareTo(((FractionSym) obj).fRational) < 0;
@@ -483,6 +511,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return fRational.doubleValue() < obj.doubleValue();
 	}
 
+	@Override
 	public boolean isGreaterThan(ISignedNumber obj) {
 		if (obj instanceof FractionSym) {
 			return fRational.compareTo(((FractionSym) obj).fRational) > 0;
@@ -493,21 +522,25 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return fRational.doubleValue() < obj.doubleValue();
 	}
 
+	@Override
 	public ISymbol head() {
 		return F.Rational;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}

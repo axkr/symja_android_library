@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -113,7 +114,12 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 					if (f1.get(2).isNumber()) {
 						if (f0.get(1).equals(f1.get(1))) {
+							// x^(a)*x^(b) => x ^(a+b)
 							return Power(f0.get(1), Plus(f0.get(2), f1.get(2)));
+						}
+						if (f0.get(2).equals(f1.get(2)) && f0.get(1).isPositive() && f1.get(1).isPositive()) {
+							// a^(c)*b^(c) => (a*b) ^c
+							return Power(Times(f0.get(1), f1.get(1)), f0.get(2));
 						}
 					}
 				}

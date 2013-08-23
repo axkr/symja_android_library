@@ -6,10 +6,21 @@ package org.matheclipse.core.interfaces;
  */
 public interface ISignedNumber extends INumber {
 
+	/**
+	 * Test if this number is negative.
+	 * 
+	 * @return <code>true</code>, if <code>this < 0</code>
+	 */
 	public boolean isNegative();
 
+	/**
+	 * Test if this number is positive.
+	 * 
+	 * @return <code>true</code>, if <code>this > 0</code>
+	 */
 	public boolean isPositive();
 
+	/** {@inheritDoc} */
 	public boolean isZero();
 
 	public boolean isLessThan(ISignedNumber that);
@@ -17,7 +28,7 @@ public interface ISignedNumber extends INumber {
 	public boolean isGreaterThan(ISignedNumber that);
 
 	/**
-	 * this = (-1) * this
+	 * Returns  (-1) * this
 	 * 
 	 * @return
 	 */

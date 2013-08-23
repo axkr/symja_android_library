@@ -325,6 +325,13 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	public boolean isInfinity();
 
 	/**
+	 * Test if this object is a negative signed number.
+	 * 
+	 * @return <code>true</code>, if <code>this < 0</code>; <code>false</code> in all other case.
+	 */
+	public boolean isNegative();
+
+	/**
 	 * Test if this expression is representing <code>-Infinity</code> (i.e. <code>-Infinity->DirectedInfinity[-1]</code>)
 	 * 
 	 */
@@ -543,6 +550,13 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 */
 	public boolean isPatternSequence();
 
+	/**
+	 * Test if this object is a positive signed number.
+	 * 
+	 * @return <code>true</code>, if <code>this > 0</code>; <code>false</code> in all other case.
+	 */
+	public boolean isPositive();
+	
 	/**
 	 * Test if this expression is the Condition function <code>Condition[&lt;arg1&gt;, &lt;arg2&gt;]</code>
 	 * 

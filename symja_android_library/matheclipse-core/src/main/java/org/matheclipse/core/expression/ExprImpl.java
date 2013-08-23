@@ -208,39 +208,49 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegative() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
 	@Override
 	public boolean isNegativeInfinity() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isList() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSequence() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isListOfLists() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isFalse() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSame(IExpr expression) {
 		return isSame(expression, Config.DOUBLE_EPSILON);
@@ -477,14 +487,18 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternSequence() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPositive() {
+		return false;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

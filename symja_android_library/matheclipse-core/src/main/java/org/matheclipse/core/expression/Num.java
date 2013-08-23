@@ -56,11 +56,13 @@ public class Num extends ExprImpl implements INum {
 		// return fDouble == Math.floor(fDouble);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
 		return fDouble < 0.0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
 		return fDouble > 0.0;

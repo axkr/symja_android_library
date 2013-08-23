@@ -428,24 +428,31 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return this.equals(F.CInfinity);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegative() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
 	@Override
 	public boolean isNegativeInfinity() {
 		return this.equals(F.CNInfinity);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isPlus() {
 		return isSameHeadSizeGE(F.Plus, 3);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isPower() {
 		return isSameHead(F.Power, 3);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTimes() {
 		return isSameHeadSizeGE(F.Times, 3);
@@ -664,6 +671,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPositive() {
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isCondition() {

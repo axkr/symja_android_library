@@ -320,17 +320,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return fInteger.compareTo(that) > 0;
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
 		return fInteger.compareTo(BigInteger.ZERO) < 0;
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
 		return fInteger.compareTo(BigInteger.ZERO) > 0;
