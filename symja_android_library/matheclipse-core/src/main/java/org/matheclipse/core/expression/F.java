@@ -1815,6 +1815,39 @@ public class F {
 	 * @param re
 	 * @return
 	 */
+	public static IComplex CC(final IFraction re) {
+		return complex(re, fraction(0, 1));
+	}
+
+	/**
+	 * Create a symbolic complex number
+	 * 
+	 * @param re
+	 * @param im
+	 * @return
+	 */
+	public static IComplex CC(final IFraction re, final IFraction im) {
+		return ComplexSym.valueOf(re, im);
+	}
+
+	/**
+	 * Create a symbolic complex number
+	 * 
+	 * @param re
+	 * @param im
+	 * @return
+	 */
+	public static IComplex CC(final long real_numerator, final long real_denominator, final long imag_numerator,
+			final long imag_denominator) {
+		return ComplexSym.valueOf(real_numerator, real_denominator, imag_numerator, imag_denominator);
+	}
+
+	/**
+	 * Create a symbolic complex number
+	 * 
+	 * @param re
+	 * @return
+	 */
 	public static IComplex complex(final IFraction re) {
 		return complex(re, fraction(0, 1));
 	}
@@ -2031,6 +2064,32 @@ public class F {
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
+	public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
+		return FractionSym.valueOf(numerator, denominator);
+	}
+
+	/**
+	 * Create a "fractional" number
+	 * 
+	 * @param numerator
+	 *            numerator of the fractional number
+	 * @param denominator
+	 *            denumerator of the fractional number
+	 * @return IFraction
+	 */
+	public static IFraction QQ(final long numerator, final long denominator) {
+		return FractionSym.valueOf(numerator, denominator);
+	}
+
+	/**
+	 * Create a "fractional" number
+	 * 
+	 * @param numerator
+	 *            numerator of the fractional number
+	 * @param denominator
+	 *            denumerator of the fractional number
+	 * @return IFraction
+	 */
 	public static IFraction fraction(final IInteger numerator, final IInteger denominator) {
 		return FractionSym.valueOf(numerator, denominator);
 	}
@@ -2044,7 +2103,7 @@ public class F {
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
-	public static IFraction fraction(final BigInteger numerator, final BigInteger denominator) {
+	public static IFraction fraction(final long numerator, final long denominator) {
 		return FractionSym.valueOf(numerator, denominator);
 	}
 
@@ -2057,7 +2116,7 @@ public class F {
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
-	public static IFraction fraction(final long numerator, final long denominator) {
+	public static IFraction fraction(final BigInteger numerator, final BigInteger denominator) {
 		return FractionSym.valueOf(numerator, denominator);
 	}
 
@@ -2090,6 +2149,26 @@ public class F {
 	 */
 	final public static Namespace getNamespace() {
 		return SystemNamespace.DEFAULT;
+	}
+
+	/**
+	 * Create a large integer number.
+	 * 
+	 * @param integerValue
+	 * @return
+	 */
+	public static IInteger ZZ(final BigInteger integerValue) {
+		return IntegerSym.valueOf(integerValue);
+	}
+
+	/**
+	 * Create a large integer number.
+	 * 
+	 * @param integerValue
+	 * @return
+	 */
+	public static IInteger ZZ(final long integerValue) {
+		return IntegerSym.valueOf(integerValue);
 	}
 
 	/**
@@ -2131,15 +2210,15 @@ public class F {
 	 * @param d
 	 * @return
 	 */
-	public static Num num(final double d) {
+	public static INum num(final double d) {
 		return Num.valueOf(d);
 	}
 
-	public static Num num(final IInteger obj) {
+	public static INum num(final IInteger obj) {
 		return num(obj.doubleValue());
 	}
 
-	public static Num num(final IFraction obj) {
+	public static INum num(final IFraction obj) {
 		final double n = obj.getBigNumerator().doubleValue();
 		final double d = obj.getBigDenominator().doubleValue();
 		return num(n / d);
@@ -2151,7 +2230,7 @@ public class F {
 	 * @param d
 	 * @return
 	 */
-	public static Num num(final String doubleString) {
+	public static INum num(final String doubleString) {
 		return Num.valueOf(Double.parseDouble(doubleString));
 	}
 
