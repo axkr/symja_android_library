@@ -351,7 +351,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 				return "CNI";
 			}
 		}
-		return "complex(" + real_numerator + "L," + real_denominator + "L," + imag_numerator + "L," + imag_denominator + "L)";
+		return "CC(" + real_numerator + "L," + real_denominator + "L," + imag_numerator + "L," + imag_denominator + "L)";
 	}
 
 	public INumber normalize() {

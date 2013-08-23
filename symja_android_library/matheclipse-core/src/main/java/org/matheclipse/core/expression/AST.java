@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -1310,6 +1311,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final String sep = ",";
 		final IExpr temp = head();
+		if (temp.equals(F.Hold) && size() == 2) {
+			return get(1).internalFormString(symbolsAsFactoryMethod, depth);
+		}
 		if (isInfinity()) {
 			return "CInfinity";
 		}
@@ -1325,16 +1329,22 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		StringBuffer text = new StringBuffer(size() * 10);
 		if (temp.isSymbol()) {
 			ISymbol sym = (ISymbol) temp;
-			if (!Character.isUpperCase(sym.toString().charAt(0))) {
-				text.append("$(");
-				for (int i = 0; i < size(); i++) {
-					text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
-					if (i < size() - 1) {
-						text.append(sep);
+			String name = null;
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(sym.toString().toLowerCase());
+			}
+			if (name==null) {
+				if (!Character.isUpperCase(sym.toString().charAt(0))) {
+					text.append("$(");
+					for (int i = 0; i < size(); i++) {
+						text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+						if (i < size() - 1) {
+							text.append(sep);
+						}
 					}
+					text.append(')');
+					return text.toString();
 				}
-				text.append(')');
-				return text.toString();
 			}
 		} else if (temp.isPattern() || temp.isAST()) {
 			text.append("$(");

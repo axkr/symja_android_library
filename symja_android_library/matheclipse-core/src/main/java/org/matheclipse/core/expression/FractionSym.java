@@ -362,7 +362,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 				return "CN1D4";
 			}
 		}
-		return "fraction(" + numerator + "L," + denominator + "L)";
+		return "QQ(" + numerator + "L," + denominator + "L)";
 	}
 
 	/**

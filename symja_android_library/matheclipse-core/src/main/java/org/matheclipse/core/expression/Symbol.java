@@ -526,6 +526,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 			}
 			return "$s(\"" + fSymbolName + "\")";
 		}
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase());
+			if (name != null) {
+				return name;
+			}
+		}
 		return fSymbolName;
 	}
 

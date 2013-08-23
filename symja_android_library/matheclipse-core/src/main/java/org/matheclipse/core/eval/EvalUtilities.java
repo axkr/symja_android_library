@@ -3,8 +3,10 @@ package org.matheclipse.core.eval;
 import java.io.Writer;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.ast.ASTNode;
 
 import com.google.common.base.Predicate;
 
@@ -93,6 +95,23 @@ public class EvalUtilities extends MathMLUtilities {
 			return temp;
 		}
 		return null;
+	}
+
+	/**
+	 * Converts the inputExpression string into a MathML expression and writes the result to the given <code>Writer</code>
+	 * 
+	 * @param inputExpression
+	 * @param out
+	 */
+	public String toJavaForm(final String inputExpression) {
+		IExpr parsedExpression = null;
+		ASTNode node;
+		if (inputExpression != null) {
+			node = fEvalEngine.parseNode(inputExpression);
+			parsedExpression = AST2Expr.CONST.convert(node);
+			return parsedExpression.internalFormString(false, 0);
+		}
+		return "";
 	}
 
 	/**

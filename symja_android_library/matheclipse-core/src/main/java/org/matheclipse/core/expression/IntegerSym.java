@@ -1028,7 +1028,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		case 5:
 			return "C5";
 		}
-		return "integer(" + value + "L)";
+		return "ZZ(" + value + "L)";
 	}
 
 	/**
