@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.Cot;
@@ -15,6 +16,7 @@ import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
+import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.integer;
@@ -73,6 +75,10 @@ public class ComplexExpand implements IFunctionEvaluator {
 				}
 			}
 
+			if (head.equals(Abs)) {
+				// Sqrt[reX^2 + imX^2]
+				return complexExpand(Sqrt(Plus(Power(reX, C2), Power(imX, C2))));
+			}
 			if (head.equals(Cos)) {
 				// Cosh[Im[x]]*Cos[Re[x]]+I*Sinh[Im[x]]*Sin[Re[x]]
 				return Plus(Times(Cos(reX), Cosh(imX)), Times(CI, Sin(reX), Sinh(imX)));
