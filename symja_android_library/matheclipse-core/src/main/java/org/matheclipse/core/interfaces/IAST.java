@@ -31,7 +31,7 @@ import com.google.common.base.Predicate;
  * <ul>
  * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
  * and</li>
- * <li>the <code>n</code> arguments of a function in the index <code>0 to n</code></li>
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
