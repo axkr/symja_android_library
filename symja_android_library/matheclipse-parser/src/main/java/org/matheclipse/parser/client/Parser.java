@@ -29,15 +29,12 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
-  
+
 /**
- * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
- * formulas string representation
+ * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator
- * -precedence parser</a> for the idea, how to parse the operators depending on
- * their precedence.
+ * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea, how to parse
+ * the operators depending on their precedence.
  */
 public class Parser extends Scanner {
 	/**
@@ -55,7 +52,7 @@ public class Parser extends Scanner {
 	/**
 	 * 
 	 * @param relaxedSyntax
-	 *          if <code>true</code>, use '('...')' as brackets for arguments
+	 *            if <code>true</code>, use '('...')' as brackets for arguments
 	 * @throws SyntaxError
 	 */
 	public Parser(final boolean relaxedSyntax) throws SyntaxError {
@@ -70,7 +67,7 @@ public class Parser extends Scanner {
 	 * 
 	 * @param factory
 	 * @param relaxedSyntax
-	 *          if <code>true</code>, use '('...')' as brackets for arguments
+	 *            if <code>true</code>, use '('...')' as brackets for arguments
 	 * @throws SyntaxError
 	 */
 	public Parser(IParserFactory factory, final boolean relaxedSyntax) throws SyntaxError {
@@ -247,13 +244,11 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * See <a
-	 * href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator
-	 * -precedence parser</a> for the idea, how to parse the operators depending
-	 * on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea, how to
+	 * parse the operators depending on their precedence.
 	 * 
 	 * @param lhs
-	 *          the already parsed left-hand-side of the operator
+	 *            the already parsed left-hand-side of the operator
 	 * @param min_precedence
 	 * @return
 	 */
@@ -321,7 +316,7 @@ public class Parser extends Scanner {
 	 * Parse the given <code>expression</code> String into an ASTNode.
 	 * 
 	 * @param expression
-	 *          a formula string which should be parsed.
+	 *            a formula string which should be parsed.
 	 * @return the parsed ASTNode representation of the given formula string
 	 * @throws SyntaxError
 	 */
@@ -456,7 +451,7 @@ public class Parser extends Scanner {
 			return function;
 		}
 
-		throwSyntaxError("')' expected.");
+		throwSyntaxError("'}' expected.");
 		return null;
 	}
 
@@ -506,7 +501,11 @@ public class Parser extends Scanner {
 			}
 		}
 
-		throwSyntaxError("']' expected.");
+		if (fRelaxedSyntax) {
+			throwSyntaxError("')' expected.");
+		} else {
+			throwSyntaxError("']' expected.");
+		}
 		return null;
 	}
 
@@ -679,8 +678,7 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr;
-	 * <code>b</code>
+	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
 	 * 
 	 */
 	private ASTNode getPart() throws SyntaxError {
@@ -692,7 +690,7 @@ public class Parser extends Scanner {
 		// return temp;
 		// }
 		// } else {
-		if (fToken != TT_PARTOPEN) { 
+		if (fToken != TT_PARTOPEN) {
 			return temp;
 		}
 		// }
