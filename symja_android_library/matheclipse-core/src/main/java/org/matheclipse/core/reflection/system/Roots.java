@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.polynomials.QuarticSolver;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
@@ -46,10 +47,8 @@ import edu.jas.ufd.FactorFactory;
 /**
  * Determine the roots of a univariate polynomial
  * 
- * See Wikipedia entries for: <a
- * href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation
- * </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
- * function</a> and <a
+ * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
+ * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
  * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
  */
 public class Roots extends AbstractFunctionEvaluator {
@@ -101,6 +100,13 @@ public class Roots extends AbstractFunctionEvaluator {
 			return result;
 		}
 
+		if (variables.size() == 2) {
+			IAST quarticResultList = QuarticSolver.solve(expr, variables.get(1));
+			if (quarticResultList != null) {
+				return quarticResultList;
+			}
+		}
+
 		IAST result = null;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
@@ -123,8 +129,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 		if (result != null) {
 			if (!denom.isNumber()) {
-				// eliminate roots from the result list, which occur in the
-				// denominator
+				// eliminate roots from the result list, which occur in the denominator
 				int i = 1;
 				while (i < result.size()) {
 					IExpr temp = denom.replaceAll(F.Rule(variables.get(1), result.get(i)));
@@ -356,10 +361,9 @@ public class Roots extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Calculate the roots of the cubic polynomial
-	 * <code>a*x^3 + b*x^2 + c*x + d</code>. See <a href=
-	 * "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"
-	 * >Wikipedia Cubic_function - General_formula_of_roots</a>
+	 * Calculate the roots of the cubic polynomial <code>a*x^3 + b*x^2 + c*x + d</code>. See <a href=
+	 * "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots" >Wikipedia Cubic_function -
+	 * General_formula_of_roots</a>
 	 * 
 	 * @param result
 	 * @param a
