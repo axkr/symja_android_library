@@ -16,7 +16,10 @@ import com.google.common.base.Predicate;
  * 
  * The derived instances have to define the clone and copy semantics.
  */
-public abstract class NestedAlgorithms {
+public class NestedAlgorithms {
+	private NestedAlgorithms() {
+
+	}
 
 	/**
 	 * Count all elements and nested elements in the list, which satisfies the unary predicate

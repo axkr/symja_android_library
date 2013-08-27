@@ -3,10 +3,9 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.UnaryIndexFunctionDiagonal;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.generic.nested.IndexFunctionDiagonal;
 import org.matheclipse.generic.nested.IndexTableGenerator;
 
 /**
@@ -47,7 +46,7 @@ public class IdentityMatrix extends AbstractFunctionEvaluator {
 		final int[] indexArray = new int[2];
 		indexArray[0] = dimension;
 		indexArray[1] = dimension;
-		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, new UnaryIndexFunctionDiagonal(
+		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, new IndexFunctionDiagonal(
 				valueArray));
 		final IAST matrix = (IAST) generator.table();
 		if (matrix != null) {

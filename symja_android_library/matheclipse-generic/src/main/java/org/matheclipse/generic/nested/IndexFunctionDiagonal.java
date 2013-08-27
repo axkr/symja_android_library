@@ -1,20 +1,21 @@
 package org.matheclipse.generic.nested;
 
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.generic.interfaces.IIndexFunction;
 
 /**
  * Evaluates to one of two given values. Useful for table generation.
  * 
- * @param <T>
+ * @param <IExpr>
  */
-public class IndexFunctionDiagonal<T> implements IIndexFunction<T> {
-	final T[] fValues;
+public class IndexFunctionDiagonal implements IIndexFunction<IExpr> {
+	final IExpr[] fValues;
 
-	public IndexFunctionDiagonal(final T[] values) {
+	public IndexFunctionDiagonal(final IExpr[] values) {
 		fValues = values;
 	}
 
-	public T evaluate(final int[] index) {
+	public IExpr evaluate(final int[] index) {
 		if (isMatched(index)) {
 			return fValues[1];
 		}
