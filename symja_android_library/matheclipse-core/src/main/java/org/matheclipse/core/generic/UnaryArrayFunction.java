@@ -4,7 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.generic.interfaces.IArrayFunction;
 
-public class UnaryArrayFunction implements IArrayFunction<IExpr> {
+public class UnaryArrayFunction implements IArrayFunction {
 	final EvalEngine fEngine;
 
 	final IExpr fValue;
@@ -14,7 +14,7 @@ public class UnaryArrayFunction implements IArrayFunction<IExpr> {
 		fValue = value;
 	}
 
-	public IExpr evaluate(final Object[] index) {
+	public IExpr evaluate(final IExpr[] index) {
 		return fEngine.evaluate(fValue);
 	}
 }

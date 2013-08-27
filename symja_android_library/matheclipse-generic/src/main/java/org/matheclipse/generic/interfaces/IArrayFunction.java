@@ -1,5 +1,7 @@
 package org.matheclipse.generic.interfaces;
 
-public interface IArrayFunction<T> {
-	T evaluate(Object[] index);
+import org.matheclipse.core.interfaces.IExpr;
+
+public interface IArrayFunction {
+	IExpr evaluate(IExpr[] index);
 }

@@ -10,7 +10,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
-import org.matheclipse.generic.nested.INestedListElement;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -22,7 +21,7 @@ import edu.jas.structure.RingElem;
  * (I)nterface for a mathematical (Expr)ession
  * 
  */
-public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListElement, Serializable {
+public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable {
 
 	public final static int ASTID = 256;
 
@@ -556,7 +555,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, INestedListEl
 	 * @return <code>true</code>, if <code>this > 0</code>; <code>false</code> in all other case.
 	 */
 	public boolean isPositive();
-	
+
 	/**
 	 * Test if this expression is the Condition function <code>Condition[&lt;arg1&gt;, &lt;arg2&gt;]</code>
 	 * 

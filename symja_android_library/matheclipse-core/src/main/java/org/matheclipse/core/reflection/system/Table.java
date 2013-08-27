@@ -9,7 +9,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.generic.UnaryArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -47,8 +46,8 @@ public class Table implements IFunctionEvaluator {
 				iterList.add(new Iterator((IAST) ast.get(i), engine));
 			}
 
-			final TableGenerator<IExpr, IAST> generator = new TableGenerator<IExpr, IAST>(iterList, resultList,
-					new UnaryArrayFunction(engine, ast.get(1)), AST.COPY, defaultValue);
+			final TableGenerator generator = new TableGenerator(iterList, resultList,
+					new UnaryArrayFunction(engine, ast.get(1)), defaultValue);
 			return generator.table();
 
 		} catch (final ClassCastException e) {

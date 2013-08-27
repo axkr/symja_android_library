@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -33,7 +32,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 				return null;
 			}
 		}
-		CartesianProductList<IExpr, IAST> cpi = new CartesianProductList<IExpr, IAST>(la, F.List(), AST.COPY);
+		CartesianProductList cpi = new CartesianProductList(la, F.List());
 		IAST result = F.List();
 		for (IAST iast : cpi) {
 			result.add(iast);

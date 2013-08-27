@@ -5,7 +5,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.generic.interfaces.IArrayFunction;
 
-public class MultipleArrayFunction implements IArrayFunction<IExpr> {
+public class MultipleArrayFunction implements IArrayFunction {
 	final EvalEngine fEngine;
 
 	final IAST fHeadAST;
@@ -15,10 +15,10 @@ public class MultipleArrayFunction implements IArrayFunction<IExpr> {
 		fHeadAST = headAST;
 	}
 
-	public IExpr evaluate(final Object[] index) {
+	public IExpr evaluate(final IExpr[] index) {
 		final IAST ast = fHeadAST.clone();
 		for (int i = 0; i < index.length; i++) {
-			ast.add((IExpr) index[i]);
+			ast.add(index[i]);
 		}
 		return fEngine.evaluate(ast);
 	}

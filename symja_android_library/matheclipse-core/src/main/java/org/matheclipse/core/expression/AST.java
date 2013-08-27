@@ -36,6 +36,7 @@ import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 import org.matheclipse.generic.interfaces.BiFunction;
+import org.matheclipse.generic.nested.NestedAlgorithms;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -68,7 +69,7 @@ import edu.jas.structure.ElemFactory;
 public class AST extends HMArrayList<IExpr> implements IAST {
 	private final static IAST AST_DUMMY_INSTANCE = new AST();
 
-	public final static ASTCopy COPY = new ASTCopy((Class<IAST>) AST_DUMMY_INSTANCE.getClass());
+//	 public final static ASTCopy COPY = new ASTCopy((Class<IAST>) AST_DUMMY_INSTANCE.getClass());
 
 	/**
 	 * 
@@ -433,7 +434,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public boolean isNegative() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegativeInfinity() {
@@ -676,7 +677,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public boolean isPositive() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isCondition() {
@@ -1283,7 +1284,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return AST.COPY.replaceAll(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableList));
+		return NestedAlgorithms.replaceAll(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableList));
 	}
 
 	@Override
@@ -1346,7 +1347,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(sym.toString().toLowerCase());
 			}
-			if (name==null) {
+			if (name == null) {
 				if (!Character.isUpperCase(sym.toString().charAt(0))) {
 					text.append("$(");
 					for (int i = 0; i < size(); i++) {

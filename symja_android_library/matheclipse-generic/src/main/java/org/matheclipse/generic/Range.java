@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.matheclipse.core.generic.ExprComparator;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.generic.interfaces.Aggregator;
 import org.matheclipse.generic.interfaces.BiFunction;
 import org.matheclipse.generic.interfaces.BiPredicate;
@@ -19,16 +22,16 @@ import com.google.common.collect.Sets;
 /**
  * Create a range for a given <code>List</code> instance
  * 
- * @param <E>
- * @param <L>
+ * @param <IExpr>
+ * @param <IAST>
  */
-public class Range<E, L extends List<E>, C extends Collection<E>> implements Iterable<E> {
-	class RangeIterator implements Iterator<E> {
+public class Range implements Iterable<IExpr> {
+	class RangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;
 
-		private Range<E, L, C> fRange;
+		private Range fRange;
 
-		public RangeIterator(Range<E, L, C> range) {
+		public RangeIterator(Range range) {
 			fRange = range;
 			fCurrrent = fRange.fStart;
 		}
@@ -37,7 +40,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 			return fCurrrent < fRange.fEnd;
 		}
 
-		public E next() {
+		public IExpr next() {
 			return fRange.get(fCurrrent++);
 		}
 
@@ -46,18 +49,18 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		}
 	}
 
-	final/* package private */int fEnd;
-
-	final/* package private */L fList;
+	final/* package private */IAST fList;
 
 	final/* package private */int fStart;
+
+	final/* package private */int fEnd;
 
 	/**
 	 * Construct a range for a List
 	 * 
 	 * @param list
 	 */
-	public Range(L list) {
+	public Range(IAST list) {
 		this(list, 0, list.size());
 	}
 
@@ -70,21 +73,20 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param start
 	 * @param end
 	 */
-	public Range(L list, int start) {
+	public Range(IAST list, int start) {
 		this(list, start, list.size());
 	}
 
 	/**
 	 * Construct a range for a List
 	 * 
-	 * throws IndexOutOfBoundsException if <code>start</code> or <code>end</code>
-	 * aren't valid.
+	 * throws IndexOutOfBoundsException if <code>start</code> or <code>end</code> aren't valid.
 	 * 
 	 * @param list
 	 * @param start
 	 * @param end
 	 */
-	public Range(L list, int start, int end) {
+	public Range(IAST list, int start, int end) {
 		fList = list;
 		fStart = start;
 		fEnd = end;
@@ -100,16 +102,13 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Aggregates the items in the given iterable using the given
-	 * {@link Aggregator}.
+	 * Aggregates the items in the given iterable using the given {@link Aggregator}.
 	 * 
 	 * @param aggregator
-	 *          The function that defines how the objects in this iterable have to
-	 *          be aggregated
-	 * @return The result of the aggregation of all the items in the given
-	 *         iterable
+	 *            The function that defines how the objects in this iterable have to be aggregated
+	 * @return The result of the aggregation of all the items in the given iterable
 	 */
-	public E aggregate(Aggregator<E> aggregator) {
+	public IExpr aggregate(Aggregator<IExpr> aggregator) {
 		return aggregator.aggregate(this);
 	}
 
@@ -118,7 +117,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * 
 	 * @return true if the predicate returns true, false otherwise
 	 */
-	public boolean all(Predicate<E> predicate) {
+	public boolean all(Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			if (!predicate.apply(fList.get(i))) {
@@ -129,12 +128,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Returns true if all branch predicates return true for all elements in the
-	 * range. Also returns true when there are no branch predicates.
+	 * Returns true if all branch predicates return true for all elements in the range. Also returns true when there are no branch
+	 * predicates.
 	 * 
 	 * @return true if all branch predicates return true, false otherwise
 	 */
-	public boolean all(Predicate<E>[] predicates) {
+	public boolean all(Predicate<IExpr>[] predicates) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			for (int j = 0; j < predicates.length; j++) {
@@ -148,13 +147,11 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Returns true if the predicate returns true for at least one element in the
-	 * range.
+	 * Returns true if the predicate returns true for at least one element in the range.
 	 * 
-	 * @return true if the predicate returns true for at least one element, false
-	 *         otherwise
+	 * @return true if the predicate returns true for at least one element, false otherwise
 	 */
-	public boolean any(Predicate<E> predicate) {
+	public boolean any(Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			if (predicate.apply(fList.get(i))) {
@@ -165,12 +162,11 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Returns true if at least one branch predicate returns true for all elements
-	 * in the range.
+	 * Returns true if at least one branch predicate returns true for all elements in the range.
 	 * 
 	 * @return true if at least one branch predicate returns true, false otherwise
 	 */
-	public boolean any(Predicate<E>[] predicates) {
+	public boolean any(Predicate<IExpr>[] predicates) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			for (int j = 0; j < predicates.length; j++) {
@@ -184,16 +180,15 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Compare all adjacent elemants from lowest to highest index and return true,
-	 * if the binary predicate gives true in each step. If start &gt;= (end-1) the
-	 * method return false;
+	 * Compare all adjacent elemants from lowest to highest index and return true, if the binary predicate gives true in each step.
+	 * If start &gt;= (end-1) the method return false;
 	 * 
 	 */
-	public boolean compareAdjacent(BiPredicate<E> predicate) {
+	public boolean compareAdjacent(BiPredicate<IExpr> predicate) {
 		if (fStart >= fEnd - 1) {
 			return false;
 		}
-		E elem = fList.get(fStart);
+		IExpr elem = fList.get(fStart);
 		for (int i = fStart + 1; i < fEnd; i++) {
 
 			if (!predicate.apply(elem, fList.get(i))) {
@@ -211,27 +206,27 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param secondRange
 	 * @return
 	 */
-	public C complement(final C result, final Range<E, L, C> secondRange) {
+	public Collection<IExpr> complement(final Collection<IExpr> result, final Range secondRange) {
 		if ((size() == 0) && (secondRange.size() == 0)) {
 			return result;
 		}
-		Set<E> set1 = Sets.newHashSet(this);
-		Set<E> set2 = Sets.newHashSet(secondRange);
-		Set<E> set3 = Sets.difference(set1, set2);
-		for (E e : set3) {
-			result.add(e);
+		Set<IExpr> set1 = Sets.newHashSet(this);
+		Set<IExpr> set2 = Sets.newHashSet(secondRange);
+		Set<IExpr> set3 = Sets.difference(set1, set2);
+		for (IExpr IExpr : set3) {
+			result.add(IExpr);
 		}
 		return result;
 	}
 
-	public boolean contains(E o) {
+	public boolean contains(IExpr o) {
 		return indexOf(o) >= 0;
 	}
 
-	public boolean containsAll(Collection<? extends E> c) {
-		Iterator<? extends E> e = c.iterator();
-		while (e.hasNext())
-			if (!contains(e.next()))
+	public boolean containsAll(Collection<? extends IExpr> c) {
+		Iterator<? extends IExpr> IExpr = c.iterator();
+		while (IExpr.hasNext())
+			if (!contains(IExpr.next()))
 				return false;
 		return true;
 	}
@@ -253,7 +248,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	/**
 	 * Returns the number of elements in the range that match the given predicate.
 	 */
-	public int countIf(Predicate<E> predicate) {
+	public int countIf(Predicate<IExpr> predicate) {
 		int counter = 0;
 		for (int i = fStart; i < fEnd; i++) {
 
@@ -264,33 +259,32 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		return counter;
 	}
 
-	public C difference(C result, final Range<E, L, C> secondList) {
+	public Collection<IExpr> difference(Collection<IExpr> result, final Range secondList) {
 		if ((size() == 0) && (secondList.size() == 0)) {
 			return result;
 		}
-		Set<E> set1 = Sets.newHashSet(this);
-		Set<E> set2 = Sets.newHashSet(secondList);
-		Set<E> set3 = Sets.difference(set1, set2);
-		for (E e : set3) {
-			result.add(e);
+		Set<IExpr> set1 = Sets.newHashSet(this);
+		Set<IExpr> set2 = Sets.newHashSet(secondList);
+		Set<IExpr> set3 = Sets.difference(set1, set2);
+		for (IExpr IExpr : set3) {
+			result.add(IExpr);
 		}
 		return result;
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * which match the predicate to the filterList, or otherwise append it to the
-	 * restList.
+	 * Apply the predicate to each element in the range and append the elements which match the predicate to the filterList, or
+	 * otherwise append it to the restList.
 	 * 
 	 * @param filterList
-	 *          the elements which match the predicate
+	 *            the elements which match the predicate
 	 * @param restList
-	 *          the elements which don't match the predicate
+	 *            the elements which don't match the predicate
 	 * @param predicate
-	 *          the predicate which filters each element in the range
+	 *            the predicate which filters each element in the range
 	 * @return the <code>filterList</code>
 	 */
-	public C filter(C filterList, C restList, Predicate<E> predicate) {
+	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.apply(fList.get(i))) {
 				filterList.add(fList.get(i));
@@ -302,22 +296,20 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the function to each element in the range and append the result
-	 * elements for which the function returns non-null elements to the
-	 * filterList, or otherwise append it to the restList.
+	 * Apply the function to each element in the range and append the result elements for which the function returns non-null
+	 * elements to the filterList, or otherwise append it to the restList.
 	 * 
 	 * @param filterList
-	 *          the elements which match the predicate
+	 *            the elements which match the predicate
 	 * @param restList
-	 *          the elements which don't match the predicate
+	 *            the elements which don't match the predicate
 	 * @param function
-	 *          the function which filters each element in the range by returning
-	 *          a non-null result.
+	 *            the function which filters each element in the range by returning a non-null result.
 	 * @return the <code>filterList</code>
 	 */
-	public C filter(C filterList, C restList, final Function<E, E> function) {
+	public Collection<IExpr> filter(Collection<IExpr> filterList, Collection<IExpr> restList, final Function<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
-			E expr = function.apply(fList.get(i));
+			IExpr expr = function.apply(fList.get(i));
 			if (expr != null) {
 				filterList.add(expr);
 			} else {
@@ -328,13 +320,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements to
-	 * the list, which match the predicate.
+	 * Apply the predicate to each element in the range and append the elements to the list, which match the predicate.
 	 * 
 	 * @see Range#removeAll(List, Predicate)
 	 * @see Range#replaceAll(List, Function)
 	 */
-	public C filter(C list, Predicate<E> predicate) {
+	public IAST filter(IAST list, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.apply(fList.get(i))) {
 				list.add(fList.get(i));
@@ -344,13 +335,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements to
-	 * the list, which match the predicate.
+	 * Apply the predicate to each element in the range and append the elements to the list, which match the predicate.
 	 * 
 	 * @see Range#removeAll(List, Predicate)
 	 * @see Range#replaceAll(List, Function)
 	 */
-	public C filter(C list, Predicate<E> predicate, int maxMatches) {
+	public IAST filter(IAST list, Predicate<IExpr> predicate, int maxMatches) {
 		int count = 0;
 		if (count == maxMatches) {
 			return list;
@@ -369,8 +359,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that are the same
-	 * value.
+	 * Locates the first pair of adjacent elements in a range that are the same value.
 	 * 
 	 * @return the index of the first element
 	 */
@@ -379,8 +368,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that are the same
-	 * value starting at index
+	 * Locates the first pair of adjacent elements in a range that are the same value starting at index
 	 * <code>start</start> and ending at the ranges upper limit.
 	 * 
 	 * @return the index of the first element
@@ -405,27 +393,25 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that match the given
-	 * predicate
+	 * Locates the first pair of adjacent elements in a range that match the given predicate
 	 * 
 	 * @param predicate
-	 *          a predicate that analyzes the given elements
+	 *            a predicate that analyzes the given elements
 	 * @return the index of the first element
 	 */
-	public int findAdjacent(Predicate<E> predicate) {
+	public int findAdjacent(Predicate<IExpr> predicate) {
 		return findAdjacent(predicate, fStart);
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that match the given
-	 * predicate starting at index
+	 * Locates the first pair of adjacent elements in a range that match the given predicate starting at index
 	 * <code>start</start> and ending at the ranges upper limit.
 	 * 
 	 * @param predicate
-	 *          a predicate that analyzes the given elements
+	 *            a predicate that analyzes the given elements
 	 * @return the index of the first element
 	 */
-	private int findAdjacent(Predicate<E> predicate, int start) {
+	private int findAdjacent(Predicate<IExpr> predicate, int start) {
 		for (int i = start; i < fEnd - 1; i++) {
 
 			if (predicate.apply(fList.get(i)) && predicate.apply(fList.get(i + 1))) {
@@ -436,17 +422,16 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the functor to the elements of the range from left to right and
-	 * return the final result. Results do accumulate from one invocation to the
-	 * next: each time this method is called, the accumulation starts over with
-	 * value from the previous function call.
+	 * Apply the functor to the elements of the range from left to right and return the final result. Results do accumulate from one
+	 * invocation to the next: each time this method is called, the accumulation starts over with value from the previous function
+	 * call.
 	 * 
 	 * @param function
-	 *          a binary function that accumulate the elements
+	 *            a binary function that accumulate the elements
 	 * @return the accumulated elements
 	 */
-	public E foldLeft(final BiFunction<E, E, ? extends E> function, E startValue) {
-		E value = startValue;
+	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue) {
+		IExpr value = startValue;
 		for (int i = fStart; i < fEnd; i++) {
 			value = function.apply(value, fList.get(i));
 		}
@@ -454,17 +439,16 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the functor to the elements of the range from right to left and
-	 * return the final result. Results do accumulate from one invocation to the
-	 * next: each time this method is called, the accumulation starts over with
-	 * value from the previous function call.
+	 * Apply the functor to the elements of the range from right to left and return the final result. Results do accumulate from one
+	 * invocation to the next: each time this method is called, the accumulation starts over with value from the previous function
+	 * call.
 	 * 
 	 * @param function
-	 *          a binary function that accumulate the elements
+	 *            a binary function that accumulate the elements
 	 * @return the accumulated elements
 	 */
-	public E foldRight(final BiFunction<E, E, ? extends E> function, E startValue) {
-		E value = startValue;
+	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue) {
+		IExpr value = startValue;
 		for (int i = fEnd - 1; i >= fStart; i--) {
 			value = function.apply(value, fList.get(i));
 		}
@@ -474,11 +458,10 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	/**
 	 * Apply the functor to each element in the range and return the final result.
 	 * 
-	 * @return the result of the last execution of the functor, or null if the
-	 *         functor is not executed.
+	 * @return the result of the last execution of the functor, or null if the functor is not executed.
 	 */
-	public E forEach(final Function<E, ? extends E> function) {
-		E value = null;
+	public IExpr forEach(final Function<IExpr, ? extends IExpr> function) {
+		IExpr value = null;
 		for (int i = fStart; i < fEnd; i++) {
 
 			value = function.apply(fList.get(i));
@@ -494,7 +477,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param index
 	 * @return
 	 */
-	final public E get(int index) {
+	final public IExpr get(int index) {
 		return fList.get(index);
 	}
 
@@ -507,7 +490,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * 
 	 * @return
 	 */
-	final public L getList() {
+	final public IAST getList() {
 		return fList;
 	}
 
@@ -521,7 +504,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param match
 	 * @return
 	 */
-	public int indexOf(E match) {
+	public int indexOf(IExpr match) {
 		return indexOf(match, fStart);
 	}
 
@@ -531,7 +514,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param match
 	 * @return
 	 */
-	public int indexOf(E match, int start) {
+	public int indexOf(IExpr match, int start) {
 		if (match == null) {
 			for (int i = start; i < fEnd; i++) {
 
@@ -550,7 +533,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		return -1;
 	}
 
-	public int indexOf(Predicate<E> predicate) {
+	public int indexOf(Predicate<IExpr> predicate) {
 		return indexOf(predicate, fStart);
 	}
 
@@ -558,7 +541,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * Returns the index of the first found object that match the predicate
 	 * 
 	 */
-	public int indexOf(Predicate<E> predicate, int start) {
+	public int indexOf(Predicate<IExpr> predicate, int start) {
 		for (int i = start; i < fEnd; i++) {
 
 			if (predicate.apply(fList.get(i))) {
@@ -569,26 +552,25 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Create the (unordered) intersection set from both ranges. Multiple equal
-	 * values in both ranges.
+	 * Create the (unordered) intersection set from both ranges. Multiple equal values in both ranges.
 	 * 
 	 * @param result
 	 * @param secondRange
 	 * @return
 	 */
-	public C intersection(C result, final Range<E, L, C> secondList) {
+	public Collection<IExpr> intersection(Collection<IExpr> result, final Range secondList) {
 		if ((size() == 0) && (secondList.size() == 0)) {
 			return result;
 		}
-		Set<E> set1 = Sets.newHashSet(this);
-		Set<E> set2 = Sets.newHashSet(secondList);
-		Set<E> set3 = Sets.intersection(set1, set2);
-		for (E e : set3) {
-			result.add(e);
+		Set<IExpr> set1 = Sets.newHashSet(this);
+		Set<IExpr> set2 = Sets.newHashSet(secondList);
+		Set<IExpr> set3 = Sets.intersection(set1, set2);
+		for (IExpr IExpr : set3) {
+			result.add(IExpr);
 		}
-		// final HashMap<E, MutuableInteger> rangeElementMap = new HashMap<E,
+		// final HashMap<IExpr, MutuableInteger> rangeElementMap = new HashMap<IExpr,
 		// MutuableInteger>();
-		// E elem;
+		// IExpr elem;
 		// MutuableInteger counter;
 		// for (int i = fStart; i < fEnd; i++) {
 		// elem = fList.get(i);
@@ -614,7 +596,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		return result;
 	}
 
-	public Iterator<E> iterator() {
+	public Iterator<IExpr> iterator() {
 		return new RangeIterator(this);
 	}
 
@@ -643,7 +625,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		return -1;
 	}
 
-	public int lastIndexOf(Predicate<E> predicate) {
+	public int lastIndexOf(Predicate<IExpr> predicate) {
 		for (int i = fEnd - 1; i >= fStart; i--) {
 
 			if (predicate.apply(fList.get(i))) {
@@ -654,22 +636,20 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Append the result of the pairwise mapped elements to the given
-	 * <code>list</code>. If the function evaluates to <code>null</code> append
-	 * the current range element directly otherwise evaluate the next pair of
-	 * elements
+	 * Append the result of the pairwise mapped elements to the given <code>list</code>. If the function evaluates to
+	 * <code>null</code> append the current range element directly otherwise evaluate the next pair of elements
 	 * 
 	 * @param list
 	 * @param fromIndex
 	 * @param toIndex
 	 */
-	public boolean map(C list, BiFunction<E, E, E> function) {
+	public boolean map(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> function) {
 		if (fStart >= fEnd) {
 			return false;
 		}
 		boolean evaled = false;
-		E element = fList.get(fStart);
-		E result;
+		IExpr element = fList.get(fStart);
+		IExpr result;
 		for (int i = fStart + 1; i < fEnd; i++) {
 
 			result = function.apply(element, fList.get(i));
@@ -691,7 +671,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param list
 	 * @param function
 	 */
-	public C map(C list, Function<E, E> function) {
+	public IAST map(IAST list, Function<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.add(function.apply(fList.get(i)));
 		}
@@ -704,7 +684,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param list
 	 * @param function
 	 */
-	public C map(C list, IUnaryIndexFunction<E, E> function) {
+	public IAST map(IAST list, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.add(function.apply(i, fList.get(i)));
 		}
@@ -716,11 +696,11 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * 
 	 * @param list
 	 * @param binaryFunction
-	 *          binary function
+	 *            binary function
 	 * @param leftArg
-	 *          left argument of the binary functions <code>apply()</code> method.
+	 *            left argument of the binary functions <code>apply()</code> method.
 	 */
-	public C mapLeft(C list, BiFunction<E, E, E> binaryFunction, E leftArg) {
+	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			list.add(binaryFunction.apply(leftArg, fList.get(i)));
@@ -733,12 +713,11 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * 
 	 * @param list
 	 * @param binaryFunction
-	 *          a binary function
+	 *            a binary function
 	 * @param leftArg
-	 *          right argument of the binary functions <code>apply()</code>
-	 *          method.
+	 *            right argument of the binary functions <code>apply()</code> method.
 	 */
-	public C mapRight(C list, BiFunction<E, E, E> binaryFunction, E rightArg) {
+	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			list.add(binaryFunction.apply(fList.get(i), rightArg));
@@ -750,8 +729,8 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * Returns the largest value in the range
 	 * 
 	 */
-	public E max(Comparator<? super E> comp) {
-		E value = fList.get(fStart);
+	public IExpr max(Comparator<? super IExpr> comp) {
+		IExpr value = fList.get(fStart);
 		for (int i = fStart + 1; i < fEnd; i++) {
 
 			if (comp.compare(fList.get(i), value) > 0) {
@@ -765,8 +744,8 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * Return the smallest value in the range
 	 * 
 	 */
-	public E min(Comparator<? super E> comp) {
-		E value = fList.get(fStart);
+	public IExpr min(Comparator<? super IExpr> comp) {
+		IExpr value = fList.get(fStart);
 		for (int i = fStart + 1; i < fEnd; i++) {
 
 			if (comp.compare(fList.get(i), value) < 0) {
@@ -777,13 +756,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements to
-	 * the list, which don't match the predicate.
+	 * Apply the predicate to each element in the range and append the elements to the list, which don't match the predicate.
 	 * 
 	 * @see Range#filter(List, Predicate)
 	 * @see Range#replaceAll(List, Function)
 	 */
-	public C removeAll(C list, Predicate<E> predicate) {
+	public Collection<IExpr> removeAll(Collection<IExpr> list, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
 			if (!predicate.apply(fList.get(i))) {
@@ -794,13 +772,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Apply the function to each element in the range and append the results to
-	 * the list.
+	 * Apply the function to each element in the range and append the results to the list.
 	 * 
 	 * @see Range#filter(List, Predicate)
 	 * @see Range#removeAll(List, Predicate)
 	 */
-	public C replaceAll(C list, final Function<E, ? extends E> function) {
+	public Collection<IExpr> replaceAll(Collection<IExpr> list, final Function<IExpr, ? extends IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.add(function.apply(fList.get(i)));
 		}
@@ -814,7 +791,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * @param fromIndex
 	 * @param toIndex
 	 */
-	public C reverse(C list) {
+	public Collection<IExpr> reverse(Collection<IExpr> list) {
 		for (int i = fEnd - 1; i >= fStart; i--) {
 			list.add(fList.get(i));
 		}
@@ -822,13 +799,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Rotate the ranges elements to the left by n places and append the resulting
-	 * elements to the <code>list</code>
+	 * Rotate the ranges elements to the left by n places and append the resulting elements to the <code>list</code>
 	 * 
 	 * @param list
 	 * @param n
 	 */
-	public C rotateLeft(C list, final int n) {
+	public Collection<IExpr> rotateLeft(Collection<IExpr> list, final int n) {
 		for (int i = fStart + n; i < fEnd; i++) {
 			list.add(fList.get(i));
 		}
@@ -841,13 +817,12 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Rotate the ranges elements to the right by n places and append the
-	 * resulting elements to the <code>list</code>
+	 * Rotate the ranges elements to the right by n places and append the resulting elements to the <code>list</code>
 	 * 
 	 * @param list
 	 * @param n
 	 */
-	public C rotateRight(C list, final int n) {
+	public Collection<IExpr> rotateRight(Collection<IExpr> list, final int n) {
 		if (n <= size()) {
 			for (int i = fEnd - n; i < fEnd; i++) {
 				list.add(fList.get(i));
@@ -860,8 +835,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * The size of this range gives the number of elements, which this range
-	 * include
+	 * The size of this range gives the number of elements, which this range include
 	 * 
 	 * @return
 	 */
@@ -870,13 +844,11 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Sorts the elements of the specified range "in place" (i.e. modify the
-	 * internal referenced list), according to the order induced by the specified
-	 * comparator.
+	 * Sorts the elements of the specified range "in place" (i.IExpr. modify the internal referenced list), according to the order
+	 * induced by the specified comparator.
 	 */
-	@SuppressWarnings("unchecked")
-	public L sort(Comparator<E> comparator) {
-		final E[] a = (E[]) fList.toArray();
+	public IAST sort(ExprComparator comparator) {
+		final IExpr[] a = fList.toArray(new IExpr[fList.size()]);
 		Arrays.sort(a, fStart, fEnd, comparator);
 		for (int j = fStart; j < fEnd; j++) {
 			fList.set(j, a[j]);
@@ -884,7 +856,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 		return fList;
 	}
 
-	public E[] toArray(E[] array) {
+	public IExpr[] toArray(IExpr[] array) {
 		int j = fStart;
 		for (int i = 0; i < array.length; i++) {
 			array[i] = fList.get(j++);
@@ -900,7 +872,7 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	 * 
 	 * @param list
 	 */
-	public List<E> toList(List<E> list) {
+	public List<IExpr> toList(List<IExpr> list) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.add(fList.get(i));
 		}
@@ -908,22 +880,22 @@ public class Range<E, L extends List<E>, C extends Collection<E>> implements Ite
 	}
 
 	/**
-	 * Create the (unordered) union set from both ranges. Multiple equal values in
-	 * the given ranges are reduced to one value in the result.
+	 * Create the (unordered) union set from both ranges. Multiple equal values in the given ranges are reduced to one value in the
+	 * result.
 	 * 
 	 * @param result
 	 * @param secondRange
 	 * @return
 	 */
-	public C union(final C result, final Range<E, L, C> secondList) {
+	public Collection<IExpr> union(final Collection<IExpr> result, final Range secondList) {
 		if ((size() == 0) && (secondList.size() == 0)) {
 			return result;
 		}
-		Set<E> set1 = Sets.newHashSet(this);
-		Set<E> set2 = Sets.newHashSet(secondList);
-		Set<E> set3 = Sets.union(set1, set2);
-		for (E e : set3) {
-			result.add(e);
+		Set<IExpr> set1 = Sets.newHashSet(this);
+		Set<IExpr> set2 = Sets.newHashSet(secondList);
+		Set<IExpr> set3 = Sets.union(set1, set2);
+		for (IExpr IExpr : set3) {
+			result.add(IExpr);
 		}
 		return result;
 	}

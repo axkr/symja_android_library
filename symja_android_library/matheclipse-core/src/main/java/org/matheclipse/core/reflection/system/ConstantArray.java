@@ -5,10 +5,10 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.builtin.function.Array.ArrayIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleConstArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -104,8 +104,8 @@ public class ConstantArray implements IFunctionEvaluator {
 						resultList = F.ast(ast.get(4));
 					}
 					final IExpr constantExpr = ast.get(1);
-					final TableGenerator<IExpr, IAST> generator = new TableGenerator<IExpr, IAST>(iterList, resultList,
-							new MultipleConstArrayFunction(constantExpr), AST.COPY);
+					final TableGenerator generator = new TableGenerator(iterList, resultList, new MultipleConstArrayFunction(
+							constantExpr));
 					return generator.table();
 				}
 

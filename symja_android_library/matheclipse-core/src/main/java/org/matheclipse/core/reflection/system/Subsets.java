@@ -40,7 +40,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 			level.setFromLevelAsCurrent();
 			while (level.isInRange()) {
 				k = level.getCurrentLevel();
-				final KSubsetsList<IExpr, IAST> iter = KSubsetsList.createKSubsets(f, k, F.ast(F.List), AST.COPY, 1);
+				final KSubsetsList iter = KSubsetsList.createKSubsets(f, k, F.ast(F.List), 1);
 				int i = 0;
 				for (IAST part : iter) {
 					if (part == null) {

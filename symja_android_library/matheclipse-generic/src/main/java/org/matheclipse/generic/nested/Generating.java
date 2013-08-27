@@ -1,69 +1,65 @@
 package org.matheclipse.generic.nested;
 
-import java.util.List;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
+public class Generating {
+	final private IAST fOuterList;
 
-public class Generating<T extends INestedListElement, L extends List<T> & INestedListElement> {
-	final private L fOuterList;
-
-	final private L fInnerList;
+	final private IAST fInnerList;
 
 	final private int fHeadOffset;
 
-	final private INestedList<T, L> fCopier;
-
-	public Generating(L outerList, L innerList, int headOffset, INestedList<T, L> copier) {
+	public Generating(IAST outerList, IAST innerList, int headOffset) {
 		this.fOuterList = outerList;
 		this.fInnerList = innerList;
 		this.fHeadOffset = headOffset;
-		this.fCopier = copier;
 	}
 
 	/**
-	 * Outer product - every element from the first list will be combined with the
-	 * second list
+	 * Outer product - every element from the first list will be combined with the second list
 	 * 
 	 */
-	public L outer(L first, L second) {
-		L result1 = fCopier.clone(fOuterList);
-		L result2;
-		L temp;
+	public IAST outer(IAST first, IAST second) {
+		IAST result1 = fOuterList.clone();
+		IAST result2;
+		IAST temp;
 		for (int i = fHeadOffset; i < first.size(); i++) {
 
-			if (fCopier.isInstance(first.get(i))) {
-				result1.add(fCopier.castList(outer(fCopier.cast(first.get(i)), second)));
+			if (first.get(i).isAST()) {
+				result1.add(outer(first.get(i), second));
 			} else {
-				result2 = fCopier.clone(fOuterList);
+				result2 = fOuterList.clone();
 				for (int j = fHeadOffset; j < second.size(); j++) {
 
-					if (fCopier.isInstance(second.get(j))) {
-						result2.add(fCopier.castList(outer(first.get(i), fCopier.cast(second.get(j)))));
+					if (second.get(j).isAST()) {
+						result2.add(outer(first.get(i), (IAST) second.get(j)));
 					} else {
-						temp = fCopier.clone(fInnerList);
+						temp = fInnerList.clone();
 						temp.add(first.get(i));
 						temp.add(second.get(j));
-						result2.add(fCopier.castList(temp));
+						result2.add(temp);
 					}
 				}
-				result1.add(fCopier.castList(result2));
+				result1.add(result2);
 			}
 		}
 
 		return result1;
 	}
 
-	private L outer(T element, L second) {
-		L result = fCopier.clone(fOuterList);
-		L temp;
+	private IAST outer(IExpr element, IAST second) {
+		IAST result = fOuterList.clone();
+		IAST temp;
 		for (int j = fHeadOffset; j < second.size(); j++) {
 
-			if (fCopier.isInstance(second.get(j))) {
-				result.add(fCopier.castList(outer(element, fCopier.cast(second.get(j)))));
+			if (second.get(j).isAST()) {
+				result.add(outer(element, (IAST) second.get(j)));
 			} else {
-				temp = fCopier.clone(fInnerList);
+				temp = fInnerList.clone();
 				temp.add(element);
 				temp.add(second.get(j));
-				result.add(fCopier.castList(temp));
+				result.add(temp);
 			}
 		}
 

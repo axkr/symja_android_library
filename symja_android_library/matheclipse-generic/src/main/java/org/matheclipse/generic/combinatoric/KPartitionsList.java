@@ -1,37 +1,31 @@
 package org.matheclipse.generic.combinatoric;
 
 import java.util.Iterator;
-import java.util.List;
 
-import org.matheclipse.generic.nested.INestedList;
-import org.matheclipse.generic.nested.INestedListElement;
+import org.matheclipse.core.interfaces.IAST;
 
 /**
- * This <code>Iterable</code> iterates through all k-partition lists for a given
- * list with N elements. <br/>
+ * This <code>Iterable</code> iterates through all k-partition lists for a given list with N elements. <br/>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
- * Partition of a set</a>
+ * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
  * 
  */
-public class KPartitionsList<T extends INestedListElement, L extends List<T> & INestedListElement> implements Iterator<L>, Iterable<L> {
+public class KPartitionsList implements Iterator<IAST>, Iterable<IAST> {
 
-	final private L fList;
-	final private L fResultList;
+	final private IAST fList;
+	final private IAST fResultList;
 	final private int fOffset;
 	final private KPartitionsIterable fIterable;
-	final private INestedList<T, L> fCopier;
 
-	public KPartitionsList(final L list, final int parts, L resultList, INestedList<T, L> copier) {
-		this(list, parts, resultList, copier, 0);
+	public KPartitionsList(final IAST list, final int parts, IAST resultList) {
+		this(list, parts, resultList, 0);
 	}
 
-	public KPartitionsList(final L list, final int parts, L resultList, INestedList<T, L> copier, final int offset) {
+	public KPartitionsList(final IAST list, final int parts, IAST resultList, final int offset) {
 		super();
 		fIterable = new KPartitionsIterable(list.size() - offset, parts);
 		fList = list;
 		fResultList = resultList;
-		fCopier = copier;
 		fOffset = offset;
 	}
 
@@ -40,31 +34,31 @@ public class KPartitionsList<T extends INestedListElement, L extends List<T> & I
 	 * 
 	 * @return <code>null</code> if no further index array could be generated
 	 */
-	public L next() {
+	public IAST next() {
 		int[] partitionsIndex = fIterable.next();
 		if (partitionsIndex == null) {
 			return null;
 		}
-		L part = fCopier.newInstance(fResultList);
-		L temp;
+		IAST part = fResultList.clone();
+		IAST temp;
 		// System.out.println("Part:");
 		int j = 0;
 		for (int i = 1; i < partitionsIndex.length; i++) {
 			// System.out.println(partitionsIndex[i] + ",");
-			temp = fCopier.newInstance(fResultList);
+			temp = fResultList.clone();
 			for (int m = j; m < partitionsIndex[i]; m++) {
 				temp.add(fList.get(m + fOffset));
 			}
 			j = partitionsIndex[i];
-			part.add(fCopier.castList(temp));
+			part.add(temp);
 		}
 
-		temp = fCopier.newInstance(fResultList);
+		temp = fResultList.clone();
 		int n = fList.size() - fOffset;
 		for (int m = j; m < n; m++) {
 			temp.add(fList.get(m + fOffset));
 		}
-		part.add(fCopier.castList(temp));
+		part.add(temp);
 		return part;
 	}
 
@@ -76,7 +70,7 @@ public class KPartitionsList<T extends INestedListElement, L extends List<T> & I
 		throw new UnsupportedOperationException();
 	}
 
-	public Iterator<L> iterator() {
+	public Iterator<IAST> iterator() {
 		return this;
 	}
 

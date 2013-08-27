@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,6 +11,7 @@ import org.matheclipse.generic.combinatoric.KPermutationsList;
  * Generate a list of permutations
  * 
  * See <a href=" http://en.wikipedia.org/wiki/Permutation">Permutation</a>
+ * 
  * @see Partition
  * @see Subsets
  */
@@ -26,7 +26,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		
+
 		if (ast.get(1).isAST()) {
 			final IAST f = (IAST) ast.get(1);
 			final IAST result = F.ast(f.head());
@@ -47,7 +47,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 					return null;
 				}
 			}
-			final KPermutationsList<IExpr, IAST> perm = new KPermutationsList<IExpr, IAST>(f, k, F.ast(f.head()), AST.COPY, 1);
+			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()));
 			for (IAST temp : perm) {
 				result.add(temp);
 			}

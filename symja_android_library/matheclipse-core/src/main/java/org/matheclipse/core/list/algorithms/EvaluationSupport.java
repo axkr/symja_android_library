@@ -123,7 +123,7 @@ public class EvaluationSupport {
 		ast.setEvalFlags(IAST.IS_SORTED);
 	}
 
-	public final static void sort(final IAST list, Comparator<IExpr> comparator) {
+	public final static void sort(final IAST list, ExprComparator comparator) {
 		list.args().sort(comparator);
 	}
 

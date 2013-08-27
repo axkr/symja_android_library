@@ -4,43 +4,39 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.matheclipse.generic.nested.INestedList;
-import org.matheclipse.generic.nested.INestedListElement;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Cartesian product iterable.
  * 
  * <br/>
- * See <a
- * href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
+ * See <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
  * 
  * @author Heinz Kredel
  * @author Axel Kramer (Modifications for MathEclipse)
  */
-public class CartesianProductList<T extends INestedListElement, L extends List<T> & INestedListElement> implements Iterable<L> {
+public class CartesianProductList implements Iterable<IAST> {
 
 	/**
 	 * data structure.
 	 */
-	public final List<L> comps;
+	public final List<IAST> comps;
 
-	private final L fEmptyResultList;
-
-	private final INestedList<T, L> fCopier;
+	private final IAST fEmptyResultList;
 
 	/**
 	 * CartesianProduct constructor.
 	 * 
 	 * @param comps
-	 *          components of the cartesian product.
+	 *            components of the cartesian product.
 	 */
-	public CartesianProductList(List<L> comps, L emptyResultList, INestedList<T, L> copier) {
+	public CartesianProductList(List<IAST> comps, IAST emptyResultList) {
 		if (comps == null) {
 			throw new IllegalArgumentException("null components not allowed");
 		}
 		this.comps = comps;
 		this.fEmptyResultList = emptyResultList;
-		this.fCopier = copier;
 	}
 
 	/**
@@ -48,8 +44,8 @@ public class CartesianProductList<T extends INestedListElement, L extends List<T
 	 * 
 	 * @return an iterator.
 	 */
-	public Iterator<L> iterator() {
-		return new CartesianProductIterator<T, L>(comps, fEmptyResultList, fCopier);
+	public Iterator<IAST> iterator() {
+		return new CartesianProductIterator(comps, fEmptyResultList);
 	}
 
 }
@@ -59,38 +55,35 @@ public class CartesianProductList<T extends INestedListElement, L extends List<T
  * 
  * @author Heinz Kredel
  */
-class CartesianProductIterator<T extends INestedListElement, L extends List<T> & INestedListElement> implements Iterator<L> {
+class CartesianProductIterator implements Iterator<IAST> {
 
 	/**
 	 * data structure.
 	 */
-	final List<L> comps;
+	final List<IAST> comps;
 
-	final List<Iterator<T>> compit;
+	final List<Iterator<IExpr>> compit;
 
-	L current;
+	IAST current;
 
 	boolean empty;
-
-	final private INestedList<T, L> fCopier;
 
 	/**
 	 * CartesianProduct iterator constructor.
 	 * 
 	 * @param comps
-	 *          components of the cartesian product.
+	 *            components of the cartesian product.
 	 */
-	public CartesianProductIterator(List<L> comps, L emptyResultList, INestedList<T, L> copier) {
+	public CartesianProductIterator(List<IAST> comps, IAST emptyResultList) {
 		if (comps == null) {
 			throw new IllegalArgumentException("null comps not allowed");
 		}
-		this.fCopier = copier;
 		this.comps = comps;
 		current = emptyResultList;
-		compit = new ArrayList<Iterator<T>>(comps.size());
+		compit = new ArrayList<Iterator<IExpr>>(comps.size());
 		empty = false;
-		for (L ci : comps) {
-			Iterator<T> it = ci.iterator();
+		for (IAST ci : comps) {
+			Iterator<IExpr> it = ci.iterator();
 			if (!it.hasNext()) {
 				empty = true;
 				current.clear();
@@ -116,16 +109,16 @@ class CartesianProductIterator<T extends INestedListElement, L extends List<T> &
 	 * 
 	 * @return next tuple.
 	 */
-	public synchronized L next() {
+	public synchronized IAST next() {
 		if (empty) {
 			throw new RuntimeException("invalid call of next()");
 		}
 		// IAST res = (IAST) current.clone();
-		L res = fCopier.clone(current);
+		IAST res = current.clone();
 		// search iterator which hasNext
 		int i = compit.size() - 1;
 		for (; i >= 0; i--) {
-			Iterator<T> iter = compit.get(i);
+			Iterator<IExpr> iter = compit.get(i);
 			if (iter.hasNext()) {
 				break;
 			}
@@ -136,13 +129,13 @@ class CartesianProductIterator<T extends INestedListElement, L extends List<T> &
 		}
 		// update iterators
 		for (int j = i + 1; j < compit.size(); j++) {
-			Iterator<T> iter = comps.get(j).iterator();
+			Iterator<IExpr> iter = comps.get(j).iterator();
 			compit.set(j, iter);
 		}
 		// update current
 		for (int j = i; j < compit.size(); j++) {
-			Iterator<T> iter = compit.get(j);
-			T el = iter.next();
+			Iterator<IExpr> iter = compit.get(j);
+			IExpr el = iter.next();
 			current.set(j + 1, el);
 		}
 		return res;

@@ -11,7 +11,7 @@ import org.matheclipse.generic.Range;
  * Create a range for a given <code>IAST</code> instance.
  * 
  */
-public class ASTRange extends Range<IExpr, IAST, IAST> {
+public class ASTRange extends Range {
 	/**
 	 * Construct a range <code>[start..end[</code> for a given <code>IAST</code>
 	 * instance.

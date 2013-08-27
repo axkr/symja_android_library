@@ -8,7 +8,6 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -104,8 +103,8 @@ public class Array implements ICoreFunctionEvaluator {
 						resultList = F.ast(ast.get(4));
 					}
 					final IAST list = F.ast(ast.get(1));
-					final TableGenerator<IExpr, IAST> generator = new TableGenerator<IExpr, IAST>(iterList, resultList,
-							new MultipleArrayFunction(engine, list), AST.COPY);
+					final TableGenerator generator = new TableGenerator(iterList, resultList, new MultipleArrayFunction(engine,
+							list));
 					return generator.table();
 				}
 

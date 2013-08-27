@@ -4,13 +4,13 @@ import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.generic.LevelSpecification;
 import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.generic.nested.LevelSpec;
+import org.matheclipse.generic.nested.NestedAlgorithms;
 
 public class Position extends AbstractFunctionEvaluator {
 	
@@ -40,7 +40,7 @@ public class Position extends AbstractFunctionEvaluator {
 
 		final IAST cloneList = list.copyHead();
 		final IAST resultList = List();
-		AST.COPY.position(list, cloneList, resultList, level, matcher, pos, 1);
+		NestedAlgorithms.position(list, cloneList, resultList, level, matcher, pos, 1);
 		return resultList;
 	}
 

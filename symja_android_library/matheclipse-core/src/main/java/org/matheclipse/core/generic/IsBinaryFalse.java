@@ -1,7 +1,5 @@
 package org.matheclipse.core.generic;
 
-import java.util.Comparator;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -12,7 +10,7 @@ import org.matheclipse.generic.interfaces.BiPredicate;
  * Check if the evaluation of a binary AST object gives <code>False</code>
  * 
  */
-public class IsBinaryFalse<E extends IExpr> implements  BiPredicate<E>, Comparator<E> {
+public class IsBinaryFalse<E extends IExpr> extends ExprComparator implements  BiPredicate<E>  {
 	protected final EvalEngine fEngine;
 
 	protected final IAST fAST;

@@ -2,57 +2,55 @@ package org.matheclipse.generic.nested;
 
 import java.util.List;
 
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.generic.interfaces.IArrayFunction;
 import org.matheclipse.generic.interfaces.IIterator;
 
 /**
  * Table structure generator (i.e. lists, vectors, matrices, tensors)
  */
-public class TableGenerator<T extends INestedListElement, L extends List<T> & INestedListElement> {
+public class TableGenerator {
 
-	final List<? extends IIterator<T>> fIterList;
+	final List<? extends IIterator<IExpr>> fIterList;
 
-	final T fDefaultValue;
+	final IExpr fDefaultValue;
 
-	final L fPrototypeList;
+	final IAST fPrototypeList;
 
-	final IArrayFunction<T> fFunction;
+	final IArrayFunction fFunction;
 
 	int fIndex;
 
-	Object[] fCurrentIndex;
+	private IExpr[] fCurrentIndex;
 
-	private final INestedList<T, L> fCopier;
-
-	public TableGenerator(final List<? extends IIterator<T>> iterList, final L prototypeList, final IArrayFunction<T> function,
-			INestedList<T, L> copier) {
-		this(iterList, prototypeList, function, copier, null);
+	public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList, final IArrayFunction function) {
+		this(iterList, prototypeList, function, (IExpr) null);
 	}
 
-	public TableGenerator(final List<? extends IIterator<T>> iterList, final L prototypeList, final IArrayFunction<T> function,
-			INestedList<T, L> copier, T defaultValue) {
+	public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList, final IArrayFunction function,
+			IExpr defaultValue) {
 		fIterList = iterList;
 		fPrototypeList = prototypeList;
 		fFunction = function;
 		fIndex = 0;
-		fCurrentIndex = new Object[iterList.size()];
-		fCopier = copier;
+		fCurrentIndex = new IExpr[iterList.size()];
 		fDefaultValue = defaultValue;
 	}
 
-	public T table() {
+	public IExpr table() {
 		if (fIndex < fIterList.size()) {
-			final IIterator<T> iter = fIterList.get(fIndex);
+			final IIterator<IExpr> iter = fIterList.get(fIndex);
 
 			if (iter.setUp()) {
 				try {
 					final int index = fIndex++;
-					final L result = fCopier.clone(fPrototypeList);
+					final IAST result = fPrototypeList.clone();
 					while (iter.hasNext()) {
 						fCurrentIndex[index] = iter.next();
 						result.add(table());
 					}
-					return fCopier.castList(result);
+					return result;
 				} finally {
 					--fIndex;
 					iter.tearDown();

@@ -12,8 +12,8 @@ import org.matheclipse.generic.interfaces.IIndexFunction;
 import org.matheclipse.generic.nested.IndexTableGenerator;
 
 /**
- * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1).
- * See <a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a>
+ * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See <a
+ * href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a>
  * 
  */
 public class VandermondeMatrix extends AbstractFunctionEvaluator {
@@ -36,8 +36,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 					return Power(lst.get(index[0] + 1), IntegerSym.valueOf(index[1]));
 				}
 			};
-			final IndexTableGenerator<IExpr, IAST> generator = new IndexTableGenerator<IExpr, IAST>(indexArray, resultList, function,
-					AST.COPY);
+			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, function);
 			final IAST matrix = (IAST) generator.table();
 			if (matrix != null) {
 				matrix.addEvalFlags(IAST.IS_MATRIX);
