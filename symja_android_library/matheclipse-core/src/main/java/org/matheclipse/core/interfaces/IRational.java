@@ -1,7 +1,10 @@
 package org.matheclipse.core.interfaces;
+
+import org.apache.commons.math3.fraction.BigFraction;
+
 /**
- * interface for "ractional" numbers (i.e. IInteger or IFraction)
- *
+ * Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction)
+ * 
  */
 public interface IRational extends ISignedNumber, IBigNumber {
 	/**
@@ -16,5 +19,12 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return denominator
 	 */
-	public IInteger getNumerator(); 
+	public IInteger getNumerator();
+
+	/**
+	 * Returns this number as <code>BigFraction</code> number.
+	 * 
+	 * @return <code>this</code> number s big fraction.
+	 */
+	public BigFraction getFraction();
 }

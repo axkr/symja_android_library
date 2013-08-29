@@ -186,14 +186,10 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
-		Validate.checkSize(functionList, 3);
-		// if (functionList.size() != 3) {
-		// throw new WrongNumberOfArguments(functionList, 2, functionList.size() -
-		// 1);
-		// } else {
-		return binaryOperator(functionList.get(1), functionList.get(2));
-		// }
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 3);
+
+		return binaryOperator(ast.get(1), ast.get(2));
 	}
 
 }

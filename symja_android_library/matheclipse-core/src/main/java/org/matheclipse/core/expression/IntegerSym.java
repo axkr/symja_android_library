@@ -542,24 +542,28 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	// // return fInteger.toText(radix);
 	// }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.interfaces.IInteger#getNumerator()
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public BigInteger getBigNumerator() {
 		return fInteger;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IInteger getNumerator() {
 		return this;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IInteger getDenominator() {
 		return F.C1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigFraction getFraction() {
+		return new BigFraction(fInteger);
 	}
 
 	/**

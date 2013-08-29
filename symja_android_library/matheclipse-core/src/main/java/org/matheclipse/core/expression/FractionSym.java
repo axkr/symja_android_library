@@ -105,24 +105,22 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return fRational.getNumerator().equals(BigInteger.valueOf(i)) && fRational.getDenominator().equals(BigInteger.ONE);
 	}
 
-	/**
-	 * Returns the denominator of this fraction.
-	 * 
-	 * @return denominator
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public BigInteger getBigDenominator() {
 		return fRational.getDenominator();
 	}
 
-	/**
-	 * Returns the numerator of this Rational.
-	 * 
-	 * @return numerator
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public BigInteger getBigNumerator() {
 		return fRational.getNumerator();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigFraction getFraction() {
+		return fRational;
 	}
 
 	/**
@@ -160,13 +158,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public IFraction multiply(final IFraction parm1) {
 		return newInstance(fRational.multiply(((FractionSym) parm1).fRational));
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
 		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == -1);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
@@ -485,9 +483,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {
@@ -544,7 +541,6 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
 
 	/** {@inheritDoc} */
 	@Override

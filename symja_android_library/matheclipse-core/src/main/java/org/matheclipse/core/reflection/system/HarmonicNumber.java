@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
@@ -9,20 +7,20 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Harmonic number of a given integer value
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic
- * number</a>
+ * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
  */
 public class HarmonicNumber implements IFunctionEvaluator {
 
 	public HarmonicNumber() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() != 2) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
@@ -40,26 +38,46 @@ public class HarmonicNumber implements IFunctionEvaluator {
 			if (n == 1) {
 				return F.C1;
 			}
-			n--;
-			BigFraction sum = BigFraction.ONE;
-			BigInteger counter = BigInteger.ONE;
-			for (int i = 0; i < n; i++) {
-				counter = counter.add(BigInteger.ONE);
-				sum = sum.add(new BigFraction(BigInteger.ONE, counter));
-			}
-			return F.fraction(sum);
 
+			return F.fraction(harmonicNumber(n));
 		}
 
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
-	public void setUp(ISymbol symbol) {
+	/**
+	 * The Harmonic number at the index specified
+	 * 
+	 * @param n
+	 *            the index, non-negative.
+	 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1, zero is returned.
+	 */
+	public BigFraction harmonicNumber(int n) {
+		if (n < 1)
+			return (new BigFraction(0, 1));
+		else {
+			/*
+			 * start with 1 as the result
+			 */
+			BigFraction a = new BigFraction(1, 1);
 
+			/*
+			 * add 1/i for i=2..n
+			 */
+			for (int i = 2; i <= n; i++)
+				a = a.add(new BigFraction(1, i));
+			return a;
+		}
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }
