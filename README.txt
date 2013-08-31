@@ -74,3 +74,5 @@ Symja is the underlying library for the following projects:
     https://bitbucket.org/axelclk/symja.ajax
 * Symja Java Swing GUI:
     https://bitbucket.org/axelclk/symjaswing
+* Symja Unit tests:
+    https://bitbucket.org/axelclk/symjaunittests
