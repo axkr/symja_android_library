@@ -15,15 +15,15 @@ Online demo:
 Include the symja_android_library.jar in your classpath and start coding.
 
 Example 1:
+:::java
+ import static org.matheclipse.core.expression.F.*;
+ import org.matheclipse.core.eval.EvalUtilities;
+ import org.matheclipse.core.interfaces.IAST;
+ import org.matheclipse.core.interfaces.IExpr;
+ import org.matheclipse.parser.client.SyntaxError;
+ import org.matheclipse.parser.client.math.MathException;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.eval.EvalUtilities;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.math.MathException;
-
-public class CalculusExample {
+ public class CalculusExample {
 	public static void main(String[] args) {
 		try {
 			EvalUtilities util = new EvalUtilities(false, true);
@@ -57,7 +57,7 @@ public class CalculusExample {
 			e.printStackTrace();
 		}
 	}
-}
+ }
 
 
 
