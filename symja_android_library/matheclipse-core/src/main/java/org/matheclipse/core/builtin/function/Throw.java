@@ -2,27 +2,29 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Throw implements ICoreFunctionEvaluator {
+public class Throw extends AbstractCoreFunctionEvaluator {
 
 	public Throw() {
 		super();
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
+		if (ast.size() == 2) {
+			throw new ThrowException(F.eval(ast.get(1)));
+		}
 		Validate.checkSize(ast, 2);
-		throw new ThrowException(F.eval(ast.get(1)));
+
+		return null;
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

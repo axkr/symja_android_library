@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.Collection;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -14,11 +14,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
-public class NestList implements ICoreFunctionEvaluator {
+public class NestList extends AbstractCoreFunctionEvaluator {
 
 	public NestList() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
@@ -35,10 +36,6 @@ public class NestList implements ICoreFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
 	public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn, final Collection<IExpr> resultList) {
 		IExpr temp = expr;
 		resultList.add(temp);
@@ -48,6 +45,7 @@ public class NestList implements ICoreFunctionEvaluator {
 		}
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

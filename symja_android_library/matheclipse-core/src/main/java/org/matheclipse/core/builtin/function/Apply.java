@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
@@ -13,7 +13,7 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Function;
 
-public class Apply implements ICoreFunctionEvaluator {
+public class Apply extends AbstractCoreFunctionEvaluator {
 
 	public Apply() {
 	}
@@ -64,11 +64,6 @@ public class Apply implements ICoreFunctionEvaluator {
 
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

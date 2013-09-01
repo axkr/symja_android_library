@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -10,11 +10,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
-public class Nest implements ICoreFunctionEvaluator {
+public class Nest extends AbstractCoreFunctionEvaluator {
 
 	public Nest() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
@@ -36,12 +37,9 @@ public class Nest implements ICoreFunctionEvaluator {
 			temp = F.eval(fn.apply(temp));
 		}
 		return temp;
-	}
+	} 
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

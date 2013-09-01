@@ -3,7 +3,7 @@ package org.matheclipse.core.builtin.function;
 import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,11 +11,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.generic.Algorithms;
 
-public class FoldList implements ICoreFunctionEvaluator {
+public class FoldList extends AbstractCoreFunctionEvaluator {
 
 	public FoldList() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
@@ -37,10 +38,7 @@ public class FoldList implements ICoreFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

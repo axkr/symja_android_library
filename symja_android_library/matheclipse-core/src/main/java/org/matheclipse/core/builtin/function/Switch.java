@@ -2,19 +2,20 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
-public class Switch implements ICoreFunctionEvaluator {
+public class Switch extends AbstractCoreFunctionEvaluator {
 
 	public Switch() {
 		super();
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 4);
 		final EvalEngine engine = EvalEngine.get();
@@ -29,10 +30,7 @@ public class Switch implements ICoreFunctionEvaluator {
 		return F.Null;
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

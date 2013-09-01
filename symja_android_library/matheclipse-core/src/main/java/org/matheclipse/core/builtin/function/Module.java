@@ -6,7 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
-public class Module implements ICoreFunctionEvaluator {
+public class Module extends AbstractCoreFunctionEvaluator {
 	public Module() {
 	}
 
@@ -36,8 +36,7 @@ public class Module implements ICoreFunctionEvaluator {
 	}
 
 	/**
-	 * Check the (possible nested) module condition in pattern matcher without
-	 * evaluating a result.
+	 * Check the (possible nested) module condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -129,11 +128,6 @@ public class Module implements ICoreFunctionEvaluator {
 				}
 			}
 		}
-	}
-
-	@Override
-	public IExpr numericEval(IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

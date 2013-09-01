@@ -5,14 +5,14 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Block implements ICoreFunctionEvaluator {
+public class Block extends AbstractCoreFunctionEvaluator {
 	public Block() {
 	}
 
@@ -56,11 +56,6 @@ public class Block implements ICoreFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

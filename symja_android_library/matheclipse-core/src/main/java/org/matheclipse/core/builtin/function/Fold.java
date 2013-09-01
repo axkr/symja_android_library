@@ -1,25 +1,26 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Fold implements ICoreFunctionEvaluator {
+public class Fold extends AbstractCoreFunctionEvaluator {
 
 	public Fold() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 		return evaluateNestList(ast);
 	}
 
 	public static IExpr evaluateNestList(final IAST ast) {
-		 
+
 		try {
 			IExpr temp = F.eval(ast.get(3));
 			if (temp.isAST()) {
@@ -32,10 +33,7 @@ public class Fold implements ICoreFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

@@ -5,18 +5,19 @@ import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class While implements ICoreFunctionEvaluator {
+public class While extends AbstractCoreFunctionEvaluator {
 
 	public While() {
 		super();
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final EvalEngine engine = EvalEngine.get();
@@ -41,10 +42,7 @@ public class While implements ICoreFunctionEvaluator {
 		return F.Null;
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

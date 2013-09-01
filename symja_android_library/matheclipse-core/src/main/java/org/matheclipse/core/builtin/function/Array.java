@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -19,7 +19,7 @@ import org.matheclipse.generic.nested.TableGenerator;
 /**
  * Array structure generator
  */
-public class Array implements ICoreFunctionEvaluator {
+public class Array  extends AbstractCoreFunctionEvaluator {
 
 	public static class ArrayIterator implements IIterator<IExpr> {
 		int fCurrent;
@@ -38,22 +38,27 @@ public class Array implements ICoreFunctionEvaluator {
 			fTo = from + length - 1;
 		}
 
+		@Override
 		public boolean setUp() {
 			return true;
 		}
 
+		@Override
 		public void tearDown() {
 			fCurrent = fFrom;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fCurrent <= fTo;
 		}
 
+		@Override
 		public IExpr next() {
 			return F.integer(fCurrent++);
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -63,6 +68,7 @@ public class Array implements ICoreFunctionEvaluator {
 	public Array() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		return evaluateArray(ast, List());
 	}
@@ -117,10 +123,7 @@ public class Array implements ICoreFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

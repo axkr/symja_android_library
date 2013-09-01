@@ -4,17 +4,18 @@ import org.matheclipse.core.builtin.function.Module;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Condition implements ICoreFunctionEvaluator {
+public class Condition extends AbstractCoreFunctionEvaluator {
 
 	public Condition() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
@@ -28,8 +29,7 @@ public class Condition implements ICoreFunctionEvaluator {
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without
-	 * evaluating a result.
+	 * Check the (possible nested) condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -48,10 +48,7 @@ public class Condition implements ICoreFunctionEvaluator {
 		return false;
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

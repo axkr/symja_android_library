@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -13,7 +13,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 import com.google.common.base.Function;
 
-public class Cases implements ICoreFunctionEvaluator {
+public class Cases extends AbstractCoreFunctionEvaluator {
 	private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
 		protected final PatternMatcher matcher;
 		protected IAST resultCollection;
@@ -58,6 +58,7 @@ public class Cases implements ICoreFunctionEvaluator {
 	public Cases() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		final EvalEngine engine = EvalEngine.get();
@@ -96,10 +97,7 @@ public class Cases implements ICoreFunctionEvaluator {
 		return ast.filter(ast.copyHead(), matcher);
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

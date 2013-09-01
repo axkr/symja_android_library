@@ -9,7 +9,7 @@ import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,7 +20,7 @@ import org.matheclipse.generic.interfaces.IIterator;
 /**
  * 
  */
-public class Do implements ICoreFunctionEvaluator {
+public class Do extends AbstractCoreFunctionEvaluator {
 	public static class DoIterator {
 
 		final List<? extends IIterator<IExpr>> fIterList;
@@ -67,6 +67,7 @@ public class Do implements ICoreFunctionEvaluator {
 	public Do() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 		try {
@@ -83,10 +84,7 @@ public class Do implements ICoreFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

@@ -2,12 +2,13 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Sow implements ICoreFunctionEvaluator {
+public class Sow extends AbstractCoreFunctionEvaluator {
+
 	public final double DEFAULT_CHOP_DELTA = 10E-10;
 
 	public Sow() {
@@ -16,7 +17,7 @@ public class Sow implements ICoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		
+
 		EvalEngine engine = EvalEngine.get();
 		IAST reapList = engine.getReapList();
 		IExpr expr = engine.evaluate(ast.get(1));
@@ -24,12 +25,7 @@ public class Sow implements ICoreFunctionEvaluator {
 			reapList.add(expr);
 		}
 		return expr;
-	}
-	
-	@Override
-	public IExpr numericEval(IAST ast) {
-		return evaluate(ast);
-	}
+	} 
 
 	@Override
 	public void setUp(final ISymbol symbol) {
