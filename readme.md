@@ -15,7 +15,7 @@ Online demo:
 Include the symja_android_library.jar in your classpath and start coding.
 
 Example 1:
-{{{
+ 
 #!java
 import static org.matheclipse.core.expression.F.*;
 import org.matheclipse.core.eval.EvalUtilities;
@@ -59,7 +59,6 @@ public class CalculusExample {
 		}
 	}
 }
-}}}
 
 
 The Symja library uses the Apache Commons Mathematics Library:
