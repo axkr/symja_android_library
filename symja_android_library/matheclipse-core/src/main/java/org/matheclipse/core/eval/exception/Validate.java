@@ -226,6 +226,19 @@ public final class Validate {
 		throw new WrongArgumentType(ast, ast.get(position), position, "Function(AST) expected!");
 	}
 
+	/**
+	 * Check if the expression is an AST.
+	 * 
+	 * @throws WrongArgumentType
+	 *             if it's not an AST.
+	 */
+	public static IAST checkASTType(IExpr expr) {
+		if (expr.isAST()) {
+			return (IAST) expr;
+		}
+		throw new WrongArgumentType(expr, "Function(AST) expected!");
+	}
+
 	private Validate() {
 	}
 

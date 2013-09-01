@@ -1,20 +1,18 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringWriter;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.interfaces.ISymbol;
 
-public class Print implements IFunctionEvaluator {
+public class Print extends AbstractCoreFunctionEvaluator {
 
 	public Print() {
 	}
@@ -26,13 +24,13 @@ public class Print implements IFunctionEvaluator {
 		}
 		try {
 			final StringBuilder buf = new StringBuilder();
+			IExpr temp;
 			for (int i = 1; i < ast.size(); i++) {
-				// TODO integrate the print statement in the different
-				// environments eclipse, console...
-				if (ast.get(i) instanceof IStringX) {
-					buf.append(ast.get(i).toString());
+				temp = F.eval(ast.get(i));
+				if (temp instanceof IStringX) {
+					buf.append(temp.toString());
 				} else {
-					OutputFormFactory.get().convert(buf, ast.get(i));
+					OutputFormFactory.get().convert(buf, temp);
 				}
 			}
 			stream.println(buf.toString());
@@ -44,13 +42,6 @@ public class Print implements IFunctionEvaluator {
 		}
 
 		return F.Null;
-	}
-
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
-	public void setUp(final ISymbol symbol) {
 	}
 
 }

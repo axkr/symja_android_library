@@ -1993,4 +1993,16 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return super.iterator();
 	}
 
+	@Override
+	public IAST append(IExpr expr) {
+		add(expr);
+		return this;
+	}
+
+	@Override
+	public IAST prepend(IExpr expr) {
+		add(1,  expr);
+		return this;
+	}
+
 }

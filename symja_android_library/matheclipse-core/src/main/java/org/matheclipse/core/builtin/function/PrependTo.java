@@ -1,14 +1,15 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
-public class PrependTo extends AbstractFunctionEvaluator {
+public class PrependTo extends AbstractCoreFunctionEvaluator {
 
 	class PrependToFunction implements Function<IExpr, IExpr> {
 		private final IExpr value;
@@ -22,9 +23,7 @@ public class PrependTo extends AbstractFunctionEvaluator {
 			if (!symbolValue.isAST()) {
 				return null;
 			}
-			final IAST f0 = ((IAST) symbolValue).clone();
-			f0.add(1, value);
-			return f0;
+			return ((IAST) symbolValue).clone().prepend(value);
 		}
 
 	}
@@ -37,8 +36,8 @@ public class PrependTo extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		ISymbol sym = Validate.checkSymbolType(ast, 1);
-
-		Function<IExpr, IExpr> function = new PrependToFunction(ast.get(2));
+		IExpr arg2 = F.eval(ast.get(2));
+		Function<IExpr, IExpr> function = new PrependToFunction(arg2);
 		IExpr[] results = sym.reassignSymbolValue(function);
 		if (results != null) {
 			return results[1];

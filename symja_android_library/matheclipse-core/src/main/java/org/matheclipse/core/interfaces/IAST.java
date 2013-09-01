@@ -36,7 +36,7 @@ import com.google.common.base.Predicate;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
-public interface IAST extends IExpr,  List<IExpr>, Cloneable {
+public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	/**
 	 * NO_FLAG ACTIVATED
 	 */
@@ -373,6 +373,13 @@ public interface IAST extends IExpr,  List<IExpr>, Cloneable {
 	public IAST clone();
 
 	/**
+	 * Append an expression to this list.
+	 * 
+	 * @return <code>this</code> after appending the given expression.
+	 */
+	public IAST append(IExpr expr);
+
+	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
 	 * <code>expr</code> at the given <code>position</code>.
 	 * 
@@ -397,6 +404,13 @@ public interface IAST extends IExpr,  List<IExpr>, Cloneable {
 	 */
 	public int patternHashCode();
 
+	/**
+	 * Prepend an expression to this list.
+	 * 
+	 * @return <code>this</code> after prepending the given expression.
+	 */
+	public IAST prepend(IExpr expr); 
+	
 	/**
 	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
 	 * 

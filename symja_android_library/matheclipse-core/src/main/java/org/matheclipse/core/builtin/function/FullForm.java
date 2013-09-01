@@ -1,21 +1,21 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class FullForm implements IFunctionEvaluator {
+public class FullForm extends AbstractCoreFunctionEvaluator {
 
 	public FullForm() {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 2) {
-			return null;
-		}
-		return F.stringx(new StringBuffer(ast.get(1).fullFormString()));
+		Validate.checkSize(ast, 2);
+
+		return F.stringx(new StringBuffer(F.eval(ast.get(1)).fullFormString()));
 	}
 
 	public IExpr numericEval(final IAST functionList) {
