@@ -18,8 +18,14 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
+import edu.jas.poly.Complex;
+import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.poly.PolyUtil;
+import edu.jas.poly.TermOrder;
 import edu.jas.ufd.FactorAbstract;
+import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.FactorFactory;
 
 /**
@@ -62,6 +68,7 @@ public class Factor extends AbstractFunctionEvaluator {
 
 	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
 		Object[] objects = jas.factorTerms(polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
@@ -119,73 +126,85 @@ public class Factor extends AbstractFunctionEvaluator {
 		final Options options = new Options(ast.topHead(), ast, 2);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
-			try {
-				// found "Modulus" option => use ModIntegerRing 
-				ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
-				JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
-				GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
+			return factorModulus(expr, varList, factorSquareFree, option);
+		}
+		option = options.getOption("GaussianIntegers");
+		if (option != null && option.isTrue()) {
+			return factorComplex(expr, varList);
+		}
+		option = options.getOption("Extension");
+		if (option != null && option.equals(F.CI)) {
+			return factorComplex(expr, varList);
+		}
+		return null; // no evaluation
+	}
 
-				FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
-				SortedMap<GenPolynomial<ModInteger>, Long> map;
-				if (factorSquareFree) {
-					map = factorAbstract.squarefreeFactors(poly);
-				} else {
-					map = factorAbstract.factors(poly);
-				}
-				IAST result = F.Times();
-				for (SortedMap.Entry<GenPolynomial<ModInteger>, Long> entry : map.entrySet()) {
-					GenPolynomial<ModInteger> singleFactor = entry.getKey();
-					Long val = entry.getValue();
-					result.add(F.Power(jas.modIntegerPoly2Expr(singleFactor), F.integer(val)));
-				}
-				return result;
-			} catch (ArithmeticException ae) {
-				// toInt() conversion failed
-				if (Config.DEBUG) {
-					ae.printStackTrace();
-				}
+	private static IExpr factorComplex(IExpr expr, List<IExpr> varList) throws JASConversionException {
+		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+		TermOrder to = new TermOrder(TermOrder.INVLEX);
+		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
+		// Object[] objects = jas.factorTerms(polyRat);
+		String[] vars = new String[varList.size()];
+		for (int i = 0; i < varList.size(); i++) {
+			vars[i] = varList.get(i).toString();
+		}
+		Object[] objects = JASConvert.rationalFromRationalCoefficientsFactor(new GenPolynomialRing<BigRational>(BigRational.ZERO,
+				varList.size(), to, vars), polyRat);
+		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+		GenPolynomial<BigRational> poly = (GenPolynomial<BigRational>) objects[2];
+
+		BigRational rfac = new BigRational(1);
+		ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
+		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, 1, to);
+		GenPolynomial<Complex<BigRational>> a = PolyUtil.complexFromAny(cpfac, poly);
+		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
+		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(a);
+
+		IAST result = F.Times();
+		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+			result.add(F.fraction(gcd, lcm));
+		}
+		GenPolynomial<Complex<BigRational>> temp;
+		for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
+			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+				continue;
+			}
+			temp = entry.getKey();
+			result.add(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+		}
+		return result;
+	} 
+
+	private static IAST factorModulus(IExpr expr, List<IExpr> varList, boolean factorSquareFree, IExpr option)
+			throws JASConversionException {
+		try {
+			// found "Modulus" option => use ModIntegerRing
+			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
+			JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
+			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
+
+			FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
+			SortedMap<GenPolynomial<ModInteger>, Long> map;
+			if (factorSquareFree) {
+				map = factorAbstract.squarefreeFactors(poly);
+			} else {
+				map = factorAbstract.factors(poly);
+			}
+			IAST result = F.Times();
+			for (SortedMap.Entry<GenPolynomial<ModInteger>, Long> entry : map.entrySet()) {
+				GenPolynomial<ModInteger> singleFactor = entry.getKey();
+				Long val = entry.getValue();
+				result.add(F.Power(jas.modIntegerPoly2Expr(singleFactor), F.integer(val)));
+			}
+			return result;
+		} catch (ArithmeticException ae) {
+			// toInt() conversion failed
+			if (Config.DEBUG) {
+				ae.printStackTrace();
 			}
 		}
-		// option = options.getOption("GaussianIntegers");
-		// if (option != null && option.equals(F.True)) {
-		// try {
-		// ComplexRing<edu.jas.arith.BigInteger> fac = new
-		// ComplexRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ONE);
-		//						
-		// JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>> jas =
-		// new JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>(
-		// varList, fac);
-		// GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-		// poly = jas.expr2Poly(expr);
-		// FactorAbstract<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-		// factorAbstract = FactorFactory
-		// .getImplementation(fac);
-		// SortedMap<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
-		// Long> map = factorAbstract.factors(poly);
-		// IAST result = F.Times();
-		// for
-		// (SortedMap.Entry<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
-		// Long> entry : map.entrySet()) {
-		// GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-		// singleFactor = entry.getKey();
-		// // GenPolynomial<edu.jas.arith.BigComplex> integerCoefficientPoly
-		// // = (GenPolynomial<edu.jas.arith.BigComplex>) jas
-		// // .factorTerms(singleFactor)[2];
-		// // Long val = entry.getValue();
-		// // result.add(F.Power(jas.integerPoly2Expr(integerCoefficientPoly),
-		// // F.integer(val)));
-		// System.out.println(singleFactor);
-		// }
-		// return result;
-		// } catch (ArithmeticException ae) {
-		// // toInt() conversion failed
-		// if (Config.DEBUG) {
-		// ae.printStackTrace();
-		// }
-		// return null; // no evaluation
-		// }
-		// }
-		return null; // no evaluation
+		return null;
 	}
 
 }

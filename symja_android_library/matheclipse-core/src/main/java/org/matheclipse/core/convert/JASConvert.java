@@ -2,6 +2,7 @@ package org.matheclipse.core.convert;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -41,11 +42,11 @@ import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrder;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
+import edu.jas.structure.UnaryFunctor;
 import edu.jas.ufd.Quotient;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
- * and to MathEclipse objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse objects
  * 
  * 
  * @param <C>
@@ -101,10 +102,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Convert the given expression into a <a
-	 * href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
-	 * <code>INum</code> double values are internally converted to IFractions
-	 * and converte into the pokynomial structure.
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. <code>INum</code>
+	 * double values are internally converted to IFractions and converte into the pokynomial structure.
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -120,11 +119,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Convert the given expression into a <a
-	 * href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
-	 * symbolic numbers are converted (i.e. no <code>INum</code> or
-	 * <code>IComplexNum</code> values are converted into the polynomial
-	 * structure)
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only symbolic numbers
+	 * are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into the polynomial structure)
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -140,10 +136,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Convert the given expression into a <a
-	 * href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
-	 * <code>INum</code> values are internally converted to IFractions and
-	 * <code>expr2Poly</code> was called for the expression
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. <code>INum</code>
+	 * values are internally converted to IFractions and <code>expr2Poly</code> was called for the expression
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -155,13 +149,11 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Convert the given expression into a <a
-	 * href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
 	 * 
 	 * @param exprPoly
 	 * @param numeric2Rational
-	 *            if <code>true</code>, <code>INum</code> double values are
-	 *            converted to <code>BigRational</code> internally
+	 *            if <code>true</code>, <code>INum</code> double values are converted to <code>BigRational</code> internally
 	 * 
 	 * @return
 	 * @throws ArithmeticException
@@ -317,14 +309,12 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with
-	 * BigInteger coefficients by multiplication with the gcd of the numerators
-	 * and the lcm of the denominators of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication with the gcd
+	 * of the numerators and the lcm of the denominators of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
-	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial
-	 *         with BigInteger coefficients.
+	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
 	 */
 	public Object[] factorTerms(GenPolynomial<BigRational> A) {
 		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
@@ -338,9 +328,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with
-	 * BigInteger coefficients by multiplication with the lcm of the numerators
-	 * of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication with the lcm
+	 * of the numerators of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
@@ -360,6 +349,30 @@ public class JASConvert<C extends RingElem<C>> {
 			ExpVector exp = monomial.exponent();
 			IInteger coeffValue = F.integer(coeff.getVal());
 			IAST monomTimes = F.Times(coeffValue);
+			long lExp;
+			for (int i = 0; i < exp.length(); i++) {
+				lExp = exp.getVal(i);
+				if (lExp != 0) {
+					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
+				}
+			}
+			result.add(monomTimes);
+		}
+		return result;
+	}
+
+	public IAST complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly) throws ArithmeticException, ClassCastException {
+		if (poly.length() == 0) {
+			return F.Plus(F.C0);
+		}
+		IAST result = F.Plus();
+		for (Monomial<Complex<BigRational>> monomial : poly) {
+			Complex<BigRational> coeff = monomial.coefficient();
+			ExpVector exp = monomial.exponent();
+			BigRational re = coeff.getRe();
+			BigRational im = coeff.getIm();
+			IAST monomTimes = F.Times(F.complex(F.fraction(re.numerator(), re.denominator()),
+					F.fraction(im.numerator(), im.denominator())));
 			long lExp;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
@@ -488,8 +501,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -502,8 +514,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -540,8 +551,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -704,5 +714,92 @@ public class JASConvert<C extends RingElem<C>> {
 			return F.num(red);
 		}
 		return F.complexNum(red, imd);
+	}
+
+	/**
+	 *  * Conversion of BigRational to BigInteger. result = (num/gcd)*(lcm/denom).
+	 */
+	static class RatToRatFactor implements UnaryFunctor<BigRational, BigRational> {
+
+		final java.math.BigInteger lcm;
+
+		final java.math.BigInteger gcd;
+
+		public RatToRatFactor(java.math.BigInteger gcd, java.math.BigInteger lcm) {
+			this.gcd = gcd;
+			this.lcm = lcm; // .getVal();
+		}
+
+		public BigRational eval(BigRational c) {
+			if (c == null) {
+				return BigRational.ZERO;
+			}
+			if (gcd.equals(java.math.BigInteger.ONE)) {
+				// p = num*(lcm/denom)
+				java.math.BigInteger b = lcm.divide(c.denominator());
+				return BigRational.valueOf(c.numerator().multiply(b));
+			}
+			// p = (num/gcd)*(lcm/denom)
+			java.math.BigInteger a = c.numerator().divide(gcd);
+			java.math.BigInteger b = lcm.divide(c.denominator());
+			return BigRational.valueOf(a.multiply(b));
+		}
+	}
+
+	/**
+	 * BigRational from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication with the
+	 * gcd of the numerators and the lcm of the denominators of the BigRational coefficients. <br
+     * />
+	 * 
+	 * @param fac
+	 *            result polynomial factory.
+	 * @param A
+	 *            polynomial with BigRational coefficients to be converted.
+	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
+	 */
+	public static Object[] rationalFromRationalCoefficientsFactor(GenPolynomialRing<BigRational> fac, GenPolynomial<BigRational> A) {
+		Object[] result = new Object[3];
+		if (A == null || A.isZERO()) {
+			result[0] = java.math.BigInteger.ONE;
+			result[1] = java.math.BigInteger.ZERO;
+			result[2] = fac.getZERO();
+			return result;
+		}
+		java.math.BigInteger gcd = null;
+		java.math.BigInteger lcm = null;
+		int sLCM = 0;
+		int sGCD = 0;
+		// lcm of denominators
+		Iterator<BigRational> iter = A.coefficientIterator();
+		while (iter.hasNext()) {
+			BigRational y = iter.next();
+			java.math.BigInteger numerator = y.numerator();
+			java.math.BigInteger denominator = y.denominator();
+			// lcm = lcm(lcm,x)
+			if (lcm == null) {
+				lcm = denominator;
+				sLCM = denominator.signum();
+			} else {
+				java.math.BigInteger d = lcm.gcd(denominator);
+				lcm = lcm.multiply(denominator.divide(d));
+			}
+			// gcd = gcd(gcd,x)
+			if (gcd == null) {
+				gcd = numerator;
+				sGCD = numerator.signum();
+			} else {
+				gcd = gcd.gcd(numerator);
+			}
+		}
+		if (sLCM < 0) {
+			lcm = lcm.negate();
+		}
+		if (sGCD < 0) {
+			gcd = gcd.negate();
+		}
+		result[0] = gcd;
+		result[1] = lcm;
+		result[2] = PolyUtil.<BigRational, BigRational> map(fac, A, new RatToRatFactor(gcd, lcm));
+		return result;
 	}
 }
