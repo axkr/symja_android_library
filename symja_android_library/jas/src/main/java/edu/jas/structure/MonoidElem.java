@@ -1,5 +1,5 @@
 /*
- * $Id: MonoidElem.java 4056 2012-07-26 17:44:13Z kredel $
+ * $Id: MonoidElem.java 4615 2013-09-08 13:04:36Z kredel $
  */
 
 package edu.jas.structure;
@@ -51,6 +51,14 @@ public interface MonoidElem<C extends MonoidElem<C>> extends Element<C> {
      * @return this - (this / S) * S.
      */
     public C remainder(C S);
+
+
+    /* for a later release:
+     * Quotient and remainder by division of this by S.
+     * @param S
+     * @return [this/S, this - (this/S)*S].
+     */
+    //public C[] quotientRemainder(C S);
 
 
     /**

@@ -1,5 +1,5 @@
 /*
- * $Id: BigRational.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: BigRational.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -866,6 +866,16 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             throw new ArithmeticException("division by zero");
         }
         return ZERO;
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a rational number
+     * @return [this/S, this - (this/S)*S].
+     */
+    public BigRational[] quotientRemainder(BigRational S) {
+        return new BigRational[] { divide(S), ZERO };
     }
 
 

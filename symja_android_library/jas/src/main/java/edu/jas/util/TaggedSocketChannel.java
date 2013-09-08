@@ -1,5 +1,5 @@
 /*
- * $Id: TaggedSocketChannel.java 4523 2013-07-27 10:54:39Z kredel $
+ * $Id: TaggedSocketChannel.java 4572 2013-08-18 21:43:12Z kredel $
  */
 
 package edu.jas.util;
@@ -159,7 +159,8 @@ public class TaggedSocketChannel extends Thread {
             throw (ClassNotFoundException) v;
         }
         if ( v instanceof Exception ) {
-            throw new RuntimeException(v.toString());
+            //throw new RuntimeException(v.toString());
+            throw new IOException(v.toString());
         }
         return v;
     }

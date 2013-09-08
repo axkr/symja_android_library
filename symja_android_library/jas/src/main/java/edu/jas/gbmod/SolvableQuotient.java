@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4535 2013-07-28 15:45:50Z kredel $
+ * $Id: SolvableQuotient.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -432,6 +432,16 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             throw new ArithmeticException("element not invertible " + this);
         }
         return ring.getZERO();
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a SolvableQuotient
+     * @return [this/S, this - (this/S)*S].
+     */
+    public SolvableQuotient<C>[] quotientRemainder(SolvableQuotient<C> S) {
+        return new SolvableQuotient[] { divide(S), remainder(S) };
     }
 
 

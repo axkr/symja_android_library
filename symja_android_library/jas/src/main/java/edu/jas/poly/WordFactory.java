@@ -1,5 +1,5 @@
 /*
- * $Id: WordFactory.java 4388 2013-04-27 19:38:16Z kredel $
+ * $Id: WordFactory.java 4588 2013-08-20 20:23:23Z kredel $
  */
 
 package edu.jas.poly;
@@ -498,7 +498,7 @@ public final class WordFactory implements MonoidFactory<Word> {
             //    //logger.error("v[i] not single letter "+ a);
             //    a  = a.substring(0,1);
             //}
-	    s.append(v[i]);
+            s.append(v[i]);
         }
         return s.toString();
     }
@@ -569,7 +569,7 @@ public final class WordFactory implements MonoidFactory<Word> {
                 //continue;
                 throw new IllegalArgumentException("v[i] not found in t: "+ a);
             }
-	    s.append(transRef.charAt(k));
+            s.append(transRef.charAt(k));
         }
         return s.toString();
     }

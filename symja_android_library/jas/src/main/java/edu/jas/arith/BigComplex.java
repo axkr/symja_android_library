@@ -1,5 +1,5 @@
 /*
- * $Id: BigComplex.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: BigComplex.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -701,6 +701,16 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      */
     public BigComplex divide(BigComplex B) {
         return this.multiply(B.inverse());
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a complex number
+     * @return [this/S, this - (this/S)*S].
+     */
+    public BigComplex[] quotientRemainder(BigComplex S) {
+        return new BigComplex[] { divide(S), ZERO };
     }
 
 

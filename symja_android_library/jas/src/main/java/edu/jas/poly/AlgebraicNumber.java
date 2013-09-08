@@ -1,14 +1,14 @@
 /*
- * $Id: AlgebraicNumber.java 4148 2012-08-31 19:49:27Z kredel $
+ * $Id: AlgebraicNumber.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.poly;
 
 
 import edu.jas.kern.PrettyPrint;
-import edu.jas.structure.RingElem;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.NotInvertibleException;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -331,8 +331,8 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
             //System.out.println(e);
             throw e;
         } catch (NotInvertibleException e) {
-            throw new AlgebraicNotInvertibleException(e + ", val = " + val + ", modul = " + ring.modul + ", gcd = "
-                                                      + val.gcd(ring.modul),e);
+            throw new AlgebraicNotInvertibleException(e + ", val = " + val + ", modul = " + ring.modul
+                            + ", gcd = " + val.gcd(ring.modul), e);
         }
     }
 
@@ -354,6 +354,16 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
         }
         GenPolynomial<C> x = val.remainder(S.val);
         return new AlgebraicNumber<C>(ring, x);
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a AlgebraicNumber
+     * @return [this/S, this - (this/S)*S].
+     */
+    public AlgebraicNumber<C>[] quotientRemainder(AlgebraicNumber<C> S) {
+        return new AlgebraicNumber[] { divide(S), remainder(S) };
     }
 
 

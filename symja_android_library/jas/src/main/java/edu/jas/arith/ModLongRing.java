@@ -1,5 +1,5 @@
 /*
- * $Id: ModLongRing.java 4054 2012-07-26 17:34:57Z kredel $
+ * $Id: ModLongRing.java 4609 2013-09-07 11:28:16Z rjolly $
  */
 
 package edu.jas.arith;
@@ -103,7 +103,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
      */
     public ModLongRing(java.math.BigInteger m) {
         this(m.longValue());
-        if (MAX_LONG.compareTo(m) <= 0) { // m >= max
+        if (MAX_LONG.compareTo(m) < 0) { // m > max
             System.out.println("modul to large for long " + m + ",max=" + MAX_LONG);
             throw new IllegalArgumentException("modul to large for long " + m);
         }
@@ -118,7 +118,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
      */
     public ModLongRing(java.math.BigInteger m, boolean isField) {
         this(m.longValue(), isField);
-        if (MAX_LONG.compareTo(m) <= 0) { // m >= max
+        if (MAX_LONG.compareTo(m) < 0) { // m > max
             System.out.println("modul to large for long " + m + ",max=" + MAX_LONG);
             throw new IllegalArgumentException("modul to large for long " + m);
         }
@@ -151,7 +151,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
      * @return modul.
      */
     public java.math.BigInteger getModul() {
-        return new java.math.BigInteger("" + modul);
+        return new java.math.BigInteger(Long.toString(modul));
     }
 
 
@@ -283,7 +283,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
             return false;
         }
         //System.out.println("isProbablePrime " + modul + " = " + modul.isProbablePrime(certainty));
-        java.math.BigInteger m = new java.math.BigInteger("" + modul);
+        java.math.BigInteger m = new java.math.BigInteger(Long.toString(modul));
         if (m.isProbablePrime(m.bitLength())) {
             isField = 1;
             return true;
@@ -298,7 +298,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
      * @return characteristic of this ring.
      */
     public java.math.BigInteger characteristic() {
-        return new java.math.BigInteger("" + modul);
+        return new java.math.BigInteger(Long.toString(modul));
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ThreadPool.java 4543 2013-07-30 12:24:09Z kredel $
+ * $Id: ThreadPool.java 4571 2013-08-18 19:00:31Z kredel $
  */
 
 // package edu.unima.ky.parallel;
@@ -318,7 +318,7 @@ class PoolThread extends Thread {
     ThreadPool pool;
 
 
-    private static final Logger logger = Logger.getLogger(ThreadPool.class);
+    private static final Logger logger = Logger.getLogger(PoolThread.class);
 
 
     private static boolean debug = logger.isDebugEnabled();

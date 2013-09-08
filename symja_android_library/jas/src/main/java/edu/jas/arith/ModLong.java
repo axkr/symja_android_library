@@ -1,5 +1,5 @@
 /*
- * $Id: ModLong.java 4148 2012-08-31 19:49:27Z kredel $
+ * $Id: ModLong.java 4609 2013-09-07 11:28:16Z rjolly $
  */
 
 package edu.jas.arith;
@@ -37,7 +37,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @param a math.BigInteger.
      */
     public ModLong(ModLongRing m, java.math.BigInteger a) {
-        this(m, a.mod(new java.math.BigInteger("" + m.modul)).longValue());
+        this(m, a.mod(m.getModul()).longValue());
     }
 
 
@@ -202,7 +202,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      */
     @Override
     public String toString() {
-        return "" + val;
+        return Long.toString(val);
     }
 
 
@@ -477,7 +477,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
             q = r;
             r = b;
         }
-        System.out.println("q = " + q + "\n c1 = " + c1 + "\n c2 = " + c2);
+        //System.out.println("q = " + q + "\n c1 = " + c1 + "\n c2 = " + c2);
         ret[0] = new ModLong(ring, q);
         ret[1] = new ModLong(ring, c1);
         ret[2] = new ModLong(ring, c2);

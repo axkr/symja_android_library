@@ -1,5 +1,5 @@
 /*
- * $Id: Complex.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: Complex.java 4588 2013-08-20 20:23:23Z kredel $
  */
 
 package edu.jas.poly;
@@ -197,7 +197,7 @@ public class Complex<C extends RingElem<C>> implements StarRingElem<Complex<C>>,
                 s.append(re.toScript());
                 if (mi.signum() > 0) {
                     s.append(" + ");
-	        } else {
+                } else {
                     s.append(" - ");
                     mi = mi.negate();
                 }

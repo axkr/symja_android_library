@@ -1,5 +1,5 @@
 /*
- * $Id: MultiVarPowerSeries.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: MultiVarPowerSeries.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.ps;
@@ -1286,6 +1286,16 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
             return ring.getZERO();
         }
         return this;
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a MultiVarPowerSeries
+     * @return [this/S, this - (this/S)*S].
+     */
+    public MultiVarPowerSeries<C>[] quotientRemainder(MultiVarPowerSeries<C> S) {
+        return new MultiVarPowerSeries[] { divide(S), remainder(S) };
     }
 
 

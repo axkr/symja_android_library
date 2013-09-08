@@ -1,5 +1,5 @@
 /*
- * $Id: UnivPowerSeries.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: UnivPowerSeries.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.ps;
@@ -726,6 +726,16 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
             return ring.getZERO();
         }
         return this;
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a UnivPowerSeries
+     * @return [this/S, this - (this/S)*S].
+     */
+    public UnivPowerSeries<C>[] quotientRemainder(UnivPowerSeries<C> S) {
+        return new UnivPowerSeries[] { divide(S), remainder(S) };
     }
 
 

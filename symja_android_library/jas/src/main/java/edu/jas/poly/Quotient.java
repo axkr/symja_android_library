@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: Quotient.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.poly;
@@ -356,6 +356,16 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>> {
             throw new ArithmeticException("element not invertible " + this);
         }
         return ring.getZERO();
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a Quotient
+     * @return [this/S, this - (this/S)*S].
+     */
+    public Quotient<C>[] quotientRemainder(Quotient<C> S) {
+        return new Quotient[] { divide(S), remainder(S) };
     }
 
 

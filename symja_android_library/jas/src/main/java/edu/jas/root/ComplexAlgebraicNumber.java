@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexAlgebraicNumber.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: ComplexAlgebraicNumber.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.root;
@@ -331,6 +331,16 @@ implements GcdRingElem<ComplexAlgebraicNumber<C>> {
      */
     public ComplexAlgebraicNumber<C> remainder(ComplexAlgebraicNumber<C> S) {
         return new ComplexAlgebraicNumber<C>(ring, number.remainder(S.number));
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a ComplexAlgebraicNumber
+     * @return [this/S, this - (this/S)*S].
+     */
+    public ComplexAlgebraicNumber<C>[] quotientRemainder(ComplexAlgebraicNumber<C> S) {
+        return new ComplexAlgebraicNumber[] { divide(S), remainder(S) };
     }
 
 

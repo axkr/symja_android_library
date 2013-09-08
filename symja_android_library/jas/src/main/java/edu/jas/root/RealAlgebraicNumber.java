@@ -1,5 +1,5 @@
 /*
- * $Id: RealAlgebraicNumber.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: RealAlgebraicNumber.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.root;
@@ -378,6 +378,16 @@ implements GcdRingElem<RealAlgebraicNumber<C>>, Rational {
      */
     public RealAlgebraicNumber<C> remainder(RealAlgebraicNumber<C> S) {
         return new RealAlgebraicNumber<C>(ring, number.remainder(S.number));
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a RealAlgebraicNumber
+     * @return [this/S, this - (this/S)*S].
+     */
+    public RealAlgebraicNumber<C>[] quotientRemainder(RealAlgebraicNumber<C> S) {
+        return new RealAlgebraicNumber[] { divide(S), remainder(S) };
     }
 
 

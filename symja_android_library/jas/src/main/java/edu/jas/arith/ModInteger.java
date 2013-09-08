@@ -1,5 +1,5 @@
 /*
- * $Id: ModInteger.java 4148 2012-08-31 19:49:27Z kredel $
+ * $Id: ModInteger.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -455,6 +455,16 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
         if (A == null)
             return null;
         return A.remainder(B);
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a modular integer
+     * @return [this/S, this - (this/S)*S].
+     */
+    public ModInteger[] quotientRemainder(ModInteger S) {
+        return new ModInteger[] { divide(S), remainder(S) };
     }
 
 

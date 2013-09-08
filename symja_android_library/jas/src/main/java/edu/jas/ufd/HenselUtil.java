@@ -1,5 +1,5 @@
 /*
- * $Id: HenselUtil.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id: HenselUtil.java 4588 2013-08-20 20:23:23Z kredel $
  */
 
 package edu.jas.ufd;
@@ -1735,7 +1735,7 @@ public class HenselUtil {
 
         // inplace modify polynomials, replace leading coefficient
         for ( GenPolynomial<BigInteger> ai : Fi ) {
-	    if ( ai.isZERO() ) {
+            if ( ai.isZERO() ) {
                 continue;
             }
             ExpVector ea = ai.leadingExpVector();

@@ -1,5 +1,5 @@
 /*
- * $Id: ChannelFactory.java 4229 2012-10-03 17:19:36Z kredel $
+ * $Id: ChannelFactory.java 4568 2013-08-18 15:55:39Z kredel $
  */
 
 //package edu.unima.ky.parallel;
@@ -116,7 +116,7 @@ public class ChannelFactory extends Thread {
      */
     @Override
     public String toString() {
-        return "" + this.getClass().getSimpleName() + "(" + srv + ", buf = " + buf.size() + ")";
+        return this.getClass().getSimpleName() + "(" + srv + ", buf = " + buf.size() + ")";
     }
 
 
@@ -151,6 +151,15 @@ public class ChannelFactory extends Thread {
     /**
      * Get a new socket channel to a given host.
      * @param h hostname
+     */
+    public SocketChannel getChannel(String h) throws IOException {
+        return getChannel(h,DEFAULT_PORT);
+    }
+
+
+    /**
+     * Get a new socket channel to a given host.
+     * @param h hostname
      * @param p port
      */
     public SocketChannel getChannel(String h, int p) throws IOException {
@@ -170,9 +179,8 @@ public class ChannelFactory extends Thread {
                 i++;
                 if (i % 50 == 0) {
                     delay += delay;
-                    logger.info("Server on " + h + " not ready in " + delay + "ms");
+                    logger.info("Server on " + h + ":" + p + " not ready in " + delay + "ms");
                 }
-                System.out.println("Server on " + h + " not ready in " + delay + "ms");
                 try {
                     Thread.sleep(delay);
                     if (i % 50 == 0 && debug) {
@@ -202,7 +210,7 @@ public class ChannelFactory extends Thread {
         srvrun = true;
         while (true) {
             try {
-                logger.info("waiting for connection");
+                logger.info("waiting for connection on " + srv);
                 Socket s = srv.accept();
                 if (this.isInterrupted()) {
                     //System.out.println("ChannelFactory interrupted");

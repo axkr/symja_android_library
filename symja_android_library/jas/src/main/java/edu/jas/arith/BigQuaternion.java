@@ -1,5 +1,5 @@
 /*
- * $Id: BigQuaternion.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: BigQuaternion.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -882,6 +882,16 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
     public BigQuaternion divide(BigRational b) {
         BigRational bi = b.inverse();
         return new BigQuaternion(re.multiply(bi), im.multiply(bi), jm.multiply(bi), km.multiply(bi));
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a quaternion number
+     * @return [this/S, this - (this/S)*S].
+     */
+    public BigQuaternion[] quotientRemainder(BigQuaternion S) {
+        return new BigQuaternion[] { divide(S), ZERO };
     }
 
 

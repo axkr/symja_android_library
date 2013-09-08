@@ -1,5 +1,5 @@
 /*
- * $Id: Local.java 4524 2013-07-27 11:06:24Z kredel $
+ * $Id: Local.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.poly;
@@ -388,9 +388,18 @@ public class Local<C extends RingElem<C>> implements RingElem<Local<C>> {
         }
         if (S.isUnit()) {
             return ring.getZERO();
-        } else {
-            throw new UnsupportedOperationException("remainder not implemented" + S);
         }
+        throw new UnsupportedOperationException("remainder not implemented" + S);
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a Local
+     * @return [this/S, this - (this/S)*S].
+     */
+    public Local<C>[] quotientRemainder(Local<C> S) {
+        return new Local[] { divide(S), remainder(S) };
     }
 
 

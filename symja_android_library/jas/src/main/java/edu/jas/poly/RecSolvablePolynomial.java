@@ -1,5 +1,5 @@
 /*
- * $Id: RecSolvablePolynomial.java 4442 2013-05-26 17:43:16Z kredel $
+ * $Id: RecSolvablePolynomial.java 4558 2013-08-04 19:06:34Z kredel $
  */
 
 package edu.jas.poly;
@@ -144,6 +144,7 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
      * @param Bp RecSolvablePolynomial.
      * @return this*Bp, where * denotes solvable multiplication.
      */
+    // not @Override
     public RecSolvablePolynomial<C> multiply(RecSolvablePolynomial<C> Bp) {
         if (Bp == null || Bp.isZERO()) {
             return ring.getZERO();
@@ -228,10 +229,10 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                             g1 = g.subst(gl1, 0);
                             g2 = Zc.subst(gl1, g.getVal(gl1));
                         }
-                        if (debug)
+                        if (debug) {
                             logger.info("coeff, e1 = " + e1 + ", e2 = " + e2 + ", Cps = " + Cps);
-                        if (debug)
                             logger.info("coeff, g1 = " + g1 + ", g2 = " + g2);
+                        }
                         TableRelation<GenPolynomial<C>> crel = ring.coeffTable.lookup(e2, g2);
                         if (debug)
                             logger.info("coeff, crel = " + crel.p);
@@ -307,14 +308,14 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                             Ds = (RecSolvablePolynomial<C>) zero.sum(one, h); // symmetric!
                         } else {
                             ExpVector g1 = g.subst(gl1, 0);
-                            ExpVector g2 = Z.subst(gl1, g.getVal(el1));
+                            ExpVector g2 = Z.subst(gl1, g.getVal(gl1)); // bug el1, gl1
                             ExpVector g4;
                             ExpVector f1 = f.subst(fl1, 0);
                             ExpVector f2 = Z.subst(fl1, f.getVal(fl1));
-                            if (debug)
+                            if (debug) {
                                 logger.info("poly, g1 = " + g1 + ", f1 = " + f1 + ", Dps = " + Dps);
-                            if (debug)
                                 logger.info("poly, g2 = " + g2 + ", f2 = " + f2);
+                            }
                             TableRelation<GenPolynomial<C>> rel = ring.table.lookup(g2, f2);
                             if (debug)
                                 logger.info("poly, g  = " + g + ", f  = " + f + ", rel = " + rel);
@@ -367,6 +368,7 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
      * @param T RecSolvablePolynomial.
      * @return S*this*T.
      */
+    // not @Override
     public RecSolvablePolynomial<C> multiply(RecSolvablePolynomial<C> S, RecSolvablePolynomial<C> T) {
         if (S.isZERO() || T.isZERO() || this.isZERO()) {
             return ring.getZERO();
@@ -442,6 +444,16 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
         // }
         // return Cp;
     }
+
+
+    /*
+     * RecSolvablePolynomial multiplication. Product with coefficient ring
+     * element.
+     * @param b coefficient of coefficient.
+     * @return this*b, where * is coefficient multiplication.
+     */
+    //@Override not possible
+    //public RecSolvablePolynomial<C> multiply(C b) { ... }
 
 
     /**
@@ -606,7 +618,21 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
     }
 
 
-    /*
+    /**
+     * RecSolvablePolynomial multiplication. Product with 'monomial'.
+     * @param m 'monomial'.
+     * @return this * m, where * denotes solvable multiplication.
+     */
+    @Override
+    public RecSolvablePolynomial<C> multiply(Map.Entry<ExpVector, GenPolynomial<C>> m) {
+        if (m == null) {
+            return ring.getZERO();
+        }
+        return multiply(m.getValue(), m.getKey());
+    }
+
+
+    /**
      * RecSolvablePolynomial multiplication. 
      * Left product with coefficient ring element.
      * @param B solvable polynomial.

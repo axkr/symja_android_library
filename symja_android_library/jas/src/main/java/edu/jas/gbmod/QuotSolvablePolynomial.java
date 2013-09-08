@@ -1,5 +1,5 @@
 /*
- * $Id: QuotSolvablePolynomial.java 4461 2013-06-23 10:54:02Z kredel $
+ * $Id: QuotSolvablePolynomial.java 4588 2013-08-20 20:23:23Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
+import edu.jas.poly.RecSolvablePolynomial;
 import edu.jas.poly.TableRelation;
 import edu.jas.structure.GcdRingElem;
 
@@ -197,7 +198,7 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
                 QuotSolvablePolynomial<C> Cps = ring.getZERO().copy();
                 QuotSolvablePolynomial<C> Cs;
                 QuotSolvablePolynomial<C> qp;
-                if (ring.coeffTable.isEmpty() || b.isConstant() || e.isZERO()) { // symmetric
+                if (ring.polCoeff.coeffTable.isEmpty() || b.isConstant() || e.isZERO()) { // symmetric
                     Cps = new QuotSolvablePolynomial<C>(ring, b, e);
                     if (debug)
                         logger.info("symmetric coeff: b = " + b + ", e = " + e);
@@ -206,75 +207,87 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
                         logger.info("unsymmetric coeff: b = " + b + ", e = " + e);
                     // compute e * b as ( e * 1/b.den ) * b.num
                     if (b.den.isONE()) { // recursion base
-                        for (Map.Entry<ExpVector, C> z : b.num.getMap().entrySet()) {
-                            C c = z.getValue();
-                            SolvableQuotient<C> cc = b.ring.getONE().multiply(c);
-                            ExpVector g = z.getKey();
-                            if (debug)
-                                logger.info("g = " + g + ", c = " + c);
-                            int[] gp = g.dependencyOnVariables();
-                            int gl1 = 0;
-                            if (gp.length > 0) {
-                                gl1 = gp[gp.length - 1];
-                            }
-                            int gl1s = b.ring.ring.nvar + 1 - gl1;
-                            if (debug) {
-                                logger.info("gl1s = " + gl1s);
-                            }
-                            // split e = e1 * e2, g = g1 * g2
-                            ExpVector e1 = e;
-                            ExpVector e2 = Z;
-                            if (!e.isZERO()) {
-                                e1 = e.subst(el1, 0);
-                                e2 = Z.subst(el1, e.getVal(el1));
-                            }
-                            ExpVector e4;
-                            ExpVector g1 = g;
-                            ExpVector g2 = Zc;
-                            if (!g.isZERO()) {
-                                g1 = g.subst(gl1, 0);
-                                g2 = Zc.subst(gl1, g.getVal(gl1));
-                            }
-                            if (debug)
-                                logger.info("coeff, e1 = " + e1 + ", e2 = " + e2);
-                            if (debug)
-                                logger.info("coeff, g1 = " + g1 + ", g2 = " + g2);
-                            TableRelation<GenPolynomial<C>> crel = ring.coeffTable.lookup(e2, g2);
-                            if (debug)
-                                logger.info("coeff, crel = " + crel.p);
-                            if (debug)
-                                logger.info("coeff, e  = " + e + " g, = " + g + ", crel = " + crel);
-                            Cs = ring.fromPolyCoefficients(crel.p); //QuotSolvablePolynomial<C>(ring, crel.p);
-                            // rest of multiplication and update relations
-                            if (crel.f != null) {
-                                SolvableQuotient<C> c2 = b.ring.getONE().multiply(crel.f);
-                                C2 = new QuotSolvablePolynomial<C>(ring, c2, Z);
-                                Cs = Cs.multiply(C2);
-                                if (crel.e == null) {
-                                    e4 = e2;
-                                } else {
-                                    e4 = e2.subtract(crel.e);
-                                }
-                                ring.coeffTable.update(e4, g2, ring.toPolyCoefficients(Cs));
-                            }
-                            if (crel.e != null) { // process left part
-                                C1 = new QuotSolvablePolynomial<C>(ring, one, crel.e);
-                                Cs = C1.multiply(Cs);
-                                ring.coeffTable.update(e2, g2, ring.toPolyCoefficients(Cs));
-                            }
-                            if (!g1.isZERO()) { // process right part
-                                SolvableQuotient<C> c2 = b.ring.getONE().multiply(g1);
-                                C2 = new QuotSolvablePolynomial<C>(ring, c2, Z);
-                                Cs = Cs.multiply(C2);
-                            }
-                            if (!e1.isZERO()) { // process left part
-                                C1 = new QuotSolvablePolynomial<C>(ring, one, e1);
-                                Cs = C1.multiply(Cs);
-                            }
-                            //System.out.println("e1*Cs*g1 = " + Cs);
-                            Cs = Cs.multiplyLeft(cc); // cc * Cs
-                            Cps = (QuotSolvablePolynomial<C>) Cps.sum(Cs);
-                        } // end b.num loop 
+                        // for (Map.Entry<ExpVector, C> z : b.num.getMap().entrySet()) {
+                        //     C c = z.getValue();
+                        //     SolvableQuotient<C> cc = b.ring.getONE().multiply(c);
+                        //     ExpVector g = z.getKey();
+                        //     if (debug)
+                        //         logger.info("g = " + g + ", c = " + c);
+                        //     int[] gp = g.dependencyOnVariables();
+                        //     int gl1 = 0;
+                        //     if (gp.length > 0) {
+                        //         gl1 = gp[gp.length - 1];
+                        //     }
+                        //     int gl1s = b.ring.ring.nvar + 1 - gl1;
+                        //     if (debug) {
+                        //         logger.info("gl1s = " + gl1s);
+                        //     }
+                        //     // split e = e1 * e2, g = g1 * g2
+                        //     ExpVector e1 = e;
+                        //     ExpVector e2 = Z;
+                        //     if (!e.isZERO()) {
+                        //         e1 = e.subst(el1, 0);
+                        //         e2 = Z.subst(el1, e.getVal(el1));
+                        //     }
+                        //     ExpVector e4;
+                        //     ExpVector g1 = g;
+                        //     ExpVector g2 = Zc;
+                        //     if (!g.isZERO()) {
+                        //         g1 = g.subst(gl1, 0);
+                        //         g2 = Zc.subst(gl1, g.getVal(gl1));
+                        //     }
+                        //     if (debug) {
+                        //         logger.info("coeff, e1 = " + e1 + ", e2 = " + e2);
+                        //         logger.info("coeff, g1 = " + g1 + ", g2 = " + g2);
+                        //     }
+                        //     TableRelation<GenPolynomial<C>> crel = ring.coeffTable.lookup(e2, g2);
+                        //     if (debug) {
+                        //         logger.info("coeff, crel = " + crel.p);
+                        //         logger.info("coeff, e  = " + e + " g, = " + g + ", crel = " + crel);
+                        //     }
+                        //     Cs = ring.fromPolyCoefficients(crel.p); //QuotSolvablePolynomial<C>(ring, crel.p);
+                        //     // rest of multiplication and update relations
+                        //     if (crel.f != null) {
+                        //         SolvableQuotient<C> c2 = b.ring.getONE().multiply(crel.f);
+                        //         C2 = new QuotSolvablePolynomial<C>(ring, c2, Z);
+                        //         Cs = Cs.multiply(C2);
+                        //         if (crel.e == null) {
+                        //             e4 = e2;
+                        //         } else {
+                        //             e4 = e2.subtract(crel.e);
+                        //         }
+                        //         ring.coeffTable.update(e4, g2, ring.toPolyCoefficients(Cs));
+                        //     }
+                        //     if (crel.e != null) { // process left part
+                        //         C1 = new QuotSolvablePolynomial<C>(ring, one, crel.e);
+                        //         Cs = C1.multiply(Cs);
+                        //         ring.coeffTable.update(e2, g2, ring.toPolyCoefficients(Cs));
+                        //     }
+                        //     if (!g1.isZERO()) { // process right part
+                        //         SolvableQuotient<C> c2 = b.ring.getONE().multiply(g1);
+                        //         C2 = new QuotSolvablePolynomial<C>(ring, c2, Z);
+                        //         Cs = Cs.multiply(C2);
+                        //     }
+                        //     if (!e1.isZERO()) { // process left part
+                        //         C1 = new QuotSolvablePolynomial<C>(ring, one, e1);
+                        //         Cs = C1.multiply(Cs);
+                        //     }
+                        //     //System.out.println("e1*Cs*g1 = " + Cs);
+                        //     Cs = Cs.multiplyLeft(cc); // cc * Cs
+                        //     Cps = (QuotSolvablePolynomial<C>) Cps.sum(Cs);
+                        // } // end b.num loop 
+                        // recursive polynomial coefficient multiplication : e * b.num
+                        RecSolvablePolynomial<C> rsp1 = new RecSolvablePolynomial<C>(ring.polCoeff,e);
+                        RecSolvablePolynomial<C> rsp2 = new RecSolvablePolynomial<C>(ring.polCoeff,b.num);
+                        RecSolvablePolynomial<C> rsp3 = rsp1.multiply(rsp2);
+                        QuotSolvablePolynomial<C> rsp = ring.fromPolyCoefficients(rsp3);
+                        Cps = rsp;
+                        if (rsp.compareTo(Cps) != 0) {
+                            logger.info("coeff-poly: Cps = " + Cps);
+                            logger.info("coeff-poly: rsp = " + rsp);
+                            //} else {
+                            //System.out.println("rsp.compareTo(Cps) == 0");
+                        }
                     } else { // b.den != 1
                         if (debug)
                             logger.info("coeff-num: Cps = " + Cps + ", num = " + b.num + ", den = " + b.den);
@@ -288,7 +301,6 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
                         QuotSolvablePolynomial<C> v = qv.multiply(qden);
                         QuotSolvablePolynomial<C> vl = qv.multiplyLeft(qden);
                         //System.out.println("v = " + v + ", vl = " + vl + ", qden = " + qden);
-                        //QuotSolvablePolynomial<C> vr = (QuotSolvablePolynomial<C>) v.reductum();
                         QuotSolvablePolynomial<C> vr = (QuotSolvablePolynomial<C>) v.subtract(vl);
                         SolvableQuotient<C> qdeni = new SolvableQuotient<C>(b.ring, b.ring.ring.getONE(), b.den);
                         //System.out.println("vr = " + vr + ", qdeni = " + qdeni);
@@ -343,14 +355,14 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
                             Ds = (QuotSolvablePolynomial<C>) zero.sum(one, h); // symmetric!
                         } else {
                             ExpVector g1 = g.subst(gl1, 0);
-                            ExpVector g2 = Z.subst(gl1, g.getVal(el1));
+                            ExpVector g2 = Z.subst(gl1, g.getVal(gl1)); // bug el1, gl1
                             ExpVector g4;
                             ExpVector f1 = f.subst(fl1, 0);
                             ExpVector f2 = Z.subst(fl1, f.getVal(fl1));
-                            if (debug)
+                            if (debug) {
                                 logger.info("poly, g1 = " + g1 + ", f1 = " + f1 + ", Dps = " + Dps);
-                            if (debug)
                                 logger.info("poly, g2 = " + g2 + ", f2 = " + f2);
+                            }
                             TableRelation<SolvableQuotient<C>> rel = ring.table.lookup(g2, f2);
                             if (debug)
                                 logger.info("poly, g  = " + g + ", f  = " + f + ", rel = " + rel);
@@ -622,7 +634,21 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
     }
 
 
-    /*
+    /**
+     * QuotSolvablePolynomial multiplication. Product with 'monomial'.
+     * @param m 'monomial'.
+     * @return this * m, where * denotes solvable multiplication.
+     */
+    @Override
+    public QuotSolvablePolynomial<C> multiply(Map.Entry<ExpVector, SolvableQuotient<C>> m) {
+        if (m == null) {
+            return ring.getZERO();
+        }
+        return multiply(m.getValue(), m.getKey());
+    }
+
+
+    /**
      * QuotSolvablePolynomial multiplication. 
      * Left product with coefficient ring element.
      * @param B solvable polynomial.

@@ -1,5 +1,5 @@
 /*
- * $Id: BigOctonion.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: BigOctonion.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -719,6 +719,16 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
     public BigOctonion divide(BigRational b) {
         // BigRational bi = b.inverse();
         return new BigOctonion(or.divide(b), oi.divide(b));
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a octonion number
+     * @return [this/S, this - (this/S)*S].
+     */
+    public BigOctonion[] quotientRemainder(BigOctonion S) {
+        return new BigOctonion[] { divide(S), ZERO };
     }
 
 

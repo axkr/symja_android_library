@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4406 2013-04-30 10:07:39Z kredel $
+ * $Id: Quotient.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.ufd;
@@ -243,7 +243,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         if (t != 0) {
             return t;
         }
-        if ( den.compareTo(b.den) == 0 ) {
+        if (den.compareTo(b.den) == 0) {
             return num.compareTo(b.num);
         }
         GenPolynomial<C> r = num.multiply(b.den);
@@ -270,7 +270,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
         if (a == null) {
             return false;
         }
-        return compareTo( a ) == 0;
+        return compareTo(a) == 0;
         //return num.equals(a.num) && den.equals(a.den);
     }
 
@@ -326,7 +326,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
             n = n.sum(num);
             return new Quotient<C>(ring, n, den, false);
         }
-        if ( den.compareTo(S.den) == 0 ) {
+        if (den.compareTo(S.den) == 0) {
             n = num.sum(S.num);
             return new Quotient<C>(ring, n, den, false);
         }
@@ -429,6 +429,16 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
 
 
     /**
+     * Quotient and remainder by division of this by S.
+     * @param S a Quotient
+     * @return [this/S, this - (this/S)*S].
+     */
+    public Quotient<C>[] quotientRemainder(Quotient<C> S) {
+        return new Quotient[] { divide(S), remainder(S) };
+    }
+
+
+    /**
      * Quotient multiplication.
      * @param S Quotient.
      * @return this*S.
@@ -467,7 +477,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
             n = n.multiply(num);
             return new Quotient<C>(ring, n, d, true);
         }
-        if ( den.compareTo(S.den) == 0 ) { // correct ?
+        if (den.compareTo(S.den) == 0) { // correct ?
             d = den.multiply(den);
             n = num.multiply(S.num);
             return new Quotient<C>(ring, n, d, true);

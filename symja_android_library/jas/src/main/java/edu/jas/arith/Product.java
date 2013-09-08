@@ -1,5 +1,5 @@
 /*
- * $Id: Product.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: Product.java 4616 2013-09-08 13:05:27Z kredel $
  */
 
 package edu.jas.arith;
@@ -664,6 +664,16 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
             }
         }
         return new Product<C>(ring, elem);
+    }
+
+
+    /**
+     * Quotient and remainder by division of this by S.
+     * @param S a product
+     * @return [this/S, this - (this/S)*S].
+     */
+    public Product<C>[] quotientRemainder(Product<C> S) {
+        return new Product[] { divide(S), remainder(S) };
     }
 
 
