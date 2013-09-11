@@ -13,7 +13,7 @@ import com.google.common.base.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is a string which only
- * contains digits
+ * contains digits.
  * 
  */
 public class DigitQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
