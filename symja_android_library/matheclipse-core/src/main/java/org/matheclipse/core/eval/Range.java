@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.matheclipse.core.generic.ExprComparator;
+import org.matheclipse.core.generic.interfaces.BiFunction;
+import org.matheclipse.core.generic.interfaces.BiPredicate;
+import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.BiFunction;
-import org.matheclipse.generic.interfaces.BiPredicate;
-import org.matheclipse.generic.interfaces.IUnaryIndexFunction;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

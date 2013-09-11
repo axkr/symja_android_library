@@ -9,10 +9,10 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.generic.combinatoric.KPermutationsIterable;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.generic.combinatoric.KPermutationsIterable;
 
 public class Expand extends AbstractFunctionEvaluator {
 	private static class Expander {

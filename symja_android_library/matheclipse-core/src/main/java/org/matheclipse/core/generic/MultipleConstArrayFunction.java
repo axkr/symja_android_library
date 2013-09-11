@@ -1,7 +1,7 @@
 package org.matheclipse.core.generic;
 
+import org.matheclipse.core.generic.interfaces.IArrayFunction;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IArrayFunction;
 
 public class MultipleConstArrayFunction implements IArrayFunction {
 	final IExpr fConstantExpr;

@@ -3,12 +3,12 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.combinatoric.KPartitionsIterable;
+import org.matheclipse.core.generic.combinatoric.KPermutationsIterable;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.combinatoric.KPartitionsIterable;
-import org.matheclipse.generic.combinatoric.KPermutationsIterable;
 
 public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 

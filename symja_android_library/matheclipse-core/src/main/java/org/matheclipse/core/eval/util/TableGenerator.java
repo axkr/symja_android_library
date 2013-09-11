@@ -2,10 +2,10 @@ package org.matheclipse.core.eval.util;
 
 import java.util.List;
 
+import org.matheclipse.core.generic.interfaces.IArrayFunction;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IArrayFunction;
-import org.matheclipse.generic.interfaces.IIterator;
 
 /**
  * Table structure generator (i.e. lists, vectors, matrices, tensors)

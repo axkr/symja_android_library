@@ -2,9 +2,9 @@ package org.matheclipse.core.generic;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IUnaryIndexFunction;
 
 /**
  * Clone a given AST and set the i-th argument of the new AST to {@code arg} in

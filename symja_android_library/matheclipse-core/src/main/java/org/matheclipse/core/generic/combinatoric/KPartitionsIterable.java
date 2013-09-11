@@ -1,4 +1,4 @@
-package org.matheclipse.generic.combinatoric;
+package org.matheclipse.core.generic.combinatoric;
 
 import java.util.Iterator;
 

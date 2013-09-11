@@ -1,7 +1,7 @@
 package org.matheclipse.core.generic;
 
+import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.BiPredicate;
 
 /**
  * A binary function which compares the first expression with the second expression for order.

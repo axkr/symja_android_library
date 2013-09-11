@@ -1,4 +1,4 @@
-package org.matheclipse.generic.interfaces;
+package org.matheclipse.core.generic.interfaces;
 
 import org.matheclipse.core.interfaces.IExpr;
 

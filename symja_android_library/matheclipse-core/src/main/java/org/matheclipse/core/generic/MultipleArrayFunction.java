@@ -1,9 +1,9 @@
 package org.matheclipse.core.generic;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.interfaces.IArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IArrayFunction;
 
 public class MultipleArrayFunction implements IArrayFunction {
 	final EvalEngine fEngine;

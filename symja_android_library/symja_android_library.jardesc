@@ -12,8 +12,7 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=symja_android_library/jas\/src\/main\/java"/>
-        <javaElement handleIdentifier="=symja_android_library/commons-math\/src\/main\/java"/>
-        <javaElement handleIdentifier="=symja_android_library/matheclipse-generic\/src\/main\/java"/>
+        <javaElement handleIdentifier="=symja_android_library/commons-math\/src\/main\/java"/> 
         <javaElement handleIdentifier="=symja_android_library/commons-math\/src\/main\/resources"/>
         <javaElement handleIdentifier="=symja_android_library/matheclipse-parser\/src\/main\/java"/>
         <javaElement handleIdentifier="=symja_android_library/matheclipse-core\/src\/main\/java"/>

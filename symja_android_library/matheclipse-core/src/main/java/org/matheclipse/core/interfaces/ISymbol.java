@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
-import org.matheclipse.generic.interfaces.INumericFunction;
 
 import com.google.common.base.Function;
 

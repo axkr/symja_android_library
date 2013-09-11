@@ -6,10 +6,10 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
+import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.interfaces.BiFunction;
 
 public class FoldList extends AbstractCoreFunctionEvaluator {
 

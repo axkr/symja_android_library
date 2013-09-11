@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
+import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.generic.util.HMArrayList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -35,7 +36,6 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
-import org.matheclipse.generic.interfaces.BiFunction;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

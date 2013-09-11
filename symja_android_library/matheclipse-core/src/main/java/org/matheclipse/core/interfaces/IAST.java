@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.reflection.system.Apart;
-import org.matheclipse.generic.interfaces.BiFunction;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

@@ -5,9 +5,9 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.combinatoric.KSubsetsList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.combinatoric.KSubsetsList;
 
 /**
  * Generate a list of all k-combinations from a given list

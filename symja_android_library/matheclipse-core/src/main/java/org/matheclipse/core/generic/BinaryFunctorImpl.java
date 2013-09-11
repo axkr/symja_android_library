@@ -1,6 +1,6 @@
 package org.matheclipse.core.generic;
 
-import org.matheclipse.generic.interfaces.BiFunction;
+import org.matheclipse.core.generic.interfaces.BiFunction;
 
 import com.google.common.base.Function;
 

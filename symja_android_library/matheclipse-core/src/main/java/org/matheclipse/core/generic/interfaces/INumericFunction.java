@@ -1,4 +1,4 @@
-package org.matheclipse.generic.interfaces;
+package org.matheclipse.core.generic.interfaces;
 
 /**
  * A INumericFunction provides a transformation of a <code>double</code> value

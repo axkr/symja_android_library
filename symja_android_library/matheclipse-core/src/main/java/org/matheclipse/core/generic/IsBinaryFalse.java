@@ -2,9 +2,9 @@ package org.matheclipse.core.generic;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.BiPredicate;
 
 /**
  * Check if the evaluation of a binary AST object gives <code>False</code>
