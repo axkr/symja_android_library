@@ -46,16 +46,15 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		RealMatrix matrix;
+		final IAST list = (IAST) ast.get(1);
 		try {
-
-			final IAST list = (IAST) ast.get(1);
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);
-
 		} catch (final ClassCastException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
+			// ClassCastException occurs in list2RealMatrix(),
+			// if the matrix elements aren't pure numerical values
+			FieldMatrix<ExprFieldElement> fieldMatrix = Convert.list2Matrix(list);
+			return matrixEval(fieldMatrix).getExpr();
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
