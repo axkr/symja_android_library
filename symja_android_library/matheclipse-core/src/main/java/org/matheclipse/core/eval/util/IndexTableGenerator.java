@@ -1,8 +1,7 @@
-package org.matheclipse.generic.nested;
+package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IIndexFunction;
 
 /**
  * Table structure generator (i.e. lists, vectors, matrices, tensors)

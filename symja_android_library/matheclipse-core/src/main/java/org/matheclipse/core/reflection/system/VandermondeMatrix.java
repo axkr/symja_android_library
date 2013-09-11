@@ -4,12 +4,12 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Power;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.IIndexFunction;
+import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IIndexFunction;
-import org.matheclipse.generic.nested.IndexTableGenerator;
 
 /**
  * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See <a

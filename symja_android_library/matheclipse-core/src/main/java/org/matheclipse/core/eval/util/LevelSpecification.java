@@ -1,10 +1,9 @@
-package org.matheclipse.core.generic;
+package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.generic.nested.LevelSpec;
 import org.matheclipse.parser.client.math.MathException;
 
 /**

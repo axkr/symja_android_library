@@ -1,10 +1,10 @@
-package org.matheclipse.generic.interfaces;
+package org.matheclipse.core.eval.util;
 
 /**
  * Interface for sequence specifications.
  * 
  * A sequence in the interval of <code>integer</code> numbers:
- * <code>[getStart(), getStart()+getStep(), getStart()+getStep(), ..., getEnd()]</code>
+ * <code>[getStart(), getStart()+getStep(), getStart()+2*getStep(), ..., getEnd()]</code>
  * 
  */
 public interface ISequence {
@@ -20,7 +20,7 @@ public interface ISequence {
 	 * Get the generated sequence of indices for this ISequence. Especially useful
 	 * for unit tests to check the sequence implementation.
 	 * 
-	 * @return <code>[getStart(), getStart()+getStep(), getStart()+getStep(), ..., getEnd()]</code>
+	 * @return <code>[getStart(), getStart()+getStep(), getStart()+2*getStep(), ..., getEnd()]</code>
 	 */
 	public abstract int[] getIndices();
 

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.List;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.generic.PositionConverter;
@@ -7,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.nested.NestedAlgorithms;
+import org.matheclipse.generic.interfaces.IPositionConverter;
 
 public class Extract extends AbstractFunctionEvaluator {
 
@@ -31,7 +33,7 @@ public class Extract extends AbstractFunctionEvaluator {
 	public static IExpr extract(final IAST list, final IAST position) {
 		final PositionConverter converter = new PositionConverter();
 		if ((position.size() > 1) && (position.get(1) instanceof IInteger)) {
-			return NestedAlgorithms.extract(list, position, converter, 1);
+			return extract(list, position, converter, 1);
 		} else {
 			// construct an array
 			// final IAST resultList = List();
@@ -43,5 +45,38 @@ public class Extract extends AbstractFunctionEvaluator {
 
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
+	}
+
+	/**
+	 * Traverse all <code>list</code> element's and filter out the elements in the given <code>positions</code> list.
+	 * 
+	 * @param list
+	 * @param positions
+	 * @param positionConverter
+	 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position objects in
+	 *            <code>positions</code>.
+	 * @param headOffsez
+	 */
+	public static IExpr extract(final IAST list, final List<? extends IExpr> positions,
+			final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
+		int p = 0;
+		IAST temp = list;
+		int posSize = positions.size() - 1;
+		IExpr expr = list;
+		for (int i = headOffset; i <= posSize; i++) {
+			p = positionConverter.toInt(positions.get(i));
+			if (temp == null || temp.size() <= p) {
+				return null;
+			}
+			expr = temp.get(p);
+			if (expr.isAST()) {
+				temp = (IAST) expr;
+			} else {
+				if (i < positions.size()) {
+					temp = null;
+				}
+			}
+		}
+		return expr;
 	}
 }

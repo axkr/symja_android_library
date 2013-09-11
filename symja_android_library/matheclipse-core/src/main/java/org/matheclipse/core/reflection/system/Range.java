@@ -8,11 +8,11 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.generic.UnaryRangeFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.nested.TableGenerator;
 
 public class Range implements IFunctionEvaluator {
 

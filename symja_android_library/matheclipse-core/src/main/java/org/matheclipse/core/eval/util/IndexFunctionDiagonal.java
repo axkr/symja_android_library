@@ -1,7 +1,6 @@
-package org.matheclipse.generic.nested;
+package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.IIndexFunction;
 
 /**
  * Evaluates to one of two given values. Useful for table generation.

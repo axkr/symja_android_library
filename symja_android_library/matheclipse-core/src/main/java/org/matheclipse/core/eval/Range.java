@@ -1,4 +1,4 @@
-package org.matheclipse.generic;
+package org.matheclipse.core.eval;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,7 +10,6 @@ import java.util.Set;
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.interfaces.Aggregator;
 import org.matheclipse.generic.interfaces.BiFunction;
 import org.matheclipse.generic.interfaces.BiPredicate;
 import org.matheclipse.generic.interfaces.IUnaryIndexFunction;
@@ -22,8 +21,6 @@ import com.google.common.collect.Sets;
 /**
  * Create a range for a given <code>List</code> instance
  * 
- * @param <IExpr>
- * @param <IAST>
  */
 public class Range implements Iterable<IExpr> {
 	class RangeIterator implements Iterator<IExpr> {
@@ -99,17 +96,6 @@ public class Range implements Iterable<IExpr> {
 		if (fStart > fEnd) {
 			throw new IndexOutOfBoundsException("Start index greater than end index");
 		}
-	}
-
-	/**
-	 * Aggregates the items in the given iterable using the given {@link Aggregator}.
-	 * 
-	 * @param aggregator
-	 *            The function that defines how the objects in this iterable have to be aggregated
-	 * @return The result of the aggregation of all the items in the given iterable
-	 */
-	public IExpr aggregate(Aggregator<IExpr> aggregator) {
-		return aggregator.aggregate(this);
 	}
 
 	/**

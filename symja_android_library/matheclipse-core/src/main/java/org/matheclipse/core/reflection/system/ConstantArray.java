@@ -9,13 +9,13 @@ import org.matheclipse.core.builtin.function.Array.ArrayIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleConstArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.generic.interfaces.IIterator;
-import org.matheclipse.generic.nested.TableGenerator;
 
 /**
  * Array structure generator for constant (i,j) value.

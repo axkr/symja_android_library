@@ -3,9 +3,9 @@ package org.matheclipse.core.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.eval.Range;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.generic.Range;
 
 /**
  * Create a range for a given <code>IAST</code> instance.

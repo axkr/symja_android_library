@@ -1,4 +1,4 @@
-package org.matheclipse.generic.nested;
+package org.matheclipse.core.eval.util;
 
 /**
  * A level specification definition for levels in nested lists.

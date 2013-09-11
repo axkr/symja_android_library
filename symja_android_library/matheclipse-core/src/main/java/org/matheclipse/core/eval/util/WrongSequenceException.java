@@ -1,4 +1,4 @@
-package org.matheclipse.generic;
+package org.matheclipse.core.eval.util;
 
 /**
  * Exception for wrong <code>ISequence</code> definitions.

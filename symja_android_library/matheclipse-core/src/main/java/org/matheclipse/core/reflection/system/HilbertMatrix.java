@@ -2,12 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.IIndexFunction;
+import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.generic.interfaces.IIndexFunction;
-import org.matheclipse.generic.nested.IndexTableGenerator;
 
 /**
  * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>

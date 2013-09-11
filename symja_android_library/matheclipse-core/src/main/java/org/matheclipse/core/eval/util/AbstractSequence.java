@@ -1,12 +1,11 @@
-package org.matheclipse.generic;
+package org.matheclipse.core.eval.util;
 
-import org.matheclipse.generic.interfaces.ISequence;
 
 /**
  * Basic abstract class for sequence specifications.
  * 
  * A sequence in the interval of <code>integer</code> numbers:
- * <code>[getStart(), getStart()+getStep(), getStart()+getStep(), ..., getEnd()]</code>
+ * <code>[getStart(), getStart()+getStep(), getStart()+2*getStep(), ..., getEnd()]</code>
  * 
  */
 public abstract class AbstractSequence implements ISequence {

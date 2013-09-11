@@ -1,4 +1,4 @@
-package org.matheclipse.generic.interfaces;
+package org.matheclipse.core.eval.util;
 
 public interface IIndexFunction<T> {
 	T evaluate(int[] index);

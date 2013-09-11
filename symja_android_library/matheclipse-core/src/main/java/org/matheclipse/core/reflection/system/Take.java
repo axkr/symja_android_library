@@ -3,12 +3,12 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.interfaces.ISequence;
 
 public class Take extends AbstractFunctionEvaluator {
 

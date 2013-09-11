@@ -1,4 +1,5 @@
-package org.matheclipse.generic;
+package org.matheclipse.core.eval.util;
+
 
 /**
  * A sequence specification.

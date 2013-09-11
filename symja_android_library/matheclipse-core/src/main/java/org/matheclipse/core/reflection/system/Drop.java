@@ -3,12 +3,11 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.generic.Algorithms;
-import org.matheclipse.generic.interfaces.ISequence;
 
 public class Drop extends AbstractFunctionEvaluator {
 
@@ -25,7 +24,7 @@ public class Drop extends AbstractFunctionEvaluator {
 				final IAST arg1 = (IAST) ast.get(1);
 				if (sequ != null) {
 					final IAST resultList = arg1.clone();
-					Algorithms.drop(resultList, sequ);
+					drop(resultList, sequ);
 					return resultList;
 				}
 			}
@@ -39,5 +38,23 @@ public class Drop extends AbstractFunctionEvaluator {
 
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
+	}
+
+	/**
+	 * Drop (remove) the list elements according to the <code>sequenceSpecification</code> for the list indexes.
+	 * 
+	 * @param <IExpr>
+	 * @param list
+	 * @param resultList
+	 * @param sequenceSpecification
+	 */
+	public static IAST drop(final IAST resultList, final ISequence sequenceSpecification) {
+		sequenceSpecification.setListSize(resultList.size());
+		int j = sequenceSpecification.getStart();
+		for (int i = j; i < sequenceSpecification.getEnd(); i += sequenceSpecification.getStep()) {
+			resultList.remove(j);
+			j += sequenceSpecification.getStep() - 1;
+		}
+		return resultList;
 	}
 }
