@@ -1,11 +1,12 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class Riffle extends AbstractFunctionEvaluator {
+public class Riffle extends AbstractCoreFunctionEvaluator {
 
 	public Riffle() {
 		super();
@@ -14,16 +15,16 @@ public class Riffle extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		if (ast.get(1).isAST()) {
-			IAST arg1 = (IAST) ast.get(1);
-			if (ast.get(2).isAST()) {
-				IAST arg2 = (IAST) ast.get(2);
-				return riffleAST(arg1, arg2);
-			} else {
-				IExpr arg2 = ast.get(2);
-				return riffleAtom(arg1, arg2);
-			}
 
+		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg2 = F.eval(ast.get(2));
+		if (arg1.isAST()) {
+			IAST list = (IAST) ast.get(1);
+			if (arg2.isAST()) {
+				return riffleAST(list, (IAST) arg2);
+			} else {
+				return riffleAtom(list, arg2);
+			}
 		}
 		return null;
 	}

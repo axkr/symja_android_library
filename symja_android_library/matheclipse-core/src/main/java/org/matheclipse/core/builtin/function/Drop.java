@@ -1,15 +1,20 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Sequence;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Drop extends AbstractFunctionEvaluator {
+/**
+ * Drop(list,n) - delete the first n arguments from the list. Negative n counts from the end.
+ * 
+ */
+public class Drop extends AbstractCoreFunctionEvaluator {
 
 	public Drop() {
 	}
@@ -18,12 +23,13 @@ public class Drop extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
+		final IExpr arg1 = F.eval(ast.get(1));
 		try {
-			if (ast.get(1).isAST()) {
+			if (arg1.isAST()) {
 				final ISequence sequ = Sequence.createSequence(ast.get(2));
-				final IAST arg1 = (IAST) ast.get(1);
+				final IAST list = (IAST) arg1;
 				if (sequ != null) {
-					final IAST resultList = arg1.clone();
+					final IAST resultList = list.clone();
 					drop(resultList, sequ);
 					return resultList;
 				}

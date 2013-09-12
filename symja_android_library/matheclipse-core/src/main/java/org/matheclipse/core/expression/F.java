@@ -184,6 +184,12 @@ public class F {
 			new org.matheclipse.core.builtin.function.Continue());
 	public final static ISymbol Definition = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "definition" : "Definition",
 			new org.matheclipse.core.builtin.function.Definition());
+	public final static ISymbol Delete = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "delete" : "Delete",
+			new org.matheclipse.core.builtin.function.Delete());
+	public final static ISymbol Depth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
+			new org.matheclipse.core.builtin.function.Depth());
+	public final static ISymbol Drop = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop",
+			new org.matheclipse.core.builtin.function.Drop());
 	public final static ISymbol Do = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do",
 			new org.matheclipse.core.builtin.function.Do());
 	public final static ISymbol First = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First",
@@ -204,6 +210,14 @@ public class F {
 			new org.matheclipse.core.builtin.function.Head());
 	public final static ISymbol If = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
 			new org.matheclipse.core.builtin.function.If());
+	public final static ISymbol Last = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last",
+			new org.matheclipse.core.builtin.function.Last());
+	public final static ISymbol LeafCount = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount",
+			new org.matheclipse.core.builtin.function.LeafCount());
+	public final static ISymbol Length = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length",
+			new org.matheclipse.core.builtin.function.Length());
+	public final static ISymbol MemberQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
+			new org.matheclipse.core.builtin.function.MemberQ());
 	public final static ISymbol Module = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
 			new org.matheclipse.core.builtin.function.Module());
 	public final static ISymbol N = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "n" : "N",
@@ -220,6 +234,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.NumberQ());
 	public final static ISymbol NumericQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ",
 			new org.matheclipse.core.builtin.function.NumericQ());
+	public final static ISymbol Position = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
+			new org.matheclipse.core.builtin.function.Position());
 	public final static ISymbol Prepend = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend",
 			new org.matheclipse.core.builtin.function.Prepend());
 	public final static ISymbol PrependTo = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prependto" : "PrependTo",
@@ -232,6 +248,12 @@ public class F {
 			new org.matheclipse.core.builtin.function.Rest());
 	public final static ISymbol Return = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "return" : "Return",
 			new org.matheclipse.core.builtin.function.Return());
+	public final static ISymbol Riffle = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "riffle" : "Riffle",
+			new org.matheclipse.core.builtin.function.Riffle());
+	public final static ISymbol RotateLeft = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateleft" : "RotateLeft",
+			new org.matheclipse.core.builtin.function.RotateLeft());
+	public final static ISymbol RotateRight = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight",
+			new org.matheclipse.core.builtin.function.RotateRight());
 	public final static ISymbol Sow = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow",
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
@@ -297,10 +319,8 @@ public class F {
 	public final static ISymbol D = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "d" : "D");
 	public final static ISymbol Decrement = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "decrement" : "Decrement");
 	public final static ISymbol Default = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "default" : "Default");
-	public final static ISymbol Delete = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "delete" : "Delete");
 	public final static ISymbol Denominator = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "denominator" : "Denominator");
-	public final static ISymbol Depth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth");
 	public final static ISymbol Derivative = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "derivative" : "Derivative");
 	public final static ISymbol Det = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "det" : "Det");
 	public final static ISymbol DiagonalMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonalmatrix"
@@ -313,7 +333,6 @@ public class F {
 	public final static ISymbol Divergence = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divergence" : "Divergence");
 	public final static ISymbol DivideBy = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divideby" : "DivideBy");
 	public final static ISymbol Dot = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dot" : "Dot");
-	public final static ISymbol Drop = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop");
 	public final static ISymbol Eigenvalues = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvalues" : "Eigenvalues");
 	public final static ISymbol Eigenvectors = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvectors"
@@ -398,10 +417,7 @@ public class F {
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "korderlesspartitions" : "KOrderlessPartitions");
 	public final static ISymbol KPartitions = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "kpartitions" : "KPartitions");
-	public final static ISymbol Last = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last");
 	public final static ISymbol LCM = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lcm" : "LCM");
-	public final static ISymbol LeafCount = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount");
-	public final static ISymbol Length = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length");
 	public final static ISymbol Less = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "less" : "Less");
 	public final static ISymbol LessEqual = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lessequal" : "LessEqual");
 	public final static ISymbol LetterQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "letterq" : "LetterQ");
@@ -427,7 +443,6 @@ public class F {
 	public final static ISymbol Max = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "max" : "Max");
 	public final static ISymbol Mean = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mean" : "Mean");
 	public final static ISymbol Median = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "median" : "Median");
-	public final static ISymbol MemberQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ");
 	public final static ISymbol Min = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "min" : "Min");
 	public final static ISymbol Mod = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mod" : "Mod");
 	public final static ISymbol MoebiusMu = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "moebiusmu" : "MoebiusMu");
@@ -477,7 +492,6 @@ public class F {
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialquotientremainder" : "PolynomialQuotientRemainder");
 	public final static ISymbol PolynomialRemainder = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialremainder"
 			: "PolynomialRemainder");
-	public final static ISymbol Position = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position");
 	public final static ISymbol Positive = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "positive" : "Positive");
 	public final static ISymbol PossibleZeroQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq"
 			: "PossibleZeroQ");
@@ -509,13 +523,9 @@ public class F {
 			: "ReplaceRepeated");
 	public final static ISymbol Resultant = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "resultant" : "Resultant");
 	public final static ISymbol Reverse = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reverse" : "Reverse");
-	public final static ISymbol Riffle = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "riffle" : "Riffle");
 	public final static ISymbol RootIntervals = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rootintervals"
 			: "RootIntervals");
 	public final static ISymbol Roots = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "roots" : "Roots");
-	public final static ISymbol RotateLeft = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateleft" : "RotateLeft");
-	public final static ISymbol RotateRight = F
-			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight");
 	public final static ISymbol Round = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "round" : "Round");
 	public final static ISymbol Rule = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rule" : "Rule");
 	public final static ISymbol RuleDelayed = F

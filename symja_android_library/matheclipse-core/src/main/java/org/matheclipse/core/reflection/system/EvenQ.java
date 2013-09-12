@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,7 +16,7 @@ import com.google.common.base.Predicate;
  * Returns <code>True</code> if the 1st argument is an even integer number;
  * <code>False</code> otherwise
  */
-public class EvenQ extends AbstractFunctionEvaluator implements
+public class EvenQ extends AbstractCoreFunctionEvaluator implements
 		Predicate<IExpr> {
 	/**
 	 * Constructor for the unary predicate

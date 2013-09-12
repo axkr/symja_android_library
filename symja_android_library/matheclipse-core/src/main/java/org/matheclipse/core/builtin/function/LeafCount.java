@@ -1,7 +1,7 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.visit.AbstractVisitorInt;
 
-public class LeafCount extends AbstractFunctionEvaluator {
+public class LeafCount extends AbstractCoreFunctionEvaluator {
 
 	/**
 	 * Calculate the number of leaves in an AST
@@ -56,8 +56,8 @@ public class LeafCount extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		
-		return F.integer(leafCount(ast.get(1)));
+
+		return F.integer(leafCount(F.eval(ast.get(1))));
 	}
 
 	public static int leafCount(IExpr expr) {

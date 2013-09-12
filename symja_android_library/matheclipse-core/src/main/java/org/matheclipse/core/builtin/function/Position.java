@@ -1,11 +1,12 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
@@ -14,7 +15,11 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 
 import com.google.common.base.Predicate;
 
-public class Position extends AbstractFunctionEvaluator {
+/**
+ * Position(list, pattern) - return the positions where the pattern occurs in list.
+ *
+ */
+public class Position extends AbstractCoreFunctionEvaluator {
 
 	public Position() {
 	}
@@ -23,14 +28,17 @@ public class Position extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		if (ast.get(1).isAST()) {
+		IExpr arg1 = F.eval(ast.get(1));
+		if (arg1.isAST()) {
+			IExpr arg2 = F.eval(ast.get(2));
 			if (ast.size() == 3) {
 				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
-				return position((IAST) ast.get(1), ast.get(2), level);
+				return position((IAST) arg1, arg2, level);
 			}
 			if (ast.size() == 4) {
-				final LevelSpec level = new LevelSpecification(ast.get(3), false);
-				return position((IAST) ast.get(1), ast.get(2), level);
+				IExpr arg3 = F.eval(ast.get(3));
+				final LevelSpec level = new LevelSpecification(arg3, false);
+				return position((IAST) arg1, arg2, level);
 			}
 		}
 		return null;
