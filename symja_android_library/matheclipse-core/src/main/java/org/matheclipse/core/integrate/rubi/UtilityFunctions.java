@@ -134,158 +134,9 @@ public class UtilityFunctions {
 	//
 	// should be buit-in ?
 	//
-	public static IAST Break() {
-		return ast($s("Break"));
-	}
-
-	public static IAST Return(final IExpr a) {
-		// TODO fix this
-		return unary($s("Return"), a);
-	}
-
-	public static IAST OrderedQ(final IExpr a) {
-		// TODO fix this
-		return unary($s("OrderedQ"), a);
-	}
-
-	public static IAST Sign(final IExpr a) {
-		// TODO fix this
-		return unary($s("Sign"), a);
-	}
-
-	public static IAST FullSimplify(final IExpr a) {
-		// TODO fix this
-		return unary($s("FullSimplify"), a);
-	}
-
-	public static IAST Increment(final IExpr a) {
-		// TODO fix this
-		return unary($s("Increment"), a);
-	}
-
-	public static IAST Decrement(final IExpr a) {
-		// TODO fix this
-		return unary($s("Decrement"), a);
-	}
-
-	public static IAST Distribute(final IExpr a) {
-		// TODO fix this
-		return unary($sDBG("Distribute"), a);
-	}
-
-	public static IAST FactorSquareFreeList(final IExpr a) {
-		// TODO fix this
-		return unary($sDBG("FactorSquareFreeList"), a);
-	}
-
-	public static IAST Reverse(final IExpr a) {
-		// TODO fix this
-		return unary($s("Reverse"), a);
-	}
-
 	public static IAST Protect(final IExpr a) {
 		// TODO fix this
 		return unary($s("Protect"), a);
-	}
-
-	public static IAST InverseFunction(final IExpr a) {
-		// TODO fix this
-		return unary($s("InverseFunction"), a);
-	}
-
-	public static IAST Count(final IExpr a0, final IExpr a1, final IExpr a2) {
-		// TODO
-		return ternary($s("Count"), a0, a1, a2);
-	}
-
-	public static IAST Exponent(final IExpr a0, final IExpr a1, final IExpr a2) {
-		// TODO
-		return ternary($sDBG("Exponent"), a0, a1, a2);
-	}
-
-	public static IAST LCM(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($sDBG("LCM"), a0, a1);
-	}
-
-	public static IAST Order(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Order"), a0, a1);
-	}
-
-	public static IAST Delete(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Delete"), a0, a1);
-	}
-
-	public static IAST Join(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Join"), a0, a1);
-	}
-
-	public static IAST TrigExpand(final IExpr a0) {
-		// TODO
-		return unary($sDBG("TrigExpand"), a0);
-	}
-
-	public static IAST While(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("While"), a0, a1);
-	}
-
-	public static IAST StringJoin(final IExpr a) {
-		// TODO fix this
-		return unary($s("StringJoin"), a);
-	}
-
-	public static IAST Drop(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Drop"), a0, a1);
-	}
-
-	public static IAST Take(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Take"), a0, a1);
-	}
-
-	public static IAST Print(final IExpr a0) {
-		// TODO
-		return unary($s("Print"), a0);
-	}
-
-	public static IAST Print(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Print"), a0, a1);
-	}
-
-	public static IAST PolynomialRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-		// TODO
-		return ternary($s("PolynomialRemainder"), a0, a1, a2);
-	}
-
-	public static IAST PolynomialQuotient(final IExpr a0, final IExpr a1, final IExpr a2) {
-		// TODO
-		return ternary($s("PolynomialQuotient"), a0, a1, a2);
-	}
-
-	public static IAST ReplacePart(final IExpr a0, final IExpr a1, final IExpr a2) {
-		// TODO
-		return ternary($sDBG("ReplacePart"), a0, a1, a2);
-	}
-
-	public static IAST Do(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($s("Do"), a0, a1);
-	}
-
-	public static IAST Reap(final IExpr a) {
-		// TODO fix this
-		return unary($s("Reap"), a);
-	}
-
-	public static IAST Sow(final IExpr a) {
-		// TODO fix this
-		return unary($s("Sow"), a);
 	}
 
 	// public static IAST Unprotect(final IExpr a) {
@@ -298,23 +149,9 @@ public class UtilityFunctions {
 	// return unary($s("DownValues"), a);
 	// }
 
-	public static IAST Length(final IExpr a) {
-		// TODO fix this
-		return unary($s("Length"), a);
-	}
-
-	public static IAST Scan(final IExpr a0, final IExpr a1) {
-		// TODO
-		return binary($sDBG("Scan"), a0, a1);
-	}
-
 	public static IAST ArcCoth(final IExpr a) {
 		// TODO fix this
 		return unary($s("ArcCoth"), a);
-	}
-
-	public static IAST Coefficient(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternary($sDBG("Coefficient"), a0, a1, a2);
 	}
 
 	public static IAST CosIntegral(final IExpr a) {
@@ -328,10 +165,6 @@ public class UtilityFunctions {
 
 	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
 		return binary($s("EllipticF"), a0, a1);
-	}
-
-	public static IAST Exponent(final IExpr a0, final IExpr a1) {
-		return binary($sDBG("Exponent"), a0, a1);
 	}
 
 	public static IAST ArcCsc(final IExpr a) {
@@ -364,10 +197,6 @@ public class UtilityFunctions {
 		return unary($s("FresnelS"), a);
 	}
 
-	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
-		return binary($sDBG("PolynomialQ"), a0, a1);
-	}
-
 	public static IAST SinIntegral(final IExpr a) {
 		// TODO fix this
 		return unary($s("SinIntegral"), a);
@@ -383,42 +212,12 @@ public class UtilityFunctions {
 		return unary($s("SinhIntegral"), a);
 	}
 
-	public static IAST AtomQ(final IExpr a) {
-		// TODO fix this
-		return unary($s("AtomQ"), a);
-	}
-
-	public static IAST Head(final IExpr a) {
-		// TODO fix this
-		return unary($s("Head"), a);
-	}
-
-	public static IAST Map(final IExpr a0, final IExpr a1) {
-		return binary($s("Map"), a0, a1);
-	}
-
-	public static IAST Unequal(final IExpr a0, final IExpr a1) {
-		return binary($s("Unequal"), a0, a1);
-	}
-
-	public static IAST Discriminant(final IExpr a0, final IExpr a1) {
-		return binary($s("Discriminant"), a0, a1);
-	}
-
-	public static IAST Erf(final IExpr a) {
-		return unary($s("Erf"), a);
-	}
-
 	public static IAST Erfi(final IExpr a) {
 		return unary($s("Erfi"), a);
 	}
 
 	public static IAST ExpIntegralEi(final IExpr a) {
 		return unary($s("ExpIntegralEi"), a);
-	}
-
-	public static IAST Gamma(final IExpr a0, final IExpr a1) {
-		return binary($s("Gamma"), a0, a1);
 	}
 
 	public static IAST LogIntegral(final IExpr a) {
@@ -433,28 +232,8 @@ public class UtilityFunctions {
 		return unary($s("ProductLog"), a);
 	}
 
-	public static IAST TrigReduce(final IExpr v) {
-		return unary($s("TrigReduce"), v);
-	}
-
-	public static IAST FractionalPart(final IExpr a) {
-		return unary($s("FractionalPart"), a);
-	}
-
-	public static IAST Throw(final IExpr a) {
-		return unary($s("Throw"), a);
-	}
-
-	public static IAST Catch(final IExpr a) {
-		return unary($sDBG("Catch"), a);
-	}
-
 	public static IAST Erfc(final IExpr a) {
 		return unary($s("Erfc"), a);
-	}
-
-	public static IAST Gamma(final IExpr a0) {
-		return unary($s("Gamma"), a0);
 	}
 
 	public static IAST LogGamma(final IExpr a0) {
