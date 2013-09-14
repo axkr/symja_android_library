@@ -11,7 +11,10 @@ Features:
 
 Online demo: 
     http://symjaweb.appspot.com/
-    
+
+See Wiki pages:
+    [[Home]]
+	
 Include the symja_android_library.jar in your classpath and start coding.
 
 Example 1:
