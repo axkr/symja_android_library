@@ -76,4 +76,4 @@ Symja is the underlying library for the following projects:
 * Symja Unit tests:
     https://bitbucket.org/axelclk/symjaunittests
 	
-axelclk_AT_gmail_DOT_com
+axelclk_AT_gmail_DOT_com 
