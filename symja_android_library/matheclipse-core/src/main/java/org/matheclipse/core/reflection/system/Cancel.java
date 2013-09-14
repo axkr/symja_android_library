@@ -25,9 +25,7 @@ import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 
 /**
- * Greatest common divisor of two polynomials. See: <a href=
- * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common divisor of two
- * polynomials</a>
+ * Cancel(expr) - cancels out common factors in numerators and denominators.
  */
 public class Cancel extends AbstractFunctionEvaluator {
 	/**

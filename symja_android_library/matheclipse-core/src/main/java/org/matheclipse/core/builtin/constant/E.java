@@ -7,12 +7,13 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Euler constant E
- *
+ * Euler's constant E
+ * 
+ * See: <a href="http://en.wikipedia.org/wiki/Exponential_function">Wikipedia - Exponential function</a>
  */
 public class E extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-  public E() {
-  }
+	public E() {
+	}
 
 	@Override
 	public void setUp(final ISymbol symbol) {
