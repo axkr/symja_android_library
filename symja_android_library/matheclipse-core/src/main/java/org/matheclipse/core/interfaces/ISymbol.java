@@ -183,6 +183,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
 	 * 
 	 * @return
+	 * @see ISymbol#FLAT
 	 */
 	public int getAttributes();
 

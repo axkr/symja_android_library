@@ -165,6 +165,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.AppendTo());
 	public final static ISymbol Apply = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply",
 			new org.matheclipse.core.builtin.function.Apply());
+	public final static ISymbol Attributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "attributes" : "Attributes",
+			new org.matheclipse.core.builtin.function.Attributes());
 	public final static ISymbol Array = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array",
 			new org.matheclipse.core.builtin.function.Array());
 	public final static ISymbol AtomQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ",
@@ -260,6 +262,8 @@ public class F {
 	public final static ISymbol RotateRight = F.initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight",
 			new org.matheclipse.core.builtin.function.RotateRight());
+	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes" : "SetAttributes",
+			new org.matheclipse.core.builtin.function.SetAttributes());
 	public final static ISymbol Sow = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow",
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
@@ -543,8 +547,6 @@ public class F {
 	public final static ISymbol Select = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
 	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set");
 
-	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes"
-			: "SetAttributes");
 	public final static ISymbol SetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed");
 	public final static ISymbol Sign = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sign" : "Sign");
 	public final static ISymbol SignCmp = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");

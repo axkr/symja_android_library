@@ -1,10 +1,10 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Set the attributes for a symbol
  * 
  */
-public class SetAttributes extends AbstractFunctionEvaluator {
+public class SetAttributes extends AbstractCoreFunctionEvaluator {
 
 	public SetAttributes() {
 	}
@@ -26,6 +26,7 @@ public class SetAttributes extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
+		IExpr arg2 = F.eval(ast.get(2));
 		if (ast.get(1).isSymbol()) {
 			final ISymbol sym = ((ISymbol) ast.get(1));
 			if (!EvalEngine.get().isPackageMode()) {
@@ -33,70 +34,60 @@ public class SetAttributes extends AbstractFunctionEvaluator {
 					throw new RuleCreationError(sym);
 				}
 			}
-			if (ast.get(2).isSymbol()) {
-				if (((ISymbol) ast.get(2)) == F.Flat) {
+			if (arg2.isSymbol()) {
+				ISymbol attribute = (ISymbol) arg2;
+				if (attribute == F.Flat) {
 					sym.setAttributes(ISymbol.FLAT);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.Listable) {
+				if (attribute == F.Listable) {
 					sym.setAttributes(ISymbol.LISTABLE);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.OneIdentity) {
+				if (attribute == F.OneIdentity) {
 					sym.setAttributes(ISymbol.ONEIDENTITY);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.Orderless) {
+				if (attribute == F.Orderless) {
 					sym.setAttributes(ISymbol.ORDERLESS);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.HoldAll) {
+				if (attribute == F.HoldAll) {
 					sym.setAttributes(ISymbol.HOLDALL);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.HoldFirst) {
+				if (attribute == F.HoldFirst) {
 					sym.setAttributes(ISymbol.HOLDFIRST);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.HoldRest) {
+				if (attribute == F.HoldRest) {
 					sym.setAttributes(ISymbol.HOLDREST);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.NHoldAll) {
+				if (attribute == F.NHoldAll) {
 					sym.setAttributes(ISymbol.NHOLDALL);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.NHoldFirst) {
+				if (attribute == F.NHoldFirst) {
 					sym.setAttributes(ISymbol.NHOLDFIRST);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.NHoldRest) {
+				if (attribute == F.NHoldRest) {
 					sym.setAttributes(ISymbol.NHOLDREST);
-
 					return F.Null;
 				}
 
-				if (((ISymbol) ast.get(2)) == F.NumericFunction) {
+				if (attribute == F.NumericFunction) {
 					sym.setAttributes(ISymbol.NUMERICFUNCTION);
-
 					return F.Null;
 				}
 
@@ -105,48 +96,48 @@ public class SetAttributes extends AbstractFunctionEvaluator {
 					final IAST lst = (IAST) ast.get(2);
 					int symbolAttributes = ISymbol.NOATTRIBUTE;
 					for (int i = 1; i < lst.size(); i++) {
-
-						if (((ISymbol) lst.get(i)) == F.Flat) {
+						ISymbol attribute = (ISymbol) lst.get(i);
+						if (attribute == F.Flat) {
 							sym.setAttributes(symbolAttributes | ISymbol.FLAT);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.Listable) {
+						if (attribute == F.Listable) {
 							sym.setAttributes(symbolAttributes | ISymbol.LISTABLE);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.OneIdentity) {
+						if (attribute == F.OneIdentity) {
 							sym.setAttributes(symbolAttributes | ISymbol.ONEIDENTITY);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.Orderless) {
+						if (attribute == F.Orderless) {
 							sym.setAttributes(symbolAttributes | ISymbol.ORDERLESS);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.HoldAll) {
+						if (attribute == F.HoldAll) {
 							sym.setAttributes(symbolAttributes | ISymbol.HOLDALL);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.HoldFirst) {
+						if (attribute == F.HoldFirst) {
 							sym.setAttributes(symbolAttributes | ISymbol.HOLDFIRST);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.HoldRest) {
+						if (attribute == F.HoldRest) {
 							sym.setAttributes(symbolAttributes | ISymbol.HOLDREST);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.NHoldAll) {
+						if (attribute == F.NHoldAll) {
 							sym.setAttributes(symbolAttributes | ISymbol.NHOLDALL);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.NHoldFirst) {
+						if (attribute == F.NHoldFirst) {
 							sym.setAttributes(symbolAttributes | ISymbol.NHOLDFIRST);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.NHoldRest) {
+						if (attribute == F.NHoldRest) {
 							sym.setAttributes(symbolAttributes | ISymbol.NHOLDREST);
 						}
 
-						if (((ISymbol) lst.get(i)) == F.NumericFunction) {
+						if (attribute == F.NumericFunction) {
 							sym.setAttributes(symbolAttributes | ISymbol.NUMERICFUNCTION);
 						}
 
@@ -159,18 +150,6 @@ public class SetAttributes extends AbstractFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.matheclipse.parser.interfaces.IEvaluator#setUp(org.matheclipse.parser
-	 * .interfaces.ISymbol)
-	 */
-	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDFIRST);
 	}
 
 }
