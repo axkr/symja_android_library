@@ -267,6 +267,12 @@ public abstract class ExprImpl implements IExpr {
 		return null;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isValue() {
+		return false;
+	}
+	
 	@Override
 	public final int isVector() {
 		// default: no vector

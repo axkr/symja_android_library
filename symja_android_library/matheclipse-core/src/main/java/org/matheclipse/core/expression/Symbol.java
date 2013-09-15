@@ -457,7 +457,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 	@Override
 	public boolean isTrue() {
 		return this.equals(F.True);
-		// return fSymbolName.equals("True");
 	}
 
 	/** {@inheritDoc} */
@@ -468,18 +467,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isValue(IAST ast) {
-		if (ast.head() instanceof ISymbol) {
-			IExpr result = ((ISymbol) ast.head()).evalDownRule(EvalEngine.get(), ast);
-			return result != null;
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isFalse() {
-		// return fSymbolName.equals("False");
 		return this.equals(F.False);
 	}
 

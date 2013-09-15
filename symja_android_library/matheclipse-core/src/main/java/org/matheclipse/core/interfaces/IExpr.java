@@ -687,6 +687,13 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isTrue();
 
 	/**
+	 * Returns <code>true</code>, if this symbol or ast expression is bound to a value (i.e. the evaluation returns an
+	 * <i>assigned</i> value).
+	 * 
+	 */
+	public boolean isValue();
+
+	/**
 	 * Test if this expression is a vector and return the dimension of the vector. This expression is only a vector, if no element
 	 * is itself a list.
 	 * 

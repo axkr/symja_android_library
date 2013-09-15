@@ -262,14 +262,16 @@ public class F {
 	public final static ISymbol RotateRight = F.initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight",
 			new org.matheclipse.core.builtin.function.RotateRight());
-	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes" : "SetAttributes",
-			new org.matheclipse.core.builtin.function.SetAttributes());
+	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes"
+			: "SetAttributes", new org.matheclipse.core.builtin.function.SetAttributes());
 	public final static ISymbol Sow = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow",
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
 			new org.matheclipse.core.builtin.function.Switch());
 	public final static ISymbol Throw = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw",
 			new org.matheclipse.core.builtin.function.Throw());
+	public final static ISymbol ValueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ",
+			new org.matheclipse.core.builtin.function.ValueQ());
 	public final static ISymbol Which = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which",
 			new org.matheclipse.core.builtin.function.Which());
 	public final static ISymbol While = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While",
@@ -606,7 +608,6 @@ public class F {
 	public final static ISymbol UpSet = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet");
 	public final static ISymbol UpSetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed"
 			: "UpSetDelayed");
-	public final static ISymbol ValueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ");
 	public final static ISymbol VandermondeMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vandermondematrix"
 			: "VandermondeMatrix");
 	public final static ISymbol Variables = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "variables" : "Variables");
@@ -1906,15 +1907,15 @@ public class F {
 
 		return binary(Expand, a0, a1);
 	}
-	
+
 	public static IAST ExpandAll(final IExpr a0) {
 		return unary(ExpandAll, a0);
 	}
-	
+
 	public static IAST Exponent(final IExpr a0, final IExpr a1) {
 		return binary(Exponent, a0, a1);
 	}
-	
+
 	public static IAST Exponent(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternary(Exponent, a0, a1, a2);
 	}
@@ -1930,6 +1931,7 @@ public class F {
 	public static IAST FactorSquareFreeList(final IExpr a) {
 		return unary(FactorSquareFreeList, a);
 	}
+
 	public static IAST Fibonacci(final IExpr a0) {
 		return unary(Fibonacci, a0);
 	}

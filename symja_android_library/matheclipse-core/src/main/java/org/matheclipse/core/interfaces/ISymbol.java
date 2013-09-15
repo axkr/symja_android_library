@@ -150,19 +150,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 */
 	public boolean isSymbolName(String name);
-
-	/**
-	 * Returns <code>true</code>, if this symbol is bound to a value.
-	 * 
-	 */
-	public boolean isValue();
-
-	/**
-	 * Returns <code>true</code>, if the given AST is bound to a value.
-	 * 
-	 */
-	public boolean isValue(IAST ast);
-
+ 
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the
 	 * symbol's evaluator is of instance <code>INumericConstant</code>, then

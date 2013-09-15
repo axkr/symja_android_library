@@ -1918,6 +1918,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return isOne();
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isValue() {
+		return evaluate(EvalEngine.get()) != null;
+	}
+	
 	@Override
 	public IExpr remainder(IExpr S) {
 		throw new UnsupportedOperationException();

@@ -409,8 +409,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * 
 	 * @return <code>this</code> after prepending the given expression.
 	 */
-	public IAST prepend(IExpr expr); 
-	
+	public IAST prepend(IExpr expr);
+
 	/**
 	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
 	 * 
