@@ -217,6 +217,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Head());
 	public final static ISymbol If = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
 			new org.matheclipse.core.builtin.function.If());
+	public final static ISymbol JavaForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
+			new org.matheclipse.core.builtin.function.JavaForm());
 	public final static ISymbol Last = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last",
 			new org.matheclipse.core.builtin.function.Last());
 	public final static ISymbol LeafCount = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount",
@@ -423,7 +425,6 @@ public class F {
 			: "JacobiMatrix");
 	public final static ISymbol JacobiSymbol = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "jacobisymbol"
 			: "JacobiSymbol");
-	public final static ISymbol JavaForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm");
 	public final static ISymbol Join = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "join" : "Join");
 	public final static ISymbol KOrderlessPartitions = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "korderlesspartitions" : "KOrderlessPartitions");

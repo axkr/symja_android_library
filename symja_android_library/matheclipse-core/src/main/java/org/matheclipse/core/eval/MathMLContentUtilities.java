@@ -2,10 +2,10 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 
+import org.matheclipse.core.builtin.function.JavaForm;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.MathMLContentFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.JavaForm;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 

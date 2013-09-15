@@ -21,14 +21,11 @@ public class Options {
 	/**
 	 * 
 	 * @param symbol
-	 *          the options symbol for determining &quot;default option
-	 *          values&quot;
+	 *            the options symbol for determining &quot;default option values&quot;
 	 * @param currentOptionsList
-	 *          the AST where the option could be defined starting at position
-	 *          <code>startIndex</code>
+	 *            the AST where the option could be defined starting at position <code>startIndex</code>
 	 * @param startIndex
-	 *          the index from which tolook for options defined in
-	 *          <code>currentOptionsList</code>
+	 *            the index from which tolook for options defined in <code>currentOptionsList</code>
 	 */
 	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex) {
 		// get the List of pre-defined options:
@@ -47,14 +44,24 @@ public class Options {
 		}
 	}
 
+	public Options(final ISymbol symbol, final IExpr optionExpr) {
+		// get the List of pre-defined options:
+		final IExpr temp = F.eval(Options(symbol));
+		if ((temp != null) && (temp instanceof IAST) && temp.isList()) {
+			fDefaultOptionsList = (IAST) temp;
+		} else {
+			fDefaultOptionsList = null;
+		}
+		this.fCurrentOptionsList = List();
+		this.fCurrentOptionsList.add(optionExpr);
+	}
+
 	/**
-	 * Get the option from the internal option list and check if it's
-	 * <code>true</code> or <code>false</code>.
+	 * Get the option from the internal option list and check if it's <code>true</code> or <code>false</code>.
 	 * 
 	 * @param optionString
-	 *          the option string
-	 * @return <code>true</code> if the option is set to <code>True</code> or
-	 *         <code>false</code> otherwise.
+	 *            the option string
+	 * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code> otherwise.
 	 */
 	public boolean isOption(final String optionString) {
 		IExpr temp = getOption(optionString);
@@ -65,18 +72,19 @@ public class Options {
 	 * Get the option from the internal option list.
 	 * 
 	 * @param optionString
-	 *          the option string
-	 * @return the found option value or <code>null</code> if the option is not
-	 *         available
+	 *            the option string
+	 * @return the found option value or <code>null</code> if the option is not available
 	 */
 	public IExpr getOption(final String optionString) {
 		IAST rule = null;
 		if (fCurrentOptionsList != null) {
 			try {
 				for (int i = 1; i < fCurrentOptionsList.size(); i++) {
-					rule = (IAST) fCurrentOptionsList.get(i);
-					if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
-						return rule.get(2);
+					if (fCurrentOptionsList.get(i).isAST()) {
+						rule = (IAST) fCurrentOptionsList.get(i);
+						if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
+							return rule.get(2);
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -86,9 +94,11 @@ public class Options {
 		if (fDefaultOptionsList != null) {
 			try {
 				for (int i = 1; i < fDefaultOptionsList.size(); i++) {
-					rule = (IAST) fDefaultOptionsList.get(i);
-					if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
-						return rule.get(2);
+					if (fDefaultOptionsList.get(i).isAST()) {
+						rule = (IAST) fDefaultOptionsList.get(i);
+						if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
+							return rule.get(2);
+						}
 					}
 				}
 			} catch (Exception e) {
