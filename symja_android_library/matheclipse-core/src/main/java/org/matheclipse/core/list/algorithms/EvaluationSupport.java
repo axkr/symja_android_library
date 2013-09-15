@@ -1,8 +1,5 @@
 package org.matheclipse.core.list.algorithms;
 
-import java.util.Collections;
-import java.util.Comparator;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
@@ -15,8 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class EvaluationSupport {
 
 	/**
-	 * Flatten the list [i.e. the list getHeader() has the attribute
-	 * ISymbol.FLAT] example: suppose the Symbol f has the attribute
+	 * Flatten the list [i.e. the list getHeader() has the attribute ISymbol.FLAT] example: suppose the Symbol f has the attribute
 	 * ISymbol.FLAT f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
 	 * 
 	 * @param ast
@@ -30,11 +26,10 @@ public class EvaluationSupport {
 		}
 		final ISymbol sym = ast.topHead();
 		if (ast.isAST(sym)) {
-			final IAST res = F.ast(sym);
-
-			if (flatten(sym, ast, res)) {
-				res.setEvalFlags(IAST.IS_FLATTENED);
-				return res;
+			final IAST result = ast.copyHead();
+			if (flatten(sym, ast, result)) {
+				result.setEvalFlags(IAST.IS_FLATTENED);
+				return result;
 			}
 		}
 		ast.setEvalFlags(IAST.IS_FLATTENED);
@@ -42,36 +37,36 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Flatten the list [i.e. the lists <code>get(0)</code> element has the same
-	 * head] example: suppose the head f should be flattened out:<br>
+	 * Flatten the list (i.e. the lists <code>get(0)</code> element has the same head) example: suppose the head f should be
+	 * flattened out:<br>
 	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
 	 * 
-	 * @param argList
-	 * @return <code>true</code> if a sublist was flattened out
+	 * @param head
+	 *            the head of the expression, which should be flattened.
+	 * @param sublist
+	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
+	 * @param result
+	 *            the <code>result</code> list, where all sublist elements with the same <code>head</code> should be appended.
+	 * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
 	 */
-	public static boolean flatten(final ISymbol head, final IAST argList, final IAST resultList) {
+	public static boolean flatten(final ISymbol head, final IAST sublist, final IAST result) {
 		boolean isEvaled = false;
-		IAST list;
-		final int astSize = argList.size();
+		IExpr expr;
+		final int astSize = sublist.size();
 		for (int i = 1; i < astSize; i++) {
-			if (argList.get(i).isAST()) {
-				list = (IAST) argList.get(i);
-				if (list.isAST(head)) {
-					isEvaled = true;
-					flatten(head, list, resultList);
-				} else {
-					resultList.add(list);
-				}
+			expr = sublist.get(i);
+			if (expr.isAST(head)) {
+				isEvaled = true;
+				flatten(head, (IAST) expr, result);
 			} else {
-				resultList.add(argList.get(i));
+				result.add(expr);
 			}
 		}
 		return isEvaled;
 	}
 
 	/**
-	 * Sort the list [i.e. the list getHeader() has the attribute
-	 * ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
+	 * Sort the list [i.e. the list getHeader() has the attribute ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
 	 * ISymbol.ORDERLESS f[z,d,a,b] ==> f[a,b,d,z]
 	 * 
 	 * @param session
@@ -82,7 +77,7 @@ public class EvaluationSupport {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
 			return;
 		}
-		
+
 		final int astSize = ast.size();
 		if (astSize > 2) {
 			IExpr temp;
@@ -128,9 +123,8 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Thread through all lists in the arguments of the IAST [i.e. the list
-	 * header has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
-	 * {Sin[2],Sin[x],Sin[Pi]}
+	 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute ISymbol.LISTABLE] example:
+	 * Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
 	 * 
 	 * @param list
 	 * @param listLength
