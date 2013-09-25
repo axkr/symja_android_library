@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,7 +18,9 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if ((ast.size() == 3) && (ast.get(1).isVector() >= 0)) {
+		Validate.checkSize(ast, 3);
+		
+		if (ast.get(1).isVector() >= 0) {
 			IAST variables = null;
 			if (ast.get(2).isSymbol()) {
 				variables = F.List();

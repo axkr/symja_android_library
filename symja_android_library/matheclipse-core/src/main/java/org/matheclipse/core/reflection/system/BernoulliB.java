@@ -16,7 +16,7 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Compute the Bernoulli number of the first kind.
  * 
- * See <a href="en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
+ * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
  * For better performing implementations see <a href=
  * "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
  * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
