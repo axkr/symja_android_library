@@ -724,7 +724,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	public IntegerSym jacobiSymbol(IntegerSym b) {
-		if (this.compareTo(IntegerSym.valueOf(1)) == 0) {
+		if (this.isOne()) {
 			return IntegerSym.valueOf(1);
 		}
 		if (this.compareTo(IntegerSym.valueOf(2)) == 0) {
