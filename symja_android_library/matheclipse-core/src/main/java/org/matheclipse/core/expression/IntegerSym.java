@@ -37,24 +37,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @return
 	 */
 	protected static IntegerSym newInstance(final BigInteger value) {
-		// IntegerSym z;
-		// if (Config.SERVER_MODE) {
-		// z = FACTORY.object();
-		// } else {
-		// z = new IntegerSym();
-		// }
 		IntegerSym z = new IntegerSym();
 		z.fInteger = value;
 		return z;
 	}
 
 	public static IntegerSym valueOf(final long value) {
-		// IntegerSym z;
-		// if (Config.SERVER_MODE) {
-		// z = FACTORY.object();
-		// } else {
-		// z = new IntegerSym();
-		// }
 		IntegerSym z = new IntegerSym();
 		z.fInteger = BigInteger.valueOf(value);
 		return z;
@@ -74,23 +62,10 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 *             if the specified character sequence does not contain a parsable large integer.
 	 */
 	public static IntegerSym valueOf(final String integerString, final int radix) {
-		// IntegerSym z;
-		// if (Config.SERVER_MODE) {
-		// z = FACTORY.object();
-		// } else {
-		// z = new IntegerSym();
-		// }
 		IntegerSym z = new IntegerSym();
 		z.fInteger = new BigInteger(integerString, radix);
 		return z;
 	}
-
-	// protected static IntegerImpl valueOf(final BigInteger value) {
-	// // IntegerImpl z = new IntegerImpl();
-	// final IntegerImpl z = FACTORY.object();
-	// z.fInteger = value.copy();
-	// return z;
-	// }
 
 	/**
 	 * 
@@ -187,20 +162,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * @return
-	 */
-	// public byte byteValue() {
-	// return fInteger.byteValue();
-	// }
-
-	/**
-	 * @param o
-	 * @return
-	 */
-	// public int compareTo(Object o) {
-	// return fInteger.compareTo(o);
-	// }
-	/**
 	 * @param val
 	 * @return
 	 */
@@ -227,20 +188,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public double doubleValue() {
 		return fInteger.doubleValue();
 	}
-
-	/**
-	 * @param n
-	 * @return
-	 */
-	// public BigInteger E(final int n) {
-	// return fInteger.E(n);
-	// }
-	/**
-	 * @return
-	 */
-	// public float floatValue() {
-	// return fInteger.floatValue();
-	// }
 
 	/**
 	 * Returns the greatest common divisor of this large integer and the one specified.
@@ -283,35 +230,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return lcm((IntegerSym) that);
 	}
 
-	// public BigInteger getRemainder() {
-	// return fInteger.getRemainder();
-	// }
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return fInteger.hashCode();
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	// public int intValue() {
-	// return fInteger.intValue();
-	// }
-
-	/**
-	 * @param precision
-	 * @return
-	 */
-	// public BigInteger inverseScaled(final int precision) {
-	// return fInteger.inverseScaled(precision);
-	// }
 	/**
 	 * @param that
 	 * @return
@@ -435,13 +359,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * @param isPreserved
-	 * @return
-	 */
-	// public Object preserve(boolean isPreserved) {
-	// return fInteger.preserve(isPreserved);
-	// }
-	/**
 	 * @return
 	 */
 	@Override
@@ -467,13 +384,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public BigInteger shiftRight(final int n) {
 		return fInteger.shiftRight(n);
 	}
-
-	/**
-	 * @return
-	 */
-	// public short shortValue() {
-	// return fInteger.shortValue();
-	// }
 
 	/**
 	 * @param that
@@ -506,41 +416,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return super.times(that);
 	}
 
-	/**
-	 * @param bytes
-	 * @param offset
-	 * @return
-	 */
-	// public int toByteArray(final byte[] bytes, final int offset) {
-	// return fInteger.toByteArray(bytes, offset);
-	// }
 	public byte[] toByteArray() {
 		return fInteger.toByteArray();
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	// public String toString() {
-	// return fInteger.toString();
-	// }
-	/**
-	 * @return
-	 */
-	// public Text toText() {
-	// return fInteger.toText();
-	// }
-
-	/**
-	 * @param radix
-	 * @return
-	 */
-	// public Text toText(final int radix) {
-	// return Text.valueOf(fInteger.toString(radix));
-	// // return fInteger.toText(radix);
-	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -787,9 +665,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 		final IntegerSym[] res = new IntegerSym[2];
 		BigInteger[] largeRes = fInteger.divideAndRemainder(that.fInteger);
-		// final BigInteger[] largeRes = new BigInteger[2];
-		// largeRes[0] = fInteger.divide(that.fInteger);
-		// largeRes[1] = largeRes[0].getRemainder();
 		res[0] = newInstance(largeRes[0]);
 		res[1] = newInstance(largeRes[1]);
 
@@ -1031,9 +906,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return "ZZ(" + value + "L)";
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
