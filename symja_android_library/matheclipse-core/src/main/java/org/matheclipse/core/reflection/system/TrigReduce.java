@@ -8,10 +8,10 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -22,9 +22,8 @@ import org.matheclipse.core.visit.VisitorExpr;
 /**
  * Transform products of trigonometric functions into &quot;linear form&quot;.
  * 
- * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities"
- * >List of trigonometric identities - Product-to-sum and sum-to-product
- * identities</a>
+ * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities" >List of
+ * trigonometric identities - Product-to-sum and sum-to-product identities</a>
  */
 public class TrigReduce implements IFunctionEvaluator {
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher(true);
@@ -73,7 +72,11 @@ public class TrigReduce implements IFunctionEvaluator {
 		IExpr temp = ast.get(1);
 		IExpr result = temp;
 		while (temp != null) {
-			result = evalExpandAll(temp);
+			result = temp;
+			if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
+				result = F.evalExpand(temp);
+			}
+
 			temp = result.accept(trigReduceVisitor);
 			if (temp != null) {
 				result = temp;

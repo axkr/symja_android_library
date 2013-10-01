@@ -307,6 +307,7 @@ public class F {
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficient" : "Coefficient");
 	public final static ISymbol CoefficientList = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficientlist"
 			: "CoefficientList");
+	public final static ISymbol Collect = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect");
 	public final static ISymbol Complement = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complement" : "Complement");
 	public final static ISymbol Complex = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex");
 	public final static ISymbol ComposeList = F
@@ -1376,6 +1377,10 @@ public class F {
 		return ternary(Coefficient, a0, a1, a2);
 	}
 
+	public static IAST Collect(final IExpr a0, final IExpr a1) {
+		return binary(Collect, a0, a1);
+	}
+
 	public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
 		if (a instanceof ISignedNumber && b instanceof ISignedNumber) {
 			return a.compareTo(b);
@@ -1551,7 +1556,6 @@ public class F {
 	}
 
 	public static IAST Condition(final IExpr a0, final IExpr a1) {
-
 		return binary(Condition, a0, a1);
 	}
 
@@ -1813,6 +1817,19 @@ public class F {
 		}
 	}
 
+	/**
+	 * Apply <code>ExpandAll[]</code> to the given expression and evaluate it. If no evaluation was possible this method returns the
+	 * given argument.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#eval(IExpr)
+	 */
+	public static IExpr evalExpand(IExpr a) {
+		return EvalEngine.eval(Expand(a));
+	}
+	
 	/**
 	 * Apply <code>ExpandAll[]</code> to the given expression and evaluate it. If no evaluation was possible this method returns the
 	 * given argument.

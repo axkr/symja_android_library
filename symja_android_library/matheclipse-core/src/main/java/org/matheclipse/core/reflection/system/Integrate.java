@@ -27,8 +27,10 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules0;
 import org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules1;
 import org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules10;
@@ -97,7 +99,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 
 		if (ast.get(1).isAST()) {
-			fx = F.evalExpandAll(ast.get(1));
+			// fx = F.evalExpandAll(ast.get(1));
+			fx = F.eval(F.Expand(ast.get(1)));
 			if (fx.isPlus()) {
 				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
 				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, ast.get(2))));
@@ -164,6 +167,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 
 				if (arg1.isTimes()) {
+					IExpr temp = integrateTimesTrigFunctions(arg1, symbol);
+					if (temp != null) {
+						return temp;
+					}
+
 					// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /;
 					// FreeQ[a,x]
 					IAST filterCollector = F.Times();
@@ -183,9 +191,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 
 				if (!ast.get(1).equals(fx)) {
-					IAST clon = ast.clone();
-					clon.set(1, fx);
-					return clon;
+					return F.Integrate.evalDownRule(EvalEngine.get(), ast);
+					// IAST clon = ast.clone();
+					// clon.set(1, fx);
+					// return clon;
 				}
 
 				final IExpr header = arg1.head();
@@ -229,6 +238,35 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 		}
 
+		return null;
+	}
+
+	/**
+	 * Try using the <code>TrigReduce</code> function to get a <code>Plus(...)</code> expression which could be integrated.
+	 * 
+	 * @param timesAST
+	 *            an IAST which is a <code>Times(...)</code> expression
+	 * @param arg2
+	 *            the symbol to get the indefinite integral for.
+	 * @return <code>null</code> if no trigonometric funtion could be found.
+	 */
+	private IExpr integrateTimesTrigFunctions(final IAST timesAST, ISymbol arg2) {
+		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
+		if (timesAST.isMember(isTrigFunction, false)) {
+			// use a symbol which is not in the symbols map
+			ISymbol pSymbol = new Symbol("$x$");
+			IExpr fx = F.eval(F.TrigReduce(timesAST));
+			if (fx.isPlus()) {
+				// Collect arguments for x
+				// Sin(f_) -> Sin(Collect(f, arg2))
+				fx = F.eval(F.ReplaceAll(
+						fx,
+						F.List(F.Rule(F.Sin(F.$p(pSymbol)), F.Sin(F.Collect(pSymbol, arg2))),
+								F.Rule(F.Cos(F.$p(pSymbol)), F.Cos(F.Collect(pSymbol, arg2))))));
+				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
+				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, arg2)));
+			}
+		}
 		return null;
 	}
 

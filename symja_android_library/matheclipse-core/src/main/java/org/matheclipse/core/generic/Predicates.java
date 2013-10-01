@@ -72,12 +72,11 @@ public class Predicates {
 		protected final IAST fAST;
 
 		/**
-		 * Define an unary AST with the header <code>head</code>. The
-		 * <code>apply()</code> method evaluates the cretaed AST with the given
-		 * expression and checks if the result equals <code>True</code>.
+		 * Define an unary AST with the header <code>head</code>. The <code>apply()</code> method evaluates the cretaed AST with the
+		 * given expression and checks if the result equals <code>True</code>.
 		 * 
 		 * @param head
-		 *          the AST's head expresion
+		 *            the AST's head expresion
 		 */
 		public IsUnaryTrue(final IExpr head) {
 			this(EvalEngine.get(), head);
@@ -87,9 +86,9 @@ public class Predicates {
 		 * Define an unary AST with the header <code>head</code>.
 		 * 
 		 * @param engine
-		 *          the evaluation engine
+		 *            the evaluation engine
 		 * @param head
-		 *          the AST's head expresion
+		 *            the AST's head expresion
 		 */
 		public IsUnaryTrue(final EvalEngine engine, final IExpr head) {
 			fEngine = EvalEngine.get();
@@ -97,8 +96,8 @@ public class Predicates {
 		}
 
 		/**
-		 * Check if the evaluation of an unary AST object gives <code>True</code>,
-		 * by setting the first argument of the AST to <code>arg</code>.
+		 * Check if the evaluation of an unary AST object gives <code>True</code>, by setting the first argument of the AST to
+		 * <code>arg</code>.
 		 * 
 		 */
 		public boolean apply(final IExpr arg) {
@@ -143,21 +142,18 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the object reference
-	 * being tested is an argument of the given AST. It does not defensively copy
-	 * the collection passed in, so future changes to it will alter the behavior
-	 * of the predicate.
+	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is an argument of the given AST. It
+	 * does not defensively copy the collection passed in, so future changes to it will alter the behavior of the predicate.
 	 * 
 	 * @param target
-	 *          the AST those arguments may contain the function input
+	 *            the AST those arguments may contain the function input
 	 */
 	public static Predicate<IExpr> in(IAST target) {
 		return new InASTPredicate(target);
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the input is an
-	 * <code>instanceof IPattern</code>.
+	 * Returns a predicate that evaluates to {@code true} if the input is an <code>instanceof IPattern</code>.
 	 * 
 	 * @return
 	 */
@@ -171,8 +167,7 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if
-	 * <code>input.isNumber()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if <code>input.isNumber()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -186,8 +181,7 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if
-	 * <code>input.isNumeric()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if <code>input.isNumeric()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -201,8 +195,7 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if
-	 * <code>input.isSignedNumber()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if <code>input.isSignedNumber()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -215,4 +208,22 @@ public class Predicates {
 		};
 	}
 
+	/**
+	 * Returns a predicate that evaluates to {@code true} if the <code>input</code> is an AST list, which contains one of the given
+	 * <b>header elements</b> at index position <code>0</code>.
+	 * 
+	 */
+	public static Predicate<IExpr> isAST(final ISymbol[] heads) {
+		return new Predicate<IExpr>() {
+			@Override
+			public boolean apply(IExpr input) {
+				for (int i = 0; i < heads.length; i++) {
+					if (input.isAST(heads[i])) {
+						return true;
+					}
+				}
+				return false;
+			}
+		};
+	}
 }
