@@ -14,8 +14,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import com.google.common.collect.ArrayListMultimap;
 
 /**
- * Match two arguments of an <code>Orderless</code> AST into a new resulting
- * expression.
+ * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
  * 
  * @see HashedPatternRules
  */
@@ -29,8 +28,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
-	 * <code>OP[lhs1Str, rhsStr, ....] := OP[rhsStr, ...]</code>
+	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>OP[lhs1Str, rhsStr, ....] := OP[rhsStr, ...]</code>
 	 * 
 	 * @param lhs1Str
 	 * @param lhs2Str
@@ -65,6 +63,18 @@ public class HashedOrderlessMatcher {
 	 * @param lhs1
 	 * @param lhs2
 	 * @param rhs
+	 */
+	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs) {
+		setUpHashRule(lhs1, lhs2, rhs, null);
+	}
+
+	/**
+	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
+	 * <code>OP[lhs1Str, rhsStr, ....] := OP[rhsStr, ...] /; condition</code>
+	 * 
+	 * @param lhs1
+	 * @param lhs2
+	 * @param rhs
 	 * @param condition
 	 */
 	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
@@ -73,8 +83,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST with the defined
-	 * <code>HashedPatternRules</code>.
+	 * Evaluate an <code>Orderless</code> AST with the defined <code>HashedPatternRules</code>.
 	 * 
 	 * @param orderlessAST
 	 * @return

@@ -19,7 +19,7 @@ public class HashedPatternRules {
 	private DownRulesData fRulesData = null;
 	private final IExpr fLHSPattern1;
 	private final IExpr fLHSPattern2;
-	// private final IExpr fCondition;
+//	 private final IExpr fCondition;
 	private final IExpr fRHS;
 
 	/**

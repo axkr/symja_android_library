@@ -30,7 +30,6 @@ import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
