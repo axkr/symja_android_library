@@ -27,9 +27,9 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 
 			IExpr f = ast.get(1);
 			IExpr current = ast.get(2);
-			int steps = Integer.MAX_VALUE;
+			int iterations = Integer.MAX_VALUE;
 			if (ast.size() == 4) {
-				steps = Validate.checkIntType(ast, 3);
+				iterations = Validate.checkIntType(ast, 3);
 			}
 			IExpr last;
 			do {
@@ -38,7 +38,7 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 				if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
 					IterationLimitExceeded.throwIt(iterationCounter, ast);
 				}
-			} while ((!current.isSame(last)) && (--steps > 0));
+			} while ((!current.isSame(last)) && (--iterations > 0));
 			return current;
 
 		} finally {
