@@ -149,7 +149,7 @@ public class QuarticSolver {
 				return biQuadraticSolve(a, c, e);
 			}
 			if (a.equals(e) && b.equals(d)) {
-				return specialQuadraticSolve2(a, b, c);
+				return quasiSymmetricQuarticSolve(a, b, c);
 			}
 			IAST result = F.List();
 			// 256*a^3*e^3 - 192*a^2*b*d*e^2 - 128*a^2*c^2*e^2 +144*a^2*c*d^2*e - 27*a^2*d^4 + 144*a*b^2*c*e^2 - 6*a*b^2*d^2*e -
@@ -432,7 +432,7 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * Solve the special case quartic equation <code>Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See <a
+	 * Solve the special case of a "Quasi-symmetric equations" <code>Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See <a
 	 * href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See Bronstein 1.6.2.4
 	 * 
 	 * @param a
@@ -440,7 +440,7 @@ public class QuarticSolver {
 	 * @param e
 	 * @return
 	 */
-	public static IAST specialQuadraticSolve2(IExpr a, IExpr b, IExpr c) {
+	public static IAST quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {
 		IAST result = F.List();
 		// Sqrt[b^2-4*a*c+8*a^2]
 		IExpr sqrt = F.eval(Sqrt(Plus(Power(b, C2), Times(CN1, C4, a, c), Times(ZZ(8L), Power(a, C2)))));
