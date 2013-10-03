@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 
@@ -31,7 +32,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a> See <a
  * href="http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots">Wikipedia - Cubic function</a> See <a
  * href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
- * 
  * 
  * 
  * <br />
@@ -145,6 +145,12 @@ public class QuarticSolver {
 		if (a.isZero()) {
 			return cubicSolve(b, c, d, e);
 		} else {
+			if (b.isZero() && d.isZero()) {
+				return biQuadraticSolve(a, c, e);
+			}
+			if (a.equals(e) && b.equals(d)) {
+				return specialQuadraticSolve2(a, b, c);
+			}
 			IAST result = F.List();
 			// 256*a^3*e^3 - 192*a^2*b*d*e^2 - 128*a^2*c^2*e^2 +144*a^2*c*d^2*e - 27*a^2*d^4 + 144*a*b^2*c*e^2 - 6*a*b^2*d^2*e -
 			// 80*a*b*c^2*d*e + 18*a*b*c*d^3 + 16*a*c^4*e - 4*a*c^3*d^2 - 27*b^4*e^2 + 18*b^3*c*d*e - 4*b^3*d^3 - 4*b^2*c^3*e +
@@ -396,5 +402,63 @@ public class QuarticSolver {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Solve the bi-quadratic expression. <code>Solve(a*x^4+bc*x^2+e==0,x)</code>.
+	 * 
+	 * See Bronstein 1.6.2.4
+	 * 
+	 * @param a
+	 * @param c
+	 * @param e
+	 * @return
+	 */
+	public static IAST biQuadraticSolve(IExpr a, IExpr c, IExpr e) {
+		IAST result = F.List();
+		// Sqrt[c^2-4*a*e]
+		IExpr sqrt = F.eval(Sqrt(Plus(Power(c,C2),Times(CN1,C4,a,e))));
+
+		// (-c+sqrt)/(2*a)
+		IExpr y1 = Times(Plus(Times(CN1, c), sqrt), Power(Times(C2, a), CN1));
+
+		// -(c+sqrt)/(2*a)
+		IExpr y2 = Times(CN1, Plus(c, sqrt), Power(Times(C2, a), CN1));
+		result.add(Sqrt(y1));
+		result.add(Times(CN1, Sqrt(y1)));
+		result.add(Sqrt(y2));
+		result.add(Times(CN1, Sqrt(y2)));
+		return createSet(result);
+	}
+
+	/**
+	 * Solve the special case quartic equation <code>Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See <a
+	 * href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See Bronstein 1.6.2.4
+	 * 
+	 * @param a
+	 * @param c
+	 * @param e
+	 * @return
+	 */
+	public static IAST specialQuadraticSolve2(IExpr a, IExpr b, IExpr c) {
+		IAST result = F.List();
+		// Sqrt[b^2-4*a*c+8*a^2]
+		IExpr sqrt = F.eval(Sqrt(Plus(Power(b, C2), Times(CN1, C4, a, c), Times(ZZ(8L), Power(a, C2)))));
+
+		// (-b+sqrt)/(2*a)
+		IExpr y1 = Times(Plus(Times(CN1, b), sqrt), Power(Times(C2, a), CN1));
+		// -(b+sqrt)/(2*a)
+		IExpr y2 = Times(CN1, Plus(b, sqrt), Power(Times(C2, a), CN1));
+
+		// (y1+Sqrt[y1^2-4])/2
+		result.add(Times(C1D2, Plus(y1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4))))));
+		// (y1-Sqrt[y1^2-4])/2
+		result.add(Times(C1D2, Plus(y1, Times(CN1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4)))))));
+		// (y2+Sqrt[y2^2-4])/2
+		result.add(Times(C1D2, Plus(y2, Sqrt(Plus(Power(y2, C2), Times(CN1, C4))))));
+		// (y2-Sqrt[y2^2-4])/2
+		result.add(Times(C1D2, Plus(y2, Times(CN1, Sqrt(Plus(Power(y2, C2), Times(CN1, C4)))))));
+
+		return createSet(result);
 	}
 }
