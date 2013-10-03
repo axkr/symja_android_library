@@ -27,14 +27,11 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Function for <a
- * href="http://en.wikipedia.org/wiki/Root-finding_algorithm">numerically
- * finding roots</a> of a univariate real function.
+ * Function for <a href="http://en.wikipedia.org/wiki/Root-finding_algorithm">numerically finding roots</a> of a univariate real
+ * function.
  * 
- * Uses the <a href=
- * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
- * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver,
- * RiddersSolver, SecantSolver</a> implementations.
+ * Uses the <a href= "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
+ * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver, RiddersSolver, SecantSolver</a> implementations.
  */
 public class FindRoot extends AbstractFunctionEvaluator {
 
@@ -67,7 +64,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		if ((ast.get(2).isList())) {
 			IAST list = (IAST) ast.get(2);
 			IExpr function = ast.get(1);
-			if (list.size() == 4 && list.get(1).isSymbol() && list.get(2).isSignedNumber() && list.get(3) instanceof ISignedNumber) {
+			if (list.size() >= 3 && list.get(1).isSymbol() && list.get(2).isSignedNumber()) {
 				if (function.isAST(F.Equal, 3)) {
 					function = F.Plus(((IAST) function).get(1), F.Times(F.CN1, ((IAST) function).get(2)));
 				}
@@ -80,7 +77,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	private double findRoot(ISymbol method, int maxIterations, IAST list, IExpr function) {
 		ISymbol xVar = (ISymbol) list.get(1);
 		ISignedNumber min = (ISignedNumber) list.get(2);
-		ISignedNumber max = (ISignedNumber) list.get(3);
+		ISignedNumber max = null;
+		if (list.size() > 3 && list.get(3) instanceof ISignedNumber) {
+			max = (ISignedNumber) list.get(3);
+		}
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
@@ -107,7 +107,13 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			// default: NewtonSolver
 			DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
 			BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
+			if (max == null) {
+				return solver2.solve(maxIterations, fNewton, min.doubleValue());
+			}
 			return solver2.solve(maxIterations, fNewton, min.doubleValue(), max.doubleValue());
+		}
+		if (max == null) {
+			return solver.solve(maxIterations, f, min.doubleValue());
 		}
 		return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 
