@@ -380,16 +380,19 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return F.Times(this, that);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSequence() {
 		return isSameHeadSizeGE(F.Sequence, 1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isListOfLists() {
 		if (head().equals(F.List)) {
@@ -404,25 +407,19 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isComplexInfinity() {
 		return isSameHead(F.DirectedInfinity, 1);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isDirectedInfinity() {
 		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isInfinity() {
 		return this.equals(F.CInfinity);
@@ -458,21 +455,25 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return isSameHeadSizeGE(F.Times, 3);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSin() {
 		return isSameHead(F.Sin, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isCos() {
 		return isSameHead(F.Cos, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTan() {
 		return isSameHead(F.Tan, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcSin() {
 		return isSameHead(F.ArcSin, 2);
@@ -484,56 +485,67 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return isSameHeadSizeGE(F.And, 3);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcCos() {
 		return isSameHead(F.ArcCos, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcTan() {
 		return isSameHead(F.ArcTan, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSinh() {
 		return isSameHead(F.Sinh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSlot() {
 		return isSameHead(F.Slot, 2) && get(1).isInteger();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSlotSequence() {
 		return isSameHead(F.SlotSequence, 2) && get(1).isInteger();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isCosh() {
 		return isSameHead(F.Cosh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTanh() {
 		return isSameHead(F.Tanh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcSinh() {
 		return isSameHead(F.ArcSinh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcCosh() {
 		return isSameHead(F.ArcCosh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcTanh() {
 		return isSameHead(F.ArcTanh, 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isLog() {
 		return isSameHead(F.Log, 2);
@@ -545,44 +557,49 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return isSameHeadSizeGE(F.Or, 3);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isOne() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isMinusOne() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isZero() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTrue() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isFalse() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSame(IExpr expression) {
 		return equals(expression);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSame(IExpr expression, double epsilon) {
 		return equals(expression);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int[] isMatrix() {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
@@ -624,6 +641,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
@@ -648,6 +666,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return -1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isFraction() {
 		return false;
