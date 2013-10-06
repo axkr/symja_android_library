@@ -1,23 +1,28 @@
 package org.matheclipse.core.polynomials;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C1D3;
+import static org.matheclipse.core.expression.F.C1D4;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.C3;
 import static org.matheclipse.core.expression.F.C4;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D4;
+import static org.matheclipse.core.expression.F.CN3;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -44,7 +49,7 @@ public class QuarticSolver {
 		if (convert2Coefficients(exprPoly, x, coefficients)) {
 			return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
 		}
-		return null;
+		return null;  
 	}
 
 	private static boolean convert2Coefficients(IExpr exprPoly, IExpr x, IExpr[] coefficients) {
@@ -450,8 +455,8 @@ public class QuarticSolver {
 		}
 	}
 
-	private static IAST createSet(IAST result) {
-		Set<IExpr> set1 = new HashSet<IExpr>();
+	public static IAST createSet(IAST result) {
+		Set<IExpr> set1 = new TreeSet<IExpr>();
 		for (int i = 1; i < result.size(); i++) {
 			IExpr temp = F.evalExpandAll(result.get(i));
 			if (!temp.equals(F.Indeterminate)) {

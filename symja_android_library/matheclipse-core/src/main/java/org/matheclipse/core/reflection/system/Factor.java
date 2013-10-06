@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
@@ -121,6 +122,16 @@ public class Factor extends AbstractFunctionEvaluator {
 		return result;
 	}
 
+	/**
+	 * Factor the <code>expr</code> with the option given in <code>ast</code>.
+	 * 
+	 * @param ast
+	 * @param expr
+	 * @param varList
+	 * @param factorSquareFree
+	 * @return
+	 * @throws JASConversionException
+	 */
 	public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree)
 			throws JASConversionException {
 		final Options options = new Options(ast.topHead(), ast, 2);
@@ -130,16 +141,27 @@ public class Factor extends AbstractFunctionEvaluator {
 		}
 		option = options.getOption("GaussianIntegers");
 		if (option != null && option.isTrue()) {
-			return factorComplex(expr, varList);
+			return factorComplex(expr, varList, F.Times, false);
 		}
 		option = options.getOption("Extension");
 		if (option != null && option.equals(F.CI)) {
-			return factorComplex(expr, varList);
+			return factorComplex(expr, varList, F.Times, false);
 		}
 		return null; // no evaluation
 	}
 
-	private static IExpr factorComplex(IExpr expr, List<IExpr> varList) throws JASConversionException {
+	/**
+	 * Factor the <code>expr</code> in the domain of GaussianIntegers.
+	 * 
+	 * @param expr
+	 * @param varList
+	 * @param head
+	 *            the head of the result AST
+	 * @param noGCDLCM
+	 * @return
+	 * @throws JASConversionException
+	 */
+	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 		TermOrder to = new TermOrder(TermOrder.INVLEX);
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
@@ -161,9 +183,11 @@ public class Factor extends AbstractFunctionEvaluator {
 		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
 		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(a);
 
-		IAST result = F.Times();
-		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-			result.add(F.fraction(gcd, lcm));
+		IAST result = F.ast(head);
+		if (!noGCDLCM) {
+			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+				result.add(F.fraction(gcd, lcm));
+			}
 		}
 		GenPolynomial<Complex<BigRational>> temp;
 		for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
@@ -174,7 +198,7 @@ public class Factor extends AbstractFunctionEvaluator {
 			result.add(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
 		}
 		return result;
-	} 
+	}
 
 	private static IAST factorModulus(IExpr expr, List<IExpr> varList, boolean factorSquareFree, IExpr option)
 			throws JASConversionException {
