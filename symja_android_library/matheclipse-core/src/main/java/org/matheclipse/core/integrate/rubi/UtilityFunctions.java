@@ -149,11 +149,6 @@ public class UtilityFunctions {
 	// return unary($s("DownValues"), a);
 	// }
 
-	public static IAST ArcCoth(final IExpr a) {
-		// TODO fix this
-		return unary($s("ArcCoth"), a);
-	}
-
 	public static IAST CosIntegral(final IExpr a) {
 		// TODO fix this
 		return unary($s("CosIntegral"), a);
@@ -165,26 +160,6 @@ public class UtilityFunctions {
 
 	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
 		return binary($s("EllipticF"), a0, a1);
-	}
-
-	public static IAST ArcCsc(final IExpr a) {
-		// TODO fix this
-		return unary($s("ArcCsc"), a);
-	}
-
-	public static IAST ArcCsch(final IExpr a) {
-		// TODO fix this
-		return unary($s("ArcCsch"), a);
-	}
-
-	public static IAST ArcSec(final IExpr a) {
-		// TODO fix this
-		return unary($s("ArcSec"), a);
-	}
-
-	public static IAST ArcSech(final IExpr a) {
-		// TODO fix this
-		return unary($s("ArcSech"), a);
 	}
 
 	public static IAST FresnelC(final IExpr a) {

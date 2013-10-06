@@ -152,6 +152,11 @@ public class F {
 	public final static ISymbol SurfaceGraphics = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surfacegraphics"
 			: "SurfaceGraphics");
 	public final static ISymbol ArcCosh = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccosh" : "ArcCosh");
+	public final static ISymbol ArcCoth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccoth" : "ArcCoth");
+	public final static ISymbol ArcCsc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccsc" : "ArcCsc");
+	public final static ISymbol ArcCsch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccsch" : "ArcCsch");
+	public final static ISymbol ArcSec = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsec" : "ArcSec");
+	public final static ISymbol ArcSech = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsech" : "ArcSech");
 	public final static ISymbol ArcSinh = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsinh" : "ArcSinh");
 	public final static ISymbol ArcTanh = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arctanh" : "ArcTanh");
 	public final static ISymbol Plot = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plot" : "Plot");
@@ -1141,9 +1146,29 @@ public class F {
 	}
 
 	public static IAST ArcCot(final IExpr a0) {
-		return unary($s("ArcCot"), a0);
+		return unary(ArcCot, a0);
 	}
 
+	public static IAST ArcCoth(final IExpr a0) {
+		return unary(ArcCoth, a0);
+	}
+	
+	public static IAST ArcCsc(final IExpr a0) {
+		return unary(ArcCsc, a0);
+	}
+	
+	public static IAST ArcCsch(final IExpr a0) {
+		return unary(ArcCsch, a0);
+	}
+	
+	public static IAST ArcSec(final IExpr a0) {
+		return unary(ArcSec, a0);
+	}
+	
+	public static IAST ArcSech(final IExpr a0) {
+		return unary(ArcSech, a0);
+	}
+	
 	public static IAST ArcSin(final IExpr a0) {
 
 		return unary(ArcSin, a0);
@@ -1165,7 +1190,6 @@ public class F {
 	}
 
 	public static IAST ArcTanh(final IExpr a0) {
-
 		return unary(ArcTanh, a0);
 	}
 
