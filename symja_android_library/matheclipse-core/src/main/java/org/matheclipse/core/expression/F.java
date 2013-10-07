@@ -2806,7 +2806,11 @@ public class F {
 	public static void popLocal(ISymbol temp) {
 		temp.popLocalVariable();
 	}
-
+	
+	public static IAST Positive(final IExpr a0) {
+		return unary(Positive, a0);
+	}
+	
 	public static IAST PossibleZeroQ(final IExpr a0) {
 		return unary(PossibleZeroQ, a0);
 	}

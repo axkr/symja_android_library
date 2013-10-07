@@ -19,26 +19,41 @@ public class HashedPatternRules {
 	private DownRulesData fRulesData = null;
 	private final IExpr fLHSPattern1;
 	private final IExpr fLHSPattern2;
-//	 private final IExpr fCondition;
+	private final IExpr fCondition;
+
 	private final IExpr fRHS;
 
 	/**
 	 * 
 	 * @param lhsPattern1
-	 *          first left-hand-side pattern
+	 *            first left-hand-side pattern
 	 * @param lhsPattern2
-	 *          second left-hand-side pattern
+	 *            second left-hand-side pattern
 	 * @param rhsResult
-	 *          the right-hand-side result
-	 * @param condition
-	 *          a condition test
+	 *            the right-hand-side result
 	 * @param defaultHashCode
-	 *          TODO
 	 */
 	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean defaultHashCode) {
+		this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
+	}
+
+	/**
+	 * 
+	 * @param lhsPattern1
+	 *            first left-hand-side pattern
+	 * @param lhsPattern2
+	 *            second left-hand-side pattern
+	 * @param rhsResult
+	 *            the right-hand-side result
+	 * @param condition
+	 *            a condition test
+	 * @param defaultHashCode
+	 *            TODO
+	 */
+	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr condition, boolean defaultHashCode) {
 		fLHSPattern1 = lhsPattern1;
 		fLHSPattern2 = lhsPattern2;
-		// fCondition = condition;
+		fCondition = condition;
 		fRHS = rhsResult;
 		if (defaultHashCode) {
 			hash1 = lhsPattern1.head().hashCode();
@@ -75,33 +90,52 @@ public class HashedPatternRules {
 		}
 		if (obj instanceof HashedPatternRules) {
 			HashedPatternRules other = (HashedPatternRules) obj;
-			if (hash1 != other.hash1)
+			if (hash1 != other.hash1) {
 				return false;
-			if (hash2 != other.hash2)
+			}
+			if (hash2 != other.hash2) {
 				return false;
+			}
 			if (fLHSPattern1 == null) {
-				if (other.fLHSPattern1 != null)
+				if (other.fLHSPattern1 != null) {
 					return false;
-			} else if (!fLHSPattern1.equals(other.fLHSPattern1))
+				}
+			} else if (!fLHSPattern1.equals(other.fLHSPattern1)) {
 				return false;
+			}
 			if (fLHSPattern2 == null) {
-				if (other.fLHSPattern2 != null)
+				if (other.fLHSPattern2 != null) {
 					return false;
-			} else if (!fLHSPattern2.equals(other.fLHSPattern2))
+				}
+			} else if (!fLHSPattern2.equals(other.fLHSPattern2)) {
 				return false;
-			// if (fCondition == null) {
-			// if (other.fCondition != null)
-			// return false;
-			// } else if (!fCondition.equals(other.fCondition))
-			// return false;
+			}
+			if (fCondition == null) {
+				if (other.fCondition != null) {
+					return false;
+				}
+			} else if (!fCondition.equals(other.fCondition)) {
+				return false;
+			}
 			if (fRHS == null) {
-				if (other.fRHS != null)
+				if (other.fRHS != null) {
 					return false;
-			} else if (!fRHS.equals(other.fRHS))
+				}
+			} else if (!fRHS.equals(other.fRHS)) {
 				return false;
+			}
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Get the Condition for this rule.
+	 * 
+	 * @return may return <code>null</code>.
+	 */
+	public IExpr getCondition() {
+		return fCondition;
 	}
 
 	/**
@@ -127,15 +161,18 @@ public class HashedPatternRules {
 	}
 
 	/**
-	 * Get (or create) the rule
-	 * <code>{&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
+	 * Get (or create) the rule <code>{&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
 	 * 
 	 * @return
-	 */
+	 */  
 	public DownRulesData getRulesData() {
 		if (fRulesData == null) {
 			fRulesData = new DownRulesData();
-			fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), fRHS, 0);
+			if (fCondition != null) {
+				fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition), 0);
+			} else {
+				fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), fRHS, 0);
+			}
 		}
 		return fRulesData;
 	}
