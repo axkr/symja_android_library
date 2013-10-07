@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: Quotient.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ufd;
@@ -201,7 +201,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         if (den.isONE()) {
@@ -216,7 +216,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -228,7 +228,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @param b Quotient.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Quotient<C> b) {
         if (b == null || b.isZERO()) {
             return this.signum();
@@ -421,8 +421,8 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
      * @return this - (this/S)*S.
      */
     public Quotient<C> remainder(Quotient<C> S) {
-        if (num.isZERO()) {
-            throw new ArithmeticException("element not invertible " + this);
+        if (S.isZERO()) {
+            throw new ArithmeticException("element not invertible " + S);
         }
         return ring.getZERO();
     }

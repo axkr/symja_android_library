@@ -1,5 +1,5 @@
 /*
- * $Id: ModLong.java 4609 2013-09-07 11:28:16Z rjolly $
+ * $Id: ModLong.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -211,7 +211,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return toString();
@@ -223,7 +223,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -235,7 +235,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @param b ModLong.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override 
+    @Override 
     public int compareTo(ModLong b) {
         long v = b.val;
         if (ring != b.ring) {

@@ -1,5 +1,5 @@
 /*
- * $Id: ResidueRing.java 4487 2013-07-10 20:25:23Z kredel $
+ * $Id: ResidueRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.application;
@@ -232,7 +232,7 @@ public class ResidueRing<C extends GcdRingElem<C> >
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "RC(" + ideal.list.toScript() + ")";

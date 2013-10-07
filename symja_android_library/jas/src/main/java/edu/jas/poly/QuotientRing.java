@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 3365 2010-10-24 12:59:34Z kredel $
+ * $Id: QuotientRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -26,6 +26,7 @@ public class QuotientRing<C extends RingElem<C> >
              implements RingFactory< Quotient<C> >  {
 
      private static final Logger logger = Logger.getLogger(QuotientRing.class);
+
      private boolean debug = logger.isDebugEnabled();
 
 
@@ -160,7 +161,7 @@ public class QuotientRing<C extends RingElem<C> >
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "QuotientRing(" + ring.toScript() + ")";
@@ -171,7 +172,7 @@ public class QuotientRing<C extends RingElem<C> >
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    @SuppressWarnings("unchecked") // not jet working
+    @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
         if ( ! ( b instanceof QuotientRing ) ) {
            return false;

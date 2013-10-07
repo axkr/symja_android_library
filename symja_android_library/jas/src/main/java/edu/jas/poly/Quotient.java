@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: Quotient.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -191,7 +191,7 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "Quotient( " + num.toScript() + " , " + den.toScript() + " )";
@@ -203,7 +203,7 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -215,7 +215,7 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>> {
      * @param b Quotient.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Quotient<C> b) {
         if (b == null || b.isZERO()) {
             return this.signum();
@@ -231,9 +231,8 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>> {
      * Comparison with any other object.
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    @SuppressWarnings("unchecked")
-    // not jet working
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
         if (!(b instanceof Quotient)) {
             return false;

@@ -1,10 +1,11 @@
 /*
- * $Id: BasicLinAlg.java 3584 2011-03-26 11:39:39Z kredel $
+ * $Id: BasicLinAlg.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.vector;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +23,7 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel
  */
 
-public class BasicLinAlg<C extends RingElem<C>> {
+public class BasicLinAlg<C extends RingElem<C>> implements Serializable {
 
 
     private static final Logger logger = Logger.getLogger(BasicLinAlg.class);

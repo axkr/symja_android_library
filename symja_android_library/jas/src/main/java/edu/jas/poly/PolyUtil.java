@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4378 2013-04-26 16:50:33Z kredel $
+ * $Id: PolyUtil.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.poly;
@@ -2426,6 +2426,68 @@ public class PolyUtil {
             list.add(b);
         }
         return list;
+    }
+
+
+    /**
+     * Intersection. Intersection of a list of polynomials with a
+     * polynomial ring. The polynomial ring must be a contraction of
+     * the polynomial ring of the list of polynomials and the
+     * TermOrder must be an elimination order.
+     * @param R polynomial ring
+     * @param F list of polynomials
+     * @return R \cap F
+     */
+    public static <C extends RingElem<C>> List<GenPolynomial<C>> intersect(GenPolynomialRing<C> R, List<GenPolynomial<C>> F) {
+        if (F == null || F.isEmpty() ) {
+            return F; 
+        }
+        GenPolynomialRing<C> pfac = F.get(0).ring;
+        int d = pfac.nvar - R.nvar;
+        if (d <= 0) {
+            return F;
+        }
+        List<GenPolynomial<C>> H = new ArrayList<GenPolynomial<C>>(F.size());
+        for (GenPolynomial<C> p : F) {
+            Map<ExpVector, GenPolynomial<C>> m = null;
+            m = p.contract(R);
+            if (logger.isDebugEnabled()) {
+                logger.debug("intersect contract m = " + m);
+            }
+            if (m.size() == 1) { // contains one power of variables
+                for (Map.Entry<ExpVector, GenPolynomial<C>> me : m.entrySet()) {
+                    ExpVector e = me.getKey();
+                    if (e.isZERO()) {
+                        H.add(me.getValue());
+                    }
+                }
+            }
+        }
+        GenPolynomialRing<C> tfac = pfac.contract(d);
+        if (tfac.equals(R)) { // check 
+            return H;
+        }
+        logger.warn("tfac != R: tfac = " + tfac.toScript() + ", R = " + R.toScript());
+        // throw new RuntimeException("contract(pfac) != R");
+        return H;
+    }
+
+
+    /**
+     * Intersection. Intersection of a list of solvable polynomials
+     * with a solvable polynomial ring. The solvable polynomial ring
+     * must be a contraction of the solvable polynomial ring of the
+     * list of polynomials and the TermOrder must be an elimination
+     * order.
+     * @param R solvable polynomial ring
+     * @param F list of solvable polynomials
+     * @return R \cap F
+     */
+    public static <C extends RingElem<C>> List<GenSolvablePolynomial<C>> intersect(GenSolvablePolynomialRing<C> R, List<GenSolvablePolynomial<C>> F) {
+        List<GenPolynomial<C>> Fp = PolynomialList.<C> castToList(F);
+        GenPolynomialRing<C> Rp = (GenPolynomialRing<C>) R;
+        List<GenPolynomial<C>> H = intersect(Rp,Fp);
+        return PolynomialList.<C> castToSolvableList(H); 
     }
 
 

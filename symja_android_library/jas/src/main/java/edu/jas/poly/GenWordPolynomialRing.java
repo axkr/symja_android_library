@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomialRing.java 4523 2013-07-27 10:54:39Z kredel $
+ * $Id: GenWordPolynomialRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -155,7 +155,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         StringBuffer s = new StringBuffer();
         switch (Scripting.getLang()) {

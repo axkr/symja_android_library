@@ -1,5 +1,5 @@
 /*
- * $Id: ExpVectorByte.java 4270 2012-10-24 20:41:11Z kredel $
+ * $Id: ExpVectorByte.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.poly;
@@ -457,8 +457,8 @@ public final class ExpVectorByte extends ExpVector
      */
     public ExpVectorByte subst(int i, byte d) {
         ExpVectorByte V = this.copy();
-        @SuppressWarnings("unused")
-        long e = V.setVal(i, d);
+        //long e = 
+        V.setVal(i, d);
         return V;
         //return EVSU(this, i, d);
     }
@@ -473,8 +473,8 @@ public final class ExpVectorByte extends ExpVector
     @Override
     public ExpVectorByte subst(int i, long d) {
         ExpVectorByte V = this.copy();
-        @SuppressWarnings("unused")
-        long e = V.setVal(i, d);
+        //long e = 
+        V.setVal(i, d);
         return V;
         //return EVSU(this, i, d);
     }

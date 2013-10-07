@@ -1,5 +1,5 @@
 /*
- * $Id: GenMatrix.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: GenMatrix.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.vector;
@@ -155,7 +155,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer();
@@ -189,7 +189,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -305,7 +305,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
      * @param b other
      * @return 1 if (this &lt; b), 0 if (this == b) or -1 if (this &gt; b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(GenMatrix<C> b) {
         if (!ring.equals(b.ring)) {
             return -1;

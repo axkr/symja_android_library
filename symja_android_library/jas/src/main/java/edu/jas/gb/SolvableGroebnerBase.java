@@ -1,11 +1,12 @@
 /*
- * $Id: SolvableGroebnerBase.java 4385 2013-04-27 13:34:38Z kredel $
+ * $Id: SolvableGroebnerBase.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.gb;
 
 
 import java.util.List;
+import java.io.Serializable;
 
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.RingElem;
@@ -18,7 +19,7 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel.
  */
 
-public interface SolvableGroebnerBase<C extends RingElem<C>> {
+public interface SolvableGroebnerBase<C extends RingElem<C>> extends Serializable {
 
 
     /**

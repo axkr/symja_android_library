@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionSeq.java 4104 2012-08-18 10:00:59Z kredel $
+ * $Id: SolvableReductionSeq.java 4627 2013-09-11 14:49:39Z kredel $
  */
 
 package edu.jas.gb;
@@ -185,7 +185,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 //Q = p[i].multiplyLeft( a, e );
                 Q = p[i].multiplyLeft(e);
                 a = a.divide(Q.leadingBaseCoefficient());
-                Q = Q.multiply(a);
+                Q = Q.multiplyLeft(a);
                 S = (GenSolvablePolynomial<C>) S.subtract(Q);
                 fac = row.get(i);
                 if (fac == null) {
@@ -274,6 +274,93 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 a = a.divide(Q.leadingBaseCoefficient());
                 Q = Q.multiply(a);
                 S = (GenSolvablePolynomial<C>) S.subtract(Q);
+            }
+        }
+        return R;
+    }
+
+
+    /**
+     * RightNormalform with recording.
+     * @param row recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
+     */
+    @SuppressWarnings("unchecked")
+    public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
+            List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
+        }
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
+        }
+        int l = Pp.size();
+        GenSolvablePolynomial<C>[] P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
+        synchronized (Pp) {
+            //P = Pp.toArray();
+            for (int i = 0; i < Pp.size(); i++) {
+                P[i] = Pp.get(i);
+            }
+        }
+        ExpVector[] htl = new ExpVector[l];
+        Object[] lbc = new Object[l]; // want <C>
+        GenSolvablePolynomial<C>[] p = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
+        Map.Entry<ExpVector, C> m;
+        int j = 0;
+        int i;
+        for (i = 0; i < l; i++) {
+            p[i] = P[i];
+            m = p[i].leadingMonomial();
+            if (m != null) {
+                p[j] = p[i];
+                htl[j] = m.getKey();
+                lbc[j] = m.getValue();
+                j++;
+            }
+        }
+        l = j;
+        ExpVector e;
+        C a;
+        boolean mt = false;
+        GenSolvablePolynomial<C> zero = Ap.ring.getZERO();
+        GenSolvablePolynomial<C> R = Ap.ring.getZERO();
+
+        GenSolvablePolynomial<C> fac = null;
+        // GenSolvablePolynomial<C> T = null;
+        GenSolvablePolynomial<C> Q = null;
+        GenSolvablePolynomial<C> S = Ap;
+        while (S.length() > 0) {
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                R = (GenSolvablePolynomial<C>) R.sum(a, e);
+                S = (GenSolvablePolynomial<C>) S.subtract(a, e);
+                // System.out.println(" S = " + S);
+            } else {
+                e = e.subtract(htl[i]);
+                //logger.info("red div = " + e);
+                //a = a.divide( (C)lbc[i] );
+                //Q = p[i].multiply( a, e );
+                Q = p[i].multiply(e);
+                a = a.divide(Q.leadingBaseCoefficient());
+                Q = Q.multiply(a);
+                S = (GenSolvablePolynomial<C>) S.subtract(Q);
+                fac = row.get(i);
+                if (fac == null) {
+                    fac = (GenSolvablePolynomial<C>) zero.sum(a, e);
+                } else {
+                    fac = (GenSolvablePolynomial<C>) fac.sum(a, e);
+                }
+                row.set(i, fac);
             }
         }
         return R;

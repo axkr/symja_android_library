@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorHensel.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id: GreatestCommonDivisorHensel.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.ufd;
@@ -326,8 +326,8 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
         //System.out.println("rgcd c = " + c);
         r = PolyUtil.<BigInteger> recursiveDivide(r, a);
         q = PolyUtil.<BigInteger> recursiveDivide(q, b);
-        a = PolyUtil.<BigInteger> basePseudoDivide(a, c);
-        b = PolyUtil.<BigInteger> basePseudoDivide(b, c);
+        a = PolyUtil.<BigInteger> basePseudoDivide(a, c); // unused ?
+        b = PolyUtil.<BigInteger> basePseudoDivide(b, c); // unused ?
         if (r.isONE()) {
             return r.multiply(c);
         }

@@ -1,5 +1,5 @@
 /*
- * $Id: RealAlgebraicRing.java 3947 2012-05-28 10:50:47Z kredel $
+ * $Id: RealAlgebraicRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.application;
@@ -331,7 +331,7 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational> implements
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "RealRecN( " + realRing.toScript() + ", " + root.toScript()

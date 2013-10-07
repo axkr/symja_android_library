@@ -1,5 +1,5 @@
 /*
- * $Id: GenVector.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: GenVector.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.vector;
@@ -85,7 +85,7 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer();
@@ -109,7 +109,7 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -181,7 +181,7 @@ public class GenVector<C extends RingElem<C>> implements ModulElem<GenVector<C>,
      * @param b other
      * @return 1 if (this &lt; b), 0 if (this == b) or -1 if (this &gt; b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(GenVector<C> b) {
         if (!modul.equals(b.modul)) {
             return -1;

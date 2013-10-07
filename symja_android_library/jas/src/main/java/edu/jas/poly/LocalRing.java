@@ -1,5 +1,5 @@
 /*
- * $Id: LocalRing.java 3367 2010-10-24 13:05:02Z kredel $
+ * $Id: LocalRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -185,7 +185,7 @@ public class LocalRing<C extends RingElem<C> >
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "LocalRing(" + ideal.toScript() + ")";

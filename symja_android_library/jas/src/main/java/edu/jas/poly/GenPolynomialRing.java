@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialRing.java 4518 2013-07-27 08:27:16Z kredel $
+ * $Id: GenPolynomialRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -197,7 +198,11 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         nvar = n;
         tord = t;
         partial = false;
-        vars = v;
+        if (v == null) {
+            vars = null;
+        } else {
+            vars = Arrays.copyOf(v,v.length); // > Java-5
+        }
         ZERO = new GenPolynomial<C>(this);
         C coeff = coFac.getONE();
         evzero = ExpVector.create(nvar);
@@ -322,7 +327,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         StringBuffer s = new StringBuffer();
         switch (Scripting.getLang()) {
@@ -406,7 +411,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * @return vars.
      */
     public String[] getVars() {
-        return vars; // Java-5: Arrays.copyOf(vars,vars.length);
+        return Arrays.copyOf(vars,vars.length); // > Java-5
     }
 
 
@@ -420,7 +425,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
                             + ", nvar " + nvar);
         }
         String[] t = vars;
-        vars = v; // Java-5: Arrays.copyOf(v,v.length);
+        vars = Arrays.copyOf(v,v.length); // > Java-5 
         return t;
     }
 

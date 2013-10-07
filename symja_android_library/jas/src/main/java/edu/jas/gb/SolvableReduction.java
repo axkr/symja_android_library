@@ -1,10 +1,11 @@
 /*
- * $Id: SolvableReduction.java 2412 2009-02-07 12:17:54Z kredel $
+ * $Id: SolvableReduction.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.gb;
 
 import java.util.List;
+import java.io.Serializable;
 
 import edu.jas.poly.GenSolvablePolynomial;
 
@@ -19,7 +20,7 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel
  */
 
-public interface SolvableReduction<C extends RingElem<C>>  {
+public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
 
 
     /**
@@ -129,6 +130,18 @@ public interface SolvableReduction<C extends RingElem<C>>  {
      */
     public GenSolvablePolynomial<C> 
            rightNormalform(List<GenSolvablePolynomial<C>> Pp, 
+                           GenSolvablePolynomial<C> Ap);
+
+    /**
+     * RightNormalform with recording.
+     * @param row recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
+     */
+    public GenSolvablePolynomial<C> 
+           rightNormalform(List<GenSolvablePolynomial<C>> row,
+                           List<GenSolvablePolynomial<C>> Pp, 
                            GenSolvablePolynomial<C> Ap);
 
 }

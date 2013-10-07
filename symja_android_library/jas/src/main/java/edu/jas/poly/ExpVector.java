@@ -1,5 +1,5 @@
 /*
- * $Id: ExpVector.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: ExpVector.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -375,7 +375,7 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         return toScript(stdVars());
     }
@@ -430,7 +430,7 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "ExpVector()";
@@ -685,8 +685,8 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      */
     public ExpVector subst(int i, long d) {
         ExpVector V = this.copy();
-        @SuppressWarnings("unused")
-        long e = V.setVal(i, d);
+        //long e = 
+        V.setVal(i, d);
         return V;
         //return EVSU(this, i, d);
     }
@@ -932,7 +932,7 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      * @param V
      * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(ExpVector V) {
         return this.invLexCompareTo(V);
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: ModInteger.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: ModInteger.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -201,7 +201,7 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return toString();
@@ -213,7 +213,7 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -225,7 +225,7 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
      * @param b ModInteger.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(ModInteger b) {
         java.math.BigInteger v = b.val;
         if (ring != b.ring) {

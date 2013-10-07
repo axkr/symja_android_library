@@ -1,5 +1,5 @@
 /*
- * $Id: UnivPowerSeriesRing.java 4062 2012-07-27 12:22:37Z kredel $
+ * $Id: UnivPowerSeriesRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ps;
@@ -187,7 +187,7 @@ public class UnivPowerSeriesRing<C extends RingElem<C>> implements RingFactory<U
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer("PS(");

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionPar.java 4104 2012-08-18 10:00:59Z kredel $
+ * $Id: SolvableReductionPar.java 4635 2013-09-12 12:41:41Z kredel $
  */
 
 package edu.jas.gb;
@@ -210,6 +210,21 @@ public class SolvableReductionPar<C extends RingElem<C>>
               }
         }
         return R;
+    }
+
+
+    /**
+     * RightNormalform with recording.
+     * @param row recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
+     */
+    public GenSolvablePolynomial<C> 
+           rightNormalform(List<GenSolvablePolynomial<C>> row,
+                           List<GenSolvablePolynomial<C>> Pp, 
+                           GenSolvablePolynomial<C> Ap) {  
+        throw new UnsupportedOperationException("normalform with recording not implemented");
     }
 
 }

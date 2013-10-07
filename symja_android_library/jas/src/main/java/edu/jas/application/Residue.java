@@ -1,5 +1,5 @@
 /*
- * $Id: Residue.java 4487 2013-07-10 20:25:23Z kredel $
+ * $Id: Residue.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.application;
@@ -179,7 +179,7 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return val.toScript();
@@ -193,7 +193,7 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -206,7 +206,7 @@ public class Residue<C extends GcdRingElem<C>> implements GcdRingElem<Residue<C>
      * @return sign(this-b), 0 means that this and b are equivalent in this
      *         residue class ring.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Residue<C> b) {
         GenPolynomial<C> v = b.val;
         if (!ring.equals(b.ring)) {

@@ -1,10 +1,11 @@
 /*
- * $Id: SolvableSyzygy.java 3445 2010-12-25 17:24:04Z kredel $
+ * $Id: SolvableSyzygy.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.gbmod;
 
 import java.util.List;
+import java.io.Serializable;
 
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.ModuleList;
@@ -20,7 +21,7 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel
  */
 
-public interface SolvableSyzygy<C extends RingElem<C>> {
+public interface SolvableSyzygy<C extends RingElem<C>> extends Serializable {
 
 
     /**

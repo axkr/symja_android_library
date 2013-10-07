@@ -1,5 +1,5 @@
 /*
- * $Id: UnivPowerSeries.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: UnivPowerSeries.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ps;
@@ -177,7 +177,7 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer sb = new StringBuffer("");
@@ -232,7 +232,7 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -540,7 +540,7 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      * Compare to. <b>Note: </b> compare only up to truncate.
      * @return sign of first non zero coefficient of this-ps.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(UnivPowerSeries<C> ps) {
         int m = order();
         int n = ps.order();

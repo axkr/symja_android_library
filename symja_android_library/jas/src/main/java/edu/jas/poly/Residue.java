@@ -1,5 +1,5 @@
 /*
- * $Id: Residue.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: Residue.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -186,7 +186,7 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "Residue( " + val.toScript() + " , " + ring.toScript() + " )";
@@ -198,7 +198,7 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -211,7 +211,7 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
      * @return sign(this-b), 0 means that this and b are equivalent in this
      *         residue class ring.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Residue<C> b) {
         C v = b.val;
         if (!ring.equals(b.ring)) {
@@ -227,9 +227,8 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
      * @return true means that this and b are equivalent in this residue class
      *         ring.
      */
-    @SuppressWarnings("unchecked")
-    // not jet working
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
         if (!(b instanceof Residue)) {
             return false;

@@ -1,5 +1,5 @@
 /*
- * $Id: BigDecimal.java 4315 2012-12-15 19:23:25Z kredel $
+ * $Id: BigDecimal.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -380,7 +380,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return toString();
@@ -392,7 +392,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "DD()";
@@ -404,7 +404,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @param b BigDecimal.
      * @return 0 if abs(this-b) < epsilon, 1 if this > b, -1 if this < b.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigDecimal b) {
         //if (false) {
         //    return val.compareTo(b.val);

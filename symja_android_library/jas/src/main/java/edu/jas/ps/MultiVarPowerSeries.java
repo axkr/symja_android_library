@@ -1,5 +1,5 @@
 /*
- * $Id: MultiVarPowerSeries.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: MultiVarPowerSeries.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ps;
@@ -209,7 +209,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer sb = new StringBuffer("");
@@ -263,7 +263,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -747,7 +747,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         return zip(new BinaryFunctor<C, C, C>() {
 
 
-            //JAVA6only: @Override
+            @Override
             public C eval(C c1, C c2) {
                 return c1.sum(c2);
             }
@@ -764,7 +764,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         return zip(new BinaryFunctor<C, C, C>() {
 
 
-            //JAVA6only: @Override
+            @Override
             public C eval(C c1, C c2) {
                 return c1.subtract(c2);
             }
@@ -787,7 +787,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         return map(new UnaryFunctor<C, C>() {
 
 
-            //JAVA6only: @Override
+            @Override
             public C eval(C c) {
                 return c.multiply(a);
             }
@@ -815,7 +815,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         return map(new UnaryFunctor<C, C>() {
 
 
-            //JAVA6only: @Override
+            @Override
             public C eval(C c) {
                 return b.multiply(c);
             }
@@ -831,7 +831,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         return map(new UnaryFunctor<C, C>() {
 
 
-            //JAVA6only: @Override
+            @Override
             public C eval(C c) {
                 return c.negate();
             }
@@ -911,7 +911,8 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      */
     @SuppressWarnings("unused")
     public ExpVector orderExpVector() {
-        int x = order(); // ensure evorder is set
+        //int x = 
+        order(); // ensure evorder is set
         return evorder;
     }
 
@@ -999,7 +1000,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * Compare to. <b>Note: </b> compare only up to max(truncates).
      * @return sign of first non zero coefficient of this-ps.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(MultiVarPowerSeries<C> ps) {
         final int m = truncate();
         final int n = ps.truncate();

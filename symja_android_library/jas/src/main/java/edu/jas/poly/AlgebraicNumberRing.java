@@ -1,5 +1,5 @@
 /*
- * $Id: AlgebraicNumberRing.java 4518 2013-07-27 08:27:16Z kredel $
+ * $Id: AlgebraicNumberRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -312,7 +312,7 @@ public class AlgebraicNumberRing<C extends RingElem<C>> implements RingFactory<A
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         StringBuffer s = new StringBuffer();
         s.append("AN(");

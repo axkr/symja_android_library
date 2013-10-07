@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4476 2013-07-04 19:59:55Z kredel $
+ * $Id: GenPolynomial.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -348,7 +348,7 @@ Iterable<Monomial<C>> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         if (isZERO()) {
@@ -404,7 +404,7 @@ Iterable<Monomial<C>> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();

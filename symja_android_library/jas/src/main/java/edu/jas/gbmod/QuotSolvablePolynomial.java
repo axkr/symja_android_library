@@ -1,5 +1,5 @@
 /*
- * $Id: QuotSolvablePolynomial.java 4588 2013-08-20 20:23:23Z kredel $
+ * $Id: QuotSolvablePolynomial.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -161,8 +161,6 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
         }
         //System.out.println("this = " + this + ", Bp = " + Bp);
         ExpVector Z = ring.evzero;
-        SolvableQuotientRing<C> cfac = (SolvableQuotientRing<C>) ring.coFac;
-        ExpVector Zc = cfac.ring.evzero;
         QuotSolvablePolynomial<C> Dp = ring.getZERO().copy();
         QuotSolvablePolynomial<C> zero = ring.getZERO().copy();
         SolvableQuotient<C> one = ring.getONECoefficient();
@@ -282,12 +280,12 @@ public class QuotSolvablePolynomial<C extends GcdRingElem<C>> extends
                         RecSolvablePolynomial<C> rsp3 = rsp1.multiply(rsp2);
                         QuotSolvablePolynomial<C> rsp = ring.fromPolyCoefficients(rsp3);
                         Cps = rsp;
-                        if (rsp.compareTo(Cps) != 0) {
-                            logger.info("coeff-poly: Cps = " + Cps);
-                            logger.info("coeff-poly: rsp = " + rsp);
-                            //} else {
-                            //System.out.println("rsp.compareTo(Cps) == 0");
-                        }
+                        // if (rsp.compareTo(Cps) != 0) {
+                        //     logger.info("coeff-poly: Cps = " + Cps);
+                        //     logger.info("coeff-poly: rsp = " + rsp);
+                        //     //} else {
+                        //     //System.out.println("rsp.compareTo(Cps) == 0");
+                        // }
                     } else { // b.den != 1
                         if (debug)
                             logger.info("coeff-num: Cps = " + Cps + ", num = " + b.num + ", den = " + b.den);

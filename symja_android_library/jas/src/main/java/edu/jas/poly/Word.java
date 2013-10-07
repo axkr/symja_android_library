@@ -1,5 +1,5 @@
 /*
- * $Id: Word.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: Word.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -170,7 +170,7 @@ public final class Word implements MonoidElem<Word> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         if (val.length() == 0) {
             return "";
@@ -201,7 +201,7 @@ public final class Word implements MonoidElem<Word> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return mono.toString();
@@ -412,7 +412,7 @@ public final class Word implements MonoidElem<Word> {
      * @param V other word.
      * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(Word V) {
         return this.val.compareTo(V.val);
     }

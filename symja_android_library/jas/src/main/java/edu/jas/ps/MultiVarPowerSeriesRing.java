@@ -1,5 +1,5 @@
 /*
- * $Id: MultiVarPowerSeriesRing.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: MultiVarPowerSeriesRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ps;
@@ -156,7 +156,11 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
         this.coFac = cofac;
         this.nvar = nv;
         this.truncate = truncate;
-        vars = names;
+        if (names == null) {
+            vars = null;
+        } else {
+            vars = Arrays.copyOf(names,names.length); // > Java-5
+        }
         if (vars == null) {
             if (PrettyPrint.isTrue()) {
                 vars = GenPolynomialRing.newVars("x", nvar);
@@ -235,7 +239,7 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
      * @return names.
      */
     public String[] getVars() {
-        return vars; // Java-5: Arrays.copyOf(vars,vars.length);
+        return Arrays.copyOf(vars,vars.length); // > Java-5
     }
 
 
@@ -244,7 +248,7 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer("MPS(");

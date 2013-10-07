@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexAlgebraicRing.java 3987 2012-07-14 11:58:20Z kredel $
+ * $Id: ComplexAlgebraicRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.root;
@@ -306,7 +306,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "ComplexN( " + algebraic.modul.toScript() + ", " + root.toScript()
@@ -322,7 +322,6 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    // not jet working
     public boolean equals(Object b) {
         if (!(b instanceof ComplexAlgebraicRing)) {
             return false;

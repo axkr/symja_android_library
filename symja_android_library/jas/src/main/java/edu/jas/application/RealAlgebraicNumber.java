@@ -1,5 +1,5 @@
 /*
- * $Id: RealAlgebraicNumber.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: RealAlgebraicNumber.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.application;
@@ -114,7 +114,7 @@ public class RealAlgebraicNumber<C extends GcdRingElem<C> & Rational> implements
      * @return a BigRational approximation of this.
      * @see edu.jas.arith.Rational#getRational()
      */
-    //JAVA6only: @Override
+    @Override
     public BigRational getRational() {
         return magnitude();
     }
@@ -168,7 +168,7 @@ public class RealAlgebraicNumber<C extends GcdRingElem<C> & Rational> implements
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return number.toScript();
@@ -180,7 +180,7 @@ public class RealAlgebraicNumber<C extends GcdRingElem<C> & Rational> implements
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();
@@ -192,7 +192,7 @@ public class RealAlgebraicNumber<C extends GcdRingElem<C> & Rational> implements
      * @param b RealAlgebraicNumber.
      * @return sign(this-b).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(RealAlgebraicNumber<C> b) {
         int s = 0;
         if (number.ring != b.number.ring) {

@@ -1,5 +1,5 @@
 /*
- * $Id: GenVectorModul.java 4541 2013-07-29 19:50:47Z kredel $
+ * $Id: GenVectorModul.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.vector;
@@ -97,7 +97,7 @@ public class GenVectorModul<C extends RingElem<C>> implements ModulFactory<GenVe
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer("Vec(");

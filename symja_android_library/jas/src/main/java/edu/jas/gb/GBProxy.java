@@ -1,5 +1,5 @@
 /*
- * $Id: GBProxy.java 4289 2012-11-04 14:29:36Z kredel $
+ * $Id: GBProxy.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.gb;
@@ -98,7 +98,7 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
      * @param F polynomial list.
      * @return GB(F) a Groebner base of F.
      */
-    //JAVA6only: @Override
+    @Override
     public List<GenPolynomial<C>> GB( final int modv, final List<GenPolynomial<C>> F ) {
         if (F == null || F.isEmpty()) {
             return F;

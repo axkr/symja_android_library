@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexRing.java 3882 2012-02-05 17:53:12Z kredel $
+ * $Id: ComplexRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -207,7 +207,7 @@ public class ComplexRing<C extends RingElem<C>> implements RingFactory<Complex<C
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer();

@@ -1,5 +1,5 @@
 /*
- * $Id: CartesianProductInfinite.java 4065 2012-07-27 15:17:38Z kredel $
+ * $Id: CartesianProductInfinite.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.util;
@@ -169,7 +169,8 @@ class CartesianTwoProductInfiniteIterator<E> implements Iterator<List<E>> {
         fincomps0 = new ArrayList<E>();
         fincomps0.add(e);
         fincompit0 = fincomps0.iterator();
-        E d = fincompit0.next(); // remove current
+        //E d = 
+        fincompit0.next(); // remove current
 
         compit1 = comps1.iterator();
         e = compit1.next();
@@ -178,7 +179,8 @@ class CartesianTwoProductInfiniteIterator<E> implements Iterator<List<E>> {
         fincomps1.add(e);
         fincompit1 = fincomps1.iterator();
         //@SuppressWarnings("unused")
-        d = fincompit1.next(); // remove current
+        //d = 
+        fincompit1.next(); // remove current
         //System.out.println("current   = " + current);
     }
 
@@ -305,7 +307,8 @@ class CartesianTwoProductInfiniteIteratorList<E> implements Iterator<List<E>> {
         fincomps0 = new ArrayList<List<E>>();
         fincomps0.add(e);
         fincompit0 = fincomps0.iterator();
-        List<E> d = fincompit0.next(); // remove current
+        //List<E> d = 
+        fincompit0.next(); // remove current
 
         compit1 = comps1.iterator();
         e = compit1.next();
@@ -314,7 +317,8 @@ class CartesianTwoProductInfiniteIteratorList<E> implements Iterator<List<E>> {
         fincomps1.add(e);
         fincompit1 = fincomps1.iterator();
         //@SuppressWarnings("unused")
-        d = fincompit1.next(); // remove current
+        //d = 
+        fincompit1.next(); // remove current
         //System.out.println("current   = " + current);
     }
 

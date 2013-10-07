@@ -1,5 +1,5 @@
 /*
- * $Id: ProductRing.java 4054 2012-07-26 17:34:57Z kredel $
+ * $Id: ProductRing.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -410,7 +410,7 @@ public class ProductRing<C extends RingElem<C>> implements RingFactory<Product<C
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer("RR( [ ");

@@ -1,5 +1,5 @@
 /*
- * $Id: BigQuaternion.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: BigQuaternion.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -425,7 +425,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         StringBuffer s = new StringBuffer();
@@ -484,7 +484,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "Quat()";
@@ -591,7 +591,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @param b BigQuaternion.
      * @return 0 if b is equal to this, 1 if this is greater b and -1 else.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigQuaternion b) {
         int s = re.compareTo(b.re);
         if (s != 0) {

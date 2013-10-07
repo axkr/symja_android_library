@@ -1,5 +1,5 @@
 /*
- * $Id: Dimension.java 3058 2010-03-27 11:05:23Z kredel $
+ * $Id: Dimension.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.application;
@@ -52,7 +52,7 @@ public class Dimension implements Serializable {
         this.d = d;
         this.S = S;
         this.M = M;
-        this.v = v;
+        this.v = Arrays.copyOf(v,v.length); // > Java-5
     }
 
 

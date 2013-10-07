@@ -1,5 +1,5 @@
 /*
- * $Id: BigOctonion.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: BigOctonion.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -327,7 +327,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         boolean i = oi.isZERO();
@@ -358,7 +358,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "Oct()";
@@ -460,7 +460,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @param b BigOctonion.
      * @return 0 if b is equal to this, 1 if this is greater b and -1 else.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigOctonion b) {
         int s = or.compareTo(b.or);
         if (s != 0) {

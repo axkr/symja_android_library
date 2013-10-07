@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotientRing.java 4535 2013-07-28 15:45:50Z kredel $
+ * $Id: SolvableQuotientRing.java 4622 2013-09-09 11:48:17Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -12,11 +12,11 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.application.SolvableIdeal;
 import edu.jas.kern.StringUtil;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.PolynomialList;
+import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
@@ -56,61 +56,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
         ring = r;
         engine = new SolvableSyzygyAbstract<C>();
         logger.debug("quotient ring constructed");
-    }
-
-
-    /**
-     * Least common multiple.
-     * @param n first solvable polynomial.
-     * @param d second solvable polynomial.
-     * @return lcm(n,d)
-     */
-    protected GenSolvablePolynomial<C> syzLcm(GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
-        List<GenSolvablePolynomial<C>> list = new ArrayList<GenSolvablePolynomial<C>>(1);
-        list.add(n);
-        SolvableIdeal<C> N = new SolvableIdeal<C>(n.ring, list, true);
-        list = new ArrayList<GenSolvablePolynomial<C>>(1);
-        list.add(d);
-        SolvableIdeal<C> D = new SolvableIdeal<C>(n.ring, list, true);
-        SolvableIdeal<C> L = N.intersect(D);
-        if (L.getList().size() != 1) {
-            throw new RuntimeException("lcm not uniqe");
-        }
-        GenSolvablePolynomial<C> lcm = L.getList().get(0);
-        return lcm;
-    }
-
-
-    /**
-     * Greatest common divisor.
-     * @param n first solvable polynomial.
-     * @param d second solvable polynomial.
-     * @return gcd(n,d)
-     */
-    protected GenSolvablePolynomial<C> syzGcd(GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
-        if (n.isZERO()) {
-            return d;
-        }
-        if (d.isZERO()) {
-            return n;
-        }
-        if (n.isONE()) {
-            return n;
-        }
-        if (d.isONE()) {
-            return d;
-        }
-        GenSolvablePolynomial<C> p = n.multiply(d);
-        GenSolvablePolynomial<C> lcm = syzLcm(n, d);
-        // divide
-        List<GenSolvablePolynomial<C>> Q = new ArrayList<GenSolvablePolynomial<C>>(1);
-        Q.add(ring.getZERO());
-        List<GenSolvablePolynomial<C>> V = new ArrayList<GenSolvablePolynomial<C>>(1);
-        V.add(lcm);
-        GenSolvablePolynomial<C> x = engine.sred.leftNormalform(Q, V, p);
-        GenSolvablePolynomial<C> y = Q.get(0);
-        // GenSolvablePolynomial<C> gcd = divide(p, lcm);
-        return y;
     }
 
 

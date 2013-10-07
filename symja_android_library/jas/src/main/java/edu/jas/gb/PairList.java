@@ -1,10 +1,11 @@
 /*
- * $Id: PairList.java 4239 2012-10-07 08:40:06Z kredel $
+ * $Id: PairList.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.gb;
 
 import java.util.List;
+import java.io.Serializable;
 
 import edu.jas.structure.RingElem;
 import edu.jas.poly.ExpVector;
@@ -18,7 +19,7 @@ import edu.jas.poly.GenPolynomialRing;
  * @author Heinz Kredel
  */
 
-public interface PairList<C extends RingElem<C> > {
+public interface PairList<C extends RingElem<C> > extends Serializable {
 
 
     /**

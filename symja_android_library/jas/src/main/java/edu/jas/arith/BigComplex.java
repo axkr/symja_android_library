@@ -1,5 +1,5 @@
 /*
- * $Id: BigComplex.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: BigComplex.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -313,7 +313,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case: re or re+im*i 
         // was (re,im) or (re,) 
@@ -361,7 +361,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "CC()";
@@ -461,7 +461,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @return 0 if this is equal to b; 1 if re > b.re, or re == b.re and im >
      *         b.im; -1 if re < b.re, or re == b.re and im < b.im
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigComplex b) {
         int s = re.compareTo(b.re);
         if (s != 0) {

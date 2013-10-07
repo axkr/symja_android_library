@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomial.java 4225 2012-09-29 20:27:56Z kredel $
+ * $Id: GenWordPolynomial.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -266,7 +266,7 @@ public final class GenWordPolynomial<C extends RingElem<C>>
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         if (isZERO()) {
             return "0";
@@ -319,7 +319,7 @@ public final class GenWordPolynomial<C extends RingElem<C>>
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return factory().toScript();

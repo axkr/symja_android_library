@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseAbstract.java 4385 2013-04-27 13:34:38Z kredel $
+ * $Id: SolvableGroebnerBaseAbstract.java 4627 2013-09-11 14:49:39Z kredel $
  */
 
 package edu.jas.gb;
@@ -485,7 +485,6 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
         }
         GenSolvablePolynomialRing<C> rring = ring.reverse(true); //true
         //System.out.println("reversed ring = " + rring);
-        //ring = rring.reverse(true); // true
         GenSolvablePolynomial<C> q;
         List<GenSolvablePolynomial<C>> rF;
         rF = new ArrayList<GenSolvablePolynomial<C>>(F.size());
@@ -495,13 +494,12 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
                 rF.add(q);
             }
         }
-        if (true || debug) {
+        if (debug) {
             PolynomialList<C> pl = new PolynomialList<C>(rring, rF);
-            logger.info("reversed problem = " + pl);
+            logger.info("reversed problem = " + pl.toScript());
         }
-        //System.out.println("reversed problem = " + rF);
         List<GenSolvablePolynomial<C>> rG = leftGB(modv, rF);
-        if (true || debug) {
+        if (debug) {
             //PolynomialList<C> pl = new PolynomialList<C>(rring,rG);
             //logger.info("reversed GB = " + pl);
             long t = System.currentTimeMillis();
@@ -518,7 +516,7 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
                 G.add(q);
             }
         }
-        if (true || debug) {
+        if (debug) {
             //PolynomialList<C> pl = new PolynomialList<C>(ring,G);
             //logger.info("GB = " + pl);
             long t = System.currentTimeMillis();

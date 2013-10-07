@@ -1,5 +1,5 @@
 /*
- * $Id: ModIntegerRing.java 4533 2013-07-28 15:05:39Z kredel $
+ * $Id: ModIntegerRing.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -289,7 +289,7 @@ public final class ModIntegerRing implements ModularRingFactory<ModInteger>, Ite
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python and Ruby case
         if (isField()) {

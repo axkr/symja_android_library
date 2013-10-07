@@ -1,5 +1,5 @@
 /*
- * $Id: BigInteger.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: BigInteger.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -291,7 +291,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return toString();
@@ -303,7 +303,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "ZZ()";
@@ -315,7 +315,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * @param b BigInteger.
      * @return 0 if this == b, 1 if this > b, -1 if this < b.
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigInteger b) {
         return val.compareTo(b.val);
     }

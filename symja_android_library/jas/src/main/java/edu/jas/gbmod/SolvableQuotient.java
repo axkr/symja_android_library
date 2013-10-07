@@ -1,15 +1,18 @@
 /*
- * $Id: SolvableQuotient.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: SolvableQuotient.java 4645 2013-09-15 11:14:11Z kredel $
  */
 
 package edu.jas.gbmod;
 
+
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenSolvablePolynomial;
+import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 
 
@@ -96,8 +99,10 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             n = (GenSolvablePolynomial<C>) n.negate();
             d = (GenSolvablePolynomial<C>) d.negate();
         }
-        if (!isred) {
-            // TODO
+        if (isred) { 
+            num = n;
+            den = d;
+            return;
         }
         C lc = d.leadingBaseCoefficient();
         if (!lc.isONE() && lc.isUnit()) {
@@ -106,14 +111,38 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             d = d.multiply(lc);
         }
         if (n.compareTo(d) == 0) {
-            n = ring.ring.getONE();
-            d = ring.ring.getONE();
+            num = ring.ring.getONE();
+            den = ring.ring.getONE();
+            return;
+        }
+        if (n.negate().compareTo(d) == 0) {
+            num = (GenSolvablePolynomial<C>) ring.ring.getONE().negate();
+            den = ring.ring.getONE();
+            return;
         }
         if (n.isZERO()) {
-            d = ring.ring.getONE();
+            num = n;
+            den = ring.ring.getONE();
+            return;
         }
-        num = n;
-        den = d;
+        if (n.isONE()||d.isONE()) {
+            num = n;
+            den = d;
+            return;
+        }
+        // must reduce to lowest terms
+        // not perfect, TODO 
+        GenSolvablePolynomial<C>[] gcd = PolyGBUtil.<C> syzGcdCofactors(r.ring,n,d);
+        if (!gcd[0].isONE()) {
+            logger.info("constructor: gcd = " + Arrays.toString(gcd)); // + ", " + n + ", " +d);
+            n = gcd[1];
+            d = gcd[2];
+        }
+        // not perfect, TODO 
+        GenSolvablePolynomial<C>[] simp = ring.engine.leftSimplifier(n,d);
+        logger.info("simp: " + Arrays.toString(simp) + ", " + n + ", " +d);
+        num = simp[0];
+        den = simp[1];
     }
 
 
@@ -307,6 +336,41 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
 
 
     /**
+     * SolvableQuotient right fraction.  <b>Note:</b> It is not
+     * possible to distinguish right from left fractions in the
+     * current implementation. So it is not possible to compute with right fractions.
+     * @return SolvableQuotient(a,b), where den<sup>-1</sup> num = a b<sup>-1</sup>
+     */
+    public SolvableQuotient<C> rightFraction() {
+        if ( isZERO() || isONE() ) {
+            return this;
+        }
+        GenSolvablePolynomial<C>[] oc = ring.engine.rightOreCond(num,den);
+        return new SolvableQuotient<C>(ring, oc[1], oc[0], true); // reversed, true is wrong but okay
+    }
+
+
+    /**
+     * Test if SolvableQuotient right fraction.  <b>Note:</b> It is not
+     * possible to distinguish right from left fractions in the
+     * current implementation. So it is not possible to compute with right fractions.
+     * @param s = SolvableQuotient(a,b)
+     * @return true if s is a right fraction of this, i.e. den<sup>-1</sup> num = a b<sup>-1</sup>
+     */
+    public boolean isRightFraction(SolvableQuotient<C> s) {
+        if ( isZERO() ) {
+            return s.isZERO();
+        }
+        if ( isONE() ) {
+            return s.isONE();
+        }
+        GenSolvablePolynomial<C> x = den.multiply(s.num);
+        GenSolvablePolynomial<C> y = num.multiply(s.den);
+        return x.compareTo(y) == 0;
+    }
+
+
+    /**
      * SolvableQuotient absolute value.
      * @return the absolute value of this.
      * @see edu.jas.structure.RingElem#abs()
@@ -428,8 +492,8 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
      * @return this - (this/S)*S.
      */
     public SolvableQuotient<C> remainder(SolvableQuotient<C> S) {
-        if (num.isZERO()) {
-            throw new ArithmeticException("element not invertible " + this);
+        if (S.isZERO()) {
+            throw new ArithmeticException("element not invertible " + S);
         }
         return ring.getZERO();
     }

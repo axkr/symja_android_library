@@ -1,5 +1,5 @@
 /*
- * $Id: FactorAbsolute.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id: FactorAbsolute.java 4638 2013-09-13 19:14:05Z kredel $
  */
 
 package edu.jas.ufd;
@@ -465,7 +465,8 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             //vars = new String[] { "z_" + Math.abs(r.hashCode() % 1000) };
             vars = pfac.newVars( "z_" );
             pfac = pfac.copy();
-            String[] ovars = pfac.setVars(vars);
+            //String[] ovars = 
+            pfac.setVars(vars);
             r = pfac.copy(r); // hack to exchange the variables
             //System.out.println("r(z_) = " + r);
             AlgebraicNumberRing<C> afac = new AlgebraicNumberRing<C>(r, true); // since irreducible
@@ -847,9 +848,9 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         //String[] vars = new String[] { "z_" + Math.abs(up.hashCode() % 1000) };
         String[] vars = pfac.newVars( "z_" );
         pfac = pfac.copy();
-        String[] ovars = pfac.setVars(vars); // side effects! 
-        GenPolynomial<C> aup = pfac.copy(up); // hack to exchange the variables
-
+        //String[] ovars = 
+        pfac.setVars(vars); // side effects! 
+        //GenPolynomial<C> aup = pfac.copy(up); // hack to exchange the variables
         //AlgebraicNumberRing<C> afac = new AlgebraicNumberRing<C>(aup,true); // since irreducible
         AlgebraicNumberRing<C> afac = arfac;
         int depth = afac.depth();

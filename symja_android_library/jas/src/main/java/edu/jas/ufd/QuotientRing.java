@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 4406 2013-04-30 10:07:39Z kredel $
+ * $Id: QuotientRing.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.ufd;
@@ -16,6 +16,7 @@ import edu.jas.kern.StringUtil;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
+//import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
@@ -100,56 +101,8 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
             return engine.gcd(n, d);
         }
         return engine.gcd(n, d);
-        //return syzGcd(n, d);
+        //return PolyGBUtil.<C> syzGcd(ring, n, d);
     }
-
-
-    /*
-     * Least common multiple. Just for fun, is not efficient.
-     * @param n first polynomial.
-     * @param d second polynomial.
-     * @return lcm(n,d)
-     */
-    //     protected GenPolynomial<C> syzLcm(GenPolynomial<C> n, GenPolynomial<C> d) {
-    //         List<GenPolynomial<C>> list = new ArrayList<GenPolynomial<C>>(1);
-    //         list.add(n);
-    //         Ideal<C> N = new Ideal<C>(n.ring, list, true);
-    //         list = new ArrayList<GenPolynomial<C>>(1);
-    //         list.add(d);
-    //         Ideal<C> D = new Ideal<C>(n.ring, list, true);
-    //         Ideal<C> L = N.intersect(D);
-    //         if (L.getList().size() != 1) {
-    //             throw new RuntimeException("lcm not uniqe");
-    //         }
-    //         GenPolynomial<C> lcm = L.getList().get(0);
-    //         return lcm;
-    //     }
-
-
-    /*
-     * Greatest common divisor. Just for fun, is not efficient.
-     * @param n first polynomial.
-     * @param d second polynomial.
-     * @return gcd(n,d)
-     */
-    //     protected GenPolynomial<C> syzGcd(GenPolynomial<C> n, GenPolynomial<C> d) {
-    //         if (n.isZERO()) {
-    //             return d;
-    //         }
-    //         if (d.isZERO()) {
-    //             return n;
-    //         }
-    //         if (n.isONE()) {
-    //             return n;
-    //         }
-    //         if (d.isONE()) {
-    //             return d;
-    //         }
-    //         GenPolynomial<C> p = n.multiply(d);
-    //         GenPolynomial<C> lcm = syzLcm(n, d);
-    //         GenPolynomial<C> gcd = divide(p, lcm);
-    //         return gcd;
-    //     }
 
 
     /**
@@ -283,7 +236,7 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case
         return "RF(" + ring.toScript() + ")";

@@ -1,5 +1,5 @@
 /*
- * $Id: TermOrder.java 4389 2013-04-27 21:07:05Z kredel $
+ * $Id: TermOrder.java 4639 2013-09-13 19:52:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -279,7 +279,7 @@ public final class TermOrder implements Serializable {
         if (w == null || w.length == 0) {
             throw new IllegalArgumentException("invalid term order weight");
         }
-        weight = w;
+        weight = Arrays.copyOf(w,w.length); // > Java-5
         this.evord = 0;
         this.evord2 = 0;
         evbeg1 = 0;
@@ -1314,7 +1314,10 @@ public final class TermOrder implements Serializable {
      * @return weight.
      */
     public long[][] getWeight() {
-        return weight;
+        if (weight == null) {
+            return null;
+        }
+        return Arrays.copyOf(weight,weight.length); // > Java-5
     }
 
 

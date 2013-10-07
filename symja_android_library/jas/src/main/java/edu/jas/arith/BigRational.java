@@ -1,5 +1,5 @@
 /*
- * $Id: BigRational.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: BigRational.java 4640 2013-09-14 11:32:01Z kredel $
  */
 
 package edu.jas.arith;
@@ -311,7 +311,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         // Python case: (num,den) or num 
         // Ruby case: num/den or num 
@@ -343,7 +343,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.Element#toScriptFactory()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScriptFactory() {
         // Python case
         return "QQ()";
@@ -574,7 +574,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @param S BigRational.
      * @return SIGN(this-S).
      */
-    //JAVA6only: @Override
+    @Override
     public int compareTo(BigRational S) {
         BigInteger J2Y;
         BigInteger J3Y;

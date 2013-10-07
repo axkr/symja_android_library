@@ -1,5 +1,5 @@
 /*
- * $Id: GBOptimized.java 4289 2012-11-04 14:29:36Z kredel $
+ * $Id: GBOptimized.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.gb;
@@ -98,7 +98,7 @@ public class GBOptimized<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<
      * @param F polynomial list.
      * @return GB(F) a Groebner base of F.
      */
-    //JAVA6only: @Override
+    @Override
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
         if (F == null || F.isEmpty()) {
             return F;

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableIdeal.java 4499 2013-07-24 14:20:23Z kredel $
+ * $Id: SolvableIdeal.java 4642 2013-09-14 19:35:08Z kredel $
  */
 
 package edu.jas.application;
@@ -17,12 +17,14 @@ import edu.jas.gb.SolvableGroebnerBaseAbstract;
 import edu.jas.gb.SolvableGroebnerBaseSeq;
 import edu.jas.gb.SolvableReduction;
 import edu.jas.gb.SolvableReductionSeq;
+import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.gbmod.SolvableSyzygyAbstract;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.PolynomialList;
+import edu.jas.poly.PolyUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.NotInvertibleException;
 
@@ -475,13 +477,14 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         if (!isGB) {
             doGB();
         }
+        List<GenSolvablePolynomial<C>> si = getList();
         for (GenSolvablePolynomial<C> b : B) {
             if (b == null) {
                 continue;
             }
-            GenSolvablePolynomial<C> z = red.leftNormalform(getList(), b);
+            GenSolvablePolynomial<C> z = red.leftNormalform(si, b);
             if (!z.isZERO()) {
-                System.out.println("contains nf(b) != 0: " + b + ", z = " + z);
+                System.out.println("contains nf(b) != 0: " + b + ", z = " + z + ", si = " + si);
                 return false;
             }
         }
@@ -654,31 +657,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         if (this.isZERO()) {
             return this;
         }
-        int s = getList().size() + B.getList().size();
-        List<GenSolvablePolynomial<C>> c;
-        c = new ArrayList<GenSolvablePolynomial<C>>(s);
-        List<GenSolvablePolynomial<C>> a = getList();
-        List<GenSolvablePolynomial<C>> b = B.getList();
-
-        GenSolvablePolynomialRing<C> tfac = getRing().extend(1);
-        // term order is also adjusted
-        for (GenSolvablePolynomial<C> p : a) {
-            p = (GenSolvablePolynomial<C>) p.extend(tfac, 0, 1L); // t*p
-            c.add(p);
-        }
-        for (GenSolvablePolynomial<C> p : b) {
-            GenSolvablePolynomial<C> q = (GenSolvablePolynomial<C>) p.extend(tfac, 0, 1L);
-            GenSolvablePolynomial<C> r = (GenSolvablePolynomial<C>) p.extend(tfac, 0, 0L);
-            p = (GenSolvablePolynomial<C>) r.subtract(q); // (1-t)*p
-            c.add(p);
-        }
-        logger.warn("intersect computing GB");
-        List<GenSolvablePolynomial<C>> g = bb.leftGB(c);
-        if (debug) {
-            logger.debug("intersect GB = " + g);
-        }
-        SolvableIdeal<C> E = new SolvableIdeal<C>(tfac, g, true);
-        SolvableIdeal<C> I = E.intersect(getRing());
+        List<GenSolvablePolynomial<C>> c = PolyGBUtil.<C> intersect(getRing(),getList(),B.getList());
+        SolvableIdeal<C> I = new SolvableIdeal<C>(getRing(), c, true);
         return I;
     }
 
@@ -694,34 +674,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         if (R == null) {
             throw new IllegalArgumentException("R may not be null");
         }
-        int d = getRing().nvar - R.nvar;
-        if (d <= 0) {
-            return this;
-        }
-        List<GenSolvablePolynomial<C>> H = new ArrayList<GenSolvablePolynomial<C>>(getList().size());
-        for (GenSolvablePolynomial<C> p : getList()) {
-            Map<ExpVector, GenPolynomial<C>> m = null;
-            m = p.contract(R);
-            if (debug) {
-                logger.debug("intersect contract m = " + m);
-            }
-            if (m.size() == 1) { // contains one power of variables
-                for (Map.Entry<ExpVector, GenPolynomial<C>> me : m.entrySet()) {
-                    ExpVector e = me.getKey();
-                    GenSolvablePolynomial<C> mv = (GenSolvablePolynomial<C>) me.getValue();
-                    if (e.isZERO()) {
-                        H.add(mv); //m.get(e));
-                    }
-                }
-            }
-        }
-        GenSolvablePolynomialRing<C> tfac = getRing().contract(d);
-        if (tfac.equals(R)) { // check 
-            return new SolvableIdeal<C>(R, H, isGB, isTopt);
-        }
-        logger.info("tfac, R = " + tfac + ", " + R);
-        // throw new RuntimeException("contract(this) != R");
-        return new SolvableIdeal<C>(R, H); // compute GB
+        List<GenSolvablePolynomial<C>> H = PolyUtil.<C> intersect(R,getList());
+        return new SolvableIdeal<C>(R, H, isGB, isTopt);
     }
 
 

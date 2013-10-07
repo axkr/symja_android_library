@@ -1,5 +1,5 @@
 /*
- * $Id: WordFactory.java 4588 2013-08-20 20:23:23Z kredel $
+ * $Id: WordFactory.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -262,7 +262,7 @@ public final class WordFactory implements MonoidFactory<Word> {
      * @return script compatible representation for this Element.
      * @see edu.jas.structure.Element#toScript()
      */
-    //JAVA6only: @Override
+    @Override
     public String toScript() {
         return toString();
     }
