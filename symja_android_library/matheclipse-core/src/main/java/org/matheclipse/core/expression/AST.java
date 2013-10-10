@@ -49,7 +49,7 @@ import edu.jas.structure.ElemFactory;
  * </p>
  * 
  * <p>
- * In MathEclipse, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the MathEclipse
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
  * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that
  * it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree
  * structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node
@@ -60,7 +60,7 @@ import edu.jas.structure.ElemFactory;
  * <ul>
  * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
  * and</li>
- * <li>the <code>n</code> arguments of a function in the index <code>0 to n</code></li>
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
@@ -270,55 +270,49 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.interfaces.IExpr#hierarchy()
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final int hierarchy() {
 		return ASTID;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isLTOrdered(final IExpr obj) {
 		return compareTo(obj) < 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isLEOrdered(final IExpr obj) {
 		return compareTo(obj) <= 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isGEOrdered(final IExpr obj) {
 		return compareTo(obj) >= 0;
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final int getEvalFlags() {
 		return fEvalFlags;
 	}
 
-	/**
-	 * Set the flags to this value
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setEvalFlags(final int i) {
 		fEvalFlags = i;
 	}
 
-	/**
-	 * Add a new flag to the existing flags
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void addEvalFlags(final int i) {
 		fEvalFlags |= i;
@@ -345,17 +339,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return defaultValue;
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isEvalFlagOn(final int i) {
 		return (fEvalFlags & i) == i;
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isEvalFlagOff(final int i) {
 		return (fEvalFlags & i) == 0;
