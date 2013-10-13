@@ -312,7 +312,7 @@ public class DownRulesData implements Serializable {
 		String astString;
 		IExpr key;
 		IExpr value;
-		EvalEngine engine = EvalEngine.get();
+		EvalEngine engine = new EvalEngine(true, true);
 		ISymbol setSymbol;
 		int len = stream.read();
 		if (len > 0) {
@@ -430,7 +430,7 @@ public class DownRulesData implements Serializable {
 			while (iter.hasNext()) {
 				key = iter.next();
 				pme = fEqualDownRules.get(key);
-				stream.writeUTF(pme.getLHS().toString());
+				stream.writeUTF(pme.getSetSymbol().toString());
 				stream.writeUTF(key.fullFormString());
 				stream.writeUTF(pme.getRHS().fullFormString());
 			}
