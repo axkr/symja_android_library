@@ -1152,23 +1152,23 @@ public class F {
 	public static IAST ArcCoth(final IExpr a0) {
 		return unary(ArcCoth, a0);
 	}
-	
+
 	public static IAST ArcCsc(final IExpr a0) {
 		return unary(ArcCsc, a0);
 	}
-	
+
 	public static IAST ArcCsch(final IExpr a0) {
 		return unary(ArcCsch, a0);
 	}
-	
+
 	public static IAST ArcSec(final IExpr a0) {
 		return unary(ArcSec, a0);
 	}
-	
+
 	public static IAST ArcSech(final IExpr a0) {
 		return unary(ArcSech, a0);
 	}
-	
+
 	public static IAST ArcSin(final IExpr a0) {
 
 		return unary(ArcSin, a0);
@@ -1389,16 +1389,23 @@ public class F {
 	}
 
 	public static IAST Ceiling(final IExpr a0) {
-
 		return unary(Ceiling, a0);
 	}
 
+	public static IAST Clear(final IExpr... a) {
+		return ast(a, Clear);
+	}
+	
 	public static IAST CNInfinity() {
 		return binary(Times, CN1, Infinity);
 	}
 
 	public static IAST Coefficient(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternary(Coefficient, a0, a1, a2);
+	}
+
+	public static IAST CoefficientList(final IExpr a0, final IExpr a1) {
+		return binary(CoefficientList, a0, a1);
 	}
 
 	public static IAST Collect(final IExpr a0, final IExpr a1) {
@@ -1575,6 +1582,17 @@ public class F {
 		return F.complexNum(obj.doubleValue(), 0.0d);
 	}
 
+	/**
+	 * TODO: check if Complex is working in pattern matching?
+	 * 
+	 * @param a0
+	 * @param a1
+	 * @return
+	 */
+	public static IAST Complex(final IExpr a0, final IExpr a1) {
+		return binary(Complex, a0, a1);
+	}
+
 	public static IAST CompoundExpression(final IExpr... a) {
 		return ast(a, CompoundExpression);
 	}
@@ -1589,6 +1607,10 @@ public class F {
 
 	public static IAST Continue() {
 		return ast(Continue);
+	}
+
+	public static IAST CoprimeQ(final IExpr a0, final IExpr a1) {
+		return binary(CoprimeQ, a0, a1);
 	}
 
 	public static IAST Cos(final IExpr a0) {
@@ -1664,6 +1686,14 @@ public class F {
 
 	public static IAST Distribute(final IExpr a) {
 		return unary(Distribute, a);
+	}
+
+	public static IAST Distribute(final IExpr a0, final IExpr a1) {
+		return binary(Distribute, a0, a1);
+	}
+
+	public static IAST Distribute(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(Distribute, a0, a1, a2);
 	}
 
 	public static IExpr div(IExpr a, Integer i) {
@@ -1853,7 +1883,7 @@ public class F {
 	public static IExpr evalExpand(IExpr a) {
 		return EvalEngine.eval(Expand(a));
 	}
-	
+
 	/**
 	 * Apply <code>ExpandAll[]</code> to the given expression and evaluate it. If no evaluation was possible this method returns the
 	 * given argument.
@@ -1968,6 +1998,14 @@ public class F {
 
 	public static IAST Factorial(final IExpr a0) {
 		return unary(Factorial, a0);
+	}
+
+	public static IAST FactorInteger(final IExpr a0) {
+		return unary(FactorInteger, a0);
+	}
+
+	public static IAST FactorSquareFree(final IExpr a) {
+		return unary(FactorSquareFree, a);
 	}
 
 	public static IAST FactorSquareFreeList(final IExpr a) {
@@ -2369,6 +2407,10 @@ public class F {
 		return binary(Join, a0, a1);
 	}
 
+	public static IAST Last(final IExpr a0) {
+		return unary(Last, a0);
+	}
+
 	public static IAST LCM(final IExpr a0, final IExpr a1) {
 		return binary(LCM, a0, a1);
 	}
@@ -2735,19 +2777,8 @@ public class F {
 		return ast(Part);
 	}
 
-	public static IAST Part(final IExpr a0) {
-		return unary(Part, a0);
-	}
-
-	public static IAST Part(final IExpr a0, final IExpr a1) {
-		// if (a0 == null || a1 == null||a0 == F.Null || a1 == F.Null) {
-		// System.out.println("Part argument is null");
-		// }
-		return binary(Part, a0, a1);
-	}
-
-	public static IAST Part(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternary(Part, a0, a1, a2);
+	public static IAST Part(final IExpr... a) {
+		return ast(a, Part);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {
@@ -2806,11 +2837,11 @@ public class F {
 	public static void popLocal(ISymbol temp) {
 		temp.popLocalVariable();
 	}
-	
+
 	public static IAST Positive(final IExpr a0) {
 		return unary(Positive, a0);
 	}
-	
+
 	public static IAST PossibleZeroQ(final IExpr a0) {
 		return unary(PossibleZeroQ, a0);
 	}
@@ -2867,12 +2898,8 @@ public class F {
 		return unary(PrimeQ, a0);
 	}
 
-	public static IAST Print(final IExpr a0) {
-		return unary(Print, a0);
-	}
-
-	public static IAST Print(final IExpr a0, final IExpr a1) {
-		return binary(Print, a0, a1);
+	public static IAST Print(final IExpr... a) {
+		return ast(a, Print);
 	}
 
 	public static IAST Product(final IExpr a0, final IExpr a1) {
@@ -2932,6 +2959,18 @@ public class F {
 		return binary(ReplaceAll, a0, a1);
 	}
 
+	public static IAST ReplacePart(final IExpr a0, final IExpr a1) {
+		return binary(ReplacePart, a0, a1);
+	}
+
+	/**
+	 * TODO: check if this function is necessary ???
+	 * 
+	 * @param a0
+	 * @param a1
+	 * @param a2
+	 * @return
+	 */
 	public static IAST ReplacePart(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternary(ReplacePart, a0, a1, a2);
 	}
@@ -2986,6 +3025,10 @@ public class F {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4, a5 });
 	}
 
+	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(Select, a0, a1, a2);
+	}
+
 	public static IAST Sequence() {
 		return ast(Sequence);
 	}
@@ -3003,10 +3046,13 @@ public class F {
 	}
 
 	public static IAST SetAttributes(final IExpr a0) {
-
 		return unary(SetAttributes, a0);
 	}
 
+	public static IAST SetAttributes(final IExpr a0, final IExpr a1) {
+		return binary(SetAttributes, a0, a1);
+	}
+	
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
 		if (a0.isAST()) {
 			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK);
@@ -3047,6 +3093,10 @@ public class F {
 
 	public static IAST Slot(final int i) {
 		return unary(Slot, integer(i));
+	}
+
+	public static IAST Sort(final IExpr a0, final IExpr a1) {
+		return binary(Sort, a0, a1);
 	}
 
 	public static IAST Sow(final IExpr a) {
@@ -3192,6 +3242,10 @@ public class F {
 
 	public static IAST TrigReduce(final IExpr v) {
 		return unary(TrigReduce, v);
+	}
+
+	public static IAST TrigToExp(final IExpr a0) {
+		return unary(TrigToExp, a0);
 	}
 
 	/**
