@@ -66,9 +66,6 @@ import edu.jas.structure.ElemFactory;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
 public class AST extends HMArrayList<IExpr> implements IAST {
-	private final static IAST AST_DUMMY_INSTANCE = new AST();
-
-	// public final static ASTCopy COPY = new ASTCopy((Class<IAST>) AST_DUMMY_INSTANCE.getClass());
 
 	/**
 	 * 
