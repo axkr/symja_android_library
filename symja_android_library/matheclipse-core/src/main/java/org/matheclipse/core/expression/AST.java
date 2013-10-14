@@ -49,11 +49,11 @@ import edu.jas.structure.ElemFactory;
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
- * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that
- * it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node
- * for the header <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja source code.
+ * Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that it does not
+ * represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree structure,
+ * and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node for the
+ * header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
  * Internally an AST is represented as a <code>java.util.List</code> which contains
@@ -1185,16 +1185,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
-			return true;
-		}
 		if (obj instanceof AST) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
-			if (size() != ((AST) obj).size()) {
-				return false;
-			}
 			return super.equals(obj);
 		}
 		return false;
@@ -1929,7 +1920,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public final boolean isValue() {
 		return evaluate(EvalEngine.get()) != null;
 	}
-	
+
 	@Override
 	public IExpr remainder(IExpr S) {
 		throw new UnsupportedOperationException();

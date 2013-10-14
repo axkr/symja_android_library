@@ -30,10 +30,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
+import org.matheclipse.core.expression.AST;
+
 /**
- * HMArrayList is an implementation of {@link List}, backed by an array. All
- * optional operations adding, removing, and replacing are supported. The
- * elements can be any objects.
+ * HMArrayList is an implementation of {@link List}, backed by an array. All optional operations adding, removing, and replacing are
+ * supported. The elements can be any objects.
  * 
  * Copied and modified from the Apache Harmony project.
  * 
@@ -72,8 +73,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} with the specified
-	 * capacity.
+	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
 	 * 
 	 * @param capacity
 	 *            the initial capacity of this {@code ArrayList}.
@@ -87,9 +87,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} containing the elements of
-	 * the specified collection. The initial size of the {@code ArrayList} will
-	 * be 10% higher than the size of the specified collection.
+	 * Constructs a new instance of {@code ArrayList} containing the elements of the specified collection. The initial size of the
+	 * {@code ArrayList} will be 10% higher than the size of the specified collection.
 	 * 
 	 * @param collection
 	 *            the collection of elements to add.
@@ -110,10 +109,9 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified
-	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this
-	 * {@code ArrayList}, the object is added at the end.
+	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before any
+	 * previous element at the specified location. If the location is equal to the size of this {@code ArrayList}, the object is
+	 * added at the end.
 	 * 
 	 * @param location
 	 *            the index at which to insert the object.
@@ -177,16 +175,14 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from
-	 * the collection's iterator.
+	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in the order
+	 * they are returned from the collection's iterator.
 	 * 
 	 * @param location
 	 *            the index at which to insert.
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
@@ -249,8 +245,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * 
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 */
 	@Override
 	public boolean addAll(Collection<? extends E> collection) {
@@ -283,8 +278,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns a new {@code ArrayList} with the same elements, the same size and
-	 * the same capacity as this {@code ArrayList}.
+	 * Returns a new {@code ArrayList} with the same elements, the same size and the same capacity as this {@code ArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -294,7 +288,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	public Object clone() {
 		try {
 			HMArrayList<E> newList = (HMArrayList<E>) super.clone();
- 			newList.array = array.clone();
+			newList.array = array.clone();
 			return newList;
 		} catch (CloneNotSupportedException e) {
 			return null;
@@ -306,8 +300,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * 
 	 * @param object
 	 *            the object to search for.
-	 * @return {@code true} if {@code object} is an element of this
-	 *         {@code ArrayList}, {@code false} otherwise
+	 * @return {@code true} if {@code object} is an element of this {@code ArrayList}, {@code false} otherwise
 	 */
 	@Override
 	public boolean contains(Object object) {
@@ -328,8 +321,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Ensures that after this operation the {@code ArrayList} can hold the
-	 * specified number of elements without further growing.
+	 * Ensures that after this operation the {@code ArrayList} can hold the specified number of elements without further growing.
 	 * 
 	 * @param minimumCapacity
 	 *            the minimum capacity asked for.
@@ -344,10 +336,33 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		}
 	}
 
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (obj instanceof HMArrayList) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (size() != ((AST) obj).size()) {
+				return false;
+			}
+			HMArrayList<E> list = (HMArrayList<E>) obj;
+			int j = list.firstIndex;
+			for (int i = firstIndex; i < lastIndex; i++) {
+				if (!array[i].equals(list.array[j++])) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same
-	 * object as <code>head</code> and if the size of the list equals
-	 * <code>length</code>.
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
+	 * list equals <code>length</code>.
 	 * 
 	 * @param head
 	 *            object to compare with element at location <code>0</code>
@@ -358,9 +373,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same
-	 * object as <code>head</code> and if the size of the list equals
-	 * <code>length</code>.
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
+	 * list equals <code>length</code>.
 	 * 
 	 * @param head
 	 *            object to compare with element at location <code>0</code>
@@ -372,9 +386,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same
-	 * object as <code>head</code> and if the size of the list is greater or
-	 * equal <code>length</code>.
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
+	 * list is greater or equal <code>length</code>.
 	 * 
 	 * @param head
 	 *            object to compare with element at location <code>0</code>
@@ -580,8 +593,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Removes the objects in the specified range from the start to the end, but
-	 * not including the end index.
+	 * Removes the objects in the specified range from the start to the end, but not including the end index.
 	 * 
 	 * @param start
 	 *            the index at which to start removing.
@@ -620,8 +632,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList}
-	 * with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -653,8 +664,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this
-	 * {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
@@ -667,19 +677,15 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns an array containing all elements contained in this
-	 * {@code ArrayList}. If the specified array is large enough to hold the
-	 * elements, the specified array is used, otherwise an array of the same
-	 * type is created. If the specified array is used and is larger than this
-	 * {@code ArrayList}, the array element following the collection elements is
-	 * set to null.
+	 * Returns an array containing all elements contained in this {@code ArrayList}. If the specified array is large enough to hold
+	 * the elements, the specified array is used, otherwise an array of the same type is created. If the specified array is used and
+	 * is larger than this {@code ArrayList}, the array element following the collection elements is set to null.
 	 * 
 	 * @param contents
 	 *            the array.
 	 * @return an array of the elements from this {@code ArrayList}.
 	 * @throws ArrayStoreException
-	 *             when the type of an element in this {@code ArrayList} cannot
-	 *             be stored in the type of the specified array.
+	 *             when the type of an element in this {@code ArrayList} cannot be stored in the type of the specified array.
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -697,8 +703,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Sets the capacity of this {@code ArrayList} to be the same as the current
-	 * size.
+	 * Sets the capacity of this {@code ArrayList} to be the same as the current size.
 	 * 
 	 * @see #size
 	 */
