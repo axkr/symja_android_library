@@ -286,7 +286,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return fComplex.hashCode();
 	}
 

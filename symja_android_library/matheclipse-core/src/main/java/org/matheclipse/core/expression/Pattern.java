@@ -112,10 +112,13 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
+		if (hashCode() != obj.hashCode()) {
+			return false;
 		}
 		if (obj instanceof Pattern) {
+			if (this == obj) {
+				return true;
+			}
 			Pattern pattern = (Pattern) obj;
 			if (fSymbol == pattern.fSymbol) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {

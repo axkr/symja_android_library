@@ -28,7 +28,7 @@ public class EvaluationSupport {
 		if (ast.isAST(sym)) {
 			final IAST result = ast.copyHead();
 			if (flatten(sym, ast, result)) {
-				result.setEvalFlags(IAST.IS_FLATTENED);
+				result.addEvalFlags(IAST.IS_FLATTENED);
 				return result;
 			}
 		}
@@ -115,7 +115,7 @@ public class EvaluationSupport {
 				ast.args().sort(ExprComparator.CONS);
 			}
 		}
-		ast.setEvalFlags(IAST.IS_SORTED);
+		ast.addEvalFlags(IAST.IS_SORTED);
 	}
 
 	public final static void sort(final IAST list, ExprComparator comparator) {

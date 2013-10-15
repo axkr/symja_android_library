@@ -21,7 +21,7 @@ import org.matheclipse.core.visit.IVisitorInt;
  * 
  */
 public class ComplexSym extends ExprImpl implements IComplex {
-	
+
 	/**
 	 * 
 	 */
@@ -31,6 +31,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	private BigFraction _imaginary;
 
+	private transient int fHashValue;
 	/**
 	 * Holds the factory constructing complex instances.
 	 */
@@ -131,8 +132,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @seeorg.matheclipse.parser.interfaces.IComplex#add(org.matheclipse.parser.
-	 * interfaces.IComplex)
+	 * @seeorg.matheclipse.parser.interfaces.IComplex#add(org.matheclipse.parser. interfaces.IComplex)
 	 */
 	public IComplex add(final IComplex parm1) {
 		return ComplexSym.valueOf(_real.add(parm1.getRealPart()), _imaginary.add(parm1.getImaginaryPart()));
@@ -140,10 +140,13 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
+		if (hashCode() != obj.hashCode()) {
+			return false;
 		}
 		if (obj instanceof ComplexSym) {
+			if (this == obj) {
+				return true;
+			}
 			return _real.equals(((ComplexSym) obj)._real) && _imaginary.equals(((ComplexSym) obj)._imaginary);
 		}
 		return false;
@@ -189,8 +192,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
-	public int hashCode() {
-		return _real.hashCode() ^ _imaginary.hashCode();
+	public final int hashCode() {
+		if (fHashValue == 0) {
+			fHashValue = _real.hashCode() * 29 + _imaginary.hashCode();
+		}
+		return fHashValue;
 	}
 
 	public int hierarchy() {
@@ -203,8 +209,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	public IComplex multiply(final IComplex parm1) {
-		return ComplexSym.valueOf(_real.multiply(parm1.getRealPart()).subtract(_imaginary.multiply(parm1.getImaginaryPart())), _real
-				.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(_imaginary)));
+		return ComplexSym.valueOf(_real.multiply(parm1.getRealPart()).subtract(_imaginary.multiply(parm1.getImaginaryPart())),
+				_real.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(_imaginary)));
 	}
 
 	public IComplex pow(final int parm1) {
@@ -229,8 +235,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		}
 
 		if (parm1 < 0) {
-			final BigFraction d = res.getRealPart().multiply(res.getRealPart()).add(
-					res.getImaginaryPart().multiply(res.getImaginaryPart()));
+			final BigFraction d = res.getRealPart().multiply(res.getRealPart())
+					.add(res.getImaginaryPart().multiply(res.getImaginaryPart()));
 
 			return ComplexSym.valueOf(res.getRealPart().divide(d), res.getImaginaryPart().negate().divide(d));
 		}
@@ -381,9 +387,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof ComplexSym) {

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.RandomAccess;
 
 import org.matheclipse.core.expression.AST;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * HMArrayList is an implementation of {@link List}, backed by an array. All optional operations adding, removing, and replacing are
@@ -48,11 +49,13 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	protected transient int lastIndex;
 
+	private transient int hashValue;
+
 	private transient E[] array;
 
 	protected HMArrayList(E[] array) {
 		this.array = array;
-		firstIndex = 0;
+		firstIndex = hashValue = 0;
 		lastIndex = modCount = array.length;
 	}
 
@@ -65,7 +68,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	public HMArrayList(E ex, E... es) {
 		int len = es.length + 1;
-		firstIndex = 0;
+		firstIndex = hashValue = 0;
 		array = newElementArray(len);
 		array[0] = ex;
 		System.arraycopy(es, 0, array, 1, es.length);
@@ -82,7 +85,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		if (capacity < 0) {
 			throw new IllegalArgumentException();
 		}
-		firstIndex = lastIndex = 0;
+		firstIndex = lastIndex = hashValue = 0;
 		array = newElementArray(capacity);
 	}
 
@@ -94,7 +97,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 *            the collection of elements to add.
 	 */
 	public HMArrayList(Collection<? extends E> collection) {
-		firstIndex = 0;
+		firstIndex = hashValue = 0;
 		Object[] objects = collection.toArray();
 		int size = objects.length;
 		array = newElementArray(size + (size / 10));
@@ -122,6 +125,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public void add(int location, E object) {
+		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (0 < location && location < size) {
 			if (firstIndex == 0 && lastIndex == array.length) {
@@ -166,6 +170,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public boolean add(E object) {
+		hashValue = 0;
 		if (lastIndex == array.length) {
 			growAtEnd(1);
 		}
@@ -188,6 +193,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public boolean addAll(int location, Collection<? extends E> collection) {
+		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (location < 0 || location > size) {
 			// throw new IndexOutOfBoundsException(
@@ -249,6 +255,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public boolean addAll(Collection<? extends E> collection) {
+		hashValue = 0;
 		Object[] dumpArray = collection.toArray();
 		if (dumpArray.length == 0) {
 			return false;
@@ -275,6 +282,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			firstIndex = lastIndex = 0;
 			modCount++;
 		}
+		hashValue = 0;
 	}
 
 	/**
@@ -289,6 +297,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		try {
 			HMArrayList<E> newList = (HMArrayList<E>) super.clone();
 			newList.array = array.clone();
+			newList.hashValue = 0;
 			return newList;
 		} catch (CloneNotSupportedException e) {
 			return null;
@@ -338,18 +347,24 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
-			return true;
+		if (hashCode() != obj.hashCode()) {
+			return false;
 		}
 		if (obj instanceof HMArrayList) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
 			if (size() != ((AST) obj).size()) {
 				return false;
 			}
+			if (obj == this) {
+				return true;
+			}
 			HMArrayList<E> list = (HMArrayList<E>) obj;
 			int j = list.firstIndex;
+//			for (int i = firstIndex; i < lastIndex; i++) {
+//				if (array[i].hashCode() != list.array[j++].hashCode()) {
+//					return false;
+//				}
+//			}
+//			j = list.firstIndex;
 			for (int i = firstIndex; i < lastIndex; i++) {
 				if (!array[i].equals(list.array[j++])) {
 					return false;
@@ -494,6 +509,17 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	@Override
+	public int hashCode() {
+		if (hashValue == 0) {
+			hashValue = 17;
+			for (int i = firstIndex; i < lastIndex; i++) {
+				hashValue = 23 * hashValue + array[i].hashCode();
+			}
+		}
+		return hashValue;
+	}
+
+	@Override
 	public int indexOf(Object object) {
 		if (object != null) {
 			for (int i = firstIndex; i < lastIndex; i++) {
@@ -545,6 +571,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public E remove(int location) {
+		hashValue = 0;
 		E result;
 		int size = lastIndex - firstIndex;
 		if (0 <= location && location < size) {
@@ -584,6 +611,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	@Override
 	public boolean remove(Object object) {
+		hashValue = 0;
 		int location = indexOf(object);
 		if (location >= 0) {
 			remove(location);
@@ -604,6 +632,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	protected void removeRange(int start, int end) {
+		hashValue = 0;
 		if (start >= 0 && start <= end && end <= (lastIndex - firstIndex)) {
 			if (start == end) {
 				return;
@@ -644,6 +673,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	@Override
 	public E set(int location, E object) {
+		hashValue = 0;
 		if (0 <= location && location < (lastIndex - firstIndex)) {
 			E result = array[firstIndex + location];
 			array[firstIndex + location] = object;

@@ -80,8 +80,6 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	transient protected int fPatternMatchingHashValue = 0;
 
-	transient protected int fHashValue = 0;
-
 	/**
 	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
 	 * 
@@ -193,7 +191,6 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		AST ast = (AST) super.clone();
 		ast.fEvalFlags = 0;
 		ast.fPatternMatchingHashValue = 0;
-		ast.fHashValue = 0;
 		return ast;
 	}
 
@@ -1084,13 +1081,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 * (Times) AST is canonical less than, equal to, or greater than the specified AST.
 	 */
 	private int compareToTimes(final AST ast) {
-		final IExpr astHeader = ast.head();
-		int cp;
-
-		if (astHeader == F.Power) {
+		if (ast.isPower()) {
 			// compare from the last this (Times) element:
 			final IExpr lastTimes = get(size() - 1);
-
+			int cp;
 			if (!(lastTimes instanceof IAST)) {
 				cp = lastTimes.compareTo(ast.get(1));
 				if (cp != 0) {
@@ -1098,8 +1092,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				}
 				return F.C1.compareTo(ast.get(2));
 			} else {
-				final IExpr lastTimesHeader = ((IAST) lastTimes).head();
-				if ((lastTimesHeader == F.Power) && (((IAST) lastTimes).size() == 3)) {
+				if (lastTimes.isPower()) {
 					// compare 2 Power ast's
 					cp = ((IAST) lastTimes).get(1).compareTo(ast.get(1));
 					if (cp != 0) {
@@ -1118,11 +1111,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 					return F.C1.compareTo(ast.get(2));
 				}
 			}
-		} else if (astHeader == F.Times) {
+		} else if (ast.isTimes()) {
 			// compare from the last element:
 			int i0 = size();
 			int i1 = ast.size();
 			int commonArgCounter = (i0 > i1) ? i1 : i0;
+			int cp;
 			while (--commonArgCounter > 0) {
 				cp = get(--i0).compareTo(ast.get(--i1));
 				if (cp != 0) {
@@ -1142,20 +1136,15 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof AST) {
-			final AST ast = (AST) expr;
-
-			if ((size() > 2) && (ast.size() > 2)) {
-				// special comparison for Times?
-				if (head() == F.Times) {
-					return compareToTimes((AST) expr);
-				} else {
-					if (ast.head() == F.Times) {
-						return -1 * ast.compareToTimes(this);
-					}
+			// special comparison for Times?
+			if (isTimes()) {
+				return compareToTimes((AST) expr);
+			} else {
+				if (expr.isTimes()) {
+					return -1 * ((AST) expr).compareToTimes(this);
 				}
 			}
-
-			return compareToAST(ast);
+			return compareToAST((AST) expr);
 		}
 
 		if (expr instanceof Symbol) {
@@ -1210,17 +1199,6 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			return engine.evalAST(this);
 		}
 
-	}
-
-	@Override
-	public int hashCode() {
-		if (fHashValue == 0) {
-			fHashValue = 1;
-			for (IExpr element : this) {
-				fHashValue = 31 * fHashValue + element.hashCode();
-			}
-		}
-		return fHashValue;
 	}
 
 	/**

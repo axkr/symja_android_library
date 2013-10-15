@@ -74,6 +74,8 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	/* package private */BigInteger fInteger;
 
+	private transient int fHashValue = 0;
+
 	/**
 	 * do not use directly, needed for XML transformations
 	 * 
@@ -121,10 +123,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
+		if (hashCode() != obj.hashCode()) {
+			return false;
 		}
 		if (obj instanceof IntegerSym) {
+			if (this == obj) {
+				return true;
+			}
 			return fInteger.equals(((IntegerSym) obj).fInteger);
 		}
 		return false;
@@ -232,8 +237,11 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	/** {@inheritDoc} */
 	@Override
-	public int hashCode() {
-		return fInteger.hashCode();
+	public final int hashCode() {
+		if (fHashValue == 0) {
+			fHashValue = fInteger.hashCode();
+		}
+		return fHashValue;
 	}
 
 	/**

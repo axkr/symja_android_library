@@ -89,6 +89,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/* package private */BigFraction fRational;
 
+	private transient int fHashValue = 0;
+	
 	private FractionSym() {
 		fRational = null;
 	}
@@ -203,10 +205,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
+		if (hashCode() != obj.hashCode()) {
+			return false;
 		}
 		if (obj instanceof FractionSym) {
+			if (this == obj) {
+				return true;
+			}
 			return fRational.equals(((FractionSym) obj).fRational);
 		}
 		return false;
@@ -240,7 +245,10 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	@Override
 	public int hashCode() {
-		return fRational.hashCode();
+		if (fHashValue == 0) {
+			fHashValue = fRational.hashCode();
+		}
+		return fHashValue;
 	}
 
 	/**

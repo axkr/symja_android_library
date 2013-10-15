@@ -189,9 +189,8 @@ public class StringX extends ExprImpl implements IStringX {
 	// }
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof StringX) {
@@ -292,12 +291,7 @@ public class StringX extends ExprImpl implements IStringX {
 
 	@Override
 	public int hashCode() {
-		// based on Javolution's FastComparator.java
-		final int length = fString.length();
-		if (length == 0)
-			return 0;
-		return fString.charAt(0) + fString.charAt(length - 1) * 31 + fString.charAt(length >> 1) * 1009 + fString.charAt(length >> 2)
-				* 27583 + fString.charAt(length - 1 - (length >> 2)) * 73408859;
+		return fString.hashCode();    
 	}
 
 	public int hierarchy() {
@@ -344,6 +338,7 @@ public class StringX extends ExprImpl implements IStringX {
 	public String intern() {
 		return fString.intern();
 	}
+
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
@@ -353,8 +348,9 @@ public class StringX extends ExprImpl implements IStringX {
 			buffer.append("\")");
 			return buffer.toString();
 		}
-		return "\""+fString+"\"";
+		return "\"" + fString + "\"";
 	}
+
 	/**
 	 * @param ch
 	 * @return

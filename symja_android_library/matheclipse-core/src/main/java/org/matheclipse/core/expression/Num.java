@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.apache.commons.math3.util.MathUtils;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -211,9 +212,8 @@ public class Num extends ExprImpl implements INum {
 	// }
 
 	@Override
-	public int hashCode() {
-		Double d;
-		return Double.valueOf(fDouble).hashCode();
+	public final int hashCode() {
+		return MathUtils.hash(fDouble);
 	}
 
 	/**
