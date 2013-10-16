@@ -196,7 +196,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 					int lastStackSize = stackMatcher.size();
 					try {
 						if (stackMatcher.push(subPattern, fLHSEvalAST.get(j))) {
-							// if (matchExpr(subPattern, fLHSEvalAST.get(j))) {
 							fUsedIndex[lhsPosition - 1] = j;
 							if (matchOrderlessAST(lhsPosition + 1, stackMatcher)) {
 								matched = true;
@@ -315,8 +314,11 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @return
 	 */
 	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2) {
-		if (!patternExpr1.isPatternExpr() || !patternExpr2.isPatternExpr()) {
-			return patternExpr1.equals(patternExpr2);
+		if (!patternExpr1.isPatternExpr()) {
+			if (!patternExpr2.isPatternExpr()) {
+				return patternExpr1.equals(patternExpr2);
+			}
+			return false;
 		}
 		if (patternExpr1.isAST()) {
 			if (patternExpr2.isAST()) {
@@ -325,10 +327,15 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				if (l1.size() != l2.size()) {
 					return false;
 				}
-				if (!equivalent(l1.head(), l2.head())) {
-					return false;
+				for (int i = 0; i < l1.size(); i++) {
+					if (l1.get(i).hashCode() != l2.get(i).hashCode()) {
+						if (l1.get(i).isPatternExpr() && l2.get(i).isPatternExpr()) {
+							continue;
+						}
+						return false;
+					}
 				}
-				for (int i = 1; i < l1.size(); i++) {
+				for (int i = 0; i < l1.size(); i++) {
 					if (!equivalent(l1.get(i), l2.get(i))) {
 						return false;
 					}
@@ -337,20 +344,41 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			}
 			return false;
 		}
-		if (patternExpr1.isPattern() && patternExpr2.isPattern()) {
-			// test if the pattern indices are equal
-			final IPattern p1 = (IPattern) patternExpr1;
-			final IPattern p2 = (IPattern) patternExpr2;
-			if (p1.getIndex() != p2.getIndex()) {
-				return false;
+		if (patternExpr1.isPattern()) {
+			if (patternExpr2.isPattern()) {
+				// test if the pattern indices are equal
+				final IPattern p1 = (IPattern) patternExpr1;
+				final IPattern p2 = (IPattern) patternExpr2;
+				if (p1.getIndex() != p2.getIndex()) {
+					return false;
+				}
+				// test if the "check" expressions are equal
+				final Object o1 = p1.getCondition();
+				final Object o2 = p2.getCondition();
+				if ((o1 == null) || (o2 == null)) {
+					return o1 == o2;
+				}
+				return o1.equals(o2);
 			}
-			// test if the "check" expressions are equal
-			final Object o1 = p1.getCondition();
-			final Object o2 = p2.getCondition();
-			if ((o1 == null) || (o2 == null)) {
-				return o1 == o2;
+			return false;
+		}
+		if (patternExpr1.isPatternSequence()) {
+			if (patternExpr2.isPatternSequence()) {
+				// test if the pattern indices are equal
+				final IPatternSequence p1 = (IPatternSequence) patternExpr1;
+				final IPatternSequence p2 = (IPatternSequence) patternExpr2;
+				if (p1.getIndex() != p2.getIndex()) {
+					return false;
+				}
+				// test if the "check" expressions are equal
+				final Object o1 = p1.getCondition();
+				final Object o2 = p2.getCondition();
+				if ((o1 == null) || (o2 == null)) {
+					return o1 == o2;
+				}
+				return o1.equals(o2);
 			}
-			return o1.equals(o2);
+			return false;
 		}
 		return patternExpr1.equals(patternExpr2);
 	}
@@ -562,8 +590,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 						}
 						int lastPosition = lhsPatternAST.size() - 1;
 						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
-							// TODO only the special case, where the last
-							// element is
+							// TODO only the special case, where the last element is
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
 							seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
