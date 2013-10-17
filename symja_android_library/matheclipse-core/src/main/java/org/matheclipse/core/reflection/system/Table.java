@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.generic.UnaryArrayFunction;
@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Table structure generator (i.e. lists, vectors, matrices, tensors)
  */
-public class Table implements IFunctionEvaluator {
+public class Table extends AbstractFunctionEvaluator {
 
 	public Table() {
 	}

@@ -1,13 +1,39 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.ArcCos;
+import static org.matheclipse.core.expression.F.ArcSin;
+import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C1D3;
+import static org.matheclipse.core.expression.F.C1D4;
 import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.C5;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.GreaterEqual;
+import static org.matheclipse.core.expression.F.If;
+import static org.matheclipse.core.expression.F.IntegerPart;
+import static org.matheclipse.core.expression.F.Less;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Quotient;
+import static org.matheclipse.core.expression.F.Set;
+import static org.matheclipse.core.expression.F.SetDelayed;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Slot;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.F.integer;
+import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
@@ -20,17 +46,28 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Product of expressions.
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">
- * Wikipedia Multiplication</a>
+ * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
  */
 public class Product extends Table {
-	// private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr,
-	// IExpr>();
-	// static {
+
+	// {
+	// Product[x_,{x_,0,n_]:=0,
+	// Product[x_,{x_,0,n_, s_]:=0,
+	// Product[x_,{x_,1,n_]:=n!
 	// }
 
+	final static IAST RULES = List(
+			SetDelayed(Product($p(x), List($p(x), C0, $p(n))), C0),
+			SetDelayed(Product($p(x), List($p(x), C0, $p(n), $p(s))), C0),
+			SetDelayed(Product($p(x), List($p(x), C1, $p(n))), Factorial(n))
+			);
+
 	public Product() {
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override
@@ -41,6 +78,27 @@ public class Product extends Table {
 			IAST prod = ast.clone();
 			prod.set(1, F.Null);
 			return ((IAST) ast.get(1)).map(Functors.replace1st(prod));
+		}
+		if (ast.get(1).isPower()) {
+			IExpr powArg1 = ast.get(1).getAt(1);
+			IExpr powArg2 = ast.get(1).getAt(2);
+			boolean flag = true;
+			// Prod( i^a, {i,from,to},... )
+			for (int i = 2; i < ast.size(); i++) {
+				if (ast.get(i).isList() && (((IAST) ast.get(i)).size() == 4 || ((IAST) ast.get(i)).size() == 5)) {
+					IAST list = (IAST) ast.get(i);
+					if (powArg2.isFree(list.get(1), true)) {
+						continue;
+					}
+				}
+				flag = false;
+				break;
+			}
+			if (flag) {
+				IAST prod = ast.clone();
+				prod.set(1, powArg1);
+				return F.Power(prod, powArg2);
+			}
 		}
 		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
 			IAST list = (IAST) ast.get(2);
@@ -67,10 +125,10 @@ public class Product extends Table {
 					// }
 					// }
 				}
-				if (from.isPositive()) {
-					return F.Divide(F.Product(ast.get(1), F.List(var, C0, to)),
-							F.Product(ast.get(1), F.List(var, C0, from.minus(F.C1))));
-				}
+				// if (from.isPositive()) {
+				// return F.Divide(F.Product(ast.get(1), F.List(var, C0, to)),
+				// F.Product(ast.get(1), F.List(var, C0, from.minus(F.C1))));
+				// }
 			}
 		}
 		IAST resultList = Times();
@@ -80,4 +138,5 @@ public class Product extends Table {
 		}
 		return temp;
 	}
+
 }
