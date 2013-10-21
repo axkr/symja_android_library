@@ -1,39 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.ArcSin;
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D3;
-import static org.matheclipse.core.expression.F.C1D4;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C5;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.GreaterEqual;
-import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.IntegerPart;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Quotient;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Slot;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
-import static org.matheclipse.core.expression.F.integer;
-import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
@@ -56,11 +23,9 @@ public class Product extends Table {
 	// Product[x_,{x_,1,n_]:=n!
 	// }
 
-	final static IAST RULES = List(
-			SetDelayed(Product($p(x), List($p(x), C0, $p(n))), C0),
+	final static IAST RULES = List(SetDelayed(Product($p(x), List($p(x), C0, $p(n))), C0),
 			SetDelayed(Product($p(x), List($p(x), C0, $p(n), $p(s))), C0),
-			SetDelayed(Product($p(x), List($p(x), C1, $p(n))), Factorial(n))
-			);
+			SetDelayed(Product($p(x), List($p(x), C1, $p(n))), Factorial(n)));
 
 	public Product() {
 	}
@@ -113,22 +78,7 @@ public class Product extends Table {
 					if (from.equals(F.C0)) {
 						return F.Power(ast.get(1), Plus(to, C1));
 					}
-				} else {
-					// if (from.equals(F.C0)) {
-					// IExpr repl = ast.get(1).replaceAll(F.List(F.Rule(var,
-					// F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
-					// if (repl != null) {
-					// IExpr temp = MAP_0_N.get(repl);
-					// if (temp != null) {
-					// return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
-					// }
-					// }
-					// }
 				}
-				// if (from.isPositive()) {
-				// return F.Divide(F.Product(ast.get(1), F.List(var, C0, to)),
-				// F.Product(ast.get(1), F.List(var, C0, from.minus(F.C1))));
-				// }
 			}
 		}
 		IAST resultList = Times();
