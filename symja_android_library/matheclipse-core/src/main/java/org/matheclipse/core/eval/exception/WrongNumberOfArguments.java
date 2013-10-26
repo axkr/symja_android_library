@@ -16,6 +16,8 @@ public class WrongNumberOfArguments extends MathException {
 	int fCurrent;
 
 	IAST fExpr;
+	
+	int fTextNumber;
 
 	/**
 	 * Expected number of arguments: {@code allowed} but got {@code current}
@@ -29,11 +31,35 @@ public class WrongNumberOfArguments extends MathException {
 		fAllowed = allowed;
 		fCurrent = current;
 		fExpr = expr;
+		fTextNumber = 0;
 	}
 
+	/**
+	 * Expected number of arguments: {@code allowed} but got {@code current}
+	 * arguments:<br/> {@code expr}.
+	 * 
+	 * @param expr
+	 * @param allowed
+	 * @param current
+	 */
+	public WrongNumberOfArguments(final int textNumber, final IAST expr,final int current) {
+		fAllowed = 0;
+		fCurrent = current;
+		fExpr = expr;
+		fTextNumber = textNumber;
+	}
+	
 	@Override
 	public String getMessage() {
-		return "Expected number of arguments: " + fAllowed + " but got " + fCurrent + " arguments:\n" + fExpr.toString();
+		switch(fTextNumber){
+		case 0:
+			return "Expected number of arguments: " + fAllowed + " but got " + fCurrent + " arguments:\n" + fExpr.toString();
+		case 1:
+			return "Expected even number of arguments but got " + fCurrent + " arguments:\n" + fExpr.toString();
+		case 2:
+			return "Expected odd number of arguments but got " + fCurrent + " arguments:\n" + fExpr.toString();
+		}
+		return "Wrong text number: " + fAllowed + " but got " + fCurrent + " arguments:\n" + fExpr.toString();
 	}
 
 }

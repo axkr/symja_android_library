@@ -154,6 +154,32 @@ public final class Validate {
 	}
 
 	/**
+	 * If {@code ast.size()-1} is not even throw a {@code WrongNumberOfArguments} exception.
+	 * 
+	 * @throws WrongNumberOfArguments
+	 *             if {@code ast.size()-1} is not even
+	 */
+	public static IAST checkEven(IAST ast) {
+		if (((ast.size() - 1) & 0x0001) == 0x0001) {
+			throw new WrongNumberOfArguments(1, ast, ast.size() - 1);
+		}
+		return ast;
+	}
+
+	/**
+	 * If {@code ast.size()-1} is not odd throw a {@code WrongNumberOfArguments} exception.
+	 * 
+	 * @throws WrongNumberOfArguments
+	 *             if {@code ast.size()-1} is not odd
+	 */
+	public static IAST checkOdd(IAST ast) {
+		if (((ast.size() - 1) & 0x0001) == 0x0000) {
+			throw new WrongNumberOfArguments(2, ast, ast.size() - 1);
+		}
+		return ast;
+	}
+
+	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
 	 * @param position
