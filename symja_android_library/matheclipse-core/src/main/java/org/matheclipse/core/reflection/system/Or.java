@@ -10,8 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
- * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical
- * disjunction</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical disjunction</a>
  * 
  */
 public class Or extends AbstractFunctionEvaluator {
@@ -50,14 +49,11 @@ public class Or extends AbstractFunctionEvaluator {
 			}
 			if (temp.isSymbol()) {
 				symbols[i] = ast.get(i).hashCode();
-				continue;
-			}
-			if (temp.isNot()) {
+			} else if (temp.isNot()) {
 				sym = ((IAST) temp).getAt(1);
 				if (sym.isSymbol()) {
 					notSymbols[i] = sym.hashCode();
 				}
-				continue;
 			}
 			index++;
 		}
