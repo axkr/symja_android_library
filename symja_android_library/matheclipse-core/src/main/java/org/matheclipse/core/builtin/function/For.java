@@ -25,25 +25,34 @@ public class For extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 5);
+		Validate.checkRange(ast, 4, 5);
 		final EvalEngine engine = EvalEngine.get();
-
-		IExpr temp = F.Null;
-		engine.evaluate(ast.get(1));
 		final int iterationLimit = engine.getIterationLimit();
 		int iterationCounter = 1;
 
+		// For(start, test, incr, body)
+		engine.evaluate(ast.get(1)); // start
+		IExpr test = ast.get(2);
+		IExpr incr = ast.get(3);
+		IExpr body = F.Null;
+		if (ast.size() == 5) {
+			body = ast.get(4);
+		}
+		boolean exit = false;
 		while (true) {
 			try {
-				if (!engine.evaluate(ast.get(2)).equals(F.True)) {
-					return temp;
+				if (!engine.evaluate(test).isTrue()) {
+					exit = true;
+					return F.Null;
 				}
-				temp = engine.evaluate(ast.get(4));
-
+				if (ast.size() == 5) {
+					engine.evaluate(body);
+				}
 				if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
 					IterationLimitExceeded.throwIt(iterationCounter, ast);
 				}
 			} catch (final BreakException e) {
+				exit = true;
 				return F.Null;
 			} catch (final ContinueException e) {
 				if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
@@ -51,7 +60,9 @@ public class For extends AbstractCoreFunctionEvaluator {
 				}
 				continue;
 			} finally {
-				engine.evaluate(ast.get(3));
+				if (!exit) {
+					engine.evaluate(incr);
+				}
 			}
 		}
 	}
