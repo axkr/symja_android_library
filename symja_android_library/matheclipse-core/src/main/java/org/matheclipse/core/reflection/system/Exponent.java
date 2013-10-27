@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
@@ -32,7 +33,7 @@ public class Exponent extends AbstractFunctionEvaluator {
 			collector.add(F.CNInfinity);
 		} else if (expr.isAST()) {
 			IAST arg1 = (IAST) expr;
-			final PatternMatcher matcher = new PatternMatcher(form);
+			final IPatternMatcher matcher = new PatternMatcher(form);
 
 			if (arg1.isPower()) {
 				if (matcher.apply(arg1.get(1))) {

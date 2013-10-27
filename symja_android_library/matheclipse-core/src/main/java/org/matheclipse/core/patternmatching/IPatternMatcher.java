@@ -18,20 +18,19 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	protected IExpr fLhsPatternExpr;
 
 	protected IPatternMatcher() {
-		fLhsPatternExpr= null;
+		fLhsPatternExpr = null;
 	}
-	
+
 	public IPatternMatcher(IExpr lhsPatternExpr) {
-		fLhsPatternExpr= lhsPatternExpr;
+		fLhsPatternExpr = lhsPatternExpr;
 	}
 
 	public IExpr getLHS() {
 		return fLhsPatternExpr;
 	}
-	
+
 	/**
-	 * Returns the matched pattern in the order they appear in the pattern
-	 * expression.
+	 * Returns the matched pattern in the order they appear in the pattern expression.
 	 * 
 	 * 
 	 * @param resultList
@@ -53,26 +52,20 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	 * 
 	 * @return
 	 */
-	public abstract boolean apply(IExpr evalExpr);
+	public abstract boolean apply(IExpr leftHandSide);
 
 	/**
 	 * Match the given left-hand-side and return an evaluated expression
 	 * 
 	 * @param leftHandSide
-	 * @return <code>null</code> if the match wasn't successful, the evaluated
-	 *         expression otherwise.
+	 * @return <code>null</code> if the match wasn't successful, the evaluated expression otherwise.
 	 */
 	public abstract IExpr eval(final IExpr leftHandSide);
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-//		try {
-			IPatternMatcher v = (IPatternMatcher) super.clone();
-			v.fLhsPatternExpr = fLhsPatternExpr;
-			return v;
-//		} catch (CloneNotSupportedException e) {
-//			// this shouldn't happen, since we are Cloneable
-//			throw new InternalError();
-//		}
+		IPatternMatcher v = (IPatternMatcher) super.clone();
+		v.fLhsPatternExpr = fLhsPatternExpr;
+		return v;
 	}
 }

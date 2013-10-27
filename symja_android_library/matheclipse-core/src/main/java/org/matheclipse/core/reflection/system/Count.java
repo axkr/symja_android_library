@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 
@@ -17,7 +18,7 @@ import com.google.common.base.Function;
  */
 public class Count implements IFunctionEvaluator {
 	private static class CountFunctor implements Function<IExpr, IExpr> {
-		protected final PatternMatcher matcher;
+		protected final IPatternMatcher matcher;
 		protected int counter;
 
 		/**

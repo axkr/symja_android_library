@@ -436,15 +436,15 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	@Override
-	public boolean apply(final IExpr evalExpr) {
+	public boolean apply(final IExpr leftHandSide) {
 
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
-			return fLhsPatternExpr.equals(evalExpr);
+			return fLhsPatternExpr.equals(leftHandSide);
 		}
 
 		fPatternMap.initPattern();
-		return matchExpr(fLhsPatternExpr, evalExpr);
+		return matchExpr(fLhsPatternExpr, leftHandSide);
 	}
 
 	/**

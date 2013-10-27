@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
@@ -455,17 +456,27 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isFree(final IExpr pattern, boolean heads) {
-		final PatternMatcher matcher = new PatternMatcher(pattern);
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return !matcher.apply(this);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isFree(Predicate<IExpr> predicate, boolean heads) {
 		return !predicate.apply(this);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isMember(final IExpr pattern, boolean heads) {
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		return isMember(matcher, heads);
+	}
+	
+	/** {@inheritDoc} */
 	@Override
 	public boolean isMember(Predicate<IExpr> predicate, boolean heads) {
 		return predicate.apply(this);

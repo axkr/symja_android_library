@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
@@ -48,7 +49,7 @@ public class Collect extends AbstractFunctionEvaluator {
 			IAST poly = (IAST) arg1;
 			IAST rest = F.Plus();
 
-			PatternMatcher matcher = new PatternMatcher(arg2);
+			IPatternMatcher matcher = new PatternMatcher(arg2);
 			collectToMap(poly, matcher, map, rest);
 			if (pos < list.size()) {
 				// collect next pattern in sub-expressions
@@ -73,7 +74,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		return arg1;
 	}
 
-	public void collectToMap(IExpr expr, PatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {
+	public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {
 		if (expr.isFree(matcher, false)) {
 			rest.add(expr);
 			return;
@@ -115,7 +116,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		return;
 	}
 
-	public boolean collectToMapPlus(IExpr expr, PatternMatcher matcher, Map<IExpr, IAST> map) {
+	public boolean collectToMapPlus(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map) {
 		if (expr.isFree(matcher, false)) {
 			return false;
 		} else if (matcher.apply(expr)) {
@@ -157,7 +158,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		resultList.add(value);
 	}
 
-	public boolean isPowerMatched(IExpr poly, PatternMatcher matcher) {
+	public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
 		return poly.isPower() && ((IAST) poly).get(2).isNumber() && matcher.apply(((IAST) poly).get(1));
 	}
 

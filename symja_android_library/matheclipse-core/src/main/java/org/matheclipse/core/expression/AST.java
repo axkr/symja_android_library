@@ -29,6 +29,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -1040,7 +1041,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFree(final IExpr pattern, boolean heads) {
-		final PatternMatcher matcher = new PatternMatcher(pattern);
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return !isMember(matcher, heads);
 	}
 
@@ -1050,6 +1051,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return !isMember(predicate, heads);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isMember(final IExpr pattern, boolean heads) {
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		return isMember(matcher, heads);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {

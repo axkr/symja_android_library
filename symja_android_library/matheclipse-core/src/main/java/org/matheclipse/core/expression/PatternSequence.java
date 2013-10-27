@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -339,7 +340,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * Groovy operator overloading
 	 */
 	public boolean isCase(IExpr that) {
-		final PatternMatcher matcher = new PatternMatcher(this);
+		final IPatternMatcher matcher = new PatternMatcher(this);
 		if (matcher.apply(that)) {
 			return true;
 		}

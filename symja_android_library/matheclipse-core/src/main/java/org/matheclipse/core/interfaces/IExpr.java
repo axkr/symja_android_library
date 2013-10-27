@@ -387,6 +387,20 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isFree(Predicate<IExpr> predicate, boolean heads);
 
 	/**
+	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself, match the
+	 * given pattern.
+	 * 
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * @param heads
+	 *            if set to <code>false</code>, only the arguments of an IAST should be tested and not the <code>Head[]</code>
+	 *            element.
+	 * 
+	 */
+	public boolean isMember(IExpr pattern, boolean heads);
+
+	/**
 	 * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the expression itself, satisfy the
 	 * given unary predicate.
 	 * 

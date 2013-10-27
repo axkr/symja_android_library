@@ -5,6 +5,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
@@ -24,7 +25,7 @@ public class MatchQ implements IFunctionEvaluator {
 	}
 
 	public static boolean matchQ(final IExpr evalExpr, final IExpr pattern) {
-		final PatternMatcher matcher = new PatternMatcher(pattern);
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return matcher.apply(evalExpr);
 	}
 
