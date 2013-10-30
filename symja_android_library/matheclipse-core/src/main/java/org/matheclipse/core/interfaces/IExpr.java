@@ -525,7 +525,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * 
 	 */
 	public boolean isOne();
-
+ 
 	/**
 	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
 	 * 

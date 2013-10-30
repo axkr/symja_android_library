@@ -194,10 +194,15 @@ public class F {
 			new org.matheclipse.core.builtin.function.Condition());
 	public final static ISymbol Continue = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continue" : "Continue",
 			new org.matheclipse.core.builtin.function.Continue());
+	public final static ISymbol Defer = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "defer" : "Defer",
+			new org.matheclipse.core.builtin.function.Defer());
 	public final static ISymbol Definition = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "definition" : "Definition",
 			new org.matheclipse.core.builtin.function.Definition());
 	public final static ISymbol Delete = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "delete" : "Delete",
 			new org.matheclipse.core.builtin.function.Delete());
+	public final static ISymbol DeleteCases = F.initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "deletecases" : "DeleteCases",
+			new org.matheclipse.core.builtin.function.DeleteCases());
 	public final static ISymbol Depth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
 			new org.matheclipse.core.builtin.function.Depth());
 	public final static ISymbol Drop = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop",
@@ -208,6 +213,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.First());
 	public final static ISymbol FixedPoint = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint",
 			new org.matheclipse.core.builtin.function.FixedPoint());
+	public final static ISymbol Flatten = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten",
+			new org.matheclipse.core.builtin.function.Flatten());
 	public final static ISymbol Fold = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold",
 			new org.matheclipse.core.builtin.function.Fold());
 	public final static ISymbol FoldList = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList",
@@ -222,6 +229,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Head());
 	public final static ISymbol If = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
 			new org.matheclipse.core.builtin.function.If());
+	public final static ISymbol Insert = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
+			new org.matheclipse.core.builtin.function.Insert());
 	public final static ISymbol JavaForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
 			new org.matheclipse.core.builtin.function.JavaForm());
 	public final static ISymbol Last = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last",
@@ -256,6 +265,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.PrependTo());
 	public final static ISymbol Print = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print",
 			new org.matheclipse.core.builtin.function.Print());
+	public final static ISymbol Quiet = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet",
+			new org.matheclipse.core.builtin.function.Quiet());
 	public final static ISymbol Reap = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reap" : "Reap",
 			new org.matheclipse.core.builtin.function.Reap());
 	public final static ISymbol Rest = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rest" : "Rest",
@@ -275,8 +286,15 @@ public class F {
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
 			new org.matheclipse.core.builtin.function.Switch());
+	public final static ISymbol TimeConstrained = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained"
+			: "TimeConstrained", new org.matheclipse.core.builtin.function.TimeConstrained());
 	public final static ISymbol Throw = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw",
 			new org.matheclipse.core.builtin.function.Throw());
+	public final static ISymbol Unevaluated = F.initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unevaluated" : "Unevaluated",
+			new org.matheclipse.core.builtin.function.Unevaluated());
+	public final static ISymbol Unique = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unique" : "Unique",
+			new org.matheclipse.core.builtin.function.Unique());
 	public final static ISymbol ValueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ",
 			new org.matheclipse.core.builtin.function.ValueQ());
 	public final static ISymbol Which = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which",
@@ -1395,7 +1413,7 @@ public class F {
 	public static IAST Clear(final IExpr... a) {
 		return ast(a, Clear);
 	}
-	
+
 	public static IAST CNInfinity() {
 		return binary(Times, CN1, Infinity);
 	}
@@ -1657,8 +1675,16 @@ public class F {
 		return unary(Decrement, a);
 	}
 
+	public static IAST Defer(final IExpr a0) {
+		return unary(Defer, a0);
+	}
+
 	public static IAST Delete(final IExpr a0, final IExpr a1) {
 		return binary(Delete, a0, a1);
+	}
+
+	public static IAST DeleteCases(final IExpr... a) {
+		return ast(a, DeleteCases);
 	}
 
 	public static IAST Denominator(final IExpr a0) {
@@ -2020,6 +2046,10 @@ public class F {
 		return unary(First, a0);
 	}
 
+	public static IAST Flatten(final IExpr a0, final IExpr a1) {
+		return binary(Flatten, a0, a1);
+	}
+	
 	public static IAST Floor(final IExpr a0) {
 		return unary(Floor, a0);
 	}
@@ -2316,6 +2346,10 @@ public class F {
 	 */
 	public static IInteger integer(final String integerString, final int numberFormat) {
 		return IntegerSym.valueOf(integerString, numberFormat);
+	}
+
+	public static IAST Insert(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(Insert, a0, a1, a2);
 	}
 
 	public static IAST IntegerPart(final IExpr a0) {
@@ -2942,6 +2976,10 @@ public class F {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4 });
 	}
 
+	public static IAST Quiet(final IExpr a0) {
+		return unary(Quiet, a0);
+	}
+
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
 
 		return binary($s("Quotient"), a0, a1);
@@ -3052,7 +3090,7 @@ public class F {
 	public static IAST SetAttributes(final IExpr a0, final IExpr a1) {
 		return binary(SetAttributes, a0, a1);
 	}
-	
+
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
 		if (a0.isAST()) {
 			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK);
@@ -3204,6 +3242,14 @@ public class F {
 		return unary(Throw, a);
 	}
 
+	public static IAST TimeConstrained(final IExpr a0, final IExpr a1) {
+		return binary(TimeConstrained, a0, a1);
+	}
+
+	public static IAST TimeConstrained(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(TimeConstrained, a0, a1, a2);
+	}
+
 	public static IAST Times() {
 		return ast(Times);
 	}
@@ -3263,6 +3309,14 @@ public class F {
 		return binary(Unequal, a0, a1);
 	}
 
+	public static IAST Unevaluated(final IExpr a0) {
+		return unary(Unevaluated, a0);
+	}
+
+	public static IAST Unique(final IExpr a0) {
+		return unary(Unique, a0);
+	}
+	
 	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
 		return binary(UnsameQ, a0, a1);
 	}

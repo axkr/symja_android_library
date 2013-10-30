@@ -25,8 +25,22 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 		fLhsPatternExpr = lhsPatternExpr;
 	}
 
+	/**
+	 * Get the "left-hand-side" of a pattern-matching rule.
+	 * 
+	 * @return
+	 */
 	public IExpr getLHS() {
 		return fLhsPatternExpr;
+	}
+
+	/**
+	 * Get the "right-hand-side" of a pattern-matching rule.
+	 * 
+	 * @return <code>null</code> if no right-hand-side is defined for the pattern matcher
+	 */
+	public IExpr getRHS() {
+		return null;
 	}
 
 	/**
@@ -41,26 +55,27 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	public abstract void getPatterns(List<IExpr> resultList, IExpr patternExpr);
 
 	/**
-	 * Returns <code>true</code>, if the given expression contains no patterns
+	 * Check if the pattern-matchings left-hand-side expression contains no patterns.
 	 * 
-	 * @return
+	 * @return <code>true</code>, if the given expression contains no patterns
 	 */
 	public abstract boolean isRuleWithoutPatterns();
 
 	/**
 	 * Start pattern matching.
 	 * 
-	 * @return
+	 * @param expr
+	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
 	 */
-	public abstract boolean apply(IExpr leftHandSide);
+	public abstract boolean apply(IExpr expr);
 
 	/**
 	 * Match the given left-hand-side and return an evaluated expression
 	 * 
-	 * @param leftHandSide
+	 * @param expr
 	 * @return <code>null</code> if the match wasn't successful, the evaluated expression otherwise.
 	 */
-	public abstract IExpr eval(final IExpr leftHandSide);
+	public abstract IExpr eval(final IExpr expr);
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {

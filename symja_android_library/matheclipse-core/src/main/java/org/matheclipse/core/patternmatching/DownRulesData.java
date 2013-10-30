@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -51,9 +54,25 @@ public class DownRulesData implements Serializable {
 
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
 		PatternMatcherEquals res;
+		boolean showSteps = false;
+		if (Config.SHOW_PATTERN_EVAL_STEPS) {
+			Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
+			SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
+
+			showSteps = SHOW_PATTERN_SYMBOL_STEPS.contains(expression.topHead());
+			if (showSteps) {
+				System.out.println("EVAL_EXPR: " + expression.toString());
+			}
+		}
 		if (fEqualDownRules != null) {
+			if (showSteps) {
+				System.out.println("  EQUAL RULES");
+			}
 			res = fEqualDownRules.get(expression);
 			if (res != null) {
+				if (showSteps) {
+					System.out.println("\n  >>>> " + res.getRHS().toString());
+				}
 				return res.getRHS();
 			}
 		}
@@ -67,8 +86,18 @@ public class DownRulesData implements Serializable {
 				if (list != null) {
 					for (int i = 0; i < list.size(); i++) {
 						pmEvaluator = (IPatternMatcher) list.get(i).clone();
+						if (showSteps) {
+							IExpr rhs = pmEvaluator.getRHS();
+							if (rhs==null){
+								rhs = F.Null;
+							}
+							System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  "+ rhs.toString());
+						}
 						result = pmEvaluator.eval(expression);
 						if (result != null) {
+							if (showSteps) {
+								System.out.println("\n  >>>> " + result.toString());
+							}
 							return result;
 						}
 					}
@@ -78,8 +107,18 @@ public class DownRulesData implements Serializable {
 			if (fPatternDownRules != null) {
 				for (int i = 0; i < fPatternDownRules.size(); i++) {
 					pmEvaluator = (IPatternMatcher) fPatternDownRules.get(i).clone();
+					if (showSteps) {
+						IExpr rhs = pmEvaluator.getRHS();
+						if (rhs==null){
+							rhs = F.Null;
+						}
+						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  "+ rhs.toString());
+					}
 					result = pmEvaluator.eval(expression);
 					if (result != null) {
+						if (showSteps) {
+							System.out.println("\n  >>>> " + result.toString());
+						}
 						return result;
 					}
 				}
@@ -138,8 +177,7 @@ public class DownRulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert
-	 * the left-hand-side as a simple pattern rule to the
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern rule to the
 	 * <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide

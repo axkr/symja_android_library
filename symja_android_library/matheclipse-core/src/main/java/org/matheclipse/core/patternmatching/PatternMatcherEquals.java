@@ -7,8 +7,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Matches a given expression by simply comparing the left-hand-side expression
- * of this pattern matcher with the <code>equals()</code> method.
+ * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
+ * <code>equals()</code> method.
  * 
  */
 public class PatternMatcherEquals extends IPatternMatcher implements Serializable {
@@ -34,13 +34,11 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	/**
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set,
-	 *            SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherEquals(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
@@ -81,6 +79,8 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	public void getPatterns(List<IExpr> resultList, IExpr patternExpr) {
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	public IExpr getRHS() {
 		return fRightHandSide;
 	}

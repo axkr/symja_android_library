@@ -66,6 +66,38 @@ public class EvaluationSupport {
 	}
 
 	/**
+	 * Flatten the list (i.e. the lists <code>get(0)</code> element has the same head) example: suppose the head f should be
+	 * flattened out:<br>
+	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * 
+	 * @param head
+	 *            the head of the expression, which should be flattened.
+	 * @param sublist
+	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
+	 * @param result
+	 *            the <code>result</code> list, where all sublist elements with the same <code>head</code> should be appended.
+	 * @param level
+	 *            the recursion level up to which the list should be flattened
+	 * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
+	 */
+	public static boolean flatten(final ISymbol head, final IAST sublist, final IAST result, final int recursionCounter,
+			final int level) {
+		boolean isEvaled = false;
+		IExpr expr;
+		final int astSize = sublist.size();
+		for (int i = 1; i < astSize; i++) {
+			expr = sublist.get(i);
+			if (expr.isAST(head) && recursionCounter < level) {
+				isEvaled = true;
+				flatten(head, (IAST) expr, result, recursionCounter + 1, level);
+			} else {
+				result.add(expr);
+			}
+		}
+		return isEvaled;
+	}
+
+	/**
 	 * Sort the list [i.e. the list getHeader() has the attribute ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
 	 * ISymbol.ORDERLESS f[z,d,a,b] ==> f[a,b,d,z]
 	 * 

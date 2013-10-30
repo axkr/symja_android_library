@@ -1,15 +1,19 @@
 package org.matheclipse.core.basic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.math3.util.Precision;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
  */
 public class Config {
 	/**
-	 * COMPILER switch - set this boolean variable to <code>true</code>, if you
-	 * would force a direct plot frame creation from the Plot[], Plot3D[] and
-	 * ParametricPlot[] functions
+	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation from the
+	 * Plot[], Plot3D[] and ParametricPlot[] functions
 	 * 
 	 * On the server this switch should be set to <code>false</code>
 	 */
@@ -30,8 +34,7 @@ public class Config {
 	public final static long FOREVER = 0L;
 
 	/**
-	 * The time in milliseconds an evaluation thread should sleep until
-	 * <code>Thread#stop()</code> will be called.
+	 * The time in milliseconds an evaluation thread should sleep until <code>Thread#stop()</code> will be called.
 	 * 
 	 */
 	public final static long TIME_CONSTRAINED_SLEEP_MILLISECONDS = 500;
@@ -47,20 +50,29 @@ public class Config {
 	 * 
 	 */
 	public final static boolean SHOW_STACKTRACE = true;
-  
+
 	/**
-	 * Show the console output, if an expression has a head symbol with attribute
-	 * <code>ISymbol.CONSOLE_OUTPUT</code>.
+	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
 	 * 
 	 */
 	public final static boolean SHOW_CONSOLE = true;
 
 	/**
-	 * If <code>true</code> the parser don't distinguish between lower- or
-	 * uppercase symbols (i.e. constants, function names,...)
+	 * Show the pattern-matching evaluation steps in the console output.
+	 * 
+	 */
+	public final static boolean SHOW_PATTERN_EVAL_STEPS = false;
+
+	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
+	
+	static {
+		SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
+	}
+	/**
+	 * If <code>true</code> the parser don't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
 	 */
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
-	
+
 	/**
 	 * Version string for console application
 	 * 
@@ -69,24 +81,21 @@ public class Config {
 
 	/**
 	 * <code>true</code> if the engine is started by a servlet<br/>
-	 * In <i>server mode</i> the user can only assign values to variables with
-	 * prefix '$' <br/>
+	 * In <i>server mode</i> the user can only assign values to variables with prefix '$' <br/>
 	 * <br/>
-	 * SERVER_MODE should be set to <code>true</code> in the initialization of a
-	 * servlet
+	 * SERVER_MODE should be set to <code>true</code> in the initialization of a servlet
 	 * 
 	 */
 	public static boolean SERVER_MODE = false;
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia:
-	 * Machine epsilon</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia: Machine epsilon</a>
 	 */
 	public static double DOUBLE_EPSILON = Precision.EPSILON;
-	
+
 	/**
-     * The double tolerance used for comparisons.
-     */
+	 * The double tolerance used for comparisons.
+	 */
 	public final static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
 
 	/**
@@ -104,8 +113,7 @@ public class Config {
 	public static int FASTTABLE_MAX_SIZE = 65536;
 
 	/**
-	 * Maximum length of the StringImpl's <code>String</code> in <i>server
-	 * mode</i>.
+	 * Maximum length of the StringImpl's <code>String</code> in <i>server mode</i>.
 	 * 
 	 * @see org.matheclipse.core.expression.Expression
 	 */

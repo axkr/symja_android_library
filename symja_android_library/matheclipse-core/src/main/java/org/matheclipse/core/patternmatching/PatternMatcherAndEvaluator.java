@@ -202,6 +202,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 		return null;
 	}
 
+	@Override
 	public IExpr getRHS() {
 		return fRightHandSide;
 	}
