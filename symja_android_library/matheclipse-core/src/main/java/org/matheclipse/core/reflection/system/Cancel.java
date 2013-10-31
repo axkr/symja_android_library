@@ -108,7 +108,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 				if (!denParts0.equals(F.C1)) {
 					IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);
 					if (result != null) {
-						return F.Times(result[0], numParts[1], F.Power(F.Times(result[1], denParts[1]), F.CN1));
+						return F.Times(result[0], result[1], numParts[1], F.Power(F.Times(result[2], denParts[1]), F.CN1));
 					}
 				}
 			}
@@ -117,8 +117,9 @@ public class Cancel extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Calculate the result array <code>[ poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code> for the given
-	 * expressions <code>poly1</code> and <code>poly2</code>.
+	 * Calculate the 3 element result array
+	 * <code>[ commonFactor, poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code> for the given expressions
+	 * <code>poly1</code> and <code>poly2</code>.
 	 * 
 	 * 
 	 * @param poly1
@@ -142,15 +143,20 @@ public class Cancel extends AbstractFunctionEvaluator {
 			GreatestCommonDivisor<BigRational> engine;
 			engine = GCDFactory.getImplementation(cofac);
 			GenPolynomial<BigRational> gcd = engine.gcd(p1, p2);
-			IAST[] result = new IAST[2];
+			IExpr[] result = new IExpr[3];
 			if (gcd.isONE()) {
-				result[0] = jas.rationalPoly2Expr(p1);
-				result[1] = jas.rationalPoly2Expr(p2);
+				result[0] = jas.rationalPoly2Expr(gcd);
+				result[1] = jas.rationalPoly2Expr(p1);
+				result[2] = jas.rationalPoly2Expr(p2);
 			} else {
+				java.math.BigInteger commonNumerator, commonDenominator;
 				Object[] objects = jas.factorTerms(p1.divide(gcd));
-				result[0] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
-				objects = jas.factorTerms(p2.divide(gcd));
+				commonNumerator = (java.math.BigInteger) objects[0];
 				result[1] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
+				objects = jas.factorTerms(p2.divide(gcd));
+				commonDenominator = (java.math.BigInteger) objects[0];
+				result[2] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
+				result[0] = F.fraction(commonNumerator, commonDenominator);
 			}
 			return result;
 		} catch (Exception e) {

@@ -96,7 +96,7 @@ public class Together extends AbstractFunctionEvaluator {
 				try {
 					IExpr[] result = Cancel.cancelGCD(exprNumerator, exprDenominator);
 					if (result != null) {
-						return F.Times(result[0], F.Power(result[1], F.CN1));
+						return F.Times(result[0], result[1], F.Power(result[2], F.CN1));
 					}
 				} catch (JASConversionException jce) {
 					if (Config.DEBUG) {
