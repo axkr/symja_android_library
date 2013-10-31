@@ -110,8 +110,8 @@ public class D extends AbstractFunctionEvaluator {
 				return listArg1.map(Functors.replace1st(F.D(F.Null, x)));
 			} else if (header == F.Times) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-			} else if ((header == F.Power) && (listArg1.size() == 3)) {
-				if (listArg1.get(2).isNumber()) {
+			} else if (listArg1.isPower()) {
+				if (listArg1.get(2).isFree(x, true)) {
 					// D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
 					final IAST timesList = F.Times();
 					timesList.add(listArg1.get(2));
