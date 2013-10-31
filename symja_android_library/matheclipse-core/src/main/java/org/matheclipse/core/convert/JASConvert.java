@@ -339,9 +339,18 @@ public class JASConvert<C extends RingElem<C>> {
 		return PolyUtil.integerFromRationalCoefficients(fBigIntegerPolyFactory, A);
 	}
 
-	public IAST integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly) throws ArithmeticException, ClassCastException {
+	/**
+	 * Convert a JAS integer polynomial to <code>IExpr</code>.
+	 * 
+	 * @param poly
+	 * @return
+	 * @throws ArithmeticException
+	 * @throws ClassCastException
+	 */
+	public IExpr integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly) throws ArithmeticException,
+			ClassCastException {
 		if (poly.length() == 0) {
-			return F.Plus(F.C0);
+			return F.C0;
 		}
 		IAST result = F.Plus();
 		for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
@@ -356,14 +365,30 @@ public class JASConvert<C extends RingElem<C>> {
 					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
-			result.add(monomTimes);
+			if (monomTimes.size() == 2) {
+				result.add(monomTimes.get(1));
+			} else {
+				result.add(monomTimes);
+			}
 		}
-		return result;
+		if (result.size() == 2) {
+			return result.get(1);
+		} else {
+			return result;
+		}
 	}
 
-	public IAST complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly) throws ArithmeticException, ClassCastException {
+	/**
+	 * Convert a JAS complex polynomial to <code>IExpr</code>.
+	 * 
+	 * @param poly
+	 * @return
+	 * @throws ArithmeticException
+	 * @throws ClassCastException
+	 */
+	public IExpr complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly) throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
-			return F.Plus(F.C0);
+			return F.C0;
 		}
 		IAST result = F.Plus();
 		for (Monomial<Complex<BigRational>> monomial : poly) {
@@ -380,9 +405,17 @@ public class JASConvert<C extends RingElem<C>> {
 					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
-			result.add(monomTimes);
+			if (monomTimes.size() == 2) {
+				result.add(monomTimes.get(1));
+			} else {
+				result.add(monomTimes);
+			}
 		}
-		return result;
+		if (result.size() == 2) {
+			return result.get(1);
+		} else {
+			return result;
+		}
 	}
 
 	/**
