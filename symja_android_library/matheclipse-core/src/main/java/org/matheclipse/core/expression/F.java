@@ -2049,7 +2049,7 @@ public class F {
 	public static IAST Flatten(final IExpr a0, final IExpr a1) {
 		return binary(Flatten, a0, a1);
 	}
-	
+
 	public static IAST Floor(final IExpr a0) {
 		return unary(Floor, a0);
 	}
@@ -2284,6 +2284,10 @@ public class F {
 			try {
 				isSystemStarted = true;
 
+				if (Config.SHOW_PATTERN_EVAL_STEPS) {
+					// watch the rules whichare used in pattern matching in system.out
+					Config.SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
+				}
 				if (symbolObserver != null) {
 					SYMBOL_OBSERVER = symbolObserver;
 				}
@@ -3316,7 +3320,7 @@ public class F {
 	public static IAST Unique(final IExpr a0) {
 		return unary(Unique, a0);
 	}
-	
+
 	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
 		return binary(UnsameQ, a0, a1);
 	}

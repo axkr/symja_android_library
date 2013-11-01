@@ -56,10 +56,7 @@ public class DownRulesData implements Serializable {
 		PatternMatcherEquals res;
 		boolean showSteps = false;
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
-			Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
-			SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
-
-			showSteps = SHOW_PATTERN_SYMBOL_STEPS.contains(expression.topHead());
+			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expression.topHead());
 			if (showSteps) {
 				System.out.println("EVAL_EXPR: " + expression.toString());
 			}

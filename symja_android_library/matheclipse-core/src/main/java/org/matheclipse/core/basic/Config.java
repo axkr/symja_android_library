@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.math3.util.Precision;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -64,10 +63,7 @@ public class Config {
 	public final static boolean SHOW_PATTERN_EVAL_STEPS = false;
 
 	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
-	
-	static {
-		SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
-	}
+	 
 	/**
 	 * If <code>true</code> the parser don't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
 	 */
