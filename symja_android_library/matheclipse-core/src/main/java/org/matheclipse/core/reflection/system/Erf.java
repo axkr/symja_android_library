@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CNInfinity;
 import static org.matheclipse.core.expression.F.Erf;
 import static org.matheclipse.core.expression.F.Times;
 
@@ -37,6 +39,12 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isZero()) {
 			return F.C0;
+		}
+		if (arg1.equals(CInfinity)) {
+			return F.C1;
+		}
+		if (arg1.equals(CNInfinity)) {
+			return F.CN1;
 		}
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Erf(Times(CN1, arg1)));
