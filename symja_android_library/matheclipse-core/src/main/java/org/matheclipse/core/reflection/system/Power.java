@@ -147,11 +147,10 @@ public class Power extends AbstractArg2 implements INumeric {
 			}
 
 			if ((o1.isSignedNumber()) && ((ISignedNumber) o1).isNegative()) {
-				// throw new DivisionByZero("");
 				if (!ee.isQuietMode()) {
-					ee.getOutPrintStream().println("Infinite expression 1/0");
+					ee.getOutPrintStream().println("Infinite expression 0^(negative number)");
 				}
-				return F.Indeterminate;
+				return F.CComplexInfinity;
 			}
 
 			return F.C0;

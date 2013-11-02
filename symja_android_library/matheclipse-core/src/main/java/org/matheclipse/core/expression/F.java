@@ -2985,10 +2985,13 @@ public class F {
 	}
 
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
-
 		return binary($s("Quotient"), a0, a1);
 	}
 
+	public static IAST Rational(final IExpr a0, final IExpr a1) {
+		return binary(Rational, a0, a1);
+	}
+	
 	public static IAST Re(final IExpr a0) {
 		return unary(Re, a0);
 	}

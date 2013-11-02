@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -255,8 +256,30 @@ public class AST2Expr {
 			if (fr.isSign()) {
 				return F.fraction((IInteger) convert(fr.getNumerator()), (IInteger) convert(fr.getDenominator())).negate();
 			}
-			return F.fraction((IInteger) convert(((FractionNode) node).getNumerator()),
-					(IInteger) convert(((FractionNode) node).getDenominator()));
+			IInteger numerator = (IInteger) convert(((FractionNode) node).getNumerator());
+			IInteger denominator = (IInteger) convert(((FractionNode) node).getDenominator());
+			return F.Rational(numerator, denominator);
+//			if (denominator.isZero()) {
+//				EvalEngine ee = EvalEngine.get();
+//				if (numerator.isZero()) {
+//					// 0^0
+//					if (!ee.isQuietMode()) {
+//						ee.getOutPrintStream().println(
+//								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+//					}
+//					return F.Indeterminate;
+//				}
+//				if (!ee.isQuietMode()) {
+//					ee.getOutPrintStream().println(
+//							"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+//				}
+//				return F.CComplexInfinity;
+//			}
+//			if (numerator.isZero()) {
+//				return F.C0;
+//			}
+//
+//			return F.fraction(numerator, denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.stringx(node.getString());

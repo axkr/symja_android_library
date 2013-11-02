@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -26,13 +27,65 @@ public class Rational extends AbstractFunctionEvaluator {
 
 		try {
 			// try to convert into a fractional number
-			final EvalEngine engine = EvalEngine.get();
 			IExpr arg0 = ast.get(1);
-			arg0 = engine.evaluate(arg0);
 			IExpr arg1 = ast.get(2);
-			arg1 = engine.evaluate(arg1);
 			if (arg0.isInteger() && arg1.isInteger()) {
-				return F.fraction((IInteger) arg0, (IInteger) arg1);
+				// already evaluated
+			} else if (arg0 instanceof INum && arg1 instanceof INum) {
+				// already evaluated
+			} else {
+				final EvalEngine engine = EvalEngine.get();
+				arg0 = engine.evaluate(arg0);
+				arg1 = engine.evaluate(arg1);
+			}
+			if (arg0.isInteger() && arg1.isInteger()) {
+				// symbolic mode
+				IInteger numerator = (IInteger) arg0;
+				IInteger denominator = (IInteger) arg1;
+				if (denominator.isZero()) {
+					EvalEngine ee = EvalEngine.get();
+					if (numerator.isZero()) {
+						// 0^0
+						if (!ee.isQuietMode()) {
+							ee.getOutPrintStream().println(
+									"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+						}
+						return F.Indeterminate;
+					}
+					if (!ee.isQuietMode()) {
+						ee.getOutPrintStream().println(
+								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+					}
+					return F.CComplexInfinity;
+				}
+				if (numerator.isZero()) {
+					return F.C0;
+				}
+				return F.fraction(numerator, denominator);
+			} else if (arg0 instanceof INum && arg1 instanceof INum) {
+				// numeric mode
+				INum numerator = (INum) arg0;
+				INum denominator = (INum) arg1;
+				if (denominator.isZero()) {
+					EvalEngine ee = EvalEngine.get();
+					if (numerator.isZero()) {
+						// 0^0
+						if (!ee.isQuietMode()) {
+							ee.getOutPrintStream().println(
+									"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+						}
+						return F.Indeterminate;
+					}
+					if (!ee.isQuietMode()) {
+						ee.getOutPrintStream().println(
+								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+					}
+					return F.CComplexInfinity;
+				}
+				if (numerator.isZero()) {
+					return F.C0;
+				}
+				return F.num(numerator.doubleValue() / denominator.doubleValue());
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
