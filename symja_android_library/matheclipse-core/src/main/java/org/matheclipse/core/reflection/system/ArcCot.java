@@ -20,12 +20,16 @@ public class ArcCot extends AbstractTrigArg1 {
 {
 ArcCot[0]=0,
 ArcCot[1]=1/4*Pi,
+ArcCot[Infinity]=0,
+ArcCot[-Infinity]=0,
 ArcCot[ComplexInfinity]=0
 }
 	 */
 	final static IAST RULES = List(
 			Set(ArcCot(C0),C0),
 			Set(ArcCot(C1),Times(C1D4,Pi)),
+			Set(ArcCot(CInfinity),C0),
+			Set(ArcCot(CNInfinity),C0),
 			Set(ArcCot(CComplexInfinity),C0)
 			);
 	
