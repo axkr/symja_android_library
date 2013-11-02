@@ -1,14 +1,15 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * TODO implement &quot;Quiet&quot; mode
+ * The call <code>Quiet( expr )</code> evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning messages are shown
+ * during evaluation).
  * 
  */
 public class Quiet extends AbstractCoreFunctionEvaluator {
@@ -19,9 +20,14 @@ public class Quiet extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		IExpr arg1 = F.eval(ast.get(1));
-
-		return arg1;
+		EvalEngine engine = EvalEngine.get();
+		boolean quietMode = engine.isQuietMode();
+		try {
+			engine.setQuietMode(true);
+			return engine.evaluate(ast.get(1));
+		} finally {
+			engine.setQuietMode(quietMode);
+		}
 	}
 
 	@Override

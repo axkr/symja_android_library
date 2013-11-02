@@ -144,18 +144,23 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	}
 
 	private IExpr eInfinity(IExpr inf, IExpr o1) {
+		EvalEngine engine = EvalEngine.get();
 		if (inf.isInfinity()) {
 			if (o1.isInfinity()) {
 				return F.CInfinity;
 			} else if (o1.isNegativeInfinity()) {
-				EvalEngine.get().getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+				if (!engine.isQuietMode()) {
+					engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+				}
 				return F.Indeterminate;
 			} else if (o1.isSignedNumber()) {
 				return F.CInfinity;
 			}
 		} else if (inf.isNegativeInfinity()) {
 			if (o1.isInfinity()) {
-				EvalEngine.get().getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+				if (!engine.isQuietMode()) {
+					engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+				}
 				return F.Indeterminate;
 			} else if (o1.isNegativeInfinity()) {
 				return F.CNInfinity;

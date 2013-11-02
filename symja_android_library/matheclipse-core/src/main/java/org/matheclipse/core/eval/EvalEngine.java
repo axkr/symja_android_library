@@ -141,24 +141,33 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private Map<String, ISymbol> fVariableMap;
 
 	/**
-	 * Associate a symbol name with a local variable stack in this thread
+	 * Associate a symbol name with a local variable stack in this thread.
 	 * 
 	 */
 	transient private Map<String, Stack<IExpr>> fLocalVariableStackMap = null;
 
 	/**
-	 * if set the current thread should stop evaluation;
+	 * If set to <code>true</code> the current thread should stop evaluation;
 	 */
 	transient volatile boolean fStopRequested;
 
 	transient int fRecursionCounter;
 
+	/**
+	 * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode, otherwise the engine evaluates in &quot;symbolic&quot;
+	 * mode.
+	 */
 	transient boolean fNumericMode;
 
 	transient boolean fEvalLHSMode;
 
 	transient String fSessionID;
 
+	/**
+	 * If <code>true</code> the engine evaluates in &quot;Trace()&quot; function mode.
+	 * 
+	 * @see #evalTrace(IExpr, Predicate, IAST)
+	 */
 	transient boolean fTraceMode;
 
 	transient TraceStack fTraceStack = null;
@@ -197,6 +206,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see org.matheclipse.core.reflection.Out
 	 */
 	transient boolean fOutListDisabled = true;
+
+	/**
+	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are shown during evaluation).
+	 * 
+	 * @see org.matheclipse.core.builtin.function.Quiet
+	 */
+	transient boolean fQuietMode = false;
 
 	public final static boolean DEBUG = false;
 
@@ -802,14 +818,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * 
-	 * Evaluate an object and reset the numeric mode to the value before the evaluation step. If evaluation is not possible return
-	 * the input object.
+	 * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation reset the numeric mode to the
+	 * value stored before the evaluation starts. If evaluation is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @param numericMode
-	 *            reset the numericMode to this value after evaluation
 	 * @return the evaluated object
 	 */
 	public final IExpr evaluate(final IExpr expr) {
@@ -1007,6 +1020,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
+	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are showw in the evaluation).
+	 * 
+	 * @see org.matheclipse.core.builtin.function.Quiet
+	 */
+	public boolean isQuietMode() {
+		return fQuietMode;
+	}
+
+	/**
 	 * @return the fRelaxedSyntax
 	 */
 	public boolean isRelaxedSyntax() {
@@ -1102,6 +1124,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public void setPackageMode(boolean packageMode) {
 		fPackageMode = packageMode;
+	}
+
+	/**
+	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are showw in the evaluation).
+	 * 
+	 * @param quietMode
+	 */
+	public void setQuietMode(boolean quietMode) {
+		this.fQuietMode = quietMode;
 	}
 
 	/**

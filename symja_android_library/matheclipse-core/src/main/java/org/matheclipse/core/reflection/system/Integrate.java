@@ -96,20 +96,25 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// F(b)-F(a)
 					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.get(1), xList.get(3))));
 					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.get(1), xList.get(2))));
+					EvalEngine engine = EvalEngine.get();
 					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-						PrintStream stream = EvalEngine.get().getOutPrintStream();
+						PrintStream stream = engine.getOutPrintStream();
 						if (stream == null) {
 							stream = System.out;
 						}
-						stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(3));
+						if (!engine.isQuietMode()) {
+							stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(3));
+						}
 						return null;
 					}
 					if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-						PrintStream stream = EvalEngine.get().getOutPrintStream();
+						PrintStream stream = engine.getOutPrintStream();
 						if (stream == null) {
 							stream = System.out;
 						}
-						stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(2));
+						if (!engine.isQuietMode()) {
+							stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(2));
+						}
 						return null;
 					}
 					return F.Subtract(Fb, Fa);
