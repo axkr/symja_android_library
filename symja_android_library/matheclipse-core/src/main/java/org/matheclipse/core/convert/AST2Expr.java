@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -50,7 +49,7 @@ public class AST2Expr {
 			"FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Glaisher", "GoldenRatio", "Greater",
 			"GreaterEqual", "GroebnerBasis", "HarmonicNumber", "Head", "HilbertMatrix", "Hold", "Horner", "I", "IdentityMatrix",
 			"If", "Im", "Increment", "Infinity", "Inner", "Insert", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate",
-			"InterpolatingFunction", "Intersection", "Inverse", "InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm",
+			"InterpolatingFunction", "Intersection", "Inverse", "InverseErf", "InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm",
 			"Join", "Khinchin", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "Length", "Less", "LessEqual",
 			"LetterQ", "Level", "Limit", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition",
 			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "Max", "Mean",
@@ -259,27 +258,6 @@ public class AST2Expr {
 			IInteger numerator = (IInteger) convert(((FractionNode) node).getNumerator());
 			IInteger denominator = (IInteger) convert(((FractionNode) node).getDenominator());
 			return F.Rational(numerator, denominator);
-//			if (denominator.isZero()) {
-//				EvalEngine ee = EvalEngine.get();
-//				if (numerator.isZero()) {
-//					// 0^0
-//					if (!ee.isQuietMode()) {
-//						ee.getOutPrintStream().println(
-//								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-//					}
-//					return F.Indeterminate;
-//				}
-//				if (!ee.isQuietMode()) {
-//					ee.getOutPrintStream().println(
-//							"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-//				}
-//				return F.CComplexInfinity;
-//			}
-//			if (numerator.isZero()) {
-//				return F.C0;
-//			}
-//
-//			return F.fraction(numerator, denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.stringx(node.getString());

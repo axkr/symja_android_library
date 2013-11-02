@@ -10,18 +10,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Returns the error function.
+ * Returns the inverse erf.
  * 
- * @see org.matheclipse.core.reflection.system.InverseErf
+ * @see org.matheclipse.core.reflection.system.Erf
  */
-public class Erf extends AbstractTrigArg1 implements INumeric {
-	public Erf() {
+public class InverseErf extends AbstractTrigArg1 implements INumeric {
+	public InverseErf() {
 	}
 
 	@Override
 	public IExpr numericEvalD1(final Num arg1) {
 		try {
-			return Num.valueOf(org.apache.commons.math3.special.Erf.erf(arg1.getRealPart()));
+			return Num.valueOf(org.apache.commons.math3.special.Erf.erfInv(arg1.getRealPart()));
 		} catch (final MaxCountExceededException e) {
 		}
 		return null;
@@ -37,7 +37,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 			throw new UnsupportedOperationException();
 		}
 		try {
-			return org.apache.commons.math3.special.Erf.erf(stack[top]);
+			return org.apache.commons.math3.special.Erf.erfInv(stack[top]);
 		} catch (final MaxCountExceededException e) {
 		}
 		throw new UnsupportedOperationException();
