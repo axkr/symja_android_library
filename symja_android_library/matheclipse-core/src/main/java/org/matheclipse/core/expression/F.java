@@ -443,6 +443,7 @@ public class F {
 	public final static ISymbol Intersection = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "intersection"
 			: "Intersection");
 	public final static ISymbol Inverse = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverse" : "Inverse");
+	public final static ISymbol InverseErf = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverseerf" : "InverseErf");
 	public final static ISymbol InverseFunction = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inversefunction"
 			: "InverseFunction");
 	public final static ISymbol JacobiMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "jacobimatrix"
@@ -2374,6 +2375,10 @@ public class F {
 		return unary(Inverse, a0);
 	}
 
+	public static IAST InverseErf(final IExpr a0) {
+		return unary(InverseErf, a0);
+	}
+
 	public static IAST InverseFunction(final IExpr a) {
 		return unary(InverseFunction, a);
 	}
@@ -2991,7 +2996,7 @@ public class F {
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
 		return binary(Rational, a0, a1);
 	}
-	
+
 	public static IAST Re(final IExpr a0) {
 		return unary(Re, a0);
 	}
