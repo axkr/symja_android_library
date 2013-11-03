@@ -26,8 +26,8 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		if (ast.get(1).isInteger()) {
-			final int n = ((IInteger) ast.get(1)).getBigNumerator().intValue();
+		if (ast.arg1().isInteger()) {
+			final int n = ((IInteger) ast.arg1()).getBigNumerator().intValue();
 			final IAST result = F.List();
 			IAST temp;
 			final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);

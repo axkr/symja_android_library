@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -17,11 +17,9 @@ public class ToString extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
 
-		if (ast.size() != 2) {
-			return null;
-		}
-		return F.stringx(outputForm(ast.get(1)));
+		return F.stringx(outputForm(ast.arg1()));
 	}
 
 	public static String outputForm(final IExpr expression) {

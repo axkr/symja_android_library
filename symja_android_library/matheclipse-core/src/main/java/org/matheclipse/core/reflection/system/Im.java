@@ -38,7 +38,7 @@ public class Im implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		if (arg1.isSignedNumber()) {
 			return F.C0;
 		}
@@ -69,9 +69,9 @@ public class Im implements IFunctionEvaluator {
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;
-			if (astPower.get(1).isRealFunction()) {
+			if (astPower.arg1().isRealFunction()) {
 				// test for x^(a+I*b)
-				IExpr x = astPower.get(1);
+				IExpr x = astPower.arg1();
 				if (astPower.get(2).isNumber()) {
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
 					IExpr a = ((INumber) astPower.get(2)).getRe();

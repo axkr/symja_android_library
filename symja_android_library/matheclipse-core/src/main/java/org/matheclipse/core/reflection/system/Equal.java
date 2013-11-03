@@ -13,11 +13,11 @@ public class Equal extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST lst) {
-		if (lst.size() > 1) {
+	public IExpr evaluate(final IAST ast) {
+		if (ast.size() > 1) {
 			int b = 0;
 			boolean evaled = false;
-			IAST result = lst.clone();
+			IAST result = ast.clone();
 			int i = 2;
 			while (i < result.size()) {
 				b = compare(result.get(i - 1), result.get(i));

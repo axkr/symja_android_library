@@ -43,8 +43,8 @@ public class Coefficient extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
-		IExpr expr = F.evalExpandAll(ast.get(1));
-		IExpr arg2 = ast.get(2);
+		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()){
 			// TODO allow multinomials
 			return null;
@@ -75,7 +75,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 		for (int i = 1; i < times.size(); i++) {
 			if (times.get(i).isPower()) {
 				IAST pow = (IAST) times.get(i);
-				if (pow.get(1).equals(arg2)) {
+				if (pow.arg1().equals(arg2)) {
 					if (pow.get(2).equals(n)) {
 						times = times.clone();
 						times.remove(i);
@@ -101,8 +101,8 @@ public class Coefficient extends AbstractFunctionEvaluator {
 	}
 
 	private static IExpr coefficientPower(IAST powerAST, IExpr arg2, IInteger n) {
-		if (powerAST.get(1).equals(arg2)) {
-			if (powerAST.get(2).equals(n)) {
+		if (powerAST.arg1().equals(arg2)) {
+			if (powerAST.arg2().equals(n)) {
 				return F.C1;
 			}
 			return F.C0;

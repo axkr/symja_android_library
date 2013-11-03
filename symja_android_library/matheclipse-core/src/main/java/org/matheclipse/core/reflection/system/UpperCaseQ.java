@@ -24,11 +24,11 @@ public class UpperCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (!(ast.get(1) instanceof IStringX)) {
+		if (!(ast.arg1() instanceof IStringX)) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		
-		return F.bool(apply(ast.get(1)));
+		return F.bool(apply(ast.arg1()));
 	}
 
 	@Override

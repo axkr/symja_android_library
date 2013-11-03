@@ -32,8 +32,8 @@ public class LinearSolve extends AbstractFunctionEvaluator {
 		FieldVector<ExprFieldElement> bVector;
 		try {
 
-			aMatrix = Convert.list2Matrix((IAST) ast.get(1));
-			bVector = Convert.list2Vector((IAST) ast.get(2));
+			aMatrix = Convert.list2Matrix((IAST) ast.arg1());
+			bVector = Convert.list2Vector((IAST) ast.arg2());
 			final FieldLUDecomposition<ExprFieldElement> lu = new FieldLUDecomposition<ExprFieldElement>(aMatrix);
 
 			FieldDecompositionSolver<ExprFieldElement> fds = lu.getSolver();

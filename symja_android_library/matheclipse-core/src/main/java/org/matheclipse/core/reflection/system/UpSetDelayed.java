@@ -19,8 +19,8 @@ public class UpSetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		final IExpr leftHandSide = ast.get(1);
-		final IExpr rightHandSide = ast.get(2);
+		final IExpr leftHandSide = ast.arg1();
+		final IExpr rightHandSide = ast.arg2();
 
 		createPatternMatcher(leftHandSide, rightHandSide, false);
 

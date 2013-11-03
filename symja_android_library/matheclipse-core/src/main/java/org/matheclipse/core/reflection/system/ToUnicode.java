@@ -19,11 +19,11 @@ public class ToUnicode extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (!(ast.get(1) instanceof IStringX)) {
+		if (!(ast.arg1() instanceof IStringX)) {
 			return null;
 		}
 		
-		return StringX.valueOf(toUnicodeString(ast.get(1).toString(), "UTF-8"));
+		return StringX.valueOf(toUnicodeString(ast.arg1().toString(), "UTF-8"));
 	}
 
 	@Override

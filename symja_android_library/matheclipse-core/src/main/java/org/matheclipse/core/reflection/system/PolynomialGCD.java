@@ -34,12 +34,12 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 		
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// gcd only possible for univariate polynomials
 			return null;
 		}
-		IExpr expr = F.evalExpandAll(ast.get(1));
+		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3 && ast.last().isRuleAST()) {
 			return gcdWithOption(ast, expr, eVar);
 		}

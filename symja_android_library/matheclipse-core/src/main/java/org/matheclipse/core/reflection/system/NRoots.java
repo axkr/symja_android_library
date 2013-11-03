@@ -45,14 +45,14 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	protected static IAST roots(final IAST ast) {
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
 			return null;
 		}
-		IExpr expr = evalExpandAll(ast.get(1));
+		IExpr expr = evalExpandAll(ast.arg1());
 		IAST variables = eVar.getVarList();
-		ISymbol sym = (ISymbol) variables.get(1);
+		ISymbol sym = (ISymbol) variables.arg1();
 		double[] poly = Expr2Object.toPolynomial(expr, sym);
 		IAST result = null;
 		if (poly != null) {

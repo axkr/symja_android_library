@@ -48,7 +48,7 @@ public class Sum extends Table {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 
 		if (arg1.isPlus()) {
 			IAST sum = ast.clone();
@@ -59,7 +59,7 @@ public class Sum extends Table {
 		IExpr temp;
 		if (ast.size() == 3 && arg2.isList() && ((IAST) arg2).size() == 4) {
 			IAST list = (IAST) arg2;
-			if (list.get(1).isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
+			if (list.arg1().isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
 				temp = definiteSum(arg1, list);
 				if (temp != null) {
 					return temp;
@@ -89,7 +89,7 @@ public class Sum extends Table {
 	 * @return
 	 */
 	public IExpr definiteSum(IExpr arg1, final IAST list) {
-		final ISymbol var = (ISymbol) list.get(1);
+		final ISymbol var = (ISymbol) list.arg1();
 		final IInteger from = (IInteger) list.get(2);
 		final ISymbol to = (ISymbol) list.get(3);
 		if (arg1.isFree(var, true) && arg1.isFree(to, true)) {
@@ -112,7 +112,7 @@ public class Sum extends Table {
 				});
 				if (filterCollector.size() > 1) {
 					if (restCollector.size() == 2) {
-						filterCollector.add(F.Sum(restCollector.get(1), list));
+						filterCollector.add(F.Sum(restCollector.arg1(), list));
 					} else {
 						filterCollector.add(F.Sum(restCollector, list));
 					}
@@ -161,7 +161,7 @@ public class Sum extends Table {
 			});
 			if (filterCollector.size() > 1) {
 				if (restCollector.size() == 2) {
-					filterCollector.add(F.Sum(restCollector.get(1), var));
+					filterCollector.add(F.Sum(restCollector.arg1(), var));
 				} else {
 					filterCollector.add(F.Sum(restCollector, var));
 				}
@@ -193,7 +193,7 @@ public class Sum extends Table {
 	 * @return
 	 */
 	public IExpr sumPower(final IAST powAST, final ISymbol var, final IExpr to) {
-		if (powAST.get(1).equals(var) && powAST.get(2).isInteger()) {
+		if (powAST.arg1().equals(var) && powAST.get(2).isInteger()) {
 			IInteger p = (IInteger) powAST.get(2);
 			if (p.isPositive()) {
 				return sumPowerFormula(to, p);

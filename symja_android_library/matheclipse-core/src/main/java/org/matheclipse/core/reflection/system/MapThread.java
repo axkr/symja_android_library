@@ -41,15 +41,15 @@ public class MapThread extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		VisitorLevelSpecification level = null;
-		Function<IExpr, IExpr> umt = new UnaryMapThread(ast.get(1));
+		Function<IExpr, IExpr> umt = new UnaryMapThread(ast.arg1());
 		if (ast.size() == 4) {
-			level = new VisitorLevelSpecification(umt, ast.get(3), false);
+			level = new VisitorLevelSpecification(umt, ast.arg3(), false);
 		} else {
 			level = new VisitorLevelSpecification(umt, 0);
 		}
-		final IExpr result = ast.get(2).accept(level);
+		final IExpr result = ast.arg2().accept(level);
 
-		return result == null ? ast.get(2) : result;
+		return result == null ? ast.arg2() : result;
 	}
 
 }

@@ -20,12 +20,12 @@ public class InterpolatingFunction implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		if (ast.head().isAST()) {
 			final IAST function = (IAST) ast.head();
-			if (ast.size() == 2 && ast.get(1) instanceof INum) {
+			if (ast.size() == 2 && ast.arg1() instanceof INum) {
 				if (function.size() == 2) {
-					int[] dims = function.get(1).isMatrix();
+					int[] dims = function.arg1().isMatrix();
 					if (dims != null && dims[1] == 2) {
-						RealMatrix matrix = Convert.list2RealMatrix((IAST) function.get(1));
-						double interpolatedY = interpolate(matrix, ((INum) ast.get(1)).doubleValue());
+						RealMatrix matrix = Convert.list2RealMatrix((IAST) function.arg1());
+						double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
 						return F.num(interpolatedY);
 					}
 				}

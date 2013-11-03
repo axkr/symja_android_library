@@ -17,14 +17,14 @@ public class PadLeft extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 		int n = Validate.checkIntType(ast, 2);
 
-		if (ast.get(1).isAST()) {
-			IAST arg1 = (IAST) ast.get(1);
+		if (ast.arg1().isAST()) {
+			IAST arg1 = (IAST) ast.arg1();
 			if (ast.size() > 3) {
-				if (ast.get(3).isList()) {
-					IAST arg2 = (IAST) ast.get(3);
-					return padLeftAST(arg1, n, arg2);
+				if (ast.arg3().isList()) {
+					IAST arg3 = (IAST) ast.arg3();
+					return padLeftAST(arg1, n, arg3);
 				} else {
-					return padLeftAtom(arg1, n, ast.get(3));
+					return padLeftAtom(arg1, n, ast.arg3());
 				}
 			} else {
 				return padLeftAtom(arg1, n, F.C0);

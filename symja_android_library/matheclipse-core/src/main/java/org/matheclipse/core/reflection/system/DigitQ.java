@@ -24,11 +24,8 @@ public class DigitQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		
-		if (!(ast.get(1) instanceof IStringX)) {
-			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
-		}
-		return F.bool(apply(ast.get(1)));
+		IStringX arg1 = Validate.checkStringType(ast, 1);
+		return F.bool(apply(arg1));
 	}
 
 	@Override

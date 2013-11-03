@@ -28,10 +28,10 @@ public class Total extends AbstractFunctionEvaluator {
 			level = new VisitorLevelSpecification(tf, 1, false);
 		}
 
-		if (ast.get(1).isAST()) {
+		if (ast.arg1().isAST()) {
 			// increment level because we select only subexpressions
 			level.incCurrentLevel();
-			IExpr result = ast.get(1).accept(level);
+			IExpr result = ast.arg1().accept(level);
 			return result;
 		}
 

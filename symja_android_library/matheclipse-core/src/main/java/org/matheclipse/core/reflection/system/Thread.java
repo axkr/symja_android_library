@@ -17,7 +17,7 @@ public class Thread extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast) {
   	Validate.checkRange(ast, 2, 3);
    
-    if (!(ast.get(1).isAST())) {
+    if (!(ast.arg1().isAST())) {
       return null;
     }
     // LevelSpec level = null;
@@ -28,9 +28,9 @@ public class Thread extends AbstractFunctionEvaluator {
     // }
     IExpr head = F.List;
     if (ast.size() == 3) {
-      head = ast.get(2);
+      head = ast.arg2();
     }
-    final IAST list = (IAST) ast.get(1);
+    final IAST list = (IAST) ast.arg1();
     if (list.size() > 1) {
       return threadList(list, head, list.head(), 1);
     }

@@ -69,33 +69,33 @@ public class Integrate extends AbstractFunctionEvaluator {
 		if (ast.size() < 3) {
 			return null;
 		}
-		IExpr fx = ast.get(1);
+		IExpr fx = ast.arg1();
 		if (ast.size() > 3) {
 			// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
 			// Integrate[fxy, y], x] ...
 			return ast.range(2).foldRight(new BinaryEval(F.Integrate), fx);
 		}
 
-		if (ast.get(1).isAST()) {
-			// fx = F.evalExpandAll(ast.get(1));
-			fx = F.eval(F.Expand(ast.get(1)));
+		if (ast.arg1().isAST()) {
+			// fx = F.evalExpandAll(ast.arg1());
+			fx = F.eval(F.Expand(ast.arg1()));
 			if (fx.isPlus()) {
 				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, ast.get(2))));
+				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, ast.arg2())));
 			}
 		}
 
-		if (ast.get(2).isList()) {
-			IAST xList = (IAST) ast.get(2);
+		if (ast.arg2().isList()) {
+			IAST xList = (IAST) ast.arg2();
 			if (xList.isVector() == 3) {
 				// Integrate[f[x], {x,a,b}]
 				IAST clone = ast.clone();
-				clone.set(2, xList.get(1));
+				clone.set(2, xList.arg1());
 				IExpr temp = F.eval(clone);
 				if (temp.isFree(F.Integrate, true)) {
 					// F(b)-F(a)
-					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.get(1), xList.get(3))));
-					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.get(1), xList.get(2))));
+					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.get(3))));
+					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
 					EvalEngine engine = EvalEngine.get();
 					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 						PrintStream stream = engine.getOutPrintStream();
@@ -103,7 +103,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							stream = System.out;
 						}
 						if (!engine.isQuietMode()) {
-							stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(3));
+							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.get(3));
 						}
 						return null;
 					}
@@ -113,7 +113,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							stream = System.out;
 						}
 						if (!engine.isQuietMode()) {
-							stream.println("Not integrable: " + temp + " for " + xList.get(1) + " = " + xList.get(2));
+							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
 						}
 						return null;
 					}
@@ -122,8 +122,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 		}
 
-		if (ast.get(2).isSymbol()) {
-			final ISymbol x = (ISymbol) ast.get(2);
+		if (ast.arg2().isSymbol()) {
+			final ISymbol x = (ISymbol) ast.arg2();
 			if (fx.isNumber()) {
 				// Integrate[x_NumberQ,y_Symbol] -> x*y
 				return Times(fx, x);
@@ -139,7 +139,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (fx.isAST()) {
 				final IAST arg1 = (IAST) fx;
 
-				if (arg1.size() == 2 && x.equals(arg1.get(1))) {
+				if (arg1.size() == 2 && x.equals(arg1.arg1())) {
 					IExpr head = arg1.head();
 					IExpr temp = integrate1ArgumentFunctions(head, x);
 					if (temp != null) {
@@ -147,21 +147,21 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 				if (arg1.isPower()) {
-					if (x.equals(arg1.get(1)) && arg1.get(2).isFree(x, false)) {
-						IExpr i = arg1.get(2);
+					if (x.equals(arg1.arg1()) && arg1.arg2().isFree(x, false)) {
+						IExpr i = arg1.arg2();
 						if (!i.isMinusOne()) {
 							// Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^(i+1)
 							i = Plus(i, C1);
 							return F.Times(F.Power(i, F.CN1), F.Power(x, i));
 						}
 					}
-					if (x.equals(arg1.get(2)) && arg1.get(1).isFree(x, false)) {
-						if (arg1.get(1).equals(F.E)) {
+					if (x.equals(arg1.arg2()) && arg1.arg1().isFree(x, false)) {
+						if (arg1.arg1().equals(F.E)) {
 							// E^x
 							return arg1;
 						}
 						// a^x / Log(a)
-						return F.Times(arg1, F.Power(F.Log(arg1.get(1)), F.CN1));
+						return F.Times(arg1, F.Power(F.Log(arg1.arg1()), F.CN1));
 
 					}
 				}
@@ -189,7 +189,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 
-				if (!ast.get(1).equals(fx)) {
+				if (!ast.arg1().equals(fx)) {
 					return F.Integrate.evalDownRule(EvalEngine.get(), ast);
 					// IAST clon = ast.clone();
 					// clon.set(1, fx);
@@ -199,7 +199,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				final IExpr header = arg1.head();
 				if (arg1.size() >= 3) {
 					if (header == F.Times || header == F.Power) {
-						if (!arg1.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.get(2).isSymbol()) {
+						if (!arg1.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
 							IExpr[] parts = Apart.getFractionalParts(arg1);
 							if (parts != null) {
 								// IAST apartPlus =
@@ -209,10 +209,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 								if (apartPlus != null && apartPlus.size() > 1) {
 									if (apartPlus.size() == 2) {
-										if (ast.equals(apartPlus.get(1))) {
+										if (ast.equals(apartPlus.arg1())) {
 											return null;
 										}
-										return apartPlus.get(1);
+										return apartPlus.arg1();
 									}
 									if (ast.equals(apartPlus)) {
 										return null;
@@ -449,7 +449,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 
 			String[] varListStr = new String[1];
-			varListStr[0] = variableList.get(1).toString();
+			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
 			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
@@ -654,13 +654,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 			return null;
 		} else if (fTimes.size() == 2) {
 			// OneIdentity
-			f = fTimes.get(1);
+			f = fTimes.arg1();
 		}
 		if (gTimes.size() == 1) {
 			return null;
 		} else if (gTimes.size() == 2) {
 			// OneIdentity
-			g = gTimes.get(1);
+			g = gTimes.arg1();
 		}
 		return integrateByParts(f, g, symbol);
 	}

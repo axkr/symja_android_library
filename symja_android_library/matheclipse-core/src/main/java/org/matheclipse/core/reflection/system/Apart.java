@@ -46,7 +46,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (ast.size() == 3) {
 			variableList = Validate.checkSymbolOrSymbolList(ast, 2);
 		} else {
-			ExprVariables eVar = new ExprVariables(ast.get(1));
+			ExprVariables eVar = new ExprVariables(ast.arg1());
 			if (!eVar.isSize(1)) {
 				// partial fraction only possible for univariate polynomials
 				return null;
@@ -54,18 +54,18 @@ public class Apart extends AbstractFunctionEvaluator {
 			variableList = eVar.getVarList();
 		}
 
-		final IExpr arg = ast.get(1);
+		final IExpr arg = ast.arg1();
 		if (arg.isTimes() || arg.isPower()) {
-			IExpr[] parts = Apart.getFractionalParts(ast.get(1));
+			IExpr[] parts = Apart.getFractionalParts(ast.arg1());
 			if (parts != null) {
 				IAST plusResult = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-						(ISymbol) variableList.get(1));
+						(ISymbol) variableList.arg1());
 				if (plusResult != null) {
 					return plusResult.getOneIdentity(F.C0);
 				}
 			}
 		} else {
-			return ast.get(1);
+			return ast.arg1();
 		}
 
 		return null;
@@ -88,7 +88,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 
 			String[] varListStr = new String[1];
-			varListStr[0] = variableList.get(1).toString();
+			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
 			GenPolynomial<BigInteger> numerator = jas.expr2JAS(exprNumerator);
 			GenPolynomial<BigInteger> denominator = jas.expr2JAS(exprDenominator);
@@ -159,7 +159,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 
 			String[] varListStr = new String[1];
-			varListStr[0] = variableList.get(1).toString();
+			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
 			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
@@ -215,19 +215,19 @@ public class Apart extends AbstractFunctionEvaluator {
 			parts = Apart.getFractionalPartsTimes((IAST) arg, true);
 		} else if (arg.isPower()) {
 			IAST temp = (IAST) arg;
-			if (temp.get(2).isSignedNumber()) {
-				ISignedNumber sn = (ISignedNumber) temp.get(2);
+			if (temp.arg2().isSignedNumber()) {
+				ISignedNumber sn = (ISignedNumber) temp.arg2();
 				parts = new IExpr[2];
 				if (sn.equals(F.CN1)) {
 					parts[0] = F.C1;
-					parts[1] = temp.get(1);
+					parts[1] = temp.arg1();
 				} else if (sn.isNegative()) {
 					parts[0] = F.C1;
-					parts[1] = F.Power(temp.get(1), sn.negate());
+					parts[1] = F.Power(temp.arg1(), sn.negate());
 				} else {
-					if (sn.isInteger() && temp.get(1).isAST()) {
+					if (sn.isInteger() && temp.arg1().isAST()) {
 						// positive integer
-						IAST function = (IAST) temp.get(1);
+						IAST function = (IAST) temp.arg1();
 						IAST denomForm = Denominator.getDenominatorForm(function);
 						if (denomForm != null) {
 							parts[0] = F.C1;
@@ -284,19 +284,19 @@ public class Apart extends AbstractFunctionEvaluator {
 						continue;
 					}
 				} else if (arg.isPower()) {
-					if (argAST.get(2).isSignedNumber()) {
-						ISignedNumber sn = (ISignedNumber) argAST.get(2);
+					if (argAST.arg2().isSignedNumber()) {
+						ISignedNumber sn = (ISignedNumber) argAST.arg2();
 						if (sn.equals(F.CN1)) {
-							denominator.add(argAST.get(1));
+							denominator.add(argAST.arg1());
 							continue;
 						}
 						if (sn.isNegative()) {
-							denominator.add(F.Power(argAST.get(1), ((ISignedNumber) argAST.get(2)).negate()));
+							denominator.add(F.Power(argAST.arg1(), ((ISignedNumber) argAST.arg2()).negate()));
 							continue;
 						}
-						if (sn.isInteger() && argAST.get(1).isAST()) {
+						if (sn.isInteger() && argAST.arg1().isAST()) {
 							// positive integer
-							IAST function = (IAST) argAST.get(1);
+							IAST function = (IAST) argAST.arg1();
 							IAST denomForm = Denominator.getDenominatorForm(function);
 							if (denomForm != null) {
 								denominator.add(F.Power(denomForm, sn));

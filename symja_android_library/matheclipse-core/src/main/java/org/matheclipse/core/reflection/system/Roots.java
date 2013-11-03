@@ -42,12 +42,12 @@ public class Roots extends AbstractFunctionEvaluator {
 	}
 
 	protected static IAST roots(final IAST ast, boolean numericSolutions) {
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
 			return null;
 		}
-		IExpr expr = evalExpandAll(ast.get(1));
+		IExpr expr = evalExpandAll(ast.arg1());
 		IAST variables = eVar.getVarList();
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
@@ -84,7 +84,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			result = F.List();
 			IAST factors = Factor.factorComplex(expr, varList, F.List, true);
 			for (int i = 1; i < factors.size(); i++) {
-				IAST quarticResultList = QuarticSolver.solve(F.evalExpand(factors.get(i)), variables.get(1));
+				IAST quarticResultList = QuarticSolver.solve(F.evalExpand(factors.get(i)), variables.arg1());
 				if (quarticResultList != null) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						result.add(quarticResultList.get(j));
@@ -110,7 +110,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				// eliminate roots from the result list, which occur in the denominator
 				int i = 1;
 				while (i < result.size()) {
-					IExpr temp = denom.replaceAll(F.Rule(variables.get(1), result.get(i)));
+					IExpr temp = denom.replaceAll(F.Rule(variables.arg1(), result.get(i)));
 					if (temp != null && F.eval(temp).isZero()) {
 						result.remove(i);
 						continue;

@@ -20,9 +20,9 @@ public class Tr implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		final int[] dim = ast.get(1).isMatrix();
+		final int[] dim = ast.arg1().isMatrix();
 		if (dim != null) {
-			final IAST mat = (IAST) ast.get(1);
+			final IAST mat = (IAST) ast.arg1();
 			IAST tr;
 			int len = dim[0] < dim[1] ? dim[0] : dim[1];
 			if (ast.size() > 2) {

@@ -23,7 +23,7 @@ public class Max extends AbstractFunctionEvaluator {
 		// IExpr max = F.Times(F.CN1, ExprFactory.Infinity);
 		IExpr max1;
 		IExpr max2;
-		max1 = list.get(1);
+		max1 = list.arg1();
 		IAST f = list.copyHead();
 		COMPARE_RESULT comp;
 		for (int i = 2; i < list.size(); i++) {

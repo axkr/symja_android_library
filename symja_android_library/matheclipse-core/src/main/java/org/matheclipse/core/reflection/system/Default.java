@@ -7,9 +7,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Get the default value for a symbol (i.e. <code>1</code> is the default value
- * for <code>Times</code>, <code>0</code> is the default value for
- * <code>Plus</code>).
+ * Get the default value for a symbol (i.e. <code>1</code> is the default value for <code>Times</code>, <code>0</code> is the
+ * default value for <code>Plus</code>).
  */
 public class Default extends AbstractFunctionEvaluator {
 
@@ -19,11 +18,8 @@ public class Default extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 4);
-		
-		if (!ast.get(1).isSymbol()) {
-			return null;
-		}
-		ISymbol symbol = (ISymbol) ast.get(1);
+		ISymbol symbol = Validate.checkSymbolType(ast, 1);
+
 		if (ast.size() > 2) {
 			int pos = Validate.checkIntType(ast, 2);
 			return symbol.getDefaultValue(pos);

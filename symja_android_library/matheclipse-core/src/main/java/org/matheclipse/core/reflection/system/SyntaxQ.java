@@ -28,10 +28,10 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		
-		if (!(ast.get(1) instanceof IStringX)) {
+		if (!(ast.arg1() instanceof IStringX)) {
 			return F.False;
 		}
-		return F.bool(apply(ast.get(1).toString()));
+		return F.bool(apply(ast.arg1().toString()));
 	}
 
 	@Override

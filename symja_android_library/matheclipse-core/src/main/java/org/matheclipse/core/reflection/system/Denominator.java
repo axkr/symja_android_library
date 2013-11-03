@@ -27,7 +27,7 @@ public class Denominator implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr expr = ast.get(1);
+		IExpr expr = ast.arg1();
 		if (expr.isRational()) {
 			return ((IRational) expr).getDenominator();
 		}
@@ -57,7 +57,7 @@ public class Denominator implements IFunctionEvaluator {
 			for (int i = 0; i < Denominator.NUMERATOR_SYMBOLS.length; i++) {
 				ISymbol sym = Denominator.NUMERATOR_SYMBOLS[i];
 				if (function.head().equals(sym)) {
-					return F.$(Denominator.DENOMINATOR_SYMBOLS[i], function.get(1));
+					return F.$(Denominator.DENOMINATOR_SYMBOLS[i], function.arg1());
 				}
 			}
 		}

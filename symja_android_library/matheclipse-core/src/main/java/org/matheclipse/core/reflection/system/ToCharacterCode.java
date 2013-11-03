@@ -21,12 +21,12 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (!(ast.get(1) instanceof IStringX)) {
+		if (!(ast.arg1() instanceof IStringX)) {
 			return null;
 		}
 		
 		IAST resultList = List();
-		resultList = (IAST) toCharacterCode(ast.get(1).toString(), "UTF-8", resultList);
+		resultList = (IAST) toCharacterCode(ast.arg1().toString(), "UTF-8", resultList);
 		return resultList;
 	}
 

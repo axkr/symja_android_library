@@ -37,17 +37,17 @@ public class TrigReduce implements IFunctionEvaluator {
 					return result;
 				}
 			} else if (ast.isPower()) {
-				if (ast.get(1).isAST() && ast.get(2).isInteger()) {
+				if (ast.arg1().isAST() && ast.get(2).isInteger()) {
 					IInteger n = (IInteger) ast.get(2);
 					if (n.isPositive()) {
-						IAST powerArg1 = (IAST) ast.get(1);
+						IAST powerArg1 = (IAST) ast.arg1();
 						IExpr x;
 						if (powerArg1.isSin()) {
-							x = powerArg1.get(1);
+							x = powerArg1.arg1();
 							// (1/2-Cos[2*x]/2)*Sin[x]^(n-2)
 							return Times(Subtract(C1D2, Times(C1D2, Cos(Times(C2, x)))), Power(Sin(x), n.subtract(C2)));
 						} else if (powerArg1.isCos()) {
-							x = powerArg1.get(1);
+							x = powerArg1.arg1();
 							// (1/2+Cos[2*x]/2)*Cos[x]^(n-2)
 							return Times(Plus(C1D2, Times(C1D2, Cos(Times(C2, x)))), Power(Cos(x), n.subtract(C2)));
 						}
@@ -62,7 +62,7 @@ public class TrigReduce implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor();
-		IExpr temp = ast.get(1);
+		IExpr temp = ast.arg1();
 		IExpr result = temp;
 		while (temp != null) {
 			result = temp;

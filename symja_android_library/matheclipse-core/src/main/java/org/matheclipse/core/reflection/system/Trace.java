@@ -22,10 +22,10 @@ public class Trace implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		final IExpr temp = ast.get(1);
+		final IExpr temp = ast.arg1();
 		PatternMatcher matcher = null;
 		if (ast.size() == 3) {
-			matcher = new PatternMatcher(ast.get(2));
+			matcher = new PatternMatcher(ast.arg2());
 		}
 		final EvalEngine engine = EvalEngine.get();
 		IAST traceList = engine.evalTrace(temp, matcher, F.List());

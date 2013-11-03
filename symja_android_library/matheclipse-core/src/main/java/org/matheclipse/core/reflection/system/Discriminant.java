@@ -158,10 +158,9 @@ public class Discriminant extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		IExpr expr = F.evalExpandAll(ast.get(1));
-		IExpr arg2 = ast.get(2);
+		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {
-			// TODO allow multinomials
 			return null;
 		}
 		IAST result = F.List();
@@ -169,7 +168,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		try {
 			long degree = org.matheclipse.core.reflection.system.CoefficientList.univariateCoefficientList(expr, (ISymbol) arg2, result, resultListDiff);
 			if (degree >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.get(1), 1, "Polynomial degree" + degree + " is larger than: " + Short.MAX_VALUE);
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + Short.MAX_VALUE);
 			}
 			if (degree >= 2L && degree <= 5L) {
 				IAST rules = F.List();

@@ -121,7 +121,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1, 2);
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		return complexExpand(arg1);
 	}
 

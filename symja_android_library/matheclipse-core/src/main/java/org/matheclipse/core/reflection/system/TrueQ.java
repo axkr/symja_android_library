@@ -23,7 +23,7 @@ public class TrueQ extends AbstractFunctionEvaluator {
 		if (functionList.size() != 2) {
 			throw new WrongNumberOfArguments(functionList, 1, functionList.size() - 1);
 		}
-		return F.bool(functionList.get(1).equals(F.True));
+		return F.bool(functionList.arg1().equals(F.True));
 	}
 
 	@Override

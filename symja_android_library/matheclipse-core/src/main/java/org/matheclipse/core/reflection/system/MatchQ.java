@@ -19,7 +19,7 @@ public class MatchQ implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		if ((ast.size() == 3)) {
-			return F.bool(matchQ(ast.get(1), ast.get(2)));
+			return F.bool(matchQ(ast.arg1(), ast.arg2()));
 		}
 		return F.False;
 	}

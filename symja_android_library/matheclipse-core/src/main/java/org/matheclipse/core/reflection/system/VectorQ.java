@@ -22,7 +22,7 @@ public class VectorQ extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return F.bool(ast.get(1).isVector() != (-1));
+		return F.bool(ast.arg1().isVector() != (-1));
 	}
 
 	@Override

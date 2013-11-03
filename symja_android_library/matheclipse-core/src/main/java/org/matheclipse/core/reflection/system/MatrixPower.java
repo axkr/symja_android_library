@@ -20,20 +20,19 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 3) {
-			return null;
-		}
+		Validate.checkSize(ast, 3);
+		 
 		FieldMatrix<ExprFieldElement> matrix;
 		FieldMatrix<ExprFieldElement> resultMatrix;
 		try {
-			matrix = Convert.list2Matrix((IAST) ast.get(1));
+			matrix = Convert.list2Matrix((IAST) ast.arg1());
 			final int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			if (p < 0) {
 				return null;
 			}
 			if (p == 1) {
-				((IAST)ast.get(1)).addEvalFlags(IAST.IS_MATRIX);
-				return ast.get(1);
+				((IAST)ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
+				return ast.arg1();
 			}
 			if (p == 0) {
 				resultMatrix = new BlockFieldMatrix<ExprFieldElement>(ExprField.CONST, matrix.getRowDimension(), matrix.getColumnDimension());

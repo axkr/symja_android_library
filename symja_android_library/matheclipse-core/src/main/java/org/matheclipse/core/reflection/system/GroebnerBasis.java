@@ -26,7 +26,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST lst) {
 		if (lst.size() >= 3) {
 			try {
-				if (lst.get(1).isVector() < 0) {
+				if (lst.arg1().isVector() < 0) {
 					return null;
 				}
 				if (lst.get(2).isVector() < 0) {
@@ -47,7 +47,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 						pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
 					}
 					GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
-					IAST polys = (IAST) lst.get(1);
+					IAST polys = (IAST) lst.arg1();
 					List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(polys.size() - 1);
 					JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 					for (int i = 1; i < polys.size(); i++) {

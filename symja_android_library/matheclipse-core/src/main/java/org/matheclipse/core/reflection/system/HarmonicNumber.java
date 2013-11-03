@@ -22,10 +22,9 @@ public class HarmonicNumber implements IFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 2) {
-			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
-		}
-		IExpr arg1 = ast.get(1);
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.arg1();
 		if (arg1.isInteger()) {
 
 			int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);

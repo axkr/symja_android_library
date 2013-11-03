@@ -20,9 +20,9 @@ public class Union extends AbstractFunctionEvaluator {
 		if (functionList.size() != 3) {
 			return null;
 		}
-		if (!functionList.get(1).isAtom() && !functionList.get(2).isAtom()) {
+		if (!functionList.arg1().isAtom() && !functionList.arg2().isAtom()) {
 			final IAST result = F.List();
-			((IAST) functionList.get(1)).args().union(result,
+			((IAST) functionList.arg1()).args().union(result,
 					((IAST) functionList.get(2)).args());
 			return result.args().sort(ExprComparator.CONS);
 		}

@@ -116,11 +116,11 @@ public class TrigToExp implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		TrigToExpVisitor tteVisitor = new TrigToExpVisitor();
-		IExpr result = ast.get(1).accept(tteVisitor);
+		IExpr result = ast.arg1().accept(tteVisitor);
 		if (result != null) {
 			return result;
 		}
-		return ast.get(1);
+		return ast.arg1();
 	}
 
 	public IExpr numericEval(final IAST functionList) {

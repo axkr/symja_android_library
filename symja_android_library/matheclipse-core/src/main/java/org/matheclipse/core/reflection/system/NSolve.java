@@ -167,7 +167,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 						if (equationType == LINEAR) {
 							equationType = POLYNOMIAL;
 						}
-						getTimesEquationType(((IAST) expr).get(1));
+						getTimesEquationType(((IAST) expr).arg1());
 					} else {
 						leafCount += LeafCount.leafCount(eqExpr);
 						if (equationType <= POLYNOMIAL) {
@@ -219,18 +219,18 @@ public class NSolve extends AbstractFunctionEvaluator {
 				return;
 			}
 			if (expr.isPower()) {
-				if (((IAST) expr).get(2).isInteger()) {
+				if (((IAST) expr).arg2().isInteger()) {
 					if (equationType == LINEAR) {
 						equationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).get(1));
+					getTimesEquationType(((IAST) expr).arg1());
 					return;
 				}
-				if (((IAST) expr).get(2).isNumIntValue()) {
+				if (((IAST) expr).arg2().isNumIntValue()) {
 					if (equationType == LINEAR) {
 						equationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).get(1));
+					getTimesEquationType(((IAST) expr).arg1());
 					return;
 				}
 			}
@@ -438,7 +438,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			for (int i = 1; i < eqns.size(); i++) {
 				if (eqns.get(i).isAST(F.Equal, 3)) {
 					eq = (IAST) eqns.get(i);
-					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.get(1), eq.get(2))));
+					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
@@ -447,10 +447,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 		} else {
 			if (ast.get(position).isAST(F.Equal, 3)) {
 				eq = (IAST) ast.get(position);
-				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.get(1), eq.get(2))));
+				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
 			} else {
 				// not an equation
-				throw new WrongArgumentType(ast, ast.get(1), 1, "Equal[] expression (a==b) expected");
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
 			}
 		}
 		return termsEqualZeroList;

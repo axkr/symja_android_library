@@ -23,7 +23,7 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = ast.get(1);
+			IExpr arg1 = ast.arg1();
 			if (arg1.isSignedNumber()) {
 				final ISignedNumber signedNumber = (ISignedNumber) arg1;
 				if ((signedNumber).isNegative()) {

@@ -21,7 +21,7 @@ public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAS
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		return F.bool(apply(((IAST) ast.get(1))));
+		return F.bool(apply(((IAST) ast.arg1())));
 	}
 
 	public boolean apply(IAST ast) {

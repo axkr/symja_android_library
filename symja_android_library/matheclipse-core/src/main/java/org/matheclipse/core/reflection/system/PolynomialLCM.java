@@ -33,13 +33,13 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// gcd only possible for univariate polynomials
 			return null;
 		}
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
-		IExpr expr = F.evalExpandAll(ast.get(1));
+		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3) {
 			final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
 			IExpr option = options.getOption("Modulus");

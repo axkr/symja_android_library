@@ -39,20 +39,20 @@ public class Product extends Table {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		if (ast.get(1).isTimes()) {
+		if (ast.arg1().isTimes()) {
 			IAST prod = ast.clone();
 			prod.set(1, F.Null);
-			return ((IAST) ast.get(1)).map(Functors.replace1st(prod));
+			return ((IAST) ast.arg1()).map(Functors.replace1st(prod));
 		}
-		if (ast.get(1).isPower()) {
-			IExpr powArg1 = ast.get(1).getAt(1);
-			IExpr powArg2 = ast.get(1).getAt(2);
+		if (ast.arg1().isPower()) {
+			IExpr powArg1 = ast.arg1().getAt(1);
+			IExpr powArg2 = ast.arg1().getAt(2);
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
 				if (ast.get(i).isList() && (((IAST) ast.get(i)).size() == 4 || ((IAST) ast.get(i)).size() == 5)) {
 					IAST list = (IAST) ast.get(i);
-					if (powArg2.isFree(list.get(1), true)) {
+					if (powArg2.isFree(list.arg1(), true)) {
 						continue;
 					}
 				}
@@ -65,18 +65,18 @@ public class Product extends Table {
 				return F.Power(prod, powArg2);
 			}
 		}
-		if (ast.size() == 3 && ast.get(2).isList() && ((IAST) ast.get(2)).size() == 4) {
-			IAST list = (IAST) ast.get(2);
-			if (list.get(1).isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
-				final ISymbol var = (ISymbol) list.get(1);
-				final IInteger from = (IInteger) list.get(2);
-				final ISymbol to = (ISymbol) list.get(3);
-				if (ast.get(1).isFree(var, true) && ast.get(1).isFree(to, true)) {
+		if (ast.size() == 3 && ast.arg2().isList() && ((IAST) ast.arg2()).size() == 4) {
+			IAST list = (IAST) ast.arg2();
+			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
+				final ISymbol var = (ISymbol) list.arg1();
+				final IInteger from = (IInteger) list.arg2();
+				final ISymbol to = (ISymbol) list.arg3();
+				if (ast.arg1().isFree(var, true) && ast.arg1().isFree(to, true)) {
 					if (from.equals(F.C1)) {
-						return F.Power(ast.get(1), to);
+						return F.Power(ast.arg1(), to);
 					}
 					if (from.equals(F.C0)) {
-						return F.Power(ast.get(1), Plus(to, C1));
+						return F.Power(ast.arg1(), Plus(to, C1));
 					}
 				}
 			}

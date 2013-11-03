@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -15,12 +16,10 @@ public class EuclidianDistance implements IFunctionEvaluator {
 	public EuclidianDistance() {
 	}
 
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 3) {
-			throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
-		}
-		IExpr arg1 = functionList.get(1);
-		IExpr arg2 = functionList.get(2);
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 3);
+		IExpr arg1 = ast.arg1();
+		IExpr arg2 = ast.arg2();
 
 		int dim1 = arg1.isVector();
 		if (dim1 > (-1)) {

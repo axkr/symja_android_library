@@ -22,7 +22,7 @@ public class IdentityMatrix extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		if (ast.get(1).isInteger()) {
+		if (ast.arg1().isInteger()) {
 			int indx = Validate.checkIntType(ast, 1);
 			final IExpr[] valueArray = { F.C0, F.C1 };
 			return diagonalMatrix(valueArray, indx);

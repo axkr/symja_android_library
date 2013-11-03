@@ -116,13 +116,13 @@ public class Together extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (ast.get(1).isAST()) {
-			IExpr expr = together((IAST) ast.get(1));
+		if (ast.arg1().isAST()) {
+			IExpr expr = together((IAST) ast.arg1());
 			if (expr != null) {
 				return expr;
 			}
 		}
-		return ast.get(1);
+		return ast.arg1();
 	}
 
 	public static IExpr together(IAST ast) {

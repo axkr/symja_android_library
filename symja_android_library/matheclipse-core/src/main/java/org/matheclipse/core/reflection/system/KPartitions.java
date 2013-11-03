@@ -18,8 +18,8 @@ public class KPartitions extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		if (ast.get(1).isAST() && ast.get(2).isInteger()) {
-			final IAST listArg0 = (IAST) ast.get(1);
+		if (ast.arg1().isAST() && ast.arg2().isInteger()) {
+			final IAST listArg0 = (IAST) ast.arg1();
 			final int k = Validate.checkIntType(ast, 2);
 			final IAST result = F.List();
 			final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);

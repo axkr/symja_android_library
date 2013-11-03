@@ -23,8 +23,8 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 			return null;
 		}
 
-		if (ast.get(1).isList()) {
-			final IAST list = (IAST) ast.get(1);
+		if (ast.arg1().isList()) {
+			final IAST list = (IAST) ast.arg1();
 			final StringBuffer buffer = new StringBuffer();
 			char ch;
 			for (int i = 1; i < list.size(); i++) {
@@ -37,7 +37,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 			}
 			return StringX.valueOf(buffer);
 		}
-		if (ast.get(1).isInteger()) {
+		if (ast.arg1().isInteger()) {
 			final char ch = (char) Validate.checkIntType(ast, 1);
 			return StringX.valueOf(ch);
 		}

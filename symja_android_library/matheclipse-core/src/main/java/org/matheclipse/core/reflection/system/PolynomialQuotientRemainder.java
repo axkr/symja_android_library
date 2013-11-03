@@ -43,9 +43,9 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 
 	public static IExpr[] quotientRemainder(final IAST lst) {
 		try {
-			ExprVariables eVar = new ExprVariables(lst.get(1));
+			ExprVariables eVar = new ExprVariables(lst.arg1());
 			eVar.addVarList(lst.get(2));
-			IExpr expr = F.evalExpandAll(lst.get(1));
+			IExpr expr = F.evalExpandAll(lst.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
 			GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr);

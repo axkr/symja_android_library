@@ -18,13 +18,13 @@ public class Distribute extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 6);
 
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		IExpr head = F.Plus;
 		if (ast.size() >= 3) {
-			head = ast.get(2);
+			head = ast.arg2();
 		}
 		if (ast.size() == 4) {
-			if (!arg1.head().equals(ast.get(3))) {
+			if (!arg1.head().equals(ast.arg3())) {
 				return arg1;
 			}
 		}

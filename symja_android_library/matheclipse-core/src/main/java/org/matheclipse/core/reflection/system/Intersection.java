@@ -21,9 +21,9 @@ public class Intersection extends AbstractFunctionEvaluator {
 		if (functionList.size() != 3) {
 			return null;
 		}
-		if (!functionList.get(1).isAtom() && !functionList.get(2).isAtom()) {
+		if (!functionList.arg1().isAtom() && !functionList.get(2).isAtom()) {
 			final IAST result = F.List();
-			((IAST) functionList.get(1)).args().intersection(result,
+			((IAST) functionList.arg1()).args().intersection(result,
 					((IAST) functionList.get(2)).args());
 			return result.args().sort(ExprComparator.CONS);
 		}

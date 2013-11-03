@@ -33,8 +33,8 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 
 		if (ast.size() == 2) {
 			// bernoulli number
-			if (ast.get(1).isInteger()) {
-				BigFraction bernoulli = bernoulliNumber(((IInteger) ast.get(1)).getBigNumerator());
+			if (ast.arg1().isInteger()) {
+				BigFraction bernoulli = bernoulliNumber(((IInteger) ast.arg1()).getBigNumerator());
 				if (bernoulli != null) {
 					return F.fraction(bernoulli);
 				}

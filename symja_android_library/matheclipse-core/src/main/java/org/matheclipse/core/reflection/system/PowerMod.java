@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,18 +19,17 @@ public class PowerMod extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 4) {
-			return null;
-		}
-		for (int i = 1; i < functionList.size(); i++) {
-			if (!(functionList.get(i).isInteger())) {
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 4);
+
+		for (int i = 1; i < ast.size(); i++) {
+			if (!(ast.get(i).isInteger())) {
 				return null;
 			}
 		}
 		try {
-			BigInteger bigResult = powerMod(((IInteger) functionList.get(1)).getBigNumerator(), ((IInteger) functionList.get(2))
-					.getBigNumerator(), ((IInteger) functionList.get(3)).getBigNumerator());
+			BigInteger bigResult = powerMod(((IInteger) ast.arg1()).getBigNumerator(), ((IInteger) ast.get(2)).getBigNumerator(),
+					((IInteger) ast.arg3()).getBigNumerator());
 			return F.integer(bigResult);
 		} catch (ArithmeticException ae) {
 			if (Config.SHOW_STACKTRACE) {

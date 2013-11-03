@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,13 +17,14 @@ public class UnitStep implements IFunctionEvaluator {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() == 2) {
-			IExpr arg1 = ast.get(1);
-			if (arg1.isSignedNumber()) {
-				ISignedNumber isn = (ISignedNumber)arg1;
-				return F.integer(isn.complexSign() < 0 ? 0 : 1);
-			}
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.arg1();
+		if (arg1.isSignedNumber()) {
+			ISignedNumber isn = (ISignedNumber) arg1;
+			return F.integer(isn.complexSign() < 0 ? 0 : 1);
 		}
+
 		return null;
 	}
 

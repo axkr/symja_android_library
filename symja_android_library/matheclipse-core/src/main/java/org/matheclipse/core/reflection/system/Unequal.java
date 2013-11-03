@@ -10,10 +10,10 @@ public class Unequal extends Equal {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST lst) {
-		if (lst.size() > 1) {
+	public IExpr evaluate(final IAST ast) {
+		if (ast.size() > 1) {
 			int b = 0;
-			IAST result = lst.clone();
+			IAST result = ast.clone();
 			int i = 2;
 			int j;
 			while (i < result.size()) {

@@ -21,8 +21,8 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		final IExpr leftHandSide = ast.get(1);
-		IExpr rightHandSide = ast.get(2);
+		final IExpr leftHandSide = ast.arg1();
+		IExpr rightHandSide = ast.arg2();
 		if (leftHandSide.isList()) {
 			// thread over lists
 			try {
@@ -38,13 +38,13 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 		Object[] result;
 		// if (rightHandSide.isCondition()) {
 		// result = createPatternMatcher(leftHandSide, ((IAST)
-		// rightHandSide).get(1), ((IAST) rightHandSide).get(2), null);
+		// rightHandSide).arg1(), ((IAST) rightHandSide).get(2), null);
 		// } else if (rightHandSide.isModule()) {
 		// IAST module = (IAST) rightHandSide;
 		// if (module.get(2).isCondition()) {
 		// IAST condition = (IAST) module.get(2);
-		// result = createPatternMatcher(leftHandSide, condition.get(1),
-		// condition.get(2), module.get(1));
+		// result = createPatternMatcher(leftHandSide, condition.arg1(),
+		// condition.get(2), module.arg1());
 		// } else {
 		// result = createPatternMatcher(leftHandSide, rightHandSide, null, null);
 		// }

@@ -15,12 +15,12 @@ public class Select implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		
-		if (ast.get(1).isAST()) {
+		if (ast.arg1().isAST()) {
 			if (ast.size() == 3) {
-				return select((IAST) ast.get(1), ast.get(2));
+				return select((IAST) ast.arg1(), ast.arg2());
 			} else if ((ast.size() == 4) && ast.get(3).isInteger()) {
 				final int resultLimit = Validate.checkIntType(ast, 3);
-				return select((IAST) ast.get(1), ast.get(2), resultLimit);
+				return select((IAST) ast.arg1(), ast.arg2(), resultLimit);
 			}
 		}
 		return null;

@@ -25,12 +25,12 @@ public class FactorSquareFree extends Factor {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (!eVar.isSize(1)) {
-			throw new WrongArgumentType(ast, ast.get(1), 1, "Factorization only implemented for univariate polynomials");
+			throw new WrongArgumentType(ast, ast.arg1(), 1, "Factorization only implemented for univariate polynomials");
 		}
 		try {
-			IExpr expr = F.evalExpandAll(ast.get(1));
+			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = r.toList();
 

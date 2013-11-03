@@ -21,14 +21,14 @@ public class Exponent extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr form = ast.get(2);
+		IExpr form = ast.arg2();
 		ISymbol sym = F.Max;
 		if (ast.size() == 4) {
 			sym = Validate.checkSymbolType(ast, 3);
 		}
 		IAST collector = F.ast(sym);
 
-		IExpr expr = F.evalExpandAll(ast.get(1));
+		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (expr.equals(F.C0)) {
 			collector.add(F.CNInfinity);
 		} else if (expr.isAST()) {
@@ -36,8 +36,8 @@ public class Exponent extends AbstractFunctionEvaluator {
 			final IPatternMatcher matcher = new PatternMatcher(form);
 
 			if (arg1.isPower()) {
-				if (matcher.apply(arg1.get(1))) {
-					collector.add(arg1.get(2));
+				if (matcher.apply(arg1.arg1())) {
+					collector.add(arg1.arg2());
 				} else {
 					collector.add(F.C0);
 				}
@@ -55,8 +55,8 @@ public class Exponent extends AbstractFunctionEvaluator {
 						}
 					} else if (arg1.get(i).isPower()) {
 						IAST pow = (IAST) arg1.get(i);
-						if (matcher.apply(pow.get(1))) {
-							collector.add(pow.get(2));
+						if (matcher.apply(pow.arg1())) {
+							collector.add(pow.arg2());
 						} else {
 							collector.add(F.C0);
 						}
@@ -66,8 +66,8 @@ public class Exponent extends AbstractFunctionEvaluator {
 						for (int j = 1; j < times.size(); j++) {
 							if (times.get(j).isPower()) {
 								IAST pow = (IAST) times.get(j);
-								if (matcher.apply(pow.get(1))) {
-									collector.add(pow.get(2));
+								if (matcher.apply(pow.arg1())) {
+									collector.add(pow.arg2());
 									evaled = true;
 									break;
 								}
@@ -85,8 +85,8 @@ public class Exponent extends AbstractFunctionEvaluator {
 				for (int i = 1; i < arg1.size(); i++) {
 					if (arg1.get(i).isPower()) {
 						IAST pow = (IAST) arg1.get(i);
-						if (matcher.apply(pow.get(1))) {
-							collector.add(pow.get(2));
+						if (matcher.apply(pow.arg1())) {
+							collector.add(pow.arg2());
 							evaled = true;
 							break;
 						}

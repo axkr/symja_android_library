@@ -15,10 +15,10 @@ public class Reverse extends AbstractFunctionEvaluator {
 		if (functionList.size() != 2) {
 			return null;
 		}
-		if (!functionList.get(1).isAtom()) {
-			final IAST result = F.ast(functionList.get(1).head());
-			((IAST) functionList.get(1)).args().reverse(result);
-//			Rotating.reverse((IAST) list.get(1), result, 1);
+		if (!functionList.arg1().isAtom()) {
+			final IAST result = F.ast(functionList.arg1().head());
+			((IAST) functionList.arg1()).args().reverse(result);
+//			Rotating.reverse((IAST) list.arg1(), result, 1);
 			return result;
 		}
 		return null;

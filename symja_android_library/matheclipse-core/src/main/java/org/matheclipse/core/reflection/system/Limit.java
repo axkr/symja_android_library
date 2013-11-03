@@ -116,7 +116,7 @@ public class Limit extends AbstractFunctionEvaluator {
 			final IExpr header = arg1.head();
 			if (arg1.size() == 2) {
 				if (header.equals(F.Sin) || header.equals(F.Cos)) {
-					return F.$(header, F.Limit(arg1.get(1), rule));
+					return F.$(header, F.Limit(arg1.arg1(), rule));
 				}
 			}
 			if (header == F.Plus) {
@@ -146,7 +146,7 @@ public class Limit extends AbstractFunctionEvaluator {
 				if (arg1.get(2).isInteger()) {
 					// Limit[a_^n_,sym->lim] -> Limit[a,sym->lim]^n
 					IInteger n = (IInteger) arg1.get(2);
-					IExpr temp = F.eval(F.Limit(arg1.get(1), rule));
+					IExpr temp = F.eval(F.Limit(arg1.arg1(), rule));
 					if (temp.isInfinity()) {
 						if (n.isPositive()) {
 							return temp;
@@ -241,21 +241,21 @@ public class Limit extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		if (!ast.get(2).isRuleAST()) {
+		if (!ast.arg2().isRuleAST()) {
 			return null;
 		}
-		IAST rule = (IAST) ast.get(2);
-		if (!(rule.get(1).isSymbol())) {
+		IAST rule = (IAST) ast.arg2();
+		if (!(rule.arg1().isSymbol())) {
 			return null;
 		}
-		ISymbol sym = (ISymbol) rule.get(1);
+		ISymbol sym = (ISymbol) rule.arg1();
 		IExpr lim = null;
-		if (rule.get(2).isFree(sym, true)) {
+		if (rule.arg2().isFree(sym, true)) {
 			lim = rule.get(2);
 		} else {
 			return null;
 		}
-		return limit(ast.get(1), sym, lim, rule, true);
+		return limit(ast.arg1(), sym, lim, rule, true);
 	}
 
 	@Override

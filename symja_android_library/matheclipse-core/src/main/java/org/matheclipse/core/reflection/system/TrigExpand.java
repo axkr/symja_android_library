@@ -37,7 +37,7 @@ public class TrigExpand implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr temp = ast.get(1);
+		IExpr temp = ast.arg1();
 		IExpr result = temp;
 		while (temp != null) {
 			result = evalExpandAll(temp);
@@ -51,8 +51,8 @@ public class TrigExpand implements IFunctionEvaluator {
 					}
 				} else if (result.getAt(1).isTimes()) {
 					IAST timesAST = (IAST) result.getAt(1);
-					if (timesAST.get(1).isInteger()) {
-						IInteger iNum = (IInteger) timesAST.get(1);
+					if (timesAST.arg1().isInteger()) {
+						IInteger iNum = (IInteger) timesAST.arg1();
 						if (iNum.isGreaterThan(C0)) {
 							IAST rest = F.Times();
 							rest.addAll(timesAST, 2, timesAST.size());

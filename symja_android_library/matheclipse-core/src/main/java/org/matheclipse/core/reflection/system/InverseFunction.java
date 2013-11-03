@@ -42,7 +42,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		IExpr inverseFunction = INVERSE_FUNCTIONS.get(arg1);
 		if (inverseFunction != null) {
 			return inverseFunction;

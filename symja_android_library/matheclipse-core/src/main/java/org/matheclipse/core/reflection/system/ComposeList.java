@@ -21,9 +21,9 @@ public class ComposeList implements IFunctionEvaluator {
 
 	public static IExpr evaluateComposeList(final IAST ast, final IAST resultList) {
 		try {
-			if ((ast.size() == 3) && (ast.get(1).isAST())) {
+			if ((ast.size() == 3) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();
-				final IAST list = (IAST) ast.get(1);
+				final IAST list = (IAST) ast.arg1();
 				FoldList.foldLeft(ast.get(2), list, 1, list.size(), new BinaryApply(F.ast(ast.get(1))), resultList);
 				return resultList;
 			}

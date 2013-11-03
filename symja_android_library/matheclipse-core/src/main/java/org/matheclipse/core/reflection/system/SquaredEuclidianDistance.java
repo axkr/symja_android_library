@@ -19,8 +19,8 @@ public class SquaredEuclidianDistance implements IFunctionEvaluator {
 		if (functionList.size() != 3) {
 			throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
 		}
-		IExpr arg1 = functionList.get(1);
-		IExpr arg2 = functionList.get(2);
+		IExpr arg1 = functionList.arg1();
+		IExpr arg2 = functionList.arg2();
 
 		int dim1 = arg1.isVector();
 		if (dim1 > (-1)) {

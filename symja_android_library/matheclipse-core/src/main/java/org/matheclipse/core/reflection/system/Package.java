@@ -31,7 +31,7 @@ public class Package implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		if (!(ast.get(1) instanceof IStringX) || !ast.get(2).isList() || !ast.get(3).isList()) {
+		if (!(ast.arg1() instanceof IStringX) || !ast.get(2).isList() || !ast.get(3).isList()) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		if (Config.SERVER_MODE) {
@@ -97,10 +97,10 @@ public class Package implements IFunctionEvaluator {
 						.equals(F.UpSetDelayed))) {
 			// determine the head to which this rule is associated
 			lhsHead = null;
-			if (rule.get(1).isAST()) {
-				lhsHead = ((IAST) rule.get(1)).topHead();
-			} else if (rule.get(1).isSymbol()) {
-				lhsHead = (ISymbol) rule.get(1);
+			if (rule.arg1().isAST()) {
+				lhsHead = ((IAST) rule.arg1()).topHead();
+			} else if (rule.arg1().isSymbol()) {
+				lhsHead = (ISymbol) rule.arg1();
 			}
 
 			if (lhsHead != null && !unprotectedSymbolSet.contains(lhsHead)) {
@@ -188,11 +188,11 @@ public class Package implements IFunctionEvaluator {
 			IExpr parsedExpression = engine.parse(builder.toString());
 			if (parsedExpression != null && parsedExpression.isAST()) {
 				IAST ast = (IAST) parsedExpression;
-				if (ast.size() != 4 || !(ast.get(1) instanceof IStringX) || !ast.get(2).isList() || !ast.get(3).isList()) {
+				if (ast.size() != 4 || !(ast.arg1() instanceof IStringX) || !ast.arg2().isList() || !ast.arg3().isList()) {
 					throw new WrongNumberOfArguments(ast, 3, ast.size() - 1);
 				}
-				IAST symbols = (IAST) ast.get(2);
-				IAST list = (IAST) ast.get(3);
+				IAST symbols = (IAST) ast.arg2();
+				IAST list = (IAST) ast.arg3();
 				evalPackage(symbols, list);
 			}
 

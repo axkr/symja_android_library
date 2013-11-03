@@ -19,6 +19,7 @@ public class Level extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 5);
+		
 		int lastIndex = ast.size() - 1;
 		boolean heads = false;
 		final Options options = new Options(ast.topHead(), ast, lastIndex);
@@ -32,8 +33,8 @@ public class Level extends AbstractFunctionEvaluator {
 			Validate.checkRange(ast, 3, 4);
 		}
 
-		if (!ast.get(1).isAtom()) {
-			final IAST arg1 = (IAST) ast.get(1);
+		if (!ast.arg1().isAtom()) {
+			final IAST arg1 = (IAST) ast.arg1();
 			IAST resultList;
 			if (lastIndex != 3) {
 				resultList = List();

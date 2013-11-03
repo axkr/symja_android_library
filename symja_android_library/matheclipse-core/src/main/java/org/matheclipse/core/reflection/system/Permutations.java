@@ -27,8 +27,8 @@ public class Permutations extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.get(1).isAST()) {
-			final IAST f = (IAST) ast.get(1);
+		if (ast.arg1().isAST()) {
+			final IAST f = (IAST) ast.arg1();
 			final IAST result = F.ast(f.head());
 			if (f.size() <= 2) {
 				if (f.size() == 2) {
@@ -39,7 +39,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 
 			int k = f.size() - 1;
 			if (ast.size() == 3) {
-				if (!ast.get(2).isInteger()) {
+				if (!ast.arg2().isInteger()) {
 					return null;
 				}
 				k = Validate.checkIntType(ast, 2);

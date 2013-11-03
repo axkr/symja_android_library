@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -25,11 +26,10 @@ public class ContinuedFraction implements IFunctionEvaluator {
 	public ContinuedFraction() {
 	}
 
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 2) {
-			throw new WrongNumberOfArguments(functionList, 1, functionList.size() - 1);
-		}
-		IExpr arg1 = functionList.get(1);
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.arg1();
 		if (arg1 instanceof INum) {
 			arg1 = F.fraction(((INum) arg1).getRealPart());
 		}

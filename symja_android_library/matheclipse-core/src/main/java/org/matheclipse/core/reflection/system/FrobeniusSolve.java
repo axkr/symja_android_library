@@ -23,7 +23,7 @@ public class FrobeniusSolve implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		if (ast.get(1).isList()) {
+		if (ast.arg1().isList()) {
 			IAST list = ast.getAST(1);
 			try {
 				int[][] equations = new int[1][list.size()];

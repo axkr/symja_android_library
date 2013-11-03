@@ -38,7 +38,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 		} else {
 			if (ast.size() == 2) {
 				ExprVariables eVar;
-				eVar = new ExprVariables(ast.get(1));
+				eVar = new ExprVariables(ast.arg1());
 				if (!eVar.isSize(1)) {
 					// only possible for univariate polynomials
 					return null;
@@ -51,8 +51,8 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			return null;
 		}
 		ASTRange r = new ASTRange(variableList, 1);
-		IExpr expr = F.evalExpandAll(ast.get(1));
-		// IExpr variable = variableList.get(1);
+		IExpr expr = F.evalExpandAll(ast.arg1());
+		// IExpr variable = variableList.arg1();
 		try {
 
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);

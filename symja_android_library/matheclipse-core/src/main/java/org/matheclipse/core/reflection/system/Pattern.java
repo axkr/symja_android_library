@@ -17,20 +17,20 @@ public class Pattern implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		
-		if (ast.get(1).isSymbol()) {
+		if (ast.arg1().isSymbol()) {
 			if (ast.get(2).isAST(F.Blank)) {
 				IAST blank = (IAST) ast.get(2);
 				if (blank.size() == 1) {
-					return F.$p((ISymbol)ast.get(1));
+					return F.$p((ISymbol)ast.arg1());
 				}
 				if (blank.size() == 2) {
-					return F.$p((ISymbol)ast.get(1), blank.get(1));
+					return F.$p((ISymbol)ast.arg1(), blank.arg1());
 				}
 			}
-			if (ast.get(2).isPattern()) {
-				IPattern blank = (IPattern) ast.get(2);
+			if (ast.arg2().isPattern()) {
+				IPattern blank = (IPattern) ast.arg2();
 				if (blank.isBlank()) {
-					return F.$p((ISymbol)ast.get(1), blank.getCondition());
+					return F.$p((ISymbol)ast.arg1(), blank.getCondition());
 				}
 			}
 		}

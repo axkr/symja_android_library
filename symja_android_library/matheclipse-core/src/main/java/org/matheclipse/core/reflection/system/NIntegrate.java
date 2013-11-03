@@ -44,15 +44,15 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		ISymbol method = LegendreGauss;
-		if (ast.size() == 4 && ast.get(3).isSymbol()) {
-			method = (ISymbol) ast.get(3);
+		if (ast.size() == 4 && ast.arg3().isSymbol()) {
+			method = (ISymbol) ast.arg3();
 		}
-		if ((ast.get(2).isList())) {
-			IAST list = (IAST) ast.get(2);
-			IExpr function = ast.get(1);
-			if (list.size() == 4 && list.get(1).isSymbol() && list.get(2).isSignedNumber() && list.get(3).isSignedNumber()) {
+		if ((ast.arg2().isList())) {
+			IAST list = (IAST) ast.arg2();
+			IExpr function = ast.arg1();
+			if (list.size() == 4 && list.arg1().isSymbol() && list.arg2().isSignedNumber() && list.arg3().isSignedNumber()) {
 				if (function.isAST(F.Equal, 3)) {
-					function = F.Plus(((IAST) function).get(1), F.Times(F.CN1, ((IAST) function).get(2)));
+					function = F.Plus(((IAST) function).arg1(), F.Times(F.CN1, ((IAST) function).arg2()));
 				}
 				try {
 					return Num.valueOf(integrate(method, list, function));
@@ -73,9 +73,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	private double integrate(ISymbol method, IAST list, IExpr function) throws ConvergenceException {
 		GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
-		ISymbol xVar = (ISymbol) list.get(1);
-		ISignedNumber min = (ISignedNumber) list.get(2);
-		ISignedNumber max = (ISignedNumber) list.get(3);
+		ISymbol xVar = (ISymbol) list.arg1();
+		ISignedNumber min = (ISignedNumber) list.arg2();
+		ISignedNumber max = (ISignedNumber) list.arg3();
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);

@@ -27,10 +27,10 @@ public class PrimeQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (!ast.get(1).isInteger()) {
+		if (!ast.arg1().isInteger()) {
 			return F.False;
 		}
-		return F.bool(apply(ast.get(1)));
+		return F.bool(apply(ast.arg1()));
 	}
 
 	public boolean apply(final IExpr obj) {

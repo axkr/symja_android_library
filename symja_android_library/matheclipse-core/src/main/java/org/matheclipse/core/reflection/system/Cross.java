@@ -25,8 +25,9 @@ public class Cross extends AbstractArg2 {
 			final IAST v0 = (IAST) o0;
 			final IAST v1 = (IAST) o1;
 			if ((v0.size() == 4) || (v1.size() == 4)) {
-				return List(Plus(Times(v0.get(2), v1.get(3)), Times(F.CN1, v0.get(3), v1.get(2))), Plus(Times(v0.get(3), v1.get(1)), Times(
-						F.CN1, v0.get(1), v1.get(3))), Plus(Times(v0.get(1), v1.get(2)), Times(F.CN1, v0.get(2), v1.get(1))));
+				return List(Plus(Times(v0.arg2(), v1.arg3()), Times(F.CN1, v0.arg3(), v1.arg2())),
+						Plus(Times(v0.arg3(), v1.arg1()), Times(F.CN1, v0.arg1(), v1.arg3())),
+						Plus(Times(v0.arg1(), v1.arg2()), Times(F.CN1, v0.arg2(), v1.arg1())));
 			}
 		}
 		return null;

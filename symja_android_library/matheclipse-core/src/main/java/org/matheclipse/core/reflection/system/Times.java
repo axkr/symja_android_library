@@ -104,33 +104,33 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		if (o0.isPower()) {
 			final IAST f0 = (IAST) o0;
-			if (f0.get(2).isNumber()) {
-				if (f0.get(1).equals(o1)) {
-					return Power(o1, Plus(F.C1, f0.get(2)));
+			if (f0.arg2().isNumber()) {
+				if (f0.arg1().equals(o1)) {
+					return Power(o1, Plus(F.C1, f0.arg2()));
 				}
 
 				if (o1.isPower()) {
 					final IAST f1 = (IAST) o1;
 
-					if (f1.get(2).isNumber()) {
-						if (f0.get(1).equals(f1.get(1))) {
+					if (f1.arg2().isNumber()) {
+						if (f0.arg1().equals(f1.arg1())) {
 							// x^(a)*x^(b) => x ^(a+b)
-							return Power(f0.get(1), Plus(f0.get(2), f1.get(2)));
+							return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
 						}
-						if (f0.get(2).equals(f1.get(2)) && f0.get(1).isPositive() && f1.get(1).isPositive()) {
+						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()) {
 							// a^(c)*b^(c) => (a*b) ^c
-							return Power(Times(f0.get(1), f1.get(1)), f0.get(2));
+							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
 						}
 					}
 				}
 			}
 		}
 
-		if (o1.isPower() && (((IAST) o1).get(2).isInteger())) {
+		if (o1.isPower() && (((IAST) o1).arg2().isInteger())) {
 			final IAST f1 = (IAST) o1;
 
-			if (f1.get(1).equals(o0)) {
-				return Power(o0, Plus(F.C1, f1.get(2)));
+			if (f1.arg1().equals(o0)) {
+				return Power(o0, Plus(F.C1, f1.arg2()));
 			}
 		}
 
@@ -174,19 +174,19 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() == 3) {
-			if ((ast.get(1).isNumeric() || ast.get(1).isOne() || ast.get(1).isMinusOne()) && ast.get(2).isPlus()) {
+			if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
 				// distribute the number over the sum:
-				final IAST arg2 = (IAST) ast.get(2);
-				return arg2.map(Functors.replace2nd(F.Times(ast.get(1), F.Null)));
+				final IAST arg2 = (IAST) ast.arg2();
+				return arg2.map(Functors.replace2nd(F.Times(ast.arg1(), F.Null)));
 			}
-			return binaryOperator(ast.get(1), ast.get(2));
+			return binaryOperator(ast.arg1(), ast.arg2());
 		}
 
 		if (ast.size() > 3) {
 			final ISymbol sym = ast.topHead();
 			final IAST result = F.ast(sym);
 			IExpr tres;
-			IExpr temp = ast.get(1);
+			IExpr temp = ast.arg1();
 			boolean evaled = false;
 			int i = 2;
 

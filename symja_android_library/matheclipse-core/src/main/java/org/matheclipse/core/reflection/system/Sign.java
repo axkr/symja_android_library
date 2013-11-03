@@ -26,7 +26,7 @@ public class Sign implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		if (arg1.isNumber()) {
 			return numberSign((INumber) arg1);
 		}

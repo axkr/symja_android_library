@@ -94,26 +94,26 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		if (o0.isTimes()) {
 			final AST f0 = (AST) o0;
 
-			if (f0.get(1).isNumber()) {
+			if (f0.arg1().isNumber()) {
 				// Times(number, o1) + o1 => Times(Plus(1, number), o1)
-				if ((f0.size() == 3) && f0.get(2).equals(o1)) {
-					return Times(Plus(F.C1, f0.get(1)), o1);
+				if ((f0.size() == 3) && f0.arg2().equals(o1)) {
+					return Times(Plus(F.C1, f0.arg1()), o1);
 				}
 
 				if (o1.isTimes()) {
 					final AST f1 = (AST) o1;
 
-					if (f1.get(1).isNumber()) {
+					if (f1.arg1().isNumber()) {
 						if (f0.equalsFromPosition(1, f1, 1)) {
 							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
 
-							return Times(Plus(f0.get(1), f1.get(1)), result);
+							return Times(Plus(f0.arg1(), f1.arg1()), result);
 						}
 					} else {
 						if (f0.equalsFromPosition(1, f1, 0)) {
 							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
 
-							return Times(Plus(F.C1, f0.get(1)), result);
+							return Times(Plus(F.C1, f0.arg1()), result);
 						}
 					}
 				}
@@ -121,22 +121,22 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 				if (o1.isTimes()) {
 					final AST f1 = (AST) o1;
 
-					if (f1.get(1).isNumber()) {
+					if (f1.arg1().isNumber()) {
 						if (f0.equalsFromPosition(0, f1, 1)) {
 							final IAST result = F.ast(f1, F.Times, true, 2, f1.size());
 
-							return Times(Plus(F.C1, f1.get(1)), result);
+							return Times(Plus(F.C1, f1.arg1()), result);
 						}
 					}
 				}
 			}
 		}
 
-		if (o1.isTimes() && (((IAST) o1).get(1).isNumber())) {
+		if (o1.isTimes() && (((IAST) o1).arg1().isNumber())) {
 			final IAST f1 = (IAST) o1;
 			// o0 + Times(o0, number) => Times(Plus(1, number), o0)
-			if ((f1.size() == 3) && f1.get(2).equals(o0)) {
-				return Times(Plus(F.C1, f1.get(1)), o0);
+			if ((f1.size() == 3) && f1.arg2().equals(o0)) {
+				return Times(Plus(F.C1, f1.arg1()), o0);
 			}
 		}
 

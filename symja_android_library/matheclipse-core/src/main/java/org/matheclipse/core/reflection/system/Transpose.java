@@ -23,9 +23,9 @@ public class Transpose implements IFunctionEvaluator {
 		// TODO generalize transpose for all levels
 		Validate.checkRange(ast, 2);
 
-		final int[] dim = ast.get(1).isMatrix();
+		final int[] dim = ast.arg1().isMatrix();
 		if (dim != null) {
-			final IAST originalMatrix = (IAST) ast.get(1);
+			final IAST originalMatrix = (IAST) ast.arg1();
 			final IAST transposedMatrix = F.ast(F.List, dim[1], true);
 			for (int i = 1; i <= dim[1]; i++) {
 				transposedMatrix.set(i, F.ast(F.List, dim[0], true));

@@ -19,7 +19,7 @@ public class Norm implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		IExpr arg = ast.get(1);
+		IExpr arg = ast.arg1();
 		if (arg.isNumber()) {
 			// absolute Value of a number
 			return ((INumber) arg).eabs();

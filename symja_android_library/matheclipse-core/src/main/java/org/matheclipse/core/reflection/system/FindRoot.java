@@ -57,26 +57,26 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				method = ((ISymbol) optionMethod);
 			} else {
 				if (ast.get(3).isSymbol()) {
-					method = (ISymbol) ast.get(3);
+					method = (ISymbol) ast.arg3();
 				}
 			}
 		}
-		if ((ast.get(2).isList())) {
-			IAST list = (IAST) ast.get(2);
-			IExpr function = ast.get(1);
-			if (list.size() >= 3 && list.get(1).isSymbol() && list.get(2).isSignedNumber()) {
+		if ((ast.arg2().isList())) {
+			IAST list = (IAST) ast.arg2();
+			IExpr function = ast.arg1();
+			if (list.size() >= 3 && list.arg1().isSymbol() && list.arg2().isSignedNumber()) {
 				if (function.isAST(F.Equal, 3)) {
-					function = F.Plus(((IAST) function).get(1), F.Times(F.CN1, ((IAST) function).get(2)));
+					function = F.Plus(((IAST) function).arg1(), F.Times(F.CN1, ((IAST) function).arg2()));
 				}
-				return F.List(F.Rule(list.get(1), Num.valueOf(findRoot(method, maxIterations, list, function))));
+				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, function))));
 			}
 		}
 		return null;
 	}
 
 	private double findRoot(ISymbol method, int maxIterations, IAST list, IExpr function) {
-		ISymbol xVar = (ISymbol) list.get(1);
-		ISignedNumber min = (ISignedNumber) list.get(2);
+		ISymbol xVar = (ISymbol) list.arg1();
+		ISignedNumber min = (ISignedNumber) list.arg2();
 		ISignedNumber max = null;
 		if (list.size() > 3 && list.get(3) instanceof ISignedNumber) {
 			max = (ISignedNumber) list.get(3);

@@ -24,7 +24,7 @@ public class Timing implements IFunctionEvaluator {
 		if (ast.size() == 2) {
 			final long begin = System.currentTimeMillis();
 			final EvalEngine engine = EvalEngine.get();
-			final IExpr result = engine.evaluate(ast.get(1));
+			final IExpr result = engine.evaluate(ast.arg1());
 			return List(Times(FractionSym.valueOf((System
 					.currentTimeMillis() - begin), 1000L),
 					F.Second), result);

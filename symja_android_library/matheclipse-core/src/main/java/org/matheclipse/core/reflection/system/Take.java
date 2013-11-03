@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Sequence;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -20,9 +19,9 @@ public class Take extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3);
 
 		try {
-			if (ast.get(1).isAST()) {
+			if (ast.arg1().isAST()) {
 				final ISequence[] sequ = Sequence.createSequences(ast, 2);
-				final IAST arg1 = (IAST) ast.get(1);
+				final IAST arg1 = (IAST) ast.arg1();
 				if (sequ != null) {
 					return take(arg1, 0, sequ);
 				}

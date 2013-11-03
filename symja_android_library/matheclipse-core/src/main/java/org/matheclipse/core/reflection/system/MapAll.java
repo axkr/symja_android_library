@@ -19,11 +19,11 @@ public class MapAll extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		final IAST arg1AST = F.ast(ast.get(1));
+		final IAST arg1AST = F.ast(ast.arg1());
 		final VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1AST), 0, Integer.MAX_VALUE, false);
 
-		final IExpr result = ast.get(2).accept(level);
-		return result == null ? ast.get(2) : result;
+		final IExpr result = ast.arg2().accept(level);
+		return result == null ? ast.arg2() : result;
 	}
 
 }

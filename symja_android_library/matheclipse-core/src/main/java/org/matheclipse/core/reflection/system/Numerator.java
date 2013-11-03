@@ -23,7 +23,7 @@ public class Numerator implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg = ast.get(1);
+		IExpr arg = ast.arg1();
 		if (arg.isRational()) {
 			return ((IRational) arg).getNumerator();
 		}

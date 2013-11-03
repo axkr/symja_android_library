@@ -21,11 +21,11 @@ public class SyntaxLength extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast,2);
-		if (!(ast.get(1) instanceof IStringX)) {
+		if (!(ast.arg1() instanceof IStringX)) {
 			return null;
 		}
 
-		final String str = ast.get(1).toString();
+		final String str = ast.arg1().toString();
 		try {
 			new Parser().parse(str);
 		} catch (final SyntaxError e) {

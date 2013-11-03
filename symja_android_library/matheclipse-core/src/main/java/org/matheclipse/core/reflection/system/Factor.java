@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTRange;
@@ -42,17 +43,15 @@ public class Factor extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 2 && ast.size() != 3) {
-			return null;
-		}
+		Validate.checkRange(ast, 2, 3);
 
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		// if (!eVar.isSize(1)) {
-		// throw new WrongArgumentType(ast, ast.get(1), 1,
+		// throw new WrongArgumentType(ast, ast.arg1(), 1,
 		// "Factorization only implemented for univariate polynomials");
 		// }
 		try {
-			IExpr expr = F.evalExpandAll(ast.get(1));
+			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = r.toList();
 

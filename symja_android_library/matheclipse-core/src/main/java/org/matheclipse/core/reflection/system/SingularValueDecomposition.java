@@ -29,7 +29,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 		RealMatrix matrix;
 		try {
 
-			final IAST list = (IAST) ast.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2RealMatrix(list);
 			final org.apache.commons.math3.linear.SingularValueDecomposition svd = new org.apache.commons.math3.linear.SingularValueDecomposition(
 					matrix);

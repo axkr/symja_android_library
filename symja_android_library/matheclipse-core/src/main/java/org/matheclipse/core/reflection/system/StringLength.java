@@ -17,8 +17,8 @@ public class StringLength extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		if (ast.get(1) instanceof IStringX) {
-			return F.integer(ast.get(1).toString().length());
+		if (ast.arg1() instanceof IStringX) {
+			return F.integer(ast.arg1().toString().length());
 		}
 		return null;
 	}

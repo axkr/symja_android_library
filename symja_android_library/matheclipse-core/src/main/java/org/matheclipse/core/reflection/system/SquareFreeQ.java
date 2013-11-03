@@ -36,22 +36,22 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.get(1).isRational()) {
+		if (ast.arg1().isRational()) {
 			// check for integers not implemented yet
 			return null;
 		}
-		ExprVariables eVar = new ExprVariables(ast.get(1));
+		ExprVariables eVar = new ExprVariables(ast.arg1());
 		if (eVar.isSize(0)) {
-			if (ast.get(1).isAtom()) {
+			if (ast.arg1().isAtom()) {
 				return F.False;
 			}
 			eVar.add(F.$s("x"));
 		}
 		if (!eVar.isSize(1)) {
-			throw new WrongArgumentType(ast, ast.get(1), 1, "SquareFreeQ only implemented for univariate polynomials");
+			throw new WrongArgumentType(ast, ast.arg1(), 1, "SquareFreeQ only implemented for univariate polynomials");
 		}
 		try {
-			IExpr expr = F.evalExpandAll(ast.get(1));
+			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = r.toList();
 

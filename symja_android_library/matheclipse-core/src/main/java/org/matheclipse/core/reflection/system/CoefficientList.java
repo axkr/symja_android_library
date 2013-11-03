@@ -30,8 +30,8 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		IExpr expr = F.evalExpandAll(ast.get(1));
-		IExpr arg2 = ast.get(2);
+		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {
 			// TODO allow multinomials
 			return null;
@@ -40,7 +40,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 			IAST result = F.List();
 			long degree = univariateCoefficientList(expr, (ISymbol) arg2, result);
 			if (degree >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.get(1), 1, "Polynomial degree" + degree + " is larger than: " + " - "
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + " - "
 						+ Short.MAX_VALUE);
 			}
 			return result;

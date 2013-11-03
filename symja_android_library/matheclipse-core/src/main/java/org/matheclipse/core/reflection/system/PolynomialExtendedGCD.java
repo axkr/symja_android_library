@@ -42,8 +42,8 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 		}
 
 		ISymbol x = (ISymbol) ast.get(3);
-		IExpr expr1 = F.evalExpandAll(ast.get(1));
-		IExpr expr2 = F.evalExpandAll(ast.get(2));
+		IExpr expr1 = F.evalExpandAll(ast.arg1());
+		IExpr expr2 = F.evalExpandAll(ast.arg2());
 		ExprVariables eVar = new ExprVariables();
 		eVar.add(x);
 

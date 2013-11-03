@@ -16,15 +16,15 @@ public class Sort extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 		
-		if (ast.get(1).isAST()) {
-			final IAST shallowCopy = ((IAST) ast.get(1)).clone();
+		if (ast.arg1().isAST()) {
+			final IAST shallowCopy = ((IAST) ast.arg1()).clone();
 			if (shallowCopy.size() <= 2) {
 				return shallowCopy;
 			}
 			if (ast.size() == 2) {
 				EvaluationSupport.sort(shallowCopy);
-			} else if (ast.get(2).isSymbol()) {
-				EvaluationSupport.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.get(2)));
+			} else if (ast.arg2().isSymbol()) {
+				EvaluationSupport.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
 			}
 			return shallowCopy;
 		}

@@ -6,6 +6,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -179,6 +180,21 @@ public final class Validate {
 		return ast;
 	}
 
+	/**
+	 * Check if the argument at the given position is a <code>IStringX</code> string object.
+	 * 
+	 * @param position
+	 *            the position which has to be a string.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
+	 */
+	public static IStringX checkStringType(IAST ast, int position) {
+		if (ast.get(position) instanceof IStringX) {
+			return (IStringX) ast.get(position);
+		}
+		throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
+	}
+	
 	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 

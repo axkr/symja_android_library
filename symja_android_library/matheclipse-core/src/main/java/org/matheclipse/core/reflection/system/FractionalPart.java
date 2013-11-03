@@ -22,7 +22,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		
-		IExpr expr = ast.get(1);
+		IExpr expr = ast.arg1();
 		if (expr.isSignedNumber()) {
 			if (expr.isInteger()) {
 				return F.C0;

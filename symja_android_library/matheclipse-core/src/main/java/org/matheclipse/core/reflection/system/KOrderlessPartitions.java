@@ -21,11 +21,11 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		if (ast.get(1).isAST() && ast.get(2).isInteger()) {
-			final IAST listArg0 = (IAST) ast.get(1);
+		if (ast.arg1().isAST() && ast.arg2().isInteger()) {
+			final IAST listArg0 = (IAST) ast.arg1();
 			final ISymbol sym = listArg0.topHead();
 			final int n = listArg0.size() - 1;
-			final int k = ((IInteger) ast.get(2)).getBigNumerator().intValue();
+			final int k = ((IInteger) ast.arg2()).getBigNumerator().intValue();
 			final IAST result = F.ast(F.List);
 			final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
 			final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);

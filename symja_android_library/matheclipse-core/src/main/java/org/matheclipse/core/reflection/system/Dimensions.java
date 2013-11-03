@@ -21,8 +21,8 @@ public class Dimensions extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		if (ast.get(1).isAST()) {
-			IAST list = (IAST) ast.get(1);
+		if (ast.arg1().isAST()) {
+			IAST list = (IAST) ast.arg1();
 			int m = list.size();
 			ArrayList<Integer> dims = new ArrayList<Integer>();
 			IAST res = F.List();
@@ -41,8 +41,8 @@ public class Dimensions extends AbstractFunctionEvaluator {
 	}
 
 	private void getLevel1(IAST ast, ISymbol header, ArrayList<Integer> dims) {
-		if (ast.size() > 1 && ast.get(1).isAST()) {
-			IAST list = (IAST) ast.get(1);
+		if (ast.size() > 1 && ast.arg1().isAST()) {
+			IAST list = (IAST) ast.arg1();
 			if (!header.equals(list.topHead())) {
 				return;
 			}

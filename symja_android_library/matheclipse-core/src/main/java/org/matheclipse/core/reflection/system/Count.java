@@ -56,7 +56,7 @@ public class Count implements IFunctionEvaluator {
 		} else {
 			level = new VisitorLevelSpecification(mf, 1);
 		}
-		ast.get(1).accept(level);
+		ast.arg1().accept(level);
 		return F.integer(mf.getCounter());
 	}
 

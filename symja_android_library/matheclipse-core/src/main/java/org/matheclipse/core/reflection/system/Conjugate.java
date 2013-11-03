@@ -23,14 +23,16 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (ast.get(1).isSignedNumber()) {
-			return ast.get(1);
+		
+		IExpr arg1 = ast.arg1();
+		if (arg1.isSignedNumber()) {
+			return arg1;
 		}
-		if (ast.get(1).isComplex()) {
-			return ((IComplex) ast.get(1)).conjugate();
+		if (arg1.isComplex()) {
+			return ((IComplex) arg1).conjugate();
 		}
-		if (ast.get(1) instanceof IComplexNum) {
-			return ((IComplexNum) ast.get(1)).conjugate();
+		if (arg1 instanceof IComplexNum) {
+			return ((IComplexNum) arg1).conjugate();
 		}
 		return null;
 	}

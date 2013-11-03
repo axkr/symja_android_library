@@ -78,9 +78,9 @@ public class Outer extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
-		if (ast.get(1).isSymbol() && ast.get(2).isAST() && ast.get(3).isAST()) {
-			Generating gen = new Generating(F.List(), F.ast(ast.get(1)), 1);
-			return gen.outer((IAST) ast.get(2), (IAST) ast.get(3));
+		if (ast.arg1().isSymbol() && ast.arg2().isAST() && ast.arg3().isAST()) {
+			Generating gen = new Generating(F.List(), F.ast(ast.arg1()), 1);
+			return gen.outer((IAST) ast.arg2(), (IAST) ast.arg3());
 		}
 		return null;
 	}

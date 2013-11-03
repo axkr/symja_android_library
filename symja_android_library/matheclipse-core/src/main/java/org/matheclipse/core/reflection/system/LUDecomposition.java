@@ -25,7 +25,7 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 
 		FieldMatrix<ExprFieldElement> matrix;
 		try {
-			final IAST list = (IAST) ast.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			final FieldLUDecomposition<ExprFieldElement> lu = new FieldLUDecomposition<ExprFieldElement>(matrix);
 			final FieldMatrix<ExprFieldElement> lMatrix = lu.getL();

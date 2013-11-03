@@ -22,19 +22,19 @@ public class Function implements IFunctionEvaluator {
 
 			final IAST function = (IAST) ast.head();
 			if (function.size() == 2) {
-				return replaceSlots(function.get(1), ast);
+				return replaceSlots(function.arg1(), ast);
 			} else if (function.size() == 3) {
 				IAST symbolSlots = null;
-				if (function.get(1).isList()) {
-					symbolSlots = (IAST) function.get(1);
+				if (function.arg1().isList()) {
+					symbolSlots = (IAST) function.arg1();
 				} else {
-					symbolSlots = F.List(function.get(1));
+					symbolSlots = F.List(function.arg1());
 				}
 				if (symbolSlots.size() > ast.size()) {
 					throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
 				}
 				final IExpr result = function.get(2).replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)));
-				return (result == null) ? function.get(2) : result;
+				return (result == null) ? function.arg2() : result;
 			}
 
 		}

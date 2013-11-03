@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 public class Through extends AbstractFunctionEvaluator {
 
@@ -16,14 +15,14 @@ public class Through extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.get(1).isAST()) {
-			IAST l1 = (IAST) ast.get(1);
+		if (ast.arg1().isAST()) {
+			IAST l1 = (IAST) ast.arg1();
 			IExpr h = l1.head();
 			if (h.isAST()) {
 
 				IAST clonedList;
 				IAST l2 = (IAST) h;
-				if (ast.size() == 3 && !l2.head().equals(ast.get(2))) {
+				if (ast.size() == 3 && !l2.head().equals(ast.arg2())) {
 					return l1;
 				}
 				IAST result = F.ast(l2.head());
@@ -39,6 +38,6 @@ public class Through extends AbstractFunctionEvaluator {
 			}
 			return l1;
 		}
-		return ast.get(1);
+		return ast.arg1();
 	}
 }

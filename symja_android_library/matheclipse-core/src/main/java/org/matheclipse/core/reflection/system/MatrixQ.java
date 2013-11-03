@@ -22,7 +22,7 @@ public class MatrixQ extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		
-		return F.bool(ast.get(1).isMatrix() != null);
+		return F.bool(ast.arg1().isMatrix() != null);
 	}
 
 	@Override

@@ -21,8 +21,8 @@ public class ManhattanDistance implements IFunctionEvaluator {
 		if (ast.size() != 3) {
 			throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
 		}
-		IExpr arg1 = ast.get(1);
-		IExpr arg2 = ast.get(2);
+		IExpr arg1 = ast.arg1();
+		IExpr arg2 = ast.arg2();
 
 		int dim1 = arg1.isVector();
 		if (dim1 > (-1)) {

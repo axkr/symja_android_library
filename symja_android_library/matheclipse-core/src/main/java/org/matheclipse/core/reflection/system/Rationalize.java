@@ -8,9 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Rationalize extends AbstractFunctionEvaluator {
@@ -22,7 +20,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		try {
 			// try to convert into a fractional number
 			final EvalEngine engine = EvalEngine.get();

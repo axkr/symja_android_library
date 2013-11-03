@@ -37,7 +37,7 @@ public class Scan extends Map {
 		}
 
 		try {
-			final IAST arg1 = F.ast(ast.get(1));
+			final IAST arg1 = F.ast(ast.arg1());
 			if (lastIndex == 3) {
 				IAST result = F.List();
 				Function<IExpr, IExpr> sf = Functors.scan(arg1, result);
@@ -50,9 +50,9 @@ public class Scan extends Map {
 
 			} else {
 				if (ast.get(2).isAST()) {
-					F.eval(((IAST) ast.get(2)).map(Functors.append(arg1)));
+					F.eval(((IAST) ast.arg2()).map(Functors.append(arg1)));
 				} else {
-					F.eval(ast.get(2));
+					F.eval(ast.arg2());
 				}
 			}
 			return F.Null;

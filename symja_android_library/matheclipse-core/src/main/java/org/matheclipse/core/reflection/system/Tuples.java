@@ -19,7 +19,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		IExpr arg1 = ast.get(1);
+		IExpr arg1 = ast.arg1();
 		if (ast.size() == 2 && arg1.isListOfLists()) {
 			try {
 				IAST list = (IAST) arg1;

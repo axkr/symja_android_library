@@ -20,8 +20,8 @@ public class UpSet implements IFunctionEvaluator, ICreatePatternMatcher {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		final IExpr leftHandSide = ast.get(1);
-		IExpr rightHandSide = ast.get(2);
+		final IExpr leftHandSide = ast.arg1();
+		IExpr rightHandSide = ast.arg2();
 		if (leftHandSide.isList()) {
 			// thread over lists
 			try {

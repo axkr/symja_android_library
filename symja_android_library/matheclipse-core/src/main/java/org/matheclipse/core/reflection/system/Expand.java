@@ -86,12 +86,12 @@ public class Expand extends AbstractFunctionEvaluator {
 			try {
 				int exp = Validate.checkPowerExponent(powerAST);
 				// (a+b)^exp
-				if ((powerAST.get(1).isPlus())) {
+				if ((powerAST.arg1().isPlus())) {
 					if (exp < 0) {
 						exp *= (-1);
-						return F.Power(expandPower((IAST) powerAST.get(1), exp), F.CN1);
+						return F.Power(expandPower((IAST) powerAST.arg1(), exp), F.CN1);
 					}
-					return expandPower((IAST) powerAST.get(1), exp);
+					return expandPower((IAST) powerAST.arg1(), exp);
 				}
 			} catch (WrongArgumentType e) {
 				return null;
@@ -123,7 +123,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		private IExpr expandTimes(final IAST timesAST) {
-			IExpr result = timesAST.get(1);
+			IExpr result = timesAST.arg1();
 			IExpr temp;
 			if (result.isPower()) {
 				temp = expandPowerNull((IAST) result);
@@ -225,7 +225,7 @@ public class Expand extends AbstractFunctionEvaluator {
 					if (indices[k] != 0) {
 						temp = precalculatedPowerASTs.getAST(k + 1).clone();
 						if (indices[k] == 1) {
-							timesAST.add(temp.get(1));
+							timesAST.add(temp.arg1());
 						} else {
 							temp.set(2, F.integer(indices[k]));
 							timesAST.add(temp);
@@ -274,17 +274,17 @@ public class Expand extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.get(1).isAST()) {
+		if (ast.arg1().isAST()) {
 			IExpr patt = null;
 			if (ast.size() > 2) {
-				patt = ast.get(2);
+				patt = ast.arg2();
 			}
-			IExpr temp = expand((IAST) ast.get(1), patt);
+			IExpr temp = expand((IAST) ast.arg1(), patt);
 			if (temp != null) {
 				return temp;
 			}
 		}
 
-		return ast.get(1);
+		return ast.arg1();
 	}
 }

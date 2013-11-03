@@ -47,7 +47,7 @@ public class Table extends AbstractFunctionEvaluator {
 			}
 
 			final TableGenerator generator = new TableGenerator(iterList, resultList,
-					new UnaryArrayFunction(engine, ast.get(1)), defaultValue);
+					new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
 			return generator.table();
 
 		} catch (final ClassCastException e) {

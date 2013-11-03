@@ -16,12 +16,12 @@ public class ReplaceAll implements IFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		if (ast.get(2).isListOfLists()) {
 			IAST result = F.List();
-			for (IExpr subList : (IAST) ast.get(2)) {
-				result.add(F.subst(ast.get(1), (IAST) subList));
+			for (IExpr subList : (IAST) ast.arg2()) {
+				result.add(F.subst(ast.arg1(), (IAST) subList));
 			}
 			return result;
 		}
-		return F.subst(ast.get(1), (IAST) ast.get(2));
+		return F.subst(ast.arg1(), (IAST) ast.arg2());
 
 	}
 

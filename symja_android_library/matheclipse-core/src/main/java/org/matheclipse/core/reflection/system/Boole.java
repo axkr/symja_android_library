@@ -22,11 +22,11 @@ public class Boole extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		 
-		if (ast.get(1).isSymbol()) {
-			if (ast.get(1).equals(F.True)) {
+		if (ast.arg1().isSymbol()) {
+			if (ast.arg1().isTrue()) {
 				return F.C1;
 			}
-			if (ast.get(1).equals(F.False)) {
+			if (ast.arg1().isFalse()) {
 				return F.C0;
 			}
 		}

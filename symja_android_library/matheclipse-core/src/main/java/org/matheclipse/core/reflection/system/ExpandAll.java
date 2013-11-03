@@ -16,14 +16,14 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 
 		IExpr patt = null;
 		if (ast.size() > 2) {
-			patt = ast.get(2);
+			patt = ast.arg2();
 		}
-		IExpr temp = expandAll(ast.get(1), patt);
+		IExpr temp = expandAll(ast.arg1(), patt);
 		if (temp != null) {
 			return temp;
 		}
 
-		return ast.get(1);
+		return ast.arg1();
 	}
 
 	public static IExpr expandAll(final IExpr expr, IExpr patt) {

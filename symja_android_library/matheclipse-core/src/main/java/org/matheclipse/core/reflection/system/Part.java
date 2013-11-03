@@ -15,10 +15,10 @@ public class Part implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
-//			if (ast.get(1) == F.Null) {
+//			if (ast.arg1() == F.Null) {
 //				System.out.println("Part argument is null");
 //			}
-			if (ast.get(1).isAST()) {
+			if (ast.arg1().isAST()) {
 				return getPart(ast.getAST(1), ast, 2);
 			}
 		}

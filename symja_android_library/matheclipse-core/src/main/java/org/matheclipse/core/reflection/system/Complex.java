@@ -25,27 +25,27 @@ public class Complex extends AbstractFunctionEvaluator {
 
 		try {
 			final EvalEngine engine = EvalEngine.get();
-			IExpr arg0 = ast.get(1);
-			arg0 = engine.evaluate(arg0);
-			IExpr arg1 = ast.get(2);
+			IExpr arg1 = ast.arg1();
 			arg1 = engine.evaluate(arg1);
-			if (arg0.isRational() && arg1.isRational()) {
+			IExpr arg2 = ast.arg2();
+			arg2 = engine.evaluate(arg2);
+			if (arg1.isRational() && arg2.isRational()) {
 				IFraction re;
-				if (arg0.isInteger()) {
-					re = F.fraction((IInteger) arg0, F.C1);
+				if (arg1.isInteger()) {
+					re = F.fraction((IInteger) arg1, F.C1);
 				} else {
-					re = (IFraction) arg0;
+					re = (IFraction) arg1;
 				}
 				IFraction im;
-				if (arg1.isInteger()) {
-					im = F.fraction((IInteger) arg1, F.C1);
+				if (arg2.isInteger()) {
+					im = F.fraction((IInteger) arg2, F.C1);
 				} else {
-					im = (IFraction) arg1;
+					im = (IFraction) arg2;
 				}
 				return F.complex(re, im);
 			}
-			if (arg0 instanceof INum && arg1 instanceof INum) {
-				return F.complexNum(((INum) arg0).doubleValue() / ((INum) arg1).doubleValue());
+			if (arg1 instanceof INum && arg2 instanceof INum) {
+				return F.complexNum(((INum) arg1).doubleValue() / ((INum) arg2).doubleValue());
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {

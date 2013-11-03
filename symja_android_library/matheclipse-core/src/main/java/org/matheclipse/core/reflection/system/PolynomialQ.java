@@ -34,11 +34,11 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 		}
 		IAST list;
 		if (ast.get(2).isList()) {
-			list = (IAST) ast.get(2);
+			list = (IAST) ast.arg2();
 		} else {
-			list = List(ast.get(2));
+			list = List(ast.arg2());
 		}
-		return F.bool(polynomialQ(ast.get(1), list));
+		return F.bool(polynomialQ(ast.arg1(), list));
 
 	}
 

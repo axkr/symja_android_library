@@ -15,9 +15,9 @@ public class Taylor extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() == 3 && (ast.get(2).isVector() == 3)) {
+		if (ast.size() == 3 && (ast.arg2().isVector() == 3)) {
 
-			IAST list = (IAST) ast.get(2);
+			IAST list = (IAST) ast.arg2();
 			final int lowerLimit = Validate.checkIntType(list, 2, Integer.MIN_VALUE);
 			if (lowerLimit != 0) {
 				// TODO support other cases than 0
@@ -28,14 +28,14 @@ public class Taylor extends AbstractFunctionEvaluator {
 				return null;
 			}
 			IAST fadd = F.Plus();
-			fadd.add(F.ReplaceAll(ast.get(1), F.Rule(list.get(1), list.get(2))));
-			IExpr temp = ast.get(1);
+			fadd.add(F.ReplaceAll(ast.arg1(), F.Rule(list.arg1(), list.arg2())));
+			IExpr temp = ast.arg1();
 			IExpr factor = null;
 			for (int i = 1; i <= upperLimit; i++) {
-				temp = F.D(temp, list.get(1));
-				factor = F.Times(F.Power(F.Factorial(F.integer(i)), F.CN1), F.Power(F.Plus(list.get(1), F.Times(F.CN1, list.get(2))), F
+				temp = F.D(temp, list.arg1());
+				factor = F.Times(F.Power(F.Factorial(F.integer(i)), F.CN1), F.Power(F.Plus(list.arg1(), F.Times(F.CN1, list.arg2())), F
 						.integer(i)));
-				fadd.add(F.Times(F.ReplaceAll(temp, F.Rule(list.get(1), list.get(2))), factor));
+				fadd.add(F.Times(F.ReplaceAll(temp, F.Rule(list.arg1(), list.arg2())), factor));
 			}
 			return fadd;
 

@@ -44,24 +44,24 @@ public class Fit extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		if (ast.get(2).isSignedNumber() && ast.get(3).isSymbol()) {
+		if (ast.arg2().isSignedNumber() && ast.get(3).isSymbol()) {
 			int rowSize = -1;
-			int degree = ((ISignedNumber) ast.get(2)).toInt();
+			int degree = ((ISignedNumber) ast.arg2()).toInt();
 			PolynomialFitter fitter = new PolynomialFitter(degree, new LevenbergMarquardtOptimizer());
-			int[] im = ast.get(1).isMatrix();
+			int[] im = ast.arg1().isMatrix();
 			if (im != null && im[1] == 2) {
-				IAST matrix = (IAST) ast.get(1);
+				IAST matrix = (IAST) ast.arg1();
 				IAST row;
 				for (int i = 1; i < matrix.size(); i++) {
 					row = matrix.getAST(i);
-					fitter.addObservedPoint(1.0, ((ISignedNumber) row.get(1)).doubleValue(), ((ISignedNumber) row.get(2)).doubleValue());
+					fitter.addObservedPoint(1.0, ((ISignedNumber) row.arg1()).doubleValue(), ((ISignedNumber) row.arg2()).doubleValue());
 				}
 			} else {
-				rowSize = ast.get(1).isVector();
+				rowSize = ast.arg1().isVector();
 				if (rowSize < 0) {
 					return null;
 				}
-				IAST vector = (IAST) ast.get(1);
+				IAST vector = (IAST) ast.arg1();
 				for (int i = 1; i < vector.size(); i++) {
 					fitter.addObservedPoint(1.0, i, ((ISignedNumber) vector.get(i)).doubleValue());
 				}

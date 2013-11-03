@@ -27,10 +27,10 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (ast.get(1).isAST()) {
-			return ast.get(1).replaceRepeated(REPLACE_RULES);
+		if (ast.arg1().isAST()) {
+			return ast.arg1().replaceRepeated(REPLACE_RULES);
 		}
-		return ast.get(1);
+		return ast.arg1();
 	}
 
 	@Override

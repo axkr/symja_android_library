@@ -26,14 +26,14 @@ public class Collect extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		try {
 			if (!ast.get(2).isList()) {
-				IExpr arg1 = F.evalExpandAll(ast.get(1));
-				IExpr arg2 = ast.get(2);
+				IExpr arg1 = F.evalExpandAll(ast.arg1());
+				IExpr arg2 = ast.arg2();
 				return collectSingleVariable(arg1, arg2, F.List(), 1);
 			}
-			IExpr arg1 = F.evalExpandAll(ast.get(1));
+			IExpr arg1 = F.evalExpandAll(ast.arg1());
 			IAST list = (IAST) ast.get(2);
 			if (list.size() > 1) {
-				return collectSingleVariable(arg1, list.get(1), (IAST) ast.get(2), 2);
+				return collectSingleVariable(arg1, list.arg1(), (IAST) ast.arg2(), 2);
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -159,7 +159,7 @@ public class Collect extends AbstractFunctionEvaluator {
 	}
 
 	public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
-		return poly.isPower() && ((IAST) poly).get(2).isNumber() && matcher.apply(((IAST) poly).get(1));
+		return poly.isPower() && ((IAST) poly).get(2).isNumber() && matcher.apply(((IAST) poly).arg1());
 	}
 
 	@Override

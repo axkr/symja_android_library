@@ -29,7 +29,7 @@ public class EvenQ extends AbstractCoreFunctionEvaluator implements
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		return F.bool(apply(ast.get(1)));
+		return F.bool(apply(ast.arg1()));
 	}
 
 	@Override

@@ -103,7 +103,7 @@ public class ConstantArray implements IFunctionEvaluator {
 					if (ast.size() == 5) {
 						resultList = F.ast(ast.get(4));
 					}
-					final IExpr constantExpr = ast.get(1);
+					final IExpr constantExpr = ast.arg1();
 					final TableGenerator generator = new TableGenerator(iterList, resultList, new MultipleConstArrayFunction(
 							constantExpr));
 					return generator.table();

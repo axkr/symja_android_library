@@ -27,8 +27,8 @@ public class Rational extends AbstractFunctionEvaluator {
 
 		try {
 			// try to convert into a fractional number
-			IExpr arg0 = ast.get(1);
-			IExpr arg1 = ast.get(2);
+			IExpr arg0 = ast.arg1();
+			IExpr arg1 = ast.arg2();
 			if (arg0.isInteger() && arg1.isInteger()) {
 				// already evaluated
 			} else if (arg0 instanceof INum && arg1 instanceof INum) {

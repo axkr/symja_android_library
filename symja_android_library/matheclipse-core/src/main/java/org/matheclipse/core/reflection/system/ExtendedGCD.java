@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.math.BigInteger;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -28,10 +29,8 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() < 3) {
-			// less than 2 arguments (0-th arg is the header ExtendedGCD)
-			return null;
-		}
+		Validate.checkRange(ast, 3);
+		 
 		for (int i = 1; i < ast.size(); i++) {
 			if (!ast.get(i).isInteger()) {
 				return null;
@@ -43,10 +42,10 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 		// all arguments are positive integers now
 
 		try {
-			BigInteger gcd = ((IInteger) ast.get(1)).getBigNumerator();
+			BigInteger gcd = ((IInteger) ast.arg1()).getBigNumerator();
 			BigInteger factor = BigInteger.ONE;
 			BigInteger[] subBezouts = new BigInteger[ast.size() - 1];
-			Object[] stepResult = extendedGCD(((IInteger) ast.get(2)).getBigNumerator(), gcd);
+			Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).getBigNumerator(), gcd);
 
 			gcd = (BigInteger) stepResult[0];
 			subBezouts[0] = ((BigInteger[]) stepResult[1])[0];

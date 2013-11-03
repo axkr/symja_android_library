@@ -18,10 +18,10 @@ public class Divergence extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		if ((ast.get(1).isVector() == ast.get(2).isVector())
-				&& (ast.get(1).isVector() >= 0)) {
-			IAST vector = (IAST) ast.get(1);
-			IAST variables = (IAST) ast.get(2);
+		if ((ast.arg1().isVector() == ast.arg2().isVector())
+				&& (ast.arg1().isVector() >= 0)) {
+			IAST vector = (IAST) ast.arg1();
+			IAST variables = (IAST) ast.arg2();
 			IAST divergenceValue = F.Plus();
 			for (int i = 1; i < vector.size(); i++) {
 				divergenceValue.add(F.D(vector.get(i), variables.get(i)));

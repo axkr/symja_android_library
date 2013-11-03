@@ -20,15 +20,15 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		
-		if (ast.get(1).isVector() >= 0) {
+		if (ast.arg1().isVector() >= 0) {
 			IAST variables = null;
-			if (ast.get(2).isSymbol()) {
+			if (ast.arg2().isSymbol()) {
 				variables = F.List();
-			} else if (ast.get(2).isVector() >= 0) {
+			} else if (ast.arg2().isVector() >= 0) {
 				variables = (IAST) ast.get(2);
 			}
 			if (variables != null) {
-				IAST vector = (IAST) ast.get(1);
+				IAST vector = (IAST) ast.arg1();
 				IAST jacobiMatrix = F.List();
 				IAST jacobiRow = null;
 				for (int i = 1; i < vector.size(); i++) {

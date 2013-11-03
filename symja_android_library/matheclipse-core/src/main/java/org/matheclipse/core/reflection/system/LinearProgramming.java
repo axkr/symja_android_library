@@ -40,13 +40,13 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr numericEval(final IAST ast) {
 		try {
-			if (ast.size() >= 4 && ast.get(1).isList() && ast.get(2).isList() && ast.get(3).isList()) {
-				double[] arg1D = Expr2Object.toDoubleVector((IAST) ast.get(1));
+			if (ast.size() >= 4 && ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
+				double[] arg1D = Expr2Object.toDoubleVector((IAST) ast.arg1());
 				LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
 				Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
 
-				IAST arg2 = (IAST) ast.get(2);
-				IAST arg3 = (IAST) ast.get(3);
+				IAST arg2 = (IAST) ast.arg2();
+				IAST arg3 = (IAST) ast.arg3();
 				if (arg2.size() != arg3.size()) {
 					return null;
 				}

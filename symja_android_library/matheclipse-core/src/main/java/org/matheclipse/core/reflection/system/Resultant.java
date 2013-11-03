@@ -22,9 +22,9 @@ public class Resultant extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
-		IExpr arg1 = F.evalExpandAll(ast.get(1));
-		IExpr arg2 = F.evalExpandAll(ast.get(2));
-		IExpr arg3 = ast.get(3);
+		IExpr arg1 = F.evalExpandAll(ast.arg1());
+		IExpr arg2 = F.evalExpandAll(ast.arg2());
+		IExpr arg3 = ast.arg3();
 		if (!arg3.isSymbol()) {
 			// TODO allow multinomials
 			return null;

@@ -20,13 +20,13 @@ public class Rule extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final EvalEngine engine = EvalEngine.get();
-		IExpr leftHandSide = ast.get(1);
+		IExpr leftHandSide = ast.arg1();
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
-		IExpr arg2 = engine.evalNull(ast.get(2));
+		IExpr arg2 = EvalEngine.evalNull(ast.arg2());
 		if (arg2 == null) {
-			if (leftHandSide.equals(ast.get(1))) {
+			if (leftHandSide.equals(ast.arg1())) {
 				return null;
 			}
 			return Rule(leftHandSide, ast.get(2));

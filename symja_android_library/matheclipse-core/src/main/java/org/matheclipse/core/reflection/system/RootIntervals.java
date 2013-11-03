@@ -37,7 +37,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return croots(ast.get(1), false);
+		return croots(ast.arg1(), false);
 	}
 
 	/**

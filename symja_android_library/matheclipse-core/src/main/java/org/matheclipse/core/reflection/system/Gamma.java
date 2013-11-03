@@ -29,7 +29,7 @@ public class Gamma extends AbstractTrigArg1 {
 		Validate.checkRange(ast, 2, 4);
 		
 		if (ast.size() == 2) {
-			return evaluateArg1(ast.get(1));
+			return evaluateArg1(ast.arg1());
 		}
 		return null;
 	}

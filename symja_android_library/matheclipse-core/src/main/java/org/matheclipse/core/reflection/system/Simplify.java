@@ -40,7 +40,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 			}
 			if (ast.isPower() && (ast.get(2).isInteger())) {
 				// check the arguments
-				return ast.get(1).accept(this);
+				return ast.arg1().accept(this);
 			}
 			return false;
 		}
@@ -193,8 +193,8 @@ public class Simplify extends AbstractFunctionEvaluator {
 				IAST basicTimes = F.Times();
 				IAST restTimes = F.Times();
 				INumber number = null;
-				if (ast.get(1).isNumber()) {
-					number = (INumber) ast.get(1);
+				if (ast.arg1().isNumber()) {
+					number = (INumber) ast.arg1();
 				}
 				IExpr reduced;
 				for (int i = 1; i < ast.size(); i++) {
@@ -207,9 +207,9 @@ public class Simplify extends AbstractFunctionEvaluator {
 								if (reduced != null) {
 									return reduced;
 								}
-							} else if (temp.isPower() && ((IAST) temp).get(1).isPlus() && ((IAST) temp).get(2).isMinusOne()) {
+							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus() && ((IAST) temp).get(2).isMinusOne()) {
 								// <number> * Power[Plus[...], -1 ]
-								reduced = tryToReduceNumericFactor(ast, ((IAST) temp).get(1), number.inverse(), i);
+								reduced = tryToReduceNumericFactor(ast, ((IAST) temp).arg1(), number.inverse(), i);
 								if (reduced != null) {
 									return F.Power(reduced, F.CN1);
 								}
@@ -259,7 +259,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		IExpr expr = ast.get(1);
+		IExpr expr = ast.arg1();
 		int minCounter = LeafCount.leafCount(expr);
 
 		IExpr result = expr;
