@@ -31,9 +31,9 @@ public class For extends AbstractCoreFunctionEvaluator {
 		int iterationCounter = 1;
 
 		// For(start, test, incr, body)
-		engine.evaluate(ast.get(1)); // start
-		IExpr test = ast.get(2);
-		IExpr incr = ast.get(3);
+		engine.evaluate(ast.arg1()); // start
+		IExpr test = ast.arg2();
+		IExpr incr = ast.arg3();
 		IExpr body = F.Null;
 		if (ast.size() == 5) {
 			body = ast.get(4);

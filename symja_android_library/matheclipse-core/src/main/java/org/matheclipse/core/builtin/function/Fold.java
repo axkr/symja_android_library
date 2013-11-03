@@ -22,10 +22,12 @@ public class Fold extends AbstractCoreFunctionEvaluator {
 	public static IExpr evaluateNestList(final IAST ast) {
 
 		try {
-			IExpr temp = F.eval(ast.get(3));
+			IExpr temp = F.eval(ast.arg3());
 			if (temp.isAST()) {
 				final IAST list = (IAST) temp;
-				return list.args().foldLeft(new BinaryMap(F.ast(ast.get(1))), ast.get(2));
+				IExpr arg1 = F.eval(ast.arg1());
+				IExpr arg2 = F.eval(ast.arg2());
+				return list.args().foldLeft(new BinaryMap(F.ast(arg1)), arg2);
 			}
 		} catch (final ArithmeticException e) {
 

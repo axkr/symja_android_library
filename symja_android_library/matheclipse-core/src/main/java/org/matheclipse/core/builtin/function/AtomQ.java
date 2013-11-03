@@ -28,7 +28,7 @@ public class AtomQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		return F.bool(arg1.isAtom());
 	}
 

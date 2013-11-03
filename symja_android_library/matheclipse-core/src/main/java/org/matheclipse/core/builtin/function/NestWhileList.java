@@ -23,7 +23,7 @@ public class NestWhileList extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		return nestList(ast.get(2), F.eval(ast.get(3)), Functors.append(F.ast(ast.get(1))), List());
+		return nestList(ast.arg2(), F.eval(ast.arg3()), Functors.append(F.ast(ast.arg1())), List());
 	}
 
 	public static IAST nestList(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn, final IAST resultList) {

@@ -25,12 +25,12 @@ public class Unique extends AbstractCoreFunctionEvaluator {
 		final EvalEngine engine = EvalEngine.get();
 		final int moduleCounter = engine.incModuleCounter();
 		if (ast.size() == 2) {
-			if (ast.get(1).isSymbol()) {
-				final String varAppend = ast.get(1).toString() + "$" + moduleCounter;
+			if (ast.arg1().isSymbol()) {
+				final String varAppend = ast.arg1().toString() + "$" + moduleCounter;
 				return F.$s(varAppend);
-			} else if (ast.get(1) instanceof IStringX) {
+			} else if (ast.arg1() instanceof IStringX) {
 				// TODO start counter by 1....
-				final String varAppend = ast.get(1).toString() + moduleCounter;
+				final String varAppend = ast.arg1().toString() + moduleCounter;
 				return F.$s(varAppend);
 			}
 		}

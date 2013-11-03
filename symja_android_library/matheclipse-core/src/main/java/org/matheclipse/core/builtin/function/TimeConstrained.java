@@ -19,7 +19,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 
 		return arg1;
 	}

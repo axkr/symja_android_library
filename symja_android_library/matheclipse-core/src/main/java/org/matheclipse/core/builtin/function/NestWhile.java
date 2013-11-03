@@ -19,7 +19,7 @@ public class NestWhile extends NestWhileList {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		return nestWhile(ast.get(2), F.eval(ast.get(3)), Functors.append(F.ast(ast.get(1))));
+		return nestWhile(ast.arg2(), F.eval(ast.arg3()), Functors.append(F.ast(ast.arg1())));
 	}
 
 	public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn) {

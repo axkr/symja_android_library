@@ -18,11 +18,11 @@ public class Last extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		if (arg1.isAST()) {
 			final IAST list = (IAST) arg1;
 			if (list.size() > 1) {
-				return list.get(list.size() - 1);
+				return list.last();
 			}
 		}
 		return null;

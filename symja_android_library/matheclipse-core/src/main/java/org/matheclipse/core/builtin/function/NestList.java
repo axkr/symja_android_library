@@ -30,7 +30,7 @@ public class NestList extends AbstractCoreFunctionEvaluator {
 		IExpr arg3 = F.eval(ast.get(3));
 		if (arg3.isInteger()) {
 			final int n = Validate.checkIntType(arg3);
-			nestList(ast.get(2), n, Functors.append(F.ast(ast.get(1))), resultList);
+			nestList(ast.get(2), n, Functors.append(F.ast(ast.arg1())), resultList);
 			return resultList;
 		}
 		return null;

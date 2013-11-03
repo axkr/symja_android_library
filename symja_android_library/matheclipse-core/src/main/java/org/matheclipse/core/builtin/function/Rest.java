@@ -18,7 +18,8 @@ public class Rest extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		IExpr arg1 = F.eval(ast.get(1));
+		
+		IExpr arg1 = F.eval(ast.arg1());
 		final IAST sublist = Validate.checkASTType(arg1).clone();
 
 		if (sublist.size() > 1) {

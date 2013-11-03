@@ -23,7 +23,7 @@ public class Reap extends AbstractCoreFunctionEvaluator {
 			IAST result = F.List();
 			IAST reapList = F.List();
 			engine.setReapList(reapList);
-			IExpr expr = engine.evaluate(ast.get(1));
+			IExpr expr = engine.evaluate(ast.arg1());
 			result.add(expr);
 			if (reapList.size() == 1) {
 				result.add(F.List());

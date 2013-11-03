@@ -20,9 +20,9 @@ public class Block extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		if (ast.get(1).isList()) {
+		if (ast.arg1().isList()) {
 			final EvalEngine engine = EvalEngine.get();
-			final IAST lst = (IAST) ast.get(1);
+			final IAST lst = (IAST) ast.arg1();
 			final List<IExpr> variables = new ArrayList<IExpr>();
 			IExpr result;
 
@@ -36,9 +36,9 @@ public class Block extends AbstractCoreFunctionEvaluator {
 						if (lst.get(i).isAST(F.Set, 3)) {
 							// lhs = rhs
 							final IAST setFun = (IAST) lst.get(i);
-							if (setFun.get(1).isSymbol()) {
-								variables.add(setFun.get(1));
-								((Symbol) setFun.get(1)).pushLocalVariable(engine.evaluate(setFun.get(2)));
+							if (setFun.arg1().isSymbol()) {
+								variables.add(setFun.arg1());
+								((Symbol) setFun.arg1()).pushLocalVariable(engine.evaluate(setFun.get(2)));
 							}
 						}
 					}

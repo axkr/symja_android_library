@@ -19,7 +19,7 @@ public class Switch extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 4);
 		final EvalEngine engine = EvalEngine.get();
-		IExpr arg1 = engine.evaluate(ast.get(1));
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		PatternMatcher matcher;
 		for (int i = 2; i < ast.size(); i += 2) {
 			matcher = new PatternMatcher(ast.get(i));

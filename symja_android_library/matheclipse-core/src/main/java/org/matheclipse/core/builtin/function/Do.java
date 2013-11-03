@@ -77,7 +77,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 				iterList.add(new Iterator((IAST) ast.get(i), engine));
 			}
 			final DoIterator generator = new DoIterator(iterList);
-			return generator.doIt(ast.get(1));
+			return generator.doIt(ast.arg1());
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
 		}

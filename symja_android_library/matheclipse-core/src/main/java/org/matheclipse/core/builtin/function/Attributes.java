@@ -1,8 +1,5 @@
 package org.matheclipse.core.builtin.function;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -26,9 +23,9 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		if (ast.get(1).isSymbol()) {
+		if (ast.arg1().isSymbol()) {
 			IAST result = F.List();
-			final ISymbol sym = ((ISymbol) ast.get(1));
+			final ISymbol sym = ((ISymbol) ast.arg1());
 			int attributea = sym.getAttributes();
 
 			if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {

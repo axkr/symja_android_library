@@ -25,8 +25,8 @@ public class MemberQ extends AbstractCoreFunctionEvaluator {
 				heads = true;
 			}
 		}
-		final IExpr arg1 = F.eval(ast.get(1));
-		final IExpr arg2 = F.eval(ast.get(2));
+		final IExpr arg1 = F.eval(ast.arg1());
+		final IExpr arg2 = F.eval(ast.arg2());
 		if (arg1.isAST()) {
 			return F.bool(arg1.isMember(arg2, heads));
 		}

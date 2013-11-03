@@ -25,8 +25,8 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 			final int iterationLimit = engine.getIterationLimit();
 			int iterationCounter = 1;
 
-			IExpr f = ast.get(1);
-			IExpr current = ast.get(2);
+			IExpr f = ast.arg1();
+			IExpr current = ast.arg2();
 			int iterations = Integer.MAX_VALUE;
 			if (ast.size() == 4) {
 				iterations = Validate.checkIntType(ast, 3);

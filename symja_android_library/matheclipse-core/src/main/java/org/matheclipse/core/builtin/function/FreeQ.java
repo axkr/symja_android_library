@@ -13,8 +13,8 @@ public class FreeQ extends AbstractCoreFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		IExpr arg1 = F.eval(ast.get(1));
-		IExpr arg2 = F.eval(ast.get(2));
+		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg2 = F.eval(ast.arg2());
 		return F.bool(arg1.isFree(arg2, true));
 	}
 

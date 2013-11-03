@@ -15,7 +15,7 @@ public class FullForm extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return F.stringx(new StringBuffer(F.eval(ast.get(1)).fullFormString()));
+		return F.stringx(new StringBuffer(F.eval(ast.arg1()).fullFormString()));
 	}
 
 	public IExpr numericEval(final IAST functionList) {

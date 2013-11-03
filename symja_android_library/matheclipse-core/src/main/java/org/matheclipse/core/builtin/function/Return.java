@@ -19,7 +19,7 @@ public class Return extends AbstractCoreFunctionEvaluator {
 			throw new ReturnException();
 		}
 		if (ast.size() == 2) {
-			throw new ReturnException(F.eval(ast.get(1)));
+			throw new ReturnException(F.eval(ast.arg1()));
 		}
 		Validate.checkRange(ast, 1, 2);
 

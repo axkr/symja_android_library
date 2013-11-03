@@ -24,7 +24,7 @@ public class Quiet extends AbstractCoreFunctionEvaluator {
 		boolean quietMode = engine.isQuietMode();
 		try {
 			engine.setQuietMode(true);
-			return engine.evaluate(ast.get(1));
+			return engine.evaluate(ast.arg1());
 		} finally {
 			engine.setQuietMode(quietMode);
 		}

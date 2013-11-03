@@ -28,15 +28,15 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		if (arg1.isAST()) {
-			IExpr arg2 = F.eval(ast.get(2));
+			IExpr arg2 = F.eval(ast.arg2());
 			if (ast.size() == 3) {
 				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
 				return position((IAST) arg1, arg2, level);
 			}
 			if (ast.size() == 4) {
-				IExpr arg3 = F.eval(ast.get(3));
+				IExpr arg3 = F.eval(ast.arg3());
 				final LevelSpec level = new LevelSpecification(arg3, false);
 				return position((IAST) arg1, arg2, level);
 			}

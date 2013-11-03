@@ -17,7 +17,7 @@ public class ClearAll extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		ISymbol symbol = (ISymbol) ast.get(1);
+		ISymbol symbol = Validate.checkSymbolType(ast, 1);
 		symbol.clearAll(EvalEngine.get());
 		return F.Null;
 	} 

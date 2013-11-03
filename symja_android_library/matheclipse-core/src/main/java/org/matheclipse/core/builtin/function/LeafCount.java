@@ -57,7 +57,7 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return F.integer(leafCount(F.eval(ast.get(1))));
+		return F.integer(leafCount(F.eval(ast.arg1())));
 	}
 
 	public static int leafCount(IExpr expr) {

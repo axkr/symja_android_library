@@ -18,10 +18,10 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		IAST arg1AST = Validate.checkASTType(arg1);
-		IExpr arg2 = F.eval(ast.get(2));
-		IExpr arg3 = F.eval(ast.get(3));
+		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg3 = F.eval(ast.arg3());
 		if (arg3.isInteger()) {
 			try {
 				int i = ((IInteger) arg3).toInt();

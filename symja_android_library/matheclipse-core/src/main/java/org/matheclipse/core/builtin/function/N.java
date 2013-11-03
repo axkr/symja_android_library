@@ -27,7 +27,7 @@ public class N extends AbstractCoreFunctionEvaluator {
 		final boolean numericMode = engine.isNumericMode();
 		try {
 			engine.setNumericMode(true);
-			return engine.evalWithoutNumericReset(ast.get(1));
+			return engine.evalWithoutNumericReset(ast.arg1());
 		} finally {
 			engine.setNumericMode(numericMode);
 		}

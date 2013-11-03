@@ -18,7 +18,7 @@ public class Blank extends AbstractCoreFunctionEvaluator {
 			return F.$p((ISymbol) null);
 		}
 		if (ast.size() == 2) {
-			return F.$p((ISymbol) null, F.eval(ast.get(1)));
+			return F.$p((ISymbol) null, F.eval(ast.arg1()));
 		}
 		return null;
 	}

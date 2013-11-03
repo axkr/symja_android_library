@@ -25,8 +25,8 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		if (ast.get(1).isList()) {
-			IAST lst = (IAST) ast.get(1);
+		if (ast.arg1().isList()) {
+			IAST lst = (IAST) ast.arg1();
 			IExpr arg2 = ast.get(2);
 			final EvalEngine engine = EvalEngine.get();
 			return evalModule(lst, arg2, engine);
@@ -48,7 +48,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 			IAST intializerList = (IAST) arg1;
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
-			// final IAST lst = (IAST) ast.get(1);
+			// final IAST lst = (IAST) ast.arg1();
 			final java.util.Map<ISymbol, ISymbol> variables = new HashMap<ISymbol, ISymbol>();
 
 			try {
@@ -77,7 +77,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 		final int moduleCounter = engine.incModuleCounter();
 		final String varAppend = "$" + moduleCounter;
-		// final IAST lst = (IAST) ast.get(1);
+		// final IAST lst = (IAST) ast.arg1();
 		final java.util.Map<ISymbol, ISymbol> variables = new HashMap<ISymbol, ISymbol>();
 
 		try {
@@ -111,11 +111,11 @@ public class Module extends AbstractCoreFunctionEvaluator {
 			} else {
 				if (variablesList.get(i).isAST(F.Set, 3)) {
 					final IAST setFun = (IAST) variablesList.get(i);
-					if (setFun.get(1).isSymbol()) {
-						oldSymbol = (ISymbol) setFun.get(1);
+					if (setFun.arg1().isSymbol()) {
+						oldSymbol = (ISymbol) setFun.arg1();
 						newSymbol = F.$s(oldSymbol.toString() + varAppend);
 						variables.put(oldSymbol, newSymbol);
-						IExpr rightHandSide = setFun.get(2);
+						IExpr rightHandSide = setFun.arg2();
 						try {
 							rightHandSide = engine.evaluate(rightHandSide);
 						} catch (MathException me) {

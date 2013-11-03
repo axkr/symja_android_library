@@ -25,10 +25,10 @@ public class While extends AbstractCoreFunctionEvaluator {
 		final int iterationLimit = engine.getIterationLimit();
 		int iterationCounter = 1;
 		// While(test, body)
-		IExpr test = ast.get(1);
+		IExpr test = ast.arg1();
 		IExpr body = F.Null;
 		if (ast.size() == 3) {
-			body = ast.get(2);
+			body = ast.arg2();
 		}
 		
 		while (engine.evaluate(test).isTrue()) {

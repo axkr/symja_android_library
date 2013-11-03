@@ -18,18 +18,18 @@ public class If extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 3, 5);
 		final EvalEngine engine = EvalEngine.get();
 
-		final IExpr temp = engine.evaluate(ast.get(1));
+		final IExpr temp = engine.evaluate(ast.arg1());
 
 		if (temp.equals(F.False)) {
 			if (ast.size() >= 4) {
-				return ast.get(3);
+				return ast.arg3();
 			}
 
 			return F.Null;
 		}
 
 		if (temp.equals(F.True)) {
-			return ast.get(2);
+			return ast.arg2();
 		}
 
 		if (ast.size() == 5) {

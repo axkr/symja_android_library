@@ -16,10 +16,10 @@ public class Riffle extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		IExpr arg1 = F.eval(ast.get(1));
-		IExpr arg2 = F.eval(ast.get(2));
+		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg2 = F.eval(ast.arg2());
 		if (arg1.isAST()) {
-			IAST list = (IAST) ast.get(1);
+			IAST list = (IAST) arg1;
 			if (arg2.isAST()) {
 				return riffleAST(list, (IAST) arg2);
 			} else {

@@ -21,7 +21,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2);
 
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		IAST resultList = F.List();
 		if (ast.size() == 2) {
 			if (arg1.isList()) {
@@ -31,7 +31,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 			}
 			return arg1;
 		} else if (ast.size() == 3) {
-			IExpr arg2 = F.eval(ast.get(2));
+			IExpr arg2 = F.eval(ast.arg2());
 			if (arg1.isList()) {
 				int level = Validate.checkIntType(arg2);
 				if (level > 0) {

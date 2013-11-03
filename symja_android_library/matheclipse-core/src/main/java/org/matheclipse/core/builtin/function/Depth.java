@@ -18,11 +18,11 @@ public class Depth extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		final IExpr arg1 = F.eval(ast.get(1));
+		final IExpr arg1 = F.eval(ast.arg1());
 		if (!(arg1.isAST())) {
 			return F.C1;
 		}
-		return F.integer(depth((IAST) ast.get(1), 1));
+		return F.integer(depth((IAST) ast.arg1(), 1));
 	}
 
 	/**

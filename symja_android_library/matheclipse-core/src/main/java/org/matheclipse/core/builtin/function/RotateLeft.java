@@ -16,23 +16,23 @@ public class RotateLeft extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		IExpr arg1 = F.eval(ast.get(1));
+		IExpr arg1 = F.eval(ast.arg1());
 		try {
 			if (arg1.isAST()) {
 				final IAST result = F.ast(arg1.head());
 				if (ast.size() == 2) {
 					ASTRange range = ((IAST) arg1).args();
 					range.rotateLeft(result, 1);
-					// Rotating.rotateLeft((IAST) list.get(1), result, 2, 1);
+					// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
 					return result;
 				} else {
-					IExpr arg2 = F.eval(ast.get(2));
+					IExpr arg2 = F.eval(ast.arg2());
 					if (arg2.isInteger()) {
 						int n = Validate.checkIntType(ast, 2, 1);
 
 						ASTRange range = ((IAST) arg1).args();
 						range.rotateLeft(result, n);
-						// Rotating.rotateLeft((IAST) list.get(1), result, n+1, 1);
+						// Rotating.rotateLeft((IAST) list.arg1(), result, n+1, 1);
 						return result;
 					}
 				}
