@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -15,8 +16,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModInteger;
-import edu.jas.arith.ModIntegerRing;
+import edu.jas.arith.ModLong;
+import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
 
 /**
@@ -32,13 +33,14 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
+		
 		ExprVariables eVar = new ExprVariables(ast.get(1));
 		if (!eVar.isSize(1)) {
 			// gcd only possible for univariate polynomials
 			return null;
 		}
 		IExpr expr = F.evalExpandAll(ast.get(1));
-		if (ast.size() > 3) {
+		if (ast.size() > 3 && ast.last().isRuleAST()) {
 			return gcdWithOption(ast, expr, eVar);
 		}
 		try {
@@ -78,10 +80,12 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		try {
 			// found "Modulus" option => use ModIntegerRing
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
-			JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
-			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
-			GenPolynomial<ModInteger> temp;
+			// ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
+			// JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
+			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+			JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
+			GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+			GenPolynomial<ModLong> temp;
 			for (int i = 2; i < ast.size() - 1; i++) {
 				eVar = new ExprVariables(ast.get(i));
 				if (!eVar.isSize(1)) {
@@ -92,7 +96,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 				temp = jas.expr2JAS(expr);
 				poly = poly.gcd(temp);
 			}
-			return jas.modIntegerPoly2Expr(poly);
+			return Factor.factorModulus(jas, modIntegerRing, poly, false);
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();

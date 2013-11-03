@@ -22,10 +22,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicates;
-
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.integrate.Integral;
 import edu.jas.integrate.LogIntegral;
@@ -112,23 +109,6 @@ public class JASConvert<C extends RingElem<C>> {
 	public GenPolynomial<C> numericExpr2JAS(final IExpr exprPoly) throws JASConversionException {
 		try {
 			return numericExpr2Poly(exprPoly);
-		} catch (Exception ae) {
-			// ae.printStackTrace();
-			throw new JASConversionException();
-		}
-	}
-
-	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only symbolic numbers
-	 * are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into the polynomial structure)
-	 * 
-	 * @param exprPoly
-	 * @return
-	 * @throws JASConversionException
-	 */
-	public GenPolynomial<C> expr2IExprJAS(final IExpr exprPoly) throws JASConversionException {
-		try {
-			return expr2IExprPoly(exprPoly);
 		} catch (Exception ae) {
 			// ae.printStackTrace();
 			throw new JASConversionException();
@@ -239,73 +219,6 @@ public class JASConvert<C extends RingElem<C>> {
 		} else {
 			return new GenPolynomial(fPolyFactory, r);
 		}
-	}
-
-	private GenPolynomial<C> expr2IExprPoly(final IExpr exprPoly) throws ArithmeticException, ClassCastException {
-		if (exprPoly instanceof IAST) {
-			final IAST ast = (IAST) exprPoly;
-			GenPolynomial<C> result = fPolyFactory.getZERO();
-			GenPolynomial<C> p = fPolyFactory.getZERO();
-			if (ast.isPlus()) {
-				IExpr expr = ast.get(1);
-				result = expr2IExprPoly(expr);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					p = expr2IExprPoly(expr);
-					result = result.sum(p);
-				}
-				return result;
-			} else if (ast.isTimes()) {
-				IExpr expr = ast.get(1);
-				result = expr2IExprPoly(expr);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					p = expr2IExprPoly(expr);
-					result = result.multiply(p);
-				}
-				return result;
-			} else if (ast.isPower()) {
-				final IExpr expr = ast.get(1);
-				for (int i = 0; i < fVariables.size(); i++) {
-					if (fVariables.get(i).equals(expr)) {
-						int exponent = -1;
-						try {
-							exponent = Validate.checkPowerExponent(ast);
-						} catch (WrongArgumentType e) {
-							//
-						}
-						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.get(2).toString());
-						}
-						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
-						return fPolyFactory.getONE().multiply(e);
-					}
-				}
-			}
-		} else if (exprPoly instanceof ISymbol) {
-			for (int i = 0; i < fVariables.size(); i++) {
-				if (fVariables.get(i).equals(exprPoly)) {
-					ExpVector e = ExpVector.create(fVariables.size(), i, 1L);
-					return fPolyFactory.getONE().multiply(e);
-				}
-			}
-			return new GenPolynomial(fPolyFactory, exprPoly);
-		} else if (exprPoly instanceof IInteger) {
-			return fPolyFactory.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
-		} else if (exprPoly instanceof IFraction) {
-			return fraction2Poly((IFraction) exprPoly);
-		}
-		if (exprPoly.isFree(Predicates.in(fVariables), true)) {
-			return new GenPolynomial(fPolyFactory, exprPoly);
-		} else {
-			for (int i = 0; i < fVariables.size(); i++) {
-				if (fVariables.get(i).equals(exprPoly)) {
-					ExpVector e = ExpVector.create(fVariables.size(), i, 1L);
-					return fPolyFactory.getONE().multiply(e);
-				}
-			}
-		}
-		throw new ClassCastException(exprPoly.toString());
 	}
 
 	/**
@@ -511,27 +424,27 @@ public class JASConvert<C extends RingElem<C>> {
 		return plus;
 	}
 
-	public IAST modIntegerPoly2Expr(final GenPolynomial<ModInteger> poly) throws ArithmeticException, ClassCastException {
-		if (poly.length() == 0) {
-			return F.Plus(F.C0);
-		}
-		IAST result = F.Plus();
-		for (Monomial<ModInteger> monomial : poly) {
-			ModInteger coeff = monomial.coefficient();
-			ExpVector exp = monomial.exponent();
-			IInteger coeffValue = F.integer(coeff.getVal());
-			IAST monomTimes = F.Times(coeffValue);
-			long lExp;
-			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0) {
-					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
-				}
-			}
-			result.add(monomTimes);
-		}
-		return result;
-	}
+	// public IAST modIntegerPoly2Expr(final GenPolynomial<ModInteger> poly) throws ArithmeticException, ClassCastException {
+	// if (poly.length() == 0) {
+	// return F.Plus(F.C0);
+	// }
+	// IAST result = F.Plus();
+	// for (Monomial<ModInteger> monomial : poly) {
+	// ModInteger coeff = monomial.coefficient();
+	// ExpVector exp = monomial.exponent();
+	// IInteger coeffValue = F.integer(coeff.getVal());
+	// IAST monomTimes = F.Times(coeffValue);
+	// long lExp;
+	// for (int i = 0; i < exp.length(); i++) {
+	// lExp = exp.getVal(i);
+	// if (lExp != 0) {
+	// monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
+	// }
+	// }
+	// result.add(monomTimes);
+	// }
+	// return result;
+	// }
 
 	/**
 	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>

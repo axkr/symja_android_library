@@ -195,7 +195,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 			IExpr disc;
 			degree *= (degree - 1);
 			degree /= 2;
-			IExpr factor = F.Power(result.get(result.size() - 1), F.CN1);
+			IExpr factor = F.Power(result.last(), F.CN1);
 			if (degree % 2L != 0L) {
 				factor = F.Times(F.CN1, factor);
 			}

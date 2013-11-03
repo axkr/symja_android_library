@@ -39,7 +39,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 		}
 
 		VisitorLevelSpecification level = null;
-		Function<IExpr, IExpr> af = Functors.apply(ast.get(1));
+		Function<IExpr, IExpr> af = Functors.apply(ast.arg1());
 		if (lastIndex == 3) {
 			level = new VisitorLevelSpecification(af, ast.get(lastIndex), heads);
 		} else {
@@ -48,17 +48,17 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 
 		try {
 
-			if (!ast.get(2).isAtom()) {
-				final IExpr result = ast.get(2).accept(level);
+			if (!ast.arg2().isAtom()) {
+				final IExpr result = ast.arg2().accept(level);
 
-				return result == null ? ast.get(2) : result;
+				return result == null ? ast.arg2() : result;
 			} else if (ast.size() == 3) {
 				if (ast.get(1).isFunction()) {
 					IAST fun = F.ast(ast.get(1));
-					fun.add(ast.get(2));
+					fun.add(ast.arg2());
 					return fun;
 				}
-				return ast.get(2);
+				return ast.arg2();
 			}
 		} catch (final ArithmeticException e) {
 

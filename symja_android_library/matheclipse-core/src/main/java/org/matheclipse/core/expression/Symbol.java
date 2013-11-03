@@ -403,10 +403,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 			return fSymbolName.compareTo(((Symbol) obj).fSymbolName);
 		}
 		if (obj instanceof AST) {
-			final AST ast = (AST) obj;
-			final IExpr header = ast.head();
+			final AST ast = (AST) obj; 
 			if (ast.size() > 1) {
-				if (header == F.Power && ast.size() == 3) {
+				if (ast.isPower()) {
 					if (ast.get(1) instanceof ISymbol) {
 						final int cp = fSymbolName.compareTo(((Symbol) ast.get(1)).fSymbolName);
 						if (cp != 0) {
@@ -417,9 +416,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 						}
 						return F.C1.compareTo(ast.get(2));
 					}
-				} else if (header == F.Times) {
+				} else if (ast.isTimes()) {
 					// compare with the last ast element:
-					final IExpr lastTimes = ast.get(ast.size() - 1);
+					final IExpr lastTimes = ast.last();
 					if (lastTimes instanceof AST) {
 						final IExpr lastTimesHeader = ((IAST) lastTimes).head();
 						if ((lastTimesHeader == F.Power) && (((IAST) lastTimes).size() == 3)) {

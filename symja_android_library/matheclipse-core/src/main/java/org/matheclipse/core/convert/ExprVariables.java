@@ -34,6 +34,13 @@ public class ExprVariables {
 	private final Set<IExpr> set = new TreeSet<IExpr>();
 
 	/**
+	 * Create an empty instance
+	 */
+	public ExprVariables() {
+		super();
+	}
+	
+	/**
 	 * Determine the variable symbols from a Symja expression.
 	 */
 	public ExprVariables(final IExpr expression) {

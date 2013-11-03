@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -65,7 +66,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 */
 	public static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
 			throws JASConversionException {
-		JASConvert<IExpr> jas = new JASConvert<IExpr>(variable, new ExprRingFactory());
+		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		long degree = polyExpr.degree();
 		if (degree >= Short.MAX_VALUE) {
@@ -94,7 +95,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 */
 	public static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
 			List<IExpr> resultListDiff) throws JASConversionException {
-		JASConvert<IExpr> jas = new JASConvert<IExpr>(variable, new ExprRingFactory());
+		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		// derivative of the given polynomial
 		GenPolynomial<IExpr> polyExprDiff = PolyUtil.<IExpr> baseDeriviative(polyExpr);

@@ -114,13 +114,13 @@ public abstract class ExprImpl implements IExpr {
 		return F.Power(this, that);
 	}
 
-	@Override
-	public IExpr div(final IExpr that) {
-		if (that.isNumber()) {
-			return F.eval(F.Times(this, that.inverse()));
-		}
-		return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	}
+	// @Override
+	// public IExpr div(final IExpr that) {
+	// if (that.isNumber()) {
+	// return F.eval(F.Times(this, that.inverse()));
+	// }
+	// return F.eval(F.Times(this, F.Power(that, F.CN1)));
+	// }
 
 	@Override
 	public IExpr mod(final IExpr that) {
@@ -214,7 +214,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isNegative() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegativeInfinity() {
@@ -273,7 +273,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isValue() {
 		return false;
 	}
-	
+
 	@Override
 	public final int isVector() {
 		// default: no vector
@@ -475,7 +475,7 @@ public abstract class ExprImpl implements IExpr {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return isMember(matcher, heads);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isMember(Predicate<IExpr> predicate, boolean heads) {
@@ -515,7 +515,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isPositive() {
 		return false;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -832,7 +832,11 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public IExpr divide(IExpr that) {
-		return this.div(that);
+		// return this.div(that);
+		if (that.isNumber()) {
+			return F.eval(F.Times(this, that.inverse()));
+		}
+		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
 
 	@Override

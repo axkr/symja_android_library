@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
@@ -18,7 +19,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
-import edu.jas.arith.ModIntegerRing;
+import edu.jas.arith.ModLong;
+import edu.jas.arith.ModLongRing;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
@@ -204,24 +206,11 @@ public class Factor extends AbstractFunctionEvaluator {
 			throws JASConversionException {
 		try {
 			// found "Modulus" option => use ModIntegerRing
-			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
-			JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
-			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
+			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+			JASModInteger jas = new JASModInteger(varList, modIntegerRing);
+			GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 
-			FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
-			SortedMap<GenPolynomial<ModInteger>, Long> map;
-			if (factorSquareFree) {
-				map = factorAbstract.squarefreeFactors(poly);
-			} else {
-				map = factorAbstract.factors(poly);
-			}
-			IAST result = F.Times();
-			for (SortedMap.Entry<GenPolynomial<ModInteger>, Long> entry : map.entrySet()) {
-				GenPolynomial<ModInteger> singleFactor = entry.getKey();
-				Long val = entry.getValue();
-				result.add(F.Power(jas.modIntegerPoly2Expr(singleFactor), F.integer(val)));
-			}
-			return result;
+			return factorModulus(jas, modIntegerRing, poly, factorSquareFree);
 		} catch (ArithmeticException ae) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {
@@ -229,6 +218,24 @@ public class Factor extends AbstractFunctionEvaluator {
 			}
 		}
 		return null;
+	}
+
+	public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing, GenPolynomial<ModLong> poly,
+			boolean factorSquareFree) {
+		FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
+		SortedMap<GenPolynomial<ModLong>, Long> map;
+		if (factorSquareFree) {
+			map = factorAbstract.squarefreeFactors(poly);
+		} else {
+			map = factorAbstract.factors(poly);
+		}
+		IAST result = F.Times();
+		for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
+			GenPolynomial<ModLong> singleFactor = entry.getKey();
+			Long val = entry.getValue();
+			result.add(F.Power(jas.modLongPoly2Expr(singleFactor), F.integer(val)));
+		}
+		return result;
 	}
 
 }

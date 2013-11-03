@@ -2,10 +2,9 @@ package org.matheclipse.core.integrate.rubi;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -60,7 +59,7 @@ public class IntPolynomialQ extends AbstractFunctionEvaluator implements BiPredi
 		try {
 			IExpr expr = F.evalExpandAll(polnomialExpr);
 			ASTRange r = new ASTRange(variables, 1);
-			JASConvert<IExpr> jas = new JASConvert<IExpr>(r.toList(), new ExprRingFactory());
+			JASIExpr jas = new JASIExpr(r.toList(), new ExprRingFactory());
 			return jas.expr2IExprJAS(expr) != null;
 		} catch (JASConversionException e) {
 			// exception will be thrown if the expression is not a JAS

@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -16,14 +16,14 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModInteger;
-import edu.jas.arith.ModIntegerRing;
+import edu.jas.arith.ModLong;
+import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
 
 /**
  * Least common multiple of two polynomials. See also: <a href=
- * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials"
- * >Wikipedia:Greatest common divisor of two polynomials</a>
+ * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common divisor of two
+ * polynomials</a>
  */
 public class PolynomialLCM extends AbstractFunctionEvaluator {
 
@@ -46,12 +46,14 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			if (option != null && option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
-					ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
-					JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
-					GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
-					GenPolynomial<ModInteger> temp;
-					GenPolynomial<ModInteger> gcd;
-					GenPolynomial<ModInteger> lcm;
+					// ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
+					// JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
+					ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+					JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
+					GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+					GenPolynomial<ModLong> temp;
+					GenPolynomial<ModLong> gcd;
+					GenPolynomial<ModLong> lcm;
 					for (int i = 2; i < ast.size() - 1; i++) {
 						eVar = new ExprVariables(ast.get(i));
 						if (!eVar.isSize(1)) {
@@ -64,7 +66,9 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 						lcm = poly.multiply(temp).divide(gcd);
 						poly = lcm;
 					}
-					return jas.modIntegerPoly2Expr(poly);
+
+					return Factor.factorModulus(jas, modIntegerRing, poly, false);
+//					return jas.modLongPoly2Expr(poly);
 				} catch (JASConversionException e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();

@@ -27,9 +27,9 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 	@Override
 	public ExprFieldElement divide(ExprFieldElement a) throws ArithmeticException {
 		if (val.isAtom() && a.val.isAtom()) {
-			return new ExprFieldElement(val.div(a.val));
+			return new ExprFieldElement(val.divide(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.div(a.val)));
+		return new ExprFieldElement(F.evalExpandAll(val.divide(a.val)));
 	}
 
 	@Override

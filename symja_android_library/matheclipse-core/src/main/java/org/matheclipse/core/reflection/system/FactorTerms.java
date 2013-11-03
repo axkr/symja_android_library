@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,12 +25,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		ExprVariables eVar = new ExprVariables(ast.get(1));
-		if (!eVar.isSize(1)) {
-			// only possible for univariate polynomials
-			return null;
-		}
-		IAST variableList = eVar.getVarList();
+		IAST variableList = F.List();
 		if (ast.size() == 3) {
 			if (ast.get(2).isSymbol()) {
 				ISymbol variable = (ISymbol) ast.get(2);
@@ -39,15 +35,26 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			} else {
 				return null;
 			}
+		} else {
+			if (ast.size() == 2) {
+				ExprVariables eVar;
+				eVar = new ExprVariables(ast.get(1));
+				if (!eVar.isSize(1)) {
+					// only possible for univariate polynomials
+					return null;
+				}
+				variableList = eVar.getVarList();
+			}
 		}
 		if (variableList.size() != 2) {
 			// FactorTerms only possible for univariate polynomials
 			return null;
 		}
+		ASTRange r = new ASTRange(variableList, 1);
+		IExpr expr = F.evalExpandAll(ast.get(1));
 		// IExpr variable = variableList.get(1);
 		try {
-			IExpr expr = F.evalExpandAll(ast.get(1));
-			ASTRange r = new ASTRange(variableList, 1);
+
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
 			GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
 			Object[] objects = jas.factorTerms(poly);
@@ -63,9 +70,9 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			result.add(jas.integerPoly2Expr(iPoly));
 			return result;
 		} catch (JASConversionException e) {
-			if (Config.DEBUG) {
-				e.printStackTrace();
-			}
+			// if (Config.DEBUG) {
+			e.printStackTrace();
+			// }
 		}
 		return null;
 	}

@@ -357,7 +357,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public IExpr inverse() {
-		return F.Power(this, F.CN1);
+		return F.eval(F.Power(this, F.CN1));
 	}
 
 	@Override
@@ -1057,7 +1057,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return isMember(matcher, heads);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
@@ -1673,15 +1673,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return F.Plus(this, F.Times(F.CN1, that));
 	}
 
-	/**
-	 * Additional multiply method, which works like times to fulfill groovy's method signature
-	 * 
-	 * @param that
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final IExpr multiply(final IExpr that) {
-		return times(that);
+		if (that.isZero()) {
+			return F.C0;
+		}
+		return F.eval(F.Times(this, that));
 	}
 
 	@Override
@@ -1694,10 +1692,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return F.Power(this, that);
 	}
 
-	@Override
-	public IExpr div(final IExpr that) {
-		return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	}
+	// @Override
+	// public IExpr div(final IExpr that) {
+	// return F.eval(F.Times(this, F.Power(that, F.CN1)));
+	// }
 
 	@Override
 	public IExpr mod(final IExpr that) {
@@ -1863,12 +1861,15 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public IExpr subtract(IExpr that) {
-		return this.plus(that.negate());
+		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
 	}
 
 	@Override
 	public IExpr sum(IExpr that) {
-		return this.plus(that);
+		if (that.isZero()) {
+			return this;
+		}
+		return F.eval(F.Plus(this, that));
 	}
 
 	@Override
@@ -1886,19 +1887,35 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		throw new UnsupportedOperationException();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr divide(IExpr that) {
-		return this.div(that);
+		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isONE() {
 		return isOne();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isUnit() {
-		return isOne();
+		if (isZero()) {
+			return false;
+		}
+		if (isOne()) {
+			return true;
+		}
+		if (isNumber()) {
+			return true;
+		}
+		IExpr temp = F.eval(F.Times(this, F.Power(this, F.CN1)));
+		if (temp.isOne()) {
+			return true;
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -1914,7 +1931,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public final IExpr negate() {
-		return opposite();
+		return F.eval(F.Times(F.CN1, this));
 	}
 
 	@Override
@@ -2015,6 +2032,30 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 */
 	public Iterator<IExpr> iterator0() {
 		return super.iterator();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	final public IExpr arg1() {
+		return get(1);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	final public IExpr arg2() {
+		return get(2);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	final public IExpr arg3() {
+		return get(3);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	final public IExpr last() {
+		return get(size() - 1);
 	}
 
 	@Override

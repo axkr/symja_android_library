@@ -94,7 +94,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 */
 	public IExpr evaluate(EvalEngine engine);
 
-	public IExpr div(final IExpr that);
+	// public IExpr div(final IExpr that);
 
 	/**
 	 * Return the FullForm of this expression
@@ -111,6 +111,9 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public IExpr getAt(final int index);
 
 	/**
+	 * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the
+	 * <code>IAST</code> list (i.e. get(0) ).
+	 * 
 	 * @return the head of the expression, which must not be null.
 	 */
 	public IExpr head();
@@ -525,7 +528,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * 
 	 */
 	public boolean isOne();
- 
+
 	/**
 	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
 	 * 

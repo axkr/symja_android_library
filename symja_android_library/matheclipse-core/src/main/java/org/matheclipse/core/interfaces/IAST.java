@@ -234,6 +234,41 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public Iterator<IExpr> iterator0();
 
 	/**
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e. get(1)
+	 * ).
+	 * 
+	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg1();
+
+	/**
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e. get(2)
+	 * ).
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg2();
+
+	/**
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e. get(3)
+	 * ).
+	 * 
+	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg3();
+
+	/**
+	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1).
+	 * 
+	 * @return the last argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr last();
+
+	/**
 	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
 	 * 
 	 * @param head

@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -46,7 +46,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 		try {
 			IExpr expr = F.evalExpandAll(polnomialExpr);
 			ASTRange r = new ASTRange(variables, 1);
-			JASConvert<IExpr> jas = new JASConvert<IExpr>(r.toList(), new ExprRingFactory());
+			JASIExpr jas = new JASIExpr(r.toList(), new ExprRingFactory());
 			return jas.expr2IExprJAS(expr) != null;
 		} catch (JASConversionException e) {
 			// exception will be thrown if the expression is not a JAS polynomial

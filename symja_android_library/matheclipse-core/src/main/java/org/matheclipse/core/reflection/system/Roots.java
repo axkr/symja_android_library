@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
-import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
@@ -96,7 +96,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		} catch (JASConversionException e) {
 			try {
 				// try to generate a common expression polynomial
-				JASConvert<IExpr> eJas = new JASConvert<IExpr>(varList, new ExprRingFactory());
+				JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
 				GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
 				result = rootsOfPolynomial(ePoly);
 			} catch (JASConversionException e2) {
