@@ -37,6 +37,7 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Sec extends AbstractTrigArg1 implements INumeric {
 
 //	 {
+//   Sec[0]=1,
 //	 Sec[Pi/2]=ComplexInfinity,
 //	 Sec[Pi/3]=2,
 //	 Sec[Pi/4]=Sqrt[2],
@@ -52,6 +53,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric {
 //	 }
 
 	final static IAST RULES = List(
+			Set(Sec(C0),C1),
 			Set(Sec(Times(C1D2,Pi)),CComplexInfinity),
 			Set(Sec(Times(C1D3,Pi)),C2),
 			Set(Sec(Times(C1D4,Pi)),Sqrt(C2)),

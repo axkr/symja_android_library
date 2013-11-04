@@ -16,9 +16,15 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class ArcSec extends AbstractTrigArg1 {
 	/*
-	 * { ArcSec[0]=ComplexInfinity }
+	 * { 
+	 *   ArcSec[0]=ComplexInfinity,
+	 *   ArcSec[1]=0,
+	 * }
 	 */
-	final static IAST RULES = List(Set(ArcSec(C0), CComplexInfinity));
+	final static IAST RULES = List(
+			Set(ArcSec(C0), CComplexInfinity),
+			Set(ArcSec(C1), C0)
+			);
 
 	@Override
 	public IAST getRuleAST() {

@@ -35,6 +35,7 @@ public class Csc extends AbstractTrigArg1 implements INumeric {
  
 //	 {
 //	        Csc[0]=ComplexInfinity,
+//      	Csc[Pi/2]=1,
 //	        Csc[Pi/3]=2/3*Sqrt[3],
 //	        Csc[Pi/4]=Sqrt[2],
 //          Csc[Pi/5]=1/5*Sqrt[50+10*Sqrt[5]],
@@ -50,6 +51,7 @@ public class Csc extends AbstractTrigArg1 implements INumeric {
 	 
 	final static IAST RULES = List(
 			Set(Csc(C0),CComplexInfinity),
+			Set(Csc(Times(C1D2,Pi)),C1),
 			Set(Csc(Times(C1D3,Pi)),Times(fraction(2L,3L),Sqrt(C3))),
 			Set(Csc(Times(C1D4,Pi)),Sqrt(C2)),
 			Set(Csc(Times(fraction(1L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(50L),Times(integer(10L),Sqrt(C5)))))),

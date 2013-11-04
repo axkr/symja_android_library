@@ -16,9 +16,17 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class ArcCsc extends AbstractTrigArg1 {
 	/*
-	 * { ArcCsc[0]=ComplexInfinity }
+	 * { 
+	 *   ArcCsc[0]=ComplexInfinity,
+	 *   ArcCsc[1]=1/2*Pi, 
+	 *   ArcCsc[21]=1/6*Pi, 
+	 * }
 	 */
-	final static IAST RULES = List(Set(ArcCsc(C0), CComplexInfinity));
+	final static IAST RULES = List(
+			Set(ArcCsc(C0), CComplexInfinity),
+			Set(ArcCsc(C1), Times(C1D2, Pi)),
+			Set(ArcCsc(C2), Times(fraction(1L,6L),Pi))
+			);
 
 	@Override
 	public IAST getRuleAST() {
