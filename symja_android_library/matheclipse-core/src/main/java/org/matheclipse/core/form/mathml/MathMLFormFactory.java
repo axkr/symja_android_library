@@ -374,8 +374,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			module = (AbstractConverter) clazz.newInstance();
 			module.setFactory(this);
 			// module.setExpressionFactory(fExprFactory);
-			operTab.put(headString, module);
-			return module;
+			operTab.put(headStr, module);
+			return module;  
 		} catch (final Throwable se) {
 			if (Config.DEBUG) {
 				se.printStackTrace();

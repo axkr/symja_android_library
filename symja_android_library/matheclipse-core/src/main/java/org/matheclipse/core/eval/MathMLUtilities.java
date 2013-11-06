@@ -25,11 +25,15 @@ public class MathMLUtilities {
 	 */
 	boolean fMSIE;
 
+	/**
+	 * Print MathML header in output
+	 */
+	boolean fMathMLHeader;
 	// Parser fParser;
 
 	static {
 		// initialize the global available symbols
-		F.initSymbols();
+		F.initSymbols(null, null, true);
 	}
 
 	/**
@@ -38,9 +42,10 @@ public class MathMLUtilities {
 	 * @param evalEngine
 	 * @param mathMTagPrefix
 	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for the MathML output.
-	 * @param relaxedSyntax
+	 * @param mathMLHeader
+	 *            print MathML header in output
 	 */
-	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean relaxedSyntax) {
+	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean mathMLHeader) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance
 		startRequest();
@@ -51,6 +56,7 @@ public class MathMLUtilities {
 		}
 		// fParser = new Parser(relaxedSyntax);
 		fMSIE = mathMTagPrefix;
+		fMathMLHeader = mathMLHeader;
 	}
 
 	/**
@@ -94,9 +100,14 @@ public class MathMLUtilities {
 					// out.write("<math xmlns=\"&mathml;\">");
 
 					// out.write("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
-					out.write("<?xml version=\"1.0\"?>\n"
-							+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-							+ "<math mode=\"display\">\n");
+					if (fMathMLHeader) {
+						out.write("<?xml version=\"1.0\"?>\n"
+								+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+								+ "<math mode=\"display\">\n");
+					} else {
+						out.write("<math>");
+					}
+
 					out.write(buf.toString());
 					out.write("</math>");
 				}
