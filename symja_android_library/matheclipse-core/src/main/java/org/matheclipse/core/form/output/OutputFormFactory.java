@@ -215,7 +215,7 @@ public class OutputFormFactory {
 				append(buf, "+I");
 			}
 		} else if (isImMinusOne) {
-			append(buf, "-I"); 
+			append(buf, "-I");
 		} else {
 			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 				append(buf, "(");
@@ -613,8 +613,11 @@ public class OutputFormFactory {
 	 * @throws IOException
 	 */
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
+		IExpr head = function.head();
 		convert(buf, function.head());
-		if (fRelaxedSyntax) {
+		if (head.isAST()) {
+			append(buf, "[");
+		} else if (fRelaxedSyntax) {
 			append(buf, "(");
 		} else {
 			append(buf, "[");
@@ -627,7 +630,9 @@ public class OutputFormFactory {
 			append(buf, ",");
 			convert(buf, function.get(i));
 		}
-		if (fRelaxedSyntax) {
+		if (head.isAST()) {
+			append(buf, "]");
+		} else if (fRelaxedSyntax) {
 			append(buf, ")");
 		} else {
 			append(buf, "]");

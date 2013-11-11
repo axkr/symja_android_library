@@ -158,12 +158,14 @@ public class Parser extends Scanner {
 
 	private ASTNode parseArguments(ASTNode lhs) {
 		if (fRelaxedSyntax) {
-			if (fToken == TT_PRECEDENCE_OPEN) {
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				lhs = getFunctionArguments(lhs);
+			} else if (fToken == TT_PRECEDENCE_OPEN) {
 				lhs = getFunction(lhs);
 			}
 		} else {
 			if (fToken == TT_ARGUMENTS_OPEN) {
-				lhs = getFunction(lhs);
+				lhs = getFunctionArguments(lhs);
 			}
 		}
 		return lhs;
@@ -468,7 +470,10 @@ public class Parser extends Scanner {
 			if (fToken == TT_PRECEDENCE_CLOSE) {
 				getNextToken();
 				if (fToken == TT_PRECEDENCE_OPEN) {
-					return getFunction(function);
+					return function;
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
 				}
 				return function;
 			}
@@ -476,7 +481,7 @@ public class Parser extends Scanner {
 			if (fToken == TT_ARGUMENTS_CLOSE) {
 				getNextToken();
 				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunction(function);
+					return getFunctionArguments(function);
 				}
 				return function;
 			}
@@ -487,7 +492,10 @@ public class Parser extends Scanner {
 			if (fToken == TT_PRECEDENCE_CLOSE) {
 				getNextToken();
 				if (fToken == TT_PRECEDENCE_OPEN) {
-					return getFunction(function);
+					return function;
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
 				}
 				return function;
 			}
@@ -495,7 +503,7 @@ public class Parser extends Scanner {
 			if (fToken == TT_ARGUMENTS_CLOSE) {
 				getNextToken();
 				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunction(function);
+					return getFunctionArguments(function);
 				}
 				return function;
 			}
@@ -506,6 +514,37 @@ public class Parser extends Scanner {
 		} else {
 			throwSyntaxError("']' expected.");
 		}
+		return null;
+	}
+
+	/**
+	 * Get a function f[...][...]
+	 * 
+	 */
+	FunctionNode getFunctionArguments(final ASTNode head) throws SyntaxError {
+		final FunctionNode function = fFactory.createAST(head);
+
+		getNextToken();
+
+		if (fToken == TT_ARGUMENTS_CLOSE) {
+			getNextToken();
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				return getFunctionArguments(function);
+			}
+			return function;
+		}
+
+		getArguments(function);
+
+		if (fToken == TT_ARGUMENTS_CLOSE) {
+			getNextToken();
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				return getFunctionArguments(function);
+			}
+			return function;
+		}
+
+		throwSyntaxError("']' expected.");
 		return null;
 	}
 
@@ -603,9 +642,22 @@ public class Parser extends Scanner {
 			if (fToken != TT_PRECEDENCE_CLOSE) {
 				throwSyntaxError("\')\' expected.");
 			}
-
 			getNextToken();
+			if (fToken == TT_PRECEDENCE_OPEN) {
+				FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
+				func.add(temp);
+				do {
+					getNextToken();
 
+					temp = parseOperators(parsePrimary(), 0);
+					func.add(temp);
+					if (fToken != TT_PRECEDENCE_CLOSE) {
+						throwSyntaxError("\')\' expected.");
+					}
+					getNextToken();
+				} while (fToken == TT_PRECEDENCE_OPEN);
+				return func;
+			}
 			return temp;
 		}
 		if (fToken == TT_LIST_OPEN) {
