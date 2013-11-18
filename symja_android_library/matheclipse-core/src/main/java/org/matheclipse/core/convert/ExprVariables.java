@@ -2,8 +2,10 @@ package org.matheclipse.core.convert;
 
 import static org.matheclipse.core.expression.F.List;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -98,6 +100,15 @@ public class ExprVariables {
 		return list;
 	}
 
+	public List<IExpr> getArrayList() {
+		final Iterator<IExpr> iter = set.iterator();
+		final List<IExpr> list = new ArrayList<IExpr>();
+		while (iter.hasNext()) {
+			list.add(iter.next());
+		}
+		return list;
+	}
+	
 	public String[] getVarListAsString() {
 		String[] result = new String[set.size()];
 		final Iterator<IExpr> iter = set.iterator();

@@ -210,12 +210,32 @@ public final class Validate {
 			for (int i = 1; i < vars.size(); i++) {
 				Validate.checkSymbolType(vars, i);
 			}
+			return vars;
 		} else {
-			vars = F.List(Validate.checkSymbolType(ast, position));
+			return F.List(Validate.checkSymbolType(ast, position));
 		}
-		return vars;
 	}
 
+	/**
+	 * Check if the argument at the given position is a single symbol or a list of symbols.
+	 * 
+	 * @param position
+	 *            the position which has to be a symbol or list.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
+	 */
+	public static IAST checkSymbolList(IAST ast, int position) {
+		IAST vars = null;
+		if (ast.get(position).isList()) {
+			vars = (IAST) ast.get(position);
+			for (int i = 1; i < vars.size(); i++) {
+				Validate.checkSymbolType(vars, i);
+			}
+			return vars;
+		} 
+		throw new WrongArgumentType(ast, ast.get(position), position, "List of symbols expected!");
+	}
+	
 	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 
