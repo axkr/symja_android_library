@@ -5,6 +5,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -134,4 +135,26 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		return false;
 	}
 
+	/**
+	 * Check if <code>expr</code> is a pure imaginary number without a real part.
+	 * 
+	 * @param expr
+	 * @return <code>null</code>, if <code>expr</code> is not prue imaginary number.
+	 */
+	public static IExpr getPureImaginaryPart(final IExpr expr) {
+		if (expr.isComplex() && ((IComplex) expr).getRe().isZero()) {
+			IComplex compl = (IComplex) expr;
+			return compl.getIm();
+		}
+		if (expr.isTimes()) {
+			IAST times = ((IAST) expr);
+			IExpr arg1 = times.arg1();
+			if (arg1.isComplex() && ((IComplex) arg1).getRe().isZero()) {
+				times = times.clone();
+				times.set(1, ((IComplex) arg1).getIm());
+				return times;
+			}
+		}
+		return null;
+	}
 }
