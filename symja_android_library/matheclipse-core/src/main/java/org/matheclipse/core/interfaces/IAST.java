@@ -163,10 +163,11 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>size() > 2</code> (useful for
-	 * ASTs with attribute <code>OneIdentity</code> for example Plus[] or Times[]).
+	 * ASTs with attribute <code>OneIdentity</code> for example for <code>Plus[]</code> you can call
+	 * <code>getOneIdentity(F.C0)</code> or for <code>Times[]</code>) you can call <code>getOneIdentity(F.C1)</code>.
 	 * 
 	 * @param defaultValue
-	 *            default value, if the <code>size() < 2</code>.
+	 *            default value, if <code>size() < 2</code>.
 	 * @return
 	 */
 	public IExpr getOneIdentity(IExpr defaultValue);
@@ -234,8 +235,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public Iterator<IExpr> iterator0();
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e. get(1)
-	 * ).
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(1) ).
 	 * 
 	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -243,8 +244,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr arg1();
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e. get(2)
-	 * ).
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(2) ).
 	 * 
 	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -252,8 +253,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr arg2();
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e. get(3)
-	 * ).
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(3) ).
 	 * 
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
