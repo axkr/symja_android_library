@@ -1,19 +1,169 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.AbstractVisitorBoolean;
+
+import com.google.common.base.Predicate;
 
 /**
  * Try to eliminate a variable in a set of equations (i.e. <code>Equal[...]</code> expressions).
  */
 public class Eliminate extends AbstractFunctionEvaluator {
 
-	public Eliminate() {
+	private static class VariableCounterVisitor extends AbstractVisitorBoolean implements Comparable<VariableCounterVisitor> {
+		/**
+		 * Count the number of nodes in <code>fExpr</code>, which equals <code>fVariable</code>.
+		 */
+		int fVariableCounter;
+
+		/**
+		 * Count the total number of nodes in <code>fExpr</code>..
+		 */
+		int fNodeCounter;
+
+		/**
+		 * The maximum number of recursion levels for visiting nodes, which equals <code>fVariable</code>.
+		 */
+		int fMaxVariableDepth;
+
+		/**
+		 * Holds the current recursion level for visiting nodes.
+		 */
+		int fCurrentDepth;
+
+		final IExpr fVariable;
+		final IAST fExpr;
+
+		public VariableCounterVisitor(final IAST expr, final IExpr variable) {
+			super();
+			fVariable = variable;
+			fExpr = expr;
+			fVariableCounter = 0;
+			fNodeCounter = 0;
+			fMaxVariableDepth = 0;
+			fCurrentDepth = 0;
+		}
+
+		@Override
+		public int compareTo(VariableCounterVisitor other) {
+			if (fVariableCounter < other.fVariableCounter) {
+				return -1;
+			}
+			if (fVariableCounter > other.fVariableCounter) {
+				return 1;
+			}
+			if (fMaxVariableDepth < other.fMaxVariableDepth) {
+				return -1;
+			}
+			if (fMaxVariableDepth > other.fMaxVariableDepth) {
+				return 1;
+			}
+			if (fNodeCounter < other.fNodeCounter) {
+				return -1;
+			}
+			if (fNodeCounter > other.fNodeCounter) {
+				return 1;
+			}
+			return 0;
+		}
+
+		public IAST getExpr() {
+			return fExpr;
+		}
+
+		@Override
+		public boolean visit(IAST ast) {
+			fNodeCounter++;
+			if (ast.equals(fVariable)) {
+				fVariableCounter++;
+				if (fMaxVariableDepth < fCurrentDepth) {
+					fMaxVariableDepth = fCurrentDepth;
+				}
+				return true;
+			}
+			try {
+				fCurrentDepth++;
+				for (int i = 1; i < ast.size(); i++) {
+					ast.get(i).accept(this);
+				}
+			} finally {
+				fCurrentDepth--;
+			}
+
+			return false;
+		}
+
+		@Override
+		public boolean visit(ISymbol symbol) {
+			fNodeCounter++;
+			if (symbol.equals(fVariable)) {
+				fVariableCounter++;
+				if (fMaxVariableDepth < fCurrentDepth) {
+					fMaxVariableDepth = fCurrentDepth;
+				}
+				return true;
+			}
+			return false;
+		}
+
+		public boolean visit(IInteger element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IFraction element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IComplex element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(INum element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IComplexNum element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IPattern element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IPatternSequence element) {
+			fNodeCounter++;
+			return false;
+		}
+
+		public boolean visit(IStringX element) {
+			fNodeCounter++;
+			return false;
+		}
+
 	}
 
 	/**
@@ -51,31 +201,6 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		return equalList;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 3);
-		try {
-			IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
-			IAST termsEqualZeroList = checkEquations(ast, 1);
-			IAST result = termsEqualZeroList;
-			IAST temp;
-			for (int i = 1; i < vars.size(); i++) {
-				ISymbol variable = (ISymbol) vars.get(i);
-				temp = eliminateOneVariable(result, variable);
-				if (temp != null) {
-					result = temp;
-				} else {
-					return result;
-				}
-			}
-			return result;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return null;
-	}
-
 	/**
 	 * Analyze an <code>Equal()</code> expression.
 	 * 
@@ -88,12 +213,16 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	private static IExpr eliminateAnalyze(IAST equalAST, ISymbol variable) {
 		IExpr arg1 = equalAST.arg1();
 		IExpr arg2 = equalAST.arg2();
-		if (arg1.isMember(variable, false) && !arg2.isMember(variable, false)) {
-			return extractVariable(arg1, arg2, variable);
-		} else if (arg2.isMember(variable, false) && !arg1.isMember(variable, false)) {
-			return extractVariable(arg2, arg1, variable);
+		Predicate<IExpr> predicate = Predicates.in(variable);
+		boolean boolArg1 = arg1.isFree(predicate, true);
+		boolean boolArg2 = arg2.isFree(predicate, true);
+		IExpr result = null;
+		if (!boolArg1 && boolArg2) {
+			result = extractVariable(arg1, arg2, predicate, variable);
+		} else if (boolArg1 && !boolArg2) {
+			result = extractVariable(arg2, arg1, predicate, variable);
 		}
-		return null;
+		return result;
 	}
 
 	/**
@@ -107,60 +236,71 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated.
 	 * @return <code>null</code> if we can't find an equation for the given <code>variable</code>.
 	 */
-	public static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, ISymbol variable) {
+	public static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
+			ISymbol variable) {
 		if (exprWithVariable.isAST()) {
 			IAST ast = (IAST) exprWithVariable;
-			if (ast.isPlus()) {
-				// a + b + c....
-				IAST rest = F.Plus();
-				IAST plusClone = ast.clone();
-				int j = 1;
-				for (int i = 1; i < ast.size(); i++) {
-					if (ast.get(i).isMember(variable, false)) {
-						rest.add(ast.get(i));
-						plusClone.remove(j);
-					} else {
-						j++;
+			if (ast.size() == 2) {
+				IAST inverseFunction = InverseFunction.getInverseFunction(ast);
+				if (inverseFunction != null) {
+					// example: Sin(x) == y -> x == ArcSin(y)
+					inverseFunction.add(exprWithoutVariable);
+					return extractVariable(ast.arg1(), inverseFunction, predicate, variable);
+				}
+			} else {
+				if (ast.isPlus()) {
+					// a + b + c....
+					IAST rest = F.Plus();
+					IAST plusClone = ast.clone();
+					int j = 1;
+					for (int i = 1; i < ast.size(); i++) {
+						if (ast.get(i).isFree(predicate, true)) {
+							j++;
+						} else {
+							rest.add(ast.get(i));
+							plusClone.remove(j);
+						}
 					}
-				}
-				if (plusClone.size() == 1) {
-					// no change for given expression
-					return null;
-				}
-				IExpr value = F.eval(F.Subtract(exprWithoutVariable, plusClone));
-				if (rest.size() == 2) {
-					return extractVariable(rest.get(1), value, variable);
-				} else {
-					return extractVariable(rest, value, variable);
-				}
-			} else if (ast.isTimes()) {
-				// a * b * c....
-				IAST rest = F.Times();
-				IAST timesClone = ast.clone();
-				int j = 1;
-				for (int i = 1; i < ast.size(); i++) {
-					if (ast.get(i).isMember(variable, false)) {
-						rest.add(ast.get(i));
-						timesClone.remove(j);
-					} else {
-						j++;
+					if (plusClone.size() == 1) {
+						// no change for given expression
+						return null;
 					}
-				}
-				if (timesClone.size() == 1) {
-					// no change for given expression
-					return null;
-				}
-				IExpr value = F.eval(F.Divide(exprWithoutVariable, timesClone));
-				if (rest.size() == 2) {
-					return extractVariable(rest.get(1), value, variable);
-				} else {
-					return extractVariable(rest, value, variable);
+					IExpr value = F.Subtract(exprWithoutVariable, plusClone);
+					return extractVariable(rest.getOneIdentity(F.C0), value, predicate, variable);
+				} else if (ast.isTimes()) {
+					// a * b * c....
+					IAST rest = F.Times();
+					IAST timesClone = ast.clone();
+					int j = 1;
+					for (int i = 1; i < ast.size(); i++) {
+						if (ast.get(i).isFree(predicate, true)) {
+							j++;
+						} else {
+							rest.add(ast.get(i));
+							timesClone.remove(j);
+						}
+					}
+					if (timesClone.size() == 1) {
+						// no change for given expression
+						return null;
+					}
+					IExpr value = F.Divide(exprWithoutVariable, timesClone);
+					return extractVariable(rest.getOneIdentity(F.C1), value, predicate, variable);
+				} else if (ast.isPower()) {
+					// a ^ b
+					if (ast.arg2().isFree(predicate, true)) {
+						IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, ast.arg2()));
+						return extractVariable(ast.arg1(), value, predicate, variable);
+					}
 				}
 			}
 		} else if (exprWithVariable.equals(variable)) {
 			return exprWithoutVariable;
 		}
 		return null;
+	}
+
+	public Eliminate() {
 	}
 
 	/**
@@ -172,26 +312,73 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated.
 	 * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>variabe</code>
 	 */
-	public IAST eliminateOneVariable(IAST termsEqualZeroList, ISymbol variable) {
+	public IAST eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, ISymbol variable) {
 		IAST equalAST;
-		for (int i = 1; i < termsEqualZeroList.size(); i++) {
-			equalAST = termsEqualZeroList.getAST(i);
+		IAST termsEqualZeroList = F.List();
+		VariableCounterVisitor exprAnalyzer;
+		for (int i = 0; i < analyzerList.size(); i++) {
+			exprAnalyzer = analyzerList.get(i);
+			equalAST = exprAnalyzer.getExpr();
 			IExpr variableExpr = eliminateAnalyze(equalAST, variable);
 			if (variableExpr != null) {
-
+				variableExpr = F.eval(variableExpr);
 				IExpr temp;
+				IExpr expr;
 				IAST rule = F.Rule(variable, variableExpr);
-				termsEqualZeroList = termsEqualZeroList.clone();
-				termsEqualZeroList.remove(i);
-				for (int j = 1; j < termsEqualZeroList.size(); j++) {
-					temp = termsEqualZeroList.get(j).replaceAll(rule);
+				analyzerList.remove(i);
+				for (int j = 0; j < analyzerList.size(); j++) {
+					expr = analyzerList.get(j).getExpr();
+					temp = expr.replaceAll(rule);
 					if (temp != null) {
-						termsEqualZeroList.set(j, F.evalExpandAll(temp));
+						temp = F.evalExpandAll(temp);
+						termsEqualZeroList.add(temp);
+					} else {
+						termsEqualZeroList.add(expr);
 					}
 				}
 				return termsEqualZeroList;
 
 			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 3);
+		try {
+			IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
+
+			IAST termsEqualZeroList = checkEquations(ast, 1);
+
+			IAST result = termsEqualZeroList;
+			IAST temp;
+			IAST equalAST;
+			ISymbol variable;
+			VariableCounterVisitor exprAnalyzer;
+			for (int i = 1; i < vars.size(); i++) {
+				variable = (ISymbol) vars.get(i);
+
+				ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
+				for (int j = 1; j < result.size(); j++) {
+					equalAST = result.getAST(j);
+					exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
+					equalAST.accept(exprAnalyzer);
+					analyzerList.add(exprAnalyzer);
+				}
+				Collections.sort(analyzerList);
+
+				temp = eliminateOneVariable(analyzerList, variable);
+				if (temp != null) {
+					result = temp;
+				} else {
+					return result;
+				}
+			}
+			return result;
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		return null;
 	}

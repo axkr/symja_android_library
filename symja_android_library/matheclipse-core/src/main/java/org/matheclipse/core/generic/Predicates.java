@@ -142,14 +142,27 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is an argument of the given AST. It
-	 * does not defensively copy the collection passed in, so future changes to it will alter the behavior of the predicate.
+	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is one of the arguments of the given
+	 * <code>ast</code>. It does not defensively copy the collection passed in, so future changes to it will alter the behavior of
+	 * the predicate.
 	 * 
-	 * @param target
+	 * @param ast
 	 *            the AST those arguments may contain the function input
 	 */
-	public static Predicate<IExpr> in(IAST target) {
-		return new InASTPredicate(target);
+	public static Predicate<IExpr> in(IAST ast) {
+		return new InASTPredicate(ast);
+	}
+
+	/**
+	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is one of the arguments of the given
+	 * <code>ast</code>. It does not defensively copy the collection passed in, so future changes to it will alter the behavior of
+	 * the predicate.
+	 * 
+	 * @param expr
+	 *            the expr which may macth the function input
+	 */
+	public static Predicate<IExpr> in(IExpr expr) {
+		return new InASTPredicate(F.List(expr));
 	}
 
 	/**
