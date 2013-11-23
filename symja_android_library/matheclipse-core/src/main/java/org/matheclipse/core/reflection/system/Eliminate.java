@@ -25,6 +25,9 @@ import com.google.common.base.Predicate;
 
 /**
  * Try to eliminate a variable in a set of equations (i.e. <code>Equal[...]</code> expressions).
+ * 
+ * See <a href="http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables">Wikipedia - System of linear
+ * equations - Elimination of variables</a>.
  */
 public class Eliminate extends AbstractFunctionEvaluator {
 
@@ -243,7 +246,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			if (ast.size() == 2) {
 				IAST inverseFunction = InverseFunction.getInverseFunction(ast);
 				if (inverseFunction != null) {
-					// example: Sin(x) == y -> x == ArcSin(y)
+					// example: Sin(f(x)) == y -> f(x) == ArcSin(y)
 					inverseFunction.add(exprWithoutVariable);
 					return extractVariable(ast.arg1(), inverseFunction, predicate, variable);
 				}
@@ -287,10 +290,14 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					IExpr value = F.Divide(exprWithoutVariable, timesClone);
 					return extractVariable(rest.getOneIdentity(F.C1), value, predicate, variable);
 				} else if (ast.isPower()) {
-					// a ^ b
 					if (ast.arg2().isFree(predicate, true)) {
+						// f(x) ^ a
 						IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, ast.arg2()));
 						return extractVariable(ast.arg1(), value, predicate, variable);
+					} else if (ast.arg1().isFree(predicate, true)) {
+						// a ^ f(x)
+						IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(ast.arg1()));
+						return extractVariable(ast.arg2(), value, predicate, variable);
 					}
 				}
 			}
