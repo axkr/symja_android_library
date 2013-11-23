@@ -26,7 +26,7 @@ import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrder;
 
 /**
- * Get the list of monmials of a polynomial expression.
+ * Get the list of monomials of a polynomial expression.
  * 
  * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
  */
@@ -42,6 +42,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		ExprVariables eVar;
 		if (ast.size() == 2) {
+			// extract all variables from the polynomial expression
 			eVar = new ExprVariables(ast.arg1());
 		} else {
 			IAST symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
