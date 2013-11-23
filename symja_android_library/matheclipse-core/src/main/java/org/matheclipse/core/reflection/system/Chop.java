@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -43,7 +44,12 @@ public class Chop extends AbstractFunctionEvaluator {
 					return F.complexNum(((IComplexNum) arg1).getRealPart(), 0.0);
 				}
 				return arg1;
+			} else if (arg1.isAST()) {
+				IAST list = (IAST)arg1;
+				// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
+				return list.map(Functors.replace1st(F.Chop(F.Null)));
 			}
+			return arg1;
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

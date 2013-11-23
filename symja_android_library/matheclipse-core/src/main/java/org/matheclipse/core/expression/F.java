@@ -149,7 +149,7 @@ public class F {
 	public final static ISymbol Options = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "options" : "Options");
 	public final static ISymbol Graphics = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "graphics" : "Graphics");
 	public final static ISymbol Graphics3D = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "graphics3d" : "Graphics3D");
-	 
+
 	public final static ISymbol Show = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "show" : "Show");
 	public final static ISymbol SurfaceGraphics = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surfacegraphics"
 			: "SurfaceGraphics");
@@ -1601,6 +1601,10 @@ public class F {
 
 	public static IComplexNum complexNum(final IInteger obj) {
 		return F.complexNum(obj.doubleValue(), 0.0d);
+	}
+
+	public static IAST Chop(final IExpr a0) {
+		return unary(Chop, a0);
 	}
 
 	/**
