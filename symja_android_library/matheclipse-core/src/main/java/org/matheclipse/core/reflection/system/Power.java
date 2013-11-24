@@ -211,7 +211,7 @@ public class Power extends AbstractArg2 implements INumeric {
 				if (o1.isNumber()) {
 					final IAST f0 = arg0;
 
-					if ((f0.size() > 1) && (f0.arg1().isNumber())) {
+					if ((f0.size() > 1) && (f0.arg1().isNumber())) { 
 						return Times(Power(f0.arg1(), o1), Power(F.ast(f0, F.Times, true, 2, f0.size()), o1));
 					}
 				}

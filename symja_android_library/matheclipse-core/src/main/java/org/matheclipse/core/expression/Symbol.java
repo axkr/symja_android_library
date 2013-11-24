@@ -403,7 +403,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 			return fSymbolName.compareTo(((Symbol) obj).fSymbolName);
 		}
 		if (obj instanceof AST) {
-			final AST ast = (AST) obj; 
+			final AST ast = (AST) obj;
 			if (ast.size() > 1) {
 				if (ast.isPower()) {
 					if (ast.get(1) instanceof ISymbol) {
@@ -468,6 +468,30 @@ public class Symbol extends ExprImpl implements ISymbol {
 	@Override
 	public boolean isFalse() {
 		return this.equals(F.False);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegative() {
+		if (isNumericFunction()) {
+			IExpr temp = F.evaln(this);
+			if (temp.isSignedNumber() && temp.isNegative()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPositive() {
+		if (isNumericFunction()) {
+			IExpr temp = F.evaln(this);
+			if (temp.isSignedNumber() && temp.isPositive()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */

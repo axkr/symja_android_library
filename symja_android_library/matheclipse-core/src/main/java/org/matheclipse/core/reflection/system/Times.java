@@ -117,7 +117,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 							// x^(a)*x^(b) => x ^(a+b)
 							return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
 						}
-						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()) {
+						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
 							// a^(c)*b^(c) => (a*b) ^c
 							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
 						}

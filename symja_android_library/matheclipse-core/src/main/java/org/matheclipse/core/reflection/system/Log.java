@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Log;
@@ -16,6 +17,7 @@ import static org.matheclipse.core.expression.F.SetDelayed;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexUtils;
@@ -30,15 +32,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia -
- * Logarithm</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a>
  * 
  */
 public class Log extends AbstractArg12 implements INumeric {
 
 	/*
-	 * <pre> { Log[1]=0, Log[E]=1, Log[E^(x_Integer)]:=x,
-	 * Log[E^(x_Rational)]:=x, Log[E^(I)]=I, Log[Exp[-I]]=(-I),
+	 * <pre> { Log[1]=0, Log[E]=1, Log[E^(x_Integer)]:=x, Log[E^(x_Rational)]:=x, Log[E^(I)]=I, Log[Exp[-I]]=(-I),
 	 * Log[0]=(-Infinity) } </pre>
 	 */
 	final static IAST RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)), Set(Log(Power(E, CI)), CI),
@@ -97,5 +97,16 @@ public class Log extends AbstractArg12 implements INumeric {
 	public void setUp(ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
+	}
+
+	@Override
+	public IExpr e1ObjArg(IExpr arg1) {
+		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
+			IExpr temp = F.eval(Times(CN1, arg1));
+			if (temp.isPositive()) {
+				return F.Plus(Log(temp), Times(CI, F.Pi));
+			}
+		}
+		return null;
 	}
 }
