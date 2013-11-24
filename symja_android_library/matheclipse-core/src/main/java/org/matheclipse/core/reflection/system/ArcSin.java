@@ -81,6 +81,10 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, ArcSin(Times(CN1, arg1)));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.ArcSinh(imPart));
+		}
 		return null;
 	}
 

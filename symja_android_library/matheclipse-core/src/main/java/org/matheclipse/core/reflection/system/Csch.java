@@ -54,6 +54,10 @@ Csch[x_NumberQ]:=(-1)*Csch[(-1)*x]/;SignCmp[x]<0
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Csch(Times(CN1, arg1)));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CNI, F.Csc(imPart));
+		}
 		if (arg1.isZero()){
 			return F.CComplexInfinity;
 		}

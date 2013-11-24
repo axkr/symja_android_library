@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexUtils;
@@ -89,6 +90,10 @@ public class ArcTan extends AbstractArg12 implements INumeric {
 	public IExpr e1ObjArg(final IExpr arg1) {
 		if (isNegativeExpression(arg1)) {
 			return Times(CN1, ArcTan(Times(CN1, arg1)));
+		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.ArcTanh(imPart));
 		}
 		return null;
 	}

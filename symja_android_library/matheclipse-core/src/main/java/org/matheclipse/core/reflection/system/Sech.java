@@ -57,6 +57,10 @@ Sech[x_NumberQ]:=Sech[(-1)*x]/;SignCmp[x]<0
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Sech(Times(CN1, arg1));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Sec(imPart);
+		}
 		if (arg1.isZero()){
 			return F.C0;
 		}

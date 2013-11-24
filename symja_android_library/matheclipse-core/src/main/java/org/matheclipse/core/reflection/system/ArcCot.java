@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -45,6 +46,10 @@ ArcCot[ComplexInfinity]=0
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Plus(Times(CN1, Pi), ArcCot(Times(CN1, arg1)));
+		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CNI, F.ArcCoth(imPart));
 		}
 		return null;
 	}

@@ -80,6 +80,10 @@ public class Tan extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Tan(Times(CN1, arg1)));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.Tanh(imPart));
+		}
 		return null;
 	}
 	

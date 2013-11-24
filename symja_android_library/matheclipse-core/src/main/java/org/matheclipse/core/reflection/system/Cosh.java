@@ -31,6 +31,10 @@ public class Cosh extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Cosh(Times(CN1, arg1));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Cos(imPart);
+		}
 		if (arg1.isZero()){
 			return F.C1;
 		}

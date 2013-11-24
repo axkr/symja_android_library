@@ -30,12 +30,16 @@ public class Tanh extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Tanh(Times(CN1, arg1)));
 		}
-		if (arg1.isZero()){
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.Tan(imPart));
+		}
+		if (arg1.isZero()) {
 			return F.C0;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IExpr numericEvalD1(final Num arg1) {
 		return F.num(Math.tanh(arg1.getRealPart()));
@@ -52,10 +56,10 @@ public class Tanh extends AbstractTrigArg1 implements INumeric {
 		}
 		return Math.tanh(stack[top]);
 	}
-	
+
 	@Override
-  public void setUp(final ISymbol symbol) throws SyntaxError {
-    symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-    super.setUp(symbol);
-  }
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
+	}
 }

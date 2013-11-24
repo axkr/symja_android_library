@@ -31,6 +31,10 @@ public class Sinh extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Sinh(Times(CN1, arg1)));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.Sin(imPart));
+		}
 		if (arg1.isZero()){
 			return F.C0;
 		}

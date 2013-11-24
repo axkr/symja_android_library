@@ -79,6 +79,10 @@ public class Cot extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) { 
 			return Times(CN1, Cot(Times(CN1, arg1)));
 		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CNI, F.Coth(imPart));
+		}
 		return null;
 	}
 	

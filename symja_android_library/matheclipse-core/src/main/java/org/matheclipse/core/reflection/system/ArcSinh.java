@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -32,6 +33,10 @@ public class ArcSinh extends AbstractTrigArg1 {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, ArcSinh(Times(CN1, arg1)));
+		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart != null) {
+			return F.Times(F.CI, F.ArcSin(imPart));
 		}
 		return null;
 	}
