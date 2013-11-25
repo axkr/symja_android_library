@@ -35,6 +35,10 @@ public class AddTo extends AbstractArg2 {
 
 	}
 
+	protected ISymbol getFunctionSymbol() {
+		return F.AddTo;
+	}
+
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
 		final EvalEngine engine = EvalEngine.get();
@@ -42,7 +46,7 @@ public class AddTo extends AbstractArg2 {
 			final IExpr v1 = engine.evaluate(o1);
 			final ISymbol sym = (ISymbol) o0;
 
-			IExpr[] results = sym.reassignSymbolValue(getFunction(v1));
+			IExpr[] results = sym.reassignSymbolValue(getFunction(v1), getFunctionSymbol());
 			if (results != null) {
 				return results[1];
 			}

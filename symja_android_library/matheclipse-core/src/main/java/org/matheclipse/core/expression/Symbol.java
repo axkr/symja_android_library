@@ -12,6 +12,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -73,7 +74,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function) {
+	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol) {
 		IExpr[] result = new IExpr[2];
 		IExpr symbolValue;
 		if (hasLocalVariableStack()) {
@@ -87,19 +88,6 @@ public class Symbol extends ExprImpl implements ISymbol {
 			}
 
 		} else {
-			// Pair<ISymbol, IExpr> pair = fRulesData.getEqualRules().get(this);
-			// if (pair != null) {
-			// symbolValue = pair.getSecond();
-			// if (symbolValue != null) {
-			// result[0] = symbolValue;
-			// IExpr calculatedResult = function.apply(symbolValue);
-			// if (calculatedResult != null) {
-			// pair.setSecond(calculatedResult);
-			// result[1] = calculatedResult;
-			// return result;
-			// }
-			// }
-			// }
 			if (fDownRulesData != null) {
 				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
 				if (pme != null) {
@@ -113,6 +101,25 @@ public class Symbol extends ExprImpl implements ISymbol {
 							return result;
 						}
 					}
+				}
+			}
+		}
+		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
+				+ " has no value! Reassignment with a new value is not possible");
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IExpr getAssignedValue() {
+		if (hasLocalVariableStack()) {
+			return get();
+		} else {
+			if (fDownRulesData != null) {
+				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					return pme.getRHS();
 				}
 			}
 		}

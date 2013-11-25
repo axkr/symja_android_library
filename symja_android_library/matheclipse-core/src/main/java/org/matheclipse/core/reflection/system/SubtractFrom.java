@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
@@ -22,6 +23,9 @@ public class SubtractFrom extends AddTo {
 			return F.eval(F.Plus(assignedValue, F.Times(F.CN1, value)));
 		}
 
+		protected ISymbol getFunctionSymbol() {
+			return F.SubtractFrom;
+		}
 	}
 
 	@Override

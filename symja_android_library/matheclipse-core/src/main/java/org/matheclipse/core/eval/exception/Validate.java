@@ -194,7 +194,7 @@ public final class Validate {
 		}
 		throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
 	}
-	
+
 	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
@@ -232,10 +232,25 @@ public final class Validate {
 				Validate.checkSymbolType(vars, i);
 			}
 			return vars;
-		} 
+		}
 		throw new WrongArgumentType(ast, ast.get(position), position, "List of symbols expected!");
 	}
-	
+
+	/**
+	 * Check if the argument is a symbol and has an assigned value.
+	 * 
+	 * @param expr
+	 *            the expr which has to be a symbol.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
+	 */
+	public static ISymbol checkAssignedVariable(IExpr expr) {
+		if (expr.isSymbol()) {
+			return (ISymbol) expr;
+		}
+		throw new WrongArgumentType(expr, "Failed to convert expression: " + expr.toString() + " into a variable!");
+	}
+
 	/**
 	 * Check if the argument at the given position is a symbol.
 	 * 

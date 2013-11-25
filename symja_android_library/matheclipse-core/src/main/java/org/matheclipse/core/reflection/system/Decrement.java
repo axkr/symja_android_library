@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -22,16 +24,11 @@ public class Decrement extends AbstractArg1 {
 
 	@Override
 	public IExpr e1ObjArg(final IExpr o0) {
-		// final EvalEngine engine = EvalEngine.get();
-		if (o0.isSymbol()) {
-
-			final ISymbol sym = (ISymbol) o0;
-			IExpr[] results = sym.reassignSymbolValue(getFunction());
-			if (results != null) {
-				return getResult(results[0], results[1]);
-			}
+		final ISymbol sym = Validate.checkAssignedVariable(o0);
+		IExpr[] results = sym.reassignSymbolValue(getFunction(), getFunctionSymbol());
+		if (results != null) {
+			return getResult(results[0], results[1]);
 		}
-
 		return null;
 	}
 
@@ -39,13 +36,16 @@ public class Decrement extends AbstractArg1 {
 		return new DecrementFunction();
 	}
 
+	protected ISymbol getFunctionSymbol() {
+		return F.Decrement;
+	}
+
 	protected IExpr getResult(IExpr symbolValue, IExpr calculatedResult) {
 		return symbolValue;
 	}
 
 	/**
-	 * Evaluate <code>assignedValue - 1</code>. Override this method in
-	 * subclasses.
+	 * Evaluate <code>assignedValue - 1</code>. Override this method in subclasses.
 	 * 
 	 * @param assignedValue
 	 *            the value currently assigned to the symbol

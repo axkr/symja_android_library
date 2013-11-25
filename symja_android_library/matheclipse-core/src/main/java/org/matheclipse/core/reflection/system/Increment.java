@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
@@ -18,4 +19,7 @@ public class Increment extends Decrement {
 		return new IncrementFunction();
 	}
 
+	protected ISymbol getFunctionSymbol() {
+		return F.Increment;
+	}
 }
