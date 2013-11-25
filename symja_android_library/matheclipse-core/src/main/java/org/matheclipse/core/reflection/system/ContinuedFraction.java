@@ -28,12 +28,12 @@ public class ContinuedFraction implements IFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
-		
+
 		int maxIterations = Integer.MAX_VALUE;
 		if (ast.size() == 3 && ast.arg2().isInteger()) {
 			maxIterations = Validate.checkIntType(ast, 2);
 		}
-		
+
 		if (arg1 instanceof INum) {
 			arg1 = F.fraction(((INum) arg1).getRealPart());
 		} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
@@ -78,7 +78,7 @@ public class ContinuedFraction implements IFunctionEvaluator {
 	}
 
 	public void setUp(ISymbol symbol) {
-
+		symbol.setAttributes(ISymbol.NHOLDREST);
 	}
 
 }
