@@ -118,17 +118,36 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 			}
 		} else if (expr.isTimes()) {
 			IAST times = (IAST) expr;
-			if (times.get(1).isNumber()) {
-				if (((INumber) times.get(1)).complexSign() < 0) {
+			if (times.arg1().isNumber()) {
+				if (((INumber) times.arg1()).complexSign() < 0) {
 					return true;
 				}
 			}
 		} else if (expr.isPlus()) {
 			IAST plus = (IAST) expr;
-			if (plus.get(1).isNumber()) {
-				if (((INumber) plus.get(1)).complexSign() < 0) {
+			if (plus.arg1().isNumber()) {
+				if (((INumber) plus.arg1()).complexSign() < 0) {
 					return true;
 				}
+//			} else {
+//				IAST times = null;
+//				for (int i = 1; i < plus.size(); i++) {
+//					if (plus.get(i).isAST()) {
+//						if (times != null) {
+//							return false;
+//						}
+//						if (plus.get(i).isTimes()) {
+//							times = (IAST) plus.get(i);
+//							if (times.arg1().isNumber()) {
+//								if (((INumber) times.arg1()).complexSign() < 0) {
+//									continue;
+//								}
+//							}
+//						}
+//						return false;
+//					}
+//				}
+//				return true;
 			}
 		}
 
@@ -157,4 +176,28 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		}
 		return null;
 	}
+
+	public static IExpr[] getPeriodicParts(final IExpr expr) {
+		if (expr.isPlus()) {
+			IAST plus = (IAST) expr;
+			for (int i = 0; i < plus.size(); i++) {
+				if (plus.get(i).isTimes()) {
+					IAST times = (IAST) plus.get(i);
+					if (times.size() == 3 && times.arg2().equals(F.Pi)) {
+						if (times.arg1().isRational()) {
+							IExpr[] result = new IExpr[2];
+							IAST cloned = plus.clone();
+							cloned.remove(i);
+							result[0] = cloned;
+							result[1] = times.arg1();
+							return result;
+						}
+					}
+				}
+			}
+
+		}
+		return null;
+	}
+
 }

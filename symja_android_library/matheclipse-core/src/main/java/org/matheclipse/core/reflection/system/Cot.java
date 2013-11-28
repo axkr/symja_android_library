@@ -83,6 +83,13 @@ public class Cot extends AbstractTrigArg1 implements INumeric {
 		if (imPart != null) {
 			return F.Times(F.CNI, F.Coth(imPart));
 		}
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+		if (parts != null) {
+			if (parts[1].isInteger()) {
+				// period Pi
+				return F.Cot(parts[0]);
+			}
+		}
 		return null;
 	}
 	

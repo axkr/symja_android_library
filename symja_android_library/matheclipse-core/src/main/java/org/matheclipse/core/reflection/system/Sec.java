@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -82,6 +83,18 @@ public class Sec extends AbstractTrigArg1 implements INumeric {
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
 			return F.Sech(imPart);
+		}
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+		if (parts != null) {
+			if (parts[1].isInteger()) {
+				// period 2*Pi
+				IInteger i = (IInteger) parts[1];
+				if (i.isEven()) {
+					return F.Sec(parts[0]);
+				} else {
+					return F.Times(F.CN1, F.Sec(parts[0]));
+				}
+			}
 		}
 		return null;
 	}
