@@ -388,6 +388,9 @@ public class Parser extends Scanner {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();
+		if (fToken == TT_PRECEDENCE_OPEN) {
+			return getTimes(temp);
+		}
 		return temp;
 	}
 
@@ -644,19 +647,7 @@ public class Parser extends Scanner {
 			}
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
-				FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
-				func.add(temp);
-				do {
-					getNextToken();
-
-					temp = parseOperators(parsePrimary(), 0);
-					func.add(temp);
-					if (fToken != TT_PRECEDENCE_CLOSE) {
-						throwSyntaxError("\')\' expected.");
-					}
-					getNextToken();
-				} while (fToken == TT_PRECEDENCE_OPEN);
-				return func;
+				return getTimes(temp);
 			}
 			return temp;
 		}
@@ -725,6 +716,22 @@ public class Parser extends Scanner {
 
 		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (" + fToken + ")");
 		return null;
+	}
+
+	private ASTNode getTimes(ASTNode temp) throws SyntaxError {
+		FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
+		func.add(temp);
+		do {
+			getNextToken();
+
+			temp = parseOperators(parsePrimary(), 0);
+			func.add(temp);
+			if (fToken != TT_PRECEDENCE_CLOSE) {
+				throwSyntaxError("\')\' expected.");
+			}
+			getNextToken();
+		} while (fToken == TT_PRECEDENCE_OPEN);
+		return func;
 	}
 
 	/**
