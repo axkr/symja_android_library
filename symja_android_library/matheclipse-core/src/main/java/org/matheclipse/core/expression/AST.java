@@ -724,6 +724,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isNumIntValue() {
 		return false;
 	}

@@ -563,6 +563,12 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNumIntValue() {
 		return false;
 	}

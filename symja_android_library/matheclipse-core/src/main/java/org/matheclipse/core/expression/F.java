@@ -2424,6 +2424,15 @@ public class F {
 	// return equals(i, b);
 	// }
 
+	public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
+		long l = ii.toLong();
+		return isZero(value - l, Config.DOUBLE_TOLERANCE);
+	}
+	
+	public static boolean isNumIntValue(double value, int i) {
+		return isZero(value - i, Config.DOUBLE_TOLERANCE);
+	}
+	
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.round(value), Config.DOUBLE_TOLERANCE);
 	}

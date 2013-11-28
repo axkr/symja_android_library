@@ -111,8 +111,8 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public IExpr getAt(final int index);
 
 	/**
-	 * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the
-	 * <code>IAST</code> list (i.e. get(0) ).
+	 * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the <code>IAST</code> list (i.e.
+	 * get(0) ).
 	 * 
 	 * @return the head of the expression, which must not be null.
 	 */
@@ -455,6 +455,14 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * @return
 	 */
 	public boolean isNumIntValue();
+
+	/**
+	 * Check if this expression equals an <code>IInteger</code> value. The value of an <code>INum</code> or the value of an
+	 * <code>IInteger</code> object can be an <code>IInteger</code> value.
+	 * 
+	 * @return
+	 */
+	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException;
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns true if this expression is canonical less than or

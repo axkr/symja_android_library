@@ -51,6 +51,13 @@ public class Num extends ExprImpl implements INum {
 		return DOUBLEID;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+		return F.isNumEqualInteger(fDouble, ii);
+	}
+	
+	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {
 		return F.isNumIntValue(fDouble);
