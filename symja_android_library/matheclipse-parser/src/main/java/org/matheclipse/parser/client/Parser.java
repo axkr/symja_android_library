@@ -270,7 +270,7 @@ public class Parser extends Scanner {
 				if (oper.getPrecedence() >= min_precedence) {
 					rhs = parseLookaheadOperator(oper.getPrecedence());
 					lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
-					lhs = parseArguments(lhs);
+//					lhs = parseArguments(lhs);
 					continue;
 				}
 			} else {
@@ -291,7 +291,7 @@ public class Parser extends Scanner {
 						getNextToken();
 						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 						lhs = infixOperator.createFunction(fFactory, lhs, rhs);
-						lhs = parseArguments(lhs);
+//						lhs = parseArguments(lhs);
 						continue;
 					}
 				} else {
@@ -388,9 +388,9 @@ public class Parser extends Scanner {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();
-		if (fToken == TT_PRECEDENCE_OPEN) {
-			return getTimes(temp);
-		}
+		// if (fToken == TT_PRECEDENCE_OPEN) {
+		// return getTimes(temp);
+		// }
 		return temp;
 	}
 
@@ -562,42 +562,43 @@ public class Parser extends Scanner {
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final ASTNode check = getSymbol();
-					return fFactory.createPattern(symbol, check);
+					temp = fFactory.createPattern(symbol, check);
 				} else {
-					return fFactory.createPattern(symbol, null);
+					temp = fFactory.createPattern(symbol, null);
 				}
 			} else if (fToken == TT_BLANK_BLANK) {
 				// read '__'
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final ASTNode check = getSymbol();
-					return fFactory.createPattern2(symbol, check);
+					temp = fFactory.createPattern2(symbol, check);
 				} else {
-					return fFactory.createPattern2(symbol, null);
+					temp = fFactory.createPattern2(symbol, null);
 				}
 			} else if (fToken == TT_BLANK_BLANK_BLANK) {
 				// read '___'
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final ASTNode check = getSymbol();
-					return fFactory.createPattern3(symbol, check);
+					temp = fFactory.createPattern3(symbol, check);
 				} else {
-					return fFactory.createPattern3(symbol, null);
+					temp = fFactory.createPattern3(symbol, null);
 				}
 			} else if (fToken == TT_BLANK_OPTIONAL) {
 				// read '_.'
 				getNextToken();
 				if (fToken == TT_IDENTIFIER) {
 					final ASTNode check = getSymbol();
-					return fFactory.createPattern(symbol, check, true);
+					temp = fFactory.createPattern(symbol, check, true);
 				} else {
-					return fFactory.createPattern(symbol, null, true);
+					temp = fFactory.createPattern(symbol, null, true);
 				}
+			} else {
+				temp = symbol;
 			}
 
-			return symbol;
-		}
-		if (fToken == TT_BLANK) {
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK) {
 			getNextToken();
 			if (fToken == TT_IDENTIFIER) {
 				final ASTNode check = getSymbol();
@@ -632,12 +633,9 @@ public class Parser extends Scanner {
 			} else {
 				return fFactory.createPattern(null, null, true);
 			}
-		}
-
-		if (fToken == TT_DIGIT) {
+		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
-		}
-		if (fToken == TT_PRECEDENCE_OPEN) {
+		} else if (fToken == TT_PRECEDENCE_OPEN) {
 			getNextToken();
 
 			temp = parseOperators(parsePrimary(), 0);
@@ -650,14 +648,11 @@ public class Parser extends Scanner {
 				return getTimes(temp);
 			}
 			return temp;
-		}
-		if (fToken == TT_LIST_OPEN) {
+		} else if (fToken == TT_LIST_OPEN) {
 			return getList();
-		}
-		if (fToken == TT_STRING) {
+		} else if (fToken == TT_STRING) {
 			return getString();
-		}
-		if (fToken == TT_PERCENT) {
+		} else if (fToken == TT_PERCENT) {
 
 			final FunctionNode out = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Out));
 
@@ -676,8 +671,7 @@ public class Parser extends Scanner {
 
 			out.add(fFactory.createInteger(-countPercent));
 			return out;
-		}
-		if (fToken == TT_SLOT) {
+		} else if (fToken == TT_SLOT) {
 
 			getNextToken();
 			final FunctionNode slot = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Slot));
@@ -687,9 +681,7 @@ public class Parser extends Scanner {
 				slot.add(fFactory.createInteger(1));
 			}
 			return slot;
-
-		}
-		if (fToken == TT_SLOTSEQUENCE) {
+		} else if (fToken == TT_SLOTSEQUENCE) {
 
 			getNextToken();
 			final FunctionNode slotSequencce = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
@@ -699,7 +691,6 @@ public class Parser extends Scanner {
 				slotSequencce.add(fFactory.createInteger(1));
 			}
 			return slotSequencce;
-
 		}
 		switch (fToken) {
 
@@ -740,7 +731,7 @@ public class Parser extends Scanner {
 	 */
 	private ASTNode getPart() throws SyntaxError {
 		ASTNode temp = getFactor();
-		temp = parseArguments(temp);
+//		temp = parseArguments(temp);
 
 		if (fToken != TT_PARTOPEN) {
 			return temp;
