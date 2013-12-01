@@ -3,7 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -202,7 +202,7 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	private Map<ISymbol, IExpr> getRulesMap() {
-		final Map<ISymbol, IExpr> rulesMap = new HashMap<ISymbol, IExpr>(fSymbolsArray.length * 2);
+		final Map<ISymbol, IExpr> rulesMap = new IdentityHashMap<ISymbol, IExpr>(fSymbolsArray.length * 2);
 		for (int i = 0; i < fSymbolsArray.length; i++) {
 			if (fPatternValuesArray[i] != null) {
 				rulesMap.put(fSymbolsArray[i], fPatternValuesArray[i]);
