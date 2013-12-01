@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin.function;
-
-import java.util.HashMap;
+ 
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
@@ -49,7 +49,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
 			// final IAST lst = (IAST) ast.arg1();
-			final java.util.Map<ISymbol, ISymbol> variables = new HashMap<ISymbol, ISymbol>();
+			final java.util.Map<ISymbol, ISymbol> variables = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
 				rememberVariables(intializerList, engine, varAppend, variables);
@@ -77,8 +77,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 		final int moduleCounter = engine.incModuleCounter();
 		final String varAppend = "$" + moduleCounter;
-		// final IAST lst = (IAST) ast.arg1();
-		final java.util.Map<ISymbol, ISymbol> variables = new HashMap<ISymbol, ISymbol>();
+		final java.util.Map<ISymbol, ISymbol> variables = new IdentityHashMap<ISymbol, ISymbol>();
 
 		try {
 			rememberVariables(intializerList, engine, varAppend, variables);
