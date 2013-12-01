@@ -171,14 +171,14 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public void pushLocalVariable(final IExpr expression) {
-		final Stack<IExpr> localVariableStack = EvalEngine.localStackCreate(fSymbolName);
+		final Stack<IExpr> localVariableStack = EvalEngine.localStackCreate(this);
 		localVariableStack.push(expression);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public void popLocalVariable() {
-		final Stack<IExpr> fLocalVariableStack = EvalEngine.localStack(fSymbolName);
+		final Stack<IExpr> fLocalVariableStack = EvalEngine.localStack(this);
 		fLocalVariableStack.pop();
 	}
 
@@ -281,14 +281,14 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean hasLocalVariableStack() {
-		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
+		final Stack<IExpr> localVariableStack = EvalEngine.localStack(this);
 		return (localVariableStack != null) && !(localVariableStack.isEmpty());
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IExpr get() {
-		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
+		final Stack<IExpr> localVariableStack = EvalEngine.localStack(this);
 		if (localVariableStack == null) {
 			return null;
 		}
@@ -298,7 +298,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public void set(final IExpr value) {
-		final Stack<IExpr> localVariableStack = EvalEngine.localStack(fSymbolName);
+		final Stack<IExpr> localVariableStack = EvalEngine.localStack(this);
 
 		localVariableStack.set(localVariableStack.size() - 1, value);
 	}

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,8 +79,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbolName
 	 * @return <code>null</code> if the stack doesn't exist
 	 */
-	final public static Stack<IExpr> localStack(final String symbolName) {
-		return get().getLocalVariableStackMap().get(symbolName);
+	final public static Stack<IExpr> localStack(final ISymbol symbol) {
+		return get().getLocalVariableStackMap().get(symbol);
 	}
 
 	/**
@@ -89,14 +90,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbolName
 	 * @return
 	 */
-	public static Stack<IExpr> localStackCreate(final String symbolName) {
-		Map<String, Stack<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
-		Stack<IExpr> temp = localVariableStackMap.get(symbolName);
+	public static Stack<IExpr> localStackCreate(final ISymbol symbol) {
+		Map<ISymbol, Stack<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
+		Stack<IExpr> temp = localVariableStackMap.get(symbol);
 		if (temp != null) {
 			return temp;
 		}
 		temp = new Stack<IExpr>();
-		localVariableStackMap.put(symbolName, temp);
+		localVariableStackMap.put(symbol, temp);
 		return temp;
 	}
 
@@ -144,7 +145,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Associate a symbol name with a local variable stack in this thread.
 	 * 
 	 */
-	transient private Map<String, Stack<IExpr>> fLocalVariableStackMap = null;
+	transient private IdentityHashMap<ISymbol, Stack<IExpr>> fLocalVariableStackMap = null;
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -907,9 +908,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fIterationLimit;
 	}
 
-	final public Map<String, Stack<IExpr>> getLocalVariableStackMap() {
+	final public Map<ISymbol, Stack<IExpr>> getLocalVariableStackMap() {
 		if (fLocalVariableStackMap == null) {
-			fLocalVariableStackMap = new HashMap<String, Stack<IExpr>>();
+			fLocalVariableStackMap = new IdentityHashMap<ISymbol, Stack<IExpr>>();
 		}
 		return fLocalVariableStackMap;
 	}
