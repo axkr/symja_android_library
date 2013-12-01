@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class InverseFunction extends AbstractFunctionEvaluator {
-	private static Map<ISymbol, ISymbol> INVERSE_FUNCTIONS = new HashMap<ISymbol, ISymbol>();
+	private static Map<ISymbol, ISymbol> INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, ISymbol>();
 
 	static {
 		INVERSE_FUNCTIONS.put(F.Cos, F.ArcCos);
