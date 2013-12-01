@@ -1069,8 +1069,7 @@ public class F {
 			return symbol;
 		}
 		EvalEngine engine = EvalEngine.get();
-		Map<String, ISymbol> variableMap = engine.getVariableMap();
-		symbol = variableMap.get(name);
+		symbol = engine.getUserVariable(name);
 		if (symbol != null) {
 			return symbol;
 		}
@@ -1097,7 +1096,7 @@ public class F {
 				}
 			}
 			symbol = new Symbol(name);
-			variableMap.put(name, symbol);
+			engine.putUserVariable(name, symbol);
 			if (name.charAt(0) == '$') {
 				SYMBOL_OBSERVER.createUserSymbol(symbol);
 			}

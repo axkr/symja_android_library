@@ -139,7 +139,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @see ExprFactory.fSymbolMap for global symbol names
 	 */
-	private Map<String, ISymbol> fVariableMap;
+	private Map<String, ISymbol> fUserVariableMap;
 
 	/**
 	 * Associate a symbol name with a local variable stack in this thread.
@@ -964,15 +964,45 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get a local user symbol name in this ThreadLocal associated with the symbol created in this thread.
+	 * Returns the <code>ISymbol</code> variable created in this thread to which the specified <code>symbolName</code> is mapped, or
+	 * <code>null</code> if this map contains no mapping for the <code>symbolName</code>.
 	 * 
-	 * @see ExprFactory.fSymbolMap for global symbol names
+	 * @param name
+	 * @return
 	 */
-	final public Map<String, ISymbol> getVariableMap() {
-		if (fVariableMap == null) {
-			fVariableMap = new HashMap<String, ISymbol>();
+	public ISymbol getUserVariable(final String symbolName) {
+		if (fUserVariableMap == null) {
+			fUserVariableMap = new HashMap<String, ISymbol>();
 		}
-		return fVariableMap;
+		return fUserVariableMap.get(symbolName);
+	}
+
+	/**
+	 * Associates the <code>symbolName</code> key with the <code>ISymbol</code> value.
+	 * 
+	 * @param symbolName
+	 * @param symbol
+	 * @return
+	 */
+	public ISymbol putUserVariable(final String symbolName, final ISymbol symbol) {
+		if (fUserVariableMap == null) {
+			fUserVariableMap = new HashMap<String, ISymbol>();
+		}
+		return fUserVariableMap.put(symbolName, symbol);
+	}
+
+	/**
+	 * Remove all <code>moduleVariables</code> from this evaluation engine.
+	 * 
+	 * @param moduleVariables
+	 */
+	public void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
+		// remove all module variables from eval engine
+		if (fUserVariableMap != null) {
+			for (ISymbol symbol : moduleVariables.values()) {
+				fUserVariableMap.remove(symbol.toString());
+			}
+		}
 	}
 
 	/**
@@ -1197,8 +1227,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		if (fVariableMap != null) {
-			buf.append(fVariableMap.toString());
+		if (fUserVariableMap != null) {
+			buf.append(fUserVariableMap.toString());
 		}
 		if (fLocalVariableStackMap != null) {
 			buf.append(fLocalVariableStackMap.toString());

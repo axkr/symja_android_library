@@ -49,18 +49,18 @@ public class Module extends AbstractCoreFunctionEvaluator {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
 			// final IAST lst = (IAST) ast.arg1();
-			final java.util.Map<ISymbol, ISymbol> variables = new IdentityHashMap<ISymbol, ISymbol>();
+			final java.util.Map<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
-				rememberVariables(intializerList, engine, varAppend, variables);
-				IExpr result = F.subst(arg2, Functors.rules(variables));
+				rememberVariables(intializerList, engine, varAppend, moduleVariables);
+				IExpr result = F.subst(arg2, Functors.rules(moduleVariables));
 				if (result.isCondition()) {
 					return Condition.checkCondition(result.getAt(1), result.getAt(2), engine);
 				} else if (result.isModule()) {
 					return checkModuleCondition(result.getAt(1), result.getAt(2), engine);
 				}
 			} finally {
-				removeVariables(engine, variables);
+				engine.removeUserVariables(moduleVariables);
 			}
 		}
 		return true;
@@ -77,24 +77,16 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 		final int moduleCounter = engine.incModuleCounter();
 		final String varAppend = "$" + moduleCounter;
-		final java.util.Map<ISymbol, ISymbol> variables = new IdentityHashMap<ISymbol, ISymbol>();
+		final java.util.Map<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
 
 		try {
-			rememberVariables(intializerList, engine, varAppend, variables);
-			IExpr temp = engine.evaluate(F.subst(arg2, Functors.rules(variables)));
+			rememberVariables(intializerList, engine, varAppend, moduleVariables);
+			IExpr temp = engine.evaluate(F.subst(arg2, Functors.rules(moduleVariables)));
 			return temp;
 		} finally {
-			removeVariables(engine, variables);
+			engine.removeUserVariables(moduleVariables);
 		}
-	}
-
-	private static void removeVariables(final EvalEngine engine, final java.util.Map<ISymbol, ISymbol> variables) {
-		// remove all module variables from eval engine
-		Map<String, ISymbol> variableMap = engine.getVariableMap();
-		for (ISymbol symbol : variables.values()) {
-			variableMap.remove(symbol.toString());
-		}
-	}
+	} 
 
 	private static void rememberVariables(IAST variablesList, final EvalEngine engine, final String varAppend,
 			final java.util.Map<ISymbol, ISymbol> variables) {
