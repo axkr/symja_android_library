@@ -83,7 +83,7 @@ public class AST2Expr {
 	/**
 	 * Aliases which are mapped to the standard function symbols.
 	 */
-	public static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
+	private static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
 
 	public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
 	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
