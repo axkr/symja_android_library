@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -8,7 +8,6 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -37,12 +36,40 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 			}
 		} else if (arg1.isComplex()) {
 			final IComplex ic = (IComplex) arg1;
-			if (ic.getRealPart().equals(BigFraction.ZERO)) {
-				final BigFraction imaginaryPart = ic.getImaginaryPart();
-				if (NumberUtil.isNegative(imaginaryPart)) {
-					return Times(F.CN1D2, F.Pi);
-				} else if (NumberUtil.isPositive(imaginaryPart)) {
-					return Times(F.C1D2, F.Pi);
+			// ic == ( x + I * y )
+			BigFraction x = ic.getRealPart();
+			BigFraction y = ic.getImaginaryPart();
+			int xi = x.compareTo(BigFraction.ZERO);
+			int yi = y.compareTo(BigFraction.ZERO);
+			if (xi < 0) {
+				// x < 0
+				if (yi < 0) {
+					// y < 0
+
+					// -Pi + ArcTan(y/x)
+					return Plus(Times(CN1, Pi), ArcTan(Divide(F.fraction(y), F.fraction(x))));
+				} else {
+					// y >= 0
+
+					// Pi + ArcTan(y/x)
+					return Plus(Pi, ArcTan(Divide(F.fraction(y), F.fraction(x))));
+				}
+			}
+			if (xi > 0) {
+				// ArcTan(y/x)
+				return ArcTan(Divide(F.fraction(y), F.fraction(x)));
+			}
+			if (yi < 0) {
+				// y < 0
+
+				// -Pi/2 + ArcTan(x/y)
+				return Plus(Times(CN1D2, Pi), ArcTan(Divide(F.fraction(x), F.fraction(y))));
+			} else {
+				if (yi > 0) {
+					// y > 0
+
+					// Pi/2 + ArcTan(x/y)
+					return Plus(Times(C1D2, Pi), ArcTan(Divide(F.fraction(x), F.fraction(y))));
 				}
 			}
 		}
