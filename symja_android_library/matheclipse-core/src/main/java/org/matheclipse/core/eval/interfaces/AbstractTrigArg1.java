@@ -25,15 +25,15 @@ public abstract class AbstractTrigArg1 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST functionList) {
-		Validate.checkSize(functionList, 2);
-		if (functionList.get(1) instanceof Num) {
-			return numericEvalD1((Num) functionList.get(1));
+	public IExpr numericEval(final IAST ast) {
+		Validate.checkSize(ast, 2);
+		if (ast.get(1) instanceof Num) {
+			return numericEvalD1((Num) ast.get(1));
 		}
-		if (functionList.get(1) instanceof ComplexNum) {
-			return numericEvalDC1((ComplexNum) functionList.get(1));
+		if (ast.get(1) instanceof ComplexNum) {
+			return numericEvalDC1((ComplexNum) ast.get(1));
 		}
-		return numericEvalArg1(functionList.get(1));
+		return numericEvalArg1(ast.get(1));
 	}
 
 	/**

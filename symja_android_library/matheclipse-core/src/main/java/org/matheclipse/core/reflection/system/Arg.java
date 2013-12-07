@@ -6,9 +6,11 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -34,6 +36,10 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 			} else if (!in.equals(F.C0)) {
 				return F.C0;
 			}
+		} else if (arg1.isComplexNumeric()) {
+			final IComplexNum ic = (IComplexNum) arg1;
+			// ic == ( x + I * y )
+			return num(Math.atan2(ic.getImaginaryPart(), ic.getRealPart()));
 		} else if (arg1.isComplex()) {
 			final IComplex ic = (IComplex) arg1;
 			// ic == ( x + I * y )
@@ -99,10 +105,17 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 		return null;
 	}
 
-	// public IExpr numericEvalDC1(AbstractExpressionFactory f, DoubleComplexImpl
-	// arg1) {
-	// return f.createDouble(arg1.argument());
-	// }
+	/**
+	 * Evaluate this function for one double complex argument
+	 * 
+	 * @param arg1
+	 *          a double complex number
+	 * 
+	 * @return
+	 */
+	public IExpr numericEvalDC1(final ComplexNum arg1) {
+		return num(Math.atan2(arg1.getImaginaryPart(), arg1.getRealPart()));
+	} 
 
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
