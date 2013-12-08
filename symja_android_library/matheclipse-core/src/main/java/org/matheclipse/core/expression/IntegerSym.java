@@ -263,7 +263,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return equals(ii);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
@@ -331,7 +331,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @return
 	 */
 	@Override
-	public IExpr opposite() {
+	public ISignedNumber opposite() {
 		return newInstance(fInteger.negate());
 	}
 
@@ -350,7 +350,18 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	@Override
-	public ISignedNumber minus(ISignedNumber that) {
+	public ISignedNumber divideBy(ISignedNumber that) {
+		if (that instanceof IntegerSym) {
+			return FractionSym.valueOf(fInteger).divideBy(that);
+		}
+		if (that instanceof FractionSym) {
+			return FractionSym.valueOf(fInteger).divideBy(that);
+		}
+		return Num.valueOf(fInteger.doubleValue() / that.doubleValue());
+	}
+
+	@Override
+	public ISignedNumber subtractFrom(ISignedNumber that) {
 		if (that instanceof IntegerSym) {
 			return this.add((IntegerSym) that.negate());
 		}
@@ -358,7 +369,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return that.negate();
 		}
 		if (that instanceof FractionSym) {
-			return FractionSym.valueOf(fInteger).minus(that);
+			return FractionSym.valueOf(fInteger).subtractFrom(that);
 		}
 		return Num.valueOf(fInteger.doubleValue() - that.doubleValue());
 	}
@@ -376,7 +387,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @return
 	 */
 	@Override
-	public IExpr inverse() {
+	public ISignedNumber inverse() {
 		if (NumberUtil.isNegative(fInteger)) {
 			return FractionSym.valueOf(BigInteger.valueOf(-1), fInteger.negate());
 		}

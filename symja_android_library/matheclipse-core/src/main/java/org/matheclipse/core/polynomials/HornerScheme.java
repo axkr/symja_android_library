@@ -54,7 +54,7 @@ public class HornerScheme {
 					}
 				} else {
 					temp = F.Times();
-					ISignedNumber currentExponent = exponent.minus(start);
+					ISignedNumber currentExponent = exponent.subtractFrom(start);
 					if (currentExponent.equals(F.CD1)) {
 						temp.add(sym);
 					} else {
@@ -87,7 +87,7 @@ public class HornerScheme {
 					}
 				} else {
 					temp = F.Times();
-					ISignedNumber currentExponent = exponent.minus(start);
+					ISignedNumber currentExponent = exponent.subtractFrom(start);
 					if (currentExponent.equals(F.C1)) {
 						temp.add(sym);
 					} else {

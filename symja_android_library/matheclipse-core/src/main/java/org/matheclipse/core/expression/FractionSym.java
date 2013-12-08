@@ -278,7 +278,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * @return
 	 */
 	@Override
-	public IExpr opposite() {
+	public ISignedNumber opposite() {
 		return newInstance(fRational.negate());
 	}
 
@@ -299,7 +299,19 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber minus(ISignedNumber that) {
+	public ISignedNumber divideBy(ISignedNumber that) {
+		if (that instanceof FractionSym) {
+			return newInstance(this.divide(((FractionSym) that).fRational));
+		} 
+		if (that instanceof IntegerSym) {
+			return this.divideBy(valueOf(((IntegerSym) that).fInteger));
+		}
+		return Num.valueOf(doubleValue() / that.doubleValue());
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber subtractFrom(ISignedNumber that) {
 		if (that instanceof FractionSym) {
 			return this.add((FractionSym) that.negate());
 		}
@@ -307,7 +319,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 			return that.negate();
 		}
 		if (that instanceof IntegerSym) {
-			return this.minus(valueOf(((IntegerSym) that).fInteger));
+			return this.subtractFrom(valueOf(((IntegerSym) that).fInteger));
 		}
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
@@ -339,7 +351,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr inverse() {
+	public ISignedNumber inverse() {
 		return newInstance(NumberUtil.inverse(fRational));
 	}
 

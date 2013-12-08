@@ -35,13 +35,22 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber negate();
 
 	/**
+	 * Divide <code>this</code> signed number by <code>that</code> signed number.
+	 * 
+	 * @param that
+	 *            a signed number
+	 * @return
+	 */
+	public ISignedNumber divideBy(ISignedNumber that);
+	
+	/**
 	 * Subtract <code>that</code> signed number from <code>this</code> signed number
 	 * 
 	 * @param that
 	 *            a signed number
 	 * @return
 	 */
-	public ISignedNumber minus(ISignedNumber that);
+	public ISignedNumber subtractFrom(ISignedNumber that);
 
 	/**
 	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of this number is negative, zero or positive).
@@ -101,9 +110,9 @@ public interface ISignedNumber extends INumber {
 	 */
 	public IInteger round();
 
-	public IExpr inverse();
+	public ISignedNumber inverse();
 
-	public IExpr opposite();
+	public ISignedNumber opposite();
 
 	public double doubleValue();
 }

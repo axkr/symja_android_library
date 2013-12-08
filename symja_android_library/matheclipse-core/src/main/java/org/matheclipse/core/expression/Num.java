@@ -157,7 +157,12 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	@Override
-	public ISignedNumber minus(ISignedNumber that) {
+	public ISignedNumber divideBy(ISignedNumber that) {
+		return Num.valueOf(doubleValue() / that.doubleValue());
+	}
+	
+	@Override
+	public ISignedNumber subtractFrom(ISignedNumber that) {
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
 
@@ -334,7 +339,7 @@ public class Num extends ExprImpl implements INum {
 	 * @return
 	 */
 	@Override
-	public IExpr opposite() {
+	public ISignedNumber opposite() {
 		return newInstance(-fDouble);
 	}
 
@@ -362,7 +367,7 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	@Override
-	public IExpr inverse() {
+	public ISignedNumber inverse() {
 		return newInstance(1 / fDouble);
 	}
 
