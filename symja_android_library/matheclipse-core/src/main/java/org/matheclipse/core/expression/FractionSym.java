@@ -564,13 +564,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getIm() {
+	public ISignedNumber getIm() {
 		return F.C0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getRe() {
+	public ISignedNumber getRe() {
 		return this;
 	}
 }

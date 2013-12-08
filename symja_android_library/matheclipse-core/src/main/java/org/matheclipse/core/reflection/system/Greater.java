@@ -43,14 +43,15 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 	 */
 	final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
-		IExpr lhs, rhs;
+		IExpr lhs;
+		ISignedNumber rhs;
 		boolean useOppositeHeader = false;
 		if (a2.isSignedNumber()) {
 			lhs = a1;
-			rhs = a2;
+			rhs = (ISignedNumber) a2;
 		} else if (a1.isSignedNumber()) {
 			lhs = a2;
-			rhs = a1;
+			rhs = (ISignedNumber) a1;
 			useOppositeHeader = true;
 		} else {
 			return null;
@@ -63,13 +64,13 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 					if (sn.isNegative()) {
 						useOppositeHeader = !useOppositeHeader;
 					}
-					rhs = F.eval(F.Divide(rhs, sn));
+					rhs = rhs.divideBy(sn);
 					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
 				}
 			} else if (lhsAST.isPlus()) {
 				if (lhsAST.arg1().isSignedNumber()) {
 					ISignedNumber sn = (ISignedNumber) lhsAST.arg1();
-					rhs = F.eval(F.Subtract(rhs, sn));
+					rhs = rhs.subtractFrom(sn);
 					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
 				}
 			}

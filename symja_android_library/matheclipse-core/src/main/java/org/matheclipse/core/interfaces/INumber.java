@@ -31,20 +31,19 @@ public interface INumber extends IExpr {
 	 */
 	public boolean equalsInt(int i);
 	
-	public IExpr opposite();
+	public INumber opposite();
 	
-
 	/**
 	 * Returns the imaginary part of a complex number
 	 * 
 	 * @return real part
 	 */
-	public IExpr getIm();
+	public ISignedNumber getIm();
 	
 	/**
 	 * Returns the real part of a complex number
 	 * 
 	 * @return real part
 	 */
-	public IExpr getRe(); 
+	public ISignedNumber getRe(); 
 }

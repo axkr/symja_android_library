@@ -6,6 +6,8 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -378,7 +380,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	@Override
-	public IExpr opposite() {
+	public INumber opposite() {
 		return newInstance(fComplex.negate());
 	}
 
@@ -576,13 +578,13 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getIm() {
-		return F.C0;
+	public ISignedNumber getIm() { 
+		return F.num(getImaginaryPart());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getRe() {
-		return this;
+	public ISignedNumber getRe() {
+		return F.num(getRealPart());
 	}
 }

@@ -516,13 +516,13 @@ public class Num extends ExprImpl implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getIm() {
-		return F.C0;
+	public ISignedNumber getIm() {
+		return F.CD0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getRe() {
+	public ISignedNumber getRe() {
 		return this;
 	}
 }

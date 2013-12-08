@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -174,8 +175,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return _imaginary;
 	}
 
-	public IExpr getIm() {
-		return FractionSym.valueOf(_imaginary);
+	public ISignedNumber getIm() {
+		return FractionSym.newInstance(_imaginary);
 	}
 
 	/**
@@ -187,8 +188,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return _real;
 	}
 
-	public IExpr getRe() {
-		return FractionSym.valueOf(_real);
+	public ISignedNumber getRe() {
+		return FractionSym.newInstance(_real);
 	}
 
 	@Override
@@ -253,7 +254,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
-	public IExpr opposite() {
+	public INumber opposite() {
 		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
 	}
 
