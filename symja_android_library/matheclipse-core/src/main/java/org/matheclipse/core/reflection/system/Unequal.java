@@ -12,6 +12,12 @@ public class Unequal extends Equal {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() > 1) {
+			if (ast.size() == 3) {
+				IExpr result = simplifyCompare(ast.arg1(), ast.arg2(), F.Unequal);
+				if (result != null) {
+					return result;
+				}
+			}
 			int b = 0;
 			IAST result = ast.clone();
 			int i = 2;

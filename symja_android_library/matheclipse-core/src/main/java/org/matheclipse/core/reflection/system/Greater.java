@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ITernaryComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Greater extends AbstractFunctionEvaluator implements ITernaryComparator<IExpr> {
@@ -15,10 +16,98 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	public Greater() {
 	}
 
+	/**
+	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * 
+	 * @param a1
+	 *            left-hand-side of the comparator expression
+	 * @param a2
+	 *            right-hand-side of the comparator expression
+	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 */
+	protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+		return simplifyCompare(a1, a2, F.Greater, F.Less);
+	}
+
+	/**
+	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * 
+	 * @param a1
+	 *            left-hand-side of the comparator expression
+	 * @param a2
+	 *            right-hand-side of the comparator expression
+	 * @param originalHead
+	 *            symbol for which the simplification was started
+	 * @param oppositeHead
+	 *            opposite of the symbol for which the comparison was started
+	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 */
+	final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
+		IExpr lhs, rhs;
+		boolean useOppositeHeader = false;
+		if (a2.isSignedNumber()) {
+			lhs = a1;
+			rhs = a2;
+		} else if (a1.isSignedNumber()) {
+			lhs = a2;
+			rhs = a1;
+			useOppositeHeader = true;
+		} else {
+			return null;
+		}
+		if (lhs.isAST()) {
+			IAST lhsAST = (IAST) lhs;
+			if (lhsAST.isTimes()) {
+				if (lhsAST.arg1().isSignedNumber()) {
+					ISignedNumber sn = (ISignedNumber) lhsAST.arg1();
+					if (sn.isNegative()) {
+						useOppositeHeader = !useOppositeHeader;
+					}
+					rhs = F.eval(F.Divide(rhs, sn));
+					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
+				}
+			} else if (lhsAST.isPlus()) {
+				if (lhsAST.arg1().isSignedNumber()) {
+					ISignedNumber sn = (ISignedNumber) lhsAST.arg1();
+					rhs = F.eval(F.Subtract(rhs, sn));
+					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Create the result for a <code>simplifyCompare()</code> step.
+	 * 
+	 * @param lhsAST
+	 * @param rhs
+	 * @param useOppositeHeader
+	 * @param originalHead
+	 * @param oppositeHead
+	 * @return
+	 */
+	private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
+			ISymbol oppositeHead) {
+		IAST lhsClone = lhsAST.clone();
+		lhsClone.remove(1);
+		if (useOppositeHeader) {
+			return F.binary(oppositeHead, lhsClone, rhs);
+		} else {
+			return F.binary(originalHead, lhsClone, rhs);
+		}
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
+		if (ast.size() == 3) {
+			IExpr result = simplifyCompare(ast.arg1(), ast.arg2());
+			if (result != null) {
+				return result;
+			}
+		}
 		COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 		boolean evaled = false;
 		IAST result = ast.clone();

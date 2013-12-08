@@ -1,10 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class LessEqual extends Greater {
 	public final static LessEqual CONST = new LessEqual();
+
 	public LessEqual() {
+	}
+
+	@Override
+	protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+		return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual);
 	}
 
 	@Override

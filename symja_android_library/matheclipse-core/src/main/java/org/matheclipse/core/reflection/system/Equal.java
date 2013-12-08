@@ -5,6 +5,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Equal extends AbstractFunctionEvaluator {
@@ -12,9 +14,71 @@ public class Equal extends AbstractFunctionEvaluator {
 	public Equal() {
 	}
 
+	/**
+	 * Create the result for a <code>simplifyCompare()</code> step.
+	 * 
+	 * @param lhsAST
+	 * @param rhs
+	 * @param originalHead
+	 * @return
+	 */
+	private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, ISymbol originalHead) {
+		IAST lhsClone = lhsAST.clone();
+		lhsClone.remove(1);
+		return F.binary(originalHead, lhsClone, rhs);
+	}
+
+	/**
+	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * 
+	 * @param a1
+	 *            left-hand-side of the comparator expression
+	 * @param a2
+	 *            right-hand-side of the comparator expression
+	 * @param originalHead
+	 *            symbol for which the simplification was started
+	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 */
+	protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead) {
+		IExpr lhs, rhs;
+		if (a2.isNumber()) {
+			lhs = a1;
+			rhs = a2;
+		} else if (a1.isNumber()) {
+			lhs = a2;
+			rhs = a1;
+		} else {
+			return null;
+		}
+		if (lhs.isAST()) {
+			IAST lhsAST = (IAST) lhs;
+			if (lhsAST.isTimes()) {
+				if (lhsAST.arg1().isNumber()) {
+					INumber sn = (INumber) lhsAST.arg1();
+					rhs = F.eval(F.Divide(rhs, sn));
+					return createComparatorResult(lhsAST, rhs, originalHead);
+				}
+			} else if (lhsAST.isPlus()) {
+				if (lhsAST.arg1().isNumber()) {
+					INumber sn = (INumber) lhsAST.arg1();
+					rhs = F.eval(F.Subtract(rhs, sn));
+					return createComparatorResult(lhsAST, rhs, originalHead);
+				}
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() > 1) {
+			if (ast.size() == 3) {
+				IExpr result = simplifyCompare(ast.arg1(), ast.arg2(), F.Equal);
+				if (result != null) {
+					return result;
+				}
+			}
+
 			int b = 0;
 			boolean evaled = false;
 			IAST result = ast.clone();
