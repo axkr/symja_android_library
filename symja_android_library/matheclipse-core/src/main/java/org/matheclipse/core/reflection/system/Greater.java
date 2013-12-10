@@ -54,7 +54,8 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			rhs = (ISignedNumber) a1;
 			useOppositeHeader = true;
 		} else {
-			return null;
+			lhs = F.eval(F.Subtract(a1,a2));
+			rhs = F.C0;
 		}
 		if (lhs.isAST()) {
 			IAST lhsAST = (IAST) lhs;
