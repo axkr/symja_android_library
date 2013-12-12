@@ -27,7 +27,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.plus(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.plus(a.val)));
+		return new ExprFieldElement(F.evalExpandAll(F.Plus(val, a.val)));
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.divide(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.divide(a.val)));
+		return new ExprFieldElement(F.evalExpandAll(F.Divide(val, a.val)));
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.times(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.times(a.val)));
+		return new ExprFieldElement(F.evalExpandAll(F.Times(val, a.val)));
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom()) {
 			return new ExprFieldElement(val.times(F.integer(a)));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.times(F.integer(a))));
+		return new ExprFieldElement(F.evalExpandAll(F.Times(val, F.integer(a))));
 	}
 
 	@Override
@@ -89,13 +89,13 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom()) {
 			return new ExprFieldElement(val.times(F.CN1));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.times(F.CN1)));
+		return new ExprFieldElement(F.evalExpandAll(F.Times(val, F.CN1)));
 	}
 
 	@Override
 	public ExprFieldElement reciprocal() {
 		if (val.isSignedNumber()) {
-			return new ExprFieldElement(((ISignedNumber)val).inverse());
+			return new ExprFieldElement(((ISignedNumber) val).inverse());
 		}
 		return new ExprFieldElement(F.evalExpandAll(val.power(-1)));
 	}
@@ -105,7 +105,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.minus(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.minus(a.val)));
+		return new ExprFieldElement(F.evalExpandAll(F.Subtract(val, a.val)));
 	}
 
 	@Override

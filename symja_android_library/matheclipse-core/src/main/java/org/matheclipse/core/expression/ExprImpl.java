@@ -36,10 +36,7 @@ import edu.jas.structure.ElemFactory;
 public abstract class ExprImpl implements IExpr {
 
 	public IExpr opposite() {
-		if (this.isNumber()) {
-			return F.eval(F.Times(F.CN1, this));
-		}
-		return F.Times(F.CN1, this);
+		return F.eval(F.Times(F.CN1, this));
 	}
 
 	/**
@@ -58,33 +55,24 @@ public abstract class ExprImpl implements IExpr {
 			return F.eval(F.Plus(this, ((INumber) that).opposite()));
 		}
 		if (that.isNumber()) {
-			return F.Plus(this, ((INumber) that).opposite());
+			return F.eval(F.Plus(this, ((INumber) that).opposite()));
 		}
-		return F.Plus(this, F.Times(F.CN1, that));
+		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
 	}
 
 	@Override
 	public IExpr plus(final IExpr that) {
-		if (this.isNumber() && that.isNumber()) {
-			return F.eval(F.Plus(this, that));
-		}
-		return F.Plus(this, that);
+		return F.eval(F.Plus(this, that));
 	}
 
 	@Override
 	public IExpr inverse() {
-		if (this.isNumber()) {
-			return F.eval(F.Power(this, F.CN1));
-		}
-		return F.Power(this, F.CN1);
+		return F.eval(F.Power(this, F.CN1));
 	}
 
 	@Override
 	public IExpr times(final IExpr that) {
-		if (this.isNumber() && that.isNumber()) {
-			return F.eval(F.Times(this, that));
-		}
-		return F.Times(this, that);
+		return F.eval(F.Times(this, that));
 	}
 
 	/**
