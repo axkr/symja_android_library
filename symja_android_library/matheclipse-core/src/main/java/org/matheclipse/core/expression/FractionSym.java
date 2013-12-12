@@ -11,6 +11,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -90,7 +91,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/* package private */BigFraction fRational;
 
 	private transient int fHashValue = 0;
-	
+
 	private FractionSym() {
 		fRational = null;
 	}
@@ -223,10 +224,15 @@ public class FractionSym extends ExprImpl implements IFraction {
 		if (engine.isNumericMode()) {
 			return F.num(this);
 		}
+		final INumber cTemp = normalize();
+		return (cTemp == this) ? null : cTemp;
+	}
+
+	public INumber normalize() {
 		if (getBigDenominator().equals(BigInteger.ONE)) {
 			return F.integer(getBigNumerator());
 		}
-		return null;
+		return this;
 	}
 
 	/**
@@ -302,13 +308,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof FractionSym) {
 			return newInstance(this.divide(((FractionSym) that).fRational));
-		} 
+		}
 		if (that instanceof IntegerSym) {
 			return this.divideBy(valueOf(((IntegerSym) that).fInteger));
 		}
 		return Num.valueOf(doubleValue() / that.doubleValue());
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {

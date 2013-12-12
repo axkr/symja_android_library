@@ -160,10 +160,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			return F.complexNum(this);
 		}
 		final INumber cTemp = normalize();
-		if (cTemp == this) {
-			return null;
-		}
-		return cTemp;
+		return (cTemp == this) ? null : cTemp;
 	}
 
 	/**

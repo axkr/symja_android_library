@@ -1,9 +1,8 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigInteger;
-
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -13,11 +12,11 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 
 	public ExprFieldElement(IExpr v) {
 		if (v.isFraction()) {
-			IFraction fr = (IFraction) v;
-			if (fr.getBigDenominator().equals(BigInteger.ONE)) {
-				val = F.integer(fr.getBigNumerator());
-				return;
-			}
+			val = ((IFraction) v).normalize();
+			return;
+		} else if (v.isComplex()) {
+			val = ((IComplex) v).normalize();
+			return;
 		}
 		val = v;
 	}

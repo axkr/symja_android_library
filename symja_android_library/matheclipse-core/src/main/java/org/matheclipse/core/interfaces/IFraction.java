@@ -1,16 +1,17 @@
 package org.matheclipse.core.interfaces;
 
-
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
+
 /**
  * interface for "fractional" numbers
  * 
  */
 public interface IFraction extends IRational {
 
-	 public IFraction add(IFraction parm1);
+	public IFraction add(IFraction parm1);
+
 	//
 	// public IFraction divide(IFraction parm1);
 
@@ -30,9 +31,18 @@ public interface IFraction extends IRational {
 	 */
 	public BigInteger getBigNumerator();
 
-	 public IFraction multiply(IFraction parm1);
+	public IFraction multiply(IFraction parm1);
+
 	//
 	// public IFraction subtract(IFraction parm1);
-	 
-	 public IFraction pow(final int exp);
+
+	public IFraction pow(final int exp);
+
+	/**
+	 * Return the normalized form of this number (i.e. if the denominator part equals one, return the numerator part as an integer
+	 * number).
+	 * 
+	 * @return
+	 */
+	public INumber normalize();
 }
