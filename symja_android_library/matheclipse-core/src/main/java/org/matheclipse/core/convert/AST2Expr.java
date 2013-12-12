@@ -63,7 +63,7 @@ public class AST2Expr {
 			"PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "PrimeQ", "PrimitiveRoots", "Print", "Product",
 			"Quiet", "Quotient", "RandomInteger", "RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll",
 			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots",
-			"RotateLeft", "RotateRight", "Round", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Set",
+			"RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Set",
 			"SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition", "Sinh",
 			"Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
 			"StringLength", "StringTake", "Subsets", "SubtractFrom", "Sum", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take",
