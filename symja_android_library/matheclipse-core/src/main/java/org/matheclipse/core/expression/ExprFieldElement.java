@@ -1,13 +1,24 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigInteger;
+
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 public class ExprFieldElement implements FieldElement<ExprFieldElement>, Comparable<ExprFieldElement> {
 	private final IExpr val;
 
 	public ExprFieldElement(IExpr v) {
+		if (v.isFraction()) {
+			IFraction fr = (IFraction) v;
+			if (fr.getBigDenominator().equals(BigInteger.ONE)) {
+				val = F.integer(fr.getBigNumerator());
+				return;
+			}
+		}
 		val = v;
 	}
 
@@ -67,19 +78,25 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 
 	@Override
 	public ExprFieldElement multiply(int a) {
-		// if (val.isAtom()) {
-		// return new ExprFieldElement(val.times(a.val));
-		// }
+		if (val.isAtom()) {
+			return new ExprFieldElement(val.times(F.integer(a)));
+		}
 		return new ExprFieldElement(F.evalExpandAll(val.times(F.integer(a))));
 	}
 
 	@Override
 	public ExprFieldElement negate() {
+		if (val.isAtom()) {
+			return new ExprFieldElement(val.times(F.CN1));
+		}
 		return new ExprFieldElement(F.evalExpandAll(val.times(F.CN1)));
 	}
 
 	@Override
 	public ExprFieldElement reciprocal() {
+		if (val.isSignedNumber()) {
+			return new ExprFieldElement(((ISignedNumber)val).inverse());
+		}
 		return new ExprFieldElement(F.evalExpandAll(val.power(-1)));
 	}
 
@@ -89,6 +106,11 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 			return new ExprFieldElement(val.minus(a.val));
 		}
 		return new ExprFieldElement(F.evalExpandAll(val.minus(a.val)));
+	}
+
+	@Override
+	public String toString() {
+		return val.toString();
 	}
 
 }
