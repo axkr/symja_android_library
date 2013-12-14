@@ -7,17 +7,18 @@ import org.matheclipse.core.convert.FieldReducedRowEchelonForm;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprFieldElement;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Reduce thea matrix to row form.
+ * Compute the rank of a matrix.
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
+ * See: <a href="http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank (linear algebra)</a>.
  */
-public class RowReduce extends AbstractFunctionEvaluator {
+public class MatrixRank extends AbstractFunctionEvaluator {
 
-	public RowReduce() {
+	public MatrixRank() {
 		super();
 	}
 
@@ -30,7 +31,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			final IAST list = (IAST) function.get(1);
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			return Convert.matrix2List(fmw.rowReduce());
+			return F.integer(fmw.rank());
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -49,5 +50,4 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST function) {
 		return evaluate(function);
 	}
-
 }
