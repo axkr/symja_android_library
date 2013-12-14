@@ -222,15 +222,22 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
 		if (engine.isNumericMode()) {
-			return F.num(this);
+			return numericNumber();
 		}
 		final INumber cTemp = normalize();
 		return (cTemp == this) ? null : cTemp;
 	}
 
+	public final INumber numericNumber() {
+		return F.num(this);
+	}
+
 	public INumber normalize() {
 		if (getBigDenominator().equals(BigInteger.ONE)) {
 			return F.integer(getBigNumerator());
+		}
+		if (getBigNumerator().equals(BigInteger.ZERO)) {
+			return F.C0;
 		}
 		return this;
 	}

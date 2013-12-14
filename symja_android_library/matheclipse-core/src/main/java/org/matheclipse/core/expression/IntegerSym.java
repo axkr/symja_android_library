@@ -14,6 +14,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -93,9 +94,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
 		if (engine.isNumericMode()) {
-			return F.num(this);
+			return numericNumber();
 		}
 		return null;
+	}
+	
+	public final INumber numericNumber() {
+		return  F.num(this);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
+import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -48,6 +49,21 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 			return true;
 		}
 		if (obj instanceof ExprFieldElement) {
+			IExpr arg2 = ((ExprFieldElement) obj).val;
+			if (val.isNumeric()) {
+				if (arg2 instanceof IBigNumber) {
+					return val.isSame(((IBigNumber) arg2).numericNumber());
+				}
+				if (arg2.isNumeric()) {
+					return val.isSame(arg2);
+				}
+				return false;
+			} else if (arg2.isNumeric()) {
+				if (val instanceof IBigNumber) {
+					return arg2.isSame(((IBigNumber) val).numericNumber());
+				}
+				return false;
+			}
 			return val.equals(((ExprFieldElement) obj).val);
 		}
 		return false;

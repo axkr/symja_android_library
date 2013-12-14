@@ -157,10 +157,14 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
 		if (engine.isNumericMode()) {
-			return F.complexNum(this);
+			return numericNumber();
 		}
 		final INumber cTemp = normalize();
 		return (cTemp == this) ? null : cTemp;
+	}
+
+	public final INumber numericNumber() {
+		return F.complexNum(this);
 	}
 
 	/**
@@ -360,8 +364,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	public INumber normalize() {
 		if (_imaginary.equals(BigFraction.ZERO)) {
-			if (_real.getDenominator().equals(BigInteger.ZERO)) {
-				return IntegerSym.valueOf(_real.getNumerator());
+			if (_real.getDenominator().equals(BigInteger.ONE)) {
+				return F.integer(_real.getNumerator());
+			}
+			if (_real.getNumerator().equals(BigInteger.ZERO)) {
+				return F.C0;
 			}
 			return FractionSym.newInstance(_real);
 		}
