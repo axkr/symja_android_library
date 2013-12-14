@@ -55,9 +55,9 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		RowColIndex pivot = new RowColIndex(a.row, a.col);
 		RowColIndex current = new RowColIndex(a.row, a.col);
 
-		for (int i = a.row; i < (numRows - first_row); i++) {
+		for (int i = a.row + 1; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (getCoordinate(current).equals(one)) {
+			if (matrix.getEntry(current.row, current.col).equals(one)) {
 				swapRow(current, a);
 			}
 		}
@@ -65,7 +65,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		current.row = a.row;
 		for (int i = current.row; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (!getCoordinate(current).equals(zero)) {
+			if (!matrix.getEntry(current.row, current.col).equals(zero)) {
 				pivot.row = i;
 				break;
 			}
@@ -97,6 +97,22 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		int t = a.row;
 		a.row = b.row;
 		b.row = t;
+	} 
+
+	/**
+	 * Test if the column <code>a.col</code> of the matrix contains only zero-elements starting with the <code>a.row</code> element.
+	 * 
+	 * @param a
+	 * @return
+	 */
+	private boolean isColumnZeroFromRow(RowColIndex a) {
+		for (int i = a.row; i < numRows; i++) {
+			if (!matrix.getEntry(i, a.col).equals(zero)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -121,8 +137,8 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param a
 	 * @return
 	 */
-	private boolean isRowZeroes(RowColIndex a) {
-		T[] temp = matrix.getRow(a.row);
+	private boolean isRowZeroes(int row) {
+		T[] temp = matrix.getRow(row);
 		for (int i = 0; i < numCols; i++) {
 			if (!temp[i].equals(zero)) {
 				return false;
@@ -158,14 +174,13 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 */
 	public FieldMatrix<T> rowReduce() {
 		RowColIndex pivot = new RowColIndex(0, 0);
-
 		int submatrix = 0;
 		for (int x = 0; x < numCols; x++) {
 			pivot = new RowColIndex(pivot.row, x);
 			// Step 1
 			// Begin with the leftmost nonzero column. This is a pivot column. The pivot position is at the top.
 			for (int i = x; i < numCols; i++) {
-				if (isColumnZeroes(pivot) == false) {
+				if (isColumnZeroFromRow(pivot) == false) {
 					break;
 				} else {
 					pivot.col = i;
@@ -177,6 +192,9 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 			if (getCoordinate(pivot).equals(zero)) {
 				pivot.row++;
+				if (pivot.row >= numRows) {
+					break;
+				}
 				continue;
 			}
 
@@ -188,9 +206,6 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 			// Force pivot to be 1
 			if (!getCoordinate(pivot).equals(one)) {
-				/*
-				 * System.out.println(getCoordinate(pivot)); System.out.println(pivot); System.out.println(matrix);
-				 */
 				T scalar = getCoordinate(pivot).reciprocal();
 				scaleRow(pivot, scalar);
 			}
@@ -227,7 +242,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			// Step 4
 			// Ignore the row containing the pivot position and cover all rows, if any, above it.
 			// Apply steps 1-3 to the remaining submatrix. Repeat until there are no more nonzero entries.
-			if ((pivot.row + 1) >= numRows || isRowZeroes(new RowColIndex(pivot.row + 1, pivot.col))) {
+			if ((pivot.row + 1) >= numRows){ // || isRowZeroes(pivot.row + 1)) {
 				break;
 			}
 
@@ -235,6 +250,20 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			pivot.row++;
 		}
 		return matrix;
+	}
+
+	public int rank() {
+		if (matrix.getRowDimension() == 0 || matrix.getColumnDimension() == 0) {
+			return 0;
+		}
+		FieldMatrix<T> matrix = rowReduce();
+		int rows = matrix.getRowDimension() - 1;
+		for (int i = rows; i >= 0; i--) {
+			if (!isRowZeroes(i)) {
+				return i + 1;
+			}
+		}
+		return 0;
 	}
 
 	/**
