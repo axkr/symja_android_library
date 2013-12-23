@@ -234,9 +234,6 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 */
 	public FieldMatrix<T> rowReduce() {
 		int maxRows = numRows;
-		// if (maxNumberOfRows > 0 && maxNumberOfRows < numRows) {
-		// maxRows = maxNumberOfRows;
-		// }
 		RowColIndex pivot = new RowColIndex(0, 0);
 		int submatrix = 0;
 		for (int x = 0; x < numCols; x++) {
@@ -315,16 +312,6 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		}
 		return matrix;
 	}
-
-	// public FieldMatrix<T> nullSpace(FieldMatrix<T> matrix) {
-	// int cols = matrix.getColumnDimension();
-	// int rows = matrix.getRowDimension();
-	// for (int i = 0; i < cols; i++) {
-	// }
-	// FieldMatrix<T> m = matrix.transpose();
-	// // rowReduce();
-	// return matrix;
-	// }
 
 	public int rank() {
 		if (matrix.getRowDimension() == 0 || matrix.getColumnDimension() == 0) {
