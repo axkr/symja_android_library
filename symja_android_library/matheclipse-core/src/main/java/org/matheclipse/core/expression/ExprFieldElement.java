@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.INumber;
 
 public class ExprFieldElement implements FieldElement<ExprFieldElement>, Comparable<ExprFieldElement> {
 	private final IExpr val;
@@ -101,16 +101,16 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 
 	@Override
 	public ExprFieldElement negate() {
-		if (val.isAtom()) {
-			return new ExprFieldElement(val.times(F.CN1));
+		if (val.isNumber()) {
+			return new ExprFieldElement(((INumber) val).opposite());
 		}
 		return new ExprFieldElement(F.evalExpandAll(F.Times(val, F.CN1)));
 	}
 
 	@Override
 	public ExprFieldElement reciprocal() {
-		if (val.isSignedNumber()) {
-			return new ExprFieldElement(((ISignedNumber) val).inverse());
+		if (val.isNumber()) {
+			return new ExprFieldElement(((INumber) val).inverse());
 		}
 		return new ExprFieldElement(F.evalExpandAll(val.power(-1)));
 	}
