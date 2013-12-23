@@ -97,7 +97,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		int t = a.row;
 		a.row = b.row;
 		b.row = t;
-	} 
+	}
 
 	/**
 	 * Test if the column <code>a.col</code> of the matrix contains only zero-elements starting with the <code>a.row</code> element.
@@ -107,22 +107,6 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 */
 	private boolean isColumnZeroFromRow(RowColIndex a) {
 		for (int i = a.row; i < numRows; i++) {
-			if (!matrix.getEntry(i, a.col).equals(zero)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Test if the column <code>a.col</code> of the matrix contains only zero-elements.
-	 * 
-	 * @param a
-	 * @return
-	 */
-	private boolean isColumnZeroes(RowColIndex a) {
-		for (int i = 0; i < numRows; i++) {
 			if (!matrix.getEntry(i, a.col).equals(zero)) {
 				return false;
 			}
@@ -165,6 +149,82 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		}
 	}
 
+	public FieldMatrix<T> nullSpace(T scalar) {
+		FieldMatrix<T> matrix = rowReduce();
+		int rows = matrix.getRowDimension() - 1;
+		int rank = 0;
+		for (int i = rows; i >= 0; i--) {
+			if (!isRowZeroes(i)) {
+				rank = i + 1;
+				break;
+			}
+		}
+		if (rank == 0) {
+			return matrix.createMatrix(0, 0);
+		}
+
+		int newRowDimension = matrix.getColumnDimension() - rank;
+		int newColumnDimension = matrix.getColumnDimension();
+		FieldMatrix<T> result = matrix.createMatrix(newRowDimension, newColumnDimension);
+		return getResultOfNullspace(result, scalar, rank);
+	}
+
+	private FieldMatrix<T> getResultOfNullspace(FieldMatrix<T> result, T scalar, int rank) {
+
+		// search free columns
+		boolean[] columns = new boolean[result.getColumnDimension()];
+		int numberOfFreeColumns = 0;
+		for (int i = 0; i < rank; i++) {
+			if (!columns[i]) {
+				for (int k = i; k < matrix.getColumnDimension(); k++) {
+					if (matrix.getEntry(i, k).equals(zero)) {
+						columns[k] = true;
+						// free column
+						int offset = 0;
+						for (int j = 0; j < rank; j++) {
+							if (columns[j]) {
+								offset++;
+							}
+							result.setEntry(numberOfFreeColumns, j + offset, matrix.getEntry(j, i));
+						}
+						numberOfFreeColumns++;
+					} else {
+						break;
+					}
+				}
+			}
+		}
+
+		// Let's take the rest of the 'free part' of the reduced row echelon form
+		int start = rank + numberOfFreeColumns;
+		int row = numberOfFreeColumns;
+		for (int i = start; i < result.getColumnDimension(); i++) {
+			int offset = 0;
+			for (int j = 0; j < rank; j++) {
+				if (columns[j]) {
+					offset++;
+				}
+				result.setEntry(row, j + offset, matrix.getEntry(j, i));
+			}
+			row++;
+		}
+		for (int i = start; i < result.getColumnDimension(); i++) {
+			columns[i] = true;
+		}
+
+		// multiply matrix with scalar -1
+		result = result.scalarMultiply(scalar);
+
+		// append the 'one element' (typically as identity matrix)
+		row = 0;
+		for (int i = 0; i < columns.length; i++) {
+			if (columns[i]) {
+				result.setEntry(row++, i, one);
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * Create the &quot;reduced row echelon form&quot; of a matrix.
 	 * 
@@ -173,6 +233,10 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @return
 	 */
 	public FieldMatrix<T> rowReduce() {
+		int maxRows = numRows;
+		// if (maxNumberOfRows > 0 && maxNumberOfRows < numRows) {
+		// maxRows = maxNumberOfRows;
+		// }
 		RowColIndex pivot = new RowColIndex(0, 0);
 		int submatrix = 0;
 		for (int x = 0; x < numCols; x++) {
@@ -192,7 +256,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 			if (getCoordinate(pivot).equals(zero)) {
 				pivot.row++;
-				if (pivot.row >= numRows) {
+				if (pivot.row >= maxRows) {
 					break;
 				}
 				continue;
@@ -242,7 +306,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			// Step 4
 			// Ignore the row containing the pivot position and cover all rows, if any, above it.
 			// Apply steps 1-3 to the remaining submatrix. Repeat until there are no more nonzero entries.
-			if ((pivot.row + 1) >= numRows){ // || isRowZeroes(pivot.row + 1)) {
+			if ((pivot.row + 1) >= maxRows) { // || isRowZeroes(pivot.row + 1)) {
 				break;
 			}
 
@@ -251,6 +315,16 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		}
 		return matrix;
 	}
+
+	// public FieldMatrix<T> nullSpace(FieldMatrix<T> matrix) {
+	// int cols = matrix.getColumnDimension();
+	// int rows = matrix.getRowDimension();
+	// for (int i = 0; i < cols; i++) {
+	// }
+	// FieldMatrix<T> m = matrix.transpose();
+	// // rowReduce();
+	// return matrix;
+	// }
 
 	public int rank() {
 		if (matrix.getRowDimension() == 0 || matrix.getColumnDimension() == 0) {
