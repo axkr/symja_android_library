@@ -31,7 +31,7 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 			final IAST list = (IAST) function.get(1);
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			return F.integer(fmw.rank());
+			return F.integer(fmw.getMatrixRank());
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {

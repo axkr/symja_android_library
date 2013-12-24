@@ -5,7 +5,7 @@ import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.linear.FieldMatrix;
 
 /**
- * Matrix class that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which should be transformed to reduced row echelon format.
+ * Matrix class that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which is transformed to reduced row echelon format.
  * 
  * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
  * 
@@ -13,7 +13,7 @@ import org.apache.commons.math3.linear.FieldMatrix;
  * form</a>
  */
 public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
-	static class RowColIndex {
+	private static class RowColIndex {
 		int row;
 		int col;
 
@@ -27,27 +27,33 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		}
 	}
 
-	FieldMatrix<T> matrix;
-
-	final T zero;
-	final T one;
-	final int numRows;
-	final int numCols;
+	private final FieldMatrix<T> rowReducedMatrix;
+	private FieldMatrix<T> nullSpaceCache;
+	private int matrixRankCache;
+	
+	private final T zero;
+	private final T one;
+	private final int numRows;
+	private final int numCols;
 
 	/**
-	 * Constructor that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which should be transformed to reduced row echelon format.
+	 * Constructor which creates row reduced echelon matrix from the given <code>FieldMatrix&lt;T&gt;</code> matrix.
 	 * 
 	 * @param matrix
+	 *            matrix which will be transformed to a row reduced echelon matrix.
 	 * 
 	 * @see #rowReduce()
 	 */
 	public FieldReducedRowEchelonForm(FieldMatrix<T> matrix) {
-		this.matrix = matrix.copy();
-		numRows = matrix.getRowDimension();
-		numCols = matrix.getColumnDimension();
+		this.rowReducedMatrix = matrix.copy();
+		this.numRows = matrix.getRowDimension();
+		this.numCols = matrix.getColumnDimension();
 		Field<T> field = matrix.getField();
-		zero = field.getZero();
-		one = field.getOne();
+		this.zero = field.getZero();
+		this.one = field.getOne();
+		this.matrixRankCache = -1;
+		this.nullSpaceCache = null;
+		rowReduce();
 	}
 
 	private RowColIndex findPivot(RowColIndex a) {
@@ -57,7 +63,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 		for (int i = a.row + 1; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (matrix.getEntry(current.row, current.col).equals(one)) {
+			if (rowReducedMatrix.getEntry(current.row, current.col).equals(one)) {
 				swapRow(current, a);
 			}
 		}
@@ -65,7 +71,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		current.row = a.row;
 		for (int i = current.row; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (!matrix.getEntry(current.row, current.col).equals(zero)) {
+			if (!rowReducedMatrix.getEntry(current.row, current.col).equals(zero)) {
 				pivot.row = i;
 				break;
 			}
@@ -75,11 +81,18 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	}
 
 	private T getCoordinate(RowColIndex a) {
-		return matrix.getEntry(a.row, a.col);
+		return rowReducedMatrix.getEntry(a.row, a.col);
 	}
 
-	public FieldMatrix<T> getMatrix() {
-		return matrix;
+	/**
+	 * Get the row reduced echelon form of the matrix.
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
+	 * 
+	 * @return
+	 */
+	public FieldMatrix<T> getRowReducedMatrix() {
+		return rowReducedMatrix;
 	}
 
 	/**
@@ -90,9 +103,9 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param b
 	 */
 	private void swapRow(RowColIndex a, RowColIndex b) {
-		T[] temp = matrix.getRow(a.row);
-		matrix.setRow(a.row, matrix.getRow(b.row));
-		matrix.setRow(b.row, temp);
+		T[] temp = rowReducedMatrix.getRow(a.row);
+		rowReducedMatrix.setRow(a.row, rowReducedMatrix.getRow(b.row));
+		rowReducedMatrix.setRow(b.row, temp);
 
 		int t = a.row;
 		a.row = b.row;
@@ -107,7 +120,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 */
 	private boolean isColumnZeroFromRow(RowColIndex a) {
 		for (int i = a.row; i < numRows; i++) {
-			if (!matrix.getEntry(i, a.col).equals(zero)) {
+			if (!rowReducedMatrix.getEntry(i, a.col).equals(zero)) {
 				return false;
 			}
 		}
@@ -122,7 +135,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @return
 	 */
 	private boolean isRowZeroes(int row) {
-		T[] temp = matrix.getRow(row);
+		T[] temp = rowReducedMatrix.getRow(row);
 		for (int i = 0; i < numCols; i++) {
 			if (!temp[i].equals(zero)) {
 				return false;
@@ -141,40 +154,44 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param scalar
 	 */
 	private void multiplyAdd(RowColIndex to, RowColIndex from, T factor) {
-		T[] row = matrix.getRow(to.row);
-		T[] rowMultiplied = matrix.getRow(from.row);
+		T[] row = rowReducedMatrix.getRow(to.row);
+		T[] rowMultiplied = rowReducedMatrix.getRow(from.row);
 
 		for (int i = 0; i < numCols; i++) {
-			matrix.setEntry(to.row, i, row[i].add((rowMultiplied[i].multiply(factor))));
+			rowReducedMatrix.setEntry(to.row, i, row[i].add((rowMultiplied[i].multiply(factor))));
 		}
 	}
 
-	public FieldMatrix<T> nullSpace(T scalar) {
-		FieldMatrix<T> matrix = rowReduce();
-		int rows = matrix.getRowDimension() - 1;
-		int rank = 0;
-		for (int i = rows; i >= 0; i--) {
-			if (!isRowZeroes(i)) {
-				rank = i + 1;
-				break;
-			}
+	/**
+	 * Get the nullspace of the row reduced matrix.
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia - Kernel (linear algebra)</a>. <a
+	 * href="http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">Wikibooks - Null Spaces</a>.
+	 * 
+	 * @param minusOneFactor
+	 *            factor <code>-1</code> for multiplying all elements of the free part of the reduced row echelon form matrix
+	 * @return
+	 */
+	public FieldMatrix<T> getNullSpace(T minusOneFactor) {
+		int rank = getMatrixRank();
+		int newRowDimension = rowReducedMatrix.getColumnDimension() - rank;
+		int newColumnDimension = rowReducedMatrix.getColumnDimension();
+		if (nullSpaceCache != null) {
+			return nullSpaceCache;
 		}
-
-		int newRowDimension = matrix.getColumnDimension() - rank;
-		int newColumnDimension = matrix.getColumnDimension();
-		FieldMatrix<T> result = matrix.createMatrix(newRowDimension, newColumnDimension);
-		return getResultOfNullspace(result, scalar, rank);
+		nullSpaceCache = rowReducedMatrix.createMatrix(newRowDimension, newColumnDimension);
+		getResultOfNullspace(minusOneFactor, rank);
+		return nullSpaceCache;
 	}
 
-	private FieldMatrix<T> getResultOfNullspace(FieldMatrix<T> result, T scalar, int rank) {
-
+	private void getResultOfNullspace(T minusOneFactor, int rank) {
 		// search free columns
-		boolean[] columns = new boolean[result.getColumnDimension()];
+		boolean[] columns = new boolean[nullSpaceCache.getColumnDimension()];
 		int numberOfFreeColumns = 0;
 		for (int i = 0; i < rank; i++) {
 			if (!columns[i]) {
-				for (int k = i; k < matrix.getColumnDimension(); k++) {
-					if (matrix.getEntry(i, k).equals(zero)) {
+				for (int k = i; k < rowReducedMatrix.getColumnDimension(); k++) {
+					if (rowReducedMatrix.getEntry(i, k).equals(zero)) {
 						columns[k] = true;
 						// free column
 						int offset = 0;
@@ -182,7 +199,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 							if (columns[j]) {
 								offset++;
 							}
-							result.setEntry(numberOfFreeColumns, j + offset, matrix.getEntry(j, i));
+							nullSpaceCache.setEntry(numberOfFreeColumns, j + offset, rowReducedMatrix.getEntry(j, i));
 						}
 						numberOfFreeColumns++;
 					} else {
@@ -195,31 +212,30 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		// Let's take the rest of the 'free part' of the reduced row echelon form
 		int start = rank + numberOfFreeColumns;
 		int row = numberOfFreeColumns;
-		for (int i = start; i < result.getColumnDimension(); i++) {
+		for (int i = start; i < nullSpaceCache.getColumnDimension(); i++) {
 			int offset = 0;
 			for (int j = 0; j < rank; j++) {
 				if (columns[j]) {
 					offset++;
 				}
-				result.setEntry(row, j + offset, matrix.getEntry(j, i));
+				nullSpaceCache.setEntry(row, j + offset, rowReducedMatrix.getEntry(j, i));
 			}
 			row++;
 		}
-		for (int i = start; i < result.getColumnDimension(); i++) {
+		for (int i = start; i < nullSpaceCache.getColumnDimension(); i++) {
 			columns[i] = true;
 		}
 
 		// multiply matrix with scalar -1
-		result = result.scalarMultiply(scalar);
+		nullSpaceCache = nullSpaceCache.scalarMultiply(minusOneFactor);
 
 		// append the 'one element' (typically as identity matrix)
 		row = 0;
 		for (int i = 0; i < columns.length; i++) {
 			if (columns[i]) {
-				result.setEntry(row++, i, one);
+				nullSpaceCache.setEntry(row++, i, one);
 			}
 		}
-		return result;
 	}
 
 	/**
@@ -229,7 +245,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * 
 	 * @return
 	 */
-	public FieldMatrix<T> rowReduce() {
+	private FieldMatrix<T> rowReduce() {
 		int maxRows = numRows;
 		RowColIndex pivot = new RowColIndex(0, 0);
 		int submatrix = 0;
@@ -307,32 +323,42 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			submatrix++;
 			pivot.row++;
 		}
-		return matrix;
-	}
-
-	public int rank() {
-		if (matrix.getRowDimension() == 0 || matrix.getColumnDimension() == 0) {
-			return 0;
-		}
-		FieldMatrix<T> matrix = rowReduce();
-		int rows = matrix.getRowDimension() - 1;
-		for (int i = rows; i >= 0; i--) {
-			if (!isRowZeroes(i)) {
-				return i + 1;
-			}
-		}
-		return 0;
+		return rowReducedMatrix;
 	}
 
 	/**
-	 * Multily the <code>x.row</code> elements with the scalar <code>factor</code>.
+	 * Get the rank of the row reduced matrix.
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank (linear algebra)</a>.
+	 * 
+	 * @return the rank of the matrix.
+	 */
+	public int getMatrixRank() {
+		if (rowReducedMatrix.getRowDimension() == 0 || rowReducedMatrix.getColumnDimension() == 0) {
+			return 0;
+		}
+		if (matrixRankCache < 0) {
+			matrixRankCache = 0;
+			int rows = rowReducedMatrix.getRowDimension() - 1;
+			for (int i = rows; i >= 0; i--) {
+				if (!isRowZeroes(i)) {
+					matrixRankCache = i + 1;
+					return matrixRankCache;
+				}
+			}
+		}
+		return matrixRankCache;
+	}
+
+	/**
+	 * Multiply the <code>x.row</code> elements with the scalar <code>factor</code>.
 	 * 
 	 * @param x
 	 * @param d
 	 */
 	private void scaleRow(RowColIndex x, T factor) {
 		for (int i = 0; i < numCols; i++) {
-			matrix.multiplyEntry(x.row, i, factor);
+			rowReducedMatrix.multiplyEntry(x.row, i, factor);
 		}
 	}
 

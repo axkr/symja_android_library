@@ -30,7 +30,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			final IAST list = (IAST) function.get(1);
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			return Convert.matrix2List(fmw.rowReduce());
+			return Convert.matrix2List(fmw.getRowReducedMatrix());
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
