@@ -159,9 +159,6 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 				break;
 			}
 		}
-		if (rank == 0) {
-			return matrix.createMatrix(0, 0);
-		}
 
 		int newRowDimension = matrix.getColumnDimension() - rank;
 		int newColumnDimension = matrix.getColumnDimension();
