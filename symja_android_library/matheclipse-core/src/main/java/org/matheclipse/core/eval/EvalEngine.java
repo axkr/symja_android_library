@@ -321,9 +321,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Add an expression to the <code>Out[]</code> list. To avoid memeory leaks you can disable the appending of expressions to the
+	 * Add an expression to the <code>Out[]</code> list. To avoid memory leaks you can disable the appending of expressions to the
 	 * output history.
 	 * 
+	 * @see #setOutListDisabled(boolean)
 	 */
 	public boolean addOut(IExpr arg0) {
 		// remember the last result
@@ -332,6 +333,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		} else {
 			fAnswer = arg0;
 		}
+		ISymbol ans = F.$s("$ans");
+		ans.putDownRule(F.Set, true, ans, fAnswer, false);
 		if (fOutListDisabled) {
 			return true;
 		}

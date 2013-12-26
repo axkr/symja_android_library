@@ -78,8 +78,8 @@ public class F {
 
 	};
 
-	public final static ISymbol Ans = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ans" : "Ans",
-			new org.matheclipse.core.builtin.constant.Ans());
+//	public final static ISymbol Ans = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ans" : "Ans",
+//			new org.matheclipse.core.builtin.constant.Ans());
 	public final static ISymbol Catalan = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
 	public final static ISymbol ComplexInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity"
@@ -2429,11 +2429,11 @@ public class F {
 		long l = ii.toLong();
 		return isZero(value - l, Config.DOUBLE_TOLERANCE);
 	}
-	
+
 	public static boolean isNumIntValue(double value, int i) {
 		return isZero(value - i, Config.DOUBLE_TOLERANCE);
 	}
-	
+
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.round(value), Config.DOUBLE_TOLERANCE);
 	}
