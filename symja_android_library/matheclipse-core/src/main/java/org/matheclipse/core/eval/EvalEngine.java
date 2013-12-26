@@ -202,6 +202,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	transient protected List<IExpr> fOutList = new ArrayList<IExpr>(10);
 
 	/**
+	 * Contains the last result (&quot;answer&quot;) expression of this evaluation engine or <code>null</code> if no answer is
+	 * stored in the evaluation engine.
+	 */
+	transient protected IExpr fAnswer = null;
+
+	/**
 	 * Flag for disabling the appending of expressions to the history list for the <code>Out[]</code> function.
 	 * 
 	 * @see org.matheclipse.core.reflection.Out
@@ -320,13 +326,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 */
 	public boolean addOut(IExpr arg0) {
+		// remember the last result
+		if (arg0 == null) {
+			fAnswer = F.Null;
+		} else {
+			fAnswer = arg0;
+		}
 		if (fOutListDisabled) {
 			return true;
 		}
-		if (arg0 == null) {
-			fOutList.add(F.Null);
-		}
-		return fOutList.add(arg0);
+		return fOutList.add(fAnswer);
 	}
 
 	public void addRules(IAST ruleList) {
@@ -902,6 +911,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 		return seqResult;
+	}
+
+	/**
+	 * Get the last result (&quot;answer&quot;) expression of this evaluation engine.
+	 * 
+	 * @return <code>null</code> if no answer is stored in the evaluation engine.
+	 */
+	public IExpr getAnswer() {
+		return fAnswer;
 	}
 
 	public int getIterationLimit() {
