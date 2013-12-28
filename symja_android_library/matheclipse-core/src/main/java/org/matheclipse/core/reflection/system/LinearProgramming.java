@@ -11,6 +11,7 @@ import org.apache.commons.math3.optimization.linear.LinearObjectiveFunction;
 import org.apache.commons.math3.optimization.linear.Relationship;
 import org.apache.commons.math3.optimization.linear.SimplexSolver;
 import org.matheclipse.core.convert.Expr2Object;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -20,10 +21,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * The LinearProgramming provides an implementation of <a
- * href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's
- * simplex algorithm</a> for solving linear optimization problems with linear
- * equality and inequality constraints.
+ * The LinearProgramming provides an implementation of <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's
+ * simplex algorithm</a> for solving linear optimization problems with linear equality and inequality constraints.
  */
 public class LinearProgramming extends AbstractFunctionEvaluator {
 
@@ -39,8 +38,9 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr numericEval(final IAST ast) {
+		Validate.checkSize(ast, 4);
 		try {
-			if (ast.size() >= 4 && ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
+			if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
 				double[] arg1D = Expr2Object.toDoubleVector((IAST) ast.arg1());
 				LinearObjectiveFunction f = new LinearObjectiveFunction(arg1D, 0);
 				Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
@@ -70,7 +70,8 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
 							}
 						} else if (arg3.get(i).isSignedNumber()) {
-							constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, ((ISignedNumber) arg3.get(i)).doubleValue()));
+							constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, ((ISignedNumber) arg3.get(i))
+									.doubleValue()));
 						} else {
 							throw new WrongArgumentType(arg3, arg3.get(i), i, "Numeric vector or number expected!");
 						}
@@ -87,7 +88,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 		} catch (MathIllegalStateException oe) {
 			throw new WrappedException(oe);
 			// if (Config.SHOW_STACKTRACE) {
-			// e.printStackTrace();
+			// oe.printStackTrace();
 			// }
 		}
 
