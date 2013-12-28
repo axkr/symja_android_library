@@ -31,7 +31,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 public class AST2Expr {
 
 	private final static String[] FUNCTION_STRINGS = { "DirectedInfinity", "False", "Flat", "HoldAll", "HoldFirst", "HoldRest",
-			"Indeterminate", "Integer", "List", "Listable", "Modulus", "NumericFunction", "OneIdentity", "Orderless", "Real",
+			"Indeterminate", "Integer", "List", "Listable", "Modulus", "Null", "NumericFunction", "OneIdentity", "Orderless", "Real",
 			"Slot", "SlotSequence", "String", "Symbol", "True", "Abs", "AddTo", "And", "Apart", "Append", "AppendTo",
 			"Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh",
 			"ArcTan", "ArcTanh", "Arg", "Array", "AtomQ", "Attributes", "BernoulliB", "Binomial", "Blank", "Block", "Boole",
