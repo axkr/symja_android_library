@@ -71,6 +71,79 @@
 
     <target name="clean-build" depends="clean,jar"/>
 
+     
+	<target name="proguard" depends="jar">
+	         <taskdef resource="proguard/ant/task.properties"
+	                  classpath="toolslib/proguard.jar" />
+
+	         <proguard printmapping="proguard.map"
+	                   overloadaggressively="on"
+	                   defaultpackage=""
+	                   allowaccessmodification="on">
+	         	-dontwarn
+	            -dontskipnonpubliclibraryclasses
+	         	-dontskipnonpubliclibraryclassmembers
+
+                -assumenosideeffects class org.apache.log4j.Logger {
+                   public static *** getLogger(...);
+                   public static *** debug(...);
+                   public static *** error(...);
+                   public static *** fatal(...);
+                   public static *** warn(...);
+                }
+
+	           <injar  file="${jar.dir}/symja-${date}.jar" />
+	           <outjar file="${jar.dir}/symja-mini-${date}.jar" />
+	         	
+	           <libraryjar file="${java.home}/lib/rt.jar" /> 
+	                     
+	           <keepclasseswithmembers name="org.matheclipse.core.eval.MathUtils" />
+	           <keepclasseswithmembers name="org.matheclipse.parser.client.ast.ASTNode" />
+	           <keepclasseswithmembers extends="org.matheclipse.parser.client.ast.ASTNode" />
+	           <keepclasseswithmembers name="org.matheclipse.parser.client.math.MathException" />
+	           <keepclasseswithmembers extends="org.matheclipse.parser.client.math.MathException" />
+	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalDouble" />
+	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalComplex" />
+	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
+	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" />  
+	           <keep access="public"
+	extends="org.matheclipse.core.interfaces.IEvaluator" />
+	           <keep access="public"
+	extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
+	           <keep access="public"
+	extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
+	           <keep access="public"
+	extends="org.matheclipse.core.form.mathml.IConverter" />
+	           <keep access="public" 
+	extends="org.matheclipse.core.form.tex.IConverter" />
+	           <keep access="public" 
+	extends="org.apache.log4j.Appender" />
+	           <keep access="public" 
+	extends="org.apache.log4j.spi.OptionHandler" />
+	
+               <keep access="public" name="org.matheclipse.core.integrate.rubi.UtilityFunctions">
+	                     <method access    ="public static"
+	                             name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.eval.MathUtils">
+	                     <method access    ="public static"
+	                             name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.eval.EvalDouble">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep> 
+ 
+	           <keep access="public" name="${main-class}">
+	                     <method access    ="public static"
+	                             type      ="void"
+	                             name      ="main"
+	                             parameters="java.lang.String[]" />
+	           </keep>
+    	          	
+	         </proguard>
+	</target>
+	       
     <target name="main" depends="clean,jar"/>
 </project>
 
