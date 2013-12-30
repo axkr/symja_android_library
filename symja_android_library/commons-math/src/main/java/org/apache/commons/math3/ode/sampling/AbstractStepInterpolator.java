@@ -36,7 +36,7 @@ import org.apache.commons.math3.ode.EquationsMapper;
  * @see org.apache.commons.math3.ode.SecondOrderIntegrator
  * @see StepHandler
  *
- * @version $Id: AbstractStepInterpolator.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: AbstractStepInterpolator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  *
  */

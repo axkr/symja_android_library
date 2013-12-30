@@ -28,7 +28,7 @@ import org.apache.commons.math3.random.Well19937c;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Gamma_distribution">Gamma distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/GammaDistribution.html">Gamma distribution (MathWorld)</a>
- * @version $Id: GammaDistribution.java 1382904 2012-09-10 14:47:45Z luc $
+ * @version $Id: GammaDistribution.java 1534362 2013-10-21 20:23:54Z tn $
  */
 public class GammaDistribution extends AbstractRealDistribution {
     /**
@@ -58,6 +58,15 @@ public class GammaDistribution extends AbstractRealDistribution {
     private final double densityPrefactor1;
     /**
      * The constant value of
+     * {@code log(shape / scale * sqrt(e / (2 * pi * (shape + g + 0.5))) / L(shape))},
+     * where {@code L(shape)} is the Lanczos approximation returned by
+     * {@link Gamma#lanczos(double)}. This prefactor is used in
+     * {@link #logDensity(double)}, when no overflow occurs with the natural
+     * calculation.
+     */
+    private final double logDensityPrefactor1;
+    /**
+     * The constant value of
      * {@code shape * sqrt(e / (2 * pi * (shape + g + 0.5))) / L(shape)},
      * where {@code L(shape)} is the Lanczos approximation returned by
      * {@link Gamma#lanczos(double)}. This prefactor is used in
@@ -65,6 +74,15 @@ public class GammaDistribution extends AbstractRealDistribution {
      * calculation.
      */
     private final double densityPrefactor2;
+    /**
+     * The constant value of
+     * {@code log(shape * sqrt(e / (2 * pi * (shape + g + 0.5))) / L(shape))},
+     * where {@code L(shape)} is the Lanczos approximation returned by
+     * {@link Gamma#lanczos(double)}. This prefactor is used in
+     * {@link #logDensity(double)}, when overflow occurs with the natural
+     * calculation.
+     */
+    private final double logDensityPrefactor2;
     /**
      * Lower bound on {@code y = x / scale} for the selection of the computation
      * method in {@link #density(double)}. For {@code y <= minY}, the natural
@@ -117,6 +135,21 @@ public class GammaDistribution extends AbstractRealDistribution {
      * @param rng Random number generator.
      * @param shape the shape parameter
      * @param scale the scale parameter
+     * @throws NotStrictlyPositiveException if {@code shape <= 0} or
+     * {@code scale <= 0}.
+     * @since 3.3
+     */
+    public GammaDistribution(RandomGenerator rng, double shape, double scale)
+        throws NotStrictlyPositiveException {
+        this(rng, shape, scale, DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
+    }
+
+    /**
+     * Creates a Gamma distribution.
+     *
+     * @param rng Random number generator.
+     * @param shape the shape parameter
+     * @param scale the scale parameter
      * @param inverseCumAccuracy the maximum absolute error in inverse
      * cumulative probability estimates (defaults to
      * {@link #DEFAULT_INVERSE_ABSOLUTE_ACCURACY}).
@@ -144,9 +177,14 @@ public class GammaDistribution extends AbstractRealDistribution {
         this.shiftedShape = shape + Gamma.LANCZOS_G + 0.5;
         final double aux = FastMath.E / (2.0 * FastMath.PI * shiftedShape);
         this.densityPrefactor2 = shape * FastMath.sqrt(aux) / Gamma.lanczos(shape);
+        this.logDensityPrefactor2 = FastMath.log(shape) + 0.5 * FastMath.log(aux) -
+                                    FastMath.log(Gamma.lanczos(shape));
         this.densityPrefactor1 = this.densityPrefactor2 / scale *
                 FastMath.pow(shiftedShape, -shape) *
                 FastMath.exp(shape + Gamma.LANCZOS_G);
+        this.logDensityPrefactor1 = this.logDensityPrefactor2 - FastMath.log(scale) -
+                FastMath.log(shiftedShape) * shape +
+                shape + Gamma.LANCZOS_G;
         this.minY = shape + Gamma.LANCZOS_G - FastMath.log(Double.MAX_VALUE);
         this.maxLogY = FastMath.log(Double.MAX_VALUE) / (shape - 1.0);
     }
@@ -167,6 +205,7 @@ public class GammaDistribution extends AbstractRealDistribution {
      * Returns the shape parameter of {@code this} distribution.
      *
      * @return the shape parameter
+     * @since 3.1
      */
     public double getShape() {
         return shape;
@@ -188,6 +227,7 @@ public class GammaDistribution extends AbstractRealDistribution {
      * Returns the scale parameter of {@code this} distribution.
      *
      * @return the scale parameter
+     * @since 3.1
      */
     public double getScale() {
         return scale;
@@ -250,8 +290,33 @@ public class GammaDistribution extends AbstractRealDistribution {
         /*
          * Natural calculation.
          */
-        return densityPrefactor1  * FastMath.exp(-y) *
-                FastMath.pow(y, shape - 1);
+        return densityPrefactor1 * FastMath.exp(-y) * FastMath.pow(y, shape - 1);
+    }
+
+    /** {@inheritDoc} **/
+    @Override
+    public double logDensity(double x) {
+        /*
+         * see the comment in {@link #density(double)} for computation details
+         */
+        if (x < 0) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        final double y = x / scale;
+        if ((y <= minY) || (FastMath.log(y) >= maxLogY)) {
+            /*
+             * Overflow.
+             */
+            final double aux1 = (y - shiftedShape) / shiftedShape;
+            final double aux2 = shape * (FastMath.log1p(aux1) - aux1);
+            final double aux3 = -y * (Gamma.LANCZOS_G + 0.5) / shiftedShape +
+                    Gamma.LANCZOS_G + aux2;
+            return logDensityPrefactor2 - FastMath.log(x) + aux3;
+        }
+        /*
+         * Natural calculation.
+         */
+        return logDensityPrefactor1 - y + FastMath.log(y) * (shape - 1);
     }
 
     /**

@@ -32,7 +32,7 @@ import org.apache.commons.math3.FieldElement;
  * solution exists it is also the minimal norm solution.</p>
  *
  * @param <T> the type of the field elements
- * @version $Id: FieldDecompositionSolver.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: FieldDecompositionSolver.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public interface FieldDecompositionSolver<T extends FieldElement<T>> {

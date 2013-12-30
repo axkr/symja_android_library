@@ -46,7 +46,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  *                       standard deviation = <code>sigma</code></li>
  * <li> CONSTANT_MODE -- returns <code>mu</code> every time.</li></ul></p>
  *
- * @version $Id: ValueServer.java 1382904 2012-09-10 14:47:45Z luc $
+ * @version $Id: ValueServer.java 1517416 2013-08-26 03:04:38Z dbrosius $
  *
  */
 public class ValueServer {
@@ -103,9 +103,22 @@ public class ValueServer {
      *
      * @param randomData the RandomDataImpl instance used to source random data
      * @since 3.0
+     * @deprecated use {@link #ValueServer(RandomGenerator)}
      */
+    @Deprecated
     public ValueServer(RandomDataImpl randomData) {
         this.randomData = randomData;
+    }
+
+    /**
+     * Construct a ValueServer instance using a RandomGenerator as its source
+     * of random data.
+     *
+     * @since 3.1
+     * @param generator source of random data
+     */
+    public ValueServer(RandomGenerator generator) {
+        this.randomData = new RandomDataImpl(generator);
     }
 
     /**
@@ -179,8 +192,8 @@ public class ValueServer {
      * with <code>mode = DIGEST_MODE</code></p>
      *
      * @throws IOException if an I/O error occurs reading the input file
-     * @throws NullArgumentException 
-      * @throws ZeroException if URL contains no data
+     * @throws NullArgumentException if the {@code valuesFileURL} has not been set
+     * @throws ZeroException if URL contains no data
      */
     public void computeDistribution() throws IOException, ZeroException, NullArgumentException {
         computeDistribution(EmpiricalDistribution.DEFAULT_BIN_COUNT);
@@ -198,7 +211,7 @@ public class ValueServer {
      *
      * @param binCount the number of bins used in computing the empirical
      * distribution
-     * @throws NullArgumentException 
+     * @throws NullArgumentException if the {@code valuesFileURL} has not been set
      * @throws IOException if an error occurs reading the input file
      * @throws ZeroException if URL contains no data
      */
@@ -252,6 +265,9 @@ public class ValueServer {
     /**
      * Sets the the {@link #getValuesFileURL() values file URL}.
      *
+     * <p>The values file <i>must</i> be an ASCII text file containing one
+     * valid numeric entry per line.</p>
+     *
      * @param url URL of the values file.
      */
     public void setValuesFileURL(URL url) {
@@ -277,11 +293,11 @@ public class ValueServer {
             try {
                 filePointer.close();
                 filePointer = null;
-            } catch (IOException ex) {
+            } catch (IOException ex) { //NOPMD
                 // ignore
             }
         }
-        filePointer = new BufferedReader(new InputStreamReader(valuesFileURL.openStream()));
+        filePointer = new BufferedReader(new InputStreamReader(valuesFileURL.openStream(), "UTF-8"));
     }
 
     /**
@@ -405,7 +421,7 @@ public class ValueServer {
                                                     valuesFileURL);
             }
         }
-        return Double.valueOf(str).doubleValue();
+        return Double.parseDouble(str);
     }
 
     /**

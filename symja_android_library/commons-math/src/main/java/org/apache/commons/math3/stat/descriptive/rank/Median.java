@@ -30,7 +30,7 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * one of the threads invokes the <code>increment()</code> or
  * <code>clear()</code> method, it must be synchronized externally.</p>
  *
- * @version $Id: Median.java 1385301 2012-09-16 16:11:53Z tn $
+ * @version $Id: Median.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class Median extends Percentile implements Serializable {
 

@@ -20,10 +20,10 @@ import org.apache.commons.math3.util.IterationEvent;
 import org.apache.commons.math3.exception.MathUnsupportedOperationException;
 
 /**
- * This is the base class for all events occuring during the iterations of a
+ * This is the base class for all events occurring during the iterations of a
  * {@link IterativeLinearSolver}.
  *
- * @version $Id: IterativeLinearSolverEvent.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: IterativeLinearSolverEvent.java 1505934 2013-07-23 08:38:03Z luc $
  * @since 3.0
  */
 public abstract class IterativeLinearSolverEvent

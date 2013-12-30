@@ -25,11 +25,16 @@ import org.apache.commons.math3.exception.util.Localizable;
  * precondition is violated by a number argument.
  *
  * @since 2.2
- * @version $Id: MathIllegalNumberException.java 1364378 2012-07-22 17:42:38Z tn $
+ * @version $Id: MathIllegalNumberException.java 1505931 2013-07-23 08:37:39Z luc $
  */
 public class MathIllegalNumberException extends MathIllegalArgumentException {
+
+    /** Helper to avoid boxing warnings. @since 3.3 */
+    protected static final Integer INTEGER_ZERO = Integer.valueOf(0);
+
     /** Serializable version Id. */
     private static final long serialVersionUID = -7447085893598031110L;
+
     /** Requested. */
     private final Number argument;
 

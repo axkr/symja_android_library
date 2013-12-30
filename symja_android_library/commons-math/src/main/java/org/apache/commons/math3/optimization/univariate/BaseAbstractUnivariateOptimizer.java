@@ -29,9 +29,11 @@ import org.apache.commons.math3.optimization.ConvergenceChecker;
  * Provide a default implementation for several functions useful to generic
  * optimizers.
  *
- * @version $Id: BaseAbstractUnivariateOptimizer.java 1244787 2012-02-15 23:24:33Z erans $
+ * @version $Id: BaseAbstractUnivariateOptimizer.java 1422230 2012-12-15 12:11:13Z erans $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */
+@Deprecated
 public abstract class BaseAbstractUnivariateOptimizer
     implements UnivariateOptimizer {
     /** Convergence checker. */
@@ -110,9 +112,9 @@ public abstract class BaseAbstractUnivariateOptimizer
 
     /** {@inheritDoc} */
     public UnivariatePointValuePair optimize(int maxEval, UnivariateFunction f,
-                                                 GoalType goalType,
-                                                 double min, double max,
-                                                 double startValue) {
+                                             GoalType goalType,
+                                             double min, double max,
+                                             double startValue) {
         // Checks.
         if (f == null) {
             throw new NullArgumentException();
@@ -136,9 +138,9 @@ public abstract class BaseAbstractUnivariateOptimizer
 
     /** {@inheritDoc} */
     public UnivariatePointValuePair optimize(int maxEval,
-                                                 UnivariateFunction f,
-                                                 GoalType goalType,
-                                                 double min, double max){
+                                             UnivariateFunction f,
+                                             GoalType goalType,
+                                             double min, double max){
         return optimize(maxEval, f, goalType, min, max, min + 0.5 * (max - min));
     }
 

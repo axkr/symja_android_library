@@ -16,19 +16,20 @@
  */
 package org.apache.commons.math3.util;
 
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 
 /**
  * This class wraps a {@code double} value in an object. It is similar to the
  * standard class {@link Double}, while also implementing the
- * {@link FieldElement} interface.
+ * {@link RealFieldElement} interface.
  *
  * @since 3.1
- * @version $Id: Decimal64.java 1306177 2012-03-28 05:40:46Z celestin $
+ * @version $Id: Decimal64.java 1462423 2013-03-29 07:25:18Z luc $
  */
-public class Decimal64 extends Number implements FieldElement<Decimal64>,
-Comparable<Decimal64> {
+public class Decimal64 extends Number
+                       implements RealFieldElement<Decimal64>, Comparable<Decimal64> {
 
     /** The constant value of {@code 0d} as a {@code Decimal64}. */
     public static final Decimal64 ZERO;
@@ -301,4 +302,395 @@ Comparable<Decimal64> {
     public boolean isNaN() {
         return Double.isNaN(value);
     }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public double getReal() {
+        return value;
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 add(final double a) {
+        return new Decimal64(value + a);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 subtract(final double a) {
+        return new Decimal64(value - a);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 multiply(final double a) {
+        return new Decimal64(value * a);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 divide(final double a) {
+        return new Decimal64(value / a);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 remainder(final double a) {
+        return new Decimal64(FastMath.IEEEremainder(value, a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 remainder(final Decimal64 a) {
+        return new Decimal64(FastMath.IEEEremainder(value, a.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 abs() {
+        return new Decimal64(FastMath.abs(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 ceil() {
+        return new Decimal64(FastMath.ceil(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 floor() {
+        return new Decimal64(FastMath.floor(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 rint() {
+        return new Decimal64(FastMath.rint(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public long round() {
+        return FastMath.round(value);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 signum() {
+        return new Decimal64(FastMath.signum(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 copySign(final Decimal64 sign) {
+        return new Decimal64(FastMath.copySign(value, sign.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 copySign(final double sign) {
+        return new Decimal64(FastMath.copySign(value, sign));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 scalb(final int n) {
+        return new Decimal64(FastMath.scalb(value, n));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 hypot(final Decimal64 y) {
+        return new Decimal64(FastMath.hypot(value, y.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 sqrt() {
+        return new Decimal64(FastMath.sqrt(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 cbrt() {
+        return new Decimal64(FastMath.cbrt(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 rootN(final int n) {
+        if (value < 0) {
+            return new Decimal64(-FastMath.pow(-value, 1.0 / n));
+        } else {
+            return new Decimal64(FastMath.pow(value, 1.0 / n));
+        }
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 pow(final double p) {
+        return new Decimal64(FastMath.pow(value, p));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 pow(final int n) {
+        return new Decimal64(FastMath.pow(value, n));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 pow(final Decimal64 e) {
+        return new Decimal64(FastMath.pow(value, e.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 exp() {
+        return new Decimal64(FastMath.exp(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 expm1() {
+        return new Decimal64(FastMath.expm1(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 log() {
+        return new Decimal64(FastMath.log(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 log1p() {
+        return new Decimal64(FastMath.log1p(value));
+    }
+
+    /** Base 10 logarithm.
+     * @return base 10 logarithm of the instance
+     * @since 3.2
+     */
+    public Decimal64 log10() {
+        return new Decimal64(FastMath.log10(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 cos() {
+        return new Decimal64(FastMath.cos(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 sin() {
+        return new Decimal64(FastMath.sin(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 tan() {
+        return new Decimal64(FastMath.tan(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 acos() {
+        return new Decimal64(FastMath.acos(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 asin() {
+        return new Decimal64(FastMath.asin(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 atan() {
+        return new Decimal64(FastMath.atan(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 atan2(final Decimal64 x) {
+        return new Decimal64(FastMath.atan2(value, x.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 cosh() {
+        return new Decimal64(FastMath.cosh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 sinh() {
+        return new Decimal64(FastMath.sinh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 tanh() {
+        return new Decimal64(FastMath.tanh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 acosh() {
+        return new Decimal64(FastMath.acosh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 asinh() {
+        return new Decimal64(FastMath.asinh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 atanh() {
+        return new Decimal64(FastMath.atanh(value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final Decimal64[] a, final Decimal64[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+        final double[] aDouble = new double[a.length];
+        final double[] bDouble = new double[b.length];
+        for (int i = 0; i < a.length; ++i) {
+            aDouble[i] = a[i].value;
+            bDouble[i] = b[i].value;
+        }
+        return new Decimal64(MathArrays.linearCombination(aDouble, bDouble));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final double[] a, final Decimal64[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+        final double[] bDouble = new double[b.length];
+        for (int i = 0; i < a.length; ++i) {
+            bDouble[i] = b[i].value;
+        }
+        return new Decimal64(MathArrays.linearCombination(a, bDouble));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final Decimal64 a1, final Decimal64 b1,
+                                       final Decimal64 a2, final Decimal64 b2) {
+        return new Decimal64(MathArrays.linearCombination(a1.value, b1.value,
+                                                          a2.value, b2.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final double a1, final Decimal64 b1,
+                                       final double a2, final Decimal64 b2) {
+        return new Decimal64(MathArrays.linearCombination(a1, b1.value,
+                                                          a2, b2.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final Decimal64 a1, final Decimal64 b1,
+                                       final Decimal64 a2, final Decimal64 b2,
+                                       final Decimal64 a3, final Decimal64 b3) {
+        return new Decimal64(MathArrays.linearCombination(a1.value, b1.value,
+                                                          a2.value, b2.value,
+                                                          a3.value, b3.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final double a1, final Decimal64 b1,
+                                       final double a2, final Decimal64 b2,
+                                       final double a3, final Decimal64 b3) {
+        return new Decimal64(MathArrays.linearCombination(a1, b1.value,
+                                                          a2, b2.value,
+                                                          a3, b3.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final Decimal64 a1, final Decimal64 b1,
+                                       final Decimal64 a2, final Decimal64 b2,
+                                       final Decimal64 a3, final Decimal64 b3,
+                                       final Decimal64 a4, final Decimal64 b4) {
+        return new Decimal64(MathArrays.linearCombination(a1.value, b1.value,
+                                                          a2.value, b2.value,
+                                                          a3.value, b3.value,
+                                                          a4.value, b4.value));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Decimal64 linearCombination(final double a1, final Decimal64 b1,
+                                       final double a2, final Decimal64 b2,
+                                       final double a3, final Decimal64 b3,
+                                       final double a4, final Decimal64 b4) {
+        return new Decimal64(MathArrays.linearCombination(a1, b1.value,
+                                                          a2, b2.value,
+                                                          a3, b3.value,
+                                                          a4, b4.value));
+    }
+
 }

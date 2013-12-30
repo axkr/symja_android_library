@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.math3.exception.MathIllegalStateException;
-import org.apache.commons.math3.optimization.GoalType;
-import org.apache.commons.math3.optimization.PointValuePair;
-import org.apache.commons.math3.optimization.linear.LinearConstraint;
-import org.apache.commons.math3.optimization.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optimization.linear.Relationship;
-import org.apache.commons.math3.optimization.linear.SimplexSolver;
+import org.apache.commons.math3.optim.linear.LinearConstraint;
+import org.apache.commons.math3.optim.linear.LinearConstraintSet;
+import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
+import org.apache.commons.math3.optim.linear.NonNegativeConstraint;
+import org.apache.commons.math3.optim.linear.PivotSelectionRule;
+import org.apache.commons.math3.optim.linear.Relationship;
+import org.apache.commons.math3.optim.linear.SimplexSolver;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.PointValuePair;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -81,7 +84,11 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 					}
 				}
 				SimplexSolver solver = new SimplexSolver();
-				PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
+//				PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
+		        PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
+		                                                  GoalType.MINIMIZE,
+		                                                  new NonNegativeConstraint(true),
+		                                                  PivotSelectionRule.BLAND);
 				double[] values = solution.getPointRef();
 				return F.List(values);
 			}

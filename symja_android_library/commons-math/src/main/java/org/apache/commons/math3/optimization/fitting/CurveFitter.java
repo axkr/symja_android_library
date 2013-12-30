@@ -43,9 +43,11 @@ import org.apache.commons.math3.optimization.PointVectorValuePair;
  *
  * @param <T> Function to use for the fit.
  *
- * @version $Id: CurveFitter.java 1384907 2012-09-14 20:17:00Z luc $
+ * @version $Id: CurveFitter.java 1499808 2013-07-04 17:00:42Z sebb $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */
+@Deprecated
 public class CurveFitter<T extends ParametricUnivariateFunction> {
 
     /** Optimizer to use for the fitting.
@@ -64,6 +66,7 @@ public class CurveFitter<T extends ParametricUnivariateFunction> {
      * @param optimizer optimizer to use for the fitting
      * @deprecated as of 3.1 replaced by {@link #CurveFitter(MultivariateDifferentiableVectorOptimizer)}
      */
+    @Deprecated
     public CurveFitter(final DifferentiableMultivariateVectorOptimizer optimizer) {
         this.oldOptimizer = optimizer;
         this.optimizer    = null;

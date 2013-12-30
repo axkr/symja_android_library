@@ -27,7 +27,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 /** Wrapper class to compute Jacobian matrices by finite differences for ODE
  *  which do not compute them by themselves.
  *
- * @version $Id: ParameterJacobianWrapper.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: ParameterJacobianWrapper.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 class ParameterJacobianWrapper implements ParameterJacobianProvider {

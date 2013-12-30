@@ -19,13 +19,14 @@ package org.apache.commons.math3.analysis.interpolation;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.exception.NonMonotonicSequenceException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
 import org.apache.commons.math3.util.MathArrays;
 
 /**
  * Generates a tricubic interpolating function.
  *
  * @since 2.2
- * @version $Id: TricubicSplineInterpolator.java 1379904 2012-09-01 23:54:52Z erans $
+ * @version $Id: TricubicSplineInterpolator.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class TricubicSplineInterpolator
     implements TrivariateGridInterpolator {
@@ -36,9 +37,8 @@ public class TricubicSplineInterpolator
                                                            final double[] yval,
                                                            final double[] zval,
                                                            final double[][][] fval)
-        throws NoDataException,
-               DimensionMismatchException,
-               NonMonotonicSequenceException {
+        throws NoDataException, NumberIsTooSmallException,
+               DimensionMismatchException, NonMonotonicSequenceException {
         if (xval.length == 0 || yval.length == 0 || zval.length == 0 || fval.length == 0) {
             throw new NoDataException();
         }

@@ -19,7 +19,7 @@ package org.apache.commons.math3.optimization.general;
 
 import org.apache.commons.math3.analysis.DifferentiableMultivariateFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.analysis.differentiation.GradientFunction;
+import org.apache.commons.math3.analysis.FunctionUtils;
 import org.apache.commons.math3.analysis.differentiation.MultivariateDifferentiableFunction;
 import org.apache.commons.math3.optimization.DifferentiableMultivariateOptimizer;
 import org.apache.commons.math3.optimization.GoalType;
@@ -32,9 +32,9 @@ import org.apache.commons.math3.optimization.direct.BaseAbstractMultivariateOpti
  * differentiable functions.
  * It contains boiler-plate code for dealing with gradient evaluation.
  *
- * @version $Id: AbstractScalarDifferentiableOptimizer.java 1384907 2012-09-14 20:17:00Z luc $
+ * @version $Id: AbstractScalarDifferentiableOptimizer.java 1422230 2012-12-15 12:11:13Z erans $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
- * @deprecated as of 3.1 replaced by {@link AbstractDifferentiableOptimizer}
  */
 @Deprecated
 public abstract class AbstractScalarDifferentiableOptimizer
@@ -76,14 +76,14 @@ public abstract class AbstractScalarDifferentiableOptimizer
 
     /** {@inheritDoc} */
     @Override
-    public PointValuePair optimize(int maxEval,
-                                       final DifferentiableMultivariateFunction f,
-                                       final GoalType goalType,
-                                       final double[] startPoint) {
+    protected PointValuePair optimizeInternal(int maxEval,
+                                              final DifferentiableMultivariateFunction f,
+                                              final GoalType goalType,
+                                              final double[] startPoint) {
         // Store optimization problem characteristics.
         gradient = f.gradient();
 
-        return optimizeInternal(maxEval, f, goalType, startPoint);
+        return super.optimizeInternal(maxEval, f, goalType, startPoint);
     }
 
     /**
@@ -107,9 +107,9 @@ public abstract class AbstractScalarDifferentiableOptimizer
                                    final MultivariateDifferentiableFunction f,
                                    final GoalType goalType,
                                    final double[] startPoint) {
-        // Store optimization problem characteristics.
-        gradient = new GradientFunction(f);
-
-        return optimizeInternal(maxEval, f, goalType, startPoint);
+        return optimizeInternal(maxEval,
+                                FunctionUtils.toDifferentiableMultivariateFunction(f),
+                                goalType,
+                                startPoint);
     }
 }

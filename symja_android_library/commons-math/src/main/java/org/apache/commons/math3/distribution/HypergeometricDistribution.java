@@ -30,7 +30,7 @@ import org.apache.commons.math3.random.Well19937c;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Hypergeometric_distribution">Hypergeometric distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/HypergeometricDistribution.html">Hypergeometric distribution (MathWorld)</a>
- * @version $Id: HypergeometricDistribution.java 1363604 2012-07-20 00:43:45Z erans $
+ * @version $Id: HypergeometricDistribution.java 1534358 2013-10-21 20:13:52Z tn $
  */
 public class HypergeometricDistribution extends AbstractIntegerDistribution {
     /** Serializable version identifier. */
@@ -193,22 +193,29 @@ public class HypergeometricDistribution extends AbstractIntegerDistribution {
 
     /** {@inheritDoc} */
     public double probability(int x) {
+        final double logProbability = logProbability(x);
+        return logProbability == Double.NEGATIVE_INFINITY ? 0 : FastMath.exp(logProbability);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double logProbability(int x) {
         double ret;
 
         int[] domain = getDomain(populationSize, numberOfSuccesses, sampleSize);
         if (x < domain[0] || x > domain[1]) {
-            ret = 0.0;
+            ret = Double.NEGATIVE_INFINITY;
         } else {
             double p = (double) sampleSize / (double) populationSize;
             double q = (double) (populationSize - sampleSize) / (double) populationSize;
             double p1 = SaddlePointExpansion.logBinomialProbability(x,
                     numberOfSuccesses, p, q);
             double p2 =
-                SaddlePointExpansion.logBinomialProbability(sampleSize - x,
-                    populationSize - numberOfSuccesses, p, q);
+                    SaddlePointExpansion.logBinomialProbability(sampleSize - x,
+                            populationSize - numberOfSuccesses, p, q);
             double p3 =
-                SaddlePointExpansion.logBinomialProbability(sampleSize, populationSize, p, q);
-            ret = FastMath.exp(p1 + p2 - p3);
+                    SaddlePointExpansion.logBinomialProbability(sampleSize, populationSize, p, q);
+            ret = p1 + p2 - p3;
         }
 
         return ret;
@@ -265,7 +272,7 @@ public class HypergeometricDistribution extends AbstractIntegerDistribution {
      * size {@code n}, the mean is {@code n * m / N}.
      */
     public double getNumericalMean() {
-        return (double) (getSampleSize() * getNumberOfSuccesses()) / (double) getPopulationSize();
+        return getSampleSize() * (getNumberOfSuccesses() / (double) getPopulationSize());
     }
 
     /**

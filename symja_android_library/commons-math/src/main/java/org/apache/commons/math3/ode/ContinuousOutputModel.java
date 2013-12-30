@@ -83,7 +83,7 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see StepHandler
  * @see StepInterpolator
- * @version $Id: ContinuousOutputModel.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: ContinuousOutputModel.java 1463684 2013-04-02 19:04:13Z luc $
  * @since 1.2
  */
 
@@ -333,9 +333,25 @@ public class ContinuousOutputModel
    * Get the state vector of the interpolated point.
    * @return state vector at time {@link #getInterpolatedTime}
    * @exception MaxCountExceededException if the number of functions evaluations is exceeded
+   * @see #getInterpolatedSecondaryState(int)
    */
   public double[] getInterpolatedState() throws MaxCountExceededException {
     return steps.get(index).getInterpolatedState();
+  }
+
+  /** Get the interpolated secondary state corresponding to the secondary equations.
+   * @param secondaryStateIndex index of the secondary set, as returned by {@link
+   * org.apache.commons.math3.ode.ExpandableStatefulODE#addSecondaryEquations(
+   * org.apache.commons.math3.ode.SecondaryEquations)
+   * ExpandableStatefulODE.addSecondaryEquations(SecondaryEquations)}
+   * @return interpolated secondary state at the current interpolation date
+   * @see #getInterpolatedState()
+   * @since 3.2
+   * @exception MaxCountExceededException if the number of functions evaluations is exceeded
+   */
+  public double[] getInterpolatedSecondaryState(final int secondaryStateIndex)
+    throws MaxCountExceededException {
+    return steps.get(index).getInterpolatedSecondaryState(secondaryStateIndex);
   }
 
   /** Compare a step interval and a double.

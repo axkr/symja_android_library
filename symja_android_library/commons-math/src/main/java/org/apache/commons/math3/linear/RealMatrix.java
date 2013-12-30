@@ -31,7 +31,7 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * Matrix element indexing is 0-based -- e.g., <code>getEntry(0, 0)</code>
  * returns the element in the first row, first column of the matrix.</p>
  *
- * @version $Id: RealMatrix.java 1388154 2012-09-20 18:50:45Z celestin $
+ * @version $Id: RealMatrix.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public interface RealMatrix extends AnyMatrix {
 

@@ -22,6 +22,7 @@ import org.apache.commons.math3.analysis.FunctionUtils;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.util.FastMath;
 
 /**
@@ -33,7 +34,7 @@ import org.apache.commons.math3.util.FastMath;
  * </code></pre>
  *
  * @since 3.0
- * @version $Id: Sinc.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: Sinc.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class Sinc implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /**
@@ -105,7 +106,8 @@ public class Sinc implements UnivariateDifferentiableFunction, DifferentiableUni
     /** {@inheritDoc}
      * @since 3.1
      */
-    public DerivativeStructure value(final DerivativeStructure t) {
+    public DerivativeStructure value(final DerivativeStructure t)
+        throws DimensionMismatchException {
 
         final double scaledX  = (normalized ? FastMath.PI : 1) * t.getValue();
         final double scaledX2 = scaledX * scaledX;

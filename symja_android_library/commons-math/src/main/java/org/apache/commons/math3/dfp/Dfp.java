@@ -19,7 +19,9 @@ package org.apache.commons.math3.dfp;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.RealFieldElement;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  *  Decimal floating point library for Java
@@ -90,10 +92,10 @@ import org.apache.commons.math3.FieldElement;
  *  detail and is really only a matter of definition.  Any side effects of
  *  this can be rendered invisible by a subclass.</p>
  * @see DfpField
- * @version $Id: Dfp.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: Dfp.java 1539704 2013-11-07 16:34:51Z tn $
  * @since 2.2
  */
-public class Dfp implements FieldElement<Dfp> {
+public class Dfp implements RealFieldElement<Dfp> {
 
     /** The radix, or base of this system.  Set to 10000 */
     public static final int RADIX = 10000;
@@ -858,6 +860,7 @@ public class Dfp implements FieldElement<Dfp> {
 
     /** Get the absolute value of instance.
      * @return absolute value of instance
+     * @since 3.2
      */
     public Dfp abs() {
         Dfp result = newInstance(this);
@@ -999,6 +1002,7 @@ public class Dfp implements FieldElement<Dfp> {
      *  That is round to nearest integer unless both are equidistant.
      *  In which case round to the even one.
      *  @return rounded value
+     * @since 3.2
      */
     public Dfp rint() {
         return trunc(DfpField.RoundingMode.ROUND_HALF_EVEN);
@@ -1007,6 +1011,7 @@ public class Dfp implements FieldElement<Dfp> {
     /** Round to an integer using the round floor mode.
      * That is, round toward -Infinity
      *  @return rounded value
+     * @since 3.2
      */
     public Dfp floor() {
         return trunc(DfpField.RoundingMode.ROUND_FLOOR);
@@ -1015,6 +1020,7 @@ public class Dfp implements FieldElement<Dfp> {
     /** Round to an integer using the round ceil mode.
      * That is, round toward +Infinity
      *  @return rounded value
+     * @since 3.2
      */
     public Dfp ceil() {
         return trunc(DfpField.RoundingMode.ROUND_CEIL);
@@ -1023,6 +1029,7 @@ public class Dfp implements FieldElement<Dfp> {
     /** Returns the IEEE remainder.
      * @param d divisor
      * @return this less n &times; d, where n is the integer closest to this/d
+     * @since 3.2
      */
     public Dfp remainder(final Dfp d) {
 
@@ -1177,8 +1184,9 @@ public class Dfp implements FieldElement<Dfp> {
 
     /** Get the exponent of the greatest power of 10 that is less than or equal to abs(this).
      *  @return integer base 10 logarithm
+     * @since 3.2
      */
-    public int log10()  {
+    public int intLog10()  {
         if (mant[mant.length-1] > 1000) {
             return exp * 4 - 1;
         }
@@ -1234,7 +1242,7 @@ public class Dfp implements FieldElement<Dfp> {
         }
 
         int rh = extra / RADIX;
-        extra = extra - rh * RADIX;
+        extra -= rh * RADIX;
         for (int i = 0; i < mant.length; i++) {
             final int r = mant[i] + rh;
             rh = r / RADIX;
@@ -1549,7 +1557,7 @@ public class Dfp implements FieldElement<Dfp> {
             int rh = 0;  // acts as a carry
             for (int j=0; j<mant.length; j++) {
                 int r = mant[i] * x.mant[j];    // multiply the 2 digits
-                r = r + product[i+j] + rh;  // add to the product digit with carry in
+                r += product[i+j] + rh;  // add to the product digit with carry in
 
                 rh = r / RADIX;
                 product[i+j] = r - rh * RADIX;
@@ -1595,12 +1603,24 @@ public class Dfp implements FieldElement<Dfp> {
 
     }
 
-    /** Multiply this by a single digit 0&lt;=x&lt;radix.
-     * There are speed advantages in this special case
+    /** Multiply this by a single digit x.
      * @param x multiplicand
      * @return product of this and x
      */
     public Dfp multiply(final int x) {
+        if (x >= 0 && x < RADIX) {
+            return multiplyFast(x);
+        } else {
+            return multiply(newInstance(x));
+        }
+    }
+
+    /** Multiply this by a single digit 0&lt;=x&lt;radix.
+     * There are speed advantages in this special case.
+     * @param x multiplicand
+     * @return product of this and x
+     */
+    private Dfp multiplyFast(final int x) {
         Dfp result = newInstance(this);
 
         /* handle special cases */
@@ -1786,7 +1806,7 @@ public class Dfp implements FieldElement<Dfp> {
 
                 /* find out how far off the remainder is telling us we are */
                 minadj = (remainder[mant.length] * RADIX)+remainder[mant.length-1];
-                minadj = minadj / (divisor.mant[mant.length-1]+1);
+                minadj /= divisor.mant[mant.length-1] + 1;
 
                 if (minadj >= 2) {
                     min = trial+minadj;  // update the minimum
@@ -1944,6 +1964,7 @@ public class Dfp implements FieldElement<Dfp> {
 
     /** Compute the square root.
      * @return square root of the instance
+     * @since 3.2
      */
     public Dfp sqrt() {
 
@@ -2133,8 +2154,8 @@ public class Dfp implements FieldElement<Dfp> {
 
         while (p > 0) {
             outputbuffer[q++] = (char)(ae / p + '0');
-            ae = ae % p;
-            p = p / 10;
+            ae %= p;
+            p /= 10;
         }
 
         return new String(outputbuffer, 0, q);
@@ -2263,11 +2284,11 @@ public class Dfp implements FieldElement<Dfp> {
                 } else {
                     def = newInstance(result);  // gradual underflow
                 }
-                result.exp = result.exp + ERR_SCALE;
+                result.exp += ERR_SCALE;
                 break;
 
             case DfpField.FLAG_OVERFLOW:
-                result.exp = result.exp - ERR_SCALE;
+                result.exp -= ERR_SCALE;
                 def = newInstance(getZero());
                 def.sign = result.sign;
                 def.nans = INFINITE;
@@ -2417,7 +2438,7 @@ public class Dfp implements FieldElement<Dfp> {
 
         /* Find the exponent, first estimate by integer log10, then adjust.
          Should be faster than doing a natural logarithm.  */
-        int exponent = (int)(y.log10() * 3.32);
+        int exponent = (int)(y.intLog10() * 3.32);
         if (exponent < 0) {
             exponent--;
         }
@@ -2489,6 +2510,374 @@ public class Dfp implements FieldElement<Dfp> {
         split[1] = subtract(newInstance(split[0])).toDouble();
 
         return split;
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public double getReal() {
+        return toDouble();
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp add(final double a) {
+        return add(newInstance(a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp subtract(final double a) {
+        return subtract(newInstance(a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp multiply(final double a) {
+        return multiply(newInstance(a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp divide(final double a) {
+        return divide(newInstance(a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp remainder(final double a) {
+        return remainder(newInstance(a));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public long round() {
+        return FastMath.round(toDouble());
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp signum() {
+        if (isNaN() || isZero()) {
+            return this;
+        } else {
+            return newInstance(sign > 0 ? +1 : -1);
+        }
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp copySign(final Dfp s) {
+        if ((sign >= 0 && s.sign >= 0) || (sign < 0 && s.sign < 0)) { // Sign is currently OK
+            return this;
+        }
+        return negate(); // flip sign
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp copySign(final double s) {
+        long sb = Double.doubleToLongBits(s);
+        if ((sign >= 0 && sb >= 0) || (sign < 0 && sb < 0)) { // Sign is currently OK
+            return this;
+        }
+        return negate(); // flip sign
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp scalb(final int n) {
+        return multiply(DfpMath.pow(getTwo(), n));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp hypot(final Dfp y) {
+        return multiply(this).add(y.multiply(y)).sqrt();
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp cbrt() {
+        return rootN(3);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp rootN(final int n) {
+        return (sign >= 0) ?
+               DfpMath.pow(this, getOne().divide(n)) :
+               DfpMath.pow(negate(), getOne().divide(n)).negate();
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp pow(final double p) {
+        return DfpMath.pow(this, newInstance(p));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp pow(final int n) {
+        return DfpMath.pow(this, n);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp pow(final Dfp e) {
+        return DfpMath.pow(this, e);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp exp() {
+        return DfpMath.exp(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp expm1() {
+        return DfpMath.exp(this).subtract(getOne());
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp log() {
+        return DfpMath.log(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp log1p() {
+        return DfpMath.log(this.add(getOne()));
+    }
+
+//  TODO: deactivate this implementation (and return type) in 4.0
+    /** Get the exponent of the greatest power of 10 that is less than or equal to abs(this).
+     *  @return integer base 10 logarithm
+     *  @deprecated as of 3.2, replaced by {@link #intLog10()}, in 4.0 the return type
+     *  will be changed to Dfp
+     */
+    @Deprecated
+    public int log10()  {
+        return intLog10();
+    }
+
+//    TODO: activate this implementation (and return type) in 4.0
+//    /** {@inheritDoc}
+//     * @since 3.2
+//     */
+//    public Dfp log10() {
+//        return DfpMath.log(this).divide(DfpMath.log(newInstance(10)));
+//    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp cos() {
+        return DfpMath.cos(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp sin() {
+        return DfpMath.sin(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp tan() {
+        return DfpMath.tan(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp acos() {
+        return DfpMath.acos(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp asin() {
+        return DfpMath.asin(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp atan() {
+        return DfpMath.atan(this);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp atan2(final Dfp x)
+        throws DimensionMismatchException {
+
+        // compute r = sqrt(x^2+y^2)
+        final Dfp r = x.multiply(x).add(multiply(this)).sqrt();
+
+        if (x.sign >= 0) {
+
+            // compute atan2(y, x) = 2 atan(y / (r + x))
+            return getTwo().multiply(divide(r.add(x)).atan());
+
+        } else {
+
+            // compute atan2(y, x) = +/- pi - 2 atan(y / (r - x))
+            final Dfp tmp = getTwo().multiply(divide(r.subtract(x)).atan());
+            final Dfp pmPi = newInstance((tmp.sign <= 0) ? -FastMath.PI : FastMath.PI);
+            return pmPi.subtract(tmp);
+
+        }
+
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp cosh() {
+        return DfpMath.exp(this).add(DfpMath.exp(negate())).divide(2);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp sinh() {
+        return DfpMath.exp(this).subtract(DfpMath.exp(negate())).divide(2);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp tanh() {
+        final Dfp ePlus  = DfpMath.exp(this);
+        final Dfp eMinus = DfpMath.exp(negate());
+        return ePlus.subtract(eMinus).divide(ePlus.add(eMinus));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp acosh() {
+        return multiply(this).subtract(getOne()).sqrt().add(this).log();
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp asinh() {
+        return multiply(this).add(getOne()).sqrt().add(this).log();
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp atanh() {
+        return getOne().add(this).divide(getOne().subtract(this)).log().divide(2);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final Dfp[] a, final Dfp[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+        Dfp r = getZero();
+        for (int i = 0; i < a.length; ++i) {
+            r = r.add(a[i].multiply(b[i]));
+        }
+        return r;
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final double[] a, final Dfp[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+        Dfp r = getZero();
+        for (int i = 0; i < a.length; ++i) {
+            r = r.add(b[i].multiply(a[i]));
+        }
+        return r;
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final Dfp a1, final Dfp b1, final Dfp a2, final Dfp b2) {
+        return a1.multiply(b1).add(a2.multiply(b2));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final double a1, final Dfp b1, final double a2, final Dfp b2) {
+        return b1.multiply(a1).add(b2.multiply(a2));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final Dfp a1, final Dfp b1,
+                                 final Dfp a2, final Dfp b2,
+                                 final Dfp a3, final Dfp b3) {
+        return a1.multiply(b1).add(a2.multiply(b2)).add(a3.multiply(b3));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final double a1, final Dfp b1,
+                                 final double a2, final Dfp b2,
+                                 final double a3, final Dfp b3) {
+        return b1.multiply(a1).add(b2.multiply(a2)).add(b3.multiply(a3));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final Dfp a1, final Dfp b1, final Dfp a2, final Dfp b2,
+                                 final Dfp a3, final Dfp b3, final Dfp a4, final Dfp b4) {
+        return a1.multiply(b1).add(a2.multiply(b2)).add(a3.multiply(b3)).add(a4.multiply(b4));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public Dfp linearCombination(final double a1, final Dfp b1, final double a2, final Dfp b2,
+                                 final double a3, final Dfp b3, final double a4, final Dfp b4) {
+        return b1.multiply(a1).add(b2.multiply(a2)).add(b3.multiply(a3)).add(b4.multiply(a4));
     }
 
 }

@@ -31,7 +31,7 @@ import org.apache.commons.math3.random.Well19937c;
  * @see <a href="http://en.wikipedia.org/wiki/Triangular_distribution">
  * Triangular distribution (Wikipedia)</a>
  *
- * @version $Id: TriangularDistribution.java 1369202 2012-08-03 20:50:33Z erans $
+ * @version $Id: TriangularDistribution.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public class TriangularDistribution extends AbstractRealDistribution {

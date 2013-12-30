@@ -24,7 +24,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * increasing or decreasing.
  *
  * @since 2.2 (name changed to "NonMonotonicSequenceException" in 3.0)
- * @version $Id: NonMonotonicSequenceException.java 1364378 2012-07-22 17:42:38Z tn $
+ * @version $Id: NonMonotonicSequenceException.java 1504729 2013-07-18 23:54:52Z sebb $
  */
 public class NonMonotonicSequenceException extends MathIllegalNumberException {
     /** Serializable version Id. */
@@ -84,7 +84,7 @@ public class NonMonotonicSequenceException extends MathIllegalNumberException {
               (strict ?
                LocalizedFormats.NOT_STRICTLY_DECREASING_SEQUENCE :
                LocalizedFormats.NOT_DECREASING_SEQUENCE),
-              wrong, previous, index, index - 1);
+              wrong, previous, Integer.valueOf(index), Integer.valueOf(index - 1));
 
         this.direction = direction;
         this.strict = strict;

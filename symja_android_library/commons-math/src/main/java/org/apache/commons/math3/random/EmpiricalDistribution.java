@@ -19,16 +19,22 @@ package org.apache.commons.math3.random;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.exception.MathInternalError;
 import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
@@ -37,11 +43,12 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 
 /**
- * Represents an <a href="http://http://en.wikipedia.org/wiki/Empirical_distribution_function">
+ * <p>Represents an <a href="http://http://en.wikipedia.org/wiki/Empirical_distribution_function">
  * empirical probability distribution</a> -- a probability distribution derived
  * from observed data without making any assumptions about the functional form
- * of the population distribution that the data come from.<p>
- * An <code>EmpiricalDistribution</code> maintains data structures, called
+ * of the population distribution that the data come from.</p>
+ *
+ * <p>An <code>EmpiricalDistribution</code> maintains data structures, called
  * <i>distribution digests</i>, that describe empirical distributions and
  * support the following operations: <ul>
  * <li>loading the distribution from a file of observed data values</li>
@@ -55,6 +62,7 @@ import org.apache.commons.math3.util.MathUtils;
  * frequency histograms representing the input data or to generate random values
  * "like" those in the input file -- i.e., the values generated will follow the
  * distribution of the values in the file.</p>
+ *
  * <p>The implementation uses what amounts to the
  * <a href="http://nedwww.ipac.caltech.edu/level5/March02/Silverman/Silver2_6.html">
  * Variable Kernel Method</a> with Gaussian smoothing:<p>
@@ -69,7 +77,18 @@ import org.apache.commons.math3.util.MathUtils;
  * <li>Generate a uniformly distributed value in (0,1) </li>
  * <li>Select the subinterval to which the value belongs.
  * <li>Generate a random Gaussian value with mean = mean of the associated
- *     bin and std dev = std dev of associated bin.</li></ol></p><p>
+ *     bin and std dev = std dev of associated bin.</li></ol></p>
+ *
+ * <p>EmpiricalDistribution implements the {@link RealDistribution} interface
+ * as follows.  Given x within the range of values in the dataset, let B
+ * be the bin containing x and let K be the within-bin kernel for B.  Let P(B-)
+ * be the sum of the probabilities of the bins below B and let K(B) be the
+ * mass of B under K (i.e., the integral of the kernel density over B).  Then
+ * set P(X < x) = P(B-) + P(B) * K(x) / K(B) where K(x) is the kernel distribution
+ * evaluated at x. This results in a cdf that matches the grouped frequency
+ * distribution at the bin endpoints and interpolates within bins using
+ * within-bin kernels.</p>
+ *
  *<strong>USAGE NOTES:</strong><ul>
  *<li>The <code>binCount</code> is set by default to 1000.  A good rule of thumb
  *    is to set the bin count to approximately the length of the input file divided
@@ -78,15 +97,21 @@ import org.apache.commons.math3.util.MathUtils;
  *    entry per line.</li>
  * </ul></p>
  *
- * @version $Id: EmpiricalDistribution.java 1382902 2012-09-10 14:47:19Z luc $
+ * @version $Id: EmpiricalDistribution.java 1517416 2013-08-26 03:04:38Z dbrosius $
  */
-public class EmpiricalDistribution implements Serializable {
+public class EmpiricalDistribution extends AbstractRealDistribution {
 
     /** Default bin count */
     public static final int DEFAULT_BIN_COUNT = 1000;
 
+    /** Character set for file input */
+    private static final String FILE_CHARSET = "US-ASCII";
+
     /** Serializable version identifier */
     private static final long serialVersionUID = 5729073523949762654L;
+
+    /** RandomDataGenerator instance to use in repeated calls to getNext() */
+    protected final RandomDataGenerator randomData;
 
     /** List of SummaryStatistics objects characterizing the bins */
     private final List<SummaryStatistics> binStats;
@@ -112,14 +137,11 @@ public class EmpiricalDistribution implements Serializable {
     /** upper bounds of subintervals in (0,1) "belonging" to the bins */
     private double[] upperBounds = null;
 
-    /** RandomDataImpl instance to use in repeated calls to getNext() */
-    private final RandomDataImpl randomData;
-
     /**
      * Creates a new EmpiricalDistribution with the default bin count.
      */
     public EmpiricalDistribution() {
-        this(DEFAULT_BIN_COUNT, new RandomDataImpl());
+        this(DEFAULT_BIN_COUNT);
     }
 
     /**
@@ -128,7 +150,7 @@ public class EmpiricalDistribution implements Serializable {
      * @param binCount number of bins
      */
     public EmpiricalDistribution(int binCount) {
-        this(binCount, new RandomDataImpl());
+        this(binCount, new RandomDataGenerator());
     }
 
     /**
@@ -140,9 +162,7 @@ public class EmpiricalDistribution implements Serializable {
      * @since 3.0
      */
     public EmpiricalDistribution(int binCount, RandomGenerator generator) {
-        this.binCount = binCount;
-        randomData = new RandomDataImpl(generator);
-        binStats = new ArrayList<SummaryStatistics>();
+        this(binCount, new RandomDataGenerator(generator));
     }
 
     /**
@@ -163,11 +183,11 @@ public class EmpiricalDistribution implements Serializable {
      * @param binCount number of bins
      * @param randomData random data generator (may be null, resulting in default JDK generator)
      * @since 3.0
+     * @deprecated As of 3.1. Please use {@link #EmpiricalDistribution(int,RandomGenerator)} instead.
      */
+    @Deprecated
     public EmpiricalDistribution(int binCount, RandomDataImpl randomData) {
-        this.binCount = binCount;
-        this.randomData = randomData;
-        binStats = new ArrayList<SummaryStatistics>();
+        this(binCount, randomData.getDelegate());
     }
 
     /**
@@ -176,27 +196,44 @@ public class EmpiricalDistribution implements Serializable {
      *
      * @param randomData random data generator (may be null, resulting in default JDK generator)
      * @since 3.0
+     * @deprecated As of 3.1. Please use {@link #EmpiricalDistribution(RandomGenerator)} instead.
      */
+    @Deprecated
     public EmpiricalDistribution(RandomDataImpl randomData) {
         this(DEFAULT_BIN_COUNT, randomData);
     }
 
-     /**
+    /**
+     * Private constructor to allow lazy initialisation of the RNG contained
+     * in the {@link #randomData} instance variable.
+     *
+     * @param binCount number of bins
+     * @param randomData Random data generator.
+     */
+    private EmpiricalDistribution(int binCount,
+                                  RandomDataGenerator randomData) {
+        super(null);
+        this.binCount = binCount;
+        this.randomData = randomData;
+        binStats = new ArrayList<SummaryStatistics>();
+    }
+
+    /**
      * Computes the empirical distribution from the provided
      * array of numbers.
      *
      * @param in the input data array
      * @exception NullArgumentException if in is null
-     * @throws MathIllegalStateException if an IOException occurs
      */
-    public void load(double[] in) throws NullArgumentException, MathIllegalStateException {
+    public void load(double[] in) throws NullArgumentException {
         DataAdapter da = new ArrayDataAdapter(in);
         try {
             da.computeStats();
             // new adapter for the second pass
             fillBinStats(new ArrayDataAdapter(in));
-        } catch (IOException e) {
-            throw new MathIllegalStateException(e, LocalizedFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
+        } catch (IOException ex) {
+            // Can't happen
+            throw new MathInternalError();
         }
         loaded = true;
 
@@ -204,7 +241,11 @@ public class EmpiricalDistribution implements Serializable {
 
     /**
      * Computes the empirical distribution using data read from a URL.
-     * @param url  url of the input file
+     *
+     * <p>The input file <i>must</i> be an ASCII text file containing one
+     * valid numeric entry per line.</p>
+     *
+     * @param url url of the input file
      *
      * @throws IOException if an IO error occurs
      * @throws NullArgumentException if url is null
@@ -212,8 +253,9 @@ public class EmpiricalDistribution implements Serializable {
      */
     public void load(URL url) throws IOException, NullArgumentException, ZeroException {
         MathUtils.checkNotNull(url);
+        Charset charset = Charset.forName(FILE_CHARSET);
         BufferedReader in =
-            new BufferedReader(new InputStreamReader(url.openStream()));
+            new BufferedReader(new InputStreamReader(url.openStream(), charset));
         try {
             DataAdapter da = new StreamDataAdapter(in);
             da.computeStats();
@@ -221,13 +263,13 @@ public class EmpiricalDistribution implements Serializable {
                 throw new ZeroException(LocalizedFormats.URL_CONTAINS_NO_DATA, url);
             }
             // new adapter for the second pass
-            in = new BufferedReader(new InputStreamReader(url.openStream()));
+            in = new BufferedReader(new InputStreamReader(url.openStream(), charset));
             fillBinStats(new StreamDataAdapter(in));
             loaded = true;
         } finally {
            try {
                in.close();
-           } catch (IOException ex) {
+           } catch (IOException ex) { //NOPMD
                // ignore
            }
         }
@@ -236,24 +278,30 @@ public class EmpiricalDistribution implements Serializable {
     /**
      * Computes the empirical distribution from the input file.
      *
+     * <p>The input file <i>must</i> be an ASCII text file containing one
+     * valid numeric entry per line.</p>
+     *
      * @param file the input file
      * @throws IOException if an IO error occurs
      * @throws NullArgumentException if file is null
      */
     public void load(File file) throws IOException, NullArgumentException {
         MathUtils.checkNotNull(file);
-        BufferedReader in = new BufferedReader(new FileReader(file));
+        Charset charset = Charset.forName(FILE_CHARSET);
+        InputStream is = new FileInputStream(file);
+        BufferedReader in = new BufferedReader(new InputStreamReader(is, charset));
         try {
             DataAdapter da = new StreamDataAdapter(in);
             da.computeStats();
             // new adapter for second pass
-            in = new BufferedReader(new FileReader(file));
+            is = new FileInputStream(file);
+            in = new BufferedReader(new InputStreamReader(is, charset));
             fillBinStats(new StreamDataAdapter(in));
             loaded = true;
         } finally {
             try {
                 in.close();
-            } catch (IOException ex) {
+            } catch (IOException ex) { //NOPMD
                 // ignore
             }
         }
@@ -321,7 +369,7 @@ public class EmpiricalDistribution implements Serializable {
             double val = 0.0;
             sampleStats = new SummaryStatistics();
             while ((str = inputStream.readLine()) != null) {
-                val = Double.valueOf(str).doubleValue();
+                val = Double.parseDouble(str);
                 sampleStats.addValue(val);
             }
             inputStream.close();
@@ -372,7 +420,7 @@ public class EmpiricalDistribution implements Serializable {
     /**
      * Fills binStats array (second pass through data file).
      *
-     * @param in object providing access to the data
+     * @param da object providing access to the data
      * @throws IOException  if an IO error occurs
      */
     private void fillBinStats(final DataAdapter da)
@@ -380,7 +428,7 @@ public class EmpiricalDistribution implements Serializable {
         // Set up grid
         min = sampleStats.getMin();
         max = sampleStats.getMax();
-        delta = (max - min)/(Double.valueOf(binCount)).doubleValue();
+        delta = (max - min)/((double) binCount);
 
         // Initialize binStats ArrayList
         if (!binStats.isEmpty()) {
@@ -413,9 +461,9 @@ public class EmpiricalDistribution implements Serializable {
      */
     private int findBin(double value) {
         return FastMath.min(
-                FastMath.max((int) FastMath.ceil((value- min) / delta) - 1, 0),
+                FastMath.max((int) FastMath.ceil((value - min) / delta) - 1, 0),
                 binCount - 1);
-        }
+    }
 
     /**
      * Generates a random value from this distribution.
@@ -439,8 +487,7 @@ public class EmpiricalDistribution implements Serializable {
                SummaryStatistics stats = binStats.get(i);
                if (stats.getN() > 0) {
                    if (stats.getStandardDeviation() > 0) {  // more than one obs
-                       return randomData.nextGaussian(stats.getMean(),
-                                                      stats.getStandardDeviation());
+                       return getKernel(stats).sample();
                    } else {
                        return stats.getMean(); // only one obs in bin
                    }
@@ -497,9 +544,8 @@ public class EmpiricalDistribution implements Serializable {
      */
     public double[] getUpperBounds() {
         double[] binUpperBounds = new double[binCount];
-        binUpperBounds[0] = min + delta;
-        for (int i = 1; i < binCount - 1; i++) {
-            binUpperBounds[i] = binUpperBounds[i-1] + delta;
+        for (int i = 0; i < binCount - 1; i++) {
+            binUpperBounds[i] = min + delta * (i + 1);
         }
         binUpperBounds[binCount - 1] = max;
         return binUpperBounds;
@@ -540,5 +586,267 @@ public class EmpiricalDistribution implements Serializable {
      */
     public void reSeed(long seed) {
         randomData.reSeed(seed);
+    }
+
+    // Distribution methods ---------------------------
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    @Override
+    public double probability(double x) {
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Returns the kernel density normalized so that its integral over each bin
+     * equals the bin mass.</p>
+     *
+     * <p>Algorithm description: <ol>
+     * <li>Find the bin B that x belongs to.</li>
+     * <li>Compute K(B) = the mass of B with respect to the within-bin kernel (i.e., the
+     * integral of the kernel density over B).</li>
+     * <li>Return k(x) * P(B) / K(B), where k is the within-bin kernel density
+     * and P(B) is the mass of B.</li></ol></p>
+     * @since 3.1
+     */
+    public double density(double x) {
+        if (x < min || x > max) {
+            return 0d;
+        }
+        final int binIndex = findBin(x);
+        final RealDistribution kernel = getKernel(binStats.get(binIndex));
+        return kernel.density(x) * pB(binIndex) / kB(binIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Algorithm description:<ol>
+     * <li>Find the bin B that x belongs to.</li>
+     * <li>Compute P(B) = the mass of B and P(B-) = the combined mass of the bins below B.</li>
+     * <li>Compute K(B) = the probability mass of B with respect to the within-bin kernel
+     * and K(B-) = the kernel distribution evaluated at the lower endpoint of B</li>
+     * <li>Return P(B-) + P(B) * [K(x) - K(B-)] / K(B) where
+     * K(x) is the within-bin kernel distribution function evaluated at x.</li></ol></p>
+     *
+     * @since 3.1
+     */
+    public double cumulativeProbability(double x) {
+        if (x < min) {
+            return 0d;
+        } else if (x >= max) {
+            return 1d;
+        }
+        final int binIndex = findBin(x);
+        final double pBminus = pBminus(binIndex);
+        final double pB = pB(binIndex);
+        final double[] binBounds = getUpperBounds();
+        final double kB = kB(binIndex);
+        final double lower = binIndex == 0 ? min : binBounds[binIndex - 1];
+        final RealDistribution kernel = k(x);
+        final double withinBinCum =
+            (kernel.cumulativeProbability(x) -  kernel.cumulativeProbability(lower)) / kB;
+        return pBminus + pB * withinBinCum;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Algorithm description:<ol>
+     * <li>Find the smallest i such that the sum of the masses of the bins
+     *  through i is at least p.</li>
+     * <li>
+     *   Let K be the within-bin kernel distribution for bin i.</br>
+     *   Let K(B) be the mass of B under K. <br/>
+     *   Let K(B-) be K evaluated at the lower endpoint of B (the combined
+     *   mass of the bins below B under K).<br/>
+     *   Let P(B) be the probability of bin i.<br/>
+     *   Let P(B-) be the sum of the bin masses below bin i. <br/>
+     *   Let pCrit = p - P(B-)<br/>
+     * <li>Return the inverse of K evaluated at <br/>
+     *    K(B-) + pCrit * K(B) / P(B) </li>
+     *  </ol></p>
+     *
+     * @since 3.1
+     */
+    @Override
+    public double inverseCumulativeProbability(final double p) throws OutOfRangeException {
+        if (p < 0.0 || p > 1.0) {
+            throw new OutOfRangeException(p, 0, 1);
+        }
+
+        if (p == 0.0) {
+            return getSupportLowerBound();
+        }
+
+        if (p == 1.0) {
+            return getSupportUpperBound();
+        }
+
+        int i = 0;
+        while (cumBinP(i) < p) {
+            i++;
+        }
+
+        final RealDistribution kernel = getKernel(binStats.get(i));
+        final double kB = kB(i);
+        final double[] binBounds = getUpperBounds();
+        final double lower = i == 0 ? min : binBounds[i - 1];
+        final double kBminus = kernel.cumulativeProbability(lower);
+        final double pB = pB(i);
+        final double pBminus = pBminus(i);
+        final double pCrit = p - pBminus;
+        if (pCrit <= 0) {
+            return lower;
+        }
+        return kernel.inverseCumulativeProbability(kBminus + pCrit * kB / pB);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public double getNumericalMean() {
+       return sampleStats.getMean();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public double getNumericalVariance() {
+        return sampleStats.getVariance();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public double getSupportLowerBound() {
+       return min;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public double getSupportUpperBound() {
+        return max;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public boolean isSupportLowerBoundInclusive() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public boolean isSupportUpperBoundInclusive() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    public boolean isSupportConnected() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    @Override
+    public double sample() {
+        return getNextValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.1
+     */
+    @Override
+    public void reseedRandomGenerator(long seed) {
+        randomData.reSeed(seed);
+    }
+
+    /**
+     * The probability of bin i.
+     *
+     * @param i the index of the bin
+     * @return the probability that selection begins in bin i
+     */
+    private double pB(int i) {
+        return i == 0 ? upperBounds[0] :
+            upperBounds[i] - upperBounds[i - 1];
+    }
+
+    /**
+     * The combined probability of the bins up to but not including bin i.
+     *
+     * @param i the index of the bin
+     * @return the probability that selection begins in a bin below bin i.
+     */
+    private double pBminus(int i) {
+        return i == 0 ? 0 : upperBounds[i - 1];
+    }
+
+    /**
+     * Mass of bin i under the within-bin kernel of the bin.
+     *
+     * @param i index of the bin
+     * @return the difference in the within-bin kernel cdf between the
+     * upper and lower endpoints of bin i
+     */
+    @SuppressWarnings("deprecation")
+    private double kB(int i) {
+        final double[] binBounds = getUpperBounds();
+        final RealDistribution kernel = getKernel(binStats.get(i));
+        return i == 0 ? kernel.cumulativeProbability(min, binBounds[0]) :
+            kernel.cumulativeProbability(binBounds[i - 1], binBounds[i]);
+    }
+
+    /**
+     * The within-bin kernel of the bin that x belongs to.
+     *
+     * @param x the value to locate within a bin
+     * @return the within-bin kernel of the bin containing x
+     */
+    private RealDistribution k(double x) {
+        final int binIndex = findBin(x);
+        return getKernel(binStats.get(binIndex));
+    }
+
+    /**
+     * The combined probability of the bins up to and including binIndex.
+     *
+     * @param binIndex maximum bin index
+     * @return sum of the probabilities of bins through binIndex
+     */
+    private double cumBinP(int binIndex) {
+        return upperBounds[binIndex];
+    }
+
+    /**
+     * The within-bin smoothing kernel.
+     *
+     * @param bStats summary statistics for the bin
+     * @return within-bin kernel parameterized by bStats
+     */
+    protected RealDistribution getKernel(SummaryStatistics bStats) {
+        // Default to Gaussian
+        return new NormalDistribution(randomData.getRandomGenerator(),
+                bStats.getMean(), bStats.getStandardDeviation(),
+                NormalDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
     }
 }

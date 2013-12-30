@@ -23,7 +23,7 @@ import java.util.Random;
  * {@link RandomGenerator}.
  *
  * @since 1.1
- * @version $Id: JDKRandomGenerator.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: JDKRandomGenerator.java 1509236 2013-08-01 13:55:22Z erans $
  */
 public class JDKRandomGenerator extends Random implements RandomGenerator {
 
@@ -37,14 +37,6 @@ public class JDKRandomGenerator extends Random implements RandomGenerator {
 
     /** {@inheritDoc} */
     public void setSeed(int[] seed) {
-        // the following number is the largest prime that fits in 32 bits (it is 2^32 - 5)
-        final long prime = 4294967291l;
-
-        long combined = 0l;
-        for (int s : seed) {
-            combined = combined * prime + s;
-        }
-        setSeed(combined);
+        setSeed(RandomGeneratorFactory.convertToLong(seed));
     }
-
 }

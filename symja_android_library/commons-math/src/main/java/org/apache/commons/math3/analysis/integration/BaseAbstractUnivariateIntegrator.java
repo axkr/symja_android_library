@@ -30,7 +30,7 @@ import org.apache.commons.math3.util.MathUtils;
 /**
  * Provide a default implementation for several generic functions.
  *
- * @version $Id: BaseAbstractUnivariateIntegrator.java 1364387 2012-07-22 18:14:11Z tn $
+ * @version $Id: BaseAbstractUnivariateIntegrator.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 1.2
  */
 public abstract class BaseAbstractUnivariateIntegrator implements UnivariateIntegrator {
@@ -107,9 +107,9 @@ public abstract class BaseAbstractUnivariateIntegrator implements UnivariateInte
      * is lesser than or equal to the minimal number of iterations
      */
     protected BaseAbstractUnivariateIntegrator(final double relativeAccuracy,
-                                           final double absoluteAccuracy,
-                                           final int minimalIterationCount,
-                                           final int maximalIterationCount)
+                                               final double absoluteAccuracy,
+                                               final int minimalIterationCount,
+                                               final int maximalIterationCount)
         throws NotStrictlyPositiveException, NumberIsTooSmallException {
 
         // accuracy settings

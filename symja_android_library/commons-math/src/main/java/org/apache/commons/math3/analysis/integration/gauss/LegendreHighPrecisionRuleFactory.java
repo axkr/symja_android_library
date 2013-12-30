@@ -16,11 +16,11 @@
  */
 package org.apache.commons.math3.analysis.integration.gauss;
 
-import java.math.MathContext;
 import java.math.BigDecimal;
+import java.math.MathContext;
+
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 
 /**
  * Factory that creates Gauss-type quadrature rule using Legendre polynomials.
@@ -31,7 +31,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Abramowitz and Stegun, 1964</a>.
  *
  * @since 3.1
- * @version $Id: LegendreHighPrecisionRuleFactory.java 1374187 2012-08-17 09:50:54Z erans $
+ * @version $Id: LegendreHighPrecisionRuleFactory.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class LegendreHighPrecisionRuleFactory extends BaseRuleFactory<BigDecimal> {
     /** Settings for enhanced precision computations. */
@@ -60,17 +60,10 @@ public class LegendreHighPrecisionRuleFactory extends BaseRuleFactory<BigDecimal
         oneHalf = new BigDecimal("0.5", mContext);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws NotStrictlyPositiveException if {@code numberOfPoints < 1}.
-     */
+    /** {@inheritDoc} */
     @Override
-    protected Pair<BigDecimal[], BigDecimal[]> computeRule(int numberOfPoints) {
-        if (numberOfPoints <= 0) {
-            throw new NotStrictlyPositiveException(LocalizedFormats.NUMBER_OF_POINTS,
-                                                   numberOfPoints);
-        }
+    protected Pair<BigDecimal[], BigDecimal[]> computeRule(int numberOfPoints)
+        throws DimensionMismatchException {
 
         if (numberOfPoints == 1) {
             // Break recursion.

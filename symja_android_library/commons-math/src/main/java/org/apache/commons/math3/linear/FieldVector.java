@@ -43,9 +43,16 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * <pre>
  *   RealVector result = v.mapAddToSelf(3.0).mapTanToSelf().mapSquareToSelf();
  * </pre>
+ * <p>
+ * Note that as almost all operations on {@link FieldElement} throw {@link
+ * NullArgumentException} when operating on a null element, it is the responsibility
+ * of <code>FieldVector</code> implementations to make sure no null elements
+ * are inserted into the vector. This must be done in all constructors and
+ * all setters.
+ * <p>
  *
  * @param <T> the type of the field elements
- * @version $Id: FieldVector.java 1385316 2012-09-16 16:50:32Z tn $
+ * @version $Id: FieldVector.java 1455233 2013-03-11 17:00:41Z luc $
  * @since 2.0
  */
 public interface FieldVector<T extends FieldElement<T>>  {

@@ -41,7 +41,7 @@ import org.apache.commons.math3.util.MathUtils;
  * </p>
  *
  * @since 2.1
- * @version $Id: SaddlePointExpansion.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: SaddlePointExpansion.java 1538368 2013-11-03 13:57:37Z erans $
  */
 final class SaddlePointExpansion {
 
@@ -150,7 +150,7 @@ final class SaddlePointExpansion {
             double s1 = v * d;
             double s = Double.NaN;
             double ej = 2.0 * x * v;
-            v = v * v;
+            v *= v;
             int j = 1;
             while (s1 != s) {
                 s = s1;

@@ -35,7 +35,7 @@ import org.apache.commons.math3.FieldElement;
  * <code>ConcurrentModificationException</code> when they detect the map has been
  * modified during iteration.</p>
  * @param <T> the type of the field elements
- * @version $Id: OpenIntToFieldHashMap.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: OpenIntToFieldHashMap.java 1421448 2012-12-13 19:45:57Z tn $
  * @since 2.0
  */
 public class OpenIntToFieldHashMap<T extends FieldElement<T>> implements Serializable {
@@ -514,7 +514,7 @@ public class OpenIntToFieldHashMap<T extends FieldElement<T>> implements Seriali
             next = -1;
             try {
                 advance();
-            } catch (NoSuchElementException nsee) {
+            } catch (NoSuchElementException nsee) { // NOPMD
                 // ignored
             }
 
@@ -579,7 +579,7 @@ public class OpenIntToFieldHashMap<T extends FieldElement<T>> implements Seriali
 
             // prepare next step
             try {
-                while (states[++next] != FULL) {
+                while (states[++next] != FULL) { // NOPMD
                     // nothing to do
                 }
             } catch (ArrayIndexOutOfBoundsException e) {

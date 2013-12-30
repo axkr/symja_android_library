@@ -32,7 +32,7 @@ import org.apache.commons.math3.util.FastMath;
  *  simple harmonic oscillator</a> function.
  *
  * @since 3.0
- * @version $Id: HarmonicOscillator.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: HarmonicOscillator.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class HarmonicOscillator implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Amplitude. */
@@ -162,7 +162,8 @@ public class HarmonicOscillator implements UnivariateDifferentiableFunction, Dif
     /** {@inheritDoc}
      * @since 3.1
      */
-    public DerivativeStructure value(final DerivativeStructure t) {
+    public DerivativeStructure value(final DerivativeStructure t)
+        throws DimensionMismatchException {
         final double x = t.getValue();
         double[] f = new double[t.getOrder() + 1];
 

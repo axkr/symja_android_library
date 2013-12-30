@@ -32,7 +32,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * @see Precision
  * @see MathArrays
  *
- * @version $Id: MathUtils.java 1381283 2012-09-05 18:29:47Z luc $
+ * @version $Id: MathUtils.java 1478681 2013-05-03 09:04:58Z erans $
  */
 public final class MathUtils {
     /**
@@ -69,7 +69,7 @@ public final class MathUtils {
     }
 
     /**
-     * Normalize an angle in a 2&pi wide interval around a center value.
+     * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
      * <ul>
      *   <li>normalize an angle between 0 and 2&pi;:<br/>

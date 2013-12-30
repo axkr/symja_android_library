@@ -32,7 +32,7 @@ import org.apache.commons.math3.ode.sampling.StepInterpolator;
  *
  * @see DormandPrince853Integrator
  *
- * @version $Id: DormandPrince853StepInterpolator.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: DormandPrince853StepInterpolator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

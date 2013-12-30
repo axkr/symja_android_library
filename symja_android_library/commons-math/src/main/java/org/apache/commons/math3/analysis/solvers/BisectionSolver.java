@@ -25,7 +25,7 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * <p>
  * The function should be continuous but not necessarily smooth.</p>
  *
- * @version $Id: BisectionSolver.java 1379560 2012-08-31 19:40:30Z erans $
+ * @version $Id: BisectionSolver.java 1391927 2012-09-30 00:03:30Z erans $
  */
 public class BisectionSolver extends AbstractUnivariateSolver {
     /** Default absolute accuracy. */
@@ -60,7 +60,7 @@ public class BisectionSolver extends AbstractUnivariateSolver {
      * {@inheritDoc}
      */
     @Override
-    protected double doSolve() 
+    protected double doSolve()
         throws TooManyEvaluationsException {
         double min = getMin();
         double max = getMax();

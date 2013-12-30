@@ -19,13 +19,14 @@ package org.apache.commons.math3.analysis.solvers;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 
 /**
  * Provide a default implementation for several functions useful to generic
  * solvers.
  *
  * @since 3.1
- * @version $Id: AbstractUnivariateDifferentiableSolver.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: AbstractUnivariateDifferentiableSolver.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public abstract class AbstractUnivariateDifferentiableSolver
     extends BaseAbstractUnivariateSolver<UnivariateDifferentiableFunction>
@@ -61,10 +62,11 @@ public abstract class AbstractUnivariateDifferentiableSolver
      *
      * @param point Point at which the objective function must be evaluated.
      * @return the objective function value and derivative at specified point.
-     * @throws org.apache.commons.math3.exception.TooManyEvaluationsException
+     * @throws TooManyEvaluationsException
      * if the maximal number of evaluations is exceeded.
      */
-    protected DerivativeStructure computeObjectiveValueAndDerivative(double point) {
+    protected DerivativeStructure computeObjectiveValueAndDerivative(double point)
+        throws TooManyEvaluationsException {
         incrementEvaluationCount();
         return function.value(new DerivativeStructure(1, 1, 0, point));
     }

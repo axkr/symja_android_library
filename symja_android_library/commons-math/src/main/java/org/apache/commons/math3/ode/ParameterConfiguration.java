@@ -21,7 +21,7 @@ import java.io.Serializable;
 /** Simple container pairing a parameter name with a step in order to compute
  *  the associated Jacobian matrix by finite difference.
  *
- * @version $Id: ParameterConfiguration.java 1379973 2012-09-02 14:19:10Z luc $
+ * @version $Id: ParameterConfiguration.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 class ParameterConfiguration implements Serializable {

@@ -25,6 +25,7 @@ import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.exception.NumberIsTooSmallException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrixPreservingVisitor;
+import org.apache.commons.math3.ode.EquationsMapper;
 import org.apache.commons.math3.ode.ExpandableStatefulODE;
 import org.apache.commons.math3.ode.sampling.NordsieckStepInterpolator;
 import org.apache.commons.math3.util.FastMath;
@@ -152,7 +153,7 @@ import org.apache.commons.math3.util.FastMath;
  * <p>The P<sup>-1</sup>u vector and the P<sup>-1</sup> A P matrix do not depend on the state,
  * they only depend on k and therefore are precomputed once for all.</p>
  *
- * @version $Id: AdamsMoultonIntegrator.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: AdamsMoultonIntegrator.java 1463684 2013-04-02 19:04:13Z luc $
  * @since 2.0
  */
 public class AdamsMoultonIntegrator extends AdamsIntegrator {
@@ -250,7 +251,14 @@ public class AdamsMoultonIntegrator extends AdamsIntegrator {
                 // predict a first estimate of the state at step end (P in the PECE sequence)
                 final double stepEnd = stepStart + stepSize;
                 interpolator.setInterpolatedTime(stepEnd);
-                System.arraycopy(interpolator.getInterpolatedState(), 0, yTmp, 0, y0.length);
+                final ExpandableStatefulODE expandable = getExpandable();
+                final EquationsMapper primary = expandable.getPrimaryMapper();
+                primary.insertEquationData(interpolator.getInterpolatedState(), yTmp);
+                int index = 0;
+                for (final EquationsMapper secondary : expandable.getSecondaryMappers()) {
+                    secondary.insertEquationData(interpolator.getInterpolatedSecondaryState(index), yTmp);
+                    ++index;
+                }
 
                 // evaluate a first estimate of the derivative (first E in the PECE sequence)
                 computeDerivatives(stepEnd, yTmp, yDot);

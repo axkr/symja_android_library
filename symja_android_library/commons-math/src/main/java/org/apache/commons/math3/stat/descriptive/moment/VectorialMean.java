@@ -24,7 +24,7 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
 /**
  * Returns the arithmetic mean of the available vectors.
  * @since 1.2
- * @version $Id: VectorialMean.java 1382332 2012-09-08 17:27:47Z psteitz $
+ * @version $Id: VectorialMean.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class VectorialMean implements Serializable {
 

@@ -21,7 +21,7 @@ package org.apache.commons.math3.random;
 /** This interface represents a random generator for whole vectors.
  *
  * @since 1.2
- * @version $Id: RandomVectorGenerator.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: RandomVectorGenerator.java 1416643 2012-12-03 19:37:14Z tn $
  *
  */
 

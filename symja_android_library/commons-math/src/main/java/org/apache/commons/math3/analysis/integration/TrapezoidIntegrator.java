@@ -16,6 +16,7 @@
  */
 package org.apache.commons.math3.analysis.integration;
 
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
@@ -31,7 +32,7 @@ import org.apache.commons.math3.util.FastMath;
  * <p>
  * The function should be integrable.</p>
  *
- * @version $Id: TrapezoidIntegrator.java 1364387 2012-07-22 18:14:11Z tn $
+ * @version $Id: TrapezoidIntegrator.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 1.2
  */
 public class TrapezoidIntegrator extends BaseAbstractUnivariateIntegrator {
@@ -144,7 +145,7 @@ public class TrapezoidIntegrator extends BaseAbstractUnivariateIntegrator {
     /** {@inheritDoc} */
     @Override
     protected double doIntegrate()
-        throws TooManyEvaluationsException, MaxCountExceededException {
+        throws MathIllegalArgumentException, TooManyEvaluationsException, MaxCountExceededException {
 
         double oldt = stage(this, 0);
         iterations.incrementCount();

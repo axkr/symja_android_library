@@ -19,6 +19,7 @@ package org.apache.commons.math3.distribution;
 
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
@@ -30,7 +31,7 @@ import org.apache.commons.math3.random.Well19937c;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Normal_distribution">Normal distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/NormalDistribution.html">Normal distribution (MathWorld)</a>
- * @version $Id: NormalDistribution.java 1369415 2012-08-04 19:24:56Z erans $
+ * @version $Id: NormalDistribution.java 1535290 2013-10-24 06:58:32Z luc $
  */
 public class NormalDistribution extends AbstractRealDistribution {
     /**
@@ -40,14 +41,14 @@ public class NormalDistribution extends AbstractRealDistribution {
     public static final double DEFAULT_INVERSE_ABSOLUTE_ACCURACY = 1e-9;
     /** Serializable version identifier. */
     private static final long serialVersionUID = 8589540077390120676L;
-    /** &radic;(2 &pi;) */
-    private static final double SQRT2PI = FastMath.sqrt(2 * FastMath.PI);
     /** &radic;(2) */
     private static final double SQRT2 = FastMath.sqrt(2.0);
     /** Mean of this distribution. */
     private final double mean;
     /** Standard deviation of this distribution. */
     private final double standardDeviation;
+    /** The value of {@code log(sd) + 0.5*log(2*pi)} stored for faster computation. */
+    private final double logStandardDeviationPlusHalfLog2Pi;
     /** Inverse cumulative probability accuracy. */
     private final double solverAbsoluteAccuracy;
 
@@ -92,6 +93,20 @@ public class NormalDistribution extends AbstractRealDistribution {
      * @param rng Random number generator.
      * @param mean Mean for this distribution.
      * @param sd Standard deviation for this distribution.
+     * @throws NotStrictlyPositiveException if {@code sd <= 0}.
+     * @since 3.3
+     */
+    public NormalDistribution(RandomGenerator rng, double mean, double sd)
+        throws NotStrictlyPositiveException {
+        this(rng, mean, sd, DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
+    }
+
+    /**
+     * Creates a normal distribution.
+     *
+     * @param rng Random number generator.
+     * @param mean Mean for this distribution.
+     * @param sd Standard deviation for this distribution.
      * @param inverseCumAccuracy Inverse cumulative probability accuracy.
      * @throws NotStrictlyPositiveException if {@code sd <= 0}.
      * @since 3.1
@@ -109,6 +124,7 @@ public class NormalDistribution extends AbstractRealDistribution {
 
         this.mean = mean;
         standardDeviation = sd;
+        logStandardDeviationPlusHalfLog2Pi = FastMath.log(sd) + 0.5 * FastMath.log(2 * FastMath.PI);
         solverAbsoluteAccuracy = inverseCumAccuracy;
     }
 
@@ -132,9 +148,15 @@ public class NormalDistribution extends AbstractRealDistribution {
 
     /** {@inheritDoc} */
     public double density(double x) {
+        return FastMath.exp(logDensity(x));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double logDensity(double x) {
         final double x0 = x - mean;
         final double x1 = x0 / standardDeviation;
-        return FastMath.exp(-0.5 * x1 * x1) / (standardDeviation * SQRT2PI);
+        return -0.5 * x1 * x1 - logStandardDeviationPlusHalfLog2Pi;
     }
 
     /**
@@ -150,6 +172,17 @@ public class NormalDistribution extends AbstractRealDistribution {
             return dev < 0 ? 0.0d : 1.0d;
         }
         return 0.5 * (1 + Erf.erf(dev / (standardDeviation * SQRT2)));
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    @Override
+    public double inverseCumulativeProbability(final double p) throws OutOfRangeException {
+        if (p < 0.0 || p > 1.0) {
+            throw new OutOfRangeException(p, 0, 1);
+        }
+        return mean + standardDeviation * SQRT2 * Erf.erfInv(2 * p - 1);
     }
 
     /**

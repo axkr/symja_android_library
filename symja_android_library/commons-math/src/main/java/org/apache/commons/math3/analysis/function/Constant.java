@@ -18,8 +18,6 @@
 package org.apache.commons.math3.analysis.function;
 
 import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
-import org.apache.commons.math3.analysis.FunctionUtils;
-import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 
@@ -27,7 +25,7 @@ import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiabl
  * Constant function.
  *
  * @since 3.0
- * @version $Id: Constant.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: Constant.java 1424087 2012-12-19 20:32:50Z luc $
  */
 public class Constant implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Constant. */
@@ -49,8 +47,8 @@ public class Constant implements UnivariateDifferentiableFunction, Differentiabl
      * @deprecated as of 3.1, replaced by {@link #value(DerivativeStructure)}
      */
     @Deprecated
-    public UnivariateFunction derivative() {
-        return FunctionUtils.toDifferentiableUnivariateFunction(this).derivative();
+    public DifferentiableUnivariateFunction derivative() {
+        return new Constant(0);
     }
 
     /** {@inheritDoc}

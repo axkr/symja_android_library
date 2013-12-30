@@ -34,7 +34,7 @@ import java.util.ResourceBundle;
  * translation is missing.
  * </p>
  * @since 2.2
- * @version $Id: LocalizedFormats.java 1388099 2012-09-20 16:21:46Z erans $
+ * @version $Id: LocalizedFormats.java 1540498 2013-11-10 17:45:38Z psteitz $
  */
 public enum LocalizedFormats implements Localizable {
 
@@ -72,6 +72,7 @@ public enum LocalizedFormats implements Localizable {
     CLOSEST_ORTHOGONAL_MATRIX_HAS_NEGATIVE_DETERMINANT("the closest orthogonal matrix has a negative determinant {0}"),
     COLUMN_INDEX_OUT_OF_RANGE("column index {0} out of allowed range [{1}, {2}]"),
     COLUMN_INDEX("column index ({0})"), /* keep */
+    CONSTRAINT("constraint"), /* keep */
     CONTINUED_FRACTION_INFINITY_DIVERGENCE("Continued fraction convergents diverged to +/- infinity for value {0}"),
     CONTINUED_FRACTION_NAN_DIVERGENCE("Continued fraction diverged to NaN for value {0}"),
     CONTRACTION_CRITERIA_SMALLER_THAN_EXPANSION_FACTOR("contraction criteria ({0}) smaller than the expansion factor ({1}).  This would lead to a never ending loop of expansion and contraction as a newly expanded internal storage array would immediately satisfy the criteria for contraction."),
@@ -129,6 +130,7 @@ public enum LocalizedFormats implements Localizable {
     @Deprecated
     INPUT_DATA_FROM_UNSUPPORTED_DATASOURCE("input data comes from unsupported datasource: {0}, supported sources: {1}, {2}"),
     INSTANCES_NOT_COMPARABLE_TO_EXISTING_VALUES("instance of class {0} not comparable to existing values"),
+    INSUFFICIENT_DATA("insufficient data"),
     INSUFFICIENT_DATA_FOR_T_STATISTIC("insufficient data for t statistic, needs at least 2, got {0}"),
     INSUFFICIENT_DIMENSION("insufficient dimension {0}, must be at least {1}"),
     DIMENSION("dimension ({0})"), /* keep */
@@ -148,6 +150,7 @@ public enum LocalizedFormats implements Localizable {
     INVALID_REGRESSION_OBSERVATION("length of regressor array = {0} does not match the number of variables = {1} in the model"),
     INVALID_ROUNDING_METHOD("invalid rounding method {0}, valid methods: {1} ({2}), {3} ({4}), {5} ({6}), {7} ({8}), {9} ({10}), {11} ({12}), {13} ({14}), {15} ({16})"),
     ITERATOR_EXHAUSTED("iterator exhausted"),
+    ITERATIONS("iterations"), /* keep */
     LCM_OVERFLOW_32_BITS("overflow: lcm({0}, {1}) is 2^31"),
     LCM_OVERFLOW_64_BITS("overflow: lcm({0}, {1}) is 2^63"),
     LIST_OF_CHROMOSOMES_BIGGER_THAN_POPULATION_SIZE("list of chromosomes bigger than maxPopulationSize"),
@@ -203,6 +206,7 @@ public enum LocalizedFormats implements Localizable {
     NOT_POSITIVE_ELEMENT_AT_INDEX("element {0} is not positive: {1}"),
     NOT_POSITIVE_EXPONENT("invalid exponent {0} (must be positive)"),
     NUMBER_OF_ELEMENTS_SHOULD_BE_POSITIVE("number of elements should be positive ({0})"),
+    BASE("base ({0})"), /* keep */
     EXPONENT("exponent ({0})"), /* keep */
     NOT_POSITIVE_LENGTH("length must be positive ({0})"),
     LENGTH("length ({0})"), /* keep */
@@ -273,6 +277,7 @@ public enum LocalizedFormats implements Localizable {
     OBSERVED_COUNTS_BOTTH_ZERO_FOR_ENTRY("observed counts are both zero for entry {0}"),
     BOBYQA_BOUND_DIFFERENCE_CONDITION("the difference between the upper and lower bound must be larger than twice the initial trust region radius ({0})"),
     OUT_OF_BOUNDS_QUANTILE_VALUE("out of bounds quantile value: {0}, must be in (0, 100]"),
+    OUT_OF_BOUNDS_CONFIDENCE_LEVEL("out of bounds confidence level {0}, must be between {1} and {2}"),
     OUT_OF_BOUND_SIGNIFICANCE_LEVEL("out of bounds significance level {0}, must be between {1} and {2}"),
     SIGNIFICANCE_LEVEL("significance level ({0})"), /* keep */
     OUT_OF_ORDER_ABSCISSA_ARRAY("the abscissae array must be sorted in a strictly increasing order, but the {0}-th element is {1} whereas {2}-th is {3}"),
@@ -385,7 +390,7 @@ public enum LocalizedFormats implements Localizable {
                 return bundle.getString(toString());
             }
 
-        } catch (MissingResourceException mre) {
+        } catch (MissingResourceException mre) { // NOPMD
             // do nothing here
         }
 

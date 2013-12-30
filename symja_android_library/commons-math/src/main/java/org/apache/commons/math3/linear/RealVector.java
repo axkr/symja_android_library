@@ -54,7 +54,7 @@ import org.apache.commons.math3.util.FastMath;
  *   RealVector result = v.mapAddToSelf(3.4).mapToSelf(new Tan()).mapToSelf(new Power(2.3));
  * </pre>
  *
- * @version $Id: RealVector.java 1383743 2012-09-12 03:18:46Z celestin $
+ * @version $Id: RealVector.java 1422313 2012-12-15 18:53:41Z psteitz $
  * @since 2.1
  */
 public abstract class RealVector {
@@ -201,6 +201,7 @@ public abstract class RealVector {
      * @param end the index of the last entry of the subvector (inclusive)
      * @throws OutOfRangeException if {@code start} of {@code end} are not valid
      * @throws NumberIsTooSmallException if {@code end < start}
+     * @since 3.1
      */
     protected void checkIndices(final int start, final int end)
         throws NumberIsTooSmallException, OutOfRangeException {
@@ -232,7 +233,7 @@ public abstract class RealVector {
     public RealVector add(RealVector v) throws DimensionMismatchException {
         checkVectorDimensions(v);
         RealVector result = v.copy();
-        Iterator<Entry> it = sparseIterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             final int index = e.getIndex();
@@ -253,7 +254,7 @@ public abstract class RealVector {
     public RealVector subtract(RealVector v) throws DimensionMismatchException {
         checkVectorDimensions(v);
         RealVector result = v.mapMultiply(-1d);
-        Iterator<Entry> it = sparseIterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             final int index = e.getIndex();
@@ -381,7 +382,7 @@ public abstract class RealVector {
      * Distance between two vectors.
      * <p>This method computes the distance consistent with the
      * L<sub>2</sub> norm, i.e. the square root of the sum of
-     * element differences, or Euclidian distance.</p>
+     * element differences, or Euclidean distance.</p>
      *
      * @param v Vector to which distance is requested.
      * @return the distance between two vectors.
@@ -415,7 +416,7 @@ public abstract class RealVector {
      */
     public double getNorm() {
         double sum = 0;
-        Iterator<Entry> it = sparseIterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             final double value = e.getValue();
@@ -436,7 +437,7 @@ public abstract class RealVector {
      */
     public double getL1Norm() {
         double norm = 0;
-        Iterator<Entry> it = sparseIterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             norm += FastMath.abs(e.getValue());
@@ -456,7 +457,7 @@ public abstract class RealVector {
      */
     public double getLInfNorm() {
         double norm = 0;
-        Iterator<Entry> it = sparseIterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             norm = FastMath.max(norm, FastMath.abs(e.getValue()));
@@ -756,7 +757,12 @@ public abstract class RealVector {
      * returns {@code true}.</p>
      *
      * @return a sparse iterator.
+     * @deprecated As of 3.1, this method is deprecated, because its interface
+     * is too confusing (see
+     * <a href="https://issues.apache.org/jira/browse/MATH-875">JIRA MATH-875</a>).
+     * This method will be completely removed in 4.0.
      */
+    @Deprecated
     public Iterator<Entry> sparseIterator() {
         return new SparseEntryIterator();
     }
@@ -835,7 +841,7 @@ public abstract class RealVector {
      * @return a reference to this vector.
      */
     public RealVector mapToSelf(UnivariateFunction function) {
-        Iterator<Entry> it = (function.value(0) == 0) ? sparseIterator() : iterator();
+        Iterator<Entry> it = iterator();
         while (it.hasNext()) {
             final Entry e = it.next();
             e.setValue(function.value(e.getValue()));
@@ -884,7 +890,6 @@ public abstract class RealVector {
         return this;
     }
 
-
     /**
      * Visits (but does not alter) all entries of this vector in default order
      * (increasing index).
@@ -893,6 +898,7 @@ public abstract class RealVector {
      * vector
      * @return the value returned by {@link RealVectorPreservingVisitor#end()}
      * at the end of the walk
+     * @since 3.1
      */
     public double walkInDefaultOrder(final RealVectorPreservingVisitor visitor) {
         final int dim = getDimension();
@@ -914,6 +920,7 @@ public abstract class RealVector {
      * at the end of the walk
      * @throws NumberIsTooSmallException if {@code end < start}.
      * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.1
      */
     public double walkInDefaultOrder(final RealVectorPreservingVisitor visitor,
                                      final int start, final int end)
@@ -936,6 +943,7 @@ public abstract class RealVector {
      * vector
      * @return the value returned by {@link RealVectorPreservingVisitor#end()}
      * at the end of the walk
+     * @since 3.1
      */
     public double walkInOptimizedOrder(final RealVectorPreservingVisitor visitor) {
         return walkInDefaultOrder(visitor);
@@ -954,6 +962,7 @@ public abstract class RealVector {
      * at the end of the walk
      * @throws NumberIsTooSmallException if {@code end < start}.
      * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.1
      */
     public double walkInOptimizedOrder(final RealVectorPreservingVisitor visitor,
                                        final int start, final int end)
@@ -969,6 +978,7 @@ public abstract class RealVector {
      * of this vector
      * @return the value returned by {@link RealVectorChangingVisitor#end()}
      * at the end of the walk
+     * @since 3.1
      */
     public double walkInDefaultOrder(final RealVectorChangingVisitor visitor) {
         final int dim = getDimension();
@@ -990,6 +1000,7 @@ public abstract class RealVector {
      * at the end of the walk
      * @throws NumberIsTooSmallException if {@code end < start}.
      * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.1
      */
     public double walkInDefaultOrder(final RealVectorChangingVisitor visitor,
                               final int start, final int end)
@@ -1012,6 +1023,7 @@ public abstract class RealVector {
      * vector
      * @return the value returned by {@link RealVectorChangingVisitor#end()}
      * at the end of the walk
+     * @since 3.1
      */
     public double walkInOptimizedOrder(final RealVectorChangingVisitor visitor) {
         return walkInDefaultOrder(visitor);
@@ -1030,6 +1042,7 @@ public abstract class RealVector {
      * at the end of the walk
      * @throws NumberIsTooSmallException if {@code end < start}.
      * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.1
      */
     public double walkInOptimizedOrder(final RealVectorChangingVisitor visitor,
                                        final int start, final int end)
@@ -1137,7 +1150,13 @@ public abstract class RealVector {
      * operations which preserve the default value are to be done on the entries,
      * and the fraction of non-default values is small (i.e. someone took a
      * SparseVector, and passed it into the copy-constructor of ArrayRealVector)
+     *
+     * @deprecated As of 3.1, this class is deprecated, see
+     * <a href="https://issues.apache.org/jira/browse/MATH-875">JIRA MATH-875</a>.
+     * This class will be completely removed in 4.0.
+
      */
+    @Deprecated
     protected class SparseEntryIterator implements Iterator<Entry> {
         /** Dimension of the vector. */
         private final int dim;

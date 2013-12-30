@@ -43,7 +43,7 @@ import org.apache.commons.math3.util.MathUtils;
  * one of the threads invokes the <code>increment()</code> or
  * <code>clear()</code> method, it must be synchronized externally.</p>
  *
- * @version $Id: SecondMoment.java 1382332 2012-09-08 17:27:47Z psteitz $
+ * @version $Id: SecondMoment.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class SecondMoment extends FirstMoment implements Serializable {
 

@@ -26,7 +26,7 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * solvers.
  *
  * @since 3.0
- * @version $Id: AbstractDifferentiableUnivariateSolver.java 1379560 2012-08-31 19:40:30Z erans $
+ * @version $Id: AbstractDifferentiableUnivariateSolver.java 1455194 2013-03-11 15:45:54Z luc $
  * @deprecated as of 3.1, replaced by {@link AbstractUnivariateDifferentiableSolver}
  */
 @Deprecated
@@ -63,8 +63,7 @@ public abstract class AbstractDifferentiableUnivariateSolver
      *
      * @param point Point at which the objective function must be evaluated.
      * @return the objective function value at specified point.
-     * @throws org.apache.commons.math3.exception.TooManyEvaluationsException
-     * if the maximal number of evaluations is exceeded.
+     * @throws TooManyEvaluationsException if the maximal number of evaluations is exceeded.
      */
     protected double computeDerivativeObjectiveValue(double point)
         throws TooManyEvaluationsException {

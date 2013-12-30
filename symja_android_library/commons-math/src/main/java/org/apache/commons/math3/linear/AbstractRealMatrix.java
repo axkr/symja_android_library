@@ -36,7 +36,7 @@ import org.apache.commons.math3.util.FastMath;
  * <p>All the methods implemented here use {@link #getEntry(int, int)} to access
  * matrix elements. Derived class can provide faster implementations.</p>
  *
- * @version $Id: AbstractRealMatrix.java 1388298 2012-09-21 01:56:06Z celestin $
+ * @version $Id: AbstractRealMatrix.java 1459534 2013-03-21 21:24:45Z tn $
  * @since 2.0
  */
 public abstract class AbstractRealMatrix
@@ -353,6 +353,13 @@ public abstract class AbstractRealMatrix
                                                        rowsCount, columnsCount);
         }
 
+        for (int i = 1; i < rowsCount; i++) {
+            if (destination[i].length < columnsCount) {
+                throw new MatrixDimensionMismatchException(destination.length, destination[i].length,
+                                                           rowsCount, columnsCount);
+            }
+        }
+
         walkInOptimizedOrder(new DefaultRealMatrixPreservingVisitor() {
 
             /** Initial row index. */
@@ -385,14 +392,19 @@ public abstract class AbstractRealMatrix
         throws OutOfRangeException, NullArgumentException, NoDataException,
         MatrixDimensionMismatchException {
         MatrixUtils.checkSubMatrixIndex(this, selectedRows, selectedColumns);
+        final int nCols = selectedColumns.length;
         if ((destination.length < selectedRows.length) ||
-            (destination[0].length < selectedColumns.length)) {
+            (destination[0].length < nCols)) {
             throw new MatrixDimensionMismatchException(destination.length, destination[0].length,
                                                        selectedRows.length, selectedColumns.length);
         }
 
         for (int i = 0; i < selectedRows.length; i++) {
             final double[] destinationI = destination[i];
+            if (destinationI.length < nCols) {
+                throw new MatrixDimensionMismatchException(destination.length, destinationI.length,
+                                                           selectedRows.length, selectedColumns.length);
+            }
             for (int j = 0; j < selectedColumns.length; j++) {
                 destinationI[j] = getEntry(selectedRows[i], selectedColumns[j]);
             }
@@ -957,4 +969,25 @@ public abstract class AbstractRealMatrix
         }
         return ret;
     }
+
+
+    /*
+     * Empty implementations of these methods are provided in order to allow for
+     * the use of the @Override tag with Java 1.5.
+     */
+
+    /** {@inheritDoc} */
+    public abstract RealMatrix createMatrix(int rowDimension, int columnDimension)
+        throws NotStrictlyPositiveException;
+
+    /** {@inheritDoc} */
+    public abstract RealMatrix copy();
+
+    /** {@inheritDoc} */
+    public abstract double getEntry(int row, int column)
+        throws OutOfRangeException;
+
+    /** {@inheritDoc} */
+    public abstract void setEntry(int row, int column, double value)
+        throws OutOfRangeException;
 }

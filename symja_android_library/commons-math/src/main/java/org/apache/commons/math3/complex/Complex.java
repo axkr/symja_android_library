@@ -52,7 +52,7 @@ import org.apache.commons.math3.util.MathUtils;
  * <br/>
  * Implements Serializable since 2.0
  *
- * @version $Id: Complex.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: Complex.java 1540155 2013-11-08 19:08:22Z tn $
  */
 public class Complex implements FieldElement<Complex>, Serializable  {
     /** The square root of -1. A number representing "0.0 + 1.0i" */
@@ -302,7 +302,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
         }
 
         if (real == 0.0 && imaginary == 0.0) {
-            return NaN;
+            return INF;
         }
 
         if (isInfinite) {
@@ -634,7 +634,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  </code>
      * </pre>
      * where the (real) functions on the right-hand side are
-     * {@link java.lang.Math#sin}, {@link java.lang.Math#cos},
+     * {@link FastMath#sin}, {@link FastMath#cos},
      * {@link FastMath#cosh} and {@link FastMath#sinh}.
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
@@ -674,7 +674,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  </code>
      * </pre>
      * where the (real) functions on the right-hand side are
-     * {@link java.lang.Math#sin}, {@link java.lang.Math#cos},
+     * {@link FastMath#sin}, {@link FastMath#cos},
      * {@link FastMath#cosh} and {@link FastMath#sinh}.
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
@@ -714,8 +714,8 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  </code>
      * </pre>
      * where the (real) functions on the right-hand side are
-     * {@link java.lang.Math#exp}, {@link java.lang.Math#cos}, and
-     * {@link java.lang.Math#sin}.
+     * {@link FastMath#exp}, {@link FastMath#cos}, and
+     * {@link FastMath#sin}.
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
      * input argument is {@code NaN}.
@@ -755,9 +755,9 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *   log(a + bi) = ln(|a + bi|) + arg(a + bi)i
      *  </code>
      * </pre>
-     * where ln on the right hand side is {@link java.lang.Math#log},
+     * where ln on the right hand side is {@link FastMath#log},
      * {@code |a + bi|} is the modulus, {@link Complex#abs},  and
-     * {@code arg(a + bi) = }{@link java.lang.Math#atan2}(b, a).
+     * {@code arg(a + bi) = }{@link FastMath#atan2}(b, a).
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
      * input argument is {@code NaN}.
@@ -838,7 +838,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  </code>
      * </pre>
      * where the (real) functions on the right-hand side are
-     * {@link java.lang.Math#sin}, {@link java.lang.Math#cos},
+     * {@link FastMath#sin}, {@link FastMath#cos},
      * {@link FastMath#cosh} and {@link FastMath#sinh}.
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
@@ -878,7 +878,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  </code>
      * </pre>
      * where the (real) functions on the right-hand side are
-     * {@link java.lang.Math#sin}, {@link java.lang.Math#cos},
+     * {@link FastMath#sin}, {@link FastMath#cos},
      * {@link FastMath#cosh} and {@link FastMath#sinh}.
      * <br/>
      * Returns {@link Complex#NaN} if either real or imaginary part of the
@@ -917,7 +917,7 @@ public class Complex implements FieldElement<Complex>, Serializable  {
      *  else return {@code |b|/2t + sign(b)t i }</pre></li>
      * </ol>
      * where <ul>
-     * <li>{@code |a| = }{@link Math#abs}(a)</li>
+     * <li>{@code |a| = }{@link FastMath#abs}(a)</li>
      * <li>{@code |a + bi| = }{@link Complex#abs}(a + bi)</li>
      * <li>{@code sign(b) =  }{@link FastMath#copySign(double,double) copySign(1d, b)}
      * </ul>

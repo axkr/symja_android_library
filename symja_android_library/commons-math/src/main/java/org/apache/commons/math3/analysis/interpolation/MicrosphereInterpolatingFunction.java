@@ -34,7 +34,7 @@ import org.apache.commons.math3.util.FastMath;
  * Interpolating function that implements the
  * <a href="http://www.dudziak.com/microsphere.php">Microsphere Projection</a>.
  *
- * @version $Id: MicrosphereInterpolatingFunction.java 1379904 2012-09-01 23:54:52Z erans $
+ * @version $Id: MicrosphereInterpolatingFunction.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class MicrosphereInterpolatingFunction
     implements MultivariateFunction {
@@ -193,8 +193,9 @@ public class MicrosphereInterpolatingFunction
     /**
      * @param point Interpolation point.
      * @return the interpolated value.
+     * @throws DimensionMismatchException if point dimension does not math sample
      */
-    public double value(double[] point) {
+    public double value(double[] point) throws DimensionMismatchException {
         final RealVector p = new ArrayRealVector(point);
 
         // Reset.

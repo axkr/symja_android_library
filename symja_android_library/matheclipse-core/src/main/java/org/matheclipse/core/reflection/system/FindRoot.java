@@ -1,18 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
 import org.apache.commons.math3.analysis.solvers.BisectionSolver;
 import org.apache.commons.math3.analysis.solvers.BrentSolver;
 import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
-import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
 import org.apache.commons.math3.analysis.solvers.MullerSolver;
-import org.apache.commons.math3.analysis.solvers.NewtonSolver;
 import org.apache.commons.math3.analysis.solvers.PegasusSolver;
 import org.apache.commons.math3.analysis.solvers.RegulaFalsiSolver;
 import org.apache.commons.math3.analysis.solvers.RiddersSolver;
 import org.apache.commons.math3.analysis.solvers.SecantSolver;
+import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
+import org.matheclipse.commons.math.analysis.solvers.NewtonSolver;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -103,7 +102,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			solver = new IllinoisSolver();
 		} else if (method.isSymbolName("Pegasus")) {
 			solver = new PegasusSolver();
-		} else {
+		} else { 
 			// default: NewtonSolver
 			DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
 			BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();

@@ -30,9 +30,14 @@ import org.apache.commons.math3.util.OpenIntToDoubleHashMap.Iterator;
 /**
  * This class implements the {@link RealVector} interface with a
  * {@link OpenIntToDoubleHashMap} backing store.
- * @version $Id: OpenMapRealVector.java 1381730 2012-09-06 19:42:35Z celestin $
+ * @version $Id: OpenMapRealVector.java 1462503 2013-03-29 15:48:27Z luc $
  * @since 2.0
-*/
+ * @deprecated As of version 3.1, this class is deprecated, for reasons exposed
+ * in this JIRA
+ * <a href="https://issues.apache.org/jira/browse/MATH-870">ticket</a>. This
+ * class will be removed in version 4.0.
+ */
+@Deprecated
 public class OpenMapRealVector extends SparseRealVector
     implements Serializable {
     /** Default Tolerance for having a value considered zero. */
@@ -525,10 +530,8 @@ public class OpenMapRealVector extends SparseRealVector
         while (iter.hasNext()) {
             iter.advance();
             int key = iter.key();
-            if (!entries.containsKey(key)) {
-                if (iter.value() > max) {
-                    max = iter.value();
-                }
+            if (!entries.containsKey(key) && iter.value() > max) {
+                max = iter.value();
             }
         }
         return max;

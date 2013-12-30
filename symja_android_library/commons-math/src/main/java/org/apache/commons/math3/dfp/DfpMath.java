@@ -19,7 +19,7 @@ package org.apache.commons.math3.dfp;
 
 /** Mathematical routines for use with {@link Dfp}.
  * The constants are defined in {@link DfpField}
- * @version $Id: DfpMath.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: DfpMath.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.2
  */
 public class DfpMath {
@@ -179,7 +179,7 @@ public class DfpMath {
             int prevtrial;
             while (true) {
                 prevtrial = trial;
-                trial = trial * 2;
+                trial *= 2;
                 if (trial > a) {
                     break;
                 }
@@ -235,13 +235,13 @@ public class DfpMath {
                 prevr = new Dfp(r);
                 prevtrial = trial;
                 r = r.multiply(r);
-                trial = trial * 2;
+                trial *= 2;
             } while (a>trial);
 
             r = prevr;
             trial = prevtrial;
 
-            a = a - trial;
+            a -= trial;
             result = result.multiply(r);
 
         } while (a >= 1);
@@ -447,7 +447,7 @@ public class DfpMath {
         for (int i = 0; i < 10000; i++) {
             num = num.multiply(x);
             num = num.multiply(x);
-            den = den + 2;
+            den += 2;
             t = num.divide(den);
             y = y.add(t);
             if (y.equals(py)) {
@@ -653,11 +653,9 @@ public class DfpMath {
             r = exp(log(x).multiply(y));
         }
 
-        if (invert) {
+        if (invert && y.rint().equals(y) && !y.remainder(two).equals(zero)) {
             // if y is odd integer
-            if (y.rint().equals(y) && !y.remainder(two).equals(zero)) {
-                r = r.negate();
-            }
+            r = r.negate();
         }
 
         return x.newInstance(r);

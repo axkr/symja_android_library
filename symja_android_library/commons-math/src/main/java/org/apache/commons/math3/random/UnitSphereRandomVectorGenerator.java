@@ -24,7 +24,7 @@ import org.apache.commons.math3.util.FastMath;
  * Generate random vectors isotropically located on the surface of a sphere.
  *
  * @since 2.1
- * @version $Id: UnitSphereRandomVectorGenerator.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: UnitSphereRandomVectorGenerator.java 1444500 2013-02-10 08:10:40Z tn $
  */
 
 public class UnitSphereRandomVectorGenerator
@@ -59,18 +59,17 @@ public class UnitSphereRandomVectorGenerator
 
     /** {@inheritDoc} */
     public double[] nextVector() {
-
         final double[] v = new double[dimension];
 
-        double normSq;
-        do {
-            normSq = 0;
-            for (int i = 0; i < dimension; i++) {
-                final double comp = 2 * rand.nextDouble() - 1;
-                v[i] = comp;
-                normSq += comp * comp;
-            }
-        } while (normSq > 1);
+        // See http://mathworld.wolfram.com/SpherePointPicking.html for example.
+        // Pick a point by choosing a standard Gaussian for each element, and then
+        // normalizing to unit length.
+        double normSq = 0;
+        for (int i = 0; i < dimension; i++) {
+            final double comp = rand.nextGaussian();
+            v[i] = comp;
+            normSq += comp * comp;
+        }
 
         final double f = 1 / FastMath.sqrt(normSq);
         for (int i = 0; i < dimension; i++) {
@@ -78,7 +77,5 @@ public class UnitSphereRandomVectorGenerator
         }
 
         return v;
-
     }
-
 }

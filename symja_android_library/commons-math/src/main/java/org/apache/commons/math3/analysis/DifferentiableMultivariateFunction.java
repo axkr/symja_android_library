@@ -20,10 +20,11 @@ package org.apache.commons.math3.analysis;
 /**
  * Extension of {@link MultivariateFunction} representing a differentiable
  * multivariate real function.
- * @version $Id: DifferentiableMultivariateFunction.java 1384907 2012-09-14 20:17:00Z luc $
+ * @version $Id: DifferentiableMultivariateFunction.java 1415149 2012-11-29 13:12:55Z erans $
  * @since 2.0
  * @deprecated as of 3.1 replaced by {@link org.apache.commons.math3.analysis.differentiation.MultivariateDifferentiableFunction}
  */
+@Deprecated
 public interface DifferentiableMultivariateFunction extends MultivariateFunction {
 
     /**

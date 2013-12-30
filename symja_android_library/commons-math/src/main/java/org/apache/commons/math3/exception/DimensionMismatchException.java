@@ -23,7 +23,7 @@ import org.apache.commons.math3.exception.util.Localizable;
  * Exception to be thrown when two dimensions differ.
  *
  * @since 2.2
- * @version $Id: DimensionMismatchException.java 1364378 2012-07-22 17:42:38Z tn $
+ * @version $Id: DimensionMismatchException.java 1504729 2013-07-18 23:54:52Z sebb $
  */
 public class DimensionMismatchException extends MathIllegalNumberException {
     /** Serializable version Id. */
@@ -41,7 +41,7 @@ public class DimensionMismatchException extends MathIllegalNumberException {
     public DimensionMismatchException(Localizable specific,
                                       int wrong,
                                       int expected) {
-        super(specific, wrong, expected);
+        super(specific, Integer.valueOf(wrong), Integer.valueOf(expected));
         dimension = expected;
     }
 

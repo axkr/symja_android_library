@@ -48,7 +48,7 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * to avoid unnecessary computation and synchronization delays.</p>
  *
  * @since 2.0
- * @version $Id: AggregateSummaryStatistics.java 1382332 2012-09-08 17:27:47Z psteitz $
+ * @version $Id: AggregateSummaryStatistics.java 1416643 2012-12-03 19:37:14Z tn $
  *
  */
 public class AggregateSummaryStatistics implements StatisticalSummary,

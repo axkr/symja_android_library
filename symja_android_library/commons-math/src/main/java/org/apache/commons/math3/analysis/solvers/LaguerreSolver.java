@@ -39,7 +39,7 @@ import org.apache.commons.math3.util.FastMath;
  * approximation and be able to solve all roots from that point.
  * The algorithm requires a bracketing condition.
  *
- * @version $Id: LaguerreSolver.java 1379560 2012-08-31 19:40:30Z erans $
+ * @version $Id: LaguerreSolver.java 1422195 2012-12-15 06:45:18Z psteitz $
  * @since 1.2
  */
 public class LaguerreSolver extends AbstractPolynomialSolver {
@@ -188,6 +188,7 @@ public class LaguerreSolver extends AbstractPolynomialSolver {
      * @throws NullArgumentException if the {@code coefficients} is
      * {@code null}.
      * @throws NoDataException if the {@code coefficients} array is empty.
+     * @since 3.1
      */
     public Complex[] solveAllComplex(double[] coefficients,
                                      double initial)
@@ -217,6 +218,7 @@ public class LaguerreSolver extends AbstractPolynomialSolver {
      * @throws NullArgumentException if the {@code coefficients} is
      * {@code null}.
      * @throws NoDataException if the {@code coefficients} array is empty.
+     * @since 3.1
      */
     public Complex solveComplex(double[] coefficients,
                                 double initial)

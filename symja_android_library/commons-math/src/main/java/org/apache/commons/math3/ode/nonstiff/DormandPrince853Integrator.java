@@ -50,7 +50,7 @@ import org.apache.commons.math3.util.FastMath;
  * <i>Solving Ordinary Differential Equations</i> (Springer-Verlag,
  * ISBN 3-540-56670-8).</p>
  *
- * @version $Id: DormandPrince853Integrator.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: DormandPrince853Integrator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

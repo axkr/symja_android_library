@@ -33,7 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * This class implements the {@link RealVector} interface with a double array.
- * @version $Id: ArrayRealVector.java 1382998 2012-09-10 17:42:53Z celestin $
+ * @version $Id: ArrayRealVector.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0
  */
 public class ArrayRealVector extends RealVector implements Serializable {
@@ -306,7 +306,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
         } else {
             checkVectorDimensions(v);
             double[] out = data.clone();
-            Iterator<Entry> it = v.sparseIterator();
+            Iterator<Entry> it = v.iterator();
             while (it.hasNext()) {
                 final Entry e = it.next();
                 out[e.getIndex()] += e.getValue();
@@ -332,7 +332,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
         } else {
             checkVectorDimensions(v);
             double[] out = data.clone();
-            Iterator<Entry> it = v.sparseIterator();
+            Iterator<Entry> it = v.iterator();
             while (it.hasNext()) {
                 final Entry e = it.next();
                 out[e.getIndex()] -= e.getValue();
@@ -360,7 +360,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
     @Override
     public RealVector mapAddToSelf(double d) {
         for (int i = 0; i < data.length; i++) {
-            data[i] = data[i] + d;
+            data[i] += d;
         }
         return this;
     }
@@ -369,7 +369,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
     @Override
     public RealVector mapSubtractToSelf(double d) {
         for (int i = 0; i < data.length; i++) {
-            data[i] = data[i] - d;
+            data[i] -= d;
         }
         return this;
     }
@@ -378,7 +378,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
     @Override
     public RealVector mapMultiplyToSelf(double d) {
         for (int i = 0; i < data.length; i++) {
-            data[i] = data[i] * d;
+            data[i] *= d;
         }
         return this;
     }
@@ -387,7 +387,7 @@ public class ArrayRealVector extends RealVector implements Serializable {
     @Override
     public RealVector mapDivideToSelf(double d) {
         for (int i = 0; i < data.length; i++) {
-            data[i] = data[i] / d;
+            data[i] /= d;
         }
         return this;
     }

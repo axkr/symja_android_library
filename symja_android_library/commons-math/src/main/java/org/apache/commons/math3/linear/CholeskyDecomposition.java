@@ -42,7 +42,7 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see <a href="http://mathworld.wolfram.com/CholeskyDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Cholesky_decomposition">Wikipedia</a>
- * @version $Id: CholeskyDecomposition.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: CholeskyDecomposition.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class CholeskyDecomposition {

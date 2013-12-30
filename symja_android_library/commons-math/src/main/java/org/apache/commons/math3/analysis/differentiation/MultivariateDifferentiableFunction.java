@@ -23,7 +23,7 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
 /**
  * Extension of {@link MultivariateFunction} representing a
  * multivariate differentiable real function.
- * @version $Id: MultivariateDifferentiableFunction.java 1386741 2012-09-17 17:41:24Z luc $
+ * @version $Id: MultivariateDifferentiableFunction.java 1462496 2013-03-29 14:56:08Z psteitz $
  * @since 3.1
  */
 public interface MultivariateDifferentiableFunction extends MultivariateFunction {
@@ -34,7 +34,7 @@ public interface MultivariateDifferentiableFunction extends MultivariateFunction
      * @param point Point at which the function must be evaluated.
      * @return the function value for the given point.
      * @exception MathIllegalArgumentException if {@code point} does not
-     * fulfill functions constraints (wrong dimension, argument out of bound,
+     * satisfy the function's constraints (wrong dimension, argument out of bound,
      * or unsupported derivative order for example)
      */
     DerivativeStructure value(DerivativeStructure[] point)

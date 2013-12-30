@@ -35,7 +35,7 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see org.apache.commons.math3.ode.nonstiff.AdamsBashforthIntegrator
  * @see org.apache.commons.math3.ode.nonstiff.AdamsMoultonIntegrator
- * @version $Id: NordsieckStepInterpolator.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: NordsieckStepInterpolator.java 1503712 2013-07-16 13:35:19Z luc $
  * @since 2.0
  */
 
@@ -121,11 +121,11 @@ public class NordsieckStepInterpolator extends AbstractStepInterpolator {
      * <p>Beware that all arrays <em>must</em> be references to integrator
      * arrays, in order to ensure proper update without copy.</p>
      * @param time time at which all arrays are defined
-     * @param stepSize step size used in the scaled and nordsieck arrays
+     * @param stepSize step size used in the scaled and Nordsieck arrays
      * @param scaledDerivative reference to the integrator array holding the first
      * scaled derivative
      * @param nordsieckVector reference to the integrator matrix holding the
-     * nordsieck vector
+     * Nordsieck vector
      */
     public void reinitialize(final double time, final double stepSize,
                              final double[] scaledDerivative,
@@ -141,9 +141,9 @@ public class NordsieckStepInterpolator extends AbstractStepInterpolator {
     }
 
     /** Rescale the instance.
-     * <p>Since the scaled and Nordiseck arrays are shared with the caller,
+     * <p>Since the scaled and Nordsieck arrays are shared with the caller,
      * this method has the side effect of rescaling this arrays in the caller too.</p>
-     * @param stepSize new step size to use in the scaled and nordsieck arrays
+     * @param stepSize new step size to use in the scaled and Nordsieck arrays
      */
     public void rescale(final double stepSize) {
 

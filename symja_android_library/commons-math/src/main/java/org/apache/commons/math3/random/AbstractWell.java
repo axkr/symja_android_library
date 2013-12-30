@@ -18,6 +18,8 @@ package org.apache.commons.math3.random;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.util.FastMath;
+
 
 /** This abstract class implements the WELL class of pseudo-random number generator
  * from Fran&ccedil;ois Panneton, Pierre L'Ecuyer and Makoto Matsumoto.
@@ -30,7 +32,7 @@ import java.io.Serializable;
  * are in <a href="http://www.iro.umontreal.ca/~lecuyer/myftp/papers/wellrng-errata.txt">wellrng-errata.txt</a>.</p>
 
  * @see <a href="http://www.iro.umontreal.ca/~panneton/WELLRNG.html">WELL Random number generator</a>
- * @version $Id: AbstractWell.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: AbstractWell.java 1547633 2013-12-03 23:03:06Z tn $
  * @since 2.2
 
  */
@@ -156,7 +158,7 @@ public abstract class AbstractWell extends BitsStreamGenerator implements Serial
             return;
         }
 
-        System.arraycopy(seed, 0, v, 0, Math.min(seed.length, v.length));
+        System.arraycopy(seed, 0, v, 0, FastMath.min(seed.length, v.length));
 
         if (seed.length < v.length) {
             for (int i = seed.length; i < v.length; ++i) {

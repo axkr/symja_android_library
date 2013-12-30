@@ -27,7 +27,7 @@ package org.apache.commons.math3.util;
  * @param <V> Value type.
  *
  * @since 3.0
- * @version $Id: Pair.java 1364389 2012-07-22 18:19:26Z tn $
+ * @version $Id: Pair.java 1533646 2013-10-18 21:58:39Z tn $
  */
 public class Pair<K, V> {
     /** Key. */
@@ -78,6 +78,7 @@ public class Pair<K, V> {
      * Get the first element of the pair.
      *
      * @return the first element of the pair.
+     * @since 3.1
      */
     public K getFirst() {
         return key;
@@ -87,6 +88,7 @@ public class Pair<K, V> {
      * Get the second element of the pair.
      *
      * @return the second element of the pair.
+     * @since 3.1
      */
     public V getSecond() {
         return value;
@@ -130,5 +132,25 @@ public class Pair<K, V> {
         result = 37 * result + h ^ (h >>> 16);
 
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getKey() + ", " + getValue() + "]";
+    }
+
+    /**
+     * Convenience factory method that calls the
+     * {@link #Pair(Object, Object) constructor}.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @param k First element of the pair.
+     * @param v Second element of the pair.
+     * @return a new {@code Pair} containing {@code k} and {@code v}.
+     * @since 3.3
+     */
+    public static <K, V> Pair<K, V> create(K k, V v) {
+        return new Pair<K, V>(k, v);
     }
 }

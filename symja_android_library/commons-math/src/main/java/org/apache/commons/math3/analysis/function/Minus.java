@@ -18,8 +18,6 @@
 package org.apache.commons.math3.analysis.function;
 
 import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
-import org.apache.commons.math3.analysis.FunctionUtils;
-import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 
@@ -27,7 +25,7 @@ import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiabl
  * Minus function.
  *
  * @since 3.0
- * @version $Id: Minus.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: Minus.java 1424087 2012-12-19 20:32:50Z luc $
  */
 public class Minus implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** {@inheritDoc} */
@@ -39,8 +37,8 @@ public class Minus implements UnivariateDifferentiableFunction, DifferentiableUn
      * @deprecated as of 3.1, replaced by {@link #value(DerivativeStructure)}
      */
     @Deprecated
-    public UnivariateFunction derivative() {
-        return FunctionUtils.toDifferentiableUnivariateFunction(this).derivative();
+    public DifferentiableUnivariateFunction derivative() {
+        return new Constant(-1);
     }
 
     /** {@inheritDoc}

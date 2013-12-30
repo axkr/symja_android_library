@@ -33,7 +33,7 @@ import org.apache.commons.math3.util.MathUtils;
  * @param <FUNC> Type of function to solve.
  *
  * @since 2.0
- * @version $Id: BaseAbstractUnivariateSolver.java 1379560 2012-08-31 19:40:30Z erans $
+ * @version $Id: BaseAbstractUnivariateSolver.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public abstract class BaseAbstractUnivariateSolver<FUNC extends UnivariateFunction>
     implements BaseUnivariateSolver<FUNC> {
@@ -166,11 +166,13 @@ public abstract class BaseAbstractUnivariateSolver<FUNC extends UnivariateFuncti
      * @param max Upper bound for the interval.
      * @param startValue Start value to use.
      * @param maxEval Maximum number of evaluations.
+     * @exception NullArgumentException if f is null
      */
     protected void setup(int maxEval,
                          FUNC f,
                          double min, double max,
-                         double startValue) {
+                         double startValue)
+        throws NullArgumentException {
         // Checks.
         MathUtils.checkNotNull(f);
 
@@ -298,6 +300,9 @@ public abstract class BaseAbstractUnivariateSolver<FUNC extends UnivariateFuncti
      * It is provided for subclasses that do not exclusively use
      * {@code computeObjectiveValue} to solve the function.
      * See e.g. {@link AbstractUnivariateDifferentiableSolver}.
+     *
+     * @throws TooManyEvaluationsException when the allowed number of function
+     * evaluations has been exhausted.
      */
     protected void incrementEvaluationCount()
         throws TooManyEvaluationsException {

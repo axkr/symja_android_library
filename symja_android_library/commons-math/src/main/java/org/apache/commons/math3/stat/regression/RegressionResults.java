@@ -25,7 +25,7 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 /**
  * Results of a Multiple Linear Regression model fit.
  *
- * @version $Id: RegressionResults.java 1292251 2012-02-22 12:20:04Z erans $
+ * @version $Id: RegressionResults.java 1392342 2012-10-01 14:08:52Z psteitz $
  * @since 3.0
  */
 public class RegressionResults implements Serializable {
@@ -147,7 +147,7 @@ public class RegressionResults implements Serializable {
      * @throws OutOfRangeException if {@code index} is not in the interval
      * {@code [0, number of parameters)}.
      */
-    public double getParameterEstimate(int index) {
+    public double getParameterEstimate(int index) throws OutOfRangeException {
         if (parameters == null) {
             return Double.NaN;
         }
@@ -184,7 +184,7 @@ public class RegressionResults implements Serializable {
      * @throws OutOfRangeException if {@code index} is not in the interval
      * {@code [0, number of parameters)}.
      */
-    public double getStdErrorOfEstimate(int index) {
+    public double getStdErrorOfEstimate(int index) throws OutOfRangeException {
         if (parameters == null) {
             return Double.NaN;
         }
@@ -237,7 +237,7 @@ public class RegressionResults implements Serializable {
      * @throws OutOfRangeException if {@code i} or {@code j} is not in the
      * interval {@code [0, number of parameters)}.
      */
-    public double getCovarianceOfParameters(int i, int j) {
+    public double getCovarianceOfParameters(int i, int j) throws OutOfRangeException {
         if (parameters == null) {
             return Double.NaN;
         }

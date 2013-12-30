@@ -21,7 +21,7 @@ package org.apache.commons.math3.linear;
  * implementing this interface may alter the entries of the vector being
  * visited.
  *
- * @version $Id: RealVectorChangingVisitor.java 1343342 2012-05-28 18:03:44Z celestin $
+ * @version $Id: RealVectorChangingVisitor.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.1
  */
 public interface RealVectorChangingVisitor {

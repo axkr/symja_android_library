@@ -25,21 +25,10 @@ import org.apache.commons.math3.exception.NotStrictlyPositiveException;
  * distribution functions are not required because they are often quite
  * difficult to compute for multivariate distributions.
  *
- * @version $Id$
+ * @version $Id: MultivariateRealDistribution.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.1
  */
 public interface MultivariateRealDistribution {
-    /**
-     * For a random variable {@code X} whose values are distributed according to
-     * this distribution, this method returns {@code P(X = x)}. In other words,
-     * this method represents the probability mass function (PMF) for the
-     * distribution.
-     *
-     * @param x Point at which the PMF is evaluated.
-     * @return the value of the probability mass function at point {@code x}.
-     */
-    double probability(double[] x);
-
     /**
      * Returns the probability density function (PDF) of this distribution
      * evaluated at the specified point {@code x}. In general, the PDF is the
@@ -54,62 +43,20 @@ public interface MultivariateRealDistribution {
     double density(double[] x);
 
     /**
-     * Access the lower bound of the support.
-     * This method must return the same value as {@code inverseCumulativeProbability(0)}.
-     * In other words, this method must return
-     * <p>
-     * <code>inf {x in R | P(X <= x) > 0}</code>.
-     * </p>
-     *
-     * @return the lower bound of the support (might be
-     * {@code Double.NEGATIVE_INFINITY}).
-     */
-    double getSupportLowerBound();
-
-    /**
-     * Access the upper bound of the support.
-     * This method must return the same value as {@code inverseCumulativeProbability(1)}.
-     * In other words, this method must return
-     * <p>
-     * <code>inf {x in R | P(X <= x) = 1}</code>.
-     * </p>
-     *
-     * @return the upper bound of the support (might be
-     * {@code Double.POSITIVE_INFINITY}).
-     */
-    double getSupportUpperBound();
-
-    /**
-     * Gets information about whether the lower bound of the support is
-     * inclusive or not.
-     *
-     * @return whether the lower bound of the support is inclusive or not.
-     */
-    boolean isSupportLowerBoundInclusive();
-
-    /**
-     * gets information about whether the upper bound of the support is
-     * inclusive or not.
-     *
-     * @return whether the upper bound of the support is inclusive or not.
-     */
-    boolean isSupportUpperBoundInclusive();
-
-    /**
-     * Gets information about whether the support is connected (i.e. all
-     * values between the lower and upper bound of the support are included
-     * in the support).
-     *
-     * @return whether the support is connected or not.
-     */
-    boolean isSupportConnected();
-
-    /**
      * Reseeds the random generator used to generate samples.
      *
      * @param seed Seed with which to initialize the random number generator.
      */
     void reseedRandomGenerator(long seed);
+
+    /**
+     * Gets the number of random variables of the distribution.
+     * It is the size of the array returned by the {@link #sample() sample}
+     * method.
+     *
+     * @return the number of variables.
+     */
+    int getDimension();
 
     /**
      * Generates a random value vector sampled from this distribution.
@@ -125,6 +72,8 @@ public interface MultivariateRealDistribution {
      * @return an array representing the random samples.
      * @throws org.apache.commons.math3.exception.NotStrictlyPositiveException
      * if {@code sampleSize} is not positive.
+     *
+     * @see #sample()
      */
     double[][] sample(int sampleSize) throws NotStrictlyPositiveException;
 }

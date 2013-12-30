@@ -32,20 +32,25 @@ import org.apache.commons.math3.util.FastMath;
  * implementations are provided for some of the methods that do not vary
  * from distribution to distribution.
  *
- * @version $Id: AbstractIntegerDistribution.java 1370215 2012-08-07 12:38:59Z sebb $
+ * @version $Id: AbstractIntegerDistribution.java 1547633 2013-12-03 23:03:06Z tn $
  */
-public abstract class AbstractIntegerDistribution
-implements IntegerDistribution, Serializable {
+public abstract class AbstractIntegerDistribution implements IntegerDistribution, Serializable {
+
     /** Serializable version identifier */
     private static final long serialVersionUID = -1146319659338487221L;
-     /**
-      * RandomData instance used to generate samples from the distribution.
-      * @deprecated As of 3.1, to be removed in 4.0. Please use the
-      * {@link #random} instance variable instead.
-      */
+
+    /**
+     * RandomData instance used to generate samples from the distribution.
+     * @deprecated As of 3.1, to be removed in 4.0. Please use the
+     * {@link #random} instance variable instead.
+     */
     @Deprecated
     protected final RandomDataImpl randomData = new RandomDataImpl();
-    /** RNG instance used to generate samples from the distribution. */
+
+    /**
+     * RNG instance used to generate samples from the distribution.
+     * @since 3.1
+     */
     protected final RandomGenerator random;
 
     /**
@@ -58,8 +63,10 @@ implements IntegerDistribution, Serializable {
         // New users are forbidden to use this constructor.
         random = null;
     }
+
     /**
      * @param rng Random number generator.
+     * @since 3.1
      */
     protected AbstractIntegerDistribution(RandomGenerator rng) {
         random = rng;
@@ -123,12 +130,12 @@ implements IntegerDistribution, Serializable {
             double k = FastMath.sqrt((1.0 - p) / p);
             double tmp = mu - k * sigma;
             if (tmp > lower) {
-                lower = ((int) Math.ceil(tmp)) - 1;
+                lower = ((int) FastMath.ceil(tmp)) - 1;
             }
             k = 1.0 / k;
             tmp = mu + k * sigma;
             if (tmp < upper) {
-                upper = ((int) Math.ceil(tmp)) - 1;
+                upper = ((int) FastMath.ceil(tmp)) - 1;
             }
         }
 
@@ -224,5 +231,24 @@ implements IntegerDistribution, Serializable {
                     .DISCRETE_CUMULATIVE_PROBABILITY_RETURNED_NAN, argument);
         }
         return result;
+    }
+
+    /**
+     * For a random variable {@code X} whose values are distributed according to
+     * this distribution, this method returns {@code log(P(X = x))}, where
+     * {@code log} is the natural logarithm. In other words, this method
+     * represents the logarithm of the probability mass function (PMF) for the
+     * distribution. Note that due to the floating point precision and
+     * under/overflow issues, this method will for some distributions be more
+     * precise and faster than computing the logarithm of
+     * {@link #probability(int)}.
+     * <p>
+     * The default implementation simply computes the logarithm of {@code probability(x)}.</p>
+     *
+     * @param x the point at which the PMF is evaluated
+     * @return the logarithm of the value of the probability mass function at {@code x}
+     */
+    public double logProbability(int x) {
+        return FastMath.log(probability(x));
     }
 }

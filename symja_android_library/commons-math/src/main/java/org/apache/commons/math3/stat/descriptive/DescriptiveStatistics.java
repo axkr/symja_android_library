@@ -56,7 +56,7 @@ import org.apache.commons.math3.util.FastMath;
  * {@link SynchronizedDescriptiveStatistics} if concurrent access from multiple
  * threads is required.</p>
  *
- * @version $Id: DescriptiveStatistics.java 1385386 2012-09-16 22:11:15Z psteitz $
+ * @version $Id: DescriptiveStatistics.java 1422354 2012-12-15 20:59:01Z psteitz $
  */
 public class DescriptiveStatistics implements StatisticalSummary, Serializable {
 
@@ -353,11 +353,9 @@ public class DescriptiveStatistics implements StatisticalSummary, Serializable {
      * not equal to {@link #INFINITE_WINDOW}
      */
     public void setWindowSize(int windowSize) throws MathIllegalArgumentException {
-        if (windowSize < 1) {
-            if (windowSize != INFINITE_WINDOW) {
-                throw new MathIllegalArgumentException(
-                      LocalizedFormats.NOT_POSITIVE_WINDOW_SIZE, windowSize);
-            }
+        if (windowSize < 1 && windowSize != INFINITE_WINDOW) {
+            throw new MathIllegalArgumentException(
+                    LocalizedFormats.NOT_POSITIVE_WINDOW_SIZE, windowSize);
         }
 
         this.windowSize = windowSize;
@@ -484,7 +482,7 @@ public class DescriptiveStatistics implements StatisticalSummary, Serializable {
      */
     public double apply(UnivariateStatistic stat) {
         // No try-catch or advertised exception here because arguments are guaranteed valid
-        return stat.evaluate(eDA.getInternalValues(), eDA.start(), eDA.getNumElements());
+        return eDA.compute(stat);
     }
 
     // Implementation getters and setter

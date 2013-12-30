@@ -17,13 +17,14 @@
 package org.apache.commons.math3.linear;
 
 import org.apache.commons.math3.analysis.function.Sqrt;
+import org.apache.commons.math3.util.MathArrays;
 
 /**
  * This class implements the standard Jacobi (diagonal) preconditioner. For a
  * matrix A<sub>ij</sub>, this preconditioner is
  * M = diag(1 / A<sub>11</sub>, 1 / A<sub>22</sub>, &hellip;).
  *
- * @version $Id: JacobiPreconditioner.java 1306148 2012-03-28 04:05:59Z celestin $
+ * @version $Id: JacobiPreconditioner.java 1422195 2012-12-15 06:45:18Z psteitz $
  * @since 3.0
  */
 public class JacobiPreconditioner extends RealLinearOperator {
@@ -95,7 +96,9 @@ public class JacobiPreconditioner extends RealLinearOperator {
     @Override
     public RealVector operate(final RealVector x) {
         // Dimension check is carried out by ebeDivide
-        return x.ebeDivide(diag);
+        return new ArrayRealVector(MathArrays.ebeDivide(x.toArray(),
+                                                        diag.toArray()),
+                                   false);
     }
 
     /**
@@ -104,14 +107,17 @@ public class JacobiPreconditioner extends RealLinearOperator {
      * P = diag(1 / &radic;A<sub>11</sub>, 1 / &radic;A<sub>22</sub>, &hellip;).
      *
      * @return the square root of {@code this} preconditioner
+     * @since 3.1
      */
-    public RealLinearOperator sqrt(){
+    public RealLinearOperator sqrt() {
         final RealVector sqrtDiag = diag.map(new Sqrt());
         return new RealLinearOperator() {
             /** {@inheritDoc} */
             @Override
             public RealVector operate(final RealVector x) {
-                return x.ebeDivide(sqrtDiag);
+                return new ArrayRealVector(MathArrays.ebeDivide(x.toArray(),
+                                                                sqrtDiag.toArray()),
+                                           false);
             }
 
             /** {@inheritDoc} */

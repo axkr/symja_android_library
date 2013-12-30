@@ -17,24 +17,25 @@
 package org.apache.commons.math3.linear;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NotPositiveException;
-import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.util.MathUtils;
 
 /**
  * This class implements the {@link FieldVector} interface with a {@link FieldElement} array.
  * @param <T> the type of the field elements
- * @version $Id: ArrayFieldVector.java 1384654 2012-09-14 06:42:06Z celestin $
+ * @version $Id: ArrayFieldVector.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0
  */
 public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<T>, Serializable {
@@ -69,8 +70,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(Field<T> field, int size) {
         this.field = field;
-        data = buildArray(size);
-        Arrays.fill(data, field.getZero());
+        this.data  = MathArrays.buildArray(field, size);
     }
 
     /**
@@ -98,9 +98,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(T[] d)
             throws NullArgumentException, ZeroException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         try {
             field = d[0].getField();
             data = d.clone();
@@ -119,9 +117,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(Field<T> field, T[] d)
             throws NullArgumentException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         this.field = field;
         data = d.clone();
     }
@@ -149,9 +145,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(T[] d, boolean copyArray)
             throws NullArgumentException, ZeroException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         if (d.length == 0) {
             throw new ZeroException(LocalizedFormats.VECTOR_MUST_HAVE_AT_LEAST_ONE_ELEMENT);
         }
@@ -176,9 +170,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(Field<T> field, T[] d, boolean copyArray)
             throws NullArgumentException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         this.field = field;
         data = copyArray ? d.clone() :  d;
     }
@@ -195,14 +187,12 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(T[] d, int pos, int size)
             throws NullArgumentException, NumberIsTooLargeException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         if (d.length < pos + size) {
             throw new NumberIsTooLargeException(pos + size, d.length, true);
         }
         field = d[0].getField();
-        data = buildArray(size);
+        data = MathArrays.buildArray(field, size);
         System.arraycopy(d, pos, data, 0, size);
     }
 
@@ -219,14 +209,12 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(Field<T> field, T[] d, int pos, int size)
             throws NullArgumentException, NumberIsTooLargeException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         if (d.length < pos + size) {
             throw new NumberIsTooLargeException(pos + size, d.length, true);
         }
         this.field = field;
-        data = buildArray(size);
+        data = MathArrays.buildArray(field, size);
         System.arraycopy(d, pos, data, 0, size);
     }
 
@@ -238,11 +226,9 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(FieldVector<T> v)
             throws NullArgumentException {
-        if (v == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(v);
         field = v.getField();
-        data = buildArray(v.getDimension());
+        data = MathArrays.buildArray(field, v.getDimension());
         for (int i = 0; i < data.length; ++i) {
             data[i] = v.getEntry(i);
         }
@@ -256,9 +242,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(ArrayFieldVector<T> v)
             throws NullArgumentException {
-        if (v == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(v);
         field = v.getField();
         data = v.data.clone();
     }
@@ -273,9 +257,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(ArrayFieldVector<T> v, boolean deep)
             throws NullArgumentException {
-        if (v == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(v);
         field = v.getField();
         data = deep ? v.data.clone() : v.data;
     }
@@ -287,16 +269,12 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      * @param v2 Second vector (will be put at back of the new vector).
      * @throws NullArgumentException if {@code v1} or {@code v2} is
      * {@code null}.
+     * @deprecated as of 3.2, replaced by {@link #ArrayFieldVector(FieldVector, FieldVector)}
      */
+    @Deprecated
     public ArrayFieldVector(ArrayFieldVector<T> v1, ArrayFieldVector<T> v2)
             throws NullArgumentException {
-        if (v1 == null || v2 == null) {
-            throw new NullArgumentException();
-        }
-        field = v1.getField();
-        data = buildArray(v1.data.length + v2.data.length);
-        System.arraycopy(v1.data, 0, data, 0, v1.data.length);
-        System.arraycopy(v2.data, 0, data, v1.data.length, v2.data.length);
+        this((FieldVector<T>) v1, (FieldVector<T>) v2);
     }
 
     /**
@@ -306,16 +284,35 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      * @param v2 Second vector (will be put at back of the new vector).
      * @throws NullArgumentException if {@code v1} or {@code v2} is
      * {@code null}.
+     * @since 3.2
      */
+    public ArrayFieldVector(FieldVector<T> v1, FieldVector<T> v2)
+            throws NullArgumentException {
+        MathUtils.checkNotNull(v1);
+        MathUtils.checkNotNull(v2);
+        field = v1.getField();
+        final T[] v1Data =
+                (v1 instanceof ArrayFieldVector) ? ((ArrayFieldVector<T>) v1).data : v1.toArray();
+        final T[] v2Data =
+                (v2 instanceof ArrayFieldVector) ? ((ArrayFieldVector<T>) v2).data : v2.toArray();
+        data = MathArrays.buildArray(field, v1Data.length + v2Data.length);
+        System.arraycopy(v1Data, 0, data, 0, v1Data.length);
+        System.arraycopy(v2Data, 0, data, v1Data.length, v2Data.length);
+    }
+
+    /**
+     * Construct a vector by appending one vector to another vector.
+     *
+     * @param v1 First vector (will be put in front of the new vector).
+     * @param v2 Second vector (will be put at back of the new vector).
+     * @throws NullArgumentException if {@code v1} or {@code v2} is
+     * {@code null}.
+     * @deprecated as of 3.2, replaced by {@link #ArrayFieldVector(FieldVector, FieldElement[])}
+     */
+    @Deprecated
     public ArrayFieldVector(ArrayFieldVector<T> v1, T[] v2)
             throws NullArgumentException {
-        if (v1 == null || v2 == null) {
-            throw new NullArgumentException();
-        }
-        field = v1.getField();
-        data = buildArray(v1.data.length + v2.length);
-        System.arraycopy(v1.data, 0, data, 0, v1.data.length);
-        System.arraycopy(v2, 0, data, v1.data.length, v2.length);
+        this((FieldVector<T>) v1, v2);
     }
 
     /**
@@ -325,16 +322,54 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      * @param v2 Second vector (will be put at back of the new vector).
      * @throws NullArgumentException if {@code v1} or {@code v2} is
      * {@code null}.
+     * @since 3.2
      */
+    public ArrayFieldVector(FieldVector<T> v1, T[] v2)
+            throws NullArgumentException {
+        MathUtils.checkNotNull(v1);
+        MathUtils.checkNotNull(v2);
+        field = v1.getField();
+        final T[] v1Data =
+                (v1 instanceof ArrayFieldVector) ? ((ArrayFieldVector<T>) v1).data : v1.toArray();
+        data = MathArrays.buildArray(field, v1Data.length + v2.length);
+        System.arraycopy(v1Data, 0, data, 0, v1Data.length);
+        System.arraycopy(v2, 0, data, v1Data.length, v2.length);
+    }
+
+    /**
+     * Construct a vector by appending one vector to another vector.
+     *
+     * @param v1 First vector (will be put in front of the new vector).
+     * @param v2 Second vector (will be put at back of the new vector).
+     * @throws NullArgumentException if {@code v1} or {@code v2} is
+     * {@code null}.
+     * @deprecated as of 3.2, replaced by {@link #ArrayFieldVector(FieldElement[], FieldVector)}
+     */
+    @Deprecated
     public ArrayFieldVector(T[] v1, ArrayFieldVector<T> v2)
             throws NullArgumentException {
-        if (v1 == null || v2 == null) {
-            throw new NullArgumentException();
-        }
+        this(v1, (FieldVector<T>) v2);
+    }
+
+    /**
+     * Construct a vector by appending one vector to another vector.
+     *
+     * @param v1 First vector (will be put in front of the new vector).
+     * @param v2 Second vector (will be put at back of the new vector).
+     * @throws NullArgumentException if {@code v1} or {@code v2} is
+     * {@code null}.
+     * @since 3.2
+     */
+    public ArrayFieldVector(T[] v1, FieldVector<T> v2)
+            throws NullArgumentException {
+        MathUtils.checkNotNull(v1);
+        MathUtils.checkNotNull(v2);
         field = v2.getField();
-        data = buildArray(v1.length + v2.data.length);
+        final T[] v2Data =
+                (v2 instanceof ArrayFieldVector) ? ((ArrayFieldVector<T>) v2).data : v2.toArray();
+        data = MathArrays.buildArray(field, v1.length + v2Data.length);
         System.arraycopy(v1, 0, data, 0, v1.length);
-        System.arraycopy(v2.data, 0, data, v1.length, v2.data.length);
+        System.arraycopy(v2Data, 0, data, v1.length, v2Data.length);
     }
 
     /**
@@ -354,13 +389,12 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(T[] v1, T[] v2)
             throws NullArgumentException, ZeroException {
-        if (v1 == null || v2 == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(v1);
+        MathUtils.checkNotNull(v2);
         if (v1.length + v2.length == 0) {
             throw new ZeroException(LocalizedFormats.VECTOR_MUST_HAVE_AT_LEAST_ONE_ELEMENT);
         }
-        data = buildArray(v1.length + v2.length);
+        data = MathArrays.buildArray(v1[0].getField(), v1.length + v2.length);
         System.arraycopy(v1, 0, data, 0, v1.length);
         System.arraycopy(v2, 0, data, v1.length, v2.length);
         field = data[0].getField();
@@ -379,27 +413,15 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
      */
     public ArrayFieldVector(Field<T> field, T[] v1, T[] v2)
             throws NullArgumentException, ZeroException {
-        if (v1 == null || v2 == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(v1);
+        MathUtils.checkNotNull(v2);
         if (v1.length + v2.length == 0) {
             throw new ZeroException(LocalizedFormats.VECTOR_MUST_HAVE_AT_LEAST_ONE_ELEMENT);
         }
-        data = buildArray(v1.length + v2.length);
+        data = MathArrays.buildArray(field, v1.length + v2.length);
         System.arraycopy(v1, 0, data, 0, v1.length);
         System.arraycopy(v2, 0, data, v1.length, v2.length);
         this.field = field;
-    }
-
-    /**
-     * Build an array of elements.
-     *
-     * @param length Size of the array to build.
-     * @return a new array.
-     */
-    @SuppressWarnings("unchecked") // field is of type T
-    private T[] buildArray(final int length) {
-        return (T[]) Array.newInstance(field.getRuntimeClass(), length);
     }
 
     /** {@inheritDoc} */
@@ -419,7 +441,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
             return add((ArrayFieldVector<T>) v);
         } catch (ClassCastException cce) {
             checkVectorDimensions(v);
-            T[] out = buildArray(data.length);
+            T[] out = MathArrays.buildArray(field, data.length);
             for (int i = 0; i < data.length; i++) {
                 out[i] = data[i].add(v.getEntry(i));
             }
@@ -437,7 +459,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     public ArrayFieldVector<T> add(ArrayFieldVector<T> v)
         throws DimensionMismatchException {
         checkVectorDimensions(v.data.length);
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].add(v.data[i]);
         }
@@ -451,7 +473,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
             return subtract((ArrayFieldVector<T>) v);
         } catch (ClassCastException cce) {
             checkVectorDimensions(v);
-            T[] out = buildArray(data.length);
+            T[] out = MathArrays.buildArray(field, data.length);
             for (int i = 0; i < data.length; i++) {
                 out[i] = data[i].subtract(v.getEntry(i));
             }
@@ -469,7 +491,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     public ArrayFieldVector<T> subtract(ArrayFieldVector<T> v)
         throws DimensionMismatchException {
         checkVectorDimensions(v.data.length);
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].subtract(v.data[i]);
         }
@@ -478,7 +500,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
 
     /** {@inheritDoc} */
     public FieldVector<T> mapAdd(T d) throws NullArgumentException {
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].add(d);
         }
@@ -495,7 +517,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
 
     /** {@inheritDoc} */
     public FieldVector<T> mapSubtract(T d) throws NullArgumentException {
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].subtract(d);
         }
@@ -512,7 +534,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
 
     /** {@inheritDoc} */
     public FieldVector<T> mapMultiply(T d) throws NullArgumentException {
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].multiply(d);
         }
@@ -530,10 +552,8 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     /** {@inheritDoc} */
     public FieldVector<T> mapDivide(T d)
         throws NullArgumentException, MathArithmeticException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
-        T[] out = buildArray(data.length);
+        MathUtils.checkNotNull(d);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].divide(d);
         }
@@ -543,9 +563,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     /** {@inheritDoc} */
     public FieldVector<T> mapDivideToSelf(T d)
         throws NullArgumentException, MathArithmeticException {
-        if (d == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(d);
         for (int i = 0; i < data.length; i++) {
             data[i] = data[i].divide(d);
         }
@@ -554,7 +572,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
 
     /** {@inheritDoc} */
     public FieldVector<T> mapInv() throws MathArithmeticException {
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         final T one = field.getOne();
         for (int i = 0; i < data.length; i++) {
             try {
@@ -586,7 +604,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
             return ebeMultiply((ArrayFieldVector<T>) v);
         } catch (ClassCastException cce) {
             checkVectorDimensions(v);
-            T[] out = buildArray(data.length);
+            T[] out = MathArrays.buildArray(field, data.length);
             for (int i = 0; i < data.length; i++) {
                 out[i] = data[i].multiply(v.getEntry(i));
             }
@@ -604,7 +622,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     public ArrayFieldVector<T> ebeMultiply(ArrayFieldVector<T> v)
         throws DimensionMismatchException {
         checkVectorDimensions(v.data.length);
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             out[i] = data[i].multiply(v.data[i]);
         }
@@ -618,7 +636,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
             return ebeDivide((ArrayFieldVector<T>) v);
         } catch (ClassCastException cce) {
             checkVectorDimensions(v);
-            T[] out = buildArray(data.length);
+            T[] out = MathArrays.buildArray(field, data.length);
             for (int i = 0; i < data.length; i++) {
                 try {
                     out[i] = data[i].divide(v.getEntry(i));
@@ -641,7 +659,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     public ArrayFieldVector<T> ebeDivide(ArrayFieldVector<T> v)
         throws DimensionMismatchException, MathArithmeticException {
         checkVectorDimensions(v.data.length);
-        T[] out = buildArray(data.length);
+        T[] out = MathArrays.buildArray(field, data.length);
         for (int i = 0; i < data.length; i++) {
             try {
                 out[i] = data[i].divide(v.data[i]);
@@ -780,7 +798,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
 
     /** {@inheritDoc} */
     public FieldVector<T> append(T in) {
-        final T[] out = buildArray(data.length + 1);
+        final T[] out = MathArrays.buildArray(field, data.length + 1);
         System.arraycopy(data, 0, out, 0, data.length);
         out[data.length] = in;
         return new ArrayFieldVector<T>(field, out, false);
@@ -922,7 +940,7 @@ public class ArrayFieldVector<T extends FieldElement<T>> implements FieldVector<
     public int hashCode() {
         int h = 3542;
         for (final T a : data) {
-            h = h ^ a.hashCode();
+            h ^= a.hashCode();
         }
         return h;
     }

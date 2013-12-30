@@ -25,9 +25,11 @@ import org.apache.commons.math3.optimization.DifferentiableMultivariateVectorOpt
  * The estimated coefficients are the polynomial coefficients (see the
  * {@link #fit(double[]) fit} method).
  *
- * @version $Id: PolynomialFitter.java 1370215 2012-08-07 12:38:59Z sebb $
+ * @version $Id: PolynomialFitter.java 1422313 2012-12-15 18:53:41Z psteitz $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */
+@Deprecated
 public class PolynomialFitter extends CurveFitter<PolynomialFunction.Parametric> {
     /** Polynomial degree.
      * @deprecated
@@ -55,6 +57,7 @@ public class PolynomialFitter extends CurveFitter<PolynomialFunction.Parametric>
      * Simple constructor.
      *
      * @param optimizer Optimizer to use for the fitting.
+     * @since 3.1
      */
     public PolynomialFitter(DifferentiableMultivariateVectorOptimizer optimizer) {
         super(optimizer);
@@ -86,6 +89,7 @@ public class PolynomialFitter extends CurveFitter<PolynomialFunction.Parametric>
      * the number of evaluations exceeds {@code maxEval}.
      * @throws org.apache.commons.math3.exception.ConvergenceException
      * if the algorithm failed to converge.
+     * @since 3.1
      */
     public double[] fit(int maxEval, double[] guess) {
         return fit(maxEval, new PolynomialFunction.Parametric(), guess);
@@ -100,6 +104,7 @@ public class PolynomialFitter extends CurveFitter<PolynomialFunction.Parametric>
      * @return the coefficients of the polynomial that best fits the observed points.
      * @throws org.apache.commons.math3.exception.ConvergenceException
      * if the algorithm failed to converge.
+     * @since 3.1
      */
     public double[] fit(double[] guess) {
         return fit(new PolynomialFunction.Parametric(), guess);

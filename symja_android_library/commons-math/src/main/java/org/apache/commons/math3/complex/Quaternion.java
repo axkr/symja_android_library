@@ -32,7 +32,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Instance of this class are guaranteed to be immutable.
  *
  * @since 3.1
- * @version $Id$
+ * @version $Id: Quaternion.java 1421249 2012-12-13 12:32:03Z erans $
  */
 public final class Quaternion implements Serializable {
     /** Identity quaternion. */
@@ -90,7 +90,7 @@ public final class Quaternion implements Serializable {
         if (v.length != 3) {
             throw new DimensionMismatchException(v.length, 3);
         }
-        this.q0 = 0;
+        this.q0 = scalar;
         this.q1 = v[0];
         this.q2 = v[1];
         this.q3 = v[2];

@@ -51,7 +51,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * @see ParameterJacobianProvider
  * @see ParameterizedODE
  *
- * @version $Id: JacobianMatrices.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: JacobianMatrices.java 1538354 2013-11-03 12:48:40Z tn $
  * @since 3.0
  */
 public class JacobianMatrices {
@@ -429,7 +429,6 @@ public class JacobianMatrices {
         /** Wrap a {@link FirstOrderDifferentialEquations} into a {@link MainStateJacobianProvider}.
          * @param ode original ODE problem, without jacobians computation skill
          * @param hY step sizes to compute the jacobian df/dy
-         * @see JacobianMatrices#setMainStateSteps(double[])
          * @exception DimensionMismatchException if there is a dimension mismatch between
          * the steps array {@code hY} and the equation dimension
          */
@@ -474,7 +473,10 @@ public class JacobianMatrices {
 
     }
 
-    /** Special exception for equations mismatch. */
+    /**
+     * Special exception for equations mismatch.
+     * @since 3.1
+     */
     public static class MismatchedEquations extends MathIllegalArgumentException {
 
         /** Serializable UID. */

@@ -19,10 +19,11 @@ package org.apache.commons.math3.analysis;
 /**
  * Extension of {@link UnivariateVectorFunction} representing a differentiable univariate vectorial function.
  *
- * @version $Id: DifferentiableUnivariateVectorFunction.java 1383852 2012-09-12 08:54:40Z luc $
+ * @version $Id: DifferentiableUnivariateVectorFunction.java 1499808 2013-07-04 17:00:42Z sebb $
  * @since 2.0
  * @deprecated as of 3.1 replaced by {@link org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableVectorFunction}
  */
+@Deprecated
 public interface DifferentiableUnivariateVectorFunction
     extends UnivariateVectorFunction {
 

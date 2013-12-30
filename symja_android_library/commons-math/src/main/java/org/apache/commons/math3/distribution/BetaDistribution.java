@@ -28,7 +28,7 @@ import org.apache.commons.math3.random.Well19937c;
  * Implements the Beta distribution.
  *
  * @see <a href="http://en.wikipedia.org/wiki/Beta_distribution">Beta distribution</a>
- * @version $Id: BetaDistribution.java 1369202 2012-08-03 20:50:33Z erans $
+ * @version $Id: BetaDistribution.java 1533990 2013-10-20 21:24:45Z tn $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class BetaDistribution extends AbstractRealDistribution {
@@ -72,6 +72,18 @@ public class BetaDistribution extends AbstractRealDistribution {
      */
     public BetaDistribution(double alpha, double beta, double inverseCumAccuracy) {
         this(new Well19937c(), alpha, beta, inverseCumAccuracy);
+    }
+
+    /**
+     * Creates a &beta; distribution.
+     *
+     * @param rng Random number generator.
+     * @param alpha First shape parameter (must be positive).
+     * @param beta Second shape parameter (must be positive).
+     * @since 3.3
+     */
+    public BetaDistribution(RandomGenerator rng, double alpha, double beta) {
+        this(rng, alpha, beta, DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
     }
 
     /**
@@ -124,23 +136,30 @@ public class BetaDistribution extends AbstractRealDistribution {
 
     /** {@inheritDoc} */
     public double density(double x) {
+        final double logDensity = logDensity(x);
+        return logDensity == Double.NEGATIVE_INFINITY ? 0 : FastMath.exp(logDensity);
+    }
+
+    /** {@inheritDoc} **/
+    @Override
+    public double logDensity(double x) {
         recomputeZ();
         if (x < 0 || x > 1) {
-            return 0;
+            return Double.NEGATIVE_INFINITY;
         } else if (x == 0) {
             if (alpha < 1) {
                 throw new NumberIsTooSmallException(LocalizedFormats.CANNOT_COMPUTE_BETA_DENSITY_AT_0_FOR_SOME_ALPHA, alpha, 1, false);
             }
-            return 0;
+            return Double.NEGATIVE_INFINITY;
         } else if (x == 1) {
             if (beta < 1) {
                 throw new NumberIsTooSmallException(LocalizedFormats.CANNOT_COMPUTE_BETA_DENSITY_AT_1_FOR_SOME_BETA, beta, 1, false);
             }
-            return 0;
+            return Double.NEGATIVE_INFINITY;
         } else {
             double logX = FastMath.log(x);
             double log1mX = FastMath.log1p(-x);
-            return FastMath.exp((alpha - 1) * logX + (beta - 1) * log1mX - z);
+            return (alpha - 1) * logX + (beta - 1) * log1mX - z;
         }
     }
 

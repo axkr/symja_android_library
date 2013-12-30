@@ -27,7 +27,7 @@ import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 
 /** Polynomial interpolator using both sample values and sample derivatives.
  * <p>
@@ -42,13 +42,8 @@ import org.apache.commons.math3.util.ArithmeticUtils;
  * interpolation polynomial for n sample points with value, first and second
  * derivative for all points all have degree 3n-1.
  * </p>
- * <p>
- * This class has been imported from the Orekit space flight dynamics library
- * also distributed under the terms of the Apache License V2. Original copyright
- * is: Copyright 2002-2012 CS Systèmes d'Information.
- * </p>
  *
- * @version $Id: HermiteInterpolator.java 1383451 2012-09-11 15:33:37Z luc $
+ * @version $Id: HermiteInterpolator.java 1517203 2013-08-24 21:55:35Z psteitz $
  * @since 3.1
  */
 public class HermiteInterpolator implements UnivariateDifferentiableVectorFunction {
@@ -96,7 +91,7 @@ public class HermiteInterpolator implements UnivariateDifferentiableVectorFuncti
 
             final double[] y = value[i].clone();
             if (i > 1) {
-                double inv = 1.0 / ArithmeticUtils.factorial(i);
+                double inv = 1.0 / CombinatoricsUtils.factorial(i);
                 for (int j = 0; j < y.length; ++j) {
                     y[j] *= inv;
                 }

@@ -58,7 +58,7 @@ import org.apache.commons.math3.util.FastMath;
  * otherwise the step is rejected and a new attempt is made with a new
  * stepsize.</p>
  *
- * @version $Id: AdaptiveStepsizeIntegrator.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: AdaptiveStepsizeIntegrator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  *
  */

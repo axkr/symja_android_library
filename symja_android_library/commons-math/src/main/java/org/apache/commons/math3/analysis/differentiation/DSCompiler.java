@@ -22,14 +22,17 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.exception.MathInternalError;
+import org.apache.commons.math3.exception.NotPositiveException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 
 /** Class holding "compiled" computation rules for derivative structures.
  * <p>This class implements the computation rules described in Dan Kalman's paper <a
- * href="http://www.math.american.edu/People/kalman/pdffiles/mmgautodiff.pdf">Doubly
+ * href="http://www1.american.edu/cas/mathstat/People/kalman/pdffiles/mmgautodiff.pdf">Doubly
  * Recursive Multivariate Automatic Differentiation</a>, Mathematics Magazine, vol. 75,
  * no. 3, June 2002. However, in order to avoid performances bottlenecks, the recursive
  * rules are "compiled" once in an unfold form. This class does this recursion unrolling
@@ -70,7 +73,7 @@ import org.apache.commons.math3.util.MathArrays;
  * structures. User can for example store a vector of n variables depending on three x, y
  * and z free parameters in one array as follows:
  * <pre>
- *   // parameter 0 is x, parameter 1 is y, parameter 3 is z
+ *   // parameter 0 is x, parameter 1 is y, parameter 2 is z
  *   int parameters = 3;
  *   DSCompiler compiler = DSCompiler.getCompiler(parameters, order);
  *   int size = compiler.getSize();
@@ -119,7 +122,7 @@ import org.apache.commons.math3.util.MathArrays;
  *   double dPdZdZ = product[compiler.getPartialDerivativeIndex(0, 0, 2)];
  * </p>
  * @see DerivativeStructure
- * @version $Id: DSCompiler.java 1386743 2012-09-17 17:42:19Z luc $
+ * @version $Id: DSCompiler.java 1517788 2013-08-27 11:15:18Z luc $
  * @since 3.1
  */
 public class DSCompiler {
@@ -149,20 +152,51 @@ public class DSCompiler {
     /** Indirection arrays for function composition. */
     private final int[][][] compIndirection;
 
+    /** Private constructor, reserved for the factory method {@link #getCompiler(int, int)}.
+     * @param parameters number of free parameters
+     * @param order derivation order
+     * @param valueCompiler compiler for the value part
+     * @param derivativeCompiler compiler for the derivative part
+     * @throws NumberIsTooLargeException if order is too large
+     */
+    private DSCompiler(final int parameters, final int order,
+                       final DSCompiler valueCompiler, final DSCompiler derivativeCompiler)
+        throws NumberIsTooLargeException {
+
+        this.parameters = parameters;
+        this.order      = order;
+        this.sizes      = compileSizes(parameters, order, valueCompiler);
+        this.derivativesIndirection =
+                compileDerivativesIndirection(parameters, order,
+                                              valueCompiler, derivativeCompiler);
+        this.lowerIndirection =
+                compileLowerIndirection(parameters, order,
+                                        valueCompiler, derivativeCompiler);
+        this.multIndirection =
+                compileMultiplicationIndirection(parameters, order,
+                                                 valueCompiler, derivativeCompiler, lowerIndirection);
+        this.compIndirection =
+                compileCompositionIndirection(parameters, order,
+                                              valueCompiler, derivativeCompiler,
+                                              sizes, derivativesIndirection);
+
+    }
+
     /** Get the compiler for number of free parameters and order.
      * @param parameters number of free parameters
      * @param order derivation order
      * @return cached rules set
+     * @throws NumberIsTooLargeException if order is too large
      */
-    public static DSCompiler getCompiler(int parameters, int order) {
+    public static DSCompiler getCompiler(int parameters, int order)
+        throws NumberIsTooLargeException {
 
         // get the cached compilers
         final DSCompiler[][] cache = compilers.get();
-        if (cache != null && cache.length > parameters && cache[parameters].length > order) {
-            if (cache[parameters][order] != null) {
-                // the compiler has already been created
-                return cache[parameters][order];
-            }
+        if (cache != null && cache.length > parameters &&
+            cache[parameters].length > order && cache[parameters][order] != null) {
+            // the compiler has already been created
+            return cache[parameters][order];
         }
 
         // we need to create more compilers
@@ -196,45 +230,14 @@ public class DSCompiler {
 
     }
 
-    /** Private constructor, reserved for the factory method {@link #getCompiler(int, int)}.
-     * @param parameters number of free parameters
-     * @param order derivation order
-     * @param valueCompiler compiler for the value part
-     * @param derivativeCompiler compiler for the derivative part
-     */
-    private DSCompiler(final int parameters, final int order,
-                       final DSCompiler valueCompiler, final DSCompiler derivativeCompiler) {
-
-        this.parameters = parameters;
-        this.order      = order;
-        this.sizes      = compileSizes(parameters, order, valueCompiler, derivativeCompiler);
-        this.derivativesIndirection =
-                compileDerivativesIndirection(parameters, order,
-                                              valueCompiler, derivativeCompiler);
-        this.lowerIndirection =
-                compileLowerIndirection(parameters, order,
-                                        valueCompiler, derivativeCompiler);
-        this.multIndirection =
-                compileMultiplicationIndirection(parameters, order,
-                                                 valueCompiler, derivativeCompiler, lowerIndirection);
-        this.compIndirection =
-                compileCompositionIndirection(parameters, order,
-                                              valueCompiler, derivativeCompiler,
-                                              sizes, derivativesIndirection, lowerIndirection);
-
-
-    }
-
     /** Compile the sizes array.
      * @param parameters number of free parameters
      * @param order derivation order
      * @param valueCompiler compiler for the value part
-     * @param derivativeCompiler compiler for the derivative part
      * @return sizes array
      */
     private static int[][] compileSizes(final int parameters, final int order,
-                                        final DSCompiler valueCompiler,
-                                        final DSCompiler derivativeCompiler) {
+                                        final DSCompiler valueCompiler) {
 
         final int[][] sizes = new int[parameters + 1][order + 1];
         if (parameters == 0) {
@@ -358,7 +361,7 @@ public class DSCompiler {
 
         for (int i = 0; i < dSize; ++i) {
             final int[][] dRow = derivativeCompiler.multIndirection[i];
-            List<int[]> row = new ArrayList<int[]>();
+            List<int[]> row = new ArrayList<int[]>(dRow.length * 2);
             for (int j = 0; j < dRow.length; ++j) {
                 row.add(new int[] { dRow[j][0], lowerIndirection[dRow[j][1]], vSize + dRow[j][2] });
                 row.add(new int[] { dRow[j][0], vSize + dRow[j][1], lowerIndirection[dRow[j][2]] });
@@ -402,15 +405,15 @@ public class DSCompiler {
      * @param derivativeCompiler compiler for the derivative part
      * @param sizes sizes array
      * @param derivativesIndirection derivatives indirection array
-     * @param lowerIndirection lower derivatives indirection array
      * @return multiplication indirection array
+     * @throws NumberIsTooLargeException if order is too large
      */
     private static int[][][] compileCompositionIndirection(final int parameters, final int order,
-                                                        final DSCompiler valueCompiler,
-                                                        final DSCompiler derivativeCompiler,
-                                                        final int[][] sizes,
-                                                        final int[][] derivativesIndirection,
-                                                        final int[] lowerIndirection) {
+                                                           final DSCompiler valueCompiler,
+                                                           final DSCompiler derivativeCompiler,
+                                                           final int[][] sizes,
+                                                           final int[][] derivativesIndirection)
+       throws NumberIsTooLargeException {
 
         if ((parameters == 0) || (order == 0)) {
             return new int[][][] { { { 1, 0 } } };
@@ -519,9 +522,9 @@ public class DSCompiler {
      *   <li>if there is only 1 {@link #getFreeParameters() free parameter}, then the
      *   derivatives are sorted in increasing derivation order (i.e. f at index 0, df/dp
      *   at index 1, d<sup>2</sup>f/dp<sup>2</sup> at index 2 ...
-     *   d<sup>k</sup>f/dp<sup>k</sup> at index k),</li> 
+     *   d<sup>k</sup>f/dp<sup>k</sup> at index k),</li>
      *   <li>if the {@link #getOrder() derivation order} is 1, then the derivatives
-     *   are sorted in incresing free parameter order (i.e. f at index 0, df/dx<sub>1</sub>
+     *   are sorted in increasing free parameter order (i.e. f at index 0, df/dx<sub>1</sub>
      *   at index 1, df/dx<sub>2</sub> at index 2 ... df/dx<sub>k</sub> at index k),</li>
      *   <li>all other cases are not publicly specified</li>
      * </ul>
@@ -601,10 +604,12 @@ public class DSCompiler {
      * @param destSizes sizes array for the destination derivative structure
      * @return index of the partial derivative with the <em>same</em> characteristics
      * in destination derivative structure
+     * @throws NumberIsTooLargeException if order is too large
      */
     private static int convertIndex(final int index,
                                     final int srcP, final int[][] srcDerivativesIndirection,
-                                    final int destP, final int destO, final int[][] destSizes) {
+                                    final int destP, final int destO, final int[][] destSizes)
+        throws NumberIsTooLargeException {
         int[] orders = new int[destP];
         System.arraycopy(srcDerivativesIndirection[index], 0, orders, 0, FastMath.min(srcP, destP));
         return getPartialDerivativeIndex(destP, destO, destSizes, orders);
@@ -817,7 +822,7 @@ public class DSCompiler {
                           final double[] result, final int resultOffset) {
 
         // compute k such that lhs % rhs = lhs - k rhs
-        final double rem = lhs[lhsOffset] % rhs[rhsOffset];
+        final double rem = FastMath.IEEEremainder(lhs[lhsOffset], rhs[rhsOffset]);
         final double k   = FastMath.rint((lhs[lhsOffset] - rem) / rhs[rhsOffset]);
 
         // set up value
@@ -827,6 +832,48 @@ public class DSCompiler {
         for (int i = 1; i < getSize(); ++i) {
             result[resultOffset + i] = lhs[lhsOffset + i] - k * rhs[rhsOffset + i];
         }
+
+    }
+
+    /** Compute power of a double to a derivative structure.
+     * @param a number to exponentiate
+     * @param operand array holding the power
+     * @param operandOffset offset of the power in its array
+     * @param result array where result must be stored (for
+     * power the result array <em>cannot</em> be the input
+     * array)
+     * @param resultOffset offset of the result in its array
+     * @since 3.3
+     */
+    public void pow(final double a,
+                    final double[] operand, final int operandOffset,
+                    final double[] result, final int resultOffset) {
+
+        // create the function value and derivatives
+        // [a^x, ln(a) a^x, ln(a)^2 a^x,, ln(a)^3 a^x, ... ]
+        final double[] function = new double[1 + order];
+        if (a == 0) {
+            if (operand[operandOffset] == 0) {
+                function[0] = 1;
+                double infinity = Double.POSITIVE_INFINITY;
+                for (int i = 1; i < function.length; ++i) {
+                    infinity = -infinity;
+                    function[i] = infinity;
+                }
+            } else if (operand[operandOffset] < 0) {
+                Arrays.fill(function, Double.NaN);
+            }
+        } else {
+            function[0] = FastMath.pow(a, operand[operandOffset]);
+            final double lnA = FastMath.log(a);
+            for (int i = 1; i < function.length; ++i) {
+                function[i] = lnA * function[i - 1];
+            }
+        }
+
+
+        // apply function composition
+        compose(operand, operandOffset, function, result, resultOffset);
 
     }
 
@@ -952,15 +999,18 @@ public class DSCompiler {
         double[] function = new double[1 + order];
         double xk;
         if (n == 2) {
-            xk = FastMath.sqrt(operand[operandOffset]);
+            function[0] = FastMath.sqrt(operand[operandOffset]);
+            xk          = 0.5 / function[0];
         } else if (n == 3) {
-            xk = FastMath.cbrt(operand[operandOffset]);
+            function[0] = FastMath.cbrt(operand[operandOffset]);
+            xk          = 1.0 / (3.0 * function[0] * function[0]);
         } else {
-            xk = FastMath.pow(operand[operandOffset], 1.0 / n);
+            function[0] = FastMath.pow(operand[operandOffset], 1.0 / n);
+            xk          = 1.0 / (n * FastMath.pow(function[0], n - 1));
         }
         final double nReciprocal = 1.0 / n;
         final double xReciprocal = 1.0 / operand[operandOffset];
-        for (int i = 0; i <= order; ++i) {
+        for (int i = 1; i <= order; ++i) {
             function[i] = xk;
             xk *= xReciprocal * (nReciprocal - i);
         }
@@ -1043,8 +1093,8 @@ public class DSCompiler {
      * @param operand array holding the operand
      * @param operandOffset offset of the operand in its array
      * @param result array where result must be stored (for
-     * shifted logarithm the result array <em>cannot</em> be the input
-     * array)
+     * shifted logarithm the result array <em>cannot</em> be the input array)
+     * @param resultOffset offset of the result in its array
      */
     public void log1p(final double[] operand, final int operandOffset,
                       final double[] result, final int resultOffset) {
@@ -1070,8 +1120,8 @@ public class DSCompiler {
      * @param operand array holding the operand
      * @param operandOffset offset of the operand in its array
      * @param result array where result must be stored (for
-     * base 10 logarithm the result array <em>cannot</em> be the input
-     * array)
+     * base 10 logarithm the result array <em>cannot</em> be the input array)
+     * @param resultOffset offset of the result in its array
      */
     public void log10(final double[] operand, final int operandOffset,
                       final double[] result, final int resultOffset) {
@@ -1417,6 +1467,9 @@ public class DSCompiler {
 
         }
 
+        // fix value to take special cases (+0/+0, +0/-0, -0/+0, -0/-0, +/-infinity) correctly
+        result[resultOffset] = FastMath.atan2(y[yOffset], x[xOffset]);
+
     }
 
     /** Compute hyperbolic cosine of a derivative structure.
@@ -1729,15 +1782,23 @@ public class DSCompiler {
      * @param dsOffset offset of the derivative structure in its array
      * @param delta parameters offsets (&Delta;x, &Delta;y, ...)
      * @return value of the Taylor expansion at x + &Delta;x, y + &Delta;y, ...
+     * @throws MathArithmeticException if factorials becomes too large
      */
-    public double taylor(final double[] ds, final int dsOffset, final double ... delta) {
+    public double taylor(final double[] ds, final int dsOffset, final double ... delta)
+       throws MathArithmeticException {
         double value = 0;
         for (int i = getSize() - 1; i >= 0; --i) {
             final int[] orders = getPartialDerivativeOrders(i);
             double term = ds[dsOffset + i];
             for (int k = 0; k < orders.length; ++k) {
                 if (orders[k] > 0) {
-                    term *= FastMath.pow(delta[k], orders[k]) / ArithmeticUtils.factorial(orders[k]);
+                    try {
+                        term *= FastMath.pow(delta[k], orders[k]) /
+                        CombinatoricsUtils.factorial(orders[k]);
+                    } catch (NotPositiveException e) {
+                        // this cannot happen
+                        throw new MathInternalError(e);
+                    }
                 }
             }
             value += term;

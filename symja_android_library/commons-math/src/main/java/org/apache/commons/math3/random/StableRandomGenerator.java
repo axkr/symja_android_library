@@ -29,7 +29,7 @@ import org.apache.commons.math3.util.FastMath;
  * <i>Handbook of computational statistics: concepts and methods</i> by
  * James E. Gentle, Wolfgang H&auml;rdle, Yuichi Mori.</p>
  *
- * @version $Id: StableRandomGenerator.java 1382904 2012-09-10 14:47:45Z luc $
+ * @version $Id: StableRandomGenerator.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 3.0
  */
 public class StableRandomGenerator implements NormalizedRandomGenerator {
@@ -52,8 +52,8 @@ public class StableRandomGenerator implements NormalizedRandomGenerator {
      * @param alpha Stability parameter. Must be in range (0, 2]
      * @param beta Skewness parameter. Must be in range [-1, 1]
      * @throws NullArgumentException if generator is null
-     * @throws OutOfRangeException if {@code alpha <= 0} or {@code alpha > 2} 
-     * or {@code beta < -1} or {@code beta > 1} 
+     * @throws OutOfRangeException if {@code alpha <= 0} or {@code alpha > 2}
+     * or {@code beta < -1} or {@code beta > 1}
      */
     public StableRandomGenerator(final RandomGenerator generator,
                                  final double alpha, final double beta)
@@ -126,7 +126,7 @@ public class StableRandomGenerator implements NormalizedRandomGenerator {
                     FastMath.log(FastMath.PI / 2d * omega * cosPhi / betaPhi));
 
                 if (alpha != 1d) {
-                    x = x + beta * FastMath.tan(FastMath.PI * alpha / 2);
+                    x += beta * FastMath.tan(FastMath.PI * alpha / 2);
                 }
             }
         }

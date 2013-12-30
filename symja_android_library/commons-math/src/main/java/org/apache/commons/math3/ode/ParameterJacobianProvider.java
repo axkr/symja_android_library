@@ -22,7 +22,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 /** Interface to compute exactly Jacobian matrix for some parameter
  *  when computing {@link JacobianMatrices partial derivatives equations}.
  *
- * @version $Id: ParameterJacobianProvider.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: ParameterJacobianProvider.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public interface ParameterJacobianProvider extends Parameterizable {

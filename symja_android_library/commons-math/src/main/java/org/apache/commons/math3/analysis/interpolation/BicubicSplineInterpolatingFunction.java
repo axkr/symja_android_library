@@ -16,6 +16,7 @@
  */
 package org.apache.commons.math3.analysis.interpolation;
 
+import java.util.Arrays;
 import org.apache.commons.math3.analysis.BivariateFunction;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NoDataException;
@@ -29,10 +30,12 @@ import org.apache.commons.math3.util.MathArrays;
  * bicubic spline interpolation</a>.
  *
  * @since 2.1
- * @version $Id: BicubicSplineInterpolatingFunction.java 1379904 2012-09-01 23:54:52Z erans $
+ * @version $Id: BicubicSplineInterpolatingFunction.java 1512547 2013-08-10 01:13:38Z erans $
  */
 public class BicubicSplineInterpolatingFunction
     implements BivariateFunction {
+    /** Number of coefficients. */
+    private static final int NUM_COEFF = 16;
     /**
      * Matrix to compute the spline coefficients from the function values
      * and function derivatives values
@@ -161,18 +164,31 @@ public class BicubicSplineInterpolatingFunction
     public double value(double x, double y)
         throws OutOfRangeException {
         final int i = searchIndex(x, xval);
-        if (i == -1) {
-            throw new OutOfRangeException(x, xval[0], xval[xval.length - 1]);
-        }
         final int j = searchIndex(y, yval);
-        if (j == -1) {
-            throw new OutOfRangeException(y, yval[0], yval[yval.length - 1]);
-        }
 
         final double xN = (x - xval[i]) / (xval[i + 1] - xval[i]);
         final double yN = (y - yval[j]) / (yval[j + 1] - yval[j]);
 
         return splines[i][j].value(xN, yN);
+    }
+
+    /**
+     * Indicates whether a point is within the interpolation range.
+     *
+     * @param x First coordinate.
+     * @param y Second coordinate.
+     * @return {@code true} if (x, y) is a valid point.
+     * @since 3.3
+     */
+    public boolean isValidPoint(double x, double y) {
+        if (x < xval[0] ||
+            x > xval[xval.length - 1] ||
+            y < yval[0] ||
+            y > yval[yval.length - 1]) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -256,13 +272,7 @@ public class BicubicSplineInterpolatingFunction
         }
 
         final int i = searchIndex(x, xval);
-        if (i == -1) {
-            throw new OutOfRangeException(x, xval[0], xval[xval.length - 1]);
-        }
         final int j = searchIndex(y, yval);
-        if (j == -1) {
-            throw new OutOfRangeException(y, yval[0], yval[yval.length - 1]);
-        }
 
         final double xN = (x - xval[i]) / (xval[i + 1] - xval[i]);
         final double yN = (y - yval[j]) / (yval[j + 1] - yval[j]);
@@ -294,22 +304,32 @@ public class BicubicSplineInterpolatingFunction
      * @param c Coordinate.
      * @param val Coordinate samples.
      * @return the index in {@code val} corresponding to the interval
-     * containing {@code c}, or {@code -1} if {@code c} is out of the
+     * containing {@code c}.
+     * @throws OutOfRangeException if {@code c} is out of the
      * range defined by the boundary values of {@code val}.
      */
     private int searchIndex(double c, double[] val) {
-        if (c < val[0]) {
-            return -1;
+        final int r = Arrays.binarySearch(val, c);
+
+        if (r == -1 ||
+            r == -val.length - 1) {
+            throw new OutOfRangeException(c, val[0], val[val.length - 1]);
         }
 
-        final int max = val.length;
-        for (int i = 1; i < max; i++) {
-            if (c <= val[i]) {
-                return i - 1;
-            }
+        if (r < 0) {
+            // "c" in within an interpolation sub-interval: Return the
+            // index of the sample at the lower end of the sub-interval.
+            return -r - 2;
+        }
+        final int last = val.length - 1;
+        if (r == last) {
+            // "c" is the last sample of the range: Return the index
+            // of the sample at the lower end of the last sub-interval.
+            return last - 1;
         }
 
-        return -1;
+        // "c" is another sample point.
+        return r;
     }
 
     /**
@@ -342,12 +362,12 @@ public class BicubicSplineInterpolatingFunction
      * @return the spline coefficients.
      */
     private double[] computeSplineCoefficients(double[] beta) {
-        final double[] a = new double[16];
+        final double[] a = new double[NUM_COEFF];
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < NUM_COEFF; i++) {
             double result = 0;
             final double[] row = AINV[i];
-            for (int j = 0; j < 16; j++) {
+            for (int j = 0; j < NUM_COEFF; j++) {
                 result += row[j] * beta[j];
             }
             a[i] = result;
@@ -360,7 +380,7 @@ public class BicubicSplineInterpolatingFunction
 /**
  * 2D-spline function.
  *
- * @version $Id: BicubicSplineInterpolatingFunction.java 1379904 2012-09-01 23:54:52Z erans $
+ * @version $Id: BicubicSplineInterpolatingFunction.java 1512547 2013-08-10 01:13:38Z erans $
  */
 class BicubicSplineFunction
     implements BivariateFunction {
@@ -394,7 +414,7 @@ class BicubicSplineFunction
         this.a = new double[N][N];
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                this.a[i][j] = a[i + N * j];
+                this.a[i][j] = a[i * N + j];
             }
         }
     }

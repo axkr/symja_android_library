@@ -73,7 +73,7 @@ import org.apache.commons.math3.util.IterationManager;
  * Numerical Analysis 13: 56-80, 2002</dd>
  * </dl>
  *
- * @version $Id: ConjugateGradient.java 1380122 2012-09-03 03:54:23Z celestin $
+ * @version $Id: ConjugateGradient.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public class ConjugateGradient

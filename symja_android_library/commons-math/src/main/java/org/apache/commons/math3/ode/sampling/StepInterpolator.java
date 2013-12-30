@@ -42,7 +42,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
  * @see org.apache.commons.math3.ode.FirstOrderIntegrator
  * @see org.apache.commons.math3.ode.SecondOrderIntegrator
  * @see StepHandler
- * @version $Id: StepInterpolator.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: StepInterpolator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

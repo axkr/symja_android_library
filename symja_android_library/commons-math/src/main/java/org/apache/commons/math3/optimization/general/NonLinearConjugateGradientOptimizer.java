@@ -36,10 +36,12 @@ import org.apache.commons.math3.util.FastMath;
  * optional preconditioning.
  * </p>
  *
- * @version $Id: NonLinearConjugateGradientOptimizer.java 1345803 2012-06-03 23:24:43Z erans $
+ * @version $Id: NonLinearConjugateGradientOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  *
  */
+@Deprecated
 public class NonLinearConjugateGradientOptimizer
     extends AbstractScalarDifferentiableOptimizer {
     /** Update formula for the beta parameter. */
@@ -175,11 +177,9 @@ public class NonLinearConjugateGradientOptimizer
             final double objective = computeObjectiveValue(point);
             PointValuePair previous = current;
             current = new PointValuePair(point, objective);
-            if (previous != null) {
-                if (checker.converged(iter, previous, current)) {
-                    // We have found an optimum.
-                    return current;
-                }
+            if (previous != null && checker.converged(iter, previous, current)) {
+                // We have found an optimum.
+                return current;
             }
 
             // Find the optimal step in the search direction.

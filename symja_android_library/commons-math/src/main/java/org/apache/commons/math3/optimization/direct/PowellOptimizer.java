@@ -42,10 +42,15 @@ import org.apache.commons.math3.optimization.univariate.SimpleUnivariateValueChe
  * function value between two successive iterations. It is however possible
  * to define a custom convergence checker that might terminate the algorithm
  * earlier.
+ * <br/>
+ * The internal line search optimizer is a {@link BrentOptimizer} with a
+ * convergence checker set to {@link SimpleUnivariateValueChecker}.
  *
- * @version $Id: PowellOptimizer.java 1371264 2012-08-09 15:55:18Z erans $
+ * @version $Id: PowellOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.2
  */
+@Deprecated
 public class PowellOptimizer
     extends BaseAbstractMultivariateOptimizer<MultivariateFunction>
     implements MultivariateOptimizer {
@@ -69,7 +74,10 @@ public class PowellOptimizer
     /**
      * This constructor allows to specify a user-defined convergence checker,
      * in addition to the parameters that control the default convergence
-     * checking procedure and the line search tolerances.
+     * checking procedure.
+     * <br/>
+     * The internal line search tolerances are set to the square-root of their
+     * corresponding value in the multivariate optimizer.
      *
      * @param rel Relative threshold.
      * @param abs Absolute threshold.
@@ -79,6 +87,27 @@ public class PowellOptimizer
      */
     public PowellOptimizer(double rel,
                            double abs,
+                           ConvergenceChecker<PointValuePair> checker) {
+        this(rel, abs, FastMath.sqrt(rel), FastMath.sqrt(abs), checker);
+    }
+
+    /**
+     * This constructor allows to specify a user-defined convergence checker,
+     * in addition to the parameters that control the default convergence
+     * checking procedure and the line search tolerances.
+     *
+     * @param rel Relative threshold for this optimizer.
+     * @param abs Absolute threshold for this optimizer.
+     * @param lineRel Relative threshold for the internal line search optimizer.
+     * @param lineAbs Absolute threshold for the internal line search optimizer.
+     * @param checker Convergence checker.
+     * @throws NotStrictlyPositiveException if {@code abs <= 0}.
+     * @throws NumberIsTooSmallException if {@code rel < 2 * Math.ulp(1d)}.
+     */
+    public PowellOptimizer(double rel,
+                           double abs,
+                           double lineRel,
+                           double lineAbs,
                            ConvergenceChecker<PointValuePair> checker) {
         super(checker);
 
@@ -91,15 +120,16 @@ public class PowellOptimizer
         relativeThreshold = rel;
         absoluteThreshold = abs;
 
-        // Line search tolerances can be much less stringent than the tolerances
-        // required for the optimizer itself.
-        line = new LineSearch(FastMath.sqrt(rel),
-                              FastMath.sqrt(abs));
+        // Create the line search optimizer.
+        line = new LineSearch(lineRel,
+                              lineAbs);
     }
 
     /**
-     * The parameters control the default convergence checking procedure, and
-     * the line search tolerances.
+     * The parameters control the default convergence checking procedure.
+     * <br/>
+     * The internal line search tolerances are set to the square-root of their
+     * corresponding value in the multivariate optimizer.
      *
      * @param rel Relative threshold.
      * @param abs Absolute threshold.
@@ -109,6 +139,24 @@ public class PowellOptimizer
     public PowellOptimizer(double rel,
                            double abs) {
         this(rel, abs, null);
+    }
+
+    /**
+     * Builds an instance with the default convergence checking procedure.
+     *
+     * @param rel Relative threshold.
+     * @param abs Absolute threshold.
+     * @param lineRel Relative threshold for the internal line search optimizer.
+     * @param lineAbs Absolute threshold for the internal line search optimizer.
+     * @throws NotStrictlyPositiveException if {@code abs <= 0}.
+     * @throws NumberIsTooSmallException if {@code rel < 2 * Math.ulp(1d)}.
+     * @since 3.1
+     */
+    public PowellOptimizer(double rel,
+                           double abs,
+                           double lineRel,
+                           double lineAbs) {
+        this(rel, abs, lineRel, lineAbs, null);
     }
 
     /** {@inheritDoc} */
@@ -163,10 +211,8 @@ public class PowellOptimizer
 
             final PointValuePair previous = new PointValuePair(x1, fX);
             final PointValuePair current = new PointValuePair(x, fVal);
-            if (!stop) { // User-defined stopping criteria.
-                if (checker != null) {
-                    stop = checker.converged(iter, previous, current);
-                }
+            if (!stop && checker != null) {
+                stop = checker.converged(iter, previous, current);
             }
             if (stop) {
                 if (goal == GoalType.MINIMIZE) {

@@ -27,7 +27,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
  * provided to monitor the current iteration count. A lightweight event
  * framework is also provided.
  *
- * @version $Id: IterationManager.java 1364329 2012-07-22 15:30:45Z tn $
+ * @version $Id: IterationManager.java 1422313 2012-12-15 18:53:41Z psteitz $
  */
 public class IterationManager {
 
@@ -54,6 +54,7 @@ public class IterationManager {
      * @param callBack the function to be called when the maximum number of
      * iterations has been reached
      * @throws org.apache.commons.math3.exception.NullArgumentException if {@code callBack} is {@code null}
+     * @since 3.1
      */
     public IterationManager(final int maxIterations,
                             final Incrementor.MaxCountExceededCallback callBack) {

@@ -16,9 +16,8 @@
  */
 package org.apache.commons.math3.analysis.integration.gauss;
 
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 
 /**
  * Factory that creates Gauss-type quadrature rule using Legendre polynomials.
@@ -29,19 +28,13 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Abramowitz and Stegun, 1964</a>.
  *
  * @since 3.1
- * @version $Id: LegendreRuleFactory.java 1382197 2012-09-07 22:35:01Z erans $
+ * @version $Id: LegendreRuleFactory.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class LegendreRuleFactory extends BaseRuleFactory<Double> {
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected Pair<Double[], Double[]> computeRule(int numberOfPoints)
-        throws NotStrictlyPositiveException {
-        if (numberOfPoints <= 0) {
-            throw new NotStrictlyPositiveException(LocalizedFormats.NUMBER_OF_POINTS,
-                                                   numberOfPoints);
-        }
+        throws DimensionMismatchException {
 
         if (numberOfPoints == 1) {
             // Break recursion.

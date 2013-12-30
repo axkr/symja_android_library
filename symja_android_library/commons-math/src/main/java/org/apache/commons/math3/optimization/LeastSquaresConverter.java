@@ -49,10 +49,12 @@ import org.apache.commons.math3.linear.RealMatrix;
   *
  * @see MultivariateFunction
  * @see MultivariateVectorFunction
- * @version $Id: LeastSquaresConverter.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: LeastSquaresConverter.java 1422230 2012-12-15 12:11:13Z erans $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */
 
+@Deprecated
 public class LeastSquaresConverter implements MultivariateFunction {
 
     /** Underlying vectorial function. */

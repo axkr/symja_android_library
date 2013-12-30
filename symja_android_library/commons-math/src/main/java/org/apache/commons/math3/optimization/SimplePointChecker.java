@@ -19,6 +19,7 @@ package org.apache.commons.math3.optimization;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 
 /**
  * Simple implementation of the {@link ConvergenceChecker} interface using
@@ -28,21 +29,42 @@ import org.apache.commons.math3.util.Pair;
  * difference between each point coordinate are smaller than a threshold
  * or if either the absolute difference between the point coordinates are
  * smaller than another threshold.
+ * <br/>
+ * The {@link #converged(int,Pair,Pair) converged} method will also return
+ * {@code true} if the number of iterations has been set (see
+ * {@link #SimplePointChecker(double,double,int) this constructor}).
  *
  * @param <PAIR> Type of the (point, value) pair.
  * The type of the "value" part of the pair (not used by this class).
  *
- * @version $Id: SimplePointChecker.java 1364392 2012-07-22 18:27:12Z tn $
+ * @version $Id: SimplePointChecker.java 1462503 2013-03-29 15:48:27Z luc $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.0
  */
+@Deprecated
 public class SimplePointChecker<PAIR extends Pair<double[], ? extends Object>>
     extends AbstractConvergenceChecker<PAIR> {
+    /**
+     * If {@link #maxIterationCount} is set to this value, the number of
+     * iterations will never cause {@link #converged(int, Pair, Pair)}
+     * to return {@code true}.
+     */
+    private static final int ITERATION_CHECK_DISABLED = -1;
+    /**
+     * Number of iterations after which the
+     * {@link #converged(int, Pair, Pair)} method
+     * will return true (unless the check is disabled).
+     */
+    private final int maxIterationCount;
+
     /**
      * Build an instance with default threshold.
      * @deprecated See {@link AbstractConvergenceChecker#AbstractConvergenceChecker()}
      */
     @Deprecated
-    public SimplePointChecker() {}
+    public SimplePointChecker() {
+        maxIterationCount = ITERATION_CHECK_DISABLED;
+    }
 
     /**
      * Build an instance with specified thresholds.
@@ -56,12 +78,37 @@ public class SimplePointChecker<PAIR extends Pair<double[], ? extends Object>>
     public SimplePointChecker(final double relativeThreshold,
                               final double absoluteThreshold) {
         super(relativeThreshold, absoluteThreshold);
+        maxIterationCount = ITERATION_CHECK_DISABLED;
+    }
+
+    /**
+     * Builds an instance with specified thresholds.
+     * In order to perform only relative checks, the absolute tolerance
+     * must be set to a negative value. In order to perform only absolute
+     * checks, the relative tolerance must be set to a negative value.
+     *
+     * @param relativeThreshold Relative tolerance threshold.
+     * @param absoluteThreshold Absolute tolerance threshold.
+     * @param maxIter Maximum iteration count.
+     * @throws NotStrictlyPositiveException if {@code maxIter <= 0}.
+     *
+     * @since 3.1
+     */
+    public SimplePointChecker(final double relativeThreshold,
+                              final double absoluteThreshold,
+                              final int maxIter) {
+        super(relativeThreshold, absoluteThreshold);
+
+        if (maxIter <= 0) {
+            throw new NotStrictlyPositiveException(maxIter);
+        }
+        maxIterationCount = maxIter;
     }
 
     /**
      * Check if the optimization algorithm has converged considering the
      * last two points.
-     * This method may be called several time from the same algorithm
+     * This method may be called several times from the same algorithm
      * iteration with different points. This can be detected by checking the
      * iteration number at each call if needed. Each time this method is
      * called, the previous and current point correspond to points with the
@@ -72,12 +119,16 @@ public class SimplePointChecker<PAIR extends Pair<double[], ? extends Object>>
      * @param iteration Index of current iteration
      * @param previous Best point in the previous iteration.
      * @param current Best point in the current iteration.
-     * @return {@code true} if the algorithm has converged.
+     * @return {@code true} if the arguments satify the convergence criterion.
      */
     @Override
     public boolean converged(final int iteration,
                              final PAIR previous,
                              final PAIR current) {
+        if (maxIterationCount != ITERATION_CHECK_DISABLED && iteration >= maxIterationCount) {
+            return true;
+        }
+
         final double[] p = previous.getKey();
         final double[] c = current.getKey();
         for (int i = 0; i < p.length; ++i) {

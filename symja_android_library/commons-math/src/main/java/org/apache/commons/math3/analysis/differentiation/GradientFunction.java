@@ -23,7 +23,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
  * The vectorial components of the function represent the derivatives
  * with respect to each function parameters.
  * </p>
- * @version $Id: GradientFunction.java 1383885 2012-09-12 11:22:56Z luc $
+ * @version $Id: GradientFunction.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 3.1
  */
 public class GradientFunction implements MultivariateVectorFunction {
@@ -39,8 +39,7 @@ public class GradientFunction implements MultivariateVectorFunction {
     }
 
     /** {@inheritDoc} */
-    public double[] value(double[] point)
-        throws IllegalArgumentException {
+    public double[] value(double[] point) {
 
         // set up parameters
         final DerivativeStructure[] dsX = new DerivativeStructure[point.length];

@@ -27,9 +27,11 @@ import org.apache.commons.math3.util.Pair;
  *
  * @see PointValuePair
  * @see org.apache.commons.math3.analysis.MultivariateVectorFunction
- * @version $Id: PointVectorValuePair.java 1361839 2012-07-15 23:42:38Z erans $
+ * @version $Id: PointVectorValuePair.java 1422230 2012-12-15 12:11:13Z erans $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.0
  */
+@Deprecated
 public class PointVectorValuePair extends Pair<double[], double[]> implements Serializable {
 
     /** Serializable UID. */

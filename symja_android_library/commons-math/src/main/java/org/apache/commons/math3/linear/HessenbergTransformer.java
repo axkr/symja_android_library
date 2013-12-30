@@ -36,7 +36,7 @@ import org.apache.commons.math3.util.Precision;
  *
  * @see <a href="http://mathworld.wolfram.com/HessenbergDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Householder_transformation">Householder Transformations</a>
- * @version $Id: HessenbergTransformer.java 1334644 2012-05-06 14:33:32Z tn $
+ * @version $Id: HessenbergTransformer.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 3.1
  */
 class HessenbergTransformer {
@@ -197,8 +197,8 @@ class HessenbergTransformer {
                 }
                 final double g = (ort[m] > 0) ? -FastMath.sqrt(h) : FastMath.sqrt(h);
 
-                h = h - ort[m] * g;
-                ort[m] = ort[m] - g;
+                h -= ort[m] * g;
+                ort[m] -= g;
 
                 // Apply Householder similarity transformation
                 // H = (I - u*u' / h) * H * (I - u*u' / h)
@@ -208,7 +208,7 @@ class HessenbergTransformer {
                     for (int i = high; i >= m; i--) {
                         f += ort[i] * householderVectors[i][j];
                     }
-                    f = f / h;
+                    f /= h;
                     for (int i = m; i <= high; i++) {
                         householderVectors[i][j] -= f * ort[i];
                     }
@@ -219,7 +219,7 @@ class HessenbergTransformer {
                     for (int j = high; j >= m; j--) {
                         f += ort[j] * householderVectors[i][j];
                     }
-                    f = f / h;
+                    f /= h;
                     for (int j = m; j <= high; j++) {
                         householderVectors[i][j] -= f * ort[j];
                     }

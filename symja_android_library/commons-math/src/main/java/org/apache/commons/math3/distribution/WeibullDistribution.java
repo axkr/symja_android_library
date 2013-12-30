@@ -34,7 +34,7 @@ import org.apache.commons.math3.random.Well19937c;
  * @see <a href="http://en.wikipedia.org/wiki/Weibull_distribution">Weibull distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/WeibullDistribution.html">Weibull distribution (MathWorld)</a>
  * @since 1.1 (changed to concrete class in 3.0)
- * @version $Id: WeibullDistribution.java 1369202 2012-08-03 20:50:33Z erans $
+ * @version $Id: WeibullDistribution.java 1538998 2013-11-05 13:51:24Z erans $
  */
 public class WeibullDistribution extends AbstractRealDistribution {
     /**
@@ -97,11 +97,24 @@ public class WeibullDistribution extends AbstractRealDistribution {
      * @param rng Random number generator.
      * @param alpha Shape parameter.
      * @param beta Scale parameter.
+     * @throws NotStrictlyPositiveException if {@code alpha <= 0} or {@code beta <= 0}.
+     * @since 3.3
+     */
+    public WeibullDistribution(RandomGenerator rng, double alpha, double beta)
+        throws NotStrictlyPositiveException {
+        this(rng, alpha, beta, DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
+    }
+
+    /**
+     * Creates a Weibull distribution.
+     *
+     * @param rng Random number generator.
+     * @param alpha Shape parameter.
+     * @param beta Scale parameter.
      * @param inverseCumAccuracy Maximum absolute error in inverse
      * cumulative probability estimates
      * (defaults to {@link #DEFAULT_INVERSE_ABSOLUTE_ACCURACY}).
-     * @throws NotStrictlyPositiveException if {@code alpha <= 0} or
-     * {@code beta <= 0}.
+     * @throws NotStrictlyPositiveException if {@code alpha <= 0} or {@code beta <= 0}.
      * @since 3.1
      */
     public WeibullDistribution(RandomGenerator rng,
@@ -162,6 +175,26 @@ public class WeibullDistribution extends AbstractRealDistribution {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public double logDensity(double x) {
+        if (x < 0) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        final double xscale = x / scale;
+        final double logxscalepow = FastMath.log(xscale) * (shape - 1);
+
+        /*
+         * FastMath.pow(x / scale, shape) =
+         * FastMath.pow(xscale, shape) =
+         * FastMath.pow(xscale, shape - 1) * xscale
+         */
+        final double xscalepowshape = FastMath.exp(logxscalepow) * xscale;
+
+        return FastMath.log(shape / scale) + logxscalepow - xscalepowshape;
+    }
+
+    /** {@inheritDoc} */
     public double cumulativeProbability(double x) {
         double ret;
         if (x <= 0.0) {
@@ -188,7 +221,7 @@ public class WeibullDistribution extends AbstractRealDistribution {
         } else  if (p == 1) {
             ret = Double.POSITIVE_INFINITY;
         } else {
-            ret = scale * FastMath.pow(-FastMath.log(1.0 - p), 1.0 / shape);
+            ret = scale * FastMath.pow(-FastMath.log1p(-p), 1.0 / shape);
         }
         return ret;
     }

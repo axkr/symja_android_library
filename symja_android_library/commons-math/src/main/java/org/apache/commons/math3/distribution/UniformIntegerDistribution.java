@@ -21,7 +21,6 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
-import org.apache.commons.math3.util.FastMath;
 
 /**
  * Implementation of the uniform integer distribution.
@@ -29,7 +28,7 @@ import org.apache.commons.math3.util.FastMath;
  * @see <a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)"
  * >Uniform distribution (discrete), at Wikipedia</a>
  *
- * @version $Id: UniformIntegerDistribution.java 1363604 2012-07-20 00:43:45Z erans $
+ * @version $Id: UniformIntegerDistribution.java 1510924 2013-08-06 12:22:47Z erans $
  * @since 3.0
  */
 public class UniformIntegerDistribution extends AbstractIntegerDistribution {
@@ -156,8 +155,21 @@ public class UniformIntegerDistribution extends AbstractIntegerDistribution {
     /** {@inheritDoc} */
     @Override
     public int sample() {
-        final double r = random.nextDouble();
-        final double scaled = r * upper + (1 - r) * lower + r;
-        return (int) FastMath.floor(scaled);
+        final int max = (upper - lower) + 1;
+        if (max <= 0) {
+            // The range is too wide to fit in a positive int (larger
+            // than 2^31); as it covers more than half the integer range,
+            // we use a simple rejection method.
+            while (true) {
+                final int r = random.nextInt();
+                if (r >= lower &&
+                    r <= upper) {
+                    return r;
+                }
+            }
+        } else {
+            // We can shift the range and directly generate a positive int.
+            return lower + random.nextInt(max);
+        }
     }
 }

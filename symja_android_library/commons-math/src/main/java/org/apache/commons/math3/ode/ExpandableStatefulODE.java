@@ -43,7 +43,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
  * @see FirstOrderDifferentialEquations
  * @see JacobianMatrices
  *
- * @version $Id: ExpandableStatefulODE.java 1379975 2012-09-02 14:21:00Z luc $
+ * @version $Id: ExpandableStatefulODE.java 1463680 2013-04-02 19:02:55Z luc $
  * @since 3.0
  */
 
@@ -117,7 +117,6 @@ public class ExpandableStatefulODE {
         // compute derivatives of the primary equations
         primaryMapper.extractEquationData(y, primaryState);
         primary.computeDerivatives(t, primaryState, primaryStateDot);
-        primaryMapper.insertEquationData(primaryStateDot, yDot);
 
         // Add contribution for secondary equations
         for (final SecondaryComponent component : components) {
@@ -126,6 +125,8 @@ public class ExpandableStatefulODE {
                                                   component.state, component.stateDot);
             component.mapper.insertEquationData(component.stateDot, yDot);
         }
+
+        primaryMapper.insertEquationData(primaryStateDot, yDot);
 
     }
 

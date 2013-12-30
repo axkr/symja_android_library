@@ -33,7 +33,7 @@ import org.apache.commons.math3.util.FastMath;
  *  Generalised logistic</a> function.
  *
  * @since 3.0
- * @version $Id: Logistic.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: Logistic.java 1547633 2013-12-03 23:03:06Z tn $
  */
 public class Logistic implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Lower asymptote. */
@@ -96,10 +96,15 @@ public class Logistic implements UnivariateDifferentiableFunction, Differentiabl
 
     /**
      * Parametric function where the input array contains the parameters of
-     * the logit function, ordered as follows:
+     * the {@link Logistic#Logistic(double,double,double,double,double,double)
+     * logistic function}, ordered as follows:
      * <ul>
-     *  <li>Lower asymptote</li>
-     *  <li>Higher asymptote</li>
+     *  <li>k</li>
+     *  <li>m</li>
+     *  <li>b</li>
+     *  <li>q</li>
+     *  <li>a</li>
+     *  <li>n</li>
      * </ul>
      */
     public static class Parametric implements ParametricUnivariateFunction {
@@ -113,6 +118,7 @@ public class Logistic implements UnivariateDifferentiableFunction, Differentiabl
          * @throws NullArgumentException if {@code param} is {@code null}.
          * @throws DimensionMismatchException if the size of {@code param} is
          * not 6.
+         * @throws NotStrictlyPositiveException if {@code param[5] <= 0}.
          */
         public double value(double x, double ... param)
             throws NullArgumentException,
@@ -137,6 +143,7 @@ public class Logistic implements UnivariateDifferentiableFunction, Differentiabl
          * @throws NullArgumentException if {@code param} is {@code null}.
          * @throws DimensionMismatchException if the size of {@code param} is
          * not 6.
+         * @throws NotStrictlyPositiveException if {@code param[5] <= 0}.
          */
         public double[] gradient(double x, double ... param)
             throws NullArgumentException,
@@ -161,7 +168,7 @@ public class Logistic implements UnivariateDifferentiableFunction, Differentiabl
             final double gb = factor2 * mMinusX * qExp;
             final double gq = factor2 * exp;
             final double ga = Logistic.value(mMinusX, 0, b, q, 1, oneOverN);
-            final double gn = factor1 * Math.log(qExp1) * oneOverN;
+            final double gn = factor1 * FastMath.log(qExp1) * oneOverN;
 
             return new double[] { gk, gm, gb, gq, ga, gn };
         }
@@ -176,6 +183,7 @@ public class Logistic implements UnivariateDifferentiableFunction, Differentiabl
          * @throws NullArgumentException if {@code param} is {@code null}.
          * @throws DimensionMismatchException if the size of {@code param} is
          * not 6.
+         * @throws NotStrictlyPositiveException if {@code param[5] <= 0}.
          */
         private void validateParameters(double[] param)
             throws NullArgumentException,

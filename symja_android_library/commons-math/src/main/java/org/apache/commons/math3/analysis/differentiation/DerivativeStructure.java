@@ -18,17 +18,21 @@ package org.apache.commons.math3.analysis.differentiation;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.util.MathUtils;
 
 /** Class representing both the value and the differentials of a function.
  * <p>This class is the workhorse of the differentiation package.</p>
  * <p>This class is an implementation of the extension to Rall's
  * numbers described in Dan Kalman's paper <a
- * href="http://www.math.american.edu/People/kalman/pdffiles/mmgautodiff.pdf">Doubly
+ * href="http://www1.american.edu/cas/mathstat/People/kalman/pdffiles/mmgautodiff.pdf">Doubly
  * Recursive Multivariate Automatic Differentiation</a>, Mathematics Magazine, vol. 75,
  * no. 3, June 2002.</p>. Rall's numbers are an extension to the real numbers used
  * throughout mathematical expressions; they hold the derivative together with the
@@ -38,7 +42,7 @@ import org.apache.commons.math3.util.FastMath;
  * one free parameter, and real numbers can be seen as derivative structures with zero
  * order derivative and no free parameters.</p>
  * <p>{@link DerivativeStructure} instances can be used directly thanks to
- * the arithmetic operators to the mathematical functions provided as static
+ * the arithmetic operators to the mathematical functions provided as
  * methods by this class (+, -, *, /, %, sin, cos ...).</p>
  * <p>Implementing complex expressions by hand using these classes is
  * a tedious and error-prone task but has the advantage of having no limitation
@@ -49,13 +53,13 @@ import org.apache.commons.math3.util.FastMath;
  * DerivativeStructure}-based instances. This method is simpler but may be limited in
  * the accuracy and derivation orders and may be computationally intensive (this is
  * typically the case for {@link FiniteDifferencesDifferentiator finite differences
- * differentiator).</p>
+ * differentiator}.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @see DSCompiler
- * @version $Id: DerivativeStructure.java 1386743 2012-09-17 17:42:19Z luc $
+ * @version $Id: DerivativeStructure.java 1517789 2013-08-27 11:15:50Z luc $
  * @since 3.1
  */
-public class DerivativeStructure implements FieldElement<DerivativeStructure>, Serializable {
+public class DerivativeStructure implements RealFieldElement<DerivativeStructure>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20120730L;
@@ -77,8 +81,10 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
     /** Build an instance with all values and derivatives set to 0.
      * @param parameters number of free parameters
      * @param order derivation order
+     * @throws NumberIsTooLargeException if order is too large
      */
-    public DerivativeStructure(final int parameters, final int order) {
+    public DerivativeStructure(final int parameters, final int order)
+        throws NumberIsTooLargeException {
         this(DSCompiler.getCompiler(parameters, order));
     }
 
@@ -86,9 +92,11 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      * @param parameters number of free parameters
      * @param order derivation order
      * @param value value of the constant
+     * @throws NumberIsTooLargeException if order is too large
      * @see #DerivativeStructure(int, int, int, double)
      */
-    public DerivativeStructure(final int parameters, final int order, final double value) {
+    public DerivativeStructure(final int parameters, final int order, final double value)
+        throws NumberIsTooLargeException {
         this(parameters, order);
         this.data[0] = value;
     }
@@ -100,9 +108,9 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      * themselves is +1.</p>
      * @param parameters number of free parameters
      * @param order derivation order
-     * @param index index of the variable (from 0 to {@code variables - 1})
+     * @param index index of the variable (from 0 to {@code parameters - 1})
      * @param value value of the variable
-     * @exception NumberIsTooLargeException if index is equal to variables or larger
+     * @exception NumberIsTooLargeException if {@code index >= parameters}.
      * @see #DerivativeStructure(int, int, double)
      */
     public DerivativeStructure(final int parameters, final int order,
@@ -115,7 +123,7 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         }
 
         if (order > 0) {
-            // the derivative of the variable with respect to itself is 1.0
+            // the derivative of the variable with respect to itself is 1.
             data[DSCompiler.getCompiler(index, order).getSize()] = 1.0;
         }
 
@@ -190,10 +198,11 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      * {@link DSCompiler#getPartialDerivativeIndex(int...)}
      * @exception DimensionMismatchException if derivatives array does not match the
      * {@link DSCompiler#getSize() size} expected by the compiler
+     * @throws NumberIsTooLargeException if order is too large
      * @see #getAllDerivatives()
      */
     public DerivativeStructure(final int parameters, final int order, final double ... derivatives)
-        throws DimensionMismatchException {
+        throws DimensionMismatchException, NumberIsTooLargeException {
         this(parameters, order);
         if (derivatives.length != data.length) {
             throw new DimensionMismatchException(derivatives.length, data.length);
@@ -221,6 +230,27 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      */
     public int getOrder() {
         return compiler.getOrder();
+    }
+
+    /** Create a constant compatible with instance order and number of parameters.
+     * <p>
+     * This method is a convenience factory method, it simply calls
+     * {@code new DerivativeStructure(getFreeParameters(), getOrder(), c)}
+     * </p>
+     * @param c value of the constant
+     * @return a constant compatible with instance order and number of parameters
+     * @see #DerivativeStructure(int, int, double)
+     * @since 3.3
+     */
+    public DerivativeStructure createConstant(final double c) {
+        return new DerivativeStructure(getFreeParameters(), getOrder(), c);
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public double getReal() {
+        return data[0];
     }
 
     /** Get the value part of the derivative structure.
@@ -254,9 +284,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return data.clone();
     }
 
-    /** '+' operator.
-     * @param a right hand side parameter of the operator
-     * @return this+a
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure add(final double a) {
         final DerivativeStructure ds = new DerivativeStructure(this);
@@ -264,10 +293,9 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return ds;
     }
 
-    /** '+' operator.
-     * @param a right hand side parameter of the operator
-     * @return this+a
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
      */
     public DerivativeStructure add(final DerivativeStructure a)
         throws DimensionMismatchException {
@@ -277,18 +305,16 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return ds;
     }
 
-    /** '-' operator.
-     * @param a right hand side parameter of the operator
-     * @return this-a
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure subtract(final double a) {
         return add(-a);
     }
 
-    /** '-' operator.
-     * @param a right hand side parameter of the operator
-     * @return this-a
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
      */
     public DerivativeStructure subtract(final DerivativeStructure a)
         throws DimensionMismatchException {
@@ -303,9 +329,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return multiply((double) n);
     }
 
-    /** '&times;' operator.
-     * @param a right hand side parameter of the operator
-     * @return this&times;a
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure multiply(final double a) {
         final DerivativeStructure ds = new DerivativeStructure(this);
@@ -315,10 +340,9 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return ds;
     }
 
-    /** '&times;' operator.
-     * @param a right hand side parameter of the operator
-     * @return this&times;a
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
      */
     public DerivativeStructure multiply(final DerivativeStructure a)
         throws DimensionMismatchException {
@@ -328,9 +352,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** '&divides;' operator.
-     * @param a right hand side parameter of the operator
-     * @return this&divides;a
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure divide(final double a) {
         final DerivativeStructure ds = new DerivativeStructure(this);
@@ -340,10 +363,9 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return ds;
     }
 
-    /** '&divides;' operator.
-     * @param a right hand side parameter of the operator
-     * @return this&divides;a
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
      */
     public DerivativeStructure divide(final DerivativeStructure a)
         throws DimensionMismatchException {
@@ -353,20 +375,17 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** '%' operator.
-     * @param a right hand side parameter of the operator
-     * @return this%a
-     */
+    /** {@inheritDoc} */
     public DerivativeStructure remainder(final double a) {
         final DerivativeStructure ds = new DerivativeStructure(this);
-        ds.data[0] = ds.data[0] % a;
+        ds.data[0] = FastMath.IEEEremainder(ds.data[0], a);
         return ds;
     }
 
-    /** '%' operator.
-     * @param a right hand side parameter of the operator
-     * @return this%a
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
      */
     public DerivativeStructure remainder(final DerivativeStructure a)
         throws DimensionMismatchException {
@@ -376,9 +395,7 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** unary '-' operator.
-     * @return -this
-     */
+    /** {@inheritDoc} */
     public DerivativeStructure negate() {
         final DerivativeStructure ds = new DerivativeStructure(compiler);
         for (int i = 0; i < ds.data.length; ++i) {
@@ -387,8 +404,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return ds;
     }
 
-    /** absolute value.
-     * @return abs(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure abs() {
         if (Double.doubleToLongBits(data[0]) < 0) {
@@ -399,8 +416,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         }
     }
 
-    /** Get the smallest whole number larger than instance.
-     * @return ceil(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure ceil() {
         return new DerivativeStructure(compiler.getFreeParameters(),
@@ -408,8 +425,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
                                        FastMath.ceil(data[0]));
     }
 
-    /** Get the largest whole number smaller than instance.
-     * @return floor(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure floor() {
         return new DerivativeStructure(compiler.getFreeParameters(),
@@ -417,8 +434,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
                                        FastMath.floor(data[0]));
     }
 
-    /** Get the whole number that is the nearest to the instance, or the even one if x is exactly half way between two integers.
-     * @return a double number r such that r is an integer r - 0.5 <= this <= r + 0.5
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure rint() {
         return new DerivativeStructure(compiler.getFreeParameters(),
@@ -426,17 +443,13 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
                                        FastMath.rint(data[0]));
     }
 
-    /** Get the closest long to instance value.
-     * @return closest long to {@link #getValue()}
-     */
+    /** {@inheritDoc} */
     public long round() {
         return FastMath.round(data[0]);
     }
 
-    /** Compute the signum of the instance.
-     * The signum is -1 for negative numbers, +1 for positive numbers and 0 otherwise
-     * @param a number on which evaluation is done
-     * @return -1.0, -0.0, +0.0, +1.0 or NaN depending on sign of a
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure signum() {
         return new DerivativeStructure(compiler.getFreeParameters(),
@@ -444,14 +457,22 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
                                        FastMath.signum(data[0]));
     }
 
-    /**
-     * Returns the instance with the sign of the argument.
-     * A NaN {@code sign} argument is treated as positive.
-     *
-     * @param sign the sign for the returned value
-     * @return the instance with the same sign as the {@code sign} argument
+    /** {@inheritDoc}
+     * @since 3.2
      */
-    public DerivativeStructure copySign(final double sign){
+    public DerivativeStructure copySign(final DerivativeStructure sign){
+        long m = Double.doubleToLongBits(data[0]);
+        long s = Double.doubleToLongBits(sign.data[0]);
+        if ((m >= 0 && s >= 0) || (m < 0 && s < 0)) { // Sign is currently OK
+            return this;
+        }
+        return negate(); // flip sign
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public DerivativeStructure copySign(final double sign) {
         long m = Double.doubleToLongBits(data[0]);
         long s = Double.doubleToLongBits(sign);
         if ((m >= 0 && s >= 0) || (m < 0 && s < 0)) { // Sign is currently OK
@@ -472,10 +493,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return FastMath.getExponent(data[0]);
     }
 
-    /**
-     * Multiply the instance by a power of 2.
-     * @param n power of 2
-     * @return this &times; 2<sup>n</sup>
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure scalb(final int n) {
         final DerivativeStructure ds = new DerivativeStructure(compiler);
@@ -483,6 +502,55 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
             ds.data[i] = FastMath.scalb(data[i], n);
         }
         return ds;
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure hypot(final DerivativeStructure y)
+        throws DimensionMismatchException {
+
+        compiler.checkCompatibility(y.compiler);
+
+        if (Double.isInfinite(data[0]) || Double.isInfinite(y.data[0])) {
+            return new DerivativeStructure(compiler.getFreeParameters(),
+                                           compiler.getFreeParameters(),
+                                           Double.POSITIVE_INFINITY);
+        } else if (Double.isNaN(data[0]) || Double.isNaN(y.data[0])) {
+            return new DerivativeStructure(compiler.getFreeParameters(),
+                                           compiler.getFreeParameters(),
+                                           Double.NaN);
+        } else {
+
+            final int expX = getExponent();
+            final int expY = y.getExponent();
+            if (expX > expY + 27) {
+                // y is neglectible with respect to x
+                return abs();
+            } else if (expY > expX + 27) {
+                // x is neglectible with respect to y
+                return y.abs();
+            } else {
+
+                // find an intermediate scale to avoid both overflow and underflow
+                final int middleExp = (expX + expY) / 2;
+
+                // scale parameters without losing precision
+                final DerivativeStructure scaledX = scalb(-middleExp);
+                final DerivativeStructure scaledY = y.scalb(-middleExp);
+
+                // compute scaled hypotenuse
+                final DerivativeStructure scaledH =
+                        scaledX.multiply(scaledX).add(scaledY.multiply(scaledY)).sqrt();
+
+                // remove scaling
+                return scaledH.scalb(middleExp);
+
+            }
+
+        }
     }
 
     /**
@@ -498,50 +566,13 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      * @param x a value
      * @param y a value
      * @return sqrt(<i>x</i><sup>2</sup>&nbsp;+<i>y</i><sup>2</sup>)
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
      */
     public static DerivativeStructure hypot(final DerivativeStructure x, final DerivativeStructure y)
         throws DimensionMismatchException {
-
-        x.compiler.checkCompatibility(y.compiler);
-
-        if (Double.isInfinite(x.data[0]) || Double.isInfinite(y.data[0])) {
-            return new DerivativeStructure(x.compiler.getFreeParameters(),
-                                           x.compiler.getFreeParameters(),
-                                           Double.POSITIVE_INFINITY);
-        } else if (Double.isNaN(x.data[0]) || Double.isNaN(y.data[0])) {
-            return new DerivativeStructure(x.compiler.getFreeParameters(),
-                                           x.compiler.getFreeParameters(),
-                                           Double.NaN);
-        } else {
-
-            final int expX = x.getExponent();
-            final int expY = y.getExponent();
-            if (expX > expY + 27) {
-                // y is neglectible with respect to x
-                return x.abs();
-            } else if (expY > expX + 27) {
-                // x is neglectible with respect to y
-                return y.abs();
-            } else {
-
-                // find an intermediate scale to avoid both overflow and underflow
-                final int middleExp = (expX + expY) / 2;
-
-                // scale parameters without losing precision
-                final DerivativeStructure scaledX = x.scalb(-middleExp);
-                final DerivativeStructure scaledY = y.scalb(-middleExp);
-
-                // compute scaled hypotenuse
-                final DerivativeStructure scaledH =
-                        scaledX.multiply(scaledX).add(scaledY.multiply(scaledY)).sqrt();
-
-                // remove scaling
-                return scaledH.scalb(middleExp);
-
-            }
-
-        }
+        return x.hypot(y);
     }
 
     /** Compute composition of the instance by a univariate function.
@@ -552,7 +583,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
      * @exception DimensionMismatchException if the number of derivatives
      * in the array is not equal to {@link #getOrder() order} + 1
      */
-    public DerivativeStructure compose(final double[] f) {
+    public DerivativeStructure compose(final double ... f)
+        throws DimensionMismatchException {
         if (f.length != getOrder() + 1) {
             throw new DimensionMismatchException(f.length, getOrder() + 1);
         }
@@ -568,23 +600,22 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Square root.
-     * @return square root of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure sqrt() {
         return rootN(2);
     }
 
-    /** Cubic root.
-     * @return cubic root of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure cbrt() {
         return rootN(3);
     }
 
-    /** N<sup>th</sup> root.
-     * @param n order of the root
-     * @return n<sup>th</sup> root of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure rootN(final int n) {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -614,9 +645,20 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         };
     }
 
-    /** Power operation.
-     * @param p power to apply
-     * @return this<sup>p</sup>
+    /** Compute a<sup>x</sup> where a is a double and x a {@link DerivativeStructure}
+     * @param a number to exponentiate
+     * @param x power to apply
+     * @return a<sup>x</sup>
+     * @since 3.3
+     */
+    public static DerivativeStructure pow(final double a, final DerivativeStructure x) {
+        final DerivativeStructure result = new DerivativeStructure(x.compiler);
+        x.compiler.pow(a, x.data, 0, result.data, 0);
+        return result;
+    }
+
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure pow(final double p) {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -624,9 +666,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Integer power operation.
-     * @param n power to apply
-     * @return this<sup>n</sup>
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure pow(final int n) {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -634,10 +675,10 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Power operation.
-     * @param e exponent
-     * @return this<sup>e</sup>
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
      */
     public DerivativeStructure pow(final DerivativeStructure e)
         throws DimensionMismatchException {
@@ -647,8 +688,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Exponential.
-     * @return exponential of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure exp() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -656,8 +697,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Exponential minus 1.
-     * @return exponential minus one of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure expm1() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -665,8 +706,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Natural logarithm.
-     * @return logarithm of the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure log() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -674,8 +715,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Shifted natural logarithm.
-     * @return logarithm of one plus the instance
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure log1p() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -692,8 +733,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Cosine operation.
-     * @return cos(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure cos() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -701,8 +742,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Sine operation.
-     * @return sin(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure sin() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -710,8 +751,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Tangent operation.
-     * @return tan(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure tan() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -719,8 +760,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Arc cosine operation.
-     * @return acos(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure acos() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -728,8 +769,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Arc sine operation.
-     * @return asin(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure asin() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -737,8 +778,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Arc tangent operation.
-     * @return atan(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure atan() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -746,22 +787,32 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
+    /** {@inheritDoc}
+     * @since 3.2
+     */
+    public DerivativeStructure atan2(final DerivativeStructure x)
+        throws DimensionMismatchException {
+        compiler.checkCompatibility(x.compiler);
+        final DerivativeStructure result = new DerivativeStructure(compiler);
+        compiler.atan2(data, 0, x.data, 0, result.data, 0);
+        return result;
+    }
+
     /** Two arguments arc tangent operation.
      * @param y first argument of the arc tangent
      * @param x second argument of the arc tangent
      * @return atan2(y, x)
-     * @exception DimensionMismatchException if number of free parameters or orders are inconsistent
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
      */
     public static DerivativeStructure atan2(final DerivativeStructure y, final DerivativeStructure x)
         throws DimensionMismatchException {
-        y.compiler.checkCompatibility(x.compiler);
-        final DerivativeStructure result = new DerivativeStructure(y.compiler);
-        y.compiler.atan2(y.data, 0, x.data, 0, result.data, 0);
-        return result;
+        return y.atan2(x);
     }
 
-    /** Hyperbolic cosine operation.
-     * @return cosh(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure cosh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -769,8 +820,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Hyperbolic sine operation.
-     * @return sinh(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure sinh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -778,8 +829,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Hyperbolic tangent operation.
-     * @return tanh(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure tanh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -787,8 +838,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Inverse hyperbolic cosine operation.
-     * @return acosh(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure acosh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -796,8 +847,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Inverse hyperbolic sine operation.
-     * @return asin(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure asinh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -805,8 +856,8 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         return result;
     }
 
-    /** Inverse hyperbolic  tangent operation.
-     * @return atanh(this)
+    /** {@inheritDoc}
+     * @since 3.2
      */
     public DerivativeStructure atanh() {
         final DerivativeStructure result = new DerivativeStructure(compiler);
@@ -839,9 +890,258 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
     /** Evaluate Taylor expansion a derivative structure.
      * @param delta parameters offsets (&Delta;x, &Delta;y, ...)
      * @return value of the Taylor expansion at x + &Delta;x, y + &Delta;y, ...
+     * @throws MathArithmeticException if factorials becomes too large
      */
-    public double taylor(final double ... delta) {
+    public double taylor(final double ... delta) throws MathArithmeticException {
         return compiler.taylor(data, 0, delta);
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final DerivativeStructure[] a, final DerivativeStructure[] b)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double[] aDouble = new double[a.length];
+        for (int i = 0; i < a.length; ++i) {
+            aDouble[i] = a[i].getValue();
+        }
+        final double[] bDouble = new double[b.length];
+        for (int i = 0; i < b.length; ++i) {
+            bDouble[i] = b[i].getValue();
+        }
+        final double accurateValue = MathArrays.linearCombination(aDouble, bDouble);
+
+        // compute a simple value, with all partial derivatives
+        DerivativeStructure simpleValue = a[0].getField().getZero();
+        for (int i = 0; i < a.length; ++i) {
+            simpleValue = simpleValue.add(a[i].multiply(b[i]));
+        }
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(simpleValue.getFreeParameters(), simpleValue.getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final double[] a, final DerivativeStructure[] b)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double[] bDouble = new double[b.length];
+        for (int i = 0; i < b.length; ++i) {
+            bDouble[i] = b[i].getValue();
+        }
+        final double accurateValue = MathArrays.linearCombination(a, bDouble);
+
+        // compute a simple value, with all partial derivatives
+        DerivativeStructure simpleValue = b[0].getField().getZero();
+        for (int i = 0; i < a.length; ++i) {
+            simpleValue = simpleValue.add(b[i].multiply(a[i]));
+        }
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(simpleValue.getFreeParameters(), simpleValue.getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final DerivativeStructure a1, final DerivativeStructure b1,
+                                                 final DerivativeStructure a2, final DerivativeStructure b2)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1.getValue(), b1.getValue(),
+                                                                  a2.getValue(), b2.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = a1.multiply(b1).add(a2.multiply(b2));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final double a1, final DerivativeStructure b1,
+                                                 final double a2, final DerivativeStructure b2)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1, b1.getValue(),
+                                                                  a2, b2.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = b1.multiply(a1).add(b2.multiply(a2));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final DerivativeStructure a1, final DerivativeStructure b1,
+                                                 final DerivativeStructure a2, final DerivativeStructure b2,
+                                                 final DerivativeStructure a3, final DerivativeStructure b3)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1.getValue(), b1.getValue(),
+                                                                  a2.getValue(), b2.getValue(),
+                                                                  a3.getValue(), b3.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = a1.multiply(b1).add(a2.multiply(b2)).add(a3.multiply(b3));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final double a1, final DerivativeStructure b1,
+                                                 final double a2, final DerivativeStructure b2,
+                                                 final double a3, final DerivativeStructure b3)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1, b1.getValue(),
+                                                                  a2, b2.getValue(),
+                                                                  a3, b3.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = b1.multiply(a1).add(b2.multiply(a2)).add(b3.multiply(a3));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final DerivativeStructure a1, final DerivativeStructure b1,
+                                                 final DerivativeStructure a2, final DerivativeStructure b2,
+                                                 final DerivativeStructure a3, final DerivativeStructure b3,
+                                                 final DerivativeStructure a4, final DerivativeStructure b4)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1.getValue(), b1.getValue(),
+                                                                  a2.getValue(), b2.getValue(),
+                                                                  a3.getValue(), b3.getValue(),
+                                                                  a4.getValue(), b4.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = a1.multiply(b1).add(a2.multiply(b2)).add(a3.multiply(b3)).add(a4.multiply(b4));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /** {@inheritDoc}
+     * @exception DimensionMismatchException if number of free parameters
+     * or orders do not match
+     * @since 3.2
+     */
+    public DerivativeStructure linearCombination(final double a1, final DerivativeStructure b1,
+                                                 final double a2, final DerivativeStructure b2,
+                                                 final double a3, final DerivativeStructure b3,
+                                                 final double a4, final DerivativeStructure b4)
+        throws DimensionMismatchException {
+
+        // compute an accurate value, taking care of cancellations
+        final double accurateValue = MathArrays.linearCombination(a1, b1.getValue(),
+                                                                  a2, b2.getValue(),
+                                                                  a3, b3.getValue(),
+                                                                  a4, b4.getValue());
+
+        // compute a simple value, with all partial derivatives
+        final DerivativeStructure simpleValue = b1.multiply(a1).add(b2.multiply(a2)).add(b3.multiply(a3)).add(b4.multiply(a4));
+
+        // create a result with accurate value and all derivatives (not necessarily as accurate as the value)
+        final double[] all = simpleValue.getAllDerivatives();
+        all[0] = accurateValue;
+        return new DerivativeStructure(getFreeParameters(), getOrder(), all);
+
+    }
+
+    /**
+     * Test for the equality of two derivative structures.
+     * <p>
+     * Derivative structures are considered equal if they have the same number
+     * of free parameters, the same derivation order, and the same derivatives.
+     * </p>
+     * @param other Object to test for equality to this
+     * @return true if two derivative structures are equal
+     * @since 3.2
+     */
+    @Override
+    public boolean equals(Object other) {
+
+        if (this == other) {
+            return true;
+        }
+
+        if (other instanceof DerivativeStructure) {
+            final DerivativeStructure rhs = (DerivativeStructure)other;
+            return (getFreeParameters() == rhs.getFreeParameters()) &&
+                   (getOrder() == rhs.getOrder()) &&
+                   MathArrays.equals(data, rhs.data);
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Get a hashCode for the derivative structure.
+     * @return a hash code value for this object
+     * @since 3.2
+     */
+    @Override
+    public int hashCode() {
+        return 227 + 229 * getFreeParameters() + 233 * getOrder() + 239 * MathUtils.hash(data);
     }
 
     /**
@@ -859,17 +1159,17 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
         private static final long serialVersionUID = 20120730L;
 
         /** Number of variables.
-         * @Serial
+         * @serial
          */
         private final int variables;
 
         /** Derivation order.
-         * @Serial
+         * @serial
          */
         private final int order;
 
         /** Partial derivatives.
-         * @Serial
+         * @serial
          */
         private final double[] data;
 
@@ -888,9 +1188,7 @@ public class DerivativeStructure implements FieldElement<DerivativeStructure>, S
          * @return replacement {@link DerivativeStructure}
          */
         private Object readResolve() {
-            final DerivativeStructure ds = new DerivativeStructure(variables, order);
-            System.arraycopy(data, 0, ds.data, 0, ds.data.length);
-            return ds;
+            return new DerivativeStructure(variables, order, data);
         }
 
     }

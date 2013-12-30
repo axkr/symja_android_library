@@ -19,6 +19,8 @@ package org.apache.commons.math3.random;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.util.FastMath;
+
 /**
  * <a href="http://burtleburtle.net/bob/rand/isaacafa.html">
  *  ISAAC: a fast cryptographic pseudo-random number generator</a>
@@ -36,7 +38,7 @@ import java.io.Serializable;
  * implementation of the algorithm by Bob Jenkins.
  * <br/>
  *
- * @version $Id: ISAACRandom.java 1302386 2012-03-19 11:59:25Z sebb $
+ * @version $Id: ISAACRandom.java 1547633 2013-12-03 23:03:06Z tn $
  * @since 3.0
  */
 public class ISAACRandom extends BitsStreamGenerator implements Serializable {
@@ -124,7 +126,7 @@ public class ISAACRandom extends BitsStreamGenerator implements Serializable {
         }
         final int seedLen = seed.length;
         final int rslLen = rsl.length;
-        System.arraycopy(seed, 0, rsl, 0, Math.min(seedLen, rslLen));
+        System.arraycopy(seed, 0, rsl, 0, FastMath.min(seedLen, rslLen));
         if (seedLen < rslLen) {
             for (int j = seedLen; j < rslLen; j++) {
                 long k = rsl[j - seedLen];

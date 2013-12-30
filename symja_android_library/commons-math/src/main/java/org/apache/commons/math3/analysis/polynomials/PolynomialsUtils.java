@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.fraction.BigFraction;
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 
 /**
  * A collection of static methods that operate on or return polynomials.
  *
- * @version $Id: PolynomialsUtils.java 1364387 2012-07-22 18:14:11Z tn $
+ * @version $Id: PolynomialsUtils.java 1517203 2013-08-24 21:55:35Z psteitz $
  * @since 2.0
  */
 public class PolynomialsUtils {
@@ -328,7 +328,7 @@ public class PolynomialsUtils {
         final int[][] coeff = new int[dp1][dp1];
         for (int i = 0; i < dp1; i++){
             for(int j = 0; j <= i; j++){
-                coeff[i][j] = (int) ArithmeticUtils.binomialCoefficient(i, j);
+                coeff[i][j] = (int) CombinatoricsUtils.binomialCoefficient(i, j);
             }
         }
 

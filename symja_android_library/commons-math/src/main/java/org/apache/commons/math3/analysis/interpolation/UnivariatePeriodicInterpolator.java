@@ -19,6 +19,8 @@ package org.apache.commons.math3.analysis.interpolation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
 import org.apache.commons.math3.exception.NumberIsTooSmallException;
 
 /**
@@ -29,7 +31,7 @@ import org.apache.commons.math3.exception.NumberIsTooSmallException;
  * be wrapped into the initial range before being passed to the class that
  * actually computes the interpolation.
  *
- * @version $Id: UnivariatePeriodicInterpolator.java 1379904 2012-09-01 23:54:52Z erans $
+ * @version $Id: UnivariatePeriodicInterpolator.java 1459739 2013-03-22 11:58:11Z erans $
  */
 public class UnivariatePeriodicInterpolator
     implements UnivariateInterpolator {
@@ -78,11 +80,11 @@ public class UnivariatePeriodicInterpolator
      * {@inheritDoc}
      *
      * @throws NumberIsTooSmallException if the number of extension points
-     * iss larger then the size of {@code xval}.
+     * is larger than the size of {@code xval}.
      */
     public UnivariateFunction interpolate(double[] xval,
                                           double[] yval)
-        throws NumberIsTooSmallException {
+        throws NumberIsTooSmallException, NonMonotonicSequenceException {
         if (xval.length < extend) {
             throw new NumberIsTooSmallException(xval.length, extend, true);
         }
@@ -114,7 +116,7 @@ public class UnivariatePeriodicInterpolator
 
         final UnivariateFunction f = interpolator.interpolate(x, y);
         return new UnivariateFunction() {
-            public double value(final double x) {
+            public double value(final double x) throws MathIllegalArgumentException {
                 return f.value(MathUtils.reduce(x, period, offset));
             }
         };

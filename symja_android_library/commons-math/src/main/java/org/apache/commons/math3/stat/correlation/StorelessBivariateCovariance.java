@@ -23,7 +23,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Bivariate Covariance implementation that does not require input data to be
  * stored in memory.
  *
- * <p>This class is based on a paper written by Philippe Pbay:
+ * <p>This class is based on a paper written by Philippe P&eacute;bay:
  * <a href="http://prod.sandia.gov/techlib/access-control.cgi/2008/086212.pdf">
  * Formulas for Robust, One-Pass Parallel Computation of Covariances and
  * Arbitrary-Order Statistical Moments</a>, 2008, Technical Report SAND2008-6212,
@@ -33,7 +33,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * <p>Note: This class is package private as it is only used internally in
  * the {@link StorelessCovariance} class.</p>
  *
- * @version $Id: StorelessBivariateCovariance.java 1245133 2012-02-16 19:41:42Z tn $
+ * @version $Id: StorelessBivariateCovariance.java 1488337 2013-05-31 17:47:53Z psteitz $
  * @since 3.0
  */
 class StorelessBivariateCovariance {
@@ -88,6 +88,24 @@ class StorelessBivariateCovariance {
         meanX += deltaX / n;
         meanY += deltaY / n;
         covarianceNumerator += ((n - 1.0) / n) * deltaX * deltaY;
+    }
+
+    /**
+     * Appends another bivariate covariance calculation to this.
+     * After this operation, statistics returned should be close to what would
+     * have been obtained by by performing all of the {@link #increment(double, double)}
+     * operations in {@code cov} directly on this.
+     *
+     * @param cov StorelessBivariateCovariance instance to append.
+     */
+    public void append(StorelessBivariateCovariance cov) {
+        double oldN = n;
+        n += cov.n;
+        final double deltaX = cov.meanX - meanX;
+        final double deltaY = cov.meanY - meanY;
+        meanX += deltaX * cov.n / n;
+        meanY += deltaY * cov.n / n;
+        covarianceNumerator += cov.covarianceNumerator + oldN * cov.n / n * deltaX * deltaY;
     }
 
     /**

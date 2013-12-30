@@ -27,7 +27,7 @@ import org.apache.commons.math3.random.Well19937c;
  * Implementation of the Zipf distribution.
  *
  * @see <a href="http://mathworld.wolfram.com/ZipfDistribution.html">Zipf distribution (MathWorld)</a>
- * @version $Id: ZipfDistribution.java 1363604 2012-07-20 00:43:45Z erans $
+ * @version $Id: ZipfDistribution.java 1533974 2013-10-20 20:42:41Z psteitz $
  */
 public class ZipfDistribution extends AbstractIntegerDistribution {
     /** Serializable version identifier. */
@@ -112,6 +112,16 @@ public class ZipfDistribution extends AbstractIntegerDistribution {
         }
 
         return (1.0 / FastMath.pow(x, exponent)) / generalizedHarmonic(numberOfElements, exponent);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double logProbability(int x) {
+        if (x <= 0 || x > numberOfElements) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        return -FastMath.log(x) * exponent - FastMath.log(generalizedHarmonic(numberOfElements, exponent));
     }
 
     /** {@inheritDoc} */

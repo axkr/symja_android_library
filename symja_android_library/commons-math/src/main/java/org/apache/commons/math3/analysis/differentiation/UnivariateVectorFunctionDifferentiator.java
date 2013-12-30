@@ -19,7 +19,7 @@ package org.apache.commons.math3.analysis.differentiation;
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 
 /** Interface defining the function differentiation operation.
- * @version $Id: UnivariateVectorFunctionDifferentiator.java 1386742 2012-09-17 17:41:54Z luc $
+ * @version $Id: UnivariateVectorFunctionDifferentiator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.1
  */
 public interface UnivariateVectorFunctionDifferentiator {

@@ -19,7 +19,7 @@ package org.apache.commons.math3.analysis;
 
 /**
  * An interface representing a multivariate vectorial function.
- * @version $Id: MultivariateVectorFunction.java 1364387 2012-07-22 18:14:11Z tn $
+ * @version $Id: MultivariateVectorFunction.java 1462485 2013-03-29 14:36:19Z psteitz $
  * @since 2.0
  */
 public interface MultivariateVectorFunction {
@@ -28,7 +28,7 @@ public interface MultivariateVectorFunction {
      * Compute the value for the function at the given point.
      * @param point point at which the function must be evaluated
      * @return function value for the given point
-     * @exception IllegalArgumentException if points dimension is wrong
+     * @exception IllegalArgumentException if point's dimension is wrong
      */
     double[] value(double[] point)
         throws IllegalArgumentException;

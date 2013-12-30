@@ -38,9 +38,11 @@ import org.apache.commons.math3.optimization.GoalType;
  *  <li>to ensure that the best point encountered is the one returned.</li>
  * </ul>
  *
- * @version $Id: BrentOptimizer.java 1382441 2012-09-09 10:40:55Z erans $
+ * @version $Id: BrentOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */
+@Deprecated
 public class BrentOptimizer extends BaseAbstractUnivariateOptimizer {
     /**
      * Golden section.
@@ -238,10 +240,8 @@ public class BrentOptimizer extends BaseAbstractUnivariateOptimizer {
                                  isMinim),
                             isMinim);
 
-                if (checker != null) {
-                    if (checker.converged(iter, previous, current)) {
-                        return best;
-                    }
+                if (checker != null && checker.converged(iter, previous, current)) {
+                    return best;
                 }
 
                 // Update a, b, v, w and x.

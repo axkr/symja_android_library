@@ -24,7 +24,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * ends of an interval.
  *
  * @since 3.0
- * @version $Id: NoBracketingException.java 1364378 2012-07-22 17:42:38Z tn $
+ * @version $Id: NoBracketingException.java 1504726 2013-07-18 23:44:13Z sebb $
  */
 public class NoBracketingException extends MathIllegalArgumentException {
     /** Serializable version Id. */
@@ -65,7 +65,7 @@ public class NoBracketingException extends MathIllegalArgumentException {
                                  double lo, double hi,
                                  double fLo, double fHi,
                                  Object ... args) {
-        super(specific, lo, hi, fLo, fHi, args);
+        super(specific, Double.valueOf(lo), Double.valueOf(hi), Double.valueOf(fLo), Double.valueOf(fHi), args);
         this.lo = lo;
         this.hi = hi;
         this.fLo = fLo;

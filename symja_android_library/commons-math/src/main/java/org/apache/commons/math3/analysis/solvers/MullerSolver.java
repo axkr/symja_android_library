@@ -43,7 +43,7 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * <p>
  * The formulas here use divided differences directly.</p>
  *
- * @version $Id: MullerSolver.java 1379560 2012-08-31 19:40:30Z erans $
+ * @version $Id: MullerSolver.java 1391927 2012-09-30 00:03:30Z erans $
  * @since 1.2
  * @see MullerSolver2
  */
@@ -124,6 +124,8 @@ public class MullerSolver extends AbstractUnivariateSolver {
      * @param fMin function value at the lower bound.
      * @param fMax function value at the upper bound.
      * @return the point at which the function value is zero.
+     * @throws TooManyEvaluationsException if the allowed number of calls to
+     * the function to be solved has been exhausted.
      */
     private double solve(double min, double max,
                          double fMin, double fMax)

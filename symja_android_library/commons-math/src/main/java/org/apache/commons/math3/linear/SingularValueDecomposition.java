@@ -48,7 +48,7 @@ import org.apache.commons.math3.util.Precision;
  * </ul>
  * @see <a href="http://mathworld.wolfram.com/SingularValueDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia</a>
- * @version $Id: SingularValueDecomposition.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: SingularValueDecomposition.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class SingularValueDecomposition {
@@ -285,10 +285,18 @@ public class SingularValueDecomposition {
                 final double threshold
                     = TINY + EPS * (FastMath.abs(singularValues[k]) +
                                     FastMath.abs(singularValues[k + 1]));
-                if (FastMath.abs(e[k]) <= threshold) {
+
+                // the following condition is written this way in order
+                // to break out of the loop when NaN occurs, writing it
+                // as "if (FastMath.abs(e[k]) <= threshold)" would loop
+                // indefinitely in case of NaNs because comparison on NaNs
+                // always return false, regardless of what is checked
+                // see issue MATH-947
+                if (!(FastMath.abs(e[k]) > threshold)) {
                     e[k] = 0;
                     break;
                 }
+
             }
 
             if (k == p - 2) {
@@ -422,7 +430,7 @@ public class SingularValueDecomposition {
                         }
                     }
                     e[p - 2] = f;
-                    iter = iter + 1;
+                    iter++;
                 }
                 break;
                 // Convergence.

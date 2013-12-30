@@ -71,7 +71,7 @@ import org.apache.commons.math3.util.FastMath;
  * </p>
  * @see <a href="http://mathworld.wolfram.com/EigenDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">Wikipedia</a>
- * @version $Id: EigenDecomposition.java 1380122 2012-09-03 03:54:23Z celestin $
+ * @version $Id: EigenDecomposition.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class EigenDecomposition {
@@ -100,6 +100,8 @@ public class EigenDecomposition {
     private RealMatrix cachedD;
     /** Cached value of Vt. */
     private RealMatrix cachedVt;
+    /** Whether the matrix is symmetric. */
+    private final boolean isSymmetric;
 
     /**
      * Calculates the eigen decomposition of the given real matrix.
@@ -110,10 +112,13 @@ public class EigenDecomposition {
      * @throws MaxCountExceededException if the algorithm fails to converge.
      * @throws MathArithmeticException if the decomposition of a general matrix
      * results in a matrix with zero norm
+     * @since 3.1
      */
     public EigenDecomposition(final RealMatrix matrix)
         throws MathArithmeticException {
-        if (isSymmetric(matrix, false)) {
+        final double symTol = 10 * matrix.getRowDimension() * matrix.getColumnDimension() * Precision.EPSILON;
+        isSymmetric = MatrixUtils.isSymmetric(matrix, symTol);
+        if (isSymmetric) {
             transformToTridiagonal(matrix);
             findEigenVectors(transformer.getQ().getData());
         } else {
@@ -147,8 +152,10 @@ public class EigenDecomposition {
      * @param main Main diagonal of the symmetric tridiagonal form.
      * @param secondary Secondary of the tridiagonal form.
      * @throws MaxCountExceededException if the algorithm fails to converge.
+     * @since 3.1
      */
     public EigenDecomposition(final double[] main, final double[] secondary) {
+        isSymmetric = true;
         this.main      = main.clone();
         this.secondary = secondary.clone();
         transformer    = null;
@@ -175,37 +182,6 @@ public class EigenDecomposition {
     public EigenDecomposition(final double[] main, final double[] secondary,
                               final double splitTolerance) {
         this(main, secondary);
-    }
-
-    /**
-     * Check if a matrix is symmetric.
-     *
-     * @param matrix Matrix to check.
-     * @param raiseException If {@code true}, the method will throw an
-     * exception if {@code matrix} is not symmetric.
-     * @return {@code true} if {@code matrix} is symmetric.
-     * @throws NonSymmetricMatrixException if the matrix is not symmetric and
-     * {@code raiseException} is {@code true}.
-     */
-    private boolean isSymmetric(final RealMatrix matrix,
-                                boolean raiseException) {
-        final int rows = matrix.getRowDimension();
-        final int columns = matrix.getColumnDimension();
-        final double eps = 10 * rows * columns * Precision.EPSILON;
-        for (int i = 0; i < rows; ++i) {
-            for (int j = i + 1; j < columns; ++j) {
-                final double mij = matrix.getEntry(i, j);
-                final double mji = matrix.getEntry(j, i);
-                if (FastMath.abs(mij - mji) >
-                    (FastMath.max(FastMath.abs(mij), FastMath.abs(mji)) * eps)) {
-                    if (raiseException) {
-                        throw new NonSymmetricMatrixException(i, j, eps);
-                    }
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
@@ -386,6 +362,36 @@ public class EigenDecomposition {
     }
 
     /**
+     * Computes the square-root of the matrix.
+     * This implementation assumes that the matrix is symmetric and positive
+     * definite.
+     *
+     * @return the square-root of the matrix.
+     * @throws MathUnsupportedOperationException if the matrix is not
+     * symmetric or not positive definite.
+     * @since 3.1
+     */
+    public RealMatrix getSquareRoot() {
+        if (!isSymmetric) {
+            throw new MathUnsupportedOperationException();
+        }
+
+        final double[] sqrtEigenValues = new double[realEigenvalues.length];
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            final double eigen = realEigenvalues[i];
+            if (eigen <= 0) {
+                throw new MathUnsupportedOperationException();
+            }
+            sqrtEigenValues[i] = FastMath.sqrt(eigen);
+        }
+        final RealMatrix sqrtEigen = MatrixUtils.createRealDiagonalMatrix(sqrtEigenValues);
+        final RealMatrix v = getV();
+        final RealMatrix vT = getVT();
+
+        return v.multiply(sqrtEigen).multiply(vT);
+    }
+
+    /**
      * Gets a solver for finding the A &times; X = B solution in exact
      * linear sense.
      * <p>
@@ -507,13 +513,34 @@ public class EigenDecomposition {
          * @return true if the decomposed matrix is non-singular.
          */
         public boolean isNonSingular() {
+            double largestEigenvalueNorm = 0.0;
+            // Looping over all values (in case they are not sorted in decreasing
+            // order of their norm).
             for (int i = 0; i < realEigenvalues.length; ++i) {
-                if (realEigenvalues[i] == 0 &&
-                    imagEigenvalues[i] == 0) {
+                largestEigenvalueNorm = FastMath.max(largestEigenvalueNorm, eigenvalueNorm(i));
+            }
+            // Corner case: zero matrix, all exactly 0 eigenvalues
+            if (largestEigenvalueNorm == 0.0) {
+                return false;
+            }
+            for (int i = 0; i < realEigenvalues.length; ++i) {
+                // Looking for eigenvalues that are 0, where we consider anything much much smaller
+                // than the largest eigenvalue to be effectively 0.
+                if (Precision.equals(eigenvalueNorm(i) / largestEigenvalueNorm, 0, EPSILON)) {
                     return false;
                 }
             }
             return true;
+        }
+
+        /**
+         * @param i which eigenvalue to find the norm of
+         * @return the norm of ith (complex) eigenvalue.
+         */
+        private double eigenvalueNorm(int i) {
+            final double re = realEigenvalues[i];
+            final double im = imagEigenvalues[i];
+            return FastMath.sqrt(re * re + im * im);
         }
 
         /**
@@ -634,13 +661,13 @@ public class EigenDecomposition {
                             t = FastMath.sqrt(c * c + 1.0);
                             e[i + 1] = p * t;
                             s = 1.0 / t;
-                            c = c * s;
+                            c *= s;
                         } else {
                             s = p / q;
                             t = FastMath.sqrt(s * s + 1.0);
                             e[i + 1] = q * t;
                             c = 1.0 / t;
-                            s = s * c;
+                            s *= c;
                         }
                         if (e[i + 1] == 0.0) {
                             realEigenvalues[i + 1] -= u;
@@ -718,7 +745,7 @@ public class EigenDecomposition {
      * Transforms the matrix to Schur form and calculates the eigenvalues.
      *
      * @param matrix Matrix to transform.
-     * @return the {@link SchurTransform} for this matrix
+     * @return the {@link SchurTransformer Shur transform} for this matrix
      */
     private SchurTransformer transformToSchur(final RealMatrix matrix) {
         final SchurTransformer schurTransform = new SchurTransformer(matrix);
@@ -776,7 +803,7 @@ public class EigenDecomposition {
         double norm = 0.0;
         for (int i = 0; i < n; i++) {
            for (int j = FastMath.max(i - 1, 0); j < n; j++) {
-              norm = norm + FastMath.abs(matrixT[i][j]);
+               norm += FastMath.abs(matrixT[i][j]);
            }
         }
 
@@ -803,9 +830,9 @@ public class EigenDecomposition {
                     double w = matrixT[i][i] - p;
                     r = 0.0;
                     for (int j = l; j <= idx; j++) {
-                        r = r + matrixT[i][j] * matrixT[j][idx];
+                        r += matrixT[i][j] * matrixT[j][idx];
                     }
-                    if (Precision.compareTo(imagEigenvalues[i], 0.0, EPSILON) < 0.0) {
+                    if (Precision.compareTo(imagEigenvalues[i], 0.0, EPSILON) < 0) {
                         z = w;
                         s = r;
                     } else {
@@ -835,7 +862,7 @@ public class EigenDecomposition {
                         double t = FastMath.abs(matrixT[i][idx]);
                         if ((Precision.EPSILON * t) * t > 1) {
                             for (int j = i; j <= idx; j++) {
-                                matrixT[j][idx] = matrixT[j][idx] / t;
+                                matrixT[j][idx] /= t;
                             }
                         }
                     }
@@ -862,12 +889,12 @@ public class EigenDecomposition {
                     double ra = 0.0;
                     double sa = 0.0;
                     for (int j = l; j <= idx; j++) {
-                        ra = ra + matrixT[i][j] * matrixT[j][idx - 1];
-                        sa = sa + matrixT[i][j] * matrixT[j][idx];
+                        ra += matrixT[i][j] * matrixT[j][idx - 1];
+                        sa += matrixT[i][j] * matrixT[j][idx];
                     }
                     double w = matrixT[i][i] - p;
 
-                    if (Precision.compareTo(imagEigenvalues[i], 0.0, EPSILON) < 0.0) {
+                    if (Precision.compareTo(imagEigenvalues[i], 0.0, EPSILON) < 0) {
                         z = w;
                         r = ra;
                         s = sa;
@@ -912,20 +939,11 @@ public class EigenDecomposition {
                                                 FastMath.abs(matrixT[i][idx]));
                         if ((Precision.EPSILON * t) * t > 1) {
                             for (int j = i; j <= idx; j++) {
-                                matrixT[j][idx - 1] = matrixT[j][idx - 1] / t;
-                                matrixT[j][idx]     = matrixT[j][idx] / t;
+                                matrixT[j][idx - 1] /= t;
+                                matrixT[j][idx] /= t;
                             }
                         }
                     }
-                }
-            }
-        }
-
-        // Vectors of isolated roots
-        for (int i = 0; i < n; i++) {
-            if (i < 0 | i > n - 1) {
-                for (int j = i; j < n; j++) {
-                    matrixP[i][j] = matrixT[i][j];
                 }
             }
         }
@@ -935,7 +953,7 @@ public class EigenDecomposition {
             for (int i = 0; i <= n - 1; i++) {
                 z = 0.0;
                 for (int k = 0; k <= FastMath.min(j, n - 1); k++) {
-                    z = z + matrixP[i][k] * matrixT[k][j];
+                    z += matrixP[i][k] * matrixT[k][j];
                 }
                 matrixP[i][j] = z;
             }

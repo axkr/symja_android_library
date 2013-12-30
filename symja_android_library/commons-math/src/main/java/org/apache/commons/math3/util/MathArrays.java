@@ -17,24 +17,34 @@
 
 package org.apache.commons.math3.util;
 
-import java.util.List;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import org.apache.commons.math3.Field;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.MathInternalError;
-import org.apache.commons.math3.exception.NonMonotonicSequenceException;
-import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.MathInternalError;
+import org.apache.commons.math3.exception.NoDataException;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
+import org.apache.commons.math3.exception.NotPositiveException;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.exception.NumberIsTooLargeException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 
 /**
  * Arrays utilities.
  *
  * @since 3.0
- * @version $Id: MathArrays.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: MathArrays.java 1547633 2013-12-03 23:03:06Z tn $
  */
 public class MathArrays {
     /** Factor used for splitting double numbers: n = 2^27 + 1 (i.e. {@value}). */
@@ -44,6 +54,149 @@ public class MathArrays {
      * Private constructor.
      */
     private MathArrays() {}
+
+    /**
+     * Real-valued function that operate on an array or a part of it.
+     * @since 3.1
+     */
+    public interface Function {
+        /**
+         * Operates on an entire array.
+         *
+         * @param array Array to operate on.
+         * @return the result of the operation.
+         */
+        double evaluate(double[] array);
+        /**
+         * @param array Array to operate on.
+         * @param startIndex Index of the first element to take into account.
+         * @param numElements Number of elements to take into account.
+         * @return the result of the operation.
+         */
+        double evaluate(double[] array,
+                        int startIndex,
+                        int numElements);
+    }
+
+    /**
+     * Create a copy of an array scaled by a value.
+     *
+     * @param arr Array to scale.
+     * @param val Scalar.
+     * @return scaled copy of array with each entry multiplied by val.
+     * @since 3.2
+     */
+    public static double[] scale(double val, final double[] arr) {
+        double[] newArr = new double[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            newArr[i] = arr[i] * val;
+        }
+        return newArr;
+    }
+
+    /**
+     * <p>Multiply each element of an array by a value.</p>
+     *
+     * <p>The array is modified in place (no copy is created).</p>
+     *
+     * @param arr Array to scale
+     * @param val Scalar
+     * @since 3.2
+     */
+    public static void scaleInPlace(double val, final double[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] *= val;
+        }
+    }
+
+    /**
+     * Creates an array whose contents will be the element-by-element
+     * addition of the arguments.
+     *
+     * @param a First term of the addition.
+     * @param b Second term of the addition.
+     * @return a new array {@code r} where {@code r[i] = a[i] + b[i]}.
+     * @throws DimensionMismatchException if the array lengths differ.
+     * @since 3.1
+     */
+    public static double[] ebeAdd(double[] a, double[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+
+        final double[] result = a.clone();
+        for (int i = 0; i < a.length; i++) {
+            result[i] += b[i];
+        }
+        return result;
+    }
+    /**
+     * Creates an array whose contents will be the element-by-element
+     * subtraction of the second argument from the first.
+     *
+     * @param a First term.
+     * @param b Element to be subtracted.
+     * @return a new array {@code r} where {@code r[i] = a[i] - b[i]}.
+     * @throws DimensionMismatchException if the array lengths differ.
+     * @since 3.1
+     */
+    public static double[] ebeSubtract(double[] a, double[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+
+        final double[] result = a.clone();
+        for (int i = 0; i < a.length; i++) {
+            result[i] -= b[i];
+        }
+        return result;
+    }
+    /**
+     * Creates an array whose contents will be the element-by-element
+     * multiplication of the arguments.
+     *
+     * @param a First factor of the multiplication.
+     * @param b Second factor of the multiplication.
+     * @return a new array {@code r} where {@code r[i] = a[i] * b[i]}.
+     * @throws DimensionMismatchException if the array lengths differ.
+     * @since 3.1
+     */
+    public static double[] ebeMultiply(double[] a, double[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+
+        final double[] result = a.clone();
+        for (int i = 0; i < a.length; i++) {
+            result[i] *= b[i];
+        }
+        return result;
+    }
+    /**
+     * Creates an array whose contents will be the element-by-element
+     * division of the first argument by the second.
+     *
+     * @param a Numerator of the division.
+     * @param b Denominator of the division.
+     * @return a new array {@code r} where {@code r[i] = a[i] / b[i]}.
+     * @throws DimensionMismatchException if the array lengths differ.
+     * @since 3.1
+     */
+    public static double[] ebeDivide(double[] a, double[] b)
+        throws DimensionMismatchException {
+        if (a.length != b.length) {
+            throw new DimensionMismatchException(a.length, b.length);
+        }
+
+        final double[] result = a.clone();
+        for (int i = 0; i < a.length; i++) {
+            result[i] /= b[i];
+        }
+        return result;
+    }
 
     /**
      * Calculates the L<sub>1</sub> (sum of abs) distance between two points.
@@ -206,9 +359,7 @@ public class MathArrays {
      * @param strict Whether the order should be strict.
      * @return {@code true} if sorted, {@code false} otherwise.
      */
-    public static boolean isMonotonic(double[] val,
-                                      OrderDirection dir,
-                                      boolean strict) {
+    public static boolean isMonotonic(double[] val, OrderDirection dir, boolean strict) {
         return checkOrder(val, dir, strict, false);
     }
 
@@ -302,6 +453,77 @@ public class MathArrays {
     }
 
     /**
+     * Throws DimensionMismatchException if the input array is not rectangular.
+     *
+     * @param in array to be tested
+     * @throws NullArgumentException if input array is null
+     * @throws DimensionMismatchException if input array is not rectangular
+     * @since 3.1
+     */
+    public static void checkRectangular(final long[][] in)
+        throws NullArgumentException, DimensionMismatchException {
+        MathUtils.checkNotNull(in);
+        for (int i = 1; i < in.length; i++) {
+            if (in[i].length != in[0].length) {
+                throw new DimensionMismatchException(
+                        LocalizedFormats.DIFFERENT_ROWS_LENGTHS,
+                        in[i].length, in[0].length);
+            }
+        }
+    }
+
+    /**
+     * Check that all entries of the input array are strictly positive.
+     *
+     * @param in Array to be tested
+     * @throws NotStrictlyPositiveException if any entries of the array are not
+     * strictly positive.
+     * @since 3.1
+     */
+    public static void checkPositive(final double[] in)
+        throws NotStrictlyPositiveException {
+        for (int i = 0; i < in.length; i++) {
+            if (in[i] <= 0) {
+                throw new NotStrictlyPositiveException(in[i]);
+            }
+        }
+    }
+
+    /**
+     * Check that all entries of the input array are >= 0.
+     *
+     * @param in Array to be tested
+     * @throws NotPositiveException if any array entries are less than 0.
+     * @since 3.1
+     */
+    public static void checkNonNegative(final long[] in)
+        throws NotPositiveException {
+        for (int i = 0; i < in.length; i++) {
+            if (in[i] < 0) {
+                throw new NotPositiveException(in[i]);
+            }
+        }
+    }
+
+    /**
+     * Check all entries of the input array are >= 0.
+     *
+     * @param in Array to be tested
+     * @throws NotPositiveException if any array entries are less than 0.
+     * @since 3.1
+     */
+    public static void checkNonNegative(final long[][] in)
+        throws NotPositiveException {
+        for (int i = 0; i < in.length; i ++) {
+            for (int j = 0; j < in[i].length; j++) {
+                if (in[i][j] < 0) {
+                    throw new NotPositiveException(in[i][j]);
+                }
+            }
+        }
+    }
+
+    /**
      * Returns the Cartesian norm (2-norm), handling both overflow and underflow.
      * Translation of the minpack enorm subroutine.
      *
@@ -372,7 +594,7 @@ public class MathArrays {
         double floatn = v.length;
         double agiant = rgiant / floatn;
         for (int i = 0; i < v.length; i++) {
-            double xabs = Math.abs(v[i]);
+            double xabs = FastMath.abs(v[i]);
             if (xabs < rdwarf || xabs > agiant) {
                 if (xabs > rdwarf) {
                     if (xabs > x1max) {
@@ -457,59 +679,71 @@ public class MathArrays {
     public static void sortInPlace(double[] x,
                                    final OrderDirection dir,
                                    double[] ... yList)
-        throws NullArgumentException, DimensionMismatchException {
+        throws NullArgumentException,
+               DimensionMismatchException {
+
+        // Consistency checks.
         if (x == null) {
             throw new NullArgumentException();
         }
 
-        final int len = x.length;
-        final List<Pair<Double, double[]>> list
-            = new ArrayList<Pair<Double, double[]>>(len);
-
         final int yListLen = yList.length;
-        for (int i = 0; i < len; i++) {
-            final double[] yValues = new double[yListLen];
-            for (int j = 0; j < yListLen; j++) {
-                double[] y = yList[j];
-                if (y == null) {
-                    throw new NullArgumentException();
-                }
-                if (y.length != len) {
-                    throw new DimensionMismatchException(y.length, len);
-                }
-                yValues[j] = y[i];
+        final int len = x.length;
+
+        for (int j = 0; j < yListLen; j++) {
+            final double[] y = yList[j];
+            if (y == null) {
+                throw new NullArgumentException();
             }
-            list.add(new Pair<Double, double[]>(x[i], yValues));
+            if (y.length != len) {
+                throw new DimensionMismatchException(y.length, len);
+            }
         }
 
-        final Comparator<Pair<Double, double[]>> comp
-            = new Comparator<Pair<Double, double[]>>() {
-            public int compare(Pair<Double, double[]> o1,
-                               Pair<Double, double[]> o2) {
-                int val;
-                switch (dir) {
-                case INCREASING:
-                    val = o1.getKey().compareTo(o2.getKey());
-                break;
-                case DECREASING:
-                    val = o2.getKey().compareTo(o1.getKey());
-                break;
-                default:
-                    // Should never happen.
-                    throw new MathInternalError();
-                }
-                return val;
+        // Associate each abscissa "x[i]" with its index "i".
+        final List<Pair<Double, Integer>> list
+            = new ArrayList<Pair<Double, Integer>>(len);
+        for (int i = 0; i < len; i++) {
+            list.add(new Pair<Double, Integer>(x[i], i));
+        }
+
+        // Create comparators for increasing and decreasing orders.
+        final Comparator<Pair<Double, Integer>> comp
+            = dir == MathArrays.OrderDirection.INCREASING ?
+            new Comparator<Pair<Double, Integer>>() {
+            public int compare(Pair<Double, Integer> o1,
+                               Pair<Double, Integer> o2) {
+                return o1.getKey().compareTo(o2.getKey());
+            }
+        } : new Comparator<Pair<Double,Integer>>() {
+            public int compare(Pair<Double, Integer> o1,
+                               Pair<Double, Integer> o2) {
+                return o2.getKey().compareTo(o1.getKey());
             }
         };
 
+        // Sort.
         Collections.sort(list, comp);
 
+        // Modify the original array so that its elements are in
+        // the prescribed order.
+        // Retrieve indices of original locations.
+        final int[] indices = new int[len];
         for (int i = 0; i < len; i++) {
-            final Pair<Double, double[]> e = list.get(i);
+            final Pair<Double, Integer> e = list.get(i);
             x[i] = e.getKey();
-            final double[] yValues = e.getValue();
-            for (int j = 0; j < yListLen; j++) {
-                yList[j][i] = yValues[j];
+            indices[i] = e.getValue();
+        }
+
+        // In each of the associated arrays, move the
+        // elements to their new location.
+        for (int j = 0; j < yListLen; j++) {
+            // Input array will be modified in place.
+            final double[] yInPlace = yList[j];
+            final double[] yOrig = yInPlace.clone();
+
+            for (int i = 0; i < len; i++) {
+                yInPlace[i] = yOrig[indices[i]];
             }
         }
     }
@@ -586,6 +820,11 @@ public class MathArrays {
         final int len = a.length;
         if (len != b.length) {
             throw new DimensionMismatchException(len, b.length);
+        }
+
+        if (len == 1) {
+            // Revert to scalar multiplication.
+            return a[0] * b[0];
         }
 
         final double[] prodHigh = new double[len];
@@ -1034,57 +1273,457 @@ public class MathArrays {
         return true;
     }
 
-     /**
-      * Normalizes an array to make it sum to a specified value.
-      * Returns the result of the transformation <pre>
-      *    x |-> x * normalizedSum / sum
-      * </pre>
-      * applied to each non-NaN element x of the input array, where sum is the
-      * sum of the non-NaN entries in the input array.</p>
-      *
-      * <p>Throws IllegalArgumentException if {@code normalizedSum} is infinite
-      * or NaN and ArithmeticException if the input array contains any infinite elements
-      * or sums to 0.</p>
-      *
-      * <p>Ignores (i.e., copies unchanged to the output array) NaNs in the input array.</p>
-      *
-      * @param values Input array to be normalized
-      * @param normalizedSum Target sum for the normalized array
-      * @return the normalized array.
-      * @throws MathArithmeticException if the input array contains infinite
-      * elements or sums to zero.
-      * @throws MathIllegalArgumentException if the target sum is infinite or {@code NaN}.
-      * @since 2.1
-      */
-     public static double[] normalizeArray(double[] values, double normalizedSum)
-         throws MathIllegalArgumentException, MathArithmeticException {
-         if (Double.isInfinite(normalizedSum)) {
-             throw new MathIllegalArgumentException(LocalizedFormats.NORMALIZE_INFINITE);
-         }
-         if (Double.isNaN(normalizedSum)) {
-             throw new MathIllegalArgumentException(LocalizedFormats.NORMALIZE_NAN);
-         }
-         double sum = 0d;
-         final int len = values.length;
-         double[] out = new double[len];
-         for (int i = 0; i < len; i++) {
-             if (Double.isInfinite(values[i])) {
-                 throw new MathIllegalArgumentException(LocalizedFormats.INFINITE_ARRAY_ELEMENT, values[i], i);
-             }
-             if (!Double.isNaN(values[i])) {
-                 sum += values[i];
-             }
-         }
-         if (sum == 0) {
-             throw new MathArithmeticException(LocalizedFormats.ARRAY_SUMS_TO_ZERO);
-         }
-         for (int i = 0; i < len; i++) {
-             if (Double.isNaN(values[i])) {
-                 out[i] = Double.NaN;
-             } else {
-                 out[i] = values[i] * normalizedSum / sum;
-             }
-         }
-         return out;
-     }
+    /**
+     * Normalizes an array to make it sum to a specified value.
+     * Returns the result of the transformation
+     * <pre>
+     *    x |-> x * normalizedSum / sum
+     * </pre>
+     * applied to each non-NaN element x of the input array, where sum is the
+     * sum of the non-NaN entries in the input array.
+     * <p>
+     * Throws IllegalArgumentException if {@code normalizedSum} is infinite
+     * or NaN and ArithmeticException if the input array contains any infinite elements
+     * or sums to 0.
+     * <p>
+     * Ignores (i.e., copies unchanged to the output array) NaNs in the input array.
+     *
+     * @param values Input array to be normalized
+     * @param normalizedSum Target sum for the normalized array
+     * @return the normalized array.
+     * @throws MathArithmeticException if the input array contains infinite
+     * elements or sums to zero.
+     * @throws MathIllegalArgumentException if the target sum is infinite or {@code NaN}.
+     * @since 2.1
+     */
+    public static double[] normalizeArray(double[] values, double normalizedSum)
+        throws MathIllegalArgumentException, MathArithmeticException {
+        if (Double.isInfinite(normalizedSum)) {
+            throw new MathIllegalArgumentException(LocalizedFormats.NORMALIZE_INFINITE);
+        }
+        if (Double.isNaN(normalizedSum)) {
+            throw new MathIllegalArgumentException(LocalizedFormats.NORMALIZE_NAN);
+        }
+        double sum = 0d;
+        final int len = values.length;
+        double[] out = new double[len];
+        for (int i = 0; i < len; i++) {
+            if (Double.isInfinite(values[i])) {
+                throw new MathIllegalArgumentException(LocalizedFormats.INFINITE_ARRAY_ELEMENT, values[i], i);
+            }
+            if (!Double.isNaN(values[i])) {
+                sum += values[i];
+            }
+        }
+        if (sum == 0) {
+            throw new MathArithmeticException(LocalizedFormats.ARRAY_SUMS_TO_ZERO);
+        }
+        for (int i = 0; i < len; i++) {
+            if (Double.isNaN(values[i])) {
+                out[i] = Double.NaN;
+            } else {
+                out[i] = values[i] * normalizedSum / sum;
+            }
+        }
+        return out;
+    }
+
+    /** Build an array of elements.
+     * <p>
+     * Arrays are filled with field.getZero()
+     *
+     * @param <T> the type of the field elements
+     * @param field field to which array elements belong
+     * @param length of the array
+     * @return a new array
+     * @since 3.2
+     */
+    public static <T> T[] buildArray(final Field<T> field, final int length) {
+        @SuppressWarnings("unchecked") // OK because field must be correct class
+        T[] array = (T[]) Array.newInstance(field.getRuntimeClass(), length);
+        Arrays.fill(array, field.getZero());
+        return array;
+    }
+
+    /** Build a double dimension  array of elements.
+     * <p>
+     * Arrays are filled with field.getZero()
+     *
+     * @param <T> the type of the field elements
+     * @param field field to which array elements belong
+     * @param rows number of rows in the array
+     * @param columns number of columns (may be negative to build partial
+     * arrays in the same way <code>new Field[rows][]</code> works)
+     * @return a new array
+     * @since 3.2
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[][] buildArray(final Field<T> field, final int rows, final int columns) {
+        final T[][] array;
+        if (columns < 0) {
+            T[] dummyRow = buildArray(field, 0);
+            array = (T[][]) Array.newInstance(dummyRow.getClass(), rows);
+        } else {
+            array = (T[][]) Array.newInstance(field.getRuntimeClass(),
+                                              new int[] {
+                                                  rows, columns
+                                              });
+            for (int i = 0; i < rows; ++i) {
+                Arrays.fill(array[i], field.getZero());
+            }
+        }
+        return array;
+    }
+
+    /**
+     * Calculates the <a href="http://en.wikipedia.org/wiki/Convolution">
+     * convolution</a> between two sequences.
+     * <p>
+     * The solution is obtained via straightforward computation of the
+     * convolution sum (and not via FFT). Whenever the computation needs
+     * an element that would be located at an index outside the input arrays,
+     * the value is assumed to be zero.
+     *
+     * @param x First sequence.
+     * Typically, this sequence will represent an input signal to a system.
+     * @param h Second sequence.
+     * Typically, this sequence will represent the impulse response of the system.
+     * @return the convolution of {@code x} and {@code h}.
+     * This array's length will be {@code x.length + h.length - 1}.
+     * @throws NullArgumentException if either {@code x} or {@code h} is {@code null}.
+     * @throws NoDataException if either {@code x} or {@code h} is empty.
+     *
+     * @since 3.3
+     */
+    public static double[] convolve(double[] x, double[] h)
+        throws NullArgumentException,
+               NoDataException {
+        MathUtils.checkNotNull(x);
+        MathUtils.checkNotNull(h);
+
+        final int xLen = x.length;
+        final int hLen = h.length;
+
+        if (xLen == 0 || hLen == 0) {
+            throw new NoDataException();
+        }
+
+        // initialize the output array
+        final int totalLength = xLen + hLen - 1;
+        final double[] y = new double[totalLength];
+
+        // straightforward implementation of the convolution sum
+        for (int n = 0; n < totalLength; n++) {
+            double yn = 0;
+            int k = FastMath.max(0, n + 1 - xLen);
+            int j = n - k;
+            while (k < hLen && j >= 0) {
+                yn += x[j--] * h[k++];
+            }
+            y[n] = yn;
+        }
+
+        return y;
+    }
+
+    /**
+     * Specification for indicating that some operation applies
+     * before or after a given index.
+     */
+    public static enum Position {
+        /** Designates the beginning of the array (near index 0). */
+        HEAD,
+        /** Designates the end of the array. */
+        TAIL
+    }
+
+    /**
+     * Shuffle the entries of the given array.
+     * The {@code start} and {@code pos} parameters select which portion
+     * of the array is randomized and which is left untouched.
+     *
+     * @see #shuffle(int[],int,Position,RandomGenerator)
+     *
+     * @param list Array whose entries will be shuffled (in-place).
+     * @param start Index at which shuffling begins.
+     * @param pos Shuffling is performed for index positions between
+     * {@code start} and either the end (if {@link Position#TAIL})
+     * or the beginning (if {@link Position#HEAD}) of the array.
+     */
+    public static void shuffle(int[] list,
+                               int start,
+                               Position pos) {
+        shuffle(list, start, pos, new Well19937c());
+    }
+
+    /**
+     * Shuffle the entries of the given array, using the
+     * <a href="http://en.wikipedia.org/wiki/Fisher–Yates_shuffle#The_modern_algorithm">
+     * Fisher–Yates</a> algorithm.
+     * The {@code start} and {@code pos} parameters select which portion
+     * of the array is randomized and which is left untouched.
+     *
+     * @param list Array whose entries will be shuffled (in-place).
+     * @param start Index at which shuffling begins.
+     * @param pos Shuffling is performed for index positions between
+     * {@code start} and either the end (if {@link Position#TAIL})
+     * or the beginning (if {@link Position#HEAD}) of the array.
+     * @param rng Random number generator.
+     */
+    public static void shuffle(int[] list,
+                               int start,
+                               Position pos,
+                               RandomGenerator rng) {
+        switch (pos) {
+        case TAIL: {
+            for (int i = list.length - 1; i >= start; i--) {
+                final int target;
+                if (i == start) {
+                    target = start;
+                } else {
+                    // NumberIsTooLargeException cannot occur.
+                    target = new UniformIntegerDistribution(rng, start, i).sample();
+                }
+                final int temp = list[target];
+                list[target] = list[i];
+                list[i] = temp;
+            }
+        }
+            break;
+        case HEAD: {
+            for (int i = 0; i <= start; i++) {
+                final int target;
+                if (i == start) {
+                    target = start;
+                } else {
+                    // NumberIsTooLargeException cannot occur.
+                    target = new UniformIntegerDistribution(rng, i, start).sample();
+                }
+                final int temp = list[target];
+                list[target] = list[i];
+                list[i] = temp;
+            }
+        }
+            break;
+        default:
+            throw new MathInternalError(); // Should never happen.
+        }
+    }
+
+    /**
+     * Shuffle the entries of the given array.
+     *
+     * @see #shuffle(int[],int,Position,RandomGenerator)
+     *
+     * @param list Array whose entries will be shuffled (in-place).
+     * @param rng Random number generator.
+     */
+    public static void shuffle(int[] list,
+                               RandomGenerator rng) {
+        shuffle(list, 0, Position.TAIL, rng);
+    }
+
+    /**
+     * Shuffle the entries of the given array.
+     *
+     * @see #shuffle(int[],int,Position,RandomGenerator)
+     *
+     * @param list Array whose entries will be shuffled (in-place).
+     */
+    public static void shuffle(int[] list) {
+        shuffle(list, new Well19937c());
+    }
+
+    /**
+     * Returns an array representing the natural number {@code n}.
+     *
+     * @param n Natural number.
+     * @return an array whose entries are the numbers 0, 1, ..., {@code n}-1.
+     * If {@code n == 0}, the returned array is empty.
+     */
+    public static int[] natural(int n) {
+        final int[] a = new int[n];
+        for (int i = 0; i < n; i++) {
+            a[i] = i;
+        }
+        return a;
+    }
+    /**
+     * This method is used
+     * to verify that the input parameters designate a subarray of positive length.
+     * <p>
+     * <ul>
+     * <li>returns <code>true</code> iff the parameters designate a subarray of
+     * positive length</li>
+     * <li>throws <code>MathIllegalArgumentException</code> if the array is null or
+     * or the indices are invalid</li>
+     * <li>returns <code>false</li> if the array is non-null, but
+     * <code>length</code> is 0.
+     * </ul></p>
+     *
+     * @param values the input array
+     * @param begin index of the first array element to include
+     * @param length the number of elements to include
+     * @return true if the parameters are valid and designate a subarray of positive length
+     * @throws MathIllegalArgumentException if the indices are invalid or the array is null
+     * @since 3.3
+     */
+    public static boolean verifyValues(final double[] values, final int begin, final int length)
+            throws MathIllegalArgumentException {
+        return verifyValues(values, begin, length, false);
+    }
+
+    /**
+     * This method is used
+     * to verify that the input parameters designate a subarray of positive length.
+     * <p>
+     * <ul>
+     * <li>returns <code>true</code> iff the parameters designate a subarray of
+     * non-negative length</li>
+     * <li>throws <code>IllegalArgumentException</code> if the array is null or
+     * or the indices are invalid</li>
+     * <li>returns <code>false</li> if the array is non-null, but
+     * <code>length</code> is 0 unless <code>allowEmpty</code> is <code>true</code>
+     * </ul></p>
+     *
+     * @param values the input array
+     * @param begin index of the first array element to include
+     * @param length the number of elements to include
+     * @param allowEmpty if <code>true</code> then zero length arrays are allowed
+     * @return true if the parameters are valid
+     * @throws MathIllegalArgumentException if the indices are invalid or the array is null
+     * @since 3.3
+     */
+    public static boolean verifyValues(final double[] values, final int begin,
+            final int length, final boolean allowEmpty) throws MathIllegalArgumentException {
+
+        if (values == null) {
+            throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+        }
+
+        if (begin < 0) {
+            throw new NotPositiveException(LocalizedFormats.START_POSITION, Integer.valueOf(begin));
+        }
+
+        if (length < 0) {
+            throw new NotPositiveException(LocalizedFormats.LENGTH, Integer.valueOf(length));
+        }
+
+        if (begin + length > values.length) {
+            throw new NumberIsTooLargeException(LocalizedFormats.SUBARRAY_ENDS_AFTER_ARRAY_END,
+                    Integer.valueOf(begin + length), Integer.valueOf(values.length), true);
+        }
+
+        if (length == 0 && !allowEmpty) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    /**
+     * This method is used
+     * to verify that the begin and length parameters designate a subarray of positive length
+     * and the weights are all non-negative, non-NaN, finite, and not all zero.
+     * <p>
+     * <ul>
+     * <li>returns <code>true</code> iff the parameters designate a subarray of
+     * positive length and the weights array contains legitimate values.</li>
+     * <li>throws <code>IllegalArgumentException</code> if any of the following are true:
+     * <ul><li>the values array is null</li>
+     *     <li>the weights array is null</li>
+     *     <li>the weights array does not have the same length as the values array</li>
+     *     <li>the weights array contains one or more infinite values</li>
+     *     <li>the weights array contains one or more NaN values</li>
+     *     <li>the weights array contains negative values</li>
+     *     <li>the start and length arguments do not determine a valid array</li></ul>
+     * </li>
+     * <li>returns <code>false</li> if the array is non-null, but
+     * <code>length</code> is 0.
+     * </ul></p>
+     *
+     * @param values the input array
+     * @param weights the weights array
+     * @param begin index of the first array element to include
+     * @param length the number of elements to include
+     * @return true if the parameters are valid and designate a subarray of positive length
+     * @throws MathIllegalArgumentException if the indices are invalid or the array is null
+     * @since 3.3
+     */
+    public static boolean verifyValues(
+        final double[] values,
+        final double[] weights,
+        final int begin,
+        final int length) throws MathIllegalArgumentException {
+        return verifyValues(values, weights, begin, length, false);
+    }
+
+    /**
+     * This method is used
+     * to verify that the begin and length parameters designate a subarray of positive length
+     * and the weights are all non-negative, non-NaN, finite, and not all zero.
+     * <p>
+     * <ul>
+     * <li>returns <code>true</code> iff the parameters designate a subarray of
+     * non-negative length and the weights array contains legitimate values.</li>
+     * <li>throws <code>MathIllegalArgumentException</code> if any of the following are true:
+     * <ul><li>the values array is null</li>
+     *     <li>the weights array is null</li>
+     *     <li>the weights array does not have the same length as the values array</li>
+     *     <li>the weights array contains one or more infinite values</li>
+     *     <li>the weights array contains one or more NaN values</li>
+     *     <li>the weights array contains negative values</li>
+     *     <li>the start and length arguments do not determine a valid array</li></ul>
+     * </li>
+     * <li>returns <code>false</li> if the array is non-null, but
+     * <code>length</code> is 0 unless <code>allowEmpty</code> is <code>true</code>.
+     * </ul></p>
+     *
+     * @param values the input array.
+     * @param weights the weights array.
+     * @param begin index of the first array element to include.
+     * @param length the number of elements to include.
+     * @param allowEmpty if {@code true} than allow zero length arrays to pass.
+     * @return {@code true} if the parameters are valid.
+     * @throws NullArgumentException if either of the arrays are null
+     * @throws MathIllegalArgumentException if the array indices are not valid,
+     * the weights array contains NaN, infinite or negative elements, or there
+     * are no positive weights.
+     * @since 3.3
+     */
+    public static boolean verifyValues(final double[] values, final double[] weights,
+            final int begin, final int length, final boolean allowEmpty) throws MathIllegalArgumentException {
+
+        if (weights == null || values == null) {
+            throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+        }
+
+        if (weights.length != values.length) {
+            throw new DimensionMismatchException(weights.length, values.length);
+        }
+
+        boolean containsPositiveWeight = false;
+        for (int i = begin; i < begin + length; i++) {
+            final double weight = weights[i];
+            if (Double.isNaN(weight)) {
+                throw new MathIllegalArgumentException(LocalizedFormats.NAN_ELEMENT_AT_INDEX, Integer.valueOf(i));
+            }
+            if (Double.isInfinite(weight)) {
+                throw new MathIllegalArgumentException(LocalizedFormats.INFINITE_ARRAY_ELEMENT, Double.valueOf(weight), Integer.valueOf(i));
+            }
+            if (weight < 0) {
+                throw new MathIllegalArgumentException(LocalizedFormats.NEGATIVE_ELEMENT_AT_INDEX, Integer.valueOf(i), Double.valueOf(weight));
+            }
+            if (!containsPositiveWeight && weight > 0.0) {
+                containsPositiveWeight = true;
+            }
+        }
+
+        if (!containsPositiveWeight) {
+            throw new MathIllegalArgumentException(LocalizedFormats.WEIGHT_AT_LEAST_ONE_NON_ZERO);
+        }
+
+        return verifyValues(values, begin, length, allowEmpty);
+    }
 }

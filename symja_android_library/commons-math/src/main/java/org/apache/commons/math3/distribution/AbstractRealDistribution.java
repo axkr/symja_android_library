@@ -33,7 +33,7 @@ import org.apache.commons.math3.util.FastMath;
  * Default implementations are provided for some of the methods
  * that do not vary from distribution to distribution.
  *
- * @version $Id: AbstractRealDistribution.java 1370215 2012-08-07 12:38:59Z sebb $
+ * @version $Id: AbstractRealDistribution.java 1533974 2013-10-20 20:42:41Z psteitz $
  * @since 3.0
  */
 public abstract class AbstractRealDistribution
@@ -48,9 +48,14 @@ implements RealDistribution, Serializable {
       * {@link #random} instance variable instead.
       */
     @Deprecated
-    protected final RandomDataImpl randomData = new RandomDataImpl();
-    /** RNG instance used to generate samples from the distribution. */
+    protected RandomDataImpl randomData = new RandomDataImpl();
+
+    /**
+     * RNG instance used to generate samples from the distribution.
+     * @since 3.1
+     */
     protected final RandomGenerator random;
+
     /** Solver absolute accuracy for inverse cumulative computation */
     private double solverAbsoluteAccuracy = SOLVER_DEFAULT_ABSOLUTE_ACCURACY;
 
@@ -66,6 +71,7 @@ implements RealDistribution, Serializable {
     }
     /**
      * @param rng Random number generator.
+     * @since 3.1
      */
     protected AbstractRealDistribution(RandomGenerator rng) {
         random = rng;
@@ -275,9 +281,28 @@ implements RealDistribution, Serializable {
      * {@inheritDoc}
      *
      * @return zero.
+     * @since 3.1
      */
     public double probability(double x) {
         return 0d;
+    }
+
+    /**
+     * Returns the natural logarithm of the probability density function (PDF) of this distribution
+     * evaluated at the specified point {@code x}. In general, the PDF is the derivative of the
+     * {@link #cumulativeProbability(double) CDF}. If the derivative does not exist at {@code x},
+     * then an appropriate replacement should be returned, e.g. {@code Double.POSITIVE_INFINITY},
+     * {@code Double.NaN}, or the limit inferior or limit superior of the difference quotient. Note
+     * that due to the floating point precision and under/overflow issues, this method will for some
+     * distributions be more precise and faster than computing the logarithm of
+     * {@link #density(double)}. The default implementation simply computes the logarithm of
+     * {@code density(x)}.
+     *
+     * @param x the point at which the PDF is evaluated
+     * @return the logarithm of the value of the probability density function at point {@code x}
+     */
+    public double logDensity(double x) {
+        return FastMath.log(density(x));
     }
 }
 

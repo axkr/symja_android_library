@@ -17,24 +17,30 @@
 package org.apache.commons.math3.linear;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NotPositiveException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.OpenIntToFieldHashMap;
 
 /**
  * This class implements the {@link FieldVector} interface with a {@link OpenIntToFieldHashMap} backing store.
  * @param <T> the type of the field elements
- * @version $Id: SparseFieldVector.java 1385316 2012-09-16 16:50:32Z tn $
+ * @version $Id: SparseFieldVector.java 1455233 2013-03-11 17:00:41Z luc $
  * @since 2.0
+ * @deprecated As of version 3.1, this class is deprecated, for reasons exposed
+ * in this JIRA
+ * <a href="https://issues.apache.org/jira/browse/MATH-870">ticket</a>. This
+ * class will be removed in version 4.0.
  */
+@Deprecated
 public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector<T>, Serializable {
     /**  Serialization identifier. */
     private static final long serialVersionUID = 7841233292190413362L;
@@ -104,8 +110,10 @@ public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector
      *
      * @param field Field to which the elements belong.
      * @param values Set of values to create from.
+     * @exception NullArgumentException if values is null
      */
-    public SparseFieldVector(Field<T> field, T[] values) {
+    public SparseFieldVector(Field<T> field, T[] values) throws NullArgumentException {
+        MathUtils.checkNotNull(values);
         this.field = field;
         virtualSize = values.length;
         entries = new OpenIntToFieldHashMap<T>(field);
@@ -192,8 +200,11 @@ public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector
         }
     }
 
-    /** {@inheritDoc} */
-    public FieldVector<T> append(T d) {
+    /** {@inheritDoc}
+     * @exception NullArgumentException if d is null
+     */
+    public FieldVector<T> append(T d) throws NullArgumentException {
+        MathUtils.checkNotNull(d);
         FieldVector<T> res = new SparseFieldVector<T>(this, 1);
         res.setEntry(virtualSize, d);
         return res;
@@ -404,15 +415,21 @@ public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector
         return v.mapMultiply(dotProduct(v).divide(v.dotProduct(v)));
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @exception NullArgumentException if value is null
+     */
     public void set(T value) {
+        MathUtils.checkNotNull(value);
         for (int i = 0; i < virtualSize; i++) {
             setEntry(i, value);
         }
     }
 
-    /** {@inheritDoc} */
-    public void setEntry(int index, T value) throws OutOfRangeException {
+    /** {@inheritDoc}
+     * @exception NullArgumentException if value is null
+     */
+    public void setEntry(int index, T value) throws NullArgumentException, OutOfRangeException {
+        MathUtils.checkNotNull(value);
         checkIndex(index);
         entries.put(index, value);
     }
@@ -474,7 +491,7 @@ public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector
 
     /** {@inheritDoc} */
     public T[] toArray() {
-        T[] res = buildArray(virtualSize);
+        T[] res = MathArrays.buildArray(field, virtualSize);
         OpenIntToFieldHashMap<T>.Iterator iter = entries.iterator();
         while (iter.hasNext()) {
             iter.advance();
@@ -523,18 +540,6 @@ public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector
             return res;
         }
     }
-
-    /**
-     * Build an array of elements.
-     *
-     * @param length Size of the array to build.
-     * @return a new array.
-     */
-    @SuppressWarnings("unchecked") // field is type T
-    private T[] buildArray(final int length) {
-        return (T[]) Array.newInstance(field.getRuntimeClass(), length);
-    }
-
 
     /** {@inheritDoc} */
     @Override

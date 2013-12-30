@@ -28,7 +28,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * constructor. Specific elements of the matrix are incrementally updated with
  * calls to incrementRow() or increment Covariance().
  *
- * <p>This class is based on a paper written by Philippe Pbay:
+ * <p>This class is based on a paper written by Philippe P&eacute;bay:
  * <a href="http://prod.sandia.gov/techlib/access-control.cgi/2008/086212.pdf">
  * Formulas for Robust, One-Pass Parallel Computation of Covariances and
  * Arbitrary-Order Statistical Moments</a>, 2008, Technical Report SAND2008-6212,
@@ -37,7 +37,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * <p>Note: the underlying covariance matrix is symmetric, thus only the
  * upper triangular part of the matrix is stored and updated each increment.</p>
  *
- * @version $Id: StorelessCovariance.java 1296366 2012-03-02 18:30:40Z sebb $
+ * @version $Id: StorelessCovariance.java 1519851 2013-09-03 21:16:35Z tn $
  * @since 3.0
  */
 public class StorelessCovariance extends Covariance {
@@ -160,6 +160,30 @@ public class StorelessCovariance extends Covariance {
             }
         }
 
+    }
+
+    /**
+     * Appends {@code sc} to this, effectively aggregating the computations in {@code sc}
+     * with this.  After invoking this method, covariances returned should be close
+     * to what would have been obtained by performing all of the {@link #increment(double[])}
+     * operations in {@code sc} directly on this.
+     *
+     * @param sc externally computed StorelessCovariance to add to this
+     * @throws DimensionMismatchException if the dimension of sc does not match this
+     * @since 3.3
+     */
+    public void append(StorelessCovariance sc) throws DimensionMismatchException {
+        if (sc.dimension != dimension) {
+            throw new DimensionMismatchException(sc.dimension, dimension);
+        }
+
+        // only update the upper triangular part of the covariance matrix
+        // as only these parts are actually stored
+        for (int i = 0; i < dimension; i++) {
+            for (int j = i; j < dimension; j++) {
+                getElement(i, j).append(sc.getElement(i, j));
+            }
+        }
     }
 
     /**

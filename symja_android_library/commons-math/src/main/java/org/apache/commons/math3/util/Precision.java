@@ -27,7 +27,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Utilities for comparing numbers.
  *
  * @since 3.0
- * @version $Id: Precision.java 1387941 2012-09-20 10:09:37Z erans $
+ * @version $Id: Precision.java 1547649 2013-12-03 23:50:14Z tn $
  */
 public class Precision {
     /**
@@ -282,6 +282,7 @@ public class Precision {
      * @param eps Amount of allowed relative error.
      * @return {@code true} if the values are two adjacent floating point
      * numbers or they are within range of each other.
+     * @since 3.1
      */
     public static boolean equalsWithRelativeTolerance(double x, double y, double eps) {
         if (equals(x, y, 1)) {
@@ -490,8 +491,7 @@ public class Precision {
                 unscaled = FastMath.floor(unscaled);
             } else {
                 // The following equality test is intentional and needed for rounding purposes
-                if (FastMath.floor(unscaled) / 2.0 == FastMath.floor(Math
-                    .floor(unscaled) / 2.0)) { // even
+                if (FastMath.floor(unscaled) / 2.0 == FastMath.floor(FastMath.floor(unscaled) / 2.0)) { // even
                     unscaled = FastMath.floor(unscaled);
                 } else { // odd
                     unscaled = FastMath.ceil(unscaled);
@@ -515,7 +515,10 @@ public class Precision {
             }
             break;
         case BigDecimal.ROUND_UP :
-            unscaled = FastMath.ceil(FastMath.nextAfter(unscaled,  Double.POSITIVE_INFINITY));
+            // do not round if the discarded fraction is equal to zero
+            if (unscaled != FastMath.floor(unscaled)) {
+                unscaled = FastMath.ceil(FastMath.nextAfter(unscaled, Double.POSITIVE_INFINITY));
+            }
             break;
         default :
             throw new MathIllegalArgumentException(LocalizedFormats.INVALID_ROUNDING_METHOD,

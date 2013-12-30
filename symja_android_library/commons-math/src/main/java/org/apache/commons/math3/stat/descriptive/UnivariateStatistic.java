@@ -17,15 +17,15 @@
 package org.apache.commons.math3.stat.descriptive;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.util.MathArrays;
 
 
 /**
  * Base interface implemented by all statistics.
  *
- * @version $Id: UnivariateStatistic.java 1382332 2012-09-08 17:27:47Z psteitz $
+ * @version $Id: UnivariateStatistic.java 1416643 2012-12-03 19:37:14Z tn $
  */
-public interface UnivariateStatistic {
-
+public interface UnivariateStatistic extends MathArrays.Function {
     /**
      * Returns the result of evaluating the statistic over the input array.
      *
@@ -53,5 +53,4 @@ public interface UnivariateStatistic {
      * @return a copy of the statistic
      */
     UnivariateStatistic copy();
-
 }

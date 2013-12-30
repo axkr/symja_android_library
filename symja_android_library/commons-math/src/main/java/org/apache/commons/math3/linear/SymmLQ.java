@@ -148,7 +148,7 @@ import org.apache.commons.math3.util.MathUtils;
  * Journal on Numerical Analysis 12(4): 617-629, 1975</dd>
  * </dl>
  *
- * @version $Id: SymmLQ.java 1353141 2012-06-23 15:12:34Z celestin $
+ * @version $Id: SymmLQ.java 1505938 2013-07-23 08:50:10Z luc $
  * @since 3.0
  */
 public class SymmLQ
@@ -798,7 +798,7 @@ public class SymmLQ
         /**
          * Returns {@code true} if the default stopping criterion is fulfilled.
          *
-         * @return {@code true} if convergence of the iterations has occured
+         * @return {@code true} if convergence of the iterations has occurred
          */
         boolean hasConverged() {
             return hasConverged;

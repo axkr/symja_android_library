@@ -35,7 +35,7 @@ import org.apache.commons.math3.util.MathArrays;
  * @see <a href="http://mathworld.wolfram.com/MultivariateNormalDistribution.html">
  * Multivariate normal distribution (MathWorld)</a>
  *
- * @version $Id$
+ * @version $Id: MultivariateNormalDistribution.java 1503290 2013-07-15 15:16:29Z sebb $
  * @since 3.1
  */
 public class MultivariateNormalDistribution
@@ -175,12 +175,12 @@ public class MultivariateNormalDistribution
 
     /** {@inheritDoc} */
     public double density(final double[] vals) throws DimensionMismatchException {
-        final int dim = getDimensions();
+        final int dim = getDimension();
         if (vals.length != dim) {
             throw new DimensionMismatchException(vals.length, dim);
         }
 
-        return FastMath.pow(2 * FastMath.PI, -dim / 2) *
+        return FastMath.pow(2 * FastMath.PI, -0.5 * dim) *
             FastMath.pow(covarianceMatrixDeterminant, -0.5) *
             getExponentTerm(vals);
     }
@@ -192,7 +192,7 @@ public class MultivariateNormalDistribution
      * @return the standard deviations.
      */
     public double[] getStandardDeviations() {
-        final int dim = getDimensions();
+        final int dim = getDimension();
         final double[] std = new double[dim];
         final double[][] s = covarianceMatrix.getData();
         for (int i = 0; i < dim; i++) {
@@ -202,8 +202,9 @@ public class MultivariateNormalDistribution
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] sample() {
-        final int dim = getDimensions();
+        final int dim = getDimension();
         final double[] normalVals = new double[dim];
 
         for (int i = 0; i < dim; i++) {

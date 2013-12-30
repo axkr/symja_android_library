@@ -29,7 +29,7 @@ import org.apache.commons.math3.random.Well19937c;
  * @see <a href="http://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/CauchyDistribution.html">Cauchy Distribution (MathWorld)</a>
  * @since 1.1 (changed to concrete class in 3.0)
- * @version $Id: CauchyDistribution.java 1369202 2012-08-03 20:50:33Z erans $
+ * @version $Id: CauchyDistribution.java 1519842 2013-09-03 20:38:59Z tn $
  */
 public class CauchyDistribution extends AbstractRealDistribution {
     /**
@@ -78,6 +78,19 @@ public class CauchyDistribution extends AbstractRealDistribution {
     public CauchyDistribution(double median, double scale,
                               double inverseCumAccuracy) {
         this(new Well19937c(), median, scale, inverseCumAccuracy);
+    }
+
+    /**
+     * Creates a Cauchy distribution.
+     *
+     * @param rng Random number generator.
+     * @param median Median for this distribution.
+     * @param scale Scale parameter for this distribution.
+     * @throws NotStrictlyPositiveException if {@code scale <= 0}.
+     * @since 3.3
+     */
+    public CauchyDistribution(RandomGenerator rng, double median, double scale) {
+        this(rng, median, scale, DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
     }
 
     /**

@@ -28,7 +28,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
 
 /**
  * Common part shared by both {@link FractionFormat} and {@link BigFractionFormat}.
- * @version $Id: AbstractFormat.java 1296532 2012-03-03 00:39:50Z sebb $
+ * @version $Id: AbstractFormat.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public abstract class AbstractFormat extends NumberFormat implements Serializable {

@@ -43,7 +43,7 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see <a href="http://mathworld.wolfram.com/LUDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/LU_decomposition">Wikipedia</a>
- * @version $Id: LUDecomposition.java 1366826 2012-07-29 12:12:11Z erans $
+ * @version $Id: LUDecomposition.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class LUDecomposition {

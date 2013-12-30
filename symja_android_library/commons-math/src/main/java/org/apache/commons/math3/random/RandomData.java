@@ -26,8 +26,9 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
 /**
  * Random data generation utilities.
  * @deprecated to be removed in 4.0.  Use {@link RandomDataGenerator} directly
- * @version $Id: RandomData.java 1382904 2012-09-10 14:47:45Z luc $
+ * @version $Id: RandomData.java 1499808 2013-07-04 17:00:42Z sebb $
  */
+@Deprecated
 public interface RandomData {
     /**
      * Generates a random string of hex characters of length {@code len}.
@@ -192,7 +193,7 @@ public interface RandomData {
      * (exclusive)
      * @throws NumberIsTooLargeException if {@code lower >= upper}
      * @throws NotFiniteNumberException if one of the bounds is infinite
-     * @throws NotANumberException if one of the bounds is infinite
+     * @throws NotANumberException if one of the bounds is NaN
      */
     double nextUniform(double lower, double upper)
         throws NumberIsTooLargeException, NotFiniteNumberException, NotANumberException;
@@ -218,7 +219,7 @@ public interface RandomData {
      * {@code true}
      * @throws NumberIsTooLargeException if {@code lower >= upper}
      * @throws NotFiniteNumberException if one of the bounds is infinite
-     * @throws NotANumberException if one of the bounds is infinite
+     * @throws NotANumberException if one of the bounds is NaN
      */
     double nextUniform(double lower, double upper, boolean lowerInclusive)
         throws NumberIsTooLargeException, NotFiniteNumberException, NotANumberException;

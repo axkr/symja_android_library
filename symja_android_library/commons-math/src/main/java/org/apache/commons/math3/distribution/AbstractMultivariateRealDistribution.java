@@ -23,7 +23,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 /**
  * Base class for multivariate probability distributions.
  *
- * @version $Id$
+ * @version $Id: AbstractMultivariateRealDistribution.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.1
  */
 public abstract class AbstractMultivariateRealDistribution
@@ -31,7 +31,7 @@ public abstract class AbstractMultivariateRealDistribution
     /** RNG instance used to generate samples from the distribution. */
     protected final RandomGenerator random;
     /** The number of dimensions or columns in the multivariate distribution. */
-    private final int numDimensions;
+    private final int dimension;
 
     /**
      * @param rng Random number generator.
@@ -40,7 +40,7 @@ public abstract class AbstractMultivariateRealDistribution
     protected AbstractMultivariateRealDistribution(RandomGenerator rng,
                                                    int n) {
         random = rng;
-        numDimensions = n;
+        dimension = n;
     }
 
     /** {@inheritDoc} */
@@ -48,14 +48,9 @@ public abstract class AbstractMultivariateRealDistribution
         random.setSeed(seed);
     }
 
-    /**
-     * Gets the number of dimensions (i.e. the number of random variables) of
-     * the distribution.
-     *
-     * @return the number of dimensions.
-     */
-    public int getDimensions() {
-        return numDimensions;
+    /** {@inheritDoc} */
+    public int getDimension() {
+        return dimension;
     }
 
     /** {@inheritDoc} */
@@ -67,40 +62,10 @@ public abstract class AbstractMultivariateRealDistribution
             throw new NotStrictlyPositiveException(LocalizedFormats.NUMBER_OF_SAMPLES,
                                                    sampleSize);
         }
-        final double[][] out = new double[sampleSize][numDimensions];
+        final double[][] out = new double[sampleSize][dimension];
         for (int i = 0; i < sampleSize; i++) {
             out[i] = sample();
         }
         return out;
-    }
-
-    /** {@inheritDoc} */
-    public double probability(double[] x) {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    public double getSupportLowerBound() {
-        return Double.NEGATIVE_INFINITY;
-    }
-
-    /** {@inheritDoc} */
-    public double getSupportUpperBound() {
-        return Double.POSITIVE_INFINITY;
-    }
-
-    /** {@inheritDoc} */
-    public boolean isSupportLowerBoundInclusive() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public boolean isSupportUpperBoundInclusive() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public boolean isSupportConnected() {
-        return false;
     }
 }

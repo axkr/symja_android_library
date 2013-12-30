@@ -17,7 +17,7 @@
 package org.apache.commons.math3.analysis.differentiation;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 
 /** Interface for univariate functions derivatives.
  * <p>This interface represents a simple function which computes
@@ -26,7 +26,7 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
  * @see UnivariateDifferentiableFunction
  * @see UnivariateFunctionDifferentiator
  * @since 3.1
- * @version $Id: UnivariateDifferentiableFunction.java 1386742 2012-09-17 17:41:54Z luc $
+ * @version $Id: UnivariateDifferentiableFunction.java 1462496 2013-03-29 14:56:08Z psteitz $
  */
 public interface UnivariateDifferentiableFunction extends UnivariateFunction {
 
@@ -35,10 +35,10 @@ public interface UnivariateDifferentiableFunction extends UnivariateFunction {
      * value and the first derivative of the function.</p>
      * @param t function input value
      * @return function result
-     * @exception MathIllegalArgumentException if {@code t} does not
-     * fulfill functions constraints (argument out of bound, or unsupported
-     * derivative order for example)
+     * @exception DimensionMismatchException if t is inconsistent with the
+     * function's free parameters or order
      */
-    DerivativeStructure value(DerivativeStructure t) throws MathIllegalArgumentException;
+    DerivativeStructure value(DerivativeStructure t)
+        throws DimensionMismatchException;
 
 }

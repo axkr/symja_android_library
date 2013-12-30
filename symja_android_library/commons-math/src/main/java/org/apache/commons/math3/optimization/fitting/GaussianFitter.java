@@ -28,8 +28,6 @@ import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.optimization.DifferentiableMultivariateVectorOptimizer;
-import org.apache.commons.math3.optimization.fitting.CurveFitter;
-import org.apache.commons.math3.optimization.fitting.WeightedObservedPoint;
 import org.apache.commons.math3.util.FastMath;
 
 /**
@@ -56,8 +54,10 @@ import org.apache.commons.math3.util.FastMath;
  * </pre>
  *
  * @since 2.2
- * @version $Id: GaussianFitter.java 1374492 2012-08-18 01:09:25Z erans $
+ * @version $Id: GaussianFitter.java 1422230 2012-12-15 12:11:13Z erans $
+ * @deprecated As of 3.1 (to be removed in 4.0).
  */
+@Deprecated
 public class GaussianFitter extends CurveFitter<Gaussian.Parametric> {
     /**
      * Constructs an instance using the specified optimizer.
@@ -88,7 +88,7 @@ public class GaussianFitter extends CurveFitter<Gaussian.Parametric> {
                     double v = Double.POSITIVE_INFINITY;
                     try {
                         v = super.value(x, p);
-                    } catch (NotStrictlyPositiveException e) {
+                    } catch (NotStrictlyPositiveException e) { // NOPMD
                         // Do nothing.
                     }
                     return v;
@@ -101,7 +101,7 @@ public class GaussianFitter extends CurveFitter<Gaussian.Parametric> {
                                    Double.POSITIVE_INFINITY };
                     try {
                         v = super.gradient(x, p);
-                    } catch (NotStrictlyPositiveException e) {
+                    } catch (NotStrictlyPositiveException e) { // NOPMD
                         // Do nothing.
                     }
                     return v;

@@ -21,7 +21,7 @@ package org.apache.commons.math3.dfp;
  * This should give outward appearances of being a decimal number with DIGITS*4-3
  * decimal digits. This class can be subclassed to appear to be an arbitrary number
  * of decimal digits less than DIGITS*4-3.
- * @version $Id: DfpDec.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: DfpDec.java 1449529 2013-02-24 19:13:17Z luc $
  * @since 2.2
  */
 public class DfpDec extends Dfp {
@@ -320,7 +320,7 @@ public class DfpDec extends Dfp {
         }
 
         if (up) {
-            inc = power10(log10() - getDecimalDigits() + 1);
+            inc = power10(intLog10() - getDecimalDigits() + 1);
             inc = copysign(inc, this);
 
             if (this.equals(getZero())) {
@@ -333,7 +333,7 @@ public class DfpDec extends Dfp {
                 result = add(inc);
             }
         } else {
-            inc = power10(log10());
+            inc = power10(intLog10());
             inc = copysign(inc, this);
 
             if (this.equals(inc)) {

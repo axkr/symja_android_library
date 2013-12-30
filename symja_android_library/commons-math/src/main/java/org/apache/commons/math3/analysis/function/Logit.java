@@ -34,7 +34,7 @@ import org.apache.commons.math3.util.FastMath;
  * It is the inverse of the {@link Sigmoid sigmoid} function.
  *
  * @since 3.0
- * @version $Id: Logit.java 1383441 2012-09-11 14:56:39Z luc $
+ * @version $Id: Logit.java 1391927 2012-09-30 00:03:30Z erans $
  */
 public class Logit implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Lower bound. */
@@ -153,6 +153,7 @@ public class Logit implements UnivariateDifferentiableFunction, DifferentiableUn
      * @param lo Lower bound.
      * @param hi Higher bound.
      * @return the value of the logit function at {@code x}.
+     * @throws OutOfRangeException if {@code x < lo} or {@code x > hi}.
      */
     private static double value(double x,
                                 double lo,
@@ -206,9 +207,7 @@ public class Logit implements UnivariateDifferentiableFunction, DifferentiableUn
                 xH  *=  i * invH;
             }
         }
-        
+
         return t.compose(f);
-
     }
-
 }

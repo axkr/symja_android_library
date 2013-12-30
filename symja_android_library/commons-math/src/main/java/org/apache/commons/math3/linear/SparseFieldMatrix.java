@@ -24,9 +24,15 @@ import org.apache.commons.math3.util.OpenIntToFieldHashMap;
  * Sparse matrix implementation based on an open addressed map.
  *
  * @param <T> the type of the field elements
- * @version $Id: SparseFieldMatrix.java 1244107 2012-02-14 16:17:55Z erans $
+ * @version $Id: SparseFieldMatrix.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
+ * @deprecated As of version 3.1, this class is deprecated, for reasons exposed
+ * in this JIRA
+ * <a href="https://issues.apache.org/jira/browse/MATH-870">ticket</a>. This
+ * class will be removed in version 4.0.
+ *
  */
+@Deprecated
 public class SparseFieldMatrix<T extends FieldElement<T>> extends AbstractFieldMatrix<T> {
 
     /** Storage for (sparse) matrix elements. */
