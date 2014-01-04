@@ -2,11 +2,14 @@ package org.matheclipse.core.form.tex;
 
 import java.util.Hashtable;
 
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -47,6 +50,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	public final Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
 
 	private int plusPrec;
+	private int timesPrec;
 
 	/**
 	 * Constructor
@@ -109,12 +113,25 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
+		if (c.equals(F.CI)) {
+			buf.append("\\imag");
+			return;
+		}
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
 		}
-		convert(buf, c.getRealPart(), 0);
-		buf.append(" + ");
-		convert(buf, c.getImaginaryPart(), 0);
+		BigFraction re = c.getRealPart();
+		BigFraction im = c.getImaginaryPart();
+		if (!re.equals(BigFraction.ZERO)) {
+			convert(buf, c.getRealPart(), 0);
+			if (im.compareTo(BigFraction.ZERO) >= 0) {
+				buf.append(" + ");
+			} else {
+				buf.append(" - ");
+				im = im.negate();
+			}
+		}
+		convert(buf, im, 0);
 		buf.append("\\,"); // InvisibleTimes
 		buf.append("\\imag");
 		if (precedence > plusPrec) {
@@ -127,7 +144,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		String headStr = sym.toString();
+		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
@@ -136,11 +153,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
 		if (convertedSymbol == null) {
-			buf.append(sym.toString());
+			buf.append(sym.getSymbolName());
 		} else {
 			if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
-				buf.append(sym.toString());
+				buf.append(sym.getSymbolName());
 			} else {
 				if (convertedSymbol instanceof Operator) {
 					((Operator) convertedSymbol).convert(buf);
@@ -153,11 +170,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	public void convertHead(final StringBuffer buf, final Object obj) {
 		if (obj instanceof ISymbol) {
-			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
+			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
 			}
-			buf.append(((ISymbol) obj).toString());
+			buf.append(((ISymbol) obj).getSymbolName());
 			return;
 		}
 		convert(buf, obj, 0);
@@ -166,7 +183,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	public void convert(final StringBuffer buf, final Object o, final int precedence) {
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
-			final IConverter converter = reflection(f.head().toString());
+			IConverter converter = null;
+			IExpr h = f.head();
+			if (h.isSymbol()) {
+				converter = reflection(((ISymbol) h).getSymbolName());
+			}
 			if ((converter == null) || (!converter.convert(buf, f, precedence))) {
 				convertAST(buf, f);
 			}
@@ -276,6 +297,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		// exprFactory));
 		// operTab.put(Power, new MMLOperator(this, "msup", ""));
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
+		timesPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
 
 		operTab.put("Sin", new TeXFunction(this, "sin"));
 		operTab.put("Cos", new TeXFunction(this, "cos"));

@@ -508,7 +508,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
-	public final String getSymbol() {
+	public final String getSymbolName() {
 		return fSymbolName;
 	}
 
@@ -555,6 +555,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	@Override
 	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
 		return fSymbolName;
 	}
 

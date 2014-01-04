@@ -60,10 +60,10 @@ public class Times extends AbstractOperator {
 				flag = true;
 				continue;
 			}
-			if ((f.get(i) instanceof IAST) && ((IAST) f.get(i)).head().toString().equals(AST2Expr.POWER_STRING)) {
+			if ((f.get(i) instanceof IAST) && f.get(i).isPower()) {
 				// filter negative Powers:
 				final IAST p = (IAST) f.get(i);
-				if ((p.size() == 3) && (p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
+				if ((p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
 					if (NumberUtil.isMinusOne(p.get(2))) {
 						// x_^(-1) ?
 						denominator.add(p.get(1));

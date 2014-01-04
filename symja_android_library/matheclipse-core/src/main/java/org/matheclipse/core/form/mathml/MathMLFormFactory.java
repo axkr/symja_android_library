@@ -199,7 +199,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		String headStr = sym.toString();
+		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
@@ -230,27 +230,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param buf
-	 *          Description of Parameter
-	 * @param p
-	 *          Description of Parameter
-	 */
-	// public void convertPattern(StringBuffer buf, HPattern p) {
-	// buf.append(" <mi>");
-	// buf.append(p.toString());
-	// tagEnd(buf, "mi");
-	// }
 	public void convertHead(final StringBuffer buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
-			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
+			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			tagStart(buf, "mi");
 			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('&');
 			}
-			buf.append(((ISymbol) obj).toString());
+			buf.append(((ISymbol) obj).getSymbolName());
 			tagEnd(buf, "mi");
 			// &af; &#x2061;
 			tag(buf, "mo", "&#x2061;");
@@ -261,21 +248,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	public void convert(final StringBuffer buf, final IExpr o, final int precedence) {
 		if (o instanceof IAST) {
-			final IAST f = ((IAST) o);
-			// System.out.println(f.getHeader().toString());
-			// IConverter converter = (IConverter)
-			// operTab.get(f.getHeader().toString());
-			// if (converter == null) {
-			// converter = reflection(f.getHeader().toString());
-			// if (converter == null || (converter.convert(buf, f, 0) == false))
-			// {
-			// convertHeadList(buf, f);
-			// }
-			// } else {
-			// if (converter.convert(buf, f, precedence) == false) {
-			// convertHeadList(buf, f);
-			// }
-			// }
+			final IAST f = ((IAST) o); 
 			final ISymbol symbol = f.topHead();
 			final int attr = symbol.getAttributes();
 			IAST ast = f;
@@ -286,10 +259,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					ast = temp;
 				}
 			}
-			final IConverter converter = reflection(ast.head().toString());
+			IExpr h = ast.head();
+			IConverter converter = null;
+			if (h.isSymbol()) {
+				converter = reflection(((ISymbol)h).getSymbolName());
+			}
 			if ((converter == null) || (!converter.convert(buf, ast, precedence))) {
 				convertAST(buf, ast);
 			}
+
 			return;
 		}
 		if (o instanceof INum) {
@@ -375,7 +353,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			module.setFactory(this);
 			// module.setExpressionFactory(fExprFactory);
 			operTab.put(headStr, module);
-			return module;  
+			return module;
 		} catch (final Throwable se) {
 			if (Config.DEBUG) {
 				se.printStackTrace();

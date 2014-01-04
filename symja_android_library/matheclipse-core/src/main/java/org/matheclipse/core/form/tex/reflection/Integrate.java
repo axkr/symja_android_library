@@ -22,7 +22,7 @@ public class Integrate extends AbstractConverter {
       if (obj instanceof IAST) {
         list = (IAST) obj;
       }
-      if ((list != null) && (list.size() == 4) && list.head().toString().equals(AST2Expr.LIST_STRING)) {
+      if ((list != null) && (list.size() == 4) && list.isList()) {
       	buf.append("\\int_{");
         fFactory.convert(buf, list.get(2), 0);
         buf.append("}^{");

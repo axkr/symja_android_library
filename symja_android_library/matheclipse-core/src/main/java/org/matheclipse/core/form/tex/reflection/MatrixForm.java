@@ -1,7 +1,7 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -17,9 +17,9 @@ public class MatrixForm extends AbstractConverter {
 	 * Converts a given function into the corresponding TeX output
 	 * 
 	 * @param buf
-	 *          StringBuffer for TeX output
+	 *            StringBuffer for TeX output
 	 * @param f
-	 *          The math function which should be converted to TeX
+	 *            The math function which should be converted to TeX
 	 */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() != 2) {
@@ -38,7 +38,7 @@ public class MatrixForm extends AbstractConverter {
 					buf.append(' ');
 					fFactory.convert(buf, element, 0);
 					buf.append(' ');
-					if (i < vector.size()-1) {
+					if (i < vector.size() - 1) {
 						buf.append('&');
 					}
 				}
@@ -48,12 +48,12 @@ public class MatrixForm extends AbstractConverter {
 			buf.append("\\begin{pmatrix}");
 			IAST row;
 			for (int i = 1; i < matrix.size(); i++) {
-				row = (IAST) matrix.get(i); 
+				row = (IAST) matrix.get(i);
 				for (int j = 1; j < row.size(); j++) {
 					buf.append(' ');
 					fFactory.convert(buf, row.get(j), 0);
 					buf.append(' ');
-					if (j < row.size()-1) {
+					if (j < row.size() - 1) {
 						buf.append('&');
 					}
 				}
@@ -70,7 +70,7 @@ public class MatrixForm extends AbstractConverter {
 			return null;
 		}
 		final IAST list = (IAST) expr;
-		if (!list.topHead().toString().equals(AST2Expr.LIST_STRING)) {
+		if (!expr.isList()) {
 			return null;
 		}
 		final int size = list.size();
@@ -82,7 +82,7 @@ public class MatrixForm extends AbstractConverter {
 				return null;
 			}
 			final IAST subList = (IAST) temp;
-			if (!subList.topHead().toString().equals(AST2Expr.LIST_STRING)) {
+			if (!subList.isList()) {
 				return null;
 			}
 			if (subSize < 0) {
@@ -99,14 +99,14 @@ public class MatrixForm extends AbstractConverter {
 			return null;
 		}
 		final IAST list = (IAST) expr;
-		if (!list.topHead().toString().equals(AST2Expr.LIST_STRING)) {
+		if (!list.isList()) {
 			return null;
 		}
 		final int size = list.size();
 		IExpr temp;
 		for (int i = 1; i < size; i++) {
 			temp = list.get(i);
-			if ((temp instanceof IAST) && (((IAST) temp).topHead().toString().equals(AST2Expr.LIST_STRING))) {
+			if ((temp instanceof IAST) && (((IAST) temp).isList())) {
 				return null;
 			}
 		}

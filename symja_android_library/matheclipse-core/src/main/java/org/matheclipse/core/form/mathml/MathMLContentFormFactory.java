@@ -117,7 +117,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory  {
 	}
 
 	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
-		String headStr = sym.toString();
+		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
@@ -163,12 +163,12 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory  {
 	// }
 	public void convertHead(final StringBuffer buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
-			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).toString());
+			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			tagStart(buf, "mi");
 			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('&');
 			}
-			buf.append(((ISymbol) obj).toString());
+			buf.append(((ISymbol) obj).getSymbolName());
 			tagEnd(buf, "mi");
 			// &af; &#x2061;
 			tag(buf, "mo", "&#x2061;");
@@ -204,7 +204,11 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory  {
 					ast = temp;
 				}
 			}
-			final IConverter converter = reflection(ast.head().toString());
+			IExpr h = ast.head();
+			IConverter converter = null;
+			if (h.isSymbol()) {
+				converter = reflection(((ISymbol)h).getSymbolName());
+			}
 			if ((converter == null) || (!converter.convert(buf, ast, precedence))) {
 				convertAST(buf, ast);
 			}

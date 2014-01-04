@@ -119,6 +119,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IEvaluator getEvaluator();
 
 	/**
+	 * Get the pure symbol name string
+	 * 
+	 * @return
+	 */
+	public String getSymbolName();
+
+	/**
 	 * Set the current evaluator which is associated to this symbol
 	 */
 	public void setEvaluator(IEvaluator module);

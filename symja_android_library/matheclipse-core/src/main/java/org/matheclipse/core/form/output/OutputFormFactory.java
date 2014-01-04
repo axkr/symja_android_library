@@ -250,13 +250,13 @@ public class OutputFormFactory {
 
 	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.toString());
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
 			if (str != null) {
 				append(buf, str);
 				return;
 			}
 		}
-		append(buf, symbol.toString());
+		append(buf, symbol.getSymbolName());
 	}
 
 	public void convertPattern(final Appendable buf, final IPatternObject pattern) throws IOException {
@@ -286,7 +286,6 @@ public class OutputFormFactory {
 				IExpr temp1 = multFun.get(1);
 
 				if (temp1.isNumber() && (((INumber) temp1).complexSign() < 0)) {
-					// ((ISignedNumber) temp1).isNegative()) {
 					if (((INumber) temp1).equalsInt(1)) {
 						flag = true;
 					} else {
@@ -443,7 +442,7 @@ public class OutputFormFactory {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
 			ISymbol head = list.topHead();
-			String header = head.toString();
+			String header = head.getSymbolName();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
 				if (str != null) {

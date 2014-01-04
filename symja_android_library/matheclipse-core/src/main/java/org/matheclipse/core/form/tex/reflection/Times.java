@@ -46,7 +46,7 @@ public class Times extends AbstractOperator {
 		final IAST numerator = Times();
 		final IAST denominator = Times( );
 		for (int i = 1; i < f.size(); i++) {
-			if ((f.get(i).isAST()) && ((IAST) f.get(i)).head().toString().equals(AST2Expr.POWER_STRING)) {
+			if ((f.get(i).isAST()) && f.get(i).isPower()) {
 				// filter negative Powers:
 				final IAST p = (IAST) f.get(i);
 				if ((p.size() == 3) && (p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
