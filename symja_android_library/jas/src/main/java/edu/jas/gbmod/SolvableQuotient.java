@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4645 2013-09-15 11:14:11Z kredel $
+ * $Id: SolvableQuotient.java 4668 2013-10-19 17:41:05Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -11,9 +11,11 @@ import org.apache.log4j.Logger;
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.poly.ExpVector;
+import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.QuotPair;
 
 
 /**
@@ -22,7 +24,8 @@ import edu.jas.structure.GcdRingElem;
  * immutable.
  * @author Heinz Kredel
  */
-public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<SolvableQuotient<C>> {
+public class SolvableQuotient<C extends GcdRingElem<C>> 
+    implements GcdRingElem<SolvableQuotient<C>>, QuotPair<GenPolynomial<C>> {
 
 
     private static final Logger logger = Logger.getLogger(SolvableQuotient.class);
@@ -153,6 +156,24 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
      */
     public SolvableQuotientRing<C> factory() {
         return ring;
+    }
+
+
+    /**
+     * Numerator.
+     * @see edu.jas.structure.QuotPair#numerator()
+     */
+    public GenSolvablePolynomial<C> numerator() {
+        return num;
+    }
+
+
+    /**
+     * Denominator.
+     * @see edu.jas.structure.QuotPair#denominator()
+     */
+    public GenSolvablePolynomial<C> denominator() {
+        return den;
     }
 
 

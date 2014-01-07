@@ -1,5 +1,5 @@
 /*
- * $Id: RecSolvablePolynomial.java 4558 2013-08-04 19:06:34Z kredel $
+ * $Id: RecSolvablePolynomial.java 4710 2013-12-26 20:32:15Z kredel $
  */
 
 package edu.jas.poly;
@@ -154,7 +154,7 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
         }
         assert (ring.nvar == Bp.ring.nvar);
         if (debug) {
-            logger.debug("ring = " + ring);
+            logger.info("ring = " + ring.toScript());
         }
         ExpVector Z = ring.evzero;
         GenPolynomialRing<C> cfac = (GenPolynomialRing<C>) ring.coFac;
@@ -168,6 +168,8 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
         Map<ExpVector, GenPolynomial<C>> A = val;
         Map<ExpVector, GenPolynomial<C>> B = Bp.val;
         Set<Map.Entry<ExpVector, GenPolynomial<C>>> Bk = B.entrySet();
+        if (debug)
+            logger.info("input A = " + this);
         for (Map.Entry<ExpVector, GenPolynomial<C>> y : A.entrySet()) {
             GenPolynomial<C> a = y.getValue();
             ExpVector e = y.getKey();
@@ -179,6 +181,8 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                 el1 = ep[0];
             }
             //int el1s = ring.nvar + 1 - el1;
+            if (debug)
+                logger.info("input B = " + Bp);
             for (Map.Entry<ExpVector, GenPolynomial<C>> x : Bk) {
                 GenPolynomial<C> b = x.getValue();
                 ExpVector f = x.getKey();
@@ -190,16 +194,16 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                     fl1 = fp[fp.length - 1];
                 }
                 int fl1s = ring.nvar + 1 - fl1;
-                // polynomial coefficient multiplication 
+                // polynomial coefficient multiplication e*b = P_eb, for a*((e*b)*f)
                 RecSolvablePolynomial<C> Cps = ring.getZERO().copy();
                 RecSolvablePolynomial<C> Cs = null;
                 if (ring.coeffTable.isEmpty() || b.isConstant() || e.isZERO()) { // symmetric
                     Cps = new RecSolvablePolynomial<C>(ring, b, e);
                     if (debug)
-                        logger.info("symmetric coeff: b = " + b + ", e = " + e);
+                        logger.info("symmetric coeff, e*b: b = " + b + ", e = " + e);
                 } else { // unsymmetric
                     if (debug)
-                        logger.info("unsymmetric coeff: b = " + b + ", e = " + e);
+                        logger.info("unsymmetric coeff, e*b: b = " + b + ", e = " + e);
                     for (Map.Entry<ExpVector, C> z : b.val.entrySet()) {
                         C c = z.getValue();
                         GenPolynomial<C> cc = b.ring.getONE().multiply(c);
@@ -273,13 +277,13 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                 }
                 if (debug)
                     logger.info("coeff-poly: Cps = " + Cps);
-                // polynomial multiplication 
+                // polynomial multiplication P_eb*f, for a*(P_eb*f)
                 RecSolvablePolynomial<C> Dps = ring.getZERO().copy();
                 RecSolvablePolynomial<C> Ds = null;
                 RecSolvablePolynomial<C> D1, D2;
                 if (ring.table.isEmpty() || Cps.isConstant() || f.isZERO()) { // symmetric
                     if (debug)
-                        logger.info("symmetric poly: b = " + b + ", e = " + e);
+                        logger.info("symmetric poly, P_eb*f: Cps = " + Cps + ", f = " + f);
                     ExpVector g = e.sum(f);
                     if (Cps.isConstant()) {
                         Ds = new RecSolvablePolynomial<C>(ring, Cps.leadingBaseCoefficient(), g); // symmetric!
@@ -288,7 +292,7 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                     }
                 } else { // eventually unsymmetric
                     if (debug)
-                        logger.info("unsymmetric poly: Cps = " + Cps + ", f = " + f);
+                        logger.info("unsymmetric poly, P_eb*f: Cps = " + Cps + ", f = " + f);
                     for (Map.Entry<ExpVector, GenPolynomial<C>> z : Cps.val.entrySet()) {
                         // split g = g1 * g2, f = f1 * f2
                         GenPolynomial<C> c = z.getValue();
@@ -351,11 +355,19 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
                     } // end Dps loop
                     Ds = Dps;
                 }
+                if (debug) {
+                    logger.info("recursion+: Ds = " + Ds + ", a = " + a);
+                }
+                // polynomial coefficient multiplication a*(P_eb*f) = a*Ds
                 Ds = Ds.multiplyLeft(a); // multiply(a,b); // non-symmetric 
                 if (debug)
-                    logger.debug("Ds = " + Ds);
+                    logger.info("recursion-: Ds = " + Ds);
                 Dp = (RecSolvablePolynomial<C>) Dp.sum(Ds);
+                if (debug)
+                    logger.info("end B loop: Dp = " + Dp);
             } // end B loop
+            if (debug)
+                logger.info("end A loop: Dp = " + Dp);
         } // end A loop
         return Dp;
     }

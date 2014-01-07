@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GenPolynomialRing.java 4719 2013-12-30 13:03:37Z kredel $
  */
 
 package edu.jas.poly;
@@ -919,6 +919,27 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         }
         TermOrder to = tord.contract(0, i); // ??
         GenPolynomialRing<GenPolynomial<C>> pfac = new GenPolynomialRing<GenPolynomial<C>>(cfac, i, to, v);
+        return pfac;
+    }
+
+
+    /**
+     * Distributive representation as polynomial with all main variables.
+     * @return distributive polynomial ring factory.
+     */
+    public GenPolynomialRing<C> distribute() {
+        if ( !(coFac instanceof GenPolynomialRing) ) {
+            return this;
+        }
+        RingFactory cf = coFac;
+        RingFactory<GenPolynomial<C>> cfp = (RingFactory<GenPolynomial<C>>) cf;
+        GenPolynomialRing cr = (GenPolynomialRing) cfp;
+        GenPolynomialRing<C> pfac;
+        if ( cr.vars != null ) {
+            pfac = extend(cr.vars);
+        } else {
+            pfac = extend(cr.nvar);
+        }
         return pfac;
     }
 

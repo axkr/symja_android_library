@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomialRing.java 4621 2013-09-09 10:08:56Z kredel $
+ * $Id: GenSolvablePolynomialRing.java 4720 2013-12-30 14:23:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -186,9 +186,9 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * from a relation generator.
      * @param rg relation generator.
      */
-//    public void addRelations(RelationGenerator<C> rg) {
-//        rg.generate(this);
-//    }
+    public void addRelations(RelationGenerator<C> rg) {
+        rg.generate(this);
+    }
 
 
     /**
@@ -336,10 +336,9 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      */
     @Override
     public boolean isCommutative() {
-        if (table.size() == 0) {
+        if (table.isEmpty()) {
             return super.isCommutative();
         }
-        // todo: check structure of relations
         return false;
     }
 
@@ -591,7 +590,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
     /**
      * Extend variables. Used e.g. in module embedding. Extend number of
-     * variables by i.
+     * variables by i. New variables commute with the exiting variables.
      * @param i number of variables to extend.
      * @return extended solvable polynomial ring factory.
      */
@@ -600,6 +599,23 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         GenPolynomialRing<C> pfac = super.extend(i);
         GenSolvablePolynomialRing<C> spfac = new GenSolvablePolynomialRing<C>(pfac.coFac, pfac.nvar,
                         pfac.tord, pfac.vars);
+        spfac.table.extend(this.table);
+        return spfac;
+    }
+
+
+    /**
+     * Extend variables. Used e.g. in module embedding. Extend number of
+     * variables by length(vn). New variables commute with the exiting variables.
+     * @param vn names for extended variables.
+     * @return extended polynomial ring factory.
+     */
+    @Override
+    public GenSolvablePolynomialRing<C> extend(String[] vn) {
+        GenPolynomialRing<C> pfac = super.extend(vn);
+        GenSolvablePolynomialRing<C> spfac = new GenSolvablePolynomialRing<C>(pfac.coFac, pfac.nvar,
+                        pfac.tord, pfac.vars);
+        //GenSolvablePolynomialRing<C> spfac = new GenSolvablePolynomialRing<C>(pfac.coFac, pfac);
         spfac.table.extend(this.table);
         return spfac;
     }
@@ -674,6 +690,47 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         //System.out.println("pfac = " + pfac.toScript());
         pfac.table.recursive(table);
         pfac.coeffTable.recursive(table);
+        return pfac;
+    }
+
+
+    /**
+     * Distributive representation as polynomial with all main variables.
+     * @return distributive polynomial ring factory.
+     */
+    @Override
+    public GenSolvablePolynomialRing<C> distribute() {
+        if ( !(coFac instanceof GenPolynomialRing) ) {
+            return this;
+        }
+        RingFactory cf = coFac;
+        RingFactory<GenPolynomial<C>> cfp = (RingFactory<GenPolynomial<C>>) cf;
+        GenPolynomialRing cr = (GenPolynomialRing) cfp;
+        //System.out.println("cr = " + cr.toScript());
+        GenPolynomialRing<C> fac;
+        if ( cr.vars != null ) {
+            fac = cr.extend(vars);
+        } else {
+            fac = cr.extend(nvar);
+        }
+        //System.out.println("fac = " + fac.toScript());
+        // fac could be a commutative polynomial ring, coefficient relations
+        GenSolvablePolynomialRing<C> pfac 
+            = new GenSolvablePolynomialRing<C>(fac.coFac, fac.nvar, this.tord, fac.vars);
+        //System.out.println("pfac = " + pfac.toScript());
+        if (fac instanceof GenSolvablePolynomialRing) {
+            GenSolvablePolynomialRing<C> sfac = (GenSolvablePolynomialRing<C>) fac;
+            List<GenSolvablePolynomial<C>> rlc = sfac.table.relationList(); 
+            pfac.table.addSolvRelations(rlc);
+            //System.out.println("pfac = " + pfac.toScript());
+        }
+        // main relations
+        List<GenPolynomial<GenPolynomial<C>>> rl = (List<GenPolynomial<GenPolynomial<C>>>) (List) 
+	    PolynomialList.castToList( table.relationList() ); 
+        List<GenPolynomial<C>> rld = PolyUtil.<C> distribute(pfac,rl); 
+        pfac.table.addRelations(rld);
+        //System.out.println("pfac = " + pfac.toScript());
+        // coeffTable not avaliable here
         return pfac;
     }
 

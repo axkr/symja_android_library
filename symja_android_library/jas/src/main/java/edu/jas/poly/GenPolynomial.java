@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GenPolynomial.java 4715 2013-12-29 13:07:32Z kredel $
  */
 
 package edu.jas.poly;
@@ -1460,6 +1460,13 @@ Iterable<Monomial<C>> {
      *      .
      */
     public GenPolynomial<C> divide(GenPolynomial<C> S) {
+        if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            //logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
+            GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
+            GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
+            return T.quotientRemainder(Sp)[0];
+        }
         return quotientRemainder(S)[0];
     }
 
@@ -1474,6 +1481,13 @@ Iterable<Monomial<C>> {
      *      .
      */
     public GenPolynomial<C> remainder(GenPolynomial<C> S) {
+        if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            //logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
+            GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
+            GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
+            return T.quotientRemainder(Sp)[1];
+        }
         if (S == null || S.isZERO()) {
             throw new ArithmeticException("division by zero");
         }

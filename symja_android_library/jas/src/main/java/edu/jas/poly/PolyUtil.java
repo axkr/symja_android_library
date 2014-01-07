@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4640 2013-09-14 11:32:01Z kredel $
+ * $Id: PolyUtil.java 4713 2013-12-28 19:08:29Z kredel $
  */
 
 package edu.jas.poly;
@@ -595,6 +595,29 @@ public class PolyUtil {
 
 
     /**
+     * GenSolvablePolynomial monic, i.e. leadingBaseCoefficient == 1. If
+     * leadingBaseCoefficient is not invertible returns this unmodified.
+     * @param <C> coefficient type.
+     * @param p recursive GenSolvablePolynomial<GenPolynomial<C>>.
+     * @return monic(p).
+     */
+    public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> monic(
+                    GenSolvablePolynomial<GenPolynomial<C>> p) {
+        if (p == null || p.isZERO()) {
+            return p;
+        }
+        C lc = p.leadingBaseCoefficient().leadingBaseCoefficient();
+        if (!lc.isUnit()) {
+            return p;
+        }
+        C lm = lc.inverse();
+        GenSolvablePolynomial<C> L = (GenSolvablePolynomial<C>) p.ring.coFac.getONE();
+        L = L.multiply(lm);
+        return p.multiplyLeft(L);
+    }
+
+
+    /**
      * Polynomial list monic.
      * @param <C> coefficient type.
      * @param L list of polynomials with field coefficients.
@@ -833,7 +856,7 @@ public class PolyUtil {
         if (P.isZERO()) {
             return P;
         }
-        if (S.isONE()) {
+        if (S.isConstant()) {
             return P.ring.getZERO();
         }
         C c = S.leadingBaseCoefficient();
@@ -878,7 +901,7 @@ public class PolyUtil {
         if (P.isZERO()) {
             return P;
         }
-        if (S.degree() <= 0) {
+        if (S.isConstant()) {
             return P.ring.getZERO();
         }
         long m = P.degree(0);
@@ -1060,8 +1083,8 @@ public class PolyUtil {
                 } else {
                     q = q.multiply(c);
                     q = q.sum(a, f);
-                    r = r.multiply(c); // coeff ac
-                    h = S.multiply(a, f); // coeff ac
+                    r = r.multiply(c);    // coeff a c
+                    h = S.multiply(a, f); // coeff c a
                 }
                 r = r.subtract(h);
             } else {
@@ -1082,7 +1105,7 @@ public class PolyUtil {
      * @param <C> coefficient type.
      * @param P base GenPolynomial.
      * @param S nonzero base GenPolynomial.
-     * @return remainder with ldcf(S)<sup>m'</sup> P = quotient * S + remainder.
+     * @return true, if P = q * S + r, else false.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      *      <b>Note:</b> not always meaningful and working
      */
@@ -1096,7 +1119,7 @@ public class PolyUtil {
         d = (d > 0 ? d : -d + 2);
         for (long i = 0; i <= d; i++) {
             //System.out.println("lhs-rhs = " + lhs.subtract(rhs));
-            if (lhs.equals(rhs)) {
+            if (lhs.equals(rhs) || lhs.negate().equals(rhs)) {
                 //System.out.println("lhs,1 = " + lhs);
                 return true;
             }
@@ -1108,11 +1131,22 @@ public class PolyUtil {
         for (long i = 0; i <= d; i++) {
             lhs = Pp.subtract(r);
             //System.out.println("lhs-rhs = " + lhs.subtract(rhs));
-            if (lhs.equals(rhs)) {
+            if (lhs.equals(rhs) || lhs.negate().equals(rhs)) {
                 //System.out.println("lhs,2 = " + lhs);
                 return true;
             }
             Pp = Pp.multiply(ldcf);
+        }
+        C a = P.leadingBaseCoefficient();
+        rhs = q.multiply(S).sum(r);
+        C b = rhs.leadingBaseCoefficient();
+        C gcd = a.gcd(b);
+        C p = a.multiply(b);
+        C lcm = p.divide(gcd);
+        C ap = lcm.divide(a);
+        C bp = lcm.divide(b);
+        if (P.multiply(ap).equals( rhs.multiply(bp) )) {
+            return true;
         }
         return false;
     }
@@ -1146,9 +1180,10 @@ public class PolyUtil {
             if (!c.isZERO()) {
                 pv.put(e1, c); // or m1.setValue( c )
             } else {
-                System.out.println("pu, c1 = " + c1);
-                System.out.println("pu, s  = " + s);
-                System.out.println("pu, c  = " + c);
+                System.out.println("rDiv, P  = " + P);
+                System.out.println("rDiv, c1 = " + c1);
+                System.out.println("rDiv, s  = " + s);
+                System.out.println("rDiv, c  = " + c);
                 throw new RuntimeException("something is wrong");
             }
         }
@@ -1228,7 +1263,7 @@ public class PolyUtil {
         if (P == null || P.isZERO()) {
             return P;
         }
-        if (S.isONE()) {
+        if (S.isConstant()) {
             return P.ring.getZERO();
         }
         GenPolynomial<C> c = S.leadingBaseCoefficient();
@@ -1245,8 +1280,8 @@ public class PolyUtil {
                     GenPolynomial<C> y = PolyUtil.<C> basePseudoDivide(a, c);
                     h = S.multiply(y, f); // coeff a
                 } else {
-                    r = r.multiply(c); // coeff ac
-                    h = S.multiply(a, f); // coeff ac
+                    r = r.multiply(c);    // coeff a c
+                    h = S.multiply(a, f); // coeff c a
                 }
                 r = r.subtract(h);
             } else {
@@ -1272,7 +1307,7 @@ public class PolyUtil {
         if (P == null || P.isZERO()) {
             return P;
         }
-        if (S.degree() <= 0) {
+        if (S.isConstant()) {
             return P.ring.getZERO();
         }
         long m = P.degree(0);
@@ -1357,12 +1392,12 @@ public class PolyUtil {
 
 
     /**
-     * Is GenPolynomial pseudo quotient and remainder. For recursive
+     * Is recursive GenPolynomial pseudo quotient and remainder. For recursive
      * polynomials.
      * @param <C> coefficient type.
      * @param P recursive GenPolynomial.
      * @param S nonzero recursive GenPolynomial.
-     * @return remainder with ldcf(S)<sup>m'</sup> P = quotient * S + remainder.
+     * @return true, if P ~= q * S + r, else false.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      *      <b>Note:</b> not always meaningful and working
      */
@@ -1394,6 +1429,12 @@ public class PolyUtil {
                 return true;
             }
             Pp = Pp.multiply(ldcf);
+        }
+        GenPolynomial<C> a = P.leadingBaseCoefficient();
+        rhs = q.multiply(S).sum(r);
+        GenPolynomial<C> b = rhs.leadingBaseCoefficient();
+        if (P.multiply(b).equals( rhs.multiply(a) )) {
+            return true;
         }
         return false;
     }

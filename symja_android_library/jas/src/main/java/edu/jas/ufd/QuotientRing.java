@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: QuotientRing.java 4679 2013-10-27 13:19:41Z kredel $
  */
 
 package edu.jas.ufd;
@@ -19,6 +19,7 @@ import edu.jas.poly.PolyUtil;
 //import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
+import edu.jas.structure.QuotPairFactory;
 
 
 /**
@@ -26,7 +27,8 @@ import edu.jas.structure.RingFactory;
  * of this class are immutable.
  * @author Heinz Kredel
  */
-public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quotient<C>> {
+public class QuotientRing<C extends GcdRingElem<C>> 
+       implements RingFactory<Quotient<C>>, QuotPairFactory<GenPolynomial<C>,Quotient<C>> {
 
 
     private static final Logger logger = Logger.getLogger(QuotientRing.class);
@@ -76,6 +78,30 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
         //         }
         engine = GCDFactory.<C> getProxy(ring.coFac);
         logger.debug("quotient ring constructed");
+    }
+
+
+    /**
+     * Factory for base elements.
+     */
+    public GenPolynomialRing<C> pairFactory() {
+        return ring;
+    }
+
+
+    /**
+     * Create from numerator.
+     */
+    public Quotient<C> create(GenPolynomial<C> n) {
+        return new Quotient<C>(this, n);
+    }
+
+
+    /**
+     * Create from numerator, denominator pair.
+     */
+    public Quotient<C> create(GenPolynomial<C> n, GenPolynomial<C> d) {
+        return new Quotient<C>(this, n, d);
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: QuotSolvablePolynomialRing.java 4562 2013-08-04 20:39:23Z kredel $
+ * $Id: QuotSolvablePolynomialRing.java 4680 2013-10-27 14:08:51Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -44,6 +44,7 @@ import edu.jas.structure.RingFactory;
  * contents.
  * @param <C> coefficient type.
  * @author Heinz Kredel
+ * will be deprecated use QLRSolvablePolynomialRing
  */
 
 public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends

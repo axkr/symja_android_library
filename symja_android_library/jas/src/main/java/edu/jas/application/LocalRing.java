@@ -1,5 +1,5 @@
 /*
- * $Id: LocalRing.java 4538 2013-07-29 16:31:14Z kredel $
+ * $Id: LocalRing.java 4679 2013-10-27 13:19:41Z kredel $
  */
 
 package edu.jas.application;
@@ -19,6 +19,7 @@ import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
+import edu.jas.structure.QuotPairFactory;
 
 
 /**
@@ -26,7 +27,8 @@ import edu.jas.ufd.GreatestCommonDivisor;
  * this class are effective immutable.
  * @author Heinz Kredel
  */
-public class LocalRing<C extends GcdRingElem<C>> implements RingFactory<Local<C>> {
+public class LocalRing<C extends GcdRingElem<C>> 
+       implements RingFactory<Local<C>>, QuotPairFactory<GenPolynomial<C>,Local<C>>  {
 
 
     private static final Logger logger = Logger.getLogger(LocalRing.class);
@@ -82,6 +84,30 @@ public class LocalRing<C extends GcdRingElem<C>> implements RingFactory<Local<C>
         ring = ideal.list.ring;
         //engine = GCDFactory.<C>getImplementation( ring.coFac );
         engine = GCDFactory.<C> getProxy(ring.coFac);
+    }
+
+
+    /**
+     * Factory for base elements.
+     */
+    public GenPolynomialRing<C> pairFactory() {
+        return ring;
+    }
+
+
+    /**
+     * Create from numerator.
+     */
+    public Local<C> create(GenPolynomial<C> n) {
+        return new Local<C>(this, n);
+    }
+
+
+    /**
+     * Create from numerator, denominator pair.
+     */
+    public Local<C> create(GenPolynomial<C> n, GenPolynomial<C> d) {
+        return new Local<C>(this, n, d);
     }
 
 

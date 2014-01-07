@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialTokenizer.java 4338 2012-12-29 19:17:54Z kredel $
+ * $Id: GenPolynomialTokenizer.java 4690 2013-11-03 22:55:59Z kredel $
  */
 
 package edu.jas.poly;
@@ -851,6 +851,8 @@ public class GenPolynomialTokenizer {
                 }
                 tt = tok.nextToken(); // also comma
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         w = new long[ol.length];
@@ -900,6 +902,8 @@ public class GenPolynomialTokenizer {
                 }
                 tt = tok.nextToken(); // also comma
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         w = new long[ol.length][];
@@ -1011,6 +1015,8 @@ public class GenPolynomialTokenizer {
                     return new TermOrder(w);
                 }
             }
+        } else {
+            tok.pushBack();
         }
         int s = nextSplitIndex();
         if (s <= 0) {

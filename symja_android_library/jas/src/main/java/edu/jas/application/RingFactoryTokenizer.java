@@ -1,5 +1,5 @@
 /*
- * $Id: RingFactoryTokenizer.java 4267 2012-10-22 20:45:10Z kredel $
+ * $Id: RingFactoryTokenizer.java 4690 2013-11-03 22:55:59Z kredel $
  */
 
 package edu.jas.application;
@@ -354,6 +354,8 @@ public class RingFactoryTokenizer {
                 }
                 tt = tok.nextToken();
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         String[] v = new String[ol.length];
@@ -577,6 +579,8 @@ public class RingFactoryTokenizer {
                 }
                 tt = tok.nextToken(); // also comma
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         w = new long[ol.length];
@@ -626,6 +630,8 @@ public class RingFactoryTokenizer {
                 }
                 tt = tok.nextToken(); // also comma
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         w = new long[ol.length][];
@@ -740,6 +746,8 @@ public class RingFactoryTokenizer {
                     return new TermOrder(w);
                 }
             }
+        } else {
+            tok.pushBack();
         }
         int s = nextSplitIndex();
         if (s <= 0) {
@@ -894,7 +902,7 @@ public class RingFactoryTokenizer {
 
     /**
      * Parse variable list from String.
-     * @param s String. Syntax: (n1,...,nk) or (n1 ... nk), brackest are also
+     * @param s String. Syntax: (n1,...,nk) or (n1 ... nk), brackets are also
      *            optional.
      * @return array of variable names found in s.
      */

@@ -1,5 +1,5 @@
 /*
- * $Id: Local.java 4616 2013-09-08 13:05:27Z kredel $
+ * $Id: Local.java 4672 2013-10-21 22:24:42Z kredel $
  */
 
 package edu.jas.poly;
@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
+import edu.jas.structure.QuotPair;
 
 
 /**
@@ -16,7 +17,8 @@ import edu.jas.structure.RingElem;
  * immutable.
  * @author Heinz Kredel
  */
-public class Local<C extends RingElem<C>> implements RingElem<Local<C>> {
+public class Local<C extends RingElem<C>> 
+    implements RingElem<Local<C>>, QuotPair<C> {
 
 
     private static final Logger logger = Logger.getLogger(Local.class);
@@ -141,6 +143,34 @@ public class Local<C extends RingElem<C>> implements RingElem<Local<C>> {
      */
     public LocalRing<C> factory() {
         return ring;
+    }
+
+
+    /**
+     * Numerator.
+     * @see edu.jas.structure.QuotPair#numerator()
+     */
+    public C numerator() {
+        return num;
+    }
+
+
+    /**
+     * Denominator.
+     * @see edu.jas.structure.QuotPair#denominator()
+     */
+    public C denominator() {
+        return den;
+    }
+
+
+    /**
+     * Is Local a constant.
+     * Not implemented.
+     * @throws UnsupportedOperationException.
+     */
+    public boolean isConstant() {
+        throw new UnsupportedOperationException("isConstant not implemented");
     }
 
 

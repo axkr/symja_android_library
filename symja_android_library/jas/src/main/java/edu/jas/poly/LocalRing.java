@@ -1,5 +1,5 @@
 /*
- * $Id: LocalRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: LocalRing.java 4679 2013-10-27 13:19:41Z kredel $
  */
 
 package edu.jas.poly;
@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
+import edu.jas.structure.QuotPairFactory;
 
 
 /**
@@ -22,7 +23,7 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 public class LocalRing<C extends RingElem<C> > 
-             implements RingFactory< Local<C> >  {
+    implements RingFactory<Local<C>>, QuotPairFactory<C,Local<C>>  {
 
      private static final Logger logger = Logger.getLogger(LocalRing.class);
      //private boolean debug = logger.isDebugEnabled();
@@ -56,6 +57,30 @@ public class LocalRing<C extends RingElem<C> >
         if ( ideal.isONE() ) {
            throw new IllegalArgumentException("ideal may not be 1");
         }
+    }
+
+
+    /**
+     * Factory for base elements.
+     */
+    public RingFactory<C> pairFactory() {
+        return ring;
+    }
+
+
+    /**
+     * Create from numerator.
+     */
+    public Local<C> create(C n) {
+        return new Local<C>(this, n);
+    }
+
+
+    /**
+     * Create from numerator, denominator pair.
+     */
+    public Local<C> create(C n, C d) {
+        return new Local<C>(this, n, d);
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotientRing.java 4622 2013-09-09 11:48:17Z kredel $
+ * $Id: SolvableQuotientRing.java 4678 2013-10-27 12:39:44Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -13,12 +13,14 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.StringUtil;
+import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.PolynomialList;
 import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
+import edu.jas.structure.QuotPairFactory;
 
 
 /**
@@ -26,7 +28,8 @@ import edu.jas.structure.RingFactory;
  * Objects of this class are immutable.
  * @author Heinz Kredel
  */
-public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFactory<SolvableQuotient<C>> {
+public class SolvableQuotientRing<C extends GcdRingElem<C>> 
+       implements RingFactory<SolvableQuotient<C>>, QuotPairFactory<GenPolynomial<C>,SolvableQuotient<C>> {
 
 
     private static final Logger logger = Logger.getLogger(SolvableQuotientRing.class);
@@ -59,10 +62,34 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     }
 
 
+
+    /**
+     * Factory for base elements.
+     */
+    public GenSolvablePolynomialRing<C> pairFactory() {
+        return ring;
+    }
+
+
+    /**
+     * Create from numerator.
+     */
+    public SolvableQuotient<C> create(GenPolynomial<C> n) {
+        return new SolvableQuotient<C>(this,(GenSolvablePolynomial<C>)n);
+    }
+
+
+    /**
+     * Create from numerator, denominator pair.
+     */
+    public SolvableQuotient<C> create(GenPolynomial<C> n, GenPolynomial<C> d) {
+        return new SolvableQuotient<C>(this,(GenSolvablePolynomial<C>)n,(GenSolvablePolynomial<C>)d);
+    }
+
+
     /**
      * Is this structure finite or infinite.
      * @return true if this structure is finite, else false.
-     * @see edu.jas.structure.ElemFactory#isFinite()
      */
     public boolean isFinite() {
         return ring.isFinite();
@@ -100,7 +127,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     /**
      * Get a list of the generating elements.
      * @return list of generators for the algebraic structure.
-     * @see edu.jas.structure.ElemFactory#generators()
      */
     public List<SolvableQuotient<C>> generators() {
         List<GenSolvablePolynomial<C>> pgens = PolynomialList.<C> castToSolvableList(ring.generators());
@@ -201,7 +227,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
     /**
      * Get the String representation as RingFactory.
-     * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
@@ -218,7 +243,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     /**
      * Get a scripting compatible string representation.
      * @return script compatible representation for this ElemFactory.
-     * @see edu.jas.structure.ElemFactory#toScript()
      */
     @Override
     public String toScript() {
@@ -229,7 +253,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
     /**
      * Comparison with any other object.
-     * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -251,7 +274,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
 
     /**
      * Hash code for this quotient ring.
-     * @see java.lang.Object#hashCode()
      */
     @Override
     public int hashCode() {

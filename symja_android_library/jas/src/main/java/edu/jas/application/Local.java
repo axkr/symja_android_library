@@ -1,5 +1,5 @@
 /*
- * $Id: Local.java 4549 2013-08-01 17:21:51Z kredel $
+ * $Id: Local.java 4668 2013-10-19 17:41:05Z kredel $
  */
 
 package edu.jas.application;
@@ -12,6 +12,7 @@ import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
+import edu.jas.structure.QuotPair;
 
 
 /**
@@ -20,7 +21,8 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel
  */
 // To be fixed?: Not jet working because of monic GBs.
-public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
+public class Local<C extends GcdRingElem<C>> 
+       implements RingElem<Local<C>>, QuotPair<GenPolynomial<C>> {
 
 
     private static final Logger logger = Logger.getLogger(Local.class);
@@ -164,6 +166,24 @@ public class Local<C extends GcdRingElem<C>> implements RingElem<Local<C>> {
      */
     public LocalRing<C> factory() {
         return ring;
+    }
+
+
+    /**
+     * Numerator.
+     * @see edu.jas.structure.QuotPair#numerator()
+     */
+    public GenPolynomial<C> numerator() {
+        return num;
+    }
+
+
+    /**
+     * Denominator.
+     * @see edu.jas.structure.QuotPair#denominator()
+     */
+    public GenPolynomial<C> denominator() {
+        return den;
     }
 
 

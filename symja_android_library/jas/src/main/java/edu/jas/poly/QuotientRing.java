@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: QuotientRing.java 4679 2013-10-27 13:19:41Z kredel $
  */
 
 package edu.jas.poly;
@@ -15,6 +15,7 @@ import edu.jas.structure.ElemFactory;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 //import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.QuotPairFactory;
 
 
 /**
@@ -23,7 +24,7 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 public class QuotientRing<C extends RingElem<C> > 
-             implements RingFactory< Quotient<C> >  {
+             implements RingFactory<Quotient<C>>, QuotPairFactory<C,Quotient<C>> {
 
      private static final Logger logger = Logger.getLogger(QuotientRing.class);
 
@@ -41,6 +42,30 @@ public class QuotientRing<C extends RingElem<C> >
      */
     public QuotientRing(RingFactory<C> r) {
         ring = r;
+    }
+
+
+    /**
+     * Factory for base elements.
+     */
+    public RingFactory<C> pairFactory() {
+        return ring;
+    }
+
+
+    /**
+     * Create from numerator.
+     */
+    public Quotient<C> create(C n) {
+        return new Quotient<C>(this, n);
+    }
+
+
+    /**
+     * Create from numerator, denominator pair.
+     */
+    public Quotient<C> create(C n, C d) {
+        return new Quotient<C>(this, n, d);
     }
 
 

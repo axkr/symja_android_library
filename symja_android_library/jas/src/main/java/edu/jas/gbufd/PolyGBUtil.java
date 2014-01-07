@@ -1,5 +1,5 @@
 /*
- * $Id: PolyGBUtil.java 4647 2013-09-15 13:12:31Z kredel $
+ * $Id: PolyGBUtil.java 4665 2013-10-18 19:10:23Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -470,6 +470,7 @@ public class PolyGBUtil {
             return d;
         }
         if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
+        //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
             // && n.length() < 10 && d.length() < 10
             logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", " + d.totalDegree());
             return r.getONE();
@@ -480,7 +481,9 @@ public class PolyGBUtil {
         SolvableGroebnerBaseAbstract<C> sbb = new SolvableGroebnerBaseSeq<C>();
         logger.warn("syzGcd computing GB: " + A);
         List<GenSolvablePolynomial<C>> G = sbb.rightGB(A); //leftGB, not: sbb.twosidedGB(A);
-        //System.out.println("G = " + G);
+        if ( logger.isInfoEnabled() ) { 
+            logger.info("G = " + G);
+        }
         if (G.size() == 1) {
             return G.get(0);
         }

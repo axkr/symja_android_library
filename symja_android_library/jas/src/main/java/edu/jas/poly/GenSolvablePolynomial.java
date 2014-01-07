@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomial.java 4556 2013-08-04 13:49:14Z kredel $
+ * $Id: GenSolvablePolynomial.java 4735 2014-01-03 18:33:11Z kredel $
  */
 
 package edu.jas.poly;
@@ -139,6 +139,13 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         assert (ring.nvar == Bp.ring.nvar);
         if (debug) {
             logger.debug("ring = " + ring);
+        }
+        if (this instanceof RecSolvablePolynomial || Bp instanceof RecSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            logger.info("warn: wrong method dispatch in JRE multiply(Bp) - trying to fix");
+            RecSolvablePolynomial T = (RecSolvablePolynomial) this; // no <C>
+            RecSolvablePolynomial Sp = (RecSolvablePolynomial) Bp;
+            return (GenSolvablePolynomial<C>) T.multiply(Sp);
         }
         ExpVector Z = ring.evzero;
         GenSolvablePolynomial<C> Cp = ring.getZERO().copy();
@@ -486,6 +493,56 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
             //e.printStackTrace();
         }
         return this;
+    }
+
+
+    /**
+     * GenSolvablePolynomial left division with remainder. Fails, if exact division by
+     * leading base coefficient is not possible. Meaningful only for univariate
+     * polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading coefficient.
+     * @return [ quotient , remainder ] with this = quotient * S + remainder and
+     *         deg(remainder) &lt; deg(S) or remiander = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial).
+     */
+    //@Override
+    @SuppressWarnings("unchecked")
+    public GenSolvablePolynomial<C>[] quotientRemainder(GenSolvablePolynomial<C> S) {
+        if (S == null || S.isZERO()) {
+            throw new ArithmeticException("division by zero");
+        }
+        C c = S.leadingBaseCoefficient();
+        if (!c.isUnit()) {
+            throw new ArithmeticException("lbcf not invertible " + c);
+        }
+        C ci = c.inverse();
+        assert (ring.nvar == S.ring.nvar);
+        ExpVector e = S.leadingExpVector();
+        GenSolvablePolynomial<C> h;
+        GenSolvablePolynomial<C> q = ring.getZERO().copy();
+        GenSolvablePolynomial<C> r = this.copy();
+        while (!r.isZERO()) {
+            ExpVector f = r.leadingExpVector();
+            if (f.multipleOf(e)) {
+                C a = r.leadingBaseCoefficient();
+                //System.out.println("FDQR: f = " + f + ", a = " + a);
+                f = f.subtract(e);
+                //a = ci.multiply(a); // multiplyLeft
+                a = a.multiply(ci); // this is correct!
+                q = (GenSolvablePolynomial<C>) q.sum(a, f);
+                h = S.multiplyLeft(a, f);
+                if ( !h.leadingBaseCoefficient().equals(r.leadingBaseCoefficient()) ) {
+                    throw new RuntimeException("something is wrong: r = " + r + ", h = " + h);
+                }
+                r = (GenSolvablePolynomial<C>) r.subtract(h);
+            } else {
+                break;
+            }
+        }
+        GenSolvablePolynomial<C>[] ret = new GenSolvablePolynomial[2];
+        ret[0] = q;
+        ret[1] = r;
+        return ret;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableSyzygyAbstract.java 4647 2013-09-15 13:12:31Z kredel $
+ * $Id: SolvableSyzygyAbstract.java 4699 2013-12-25 17:47:28Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -744,13 +744,28 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
         }
         GenSolvablePolynomialRing<C> pfac = a.ring;
         GenSolvablePolynomial<C>[] oc = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
+        if ( a.equals(b) ) {
+            oc[0] = pfac.getONE();
+            oc[1] = pfac.getONE();
+            return oc;
+        }
         if ( a.isConstant() ) {
+            if (pfac.coFac.isCommutative()) { // ??
+                oc[0] = b;
+                oc[1] = a;
+                return oc;
+            }
             oc[1] = pfac.getONE();
             C c = a.leadingBaseCoefficient().inverse();
             oc[0] = b.multiply(c);
             return oc;
         }
         if ( b.isConstant() ) {
+            if (pfac.coFac.isCommutative()) { // ??
+                oc[0] = b;
+                oc[1] = a;
+                return oc;
+            }
             oc[0] = pfac.getONE();
             C c = b.leadingBaseCoefficient().inverse();
             oc[1] = a.multiply(c);
@@ -804,13 +819,28 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
         }
         GenSolvablePolynomialRing<C> pfac = a.ring;
         GenSolvablePolynomial<C>[] oc = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
+        if ( a.equals(b) ) {
+            oc[0] = pfac.getONE();
+            oc[1] = pfac.getONE();
+            return oc;
+        }
         if ( a.isConstant() ) {
+            if (pfac.coFac.isCommutative()) { // ??
+                oc[0] = b;
+                oc[1] = a;
+                return oc;
+            }
             oc[1] = pfac.getONE();
             C c = a.leadingBaseCoefficient().inverse();
             oc[0] = b.multiply(c);
             return oc;
         }
         if ( b.isConstant() ) {
+            if (pfac.coFac.isCommutative()) { // ??
+                oc[0] = b;
+                oc[1] = a;
+                return oc;
+            }
             oc[0] = pfac.getONE();
             C c = b.leadingBaseCoefficient().inverse();
             oc[1] = a.multiply(c);
@@ -838,6 +868,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
         }
         oc[0] = G1.get(0);
         oc[1] = (GenSolvablePolynomial<C>) G1.get(1).negate();
+        //logger.info("Ore multiple: " + a.multiply(oc[0]) + ", " + Arrays.toString(oc));
         return oc;
     }
 
@@ -855,6 +886,7 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
         }
         GenSolvablePolynomial<C>[] oc = null;
         if (a.totalDegree() > 3 || b.totalDegree() > 3) { // how avoid too long running GBs ?
+        //if (a.totalDegree() + b.totalDegree() > 6) { // how avoid too long running GBs ?
             // && a.length() < 10 && b.length() < 10
             logger.warn("skipping GB computation: degs = " + a.totalDegree() + ", " + b.totalDegree());
             oc = new GenSolvablePolynomial[] { a, b };
@@ -885,13 +917,13 @@ public class SolvableSyzygyAbstract<C extends RingElem<C>> implements SolvableSy
         int m = 0;
         GenSolvablePolynomial<C> min = null;
         for ( int i = 0; i < G.size(); i++ ) {
-	    if ( min == null ) {
+            if ( min == null ) {
                 min = G.get(i);  
                 m = i;
             } else if (min.compareTo(G.get(i)) > 0 ) {
                 min = G.get(i);  
                 m = i;
-	    }
+            }
         }
         //wrong: blas.scalarProduct(G2,exgb.G2F.get(m));
         GenSolvablePolynomial<C> min2 = (GenSolvablePolynomial<C>) blas.scalarProduct(PolynomialList.<C> castToList(exgb.G2F.get(m)), PolynomialList.<C> castToList(G2));
