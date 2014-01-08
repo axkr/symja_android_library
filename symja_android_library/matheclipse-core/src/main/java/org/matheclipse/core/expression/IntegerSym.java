@@ -493,7 +493,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return result;
 		}
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
-		BigInteger rest = Primality.countPrimes1021(b.fInteger, map);
+		BigInteger rest = Primality.countPrimes32749(b.fInteger, map);
 
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
 			int key = entry.getKey();
