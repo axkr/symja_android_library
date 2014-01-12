@@ -401,8 +401,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and store the resulting
-	 * ASTNode in this DoubleEvaluator
+	 * Parse the given <code>expression String</code> and store the resulting ASTNode in this DoubleEvaluator
 	 * 
 	 * @param expression
 	 * @return
@@ -423,8 +422,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and return the resulting
-	 * ASTNode
+	 * Parse the given <code>expression String</code> and return the resulting ASTNode
 	 * 
 	 * @param expression
 	 * @return
@@ -436,8 +434,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a
-	 * double value
+	 * Parse the given <code>expression String</code> and evaluate it to a double value
 	 * 
 	 * @param expression
 	 * @return
@@ -458,8 +455,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Reevaluate the <code>expression</code> (possibly after a new Variable
-	 * assignment)
+	 * Reevaluate the <code>expression</code> (possibly after a new Variable assignment)
 	 * 
 	 * @param Expression
 	 * @return
@@ -473,8 +469,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Evaluate an already parsed in abstract syntax tree node into a
-	 * <code>double</code> number value.
+	 * Evaluate an already parsed in abstract syntax tree node into a <code>double</code> number value.
 	 * 
 	 * @param node
 	 *            abstract syntax tree node
@@ -508,8 +503,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Evaluate an already parsed in <code>FunctionNode</code> into a
-	 * <code>souble</code> number value.
+	 * Evaluate an already parsed in <code>FunctionNode</code> into a <code>souble</code> number value.
 	 * 
 	 * @param functionNode
 	 * @return
@@ -564,8 +558,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
-	 * names are equal.
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the names are equal.
 	 * 
 	 * @param symbol1
 	 * @param symbol2Name
@@ -579,8 +572,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
-	 * names are equal.
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the names are equal.
 	 * 
 	 * @param symbol1
 	 * @param symbol2
@@ -774,8 +766,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Optimize an already parsed in <code>functionNode</code> into an
-	 * <code>ASTNode</code>.
+	 * Optimize an already parsed in <code>functionNode</code> into an <code>ASTNode</code>.
 	 * 
 	 * @param functionNode
 	 * @return
@@ -860,9 +851,8 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Returns the double variable value to which the specified variableName is
-	 * mapped, or {@code null} if this map contains no mapping for the
-	 * variableName.
+	 * Returns the double variable value to which the specified variableName is mapped, or {@code null} if this map contains no
+	 * mapping for the variableName.
 	 * 
 	 * @param variableName
 	 * @return
@@ -906,12 +896,21 @@ public class DoubleEvaluator {
 	 *            a set which contains the variable names
 	 */
 	public void getVariables(String expression, Set<String> result) {
-		Parser p;
-		if (fRelaxedSyntax) {
-			p = new Parser(ASTNodeFactory.RELAXED_STYLE_FACTORY, true);
-		} else {
-			p = new Parser(ASTNodeFactory.MMA_STYLE_FACTORY, false);
-		}
+		getVariables(expression, result, fRelaxedSyntax);
+	}
+
+	/**
+	 * Get the variable names from the given expression.
+	 * 
+	 * @param expression
+	 * @param result
+	 *            a set which contains the variable names
+	 * @param relaxedSyntax
+	 *            if <code>true</code> us e function syntax like <code>sin(x)</code> otherwise use <code>Sin[x]</code>.
+	 */
+	public static void getVariables(String expression, Set<String> result, boolean relaxedSyntax) {
+		Parser p = new Parser(relaxedSyntax ? ASTNodeFactory.RELAXED_STYLE_FACTORY : ASTNodeFactory.MMA_STYLE_FACTORY,
+				relaxedSyntax);
 		ASTNode node = p.parse(expression);
 		getVariables(node, result);
 	}
