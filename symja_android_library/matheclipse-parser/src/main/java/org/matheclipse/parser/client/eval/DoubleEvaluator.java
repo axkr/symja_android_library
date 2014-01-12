@@ -864,7 +864,7 @@ public class DoubleEvaluator {
 			return fVariableMap.get(variableName);
 		}
 	}
-
+	
 	/**
 	 * Define a boolean value for a given variable name.
 	 * 
@@ -895,8 +895,8 @@ public class DoubleEvaluator {
 	 * @param result
 	 *            a set which contains the variable names
 	 */
-	public void getVariables(String expression, Set<String> result) {
-		getVariables(expression, result, fRelaxedSyntax);
+	public static void getVariables(String expression, Set<String> result) {
+		getVariables(expression, result, true);
 	}
 
 	/**
