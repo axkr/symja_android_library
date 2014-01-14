@@ -113,7 +113,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 			}
 			return F.C0;
 		}
-		return powerAST;
+		return F.C0;
 	}
 
 	private static IExpr coefficientAtom(IExpr expr, IExpr arg2, IInteger n) {
