@@ -13,6 +13,7 @@ import com.google.common.base.Function;
 
 /**
  * 
+ * See: <a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient</a>
  */
 public class Coefficient extends AbstractFunctionEvaluator {
 
