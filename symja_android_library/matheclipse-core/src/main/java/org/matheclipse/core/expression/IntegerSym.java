@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+
+import com.google.common.math.BigIntegerMath;
 
 /**
  * IInteger implementation which simply delegates most of the methods to the BigInteger methods
@@ -98,9 +101,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		}
 		return null;
 	}
-	
+
 	public final INumber numericNumber() {
-		return  F.num(this);
+		return F.num(this);
 	}
 
 	@Override
@@ -747,19 +750,35 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @throws ArithmeticException
 	 *             if this integer is negative.
 	 */
+	/**
+	 * Returns the square root of {@code this}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code this < 0}
+	 * @throws ArithmeticException
+	 *             if {@code sqrt(this)} is not an integer
+	 */
 	public IInteger sqrt() throws ArithmeticException {
-		return nthRoot(2);
+		return valueOf(BigIntegerMath.sqrt(fInteger, RoundingMode.UNNECESSARY));
 	}
 
 	/**
 	 * Returns the nth-root of this integer.
 	 * 
 	 * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
+	 * @throws IllegalArgumentException
+	 *             if {@code this < 0}
 	 * @throws ArithmeticException
 	 *             if this integer is negative and n is even.
 	 */
 	@Override
 	public IInteger nthRoot(int n) throws ArithmeticException {
+		if (n < 0) {
+			throw new IllegalArgumentException("nthRoot(" + n + ") n must be >= 0");
+		}
+		if (n == 2) {
+			return sqrt();
+		}
 		if (sign() == 0) {
 			return IntegerSym.valueOf(0);
 		} else if (sign() < 0) {

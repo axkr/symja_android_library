@@ -78,8 +78,8 @@ public class F {
 
 	};
 
-//	public final static ISymbol Ans = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ans" : "Ans",
-//			new org.matheclipse.core.builtin.constant.Ans());
+	// public final static ISymbol Ans = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ans" : "Ans",
+	// new org.matheclipse.core.builtin.constant.Ans());
 	public final static ISymbol Catalan = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
 	public final static ISymbol ComplexInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity"
@@ -728,6 +728,11 @@ public class F {
 	public final static IInteger C5 = IntegerSym.valueOf(5);
 
 	/**
+	 * Constant integer &quot;10&quot;
+	 */
+	public final static IInteger C10 = IntegerSym.valueOf(10);
+
+	/**
 	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
 	 */
 	public final static IComplex CI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
@@ -826,6 +831,11 @@ public class F {
 	 * Constant integer &quot;-5&quot;
 	 */
 	public final static IInteger CN5 = IntegerSym.valueOf(-5);
+
+	/**
+	 * Constant integer &quot;-10&quot;
+	 */
+	public final static IInteger CN10 = IntegerSym.valueOf(-10);
 
 	static {
 
