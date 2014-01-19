@@ -146,7 +146,7 @@ public class FactorModular<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         GenPolynomial<MOD> g = null;
         int degi = (int) deg; //f.degree(0);
         //System.out.println("deg = " + deg);
-        BigInteger di = Power.<BigInteger> positivePower(new BigInteger(m), deg);
+        BigInteger di = Power.positivePower(new BigInteger(m), deg);
         //System.out.println("di = " + di);
         java.math.BigInteger d = di.getVal(); //.longValue()-1;
         //System.out.println("d = " + d);

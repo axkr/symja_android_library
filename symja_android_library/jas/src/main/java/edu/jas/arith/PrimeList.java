@@ -296,29 +296,19 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * @return 2**n - m
      */
     public static java.math.BigInteger getLongPrime(int n, int m) {
-        long prime = 2; // knuth (2,390)
-        for (int i = 1; i < n; i++) {
-            prime *= 2;
-        }
-        prime -= m;
-        // System.out.println("p1 = " + prime);
-        return java.math.BigInteger.valueOf(prime);
-    }
+		return java.math.BigInteger.valueOf((1 << n) - m);
+	}
 
-
-    /**
-     * Method to compute a Mersenne prime as 2**n - 1.
-     * @param n power for 2.
-     * @return 2**n - 1
-     */
-    public static java.math.BigInteger getMersennePrime(int n) {
-        BigInteger t = new BigInteger(2);
-        BigInteger p = Power.positivePower(t, n);
-        p = p.subtract(new BigInteger(1));
-        java.math.BigInteger prime = p.getVal();
-        // System.out.println("p1 = " + prime);
-        return prime;
-    }
+	/**
+	 * Method to compute a Mersenne prime as 2**n - 1.
+	 * 
+	 * @param n
+	 *            power for 2.
+	 * @return 2**n - 1
+	 */
+	public static java.math.BigInteger getMersennePrime(int n) {
+		return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.ONE);
+	}
 
 
     /**

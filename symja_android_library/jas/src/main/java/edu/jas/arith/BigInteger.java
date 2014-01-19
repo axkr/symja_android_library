@@ -48,8 +48,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * The constant 1.
      */
     public final static BigInteger ONE = new BigInteger(java.math.BigInteger.ONE);
-
-
+    
     /**
      * Constructor for BigInteger from math.BigInteger.
      * @param a java.math.BigInteger.
@@ -674,7 +673,10 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
         return new BigInteger(val.multiply(S.val));
     }
 
-
+    public BigInteger shiftLeft(int n) {
+        return new BigInteger(val.shiftLeft(n));
+    }
+    
     /**
      * BigInteger multiply.
      * @param A BigInteger.
