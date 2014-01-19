@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 /**
@@ -59,7 +60,7 @@ import javax.annotation.Nullable;
  *       .limit(10)
  *       .toList();}</pre>
  *
- * Anything which can be done using {@code FluentIterable} could be done in a different fashion
+ * <p>Anything which can be done using {@code FluentIterable} could be done in a different fashion
  * (often with {@link Iterables}), however the use of {@code FluentIterable} makes many sets of
  * operations significantly more concise.
  *
@@ -145,6 +146,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    * should use an explicit {@code break} or be certain that you will eventually remove all the
    * elements.
    */
+  @CheckReturnValue
   public final FluentIterable<E> cycle() {
     return from(Iterables.cycle(iterable));
   }
@@ -153,6 +155,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    * Returns the elements from this fluent iterable that satisfy a predicate. The
    * resulting fluent iterable's iterator does not support {@code remove()}.
    */
+  @CheckReturnValue
   public final FluentIterable<E> filter(Predicate<? super E> predicate) {
     return from(Iterables.filter(iterable, predicate));
   }
@@ -163,6 +166,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    * @param type the type of elements desired
    */
   @GwtIncompatible("Class.isInstance")
+  @CheckReturnValue
   public final <T> FluentIterable<T> filter(Class<T> type) {
     return from(Iterables.filter(iterable, type));
   }
@@ -293,6 +297,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    * to {@code * remove()} before a call to {@code next()} will throw an
    * {@link IllegalStateException}.
    */
+  @CheckReturnValue
   public final FluentIterable<E> skip(int numberToSkip) {
     return from(Iterables.skip(iterable, numberToSkip));
   }
@@ -307,6 +312,7 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    * @param size the maximum number of elements in the returned fluent iterable
    * @throws IllegalArgumentException if {@code size} is negative
    */
+  @CheckReturnValue
   public final FluentIterable<E> limit(int size) {
     return from(Iterables.limit(iterable, size));
   }
@@ -416,62 +422,6 @@ public abstract class FluentIterable<E> implements Iterable<E> {
    */
   public final <K> ImmutableMap<K, E> uniqueIndex(Function<? super E, K> keyFunction) {
     return Maps.uniqueIndex(iterable, keyFunction);
-  }
-
-  /**
-   * Returns an {@code ImmutableList} containing all of the elements from this
-   * fluent iterable in proper sequence.
-   *
-   * @deprecated Use {@link #toList()} instead. This method is scheduled for removal in Guava 15.0.
-   */
-  @Deprecated
-  public final ImmutableList<E> toImmutableList() {
-    return toList();
-  }
-
-  /**
-   * Returns an {@code ImmutableList} containing all of the elements from this
-   * {@code FluentIterable} in the order specified by {@code comparator}.  To produce an
-   * {@code ImmutableList} sorted by its natural ordering, use
-   * {@code toSortedImmutableList(Ordering.natural())}.
-   *
-   * @param comparator the function by which to sort list elements
-   * @throws NullPointerException if any element is null
-   * @since 13.0
-   * @deprecated Use {@link #toSortedList(Comparator)} instead. This method is scheduled for removal
-   *     in Guava 15.0.
-   */
-  @Deprecated
-  public final ImmutableList<E> toSortedImmutableList(Comparator<? super E> comparator) {
-    return toSortedList(comparator);
-  }
-
-  /**
-   * Returns an {@code ImmutableSet} containing all of the elements from this
-   * fluent iterable with duplicates removed.
-   *
-   * @deprecated Use {@link #toSet()} instead. This method is scheduled for removal in Guava 15.0.
-   */
-  @Deprecated
-  public final ImmutableSet<E> toImmutableSet() {
-    return toSet();
-  }
-
-  /**
-   * Returns an {@code ImmutableSortedSet} containing all of the elements from this
-   * {@code FluentIterable} in the order specified by {@code comparator}, with duplicates
-   * (determined by {@code comparator.compare(x, y) == 0}) removed. To produce an
-   * {@code ImmutableSortedSet} sorted by its natural ordering, use
-   * {@code toImmutableSortedSet(Ordering.natural())}.
-   *
-   * @param comparator the function by which to sort set elements
-   * @throws NullPointerException if any element is null
-   * @deprecated Use {@link #toSortedSet(Comparator)} instead. This method is scheduled for removal
-   *     in Guava 15.0.
-   */
-  @Deprecated
-  public final ImmutableSortedSet<E> toImmutableSortedSet(Comparator<? super E> comparator) {
-    return toSortedSet(comparator);
   }
 
   /**

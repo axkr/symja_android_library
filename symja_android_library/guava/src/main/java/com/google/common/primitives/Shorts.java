@@ -21,8 +21,10 @@ import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkPositionIndexes;
 
+import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.Converter;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -83,7 +85,10 @@ public final class Shorts {
    */
   public static short checkedCast(long value) {
     short result = (short) value;
-    checkArgument(result == value, "Out of range: %s", value);
+    if (result != value) {
+      // don't use checkArgument here, to avoid boxing
+      throw new IllegalArgumentException("Out of range: " + value);
+    }
     return result;
   }
 
@@ -109,11 +114,15 @@ public final class Shorts {
    * Compares the two specified {@code short} values. The sign of the value
    * returned is the same as that of {@code ((Short) a).compareTo(b)}.
    *
+   * <p><b>Note:</b> projects using JDK 7 or later should use the equivalent
+   * {@link Short#compare} method instead.
+   *
    * @param a the first {@code short} to compare
    * @param b the second {@code short} to compare
    * @return a negative value if {@code a} is less than {@code b}; a positive
    *     value if {@code a} is greater than {@code b}; or zero if they are equal
    */
+  // TODO(kevinb): if JDK 6 ever becomes a non-concern, remove this
   public static int compare(short a, short b) {
     return a - b; // safe due to restricted range
   }
@@ -323,6 +332,42 @@ public final class Shorts {
   @GwtIncompatible("doesn't work")
   public static short fromBytes(byte b1, byte b2) {
     return (short) ((b1 << 8) | (b2 & 0xFF));
+  }
+
+  private static final class ShortConverter
+      extends Converter<String, Short> implements Serializable {
+    static final ShortConverter INSTANCE = new ShortConverter();
+
+    @Override
+    protected Short doForward(String value) {
+      return Short.decode(value);
+    }
+
+    @Override
+    protected String doBackward(Short value) {
+      return value.toString();
+    }
+
+    @Override
+    public String toString() {
+      return "Shorts.stringConverter()";
+    }
+
+    private Object readResolve() {
+      return INSTANCE;
+    }
+    private static final long serialVersionUID = 1;
+  }
+
+  /**
+   * Returns a serializable converter object that converts between strings and
+   * shorts using {@link Short#decode} and {@link Short#toString()}.
+   *
+   * @since 16.0
+   */
+  @Beta
+  public static Converter<String, Short> stringConverter() {
+    return ShortConverter.INSTANCE;
   }
 
   /**

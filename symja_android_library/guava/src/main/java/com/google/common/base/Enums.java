@@ -41,9 +41,8 @@ public final class Enums {
   private Enums() {}
 
   /**
-   * Returns the {@link Field} in which {@code enumValue} is defined.
-   * For example, to get the {@code Description} annotation on the {@code GOLF}
-   * constant of enum {@code Sport}, use
+   * Returns the {@link Field} in which {@code enumValue} is defined. For example, to get the
+   * {@code Description} annotation on the {@code GOLF} constant of enum {@code Sport}, use
    * {@code Enums.getField(Sport.GOLF).getAnnotation(Description.class)}.
    *
    * @since 12.0
@@ -59,20 +58,25 @@ public final class Enums {
   }
 
   /**
-   * Returns a {@link Function} that maps an {@link Enum} name to the associated
-   * {@code Enum} constant. The {@code Function} will return {@code null} if the
-   * {@code Enum} constant does not exist.
+   * Returns a {@link Function} that maps an {@link Enum} name to the associated {@code Enum}
+   * constant. The {@code Function} will return {@code null} if the {@code Enum} constant
+   * does not exist.
    *
-   * @param enumClass the {@link Class} of the {@code Enum} declaring the
-   *     constant values.
+   * @param enumClass the {@link Class} of the {@code Enum} declaring the constant values
+   * @deprecated Use {@link Enums#stringConverter} instead. Note that the string converter has
+   *     slightly different behavior: it throws {@link IllegalArgumentException} if the enum
+   *     constant does not exist rather than returning {@code null}. It also converts {@code null}
+   *     to {@code null} rather than throwing {@link NullPointerException}. This method is
+   *     scheduled for removal in Guava 18.0.
    */
+  @Deprecated
   public static <T extends Enum<T>> Function<String, T> valueOfFunction(Class<T> enumClass) {
     return new ValueOfFunction<T>(enumClass);
   }
 
   /**
-   * A {@link Function} that maps an {@link Enum} name to the associated
-   * constant, or {@code null} if the constant does not exist.
+   * A {@link Function} that maps an {@link Enum} name to the associated constant, or {@code null}
+   * if the constant does not exist.
    */
   private static final class ValueOfFunction<T extends Enum<T>>
       implements Function<String, T>, Serializable {
@@ -93,8 +97,7 @@ public final class Enums {
     }
 
     @Override public boolean equals(@Nullable Object obj) {
-      return obj instanceof ValueOfFunction &&
-          enumClass.equals(((ValueOfFunction) obj).enumClass);
+      return obj instanceof ValueOfFunction && enumClass.equals(((ValueOfFunction) obj).enumClass);
     }
 
     @Override public int hashCode() {
@@ -124,5 +127,58 @@ public final class Enums {
     } catch (IllegalArgumentException iae) {
       return Optional.absent();
     }
+  }
+
+  /**
+   * Returns a converter that converts between strings and {@code enum} values of type
+   * {@code enumClass} using {@link Enum#valueOf(Class, String)} and {@link Enum#name()}. The
+   * converter will throw an {@code IllegalArgumentException} if the argument is not the name of
+   * any enum constant in the specified enum.
+   *
+   * @since 16.0
+   */
+  public static <T extends Enum<T>> Converter<String, T> stringConverter(final Class<T> enumClass) {
+    return new StringConverter<T>(enumClass);
+  }
+
+  private static final class StringConverter<T extends Enum<T>>
+      extends Converter<String, T> implements Serializable {
+
+    private final Class<T> enumClass;
+
+    StringConverter(Class<T> enumClass) {
+      this.enumClass = checkNotNull(enumClass);
+    }
+
+    @Override
+    protected T doForward(String value) {
+      return Enum.valueOf(enumClass, value);
+    }
+
+    @Override
+    protected String doBackward(T enumValue) {
+      return enumValue.name();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object object) {
+      if (object instanceof StringConverter) {
+        StringConverter<?> that = (StringConverter<?>) object;
+        return this.enumClass.equals(that.enumClass);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return enumClass.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return "Enums.stringConverter(" + enumClass.getName() + ".class)";
+    }
+
+    private static final long serialVersionUID = 0L;
   }
 }

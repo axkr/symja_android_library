@@ -36,10 +36,18 @@ import java.util.concurrent.TimeUnit;
  * @param <V0> the base type for all value types of maps built by this map maker
  * @author Kevin Bourrillion
  * @since 7.0
+ * @deprecated This class existed only to support the generic paramterization necessary for the
+ *     caching functionality in {@code MapMaker}. That functionality has been moved to {@link
+ *     com.google.common.cache.CacheBuilder}, which is a properly generified class and thus needs no
+ *     "Generic" equivalent; simple use {@code CacheBuilder} naturally. For general migration
+ *     instructions, see the <a
+ *     href="http://code.google.com/p/guava-libraries/wiki/MapMakerMigration">MapMaker Migration
+ *     Guide</a>.
  */
 @Beta
+@Deprecated
 @GwtCompatible(emulated = true)
-public abstract class GenericMapMaker<K0, V0> {
+abstract class GenericMapMaker<K0, V0> {
   @GwtIncompatible("To be supported")
   enum NullListener implements RemovalListener<Object, Object> {
     INSTANCE;
@@ -90,7 +98,14 @@ public abstract class GenericMapMaker<K0, V0> {
 
   /**
    * See {@link MapMaker#softValues}.
+   *
+   * @deprecated Caching functionality in {@code MapMaker} has been moved to {@link
+   *     com.google.common.cache.CacheBuilder}, with {@link #softValues} being replaced by {@link
+   *     com.google.common.cache.CacheBuilder#softValues}. Note that {@code CacheBuilder} is simply
+   *     an enhanced API for an implementation which was branched from {@code MapMaker}. <b>This
+   *     method is scheduled for deletion in August 2014.</b>
    */
+  @Deprecated
   @GwtIncompatible("java.lang.ref.SoftReference")
   public abstract GenericMapMaker<K0, V0> softValues();
 
@@ -131,6 +146,6 @@ public abstract class GenericMapMaker<K0, V0> {
    * See {@link MapMaker#makeComputingMap}.
    */
   @Deprecated
-  public abstract <K extends K0, V extends V0> ConcurrentMap<K, V> makeComputingMap(
+  abstract <K extends K0, V extends V0> ConcurrentMap<K, V> makeComputingMap(
       Function<? super K, ? extends V> computingFunction);
 }

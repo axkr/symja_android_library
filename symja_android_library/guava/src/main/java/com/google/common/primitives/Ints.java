@@ -24,6 +24,7 @@ import static com.google.common.base.Preconditions.checkPositionIndexes;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.Converter;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -85,7 +86,10 @@ public final class Ints {
    */
   public static int checkedCast(long value) {
     int result = (int) value;
-    checkArgument(result == value, "Out of range: %s", value);
+    if (result != value) {
+      // don't use checkArgument here, to avoid boxing
+      throw new IllegalArgumentException("Out of range: " + value);
+    }
     return result;
   }
 
@@ -111,11 +115,15 @@ public final class Ints {
    * Compares the two specified {@code int} values. The sign of the value
    * returned is the same as that of {@code ((Integer) a).compareTo(b)}.
    *
+   * <p><b>Note:</b> projects using JDK 7 or later should use the equivalent
+   * {@link Integer#compare} method instead.
+   *
    * @param a the first {@code int} to compare
    * @param b the second {@code int} to compare
    * @return a negative value if {@code a} is less than {@code b}; a positive
    *     value if {@code a} is greater than {@code b}; or zero if they are equal
    */
+  // TODO(kevinb): if JDK 6 ever becomes a non-concern, remove this
   public static int compare(int a, int b) {
     return (a < b) ? -1 : ((a > b) ? 1 : 0);
   }
@@ -326,6 +334,42 @@ public final class Ints {
   @GwtIncompatible("doesn't work")
   public static int fromBytes(byte b1, byte b2, byte b3, byte b4) {
     return b1 << 24 | (b2 & 0xFF) << 16 | (b3 & 0xFF) << 8 | (b4 & 0xFF);
+  }
+
+  private static final class IntConverter
+      extends Converter<String, Integer> implements Serializable {
+    static final IntConverter INSTANCE = new IntConverter();
+
+    @Override
+    protected Integer doForward(String value) {
+      return Integer.decode(value);
+    }
+
+    @Override
+    protected String doBackward(Integer value) {
+      return value.toString();
+    }
+
+    @Override
+    public String toString() {
+      return "Ints.stringConverter()";
+    }
+
+    private Object readResolve() {
+      return INSTANCE;
+    }
+    private static final long serialVersionUID = 1;
+  }
+
+  /**
+   * Returns a serializable converter object that converts between strings and
+   * integers using {@link Integer#decode} and {@link Integer#toString()}.
+   *
+   * @since 16.0
+   */
+  @Beta
+  public static Converter<String, Integer> stringConverter() {
+    return IntConverter.INSTANCE;
   }
 
   /**

@@ -23,6 +23,7 @@ import static com.google.common.base.Preconditions.checkPositionIndexes;
 
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Converter;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -81,11 +82,15 @@ public final class Longs {
    * Compares the two specified {@code long} values. The sign of the value
    * returned is the same as that of {@code ((Long) a).compareTo(b)}.
    *
+   * <p><b>Note:</b> projects using JDK 7 or later should use the equivalent
+   * {@link Long#compare} method instead.
+   *
    * @param a the first {@code long} to compare
    * @param b the second {@code long} to compare
    * @return a negative value if {@code a} is less than {@code b}; a positive
    *     value if {@code a} is greater than {@code b}; or zero if they are equal
    */
+  // TODO(kevinb): if JDK 6 ever becomes a non-concern, remove this
   public static int compare(long a, long b) {
     return (a < b) ? -1 : ((a > b) ? 1 : 0);
   }
@@ -352,7 +357,7 @@ public final class Longs {
       }
       accum -= digit;
     }
-
+    
     if (negative) {
       return accum;
     } else if (accum == Long.MIN_VALUE) {
@@ -360,6 +365,41 @@ public final class Longs {
     } else {
       return -accum;
     }
+  }
+
+  private static final class LongConverter extends Converter<String, Long> implements Serializable {
+    static final LongConverter INSTANCE = new LongConverter();
+
+    @Override
+    protected Long doForward(String value) {
+      return Long.decode(value);
+    }
+
+    @Override
+    protected String doBackward(Long value) {
+      return value.toString();
+    }
+
+    @Override
+    public String toString() {
+      return "Longs.stringConverter()";
+    }
+
+    private Object readResolve() {
+      return INSTANCE;
+    }
+    private static final long serialVersionUID = 1;
+  }
+
+  /**
+   * Returns a serializable converter object that converts between strings and
+   * longs using {@link Long#decode} and {@link Long#toString()}.
+   *
+   * @since 16.0
+   */
+  @Beta
+  public static Converter<String, Long> stringConverter() {
+    return LongConverter.INSTANCE;
   }
 
   /**
