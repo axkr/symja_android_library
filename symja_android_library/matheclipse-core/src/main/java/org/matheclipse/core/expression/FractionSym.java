@@ -206,10 +206,10 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (hashCode() != obj.hashCode()) {
-			return false;
-		}
 		if (obj instanceof FractionSym) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
 			if (this == obj) {
 				return true;
 			}

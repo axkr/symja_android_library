@@ -113,10 +113,10 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (hashCode() != obj.hashCode()) {
-			return false;
-		}
 		if (obj instanceof Pattern) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
 			if (this == obj) {
 				return true;
 			}
@@ -302,9 +302,8 @@ public class Pattern extends ExprImpl implements IPattern {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof Pattern) {

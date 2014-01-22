@@ -141,10 +141,10 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (hashCode() != obj.hashCode()) {
-			return false;
-		}
 		if (obj instanceof ComplexSym) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
 			if (this == obj) {
 				return true;
 			}

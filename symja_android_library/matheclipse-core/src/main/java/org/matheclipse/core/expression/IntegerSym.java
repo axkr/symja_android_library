@@ -131,10 +131,10 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (hashCode() != obj.hashCode()) {
-			return false;
-		}
 		if (obj instanceof IntegerSym) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
 			if (this == obj) {
 				return true;
 			}

@@ -347,10 +347,10 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (hashCode() != obj.hashCode()) {
-			return false;
-		}
 		if (obj instanceof HMArrayList) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
 			if (size() != ((AST) obj).size()) {
 				return false;
 			}
@@ -359,12 +359,12 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			}
 			HMArrayList<E> list = (HMArrayList<E>) obj;
 			int j = list.firstIndex;
-//			for (int i = firstIndex; i < lastIndex; i++) {
-//				if (array[i].hashCode() != list.array[j++].hashCode()) {
-//					return false;
-//				}
-//			}
-//			j = list.firstIndex;
+			// for (int i = firstIndex; i < lastIndex; i++) {
+			// if (array[i].hashCode() != list.array[j++].hashCode()) {
+			// return false;
+			// }
+			// }
+			// j = list.firstIndex;
 			for (int i = firstIndex; i < lastIndex; i++) {
 				if (!array[i].equals(list.array[j++])) {
 					return false;
