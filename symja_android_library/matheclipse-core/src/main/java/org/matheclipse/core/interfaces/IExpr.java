@@ -538,6 +538,12 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isOne();
 
 	/**
+	 * {@inheritDoc}
+	 * @deprecated use {@link #isOne()} instead.
+	 */
+	public boolean isONE();
+	
+	/**
 	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
 	 * 
 	 */
@@ -732,6 +738,12 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 */
 	public boolean isZero();
 
+	/**
+	 * {@inheritDoc}
+	 * @deprecated use {@link #isZero()} instead.
+	 */
+	public boolean isZERO();
+	
 	/**
 	 * @return a list of the the leaf expressions. Instances of ExprImpl should return null, while any other expression may not
 	 *         return null (but can return an empty list).
