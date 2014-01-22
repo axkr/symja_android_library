@@ -177,7 +177,6 @@ public class Factor extends AbstractFunctionEvaluator {
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<BigRational> poly = (GenPolynomial<BigRational>) objects[2];
 
-		BigRational rfac = new BigRational(1);
 		ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
 		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, 1, to);
 		GenPolynomial<Complex<BigRational>> a = PolyUtil.complexFromAny(cpfac, poly);
