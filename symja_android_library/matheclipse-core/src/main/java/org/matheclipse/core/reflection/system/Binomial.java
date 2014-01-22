@@ -75,7 +75,7 @@ public class Binomial extends AbstractArg2 {
 			if (ii.equals(F.C0)) {
 				return F.C1;
 			}
-			if (ii.isLessThan(F.C10) & ii.isGreaterThan(F.C1)) {
+			if (ii.isLessThan(F.C10) && ii.isGreaterThan(F.C1)) {
 				int k = ii.intValue();
 				IAST ast = F.Times();
 				IAST temp;
