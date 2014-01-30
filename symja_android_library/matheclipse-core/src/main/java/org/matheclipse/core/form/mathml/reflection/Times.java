@@ -15,7 +15,7 @@ public class Times extends AbstractOperator {
 	public final static int NO_SPECIAL_CALL = 0;
 
 	public final static int PLUS_CALL = 1;
-
+	
 	public Times() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#x2062;");
 	}

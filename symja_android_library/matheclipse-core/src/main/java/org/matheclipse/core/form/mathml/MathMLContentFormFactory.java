@@ -163,11 +163,11 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory  {
 	// }
 	public void convertHead(final StringBuffer buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
-			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
+//			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			tagStart(buf, "mi");
-			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
-				buf.append('&');
-			}
+//			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
+//				buf.append('&');
+//			}
 			buf.append(((ISymbol) obj).getSymbolName());
 			tagEnd(buf, "mi");
 			// &af; &#x2061;

@@ -86,12 +86,13 @@ public class AST2Expr {
 	 */
 	private static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
 
-	public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
-	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
-	public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
+//	public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
+//	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
+//	public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
-	public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
+//	public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
 	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
+	
 	// public static final String PART_STRING =
 	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
 	// public static final String SLOT_STRING =

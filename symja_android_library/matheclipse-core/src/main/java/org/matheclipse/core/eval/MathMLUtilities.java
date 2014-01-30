@@ -112,6 +112,7 @@ public class MathMLUtilities {
 					out.write("</math>");
 				}
 			} catch (final Throwable e) {
+				e.printStackTrace();
 				// parsedExpression == null ==> fError occured
 			}
 		}
