@@ -1,5 +1,5 @@
 /*
- * $Id: PrimeList.java 4262 2012-10-21 13:24:47Z kredel $
+ * $Id: PrimeList.java 4744 2014-01-19 22:17:01Z axelclk $
  */
 
 package edu.jas.arith;
@@ -296,19 +296,22 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * @return 2**n - m
      */
     public static java.math.BigInteger getLongPrime(int n, int m) {
-		return java.math.BigInteger.valueOf((1 << n) - m);
-	}
+        if (n < 30) {
+            return java.math.BigInteger.valueOf((1 << n) - m);
+        } else {
+            return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.valueOf(m));
+        }
+    }
 
-	/**
-	 * Method to compute a Mersenne prime as 2**n - 1.
-	 * 
-	 * @param n
-	 *            power for 2.
-	 * @return 2**n - 1
-	 */
-	public static java.math.BigInteger getMersennePrime(int n) {
-		return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.ONE);
-	}
+
+    /**
+     * Method to compute a Mersenne prime as 2**n - 1.
+     * @param n  power for 2.
+     * @return 2**n - 1
+     */
+    public static java.math.BigInteger getMersennePrime(int n) {
+        return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.ONE);
+    }
 
 
     /**

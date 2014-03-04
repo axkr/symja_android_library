@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4668 2013-10-19 17:41:05Z kredel $
+ * $Id: SolvableQuotient.java 4739 2014-01-06 19:32:39Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -669,6 +669,9 @@ public class SolvableQuotient<C extends GcdRingElem<C>>
         }
         if (this.isZERO()) {
             return b;
+        }
+        if (this.equals(b)) {
+            return this;
         }
         return ring.getONE();
     }
