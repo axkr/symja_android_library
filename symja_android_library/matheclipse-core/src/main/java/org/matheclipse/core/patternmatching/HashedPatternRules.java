@@ -2,7 +2,6 @@ package org.matheclipse.core.patternmatching;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.visit.HashValueVisitor;
 
 /**
  * Data structure for <code>HashedOrderlessMatcher</code>.

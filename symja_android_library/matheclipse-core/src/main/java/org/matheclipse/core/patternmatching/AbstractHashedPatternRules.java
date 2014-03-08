@@ -1,6 +1,5 @@
 package org.matheclipse.core.patternmatching;
 
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
@@ -20,8 +19,6 @@ public abstract class AbstractHashedPatternRules {
 	 *            second left-hand-side pattern
 	 * @param rhsResult
 	 *            the right-hand-side result
-	 * @param condition
-	 *            a condition test
 	 * @param defaultHashCode
 	 *            TODO
 	 */

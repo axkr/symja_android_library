@@ -8,7 +8,6 @@ import org.matheclipse.core.interfaces.IExpr;
  * implementation
  * 
  */
-
 public class HashedPatternFunction extends AbstractHashedPatternRules {
 	final BinaryFunctorImpl<IExpr> function;
 
