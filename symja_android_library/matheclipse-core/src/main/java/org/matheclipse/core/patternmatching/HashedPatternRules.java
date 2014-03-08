@@ -13,15 +13,10 @@ import org.matheclipse.core.visit.HashValueVisitor;
  * <code>setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "1")</code>
  * 
  */
-public class HashedPatternRules {
-	private int hash1;
-	private int hash2;
-	private DownRulesData fRulesData = null;
-	private final IExpr fLHSPattern1;
-	private final IExpr fLHSPattern2;
-	private final IExpr fCondition;
+public class HashedPatternRules extends AbstractHashedPatternRules {
+	final IExpr fCondition;
 
-	private final IExpr fRHS;
+	final IExpr fRHS;
 
 	/**
 	 * 
@@ -51,36 +46,9 @@ public class HashedPatternRules {
 	 *            TODO
 	 */
 	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr condition, boolean defaultHashCode) {
-		fLHSPattern1 = lhsPattern1;
-		fLHSPattern2 = lhsPattern2;
+		super(lhsPattern1, lhsPattern2, defaultHashCode);
 		fCondition = condition;
 		fRHS = rhsResult;
-		if (defaultHashCode) {
-			hash1 = lhsPattern1.head().hashCode();
-			hash2 = lhsPattern2.head().hashCode();
-		} else {
-			HashValueVisitor v = new HashValueVisitor();
-			hash1 = lhsPattern1.accept(v);
-			v.setUp();
-			hash2 = lhsPattern2.accept(v);
-			v.setUp();
-		}
-	}
-
-	/**
-	 * @return the right-hand-side result
-	 */
-	public IExpr getRHS() {
-		return fRHS;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + hash1;
-		result = prime * result + hash2;
-		return result;
 	}
 
 	@Override
@@ -130,6 +98,13 @@ public class HashedPatternRules {
 	}
 
 	/**
+	 * @return the right-hand-side result
+	 */
+	public IExpr getRHS() {
+		return fRHS;
+	}
+
+	/**
 	 * Get the Condition for this rule.
 	 * 
 	 * @return may return <code>null</code>.
@@ -139,32 +114,10 @@ public class HashedPatternRules {
 	}
 
 	/**
-	 * Get the hash value for the first LHS expression.
-	 * 
-	 * @return the hash1
-	 */
-	public int getHash1() {
-		return hash1;
-	}
-
-	/**
-	 * Get the hash value for the second LHS expression.
-	 * 
-	 * @return the hash2
-	 */
-	public int getHash2() {
-		return hash2;
-	}
-
-	public boolean isPattern2() {
-		return fLHSPattern2.isPattern();
-	}
-
-	/**
 	 * Get (or create) the rule <code>{&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
 	 * 
 	 * @return
-	 */  
+	 */
 	public DownRulesData getRulesData() {
 		if (fRulesData == null) {
 			fRulesData = new DownRulesData();
@@ -176,4 +129,9 @@ public class HashedPatternRules {
 		}
 		return fRulesData;
 	}
+
+	public IExpr evalDownRule(IExpr e1, IExpr e2) {
+		return getRulesData().evalDownRule(F.List(e1, e2));
+	}
+
 }

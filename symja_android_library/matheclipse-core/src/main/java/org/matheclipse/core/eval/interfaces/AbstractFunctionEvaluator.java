@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -80,15 +79,15 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
 	}
 
-	private void setUpRules(final String[] rules, final Parser parser, final EvalEngine engine) {
-		for (int i = 0; i < rules.length; i++) {
-			final ASTNode parsedAST = parser.parse(rules[i]);
-			final IExpr obj = AST2Expr.CONST.convert(parsedAST);
-			// engine.init();
-			engine.evaluate(obj);
-		}
-
-	}
+	// private void setUpRules(final String[] rules, final Parser parser, final EvalEngine engine) {
+	// for (int i = 0; i < rules.length; i++) {
+	// final ASTNode parsedAST = parser.parse(rules[i]);
+	// final IExpr obj = AST2Expr.CONST.convert(parsedAST);
+	// // engine.init();
+	// engine.evaluate(obj);
+	// }
+	//
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -129,25 +128,25 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				if (((INumber) plus.arg1()).complexSign() < 0) {
 					return true;
 				}
-//			} else {
-//				IAST times = null;
-//				for (int i = 1; i < plus.size(); i++) {
-//					if (plus.get(i).isAST()) {
-//						if (times != null) {
-//							return false;
-//						}
-//						if (plus.get(i).isTimes()) {
-//							times = (IAST) plus.get(i);
-//							if (times.arg1().isNumber()) {
-//								if (((INumber) times.arg1()).complexSign() < 0) {
-//									continue;
-//								}
-//							}
-//						}
-//						return false;
-//					}
-//				}
-//				return true;
+				// } else {
+				// IAST times = null;
+				// for (int i = 1; i < plus.size(); i++) {
+				// if (plus.get(i).isAST()) {
+				// if (times != null) {
+				// return false;
+				// }
+				// if (plus.get(i).isTimes()) {
+				// times = (IAST) plus.get(i);
+				// if (times.arg1().isNumber()) {
+				// if (((INumber) times.arg1()).complexSign() < 0) {
+				// continue;
+				// }
+				// }
+				// }
+				// return false;
+				// }
+				// }
+				// return true;
 			}
 		}
 

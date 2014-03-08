@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -117,7 +115,8 @@ public class Times extends AbstractArgMultiple implements INumeric {
 							// x^(a)*x^(b) => x ^(a+b)
 							return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
 						}
-						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
+						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()
+								&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
 							// a^(c)*b^(c) => (a*b) ^c
 							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
 						}
@@ -173,6 +172,12 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
+		if (ast.size() > 2) {
+			IAST temp = evaluateHashs(ast);
+			if (temp != null) {
+				return temp;
+			}
+		}
 		if (ast.size() == 3) {
 			if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
 				// distribute the number over the sum:
@@ -246,6 +251,10 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)", Log.getFunction());
+		ORDERLESS_MATCHER.setUpHashRule(Log($p(x)), Power(Log($p(y)), CN1),
+				org.matheclipse.core.reflection.system.Log.getFunction());
+
 		super.setUp(symbol);
 	}
 

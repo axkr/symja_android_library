@@ -3,7 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.util.List;
 
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
@@ -19,7 +19,7 @@ import com.google.common.collect.ArrayListMultimap;
  * @see HashedPatternRules
  */
 public class HashedOrderlessMatcher {
-	ArrayListMultimap<Integer, HashedPatternRules> hashRuleMap;
+	ArrayListMultimap<Integer, AbstractHashedPatternRules> hashRuleMap;
 	private final boolean fDefaultHashCode;
 
 	public HashedOrderlessMatcher(boolean defaultHashCode) {
@@ -37,6 +37,16 @@ public class HashedOrderlessMatcher {
 	 */
 	public void setUpHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr) throws SyntaxError {
 		setUpHashRule(lhs1Str, lhs2Str, rhsStr, null);
+	}
+
+	public void setUpHashRule(final String lhs1Str, final String lhs2Str, final BinaryFunctorImpl<IExpr> function)
+			throws SyntaxError {
+		final Parser parser = new Parser();
+		ASTNode parsedAST = parser.parse(lhs1Str);
+		final IExpr lhs1 = AST2Expr.CONST.convert(parsedAST);
+		parsedAST = parser.parse(lhs2Str);
+		final IExpr lhs2 = AST2Expr.CONST.convert(parsedAST);
+		setUpHashRule(lhs1, lhs2, function);
 	}
 
 	public void setUpHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr, final String conditionStr)
@@ -78,7 +88,12 @@ public class HashedOrderlessMatcher {
 	 * @param condition
 	 */
 	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
-		HashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, fDefaultHashCode);
+		AbstractHashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, fDefaultHashCode);
+		hashRuleMap.put(hashRule.getHash1(), hashRule);
+	}
+
+	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final BinaryFunctorImpl<IExpr> function) {
+		AbstractHashedPatternRules hashRule = new HashedPatternFunction(lhs1, lhs2, function, fDefaultHashCode);
 		hashRuleMap.put(hashRule.getHash1(), hashRule);
 	}
 
@@ -114,9 +129,9 @@ public class HashedOrderlessMatcher {
 				// already used entry
 				continue;
 			}
-			final List<HashedPatternRules> hashRuleList = hashRuleMap.get(hashValues[i]);
+			final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap.get(hashValues[i]);
 			if (hashRuleList != null) {
-				evaled: for (HashedPatternRules hashRule : hashRuleList) {
+				evaled: for (AbstractHashedPatternRules hashRule : hashRuleList) {
 
 					for (int j = 0; j < hashValues.length; j++) {
 						if (!hashRule.isPattern2()) {
@@ -125,8 +140,8 @@ public class HashedOrderlessMatcher {
 								continue;
 							}
 						}
-						DownRulesData rulesData = hashRule.getRulesData();
-						if ((temp = rulesData.evalDownRule(F.List(orderlessAST.get(i + 1), orderlessAST.get(j + 1)))) != null) {
+
+						if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))) != null) {
 							hashValues[i] = 0;
 							hashValues[j] = 0;
 							if (!evaled) {
@@ -136,6 +151,17 @@ public class HashedOrderlessMatcher {
 							result.add(temp);
 							break evaled;
 						}
+						// DownRulesData rulesData = hashRule.getRulesData();
+						// if ((temp = rulesData.evalDownRule(F.List(orderlessAST.get(i + 1), orderlessAST.get(j + 1)))) != null) {
+						// hashValues[i] = 0;
+						// hashValues[j] = 0;
+						// if (!evaled) {
+						// result = orderlessAST.copyHead();
+						// evaled = true;
+						// }
+						// result.add(temp);
+						// break evaled;
+						// }
 					}
 				}
 			}
