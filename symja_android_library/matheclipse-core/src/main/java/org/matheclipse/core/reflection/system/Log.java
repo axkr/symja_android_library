@@ -112,14 +112,8 @@ public class Log extends AbstractArg12 implements INumeric {
 			 */
 			@Override
 			public IExpr apply(IExpr arg1, IExpr arg2) {
-				if (arg1.isLog() && arg2.isPower()) {
-					IExpr i1 = arg1.getAt(1);
-					if (arg2.getAt(1).isLog() && arg2.getAt(2).equals(F.CN1)) {
-						IExpr i2 = arg2.getAt(1).getAt(1);
-						if (i1.isInteger() && i2.isInteger()) {
-							return baseBLog((IInteger) i2, (IInteger) i1);
-						}
-					}
+				if (arg1.isInteger() && arg2.isInteger()) {
+					return baseBLog((IInteger) arg2, (IInteger) arg1);
 				}
 				return null;
 			}

@@ -211,10 +211,28 @@ public class PatternMap implements Cloneable, Serializable {
 		return rulesMap;
 	}
 
+	/**
+	 * Return the matched value for the given pattern object
+	 * 
+	 * @param pExpr
+	 * @return <code>null</code> if no matched expression exists
+	 */
 	public IExpr getValue(IPatternObject pattern) {
 		int indx = pattern.getIndex();
 		if (indx >= 0) {
 			return fPatternValuesArray[indx];
+		}
+		return null;
+	}
+
+	/**
+	 * Return the matched value for the given <code>index</code> if possisble.
+	 * 
+	 * @return <code>null</code> if no matched expression exists
+	 */
+	protected IExpr getValue(int index) {
+		if (index < fPatternValuesArray.length) {
+			return fPatternValuesArray[index];
 		}
 		return null;
 	}

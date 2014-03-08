@@ -403,27 +403,13 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Set the symbol values for the matched patterns.
+	 * Return the matched value for index 0 if possisble.
 	 * 
-	 * @param resultList
-	 * @param pExpr
+	 * @return <code>null</code> if no matched expression exists
 	 */
-	// public void setPatternValue2Local(final IExpr pExpr) {
-	// if (pExpr.isAST()) {
-	// final IAST list = (IAST) pExpr;
-	// setPatternValue2Local(list.head());
-	// for (int i = 0; i < list.size(); i++) {
-	// setPatternValue2Local(list.get(i));
-	// }
-	// } else if (pExpr.isPattern()) {
-	// ISymbol sym = ((IPattern) pExpr).getSymbol();
-	// if (!sym.hasLocalVariableStack()) {
-	// throw new
-	// UnsupportedOperationException("Pattern symbol has to be defined with local stack");
-	// }
-	// sym.set(fPatternMap.getValue((IPattern) pExpr));
-	// }
-	// }
+	protected IExpr getPatternValue0() {
+		return fPatternMap.getValue(0);
+	}
 
 	/**
 	 * Returns true if the given expression contains no patterns
