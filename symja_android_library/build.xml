@@ -105,7 +105,9 @@
 	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalDouble" />
 	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalComplex" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
-	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" />  
+	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" /> 
+	            <keep access="public"
+	extends="org.matheclipse.core.interfaces.IExpr" /> 
 	           <keep access="public"
 	extends="org.matheclipse.core.interfaces.IEvaluator" />
 	           <keep access="public"
@@ -129,10 +131,26 @@
 	                     <method access    ="public static"
 	                             name      ="*" />
 	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.eval.EvalUtilities">
+	                     <method access    ="public static"
+	                             name      ="*" />
+	           </keep>
 	           <keep access="public" name="org.matheclipse.core.eval.EvalDouble">
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep> 
+	           <keep access="public" name="org.matheclipse.parser.client.Parser">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.expression.F">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.interfaces.IExpr">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
  
 	           <keep access="public" name="${main-class}">
 	                     <method access    ="public static"
