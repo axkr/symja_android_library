@@ -89,12 +89,12 @@ public class HashedOrderlessMatcher {
 	 */
 	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
 		AbstractHashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, fDefaultHashCode);
-		hashRuleMap.put(hashRule.getHash1(), hashRule);
+		hashRuleMap.put(hashRule.hashCode(), hashRule);
 	}
 
 	public void setUpHashRule(final IExpr lhs1, final IExpr lhs2, final BinaryFunctorImpl<IExpr> function) {
 		AbstractHashedPatternRules hashRule = new HashedPatternFunction(lhs1, lhs2, function, fDefaultHashCode);
-		hashRuleMap.put(hashRule.getHash1(), hashRule);
+		hashRuleMap.put(hashRule.hashCode(), hashRule);
 	}
 
 	/**
@@ -122,33 +122,61 @@ public class HashedOrderlessMatcher {
 
 	private IAST evaluateHashedValues(final IAST orderlessAST, int[] hashValues) {
 		boolean evaled = false;
-		IAST result = null;
-		IExpr temp;
+		IAST result = orderlessAST.copyHead();
 		for (int i = 0; i < hashValues.length; i++) {
 			if (hashValues[i] == 0) {
 				// already used entry
 				continue;
 			}
-			final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap.get(hashValues[i]);
-			if (hashRuleList != null) {
-				evaled: for (AbstractHashedPatternRules hashRule : hashRuleList) {
+			evaled: for (int j = i + 1; j < hashValues.length; j++) {
+				if (hashValues[j] == 0) {
+					// already used entry
+					continue;
+				}
+				final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap.get(AbstractHashedPatternRules.calculateHashcode(
+						hashValues[i], hashValues[j]));
+				if (hashRuleList != null) {
+					for (AbstractHashedPatternRules hashRule : hashRuleList) {
 
-					for (int j = 0; j < hashValues.length; j++) {
-						if (!hashRule.isPattern2()) {
-							if (hashValues[j] != hashRule.getHash2() || j == i) {
+						if (!hashRule.isPattern1() && !hashRule.isPattern2()) {
+							if (hashValues[i] != hashRule.getHash1() || hashValues[j] != hashRule.getHash2()) {
+								if (hashValues[i] != hashRule.getHash2() || hashValues[j] != hashRule.getHash1()) {
+									// hash code of both entries aren't matching
+									continue;
+								}
+
+								if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+									evaled = true;
+									break evaled;
+								}
+								continue;
+							}
+
+							if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j)) {
+								evaled = true;
+								break evaled;
+							}
+
+							if (hashValues[i] != hashRule.getHash2() || hashValues[j] != hashRule.getHash1()) {
 								// hash code of both entries aren't matching
 								continue;
 							}
+
+							if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+								evaled = true;
+								break evaled;
+							}
+							continue;
+
 						}
 
-						if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))) != null) {
-							hashValues[i] = 0;
-							hashValues[j] = 0;
-							if (!evaled) {
-								result = orderlessAST.copyHead();
-								evaled = true;
-							}
-							result.add(temp);
+						if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j)) {
+							evaled = true;
+							break evaled;
+						}
+
+						if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+							evaled = true;
 							break evaled;
 						}
 					}
@@ -163,7 +191,20 @@ public class HashedOrderlessMatcher {
 					result.add(orderlessAST.get(i + 1));
 				}
 			}
+			return result;
 		}
-		return result;
+		return null;
+	}
+
+	public boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule, int[] hashValues,
+			int i, int j) {
+		IExpr temp;
+		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))) != null) {
+			hashValues[i] = 0;
+			hashValues[j] = 0;
+			result.add(temp);
+			return true;
+		}
+		return false;
 	}
 }

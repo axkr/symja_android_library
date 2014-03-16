@@ -7,6 +7,7 @@ public abstract class AbstractHashedPatternRules {
 
 	protected int hash1;
 	protected int hash2;
+	protected int hashSum;
 	protected DownRulesData fRulesData = null;
 	protected final IExpr fLHSPattern1;
 	protected final IExpr fLHSPattern2;
@@ -39,11 +40,21 @@ public abstract class AbstractHashedPatternRules {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + hash1;
-		result = prime * result + hash2;
-		return result;
+		if (hashSum == 0) {
+			hashSum = calculateHashcode(hash1, hash2);
+		}
+		return hashSum;
+	}
+
+	/**
+	 * Symmetric hash code.
+	 * 
+	 * @param h1
+	 * @param h2
+	 * @return
+	 */
+	public static int calculateHashcode(int h1, int h2) {
+		return 31 * (h1 + h2);
 	}
 
 	@Override
@@ -96,6 +107,18 @@ public abstract class AbstractHashedPatternRules {
 		return hash2;
 	}
 
+	/**
+	 * Test if the first left-hand-side is a pattern object
+	 * 
+	 */
+	public boolean isPattern1() {
+		return fLHSPattern1.isPattern();
+	}
+
+	/**
+	 * Test if the seconad left-hand-side is a pattern object
+	 * 
+	 */
 	public boolean isPattern2() {
 		return fLHSPattern2.isPattern();
 	}
