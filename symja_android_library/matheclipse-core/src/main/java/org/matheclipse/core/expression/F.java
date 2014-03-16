@@ -3131,10 +3131,10 @@ public class F {
 
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
 		if (a0.isAST()) {
-			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK);
+			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
 		org.matheclipse.core.reflection.system.SetDelayed.CONST.createPatternMatcher(a0, a1, true);
-		return null;// binary(SetDelayed, a0, a1);
+		return null;
 	}
 
 	public static IAST Show(final IExpr a0) {
