@@ -48,7 +48,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 */
 	private IExpr[] fPatternValuesArray;
 
-	public PatternMap() {
+	protected PatternMap() {
 		this(new IExpr[0]);
 	}
 
@@ -125,7 +125,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 *            the (left-hand-side) expression which could contain pattern objects.
 	 */
 	private int determinePatternsRecursive(TreeMap<ISymbol, Integer> patternIndexMap, final IAST lhsPatternExpr) {
-		final IAST ast = (IAST) lhsPatternExpr;
+		final IAST ast = lhsPatternExpr;
 		int listEvalFlags = IAST.NO_FLAG;
 		for (int i = 0; i < ast.size(); i++) {
 			IExpr temp = ast.get(i);
@@ -164,8 +164,7 @@ public class PatternMap implements Cloneable, Serializable {
 		result.fPatternValuesArray = new IExpr[fPatternValuesArray.length];
 		System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, fPatternValuesArray.length);
 		// don't clone the fSymbolsArray which is final after the
-		// #determinepatterns()
-		// method
+		// #determinepatterns() method
 		result.fSymbolsArray = fSymbolsArray;
 		result.fPatternCounter = fPatternCounter;
 		result.fRuleWithoutPattern = fRuleWithoutPattern;
@@ -178,7 +177,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @return
 	 * @see PatternMap#resetPattern(IExpr[])
 	 */
-	public IExpr[] copyPattern() {
+	protected IExpr[] copyPattern() {
 		IExpr[] patternValuesArray = new IExpr[fPatternValuesArray.length];
 		System.arraycopy(fPatternValuesArray, 0, patternValuesArray, 0, fPatternValuesArray.length);
 		return patternValuesArray;
@@ -189,7 +188,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * 
 	 * @param patternMap
 	 */
-	public void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
+	protected void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
 		// for (ISymbol pattern : patternMap.fSymbolsArray) {
 		ISymbol[] symbolsArray = patternMap.fSymbolsArray;
 		for (int i = 0; i < symbolsArray.length; i++) {
@@ -217,7 +216,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param pExpr
 	 * @return <code>null</code> if no matched expression exists
 	 */
-	public IExpr getValue(IPatternObject pattern) {
+	protected IExpr getValue(IPatternObject pattern) {
 		int indx = pattern.getIndex();
 		if (indx >= 0) {
 			return fPatternValuesArray[indx];
@@ -237,7 +236,7 @@ public class PatternMap implements Cloneable, Serializable {
 		return null;
 	}
 
-	public List<IExpr> getValuesAsList() {
+	protected List<IExpr> getValuesAsList() {
 		List<IExpr> args = new ArrayList<IExpr>(fPatternValuesArray.length);
 		IExpr arg;
 		for (int i = 0; i < fPatternValuesArray.length; i++) {
@@ -261,7 +260,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isAllPatternsAssigned() {
+	protected boolean isAllPatternsAssigned() {
 		if (fPatternValuesArray != null) {
 			// all patterns have values assigned?
 			for (int i = 0; i < fPatternValuesArray.length; i++) {
@@ -278,7 +277,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * 
 	 * @return
 	 */
-	public boolean isRuleWithoutPatterns() {
+	protected boolean isRuleWithoutPatterns() {
 		return fRuleWithoutPattern;
 	}
 
@@ -288,18 +287,18 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param patternValuesArray
 	 * @see PatternMap#copyPattern()
 	 */
-	public void resetPattern(IExpr[] patternValuesArray) {
+	protected void resetPattern(IExpr[] patternValuesArray) {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
-	public void setValue(IPatternObject pattern, IExpr expr) {
+	protected void setValue(IPatternObject pattern, IExpr expr) {
 		int indx = pattern.getIndex();
 		if (indx >= 0) {
 			fPatternValuesArray[indx] = expr;
 		}
 	}
 
-	public int size() {
+	protected int size() {
 		return fPatternValuesArray.length;
 	}
 
@@ -310,7 +309,7 @@ public class PatternMap implements Cloneable, Serializable {
 	 * 
 	 * @return
 	 */
-	public IExpr substitutePatternSymbols(final IExpr expression) {
+	protected IExpr substitutePatternSymbols(final IExpr expression) {
 		if (fPatternValuesArray != null) {
 			return F.subst(expression, Functors.rules(getRulesMap()));
 		}
