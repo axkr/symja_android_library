@@ -24,16 +24,16 @@ public class RosenNumberPartitionIterator extends RosenIterator {
 	 */
 	@Override
 	public final int[] next() {
-		int[] actual = super.next();
+		int[] current = super.next();
 		final int[] temp = new int[k + 1];
 		for (int i = 0; i < temp.length; i++) {
 			if (i == 0) {
-				temp[i] = actual[i] + 1;
+				temp[i] = current[i] + 1;
 			} else {
 				if (i == temp.length - 1) {
-					temp[i] = n - actual[i - 1];
+					temp[i] = n - current[i - 1];
 				} else {
-					temp[i] = actual[i] - actual[i - 1];
+					temp[i] = current[i] - current[i - 1];
 				}
 			}
 		}

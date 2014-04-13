@@ -136,8 +136,8 @@ public class KPermutationsIterator implements Iterator<int[]>, Iterable<int[]> {
 	public boolean execute() {
 
 		while (hasNext()) {
-			final int[] actual = next();
-			if (!fHandler.visit(actual)) {
+			final int[] current = next();
+			if (!fHandler.visit(current)) {
 				return false;
 			}
 		}

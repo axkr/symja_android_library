@@ -44,10 +44,10 @@ public class NumberPartitionsIterator {
 
 		while (rosen.hasNext()) {
 			int counter = 0;
-			final int[] actualRosen = rosen.next();
-			for (int i = 0; i < actualRosen.length; i++) {
-				result[i] = new int[actualRosen[i]];
-				for (int j = 0; j < actualRosen[i]; j++) {
+			final int[] currentRosen = rosen.next();
+			for (int i = 0; i < currentRosen.length; i++) {
+				result[i] = new int[currentRosen[i]];
+				for (int j = 0; j < currentRosen[i]; j++) {
 					result[i][j] = counter++;
 				}
 //				Status status = handler.verify(i, result);
