@@ -23,7 +23,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	 */
 	public final static Times CONST = new Times();
 
-	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher(true);
+	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
 
 	@Override
 	public HashedOrderlessMatcher getHashRuleMap() {
@@ -252,7 +252,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)", Log.getFunction());
-		ORDERLESS_MATCHER.setUpHashRule(Log($p(x)), Power(Log($p(y)), CN1),
+		ORDERLESS_MATCHER.defineHashRule(Log($p(x)), Power(Log($p(y)), CN1),
 				org.matheclipse.core.reflection.system.Log.getFunction());
 
 		super.setUp(symbol);

@@ -18,8 +18,6 @@ public abstract class AbstractHashedPatternRules {
 	 *            first left-hand-side pattern
 	 * @param lhsPattern2
 	 *            second left-hand-side pattern
-	 * @param rhsResult
-	 *            the right-hand-side result
 	 * @param defaultHashCode
 	 *            TODO
 	 */

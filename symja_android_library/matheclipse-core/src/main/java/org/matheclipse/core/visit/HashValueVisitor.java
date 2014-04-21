@@ -12,52 +12,34 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class HashValueVisitor extends AbstractVisitorInt {
 
-	// @Override
-	// public int visit(IAST list) {
-	// // TODO Auto-generated method stub
-	// return 0;
-	// }
-	final int fMaxDepth;
-
-	int currentDepth = 0;
-	
 	public HashValueVisitor() {
-		this(1);
-	}
-	
-	public HashValueVisitor(int maxDepth) {
-		fMaxDepth = maxDepth;
 	}
 
 	public void setUp() {
-		currentDepth = 0;
+		// fCurrentDepth = 0;
 	}
 
 	/**
 	 * @see org.matheclipse.core.expression.AST#hashCode()
 	 */
 	public int visit(IAST list) {
-		try {
-			++currentDepth;
-			if (currentDepth <= fMaxDepth) {
-				int hash = 0;
-				if (list.size() > 1) {
-					hash = (31 * list.get(0).hashCode() + list.get(1).accept(this) + list.size());
-				} else {
-					if (list.size() == 1) {
-						hash = (17 * list.get(0).hashCode());
-					} else {
-						// this case shouldn't happen
-						hash = 41;
-					}
-				}
-				return hash;
+		int hash = 0;
+		if (list.size() > 1) {
+			if (list.get(1).isAST()) {
+				IAST temp = (IAST) list.get(1);
+				hash = list.get(0).hashCode() + (31 * temp.head().hashCode() + temp.size()) + list.size();
 			} else {
-				return (31 * list.head().hashCode() + list.size());
+				hash = (31 * list.get(0).hashCode() + list.size());
 			}
-		} finally {
-			--currentDepth;
+		} else {
+			if (list.size() == 1) {
+				hash = (17 * list.get(0).hashCode());
+			} else {
+				// this case shouldn't happen
+				hash = 41;
+			}
 		}
+		return hash;
 	}
 
 	public int visit(IComplex element) {

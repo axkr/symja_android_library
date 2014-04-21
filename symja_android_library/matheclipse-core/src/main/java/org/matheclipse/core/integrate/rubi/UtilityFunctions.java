@@ -229,13 +229,13 @@ public class UtilityFunctions {
 
 	public static void init() {
 		// Dist[u_,v_]+Dist[w_,v_] := If[ZeroQ[u+w], 0, Dist[u+w,v]],
-		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Dist($p("w"), $p("v")),
+		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist($p("u"), $p("v")), Dist($p("w"), $p("v")),
 				If(ZeroQ(Plus($s("u"), $s("w"))), C0, Dist(Plus($s("u"), $s("w")), $s("v"))), null);
 		// Dist[u_,v_]-Dist[w_,v_] := If[ZeroQ[u-w], 0, Dist[u-w,v]],
-		org.matheclipse.core.reflection.system.Plus.CONST.setUpHashRule(Dist($p("u"), $p("v")), Times(CN1, Dist($p("w"), $p("v"))),
+		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist($p("u"), $p("v")), Times(CN1, Dist($p("w"), $p("v"))),
 				If(ZeroQ(Plus($s("u"), Times(CN1, $s("w")))), C0, Dist(Plus($s("u"), Times(CN1, $s("w"))), $s("v"))), null);
 		// Dist[u_,v_]*w_ := Dist[w*u,v] /; w=!=-1
-		org.matheclipse.core.reflection.system.Times.CONST.setUpHashRule(Dist($p("u"), $p("v")), $p("w"),
+		org.matheclipse.core.reflection.system.Times.CONST.defineHashRule(Dist($p("u"), $p("v")), $p("w"),
 				Dist(Times($s("w"), $s("u")), $s("v")), UnsameQ($s("w"), CN1));
 	}
 }
