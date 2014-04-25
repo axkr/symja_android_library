@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4745 2014-02-02 17:32:41Z axelclk $
+ * $Id: Quotient.java 4668 2013-10-19 17:41:05Z kredel $
  */
 
 package edu.jas.ufd;
@@ -226,9 +226,6 @@ public class Quotient<C extends GcdRingElem<C>>
         // Python case
         if (den.isONE()) {
             return num.toScript();
-        }
-        if (den.length() == 1 && den.totalDegree() > 1) {
-            return num.toScript() + " / (" + den.toScript() + " )";
         }
         return num.toScript() + " / " + den.toScript();
     }
@@ -600,9 +597,6 @@ public class Quotient<C extends GcdRingElem<C>>
         }
         if (this.isZERO()) {
             return b;
-        }
-        if (this.equals(b)) {
-            return this;
         }
         return ring.getONE();
     }
