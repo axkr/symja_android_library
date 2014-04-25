@@ -19,6 +19,8 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.ufd.GCDFactory;
+import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 /**
  * Least common multiple of two polynomials. See also: <a href=
@@ -46,15 +48,12 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			if (option != null && option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
-					// ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
-					// JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
 					ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
 					JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
 					GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 					GenPolynomial<ModLong> temp;
-					GenPolynomial<ModLong> gcd;
-					GenPolynomial<ModLong> lcm;
-					for (int i = 2; i < ast.size() - 1; i++) {
+					GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
+					for (int i = 2; i < ast.size() - 1; i++) { 
 						eVar = new ExprVariables(ast.get(i));
 						if (!eVar.isSize(1)) {
 							// gcd only possible for univariate polynomials
@@ -62,13 +61,11 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 						}
 						expr = F.evalExpandAll(ast.get(i));
 						temp = jas.expr2JAS(expr);
-						gcd = poly.gcd(temp);
-						lcm = poly.multiply(temp).divide(gcd);
-						poly = lcm;
+						poly = factory.lcm(poly, temp);
 					}
 
-					return Factor.factorModulus(jas, modIntegerRing, poly, false);
-//					return jas.modLongPoly2Expr(poly);
+					return Factor.factorModulus(jas, modIntegerRing, poly.monic(), false);
+//					return jas.modLongPoly2Expr(poly.monic());
 				} catch (JASConversionException e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();
@@ -81,8 +78,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
 			GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
 			GenPolynomial<BigRational> temp;
-			GenPolynomial<BigRational> gcd;
-			GenPolynomial<BigRational> lcm;
+			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
 				eVar = new ExprVariables(ast.get(i));
 				if (!eVar.isSize(1)) {
@@ -91,11 +87,9 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 				}
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr);
-				gcd = poly.gcd(temp);
-				lcm = poly.multiply(temp).divide(gcd);
-				poly = lcm;
+				poly = factory.lcm(poly, temp); 
 			}
-			return jas.rationalPoly2Expr(poly);
+			return jas.rationalPoly2Expr(poly.monic());
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();

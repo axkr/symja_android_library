@@ -19,6 +19,8 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.ufd.GCDFactory;
+import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 /**
  * Greatest common divisor of two polynomials. See: <a href=
@@ -48,6 +50,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
 			GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
 			GenPolynomial<BigRational> temp;
+			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
 				eVar = new ExprVariables(ast.get(i));
 				if (!eVar.isSize(1)) {
@@ -56,9 +59,9 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 				}
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr);
-				poly = poly.gcd(temp);
+				poly = factory.gcd(poly, temp); 
 			}
-			return jas.rationalPoly2Expr(poly);
+			return jas.rationalPoly2Expr(poly.monic());
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
@@ -86,6 +89,8 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 			JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
 			GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 			GenPolynomial<ModLong> temp;
+			GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
+			
 			for (int i = 2; i < ast.size() - 1; i++) {
 				eVar = new ExprVariables(ast.get(i));
 				if (!eVar.isSize(1)) {
@@ -94,7 +99,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 				}
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr);
-				poly = poly.gcd(temp);
+				poly = factory.gcd(poly, temp);
 			}
 			return Factor.factorModulus(jas, modIntegerRing, poly, false);
 		} catch (JASConversionException e) {
