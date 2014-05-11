@@ -2,27 +2,10 @@ package org.matheclipse.core.interfaces;
 
 
 /**
- * Interface for pattern objects. A pettern object cannot be shared between
- * multiple rules
+ * Interface for pattern objects (i.e. x_)
  * 
  */
 public interface IPattern extends IPatternObject, IExpr {
-	/**
-	 * Get the index in which this pattern is stored during pattern-matching for a
-	 * given rule.
-	 * 
-	 * @param index
-	 */
-//	public int getIndex();
-
-	/**
-	 * Set the index in which this pattern is stored during pattern-matching for a
-	 * given rule.
-	 * 
-	 * @param index
-	 * @see PatternMatcher#determinePatternParameters()
-	 */
-//	public void setIndex(int index);
 
 	/**
 	 * Get the additional patterns condition expression

@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -18,7 +19,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import com.google.common.base.Predicate;
 
 /**
- * A concrete pattern sequence implementation
+ * A concrete pattern sequence implementation (i.e. x__)
  * 
  */
 public class PatternSequence extends ExprImpl implements IPatternSequence {
@@ -75,7 +76,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * 
 	 * @see org.matheclipse.core.patternmatching.PatternMatcher
 	 */
-	int fIndex = -1;
+	// int fIndex = -1;
 
 	private PatternSequence() {
 	}
@@ -104,8 +105,11 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * @return
 	 */
-	public int getIndex() {
-		return fIndex;
+	public int getIndex(PatternMap pm) {
+		if (pm != null) {
+			return pm.get(fSymbol);
+		}
+		return -1;
 	}
 
 	/**
@@ -158,12 +162,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 		return toString();
 	}
-	
-	@Override
-	public void setIndex(final int i) {
-		fIndex = i;
-	}
-	
+
+	// @Override
+	// public void setIndex(final int i) {
+	// fIndex = i;
+	// }
+
 	@Override
 	public String toString() {
 		final StringBuffer buffer = new StringBuffer();
@@ -217,9 +221,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof PatternSequence) {

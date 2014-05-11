@@ -85,9 +85,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	 * @param patternExpr1
 	 * @param patternExpr2
 	 * @param pm1
-	 *            TODO
 	 * @param pm2
-	 *            TODO
 	 * @return
 	 */
 	private static boolean equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1,
@@ -108,7 +106,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			return false;
 		}
 		// TODO refine equivalent for RHS symbols which are patterns on the LHS.
-		return equivalent(patternExpr1, patternExpr2);
+		return equivalent(patternExpr1, patternExpr2, pm1, pm2);
 	}
 
 	@Override

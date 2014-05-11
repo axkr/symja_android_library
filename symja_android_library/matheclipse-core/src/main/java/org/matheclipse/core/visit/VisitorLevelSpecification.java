@@ -19,7 +19,7 @@ import com.google.common.base.Function;
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
  * 
- * Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
+ * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  * 
  */
 public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
@@ -63,12 +63,13 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	 * @see
 	 */
 	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr expr, boolean includeHeads) {
+		IExpr levelExpr = F.eval(expr);
 		fFromLevel = fToLevel = -1;
 		fFromDepth = fToDepth = 0;
 		this.fIncludeHeads = includeHeads;
 		this.fFunction = function;
-		if (expr instanceof IInteger) {
-			final IInteger value = (IInteger) expr;
+		if (levelExpr instanceof IInteger) {
+			final IInteger value = (IInteger) levelExpr;
 
 			if (value.isNegative()) {
 				fFromDepth = Integer.MIN_VALUE;
@@ -83,8 +84,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 			}
 			return;
 		}
-		if (expr.isList()) {
-			final IAST lst = (IAST) expr;
+		if (levelExpr.isList()) {
+			final IAST lst = (IAST) levelExpr;
 
 			if (lst.size() == 2) {
 				if (lst.get(1) instanceof IInteger) {
@@ -96,7 +97,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 						fFromLevel = 0;
 						fToLevel = Integer.MAX_VALUE;
 						if (fToDepth < fFromDepth) {
-							throw new MathException("Invalid Level specification: " + expr.toString());
+							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						}
 					} else {
 						fToLevel = i.getBigNumerator().intValue();
@@ -104,7 +105,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 						fFromDepth = Integer.MIN_VALUE;
 						fToDepth = -1;
 						if (fToLevel < fFromLevel) {
-							throw new MathException("Invalid Level specification: " + expr.toString());
+							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						}
 					}
 					return;
@@ -120,7 +121,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 							fFromLevel = 0;
 							fToLevel = Integer.MAX_VALUE;
 						} else if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + expr.toString());
+							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else if (i1.isNegative()) {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = i1.getBigNumerator().intValue();
@@ -136,7 +137,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).isInfinity())) {
 						final IInteger i0 = (IInteger) lst.get(1);
 						if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + expr.toString());
+							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
@@ -148,14 +149,14 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 				}
 			}
 		}
-		if (expr.equals(F.CInfinity)) {
+		if (levelExpr.equals(F.CInfinity)) {
 			fToLevel = Integer.MAX_VALUE;
 			fFromLevel = 1;
 			fFromDepth = Integer.MIN_VALUE;
 			fToDepth = -1;
 			return;
 		}
-		throw new MathException("Invalid Level specification: " + expr.toString());
+		throw new MathException("Invalid Level specification: " + levelExpr.toString());
 	}
 
 	// public AbstractVisitorLevel(final Function<IExpr, IExpr> function,

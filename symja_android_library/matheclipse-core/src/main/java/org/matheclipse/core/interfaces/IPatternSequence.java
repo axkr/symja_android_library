@@ -1,9 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 /**
- * Interface for pattern sequence objects. A pettern sequence object cannot be
- * shared between multiple rules.
- * 
+ * Interface for pattern sequence objects (i.e. x__)
  */
 public interface IPatternSequence extends IPatternObject, IExpr {
 
@@ -15,8 +13,8 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	public IExpr getCondition();
 
 	/**
-	 * Return <code>true</code>, if all of the elements in the
-	 * <code>sequence</code> fulfill the pattern sequences additional condition
+	 * Return <code>true</code>, if all of the elements in the <code>sequence</code> fulfill the pattern sequences additional
+	 * condition
 	 * 
 	 * @param sequence
 	 * @return
@@ -31,8 +29,7 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	public boolean isBlank();
 
 	/**
-	 * Return <code>true</code>, if the expression is a pattern sequence with an
-	 * associated default value,
+	 * Return <code>true</code>, if the expression is a pattern sequence with an associated default value,
 	 * 
 	 * @return
 	 */

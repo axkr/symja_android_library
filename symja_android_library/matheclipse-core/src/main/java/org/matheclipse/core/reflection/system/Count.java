@@ -13,7 +13,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import com.google.common.base.Function;
 
 /**
- * 
+ * Count the number of elements in an expression which match the given pattern.
  * 
  */
 public class Count implements IFunctionEvaluator {

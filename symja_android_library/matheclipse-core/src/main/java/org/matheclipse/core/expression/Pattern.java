@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -18,7 +19,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import com.google.common.base.Predicate;
 
 /**
- * A concrete pattern implementation.
+ * A concrete pattern implementation (i.e. x_)
  * 
  */
 public class Pattern extends ExprImpl implements IPattern {
@@ -54,10 +55,10 @@ public class Pattern extends ExprImpl implements IPattern {
 		if (symbol == null) {
 			return NULL_PATTERN;
 		}
-		// IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
-		// if (value != null) {
-		// return value;
-		// }
+		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
+		if (value != null) {
+			return value;
+		}
 		return new Pattern(symbol);
 	}
 
@@ -71,7 +72,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * 
 	 * @see org.matheclipse.core.patternmatching.PatternMatcher
 	 */
-	int fIndex = -1;
+	// int fIndex = -1;
 
 	/**
 	 * The hash value of this object computed in the constructor.
@@ -138,8 +139,11 @@ public class Pattern extends ExprImpl implements IPattern {
 	/**
 	 * @return
 	 */
-	public int getIndex() {
-		return fIndex;
+	public int getIndex(PatternMap pm) {
+		if (pm != null) {
+			return pm.get(fSymbol);
+		}
+		return -1;
 	}
 
 	/**
@@ -170,9 +174,9 @@ public class Pattern extends ExprImpl implements IPattern {
 	// return fSymbol.toString().equals(str);
 	// }
 
-	public void setIndex(final int i) {
-		fIndex = i;
-	}
+	// public void setIndex(final int i) {
+	// fIndex = i;
+	// }
 
 	// public String toString() {
 	// if (fCheck == null) {
@@ -200,9 +204,28 @@ public class Pattern extends ExprImpl implements IPattern {
 			} else {
 				String symbolStr = fSymbol.toString();
 				char ch = symbolStr.charAt(0);
-				if (symbolStr.length() == 1 && fCondition == null && !fDefault) {
+				if (symbolStr.length() == 1) {
 					if ('a' <= ch && ch <= 'z') {
-						return "$p(" + symbolStr + ")";
+						if (!fDefault) {
+							if (fCondition == null) {
+								if (ch == 'd' || ch == 'e' || ch == 'i') {
+									return "$p(" + symbolStr + ")";
+								} else {
+									return symbolStr + "_";
+								}
+							} else if (fCondition == F.SymbolHead) {
+								if (ch == 'x') {
+									return "x_Symbol";
+								}
+							}
+						} else {
+							if (fCondition == null) {
+								if (ch == 'd' || ch == 'e' || ch == 'i') {
+								} else {
+									return symbolStr + "_DEFAULT";
+								}
+							}
+						}
 					}
 				}
 				if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {

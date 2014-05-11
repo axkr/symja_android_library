@@ -44,7 +44,6 @@ import com.google.common.base.Predicate;
 import edu.jas.structure.ElemFactory;
 
 /**
- * 
  * <p>
  * (A)bstract (S)yntax (T)ree of a given function.
  * </p>
@@ -727,7 +726,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isNumIntValue() {
@@ -1927,7 +1926,16 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isValue() {
-		return evaluate(EvalEngine.get()) != null;
+		EvalEngine engine = EvalEngine.get();
+		ISymbol symbol = topHead();
+		IExpr result = engine.evalAttributes(symbol, this);
+		if (result != null) {
+			if (result.isAST(symbol)) {
+				return engine.evalRules(symbol, (IAST) result) != null;
+			}
+			return false;
+		}
+		return engine.evalRules(symbol, this) != null;
 	}
 
 	@Override
@@ -2045,19 +2053,19 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	final public IExpr arg1() {
 		return get(1);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public IExpr arg2() {
 		return get(2);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public IExpr arg3() {
 		return get(3);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public IExpr last() {

@@ -33,7 +33,7 @@ import org.matheclipse.parser.client.math.MathException;
 import com.google.common.base.Predicate;
 
 /**
- * 
+ * The main evaluation algorithms for the .Symja computer algebra system
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
@@ -469,10 +469,88 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 				return ((ICoreFunctionEvaluator) module).evaluate(ast);
 			}
+		} else {
+			symbol = ast.topHead();
+		}
+
+		IExpr result = evalAttributes(symbol, ast);
+		if (result != null) {
+			return result;
+		}
+		return evalRules(symbol, ast);
+	}
+
+	/**
+	 * Evaluate the rules for an AST.
+	 * 
+	 * @param symbol
+	 * @param ast
+	 * @return
+	 */
+	public IExpr evalRules(ISymbol symbol, IAST ast) {
+		IExpr result;
+		for (int i = 1; i < ast.size(); i++) {
+			if (!(ast.get(i) instanceof IPatternObject)) {
+				final IExpr arg = ast.get(i);
+				ISymbol lhsSymbol = null;
+				if (arg.isSymbol()) {
+					lhsSymbol = (ISymbol) arg;
+				} else {
+					lhsSymbol = arg.topHead();
+				}
+				if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
+					return result;
+				}
+			}
+		}
+
+		return evalASTBuiltinFunction(symbol, ast);
+	}
+
+	public IExpr evalASTAttributes(IAST ast) {
+		IExpr head = ast.head();
+		ISymbol symbol = null;
+		if (head instanceof ISymbol) {
+			symbol = (ISymbol) head;
+			final IEvaluator module = symbol.getEvaluator();
+			if (module instanceof ICoreFunctionEvaluator) {
+				// evaluate a built-in function.
+				if (fNumericMode) {
+					return ((ICoreFunctionEvaluator) module).numericEval(ast);
+				}
+				return ((ICoreFunctionEvaluator) module).evaluate(ast);
+			}
 
 		} else {
 			symbol = ast.topHead();
 		}
+
+		return evalAttributes(symbol, ast);
+	}
+
+	/**
+	 * Evaluate an AST. The evaluation steps are controlled by the header attributes.
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	public IExpr evalAttributes(ISymbol symbol, IAST ast) {
+		IExpr head = ast.head();
+		// ISymbol symbol = null;
+		// if (head instanceof ISymbol) {
+		// symbol = (ISymbol) head;
+		// final IEvaluator module = symbol.getEvaluator();
+		// if (module instanceof ICoreFunctionEvaluator) {
+		// // evaluate a built-in function.
+		// if (fNumericMode) {
+		// return ((ICoreFunctionEvaluator) module).numericEval(ast);
+		// }
+		// return ((ICoreFunctionEvaluator) module).evaluate(ast);
+		// }
+		//
+		// } else {
+		// symbol = ast.topHead();
+		// }
 
 		final int astSize = ast.size();
 		if (astSize == 2) {
@@ -528,22 +606,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		for (int i = 1; i < ast.size(); i++) {
-			if (!(ast.get(i) instanceof IPatternObject)) {
-				final IExpr arg = ast.get(i);
-				ISymbol lhsSymbol = null;
-				if (arg.isSymbol()) {
-					lhsSymbol = (ISymbol) arg;
-				} else {
-					lhsSymbol = arg.topHead();
-				}
-				if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
-					return result;
-				}
-			}
-		}
-
-		return evalASTBuiltinFunction(symbol, ast);
+		return null;
 
 	}
 

@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpecification;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.combinatoric.KSubsetsList;
 import org.matheclipse.core.interfaces.IAST;
@@ -25,6 +24,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
+		
 		if (ast.arg1().isAST()) {
 			final IAST f = (IAST) ast.arg1();
 			final int n = f.size() - 1;

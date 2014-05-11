@@ -30,7 +30,6 @@ import edu.jas.structure.ElemFactory;
 
 /**
  * Abstract base class for atomic expression objects.
- * 
  */
 @SuppressWarnings("serial")
 public abstract class ExprImpl implements IExpr {
@@ -131,7 +130,6 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Object asType(Class clazz) {
 		if (clazz.equals(Boolean.class)) {
 			if (this.equals(F.True)) {
@@ -632,22 +630,10 @@ public abstract class ExprImpl implements IExpr {
 		return true;
 	}
 
-	// public INestedList castTo() {
-	// return null;
-	// }
-
 	@Override
 	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return this;
 	}
-
-	// public IExpr save() {
-	// return (IExpr) super.export();
-	// }
-	//
-	// public IExpr saveHeap() {
-	// return (IExpr) super.moveHeap();
-	// }
 
 	@Override
 	public String fullFormString() {

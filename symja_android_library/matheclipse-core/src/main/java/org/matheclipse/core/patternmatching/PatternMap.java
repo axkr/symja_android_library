@@ -21,7 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * A map from a pattern to a possibly found value during pattern-matching.
  * 
  */
-public class PatternMap implements Cloneable, Serializable {
+public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
+
 	/**
 	 * 
 	 */
@@ -65,17 +66,14 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param pattern
 	 * @param patternIndexMap
 	 */
-	protected void addPattern(TreeMap<ISymbol, Integer> patternIndexMap, IPatternObject pattern) {
+	protected void addPattern(Map<ISymbol, Integer> patternIndexMap, IPatternObject pattern) {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
 			Integer i = patternIndexMap.get(sym);
 			if (i != null) {
-				// for "named" patterns (i.e. "x_" or "x_IntegerQ")
-				pattern.setIndex(i.intValue());
 				return;
 			}
-			pattern.setIndex(fPatternCounter);
 			patternIndexMap.put(sym, Integer.valueOf(fPatternCounter++));
 		}
 	}
@@ -84,77 +82,10 @@ public class PatternMap implements Cloneable, Serializable {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
-			pattern.setIndex(0);
 			this.fSymbolsArray = new ISymbol[1];
 			this.fPatternValuesArray = new IExpr[1];
 			fSymbolsArray[0] = sym;
-			fPatternCounter++;
 		}
-	}
-
-	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
-	 * 
-	 * Increments this classes pattern counter.
-	 * 
-	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern objects.
-	 */
-	protected void determinePatterns(final IExpr lhsPatternExpr) {
-		if (lhsPatternExpr instanceof IAST) {
-			TreeMap<ISymbol, Integer> patternIndexMap = new TreeMap<ISymbol, Integer>();
-			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr);
-			this.fSymbolsArray = new ISymbol[fPatternCounter];
-			this.fPatternValuesArray = new IExpr[fPatternCounter];
-			for (ISymbol sym : patternIndexMap.keySet()) {
-				Integer indx = patternIndexMap.get(sym);
-				fSymbolsArray[indx.intValue()] = sym;
-			}
-		} else if (lhsPatternExpr instanceof IPatternObject) {
-			addSinglePattern((IPatternObject) lhsPatternExpr);
-		}
-	}
-
-	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
-	 * 
-	 * Increments this classes pattern counter.
-	 * 
-	 * @param patternIndexMap
-	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern objects.
-	 */
-	private int determinePatternsRecursive(TreeMap<ISymbol, Integer> patternIndexMap, final IAST lhsPatternExpr) {
-		final IAST ast = lhsPatternExpr;
-		int listEvalFlags = IAST.NO_FLAG;
-		for (int i = 0; i < ast.size(); i++) {
-			IExpr temp = ast.get(i);
-			if (temp.isAST()) {
-				listEvalFlags |= determinePatternsRecursive(patternIndexMap, (IAST) temp);
-			} else if (temp instanceof IPatternObject) {
-				if (temp.isPattern()) {
-					IPattern pat = (IPattern) temp;
-					addPattern(patternIndexMap, pat);
-					if (pat.isDefault()) {
-						// the ast contains a pattern with default value
-						// (i.e. "x_.")
-						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
-					} else {
-						// the ast contains a pattern without value (i.e.
-						// "x_")
-						listEvalFlags |= IAST.CONTAINS_PATTERN;
-					}
-				} else if (temp.isPatternSequence()) {
-					addPattern(patternIndexMap, (IPatternSequence) temp);
-					// the ast contains a pattern sequence (i.e. "x__")
-					listEvalFlags |= IAST.CONTAINS_PATTERN_SEQUENCE;
-				}
-			}
-		}
-		ast.setEvalFlags(listEvalFlags);
-		// disable flag "pattern with default value"
-		listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
-		return listEvalFlags;
 	}
 
 	@Override
@@ -189,7 +120,6 @@ public class PatternMap implements Cloneable, Serializable {
 	 * @param patternMap
 	 */
 	protected void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
-		// for (ISymbol pattern : patternMap.fSymbolsArray) {
 		ISymbol[] symbolsArray = patternMap.fSymbolsArray;
 		for (int i = 0; i < symbolsArray.length; i++) {
 			for (int j = 0; j < fSymbolsArray.length; j++) {
@@ -198,6 +128,82 @@ public class PatternMap implements Cloneable, Serializable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
+	 * 
+	 * Increments this classes pattern counter.
+	 * 
+	 * @param lhsPatternExpr
+	 *            the (left-hand-side) expression which could contain pattern objects.
+	 */
+	protected void determinePatterns(final IExpr lhsPatternExpr) {
+		if (lhsPatternExpr instanceof IAST) {
+			Map<ISymbol, Integer> patternIndexMap = new TreeMap<ISymbol, Integer>();
+			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr);
+			this.fSymbolsArray = new ISymbol[fPatternCounter];
+			this.fPatternValuesArray = new IExpr[fPatternCounter];
+			for (ISymbol sym : patternIndexMap.keySet()) {
+				Integer indx = patternIndexMap.get(sym);
+				fSymbolsArray[indx.intValue()] = sym;
+			}
+		} else if (lhsPatternExpr instanceof IPatternObject) {
+			addSinglePattern((IPatternObject) lhsPatternExpr);
+		}
+	}
+
+	/**
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
+	 * 
+	 * Increments this classes pattern counter.
+	 * 
+	 * @param patternIndexMap
+	 * @param lhsPatternExpr
+	 *            the (left-hand-side) expression which could contain pattern objects.
+	 */
+	private int determinePatternsRecursive(Map<ISymbol, Integer> patternIndexMap, final IAST lhsPatternExpr) {
+		final IAST ast = lhsPatternExpr;
+		int listEvalFlags = IAST.NO_FLAG;
+		for (int i = 0; i < ast.size(); i++) {
+			IExpr temp = ast.get(i);
+			if (temp.isAST()) {
+				listEvalFlags |= determinePatternsRecursive(patternIndexMap, (IAST) temp);
+			} else if (temp instanceof IPatternObject) {
+				if (temp.isPattern()) {
+					IPattern pat = (IPattern) temp;
+					addPattern(patternIndexMap, pat);
+					if (pat.isDefault()) {
+						// the ast contains a pattern with default value (i.e. "x_.")
+						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
+					} else {
+						// the ast contains a pattern without default value (i.e. "x_")
+						listEvalFlags |= IAST.CONTAINS_PATTERN;
+					}
+				} else if (temp.isPatternSequence()) {
+					addPattern(patternIndexMap, (IPatternSequence) temp);
+					// the ast contains a pattern sequence (i.e. "x__")
+					listEvalFlags |= IAST.CONTAINS_PATTERN_SEQUENCE;
+				}
+			}
+		}
+		ast.setEvalFlags(listEvalFlags);
+		// disable flag "pattern with default value"
+		listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
+		return listEvalFlags;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int get(ISymbol key) {
+		if (key != null) {
+			for (int i = 0; i < fSymbolsArray.length; i++) {
+				if (fSymbolsArray[i].equals((ISymbol) key)) {
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 
 	private Map<ISymbol, IExpr> getRulesMap() {
@@ -211,20 +217,6 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Return the matched value for the given pattern object
-	 * 
-	 * @param pExpr
-	 * @return <code>null</code> if no matched expression exists
-	 */
-	protected IExpr getValue(IPatternObject pattern) {
-		int indx = pattern.getIndex();
-		if (indx >= 0) {
-			return fPatternValuesArray[indx];
-		}
-		return null;
-	}
-
-	/**
 	 * Return the matched value for the given <code>index</code> if possisble.
 	 * 
 	 * @return <code>null</code> if no matched expression exists
@@ -234,6 +226,17 @@ public class PatternMap implements Cloneable, Serializable {
 			return fPatternValuesArray[index];
 		}
 		return null;
+	}
+
+	/**
+	 * Return the matched value for the given pattern object
+	 * 
+	 * @param pExpr
+	 * @return <code>null</code> if no matched expression exists
+	 */
+	protected IExpr getValue(IPatternObject pattern) {
+		int indx = get(pattern.getSymbol());
+		return indx >= 0 ? fPatternValuesArray[indx] : null;
 	}
 
 	protected List<IExpr> getValuesAsList() {
@@ -272,6 +275,12 @@ public class PatternMap implements Cloneable, Serializable {
 		return true;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isEmpty() {
+		return fSymbolsArray.length > 0;
+	}
+
 	/**
 	 * Returns true if the given expression contains no patterns
 	 * 
@@ -292,14 +301,16 @@ public class PatternMap implements Cloneable, Serializable {
 	}
 
 	protected void setValue(IPatternObject pattern, IExpr expr) {
-		int indx = pattern.getIndex();
+		int indx = get(pattern.getSymbol());
 		if (indx >= 0) {
 			fPatternValuesArray[indx] = expr;
 		}
 	}
 
-	protected int size() {
-		return fPatternValuesArray.length;
+	/** {@inheritDoc} */
+	@Override
+	public int size() {
+		return fSymbolsArray.length;
 	}
 
 	/**
