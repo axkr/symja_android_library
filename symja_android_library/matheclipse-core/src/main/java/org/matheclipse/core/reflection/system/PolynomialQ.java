@@ -4,7 +4,7 @@ import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -13,6 +13,8 @@ import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import edu.jas.poly.GenPolynomial;
 
 /**
  * Returns <code>True</code>, if the given expression is a polynoomial object
@@ -24,16 +26,14 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	}
 
 	/**
-	 * Returns <code>True</code> if the given expression is a polynoomial object;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() != 3) {
-			throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
-		}
+		Validate.checkSize(ast, 3);
+
 		IAST list;
-		if (ast.get(2).isList()) {
+		if (ast.arg2().isList()) {
 			list = (IAST) ast.arg2();
 		} else {
 			list = List(ast.arg2());
@@ -52,6 +52,22 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 			// exception will be thrown if the expression is not a JAS polynomial
 		}
 		return false;
+	}
+
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,boolean numericFunction) {
+		try {
+			IExpr expr = F.evalExpandAll(polnomialExpr);
+			ASTRange r = new ASTRange(variables, 1);
+			JASIExpr jas = new JASIExpr(r.toList(),numericFunction);
+			return jas.expr2IExprJAS(expr);
+		} catch (JASConversionException e) {
+			// exception will be thrown if the expression is not a JAS polynomial
+		}
+		return null;
+	}
+
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,boolean numericFunction) {
+		return polynomial(polnomialExpr, List(symbol),numericFunction);
 	}
 
 	@Override

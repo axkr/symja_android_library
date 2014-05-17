@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CNInfinity;
 import static org.matheclipse.core.expression.F.Condition;
 import static org.matheclipse.core.expression.F.E;
+import static org.matheclipse.core.expression.F.FreeQ;
 import static org.matheclipse.core.expression.F.Limit;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Negative;
@@ -17,11 +18,15 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Set;
 import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.SymbolHead;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.n;
+import static org.matheclipse.core.expression.F.a;
+import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.x_Symbol;
 
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -33,6 +38,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 
+import edu.jas.poly.GenPolynomial;
+
 /**
  * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
@@ -42,14 +49,14 @@ public class Limit extends AbstractFunctionEvaluator {
 	// Limit[x_^n_IntegerQ, x_Symbol->Infinity]:= 0 /; Negative[n],
 	// Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n],
 	// Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E,
-	// Limit[(1-x_^(-1))^x_, x_Symbol->Infinity]=E^(-1)
+	// Limit[(1+a_*(x_^(-1)))^x_, x_Symbol->Infinity]=E^(-1) /; FreeQ(a,x)
 	// }
 
 	final static IAST RULES = List(
-			SetDelayed(Limit(Power($p(x), $p(n, $s("IntegerQ"))), Rule($p(x, SymbolHead), CInfinity)), Condition(C0, Negative(n))),
-			SetDelayed(Limit(Power($p(x), $p(n, $s("IntegerQ"))), Rule($p(x, SymbolHead), CNInfinity)), Condition(C0, Negative(n))),
-			Set(Limit(Power(Plus(C1, Power($p(x), CN1)), $p(x)), Rule($p(x, SymbolHead), CInfinity)), E),
-			Set(Limit(Power(Plus(C1, Times(CN1, Power($p(x), CN1))), $p(x)), Rule($p(x, SymbolHead), CInfinity)), Power(E, CN1)));
+			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CInfinity)), Condition(C0, Negative(n))),
+			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CNInfinity)), Condition(C0, Negative(n))),
+			Set(Limit(Power(Plus(C1, Power(x_, CN1)), x_), Rule(x_Symbol, CInfinity)), E),
+			Set(Limit(Power(Plus(C1, Times(a_, Power(x_, CN1))), x_), Rule(x_Symbol, CInfinity)), Condition(Power(E, a),FreeQ(a,x))));
 
 	/**
 	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia L'Hôpital's rule</a>
@@ -122,10 +129,37 @@ public class Limit extends AbstractFunctionEvaluator {
 			if (header == F.Plus) {
 				// Limit[a_+b_+c_,sym->lim] ->
 				// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
+				if (lim.isInfinity() || lim.isNegativeInfinity()) {
+					GenPolynomial<IExpr> poly = PolynomialQ.polynomial(arg1, sym, true);
+					if (poly != null) {
+						IExpr coeff = poly.leadingBaseCoefficient();
+						long oddDegree = poly.degree() % 2;
+						if (oddDegree == 1) {
+							// odd degree
+							return F.Limit(F.Times(coeff, lim), rule);
+						} else {
+							// even degree
+							return F.Limit(F.Times(coeff, F.CInfinity), rule);
+						}
+					}
+				}
 				return mapLimit(arg1, rule);
 			} else if (header == F.Times) {
 				IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false);
 				if (parts != null) {
+
+					IExpr numerator = parts[0];
+					IExpr denominator = parts[1];
+					if (lim.isInfinity() || lim.isNegativeInfinity()) {
+						GenPolynomial<IExpr> denominatorPoly = PolynomialQ.polynomial(denominator, sym, true);
+						if (denominatorPoly != null) {
+							GenPolynomial<IExpr> numeratorPoly = PolynomialQ.polynomial(numerator, sym, true);
+							if (numeratorPoly != null) {
+								return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, sym, lim, rule);
+							}
+						}
+					}
+
 					IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
 							new PartialFractionGenerator(), parts, sym);
 					if (plusResult != null) {
@@ -134,12 +168,11 @@ public class Limit extends AbstractFunctionEvaluator {
 							return mapLimit(plusResult, rule);
 						}
 					}
-				}
-				IExpr numerator = parts[0];
-				IExpr denominator = parts[1];
-				IExpr temp = timesLimit(numerator, denominator, sym, lim, rule);
-				if (temp != null) {
-					return temp;
+
+					IExpr temp = timesLimit(numerator, denominator, sym, lim, rule);
+					if (temp != null) {
+						return temp;
+					}
 				}
 				return mapLimit(arg1, rule);
 			} else if (arg1.isAST(F.Power, 3)) {
@@ -180,6 +213,43 @@ public class Limit extends AbstractFunctionEvaluator {
 		}
 
 		return null;
+	}
+
+	/**
+	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
+	 * 
+	 * @param numeratorPoly
+	 * @param denominatorPoly
+	 * @param sym
+	 * @param rule
+	 * @param denominator
+	 * @return
+	 */
+	private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr> numeratorPoly,
+			GenPolynomial<IExpr> denominatorPoly, ISymbol sym, IExpr lim, IAST rule) {
+		long numDegree = numeratorPoly.degree();
+		long denomDegree = denominatorPoly.degree();
+		if (numDegree > denomDegree) {
+			// If the numerator has the highest term, then the fraction is called "top-heavy". If, when you divide the numerator
+			// by the denominator the resulting exponent on the variable is even, then the limit (at both \infty and -\infty) is
+			// \infty. If it is odd, then the limit at \infty is \infty, and the limit at -\infty is -\infty.
+			long oddDegree = (numDegree + denomDegree) % 2;
+			if (oddDegree == 1) {
+				return F.Limit(
+						F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()), lim),
+						rule);
+			} else {
+				return F.Limit(F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+						F.CInfinity), rule);
+			}
+		} else if (numDegree < denomDegree) {
+			// If the denominator has the highest term, then the fraction is called "bottom-heavy" and the limit (at both \infty
+			// and -\infty) is zero.
+			return F.C0;
+		}
+		// If the exponent of the highest term in the numerator matches the exponent of the highest term in the denominator,
+		// the limit (at both \infty and -\infty) is the ratio of the coefficients of the highest terms.
+		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
 	}
 
 	private static IExpr mapLimit(final IAST expr, IAST rule) {
@@ -263,8 +333,4 @@ public class Limit extends AbstractFunctionEvaluator {
 		return RULES;
 	}
 
-	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDFIRST);
-		super.setUp(symbol);
-	}
 }

@@ -826,7 +826,7 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public boolean isUnit() {
-		return isOne();
+		return true;
 	}
 
 	@Override

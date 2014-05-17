@@ -936,7 +936,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return the evaluated object of <code>null</code> if no evaluation was possible
+	 * @return the evaluated object or <code>null</code> if no evaluation was possible
 	 */
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;
