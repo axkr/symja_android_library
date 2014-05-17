@@ -58,8 +58,8 @@ public class AST2Expr {
 			"NestList", "NestWhile", "NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm",
 			"Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out",
 			"Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations", "Pi",
-			"Plot", "Plot3D", "Plus", "Pochhammer", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ",
-			"PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
+			"Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM",
+			"PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
 			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "PrimeQ",
 			"PrimitiveRoots", "Print", "Product", "Quiet", "Quotient", "RandomInteger", "RandomReal", "Range", "Rational",
 			"Rationalize", "Re", "Reap", "ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse",
@@ -86,13 +86,13 @@ public class AST2Expr {
 	 */
 	private static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
 
-//	public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
-//	public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
-//	public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
+	// public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
+	// public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
+	// public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
-//	public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
+	// public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
 	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
-	
+
 	// public static final String PART_STRING =
 	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
 	// public static final String SLOT_STRING =

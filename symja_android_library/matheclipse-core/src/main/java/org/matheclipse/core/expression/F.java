@@ -1,10 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.binary;
-import static org.matheclipse.core.expression.F.ternary;
-import static org.matheclipse.core.expression.F.unary;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -12,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.math3.fraction.BigFraction;
@@ -519,6 +515,7 @@ public class F {
 	public final static ISymbol Pattern = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pattern" : "Pattern");
 	public final static ISymbol Permutations = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "permutations"
 			: "Permutations");
+	public final static ISymbol Piecewise = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "piecewise" : "Piecewise");
 	public final static ISymbol Plus = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus");
 	public final static ISymbol PolynomialExtendedGCD = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialextendedgcd" : "PolynomialExtendedGCD");
@@ -1102,7 +1099,7 @@ public class F {
 	public static ISymbol $s(final String symbolName, boolean setEval) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			name = symbolName.toLowerCase();
+			name = symbolName.toLowerCase(Locale.ENGLISH);
 		}
 		ISymbol symbol = PREDEFINED_SYMBOLS_MAP.get(name);
 		if (symbol != null) {
@@ -2973,7 +2970,7 @@ public class F {
 			return temp;
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String lcSymbolName = symbolName.toLowerCase();
+			String lcSymbolName = symbolName.toLowerCase(Locale.ENGLISH);
 			// use the lower case string here to use it as associated class name
 			// in package org.matheclipse.core.reflection.system
 			temp = new Symbol(lcSymbolName);
