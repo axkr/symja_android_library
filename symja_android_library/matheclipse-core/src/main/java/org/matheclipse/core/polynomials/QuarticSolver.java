@@ -458,7 +458,7 @@ public class QuarticSolver {
 	public static IAST createSet(IAST result) {
 		Set<IExpr> set1 = new TreeSet<IExpr>();
 		for (int i = 1; i < result.size(); i++) {
-			IExpr temp = F.evalExpandAll(result.get(i));
+			IExpr temp = F.evalExpandAll(F.PowerExpand(result.get(i)));
 			if (!temp.equals(F.Indeterminate)) {
 				set1.add(temp);
 			}
