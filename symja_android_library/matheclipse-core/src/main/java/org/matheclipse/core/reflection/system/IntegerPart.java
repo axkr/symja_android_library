@@ -25,22 +25,12 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 		try {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isSignedNumber()) {
-				final ISignedNumber signedNumber = (ISignedNumber) arg1;
-				if ((signedNumber).isNegative()) {
-					return (signedNumber).ceil();
-				} else {
-					return (signedNumber).floor();
-				}
+				return signedNumberIntegerPart((ISignedNumber) arg1);
 			}
 			if (NumericQ.CONST.apply(arg1)) {
 				IExpr result = F.evaln(arg1);
 				if (result.isSignedNumber()) {
-					final ISignedNumber signedNumber = (ISignedNumber) result;
-					if ((signedNumber).isNegative()) {
-						return (signedNumber).ceil();
-					} else {
-						return (signedNumber).floor();
-					}
+					return signedNumberIntegerPart((ISignedNumber) result);
 				}
 			}
 			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
@@ -52,10 +42,19 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 		return null;
 	}
 
+	private IExpr signedNumberIntegerPart(ISignedNumber arg1) {
+		final ISignedNumber signedNumber = (ISignedNumber) arg1;
+		if ((signedNumber).isNegative()) {
+			return (signedNumber).ceil();
+		} else {
+			return (signedNumber).floor();
+		}
+	}
+
 	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
-	} 
+	}
 
 	@Override
 	public void setUp(final ISymbol symbol) {
