@@ -19,18 +19,19 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Set;
 import static org.matheclipse.core.expression.F.SetDelayed;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
+import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.x_Symbol;
 
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -56,40 +57,65 @@ public class Limit extends AbstractFunctionEvaluator {
 			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CInfinity)), Condition(C0, Negative(n))),
 			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CNInfinity)), Condition(C0, Negative(n))),
 			Set(Limit(Power(Plus(C1, Power(x_, CN1)), x_), Rule(x_Symbol, CInfinity)), E),
-			Set(Limit(Power(Plus(C1, Times(a_, Power(x_, CN1))), x_), Rule(x_Symbol, CInfinity)), Condition(Power(E, a),FreeQ(a,x))));
+			Set(Limit(Power(Plus(C1, Times(a_, Power(x_, CN1))), x_), Rule(x_Symbol, CInfinity)),
+					Condition(Power(E, a), FreeQ(a, x))));
 
 	/**
 	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia L'Hôpital's rule</a>
 	 * 
 	 * @param numerator
 	 * @param denominator
-	 * @param sym
+	 * @param symbol
+	 *            the variable for which to approach to the limit
+	 * @param limit
+	 *            the limit value which the variable should approach to
 	 * @param rule
+	 * @param direction
+	 *            <ul>
+	 *            <li>0 - no direction defined</li>
+	 *            <li>1 - approach from smaller values</li>
+	 *            <li>-1 - approach from larger values</li>
 	 * @return
 	 */
-	private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, ISymbol sym, IExpr lim, IAST rule) {
+	private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, ISymbol symbol, IExpr limit, IAST rule, int direction) {
 		EvalEngine engine = EvalEngine.get();
-		int limit = engine.getRecursionLimit();
-		if (limit > 0) {
-			IExpr expr = F.eval(F.Times(F.D(numerator, sym), F.Power(F.D(denominator, sym), F.CN1)));
-			return limit(expr, sym, lim, rule, false);
+		int recursionLimit = engine.getRecursionLimit();
+		if (recursionLimit > 0) {
+			IExpr expr = F.eval(F.Times(F.D(numerator, symbol), F.Power(F.D(denominator, symbol), F.CN1)));
+			return evalLimit(expr, symbol, limit, rule, direction, false);
 		}
 		try {
-			if (limit <= 0) {
+			if (recursionLimit <= 0) {
 				// set recursion limit for using l'Hospitales rule
 				engine.setRecursionLimit(128);
 			}
-			IExpr expr = F.eval(F.Times(F.D(numerator, sym), F.Power(F.D(denominator, sym), F.CN1)));
-			return limit(expr, sym, lim, rule, false);
+			IExpr expr = F.eval(F.Times(F.D(numerator, symbol), F.Power(F.D(denominator, symbol), F.CN1)));
+			return evalLimit(expr, symbol, limit, rule, direction, false);
 		} catch (RecursionLimitExceeded rle) {
-			engine.setRecursionLimit(limit);
+			engine.setRecursionLimit(recursionLimit);
 		} finally {
-			engine.setRecursionLimit(limit);
+			engine.setRecursionLimit(recursionLimit);
 		}
 		return null;
 	}
 
-	public static IExpr limit(final IExpr expr, ISymbol sym, IExpr lim, IAST rule, boolean evalExpr) {
+	/**
+	 * 
+	 * @param expr
+	 * @param symbol
+	 *            the variable for which to approach to the limit
+	 * @param limit
+	 *            the limit value which the variable should approach to
+	 * @param rule
+	 * @param direction
+	 *            <ul>
+	 *            <li>0 - no direction defined</li>
+	 *            <li>1 - approach from smaller values</li>
+	 *            <li>-1 - approach from larger values</li>
+	 * @param evalExpr
+	 * @return
+	 */
+	public static IExpr evalLimit(final IExpr expr, ISymbol symbol, IExpr limit, IAST rule, int direction, boolean evalExpr) {
 		IExpr expression = expr;
 		if (evalExpr) {
 			IExpr result = F.eval(expression);
@@ -100,7 +126,7 @@ public class Limit extends AbstractFunctionEvaluator {
 				expression = result;
 			}
 
-			if (lim.isNumericFunction()) {
+			if (limit.isNumericFunction()) {
 				result = expression.replaceAll(rule);
 				if (result != null) {
 					result = F.eval(result);
@@ -110,13 +136,13 @@ public class Limit extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		if (expression.isFree(sym, true)) {
+		if (expression.isFree(symbol, true)) {
 			// Limit[a_,sym->lim] -> a
 			return expression;
 		}
-		if (expression.equals(sym)) {
+		if (expression.equals(symbol)) {
 			// Limit[x_,x_->lim] -> lim
-			return lim;
+			return limit;
 		}
 		if (expression.isAST()) {
 			final IAST arg1 = (IAST) expression;
@@ -129,14 +155,14 @@ public class Limit extends AbstractFunctionEvaluator {
 			if (header == F.Plus) {
 				// Limit[a_+b_+c_,sym->lim] ->
 				// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
-				if (lim.isInfinity() || lim.isNegativeInfinity()) {
-					GenPolynomial<IExpr> poly = PolynomialQ.polynomial(arg1, sym, true);
+				if (limit.isInfinity() || limit.isNegativeInfinity()) {
+					GenPolynomial<IExpr> poly = PolynomialQ.polynomial(arg1, symbol, true);
 					if (poly != null) {
 						IExpr coeff = poly.leadingBaseCoefficient();
 						long oddDegree = poly.degree() % 2;
 						if (oddDegree == 1) {
 							// odd degree
-							return F.Limit(F.Times(coeff, lim), rule);
+							return F.Limit(F.Times(coeff, limit), rule);
 						} else {
 							// even degree
 							return F.Limit(F.Times(coeff, F.CInfinity), rule);
@@ -150,18 +176,18 @@ public class Limit extends AbstractFunctionEvaluator {
 
 					IExpr numerator = parts[0];
 					IExpr denominator = parts[1];
-					if (lim.isInfinity() || lim.isNegativeInfinity()) {
-						GenPolynomial<IExpr> denominatorPoly = PolynomialQ.polynomial(denominator, sym, true);
+					if (limit.isInfinity() || limit.isNegativeInfinity()) {
+						GenPolynomial<IExpr> denominatorPoly = PolynomialQ.polynomial(denominator, symbol, true);
 						if (denominatorPoly != null) {
-							GenPolynomial<IExpr> numeratorPoly = PolynomialQ.polynomial(numerator, sym, true);
+							GenPolynomial<IExpr> numeratorPoly = PolynomialQ.polynomial(numerator, symbol, true);
 							if (numeratorPoly != null) {
-								return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, sym, lim, rule);
+								return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, rule);
 							}
 						}
 					}
 
 					IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
-							new PartialFractionGenerator(), parts, sym);
+							new PartialFractionGenerator(), parts, symbol);
 					if (plusResult != null) {
 						// OneIdentity if plusResult.size() == 2
 						if (plusResult.size() > 2) {
@@ -169,7 +195,7 @@ public class Limit extends AbstractFunctionEvaluator {
 						}
 					}
 
-					IExpr temp = timesLimit(numerator, denominator, sym, lim, rule);
+					IExpr temp = timesLimit(numerator, denominator, symbol, limit, rule, direction);
 					if (temp != null) {
 						return temp;
 					}
@@ -220,13 +246,15 @@ public class Limit extends AbstractFunctionEvaluator {
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
-	 * @param sym
+	 * @param symbol
+	 *            the variable for which to approach to the limit
+	 * @param limit
+	 *            the limit value which the variable should approach to
 	 * @param rule
-	 * @param denominator
 	 * @return
 	 */
 	private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr> numeratorPoly,
-			GenPolynomial<IExpr> denominatorPoly, ISymbol sym, IExpr lim, IAST rule) {
+			GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule) {
 		long numDegree = numeratorPoly.degree();
 		long denomDegree = denominatorPoly.degree();
 		if (numDegree > denomDegree) {
@@ -236,7 +264,7 @@ public class Limit extends AbstractFunctionEvaluator {
 			long oddDegree = (numDegree + denomDegree) % 2;
 			if (oddDegree == 1) {
 				return F.Limit(
-						F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()), lim),
+						F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()), limit),
 						rule);
 			} else {
 				return F.Limit(F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
@@ -264,12 +292,20 @@ public class Limit extends AbstractFunctionEvaluator {
 	 * 
 	 * @param numerator
 	 * @param denominator
-	 * @param sym
-	 * @param lim
+	 * @param symbol
+	 *            the variable for which to approach to the limit
+	 * @param limit
+	 *            the limit value which the variable should approach to
 	 * @param rule
+	 * @param direction
+	 *            <ul>
+	 *            <li>0 - no direction defined</li>
+	 *            <li>1 - approach from smaller values</li>
+	 *            <li>-1 - approach from larger values</li>
 	 * @return <code>null</code> if no limit found
 	 */
-	private static IExpr timesLimit(final IExpr numerator, final IExpr denominator, ISymbol sym, IExpr lim, IAST rule) {
+	private static IExpr timesLimit(final IExpr numerator, final IExpr denominator, ISymbol symbol, IExpr limit, IAST rule,
+			int direction) {
 		IExpr numValue;
 		IExpr denValue;
 		if (denominator.isOne() && numerator.isTimes()) {
@@ -278,25 +314,25 @@ public class Limit extends AbstractFunctionEvaluator {
 			return mapLimit((IAST) numerator, rule);
 		}
 		if (!denominator.isNumber() || denominator.isZero()) {
-			denValue = F.evalBlock(denominator, sym, lim);
+			denValue = F.evalBlock(denominator, symbol, limit);
 			if (denValue.equals(F.Indeterminate)) {
 				return null;
 			} else if (denValue.isZero()) {
-				numValue = F.evalBlock(numerator, sym, lim);
+				numValue = F.evalBlock(numerator, symbol, limit);
 				if (numValue.isZero()) {
-					return lHospitalesRule(numerator, denominator, sym, lim, rule);
+					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
 				}
 				return null;
 			} else if (F.CInfinity.equals(denValue)) {
-				numValue = F.evalBlock(numerator, sym, lim);
+				numValue = F.evalBlock(numerator, symbol, limit);
 				if (F.CInfinity.equals(numValue)) {
-					return lHospitalesRule(numerator, denominator, sym, lim, rule);
+					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
 				}
 				return null;
 			} else if (denValue.isNegativeInfinity()) {
-				numValue = F.evalBlock(numerator, sym, lim);
+				numValue = F.evalBlock(numerator, symbol, limit);
 				if (numValue.isNegativeInfinity()) {
-					return lHospitalesRule(numerator, denominator, sym, lim, rule);
+					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
 				}
 				return null;
 			}
@@ -309,23 +345,39 @@ public class Limit extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 3);
+		Validate.checkRange(ast, 3, 4);
 
 		if (!ast.arg2().isRuleAST()) {
-			return null;
+			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: rule definition expected!");
 		}
 		IAST rule = (IAST) ast.arg2();
 		if (!(rule.arg1().isSymbol())) {
-			return null;
+			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: variable symbol for rule definition expected!");
 		}
-		ISymbol sym = (ISymbol) rule.arg1();
-		IExpr lim = null;
-		if (rule.arg2().isFree(sym, true)) {
-			lim = rule.get(2);
+		int direction = 0;
+		if (ast.size() == 4) {
+			final Options options = new Options(ast.topHead(), ast, 2);
+			IExpr option = options.getOption("Direction");
+			if (option != null) {
+				if (option.equals(F.C1)) {
+					direction = 1;
+				} else if (option.equals(F.C1)) {
+					direction = -1;
+				} else {
+					throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: direction option expected!");
+				}
+			} else {
+				throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: direction option expected!");
+			}
+		}
+		ISymbol symbol = (ISymbol) rule.arg1();
+		IExpr limit = null;
+		if (rule.arg2().isFree(symbol, true)) {
+			limit = rule.get(2);
 		} else {
-			return null;
+			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: limit value contains variable symbol for rule definition!");
 		}
-		return limit(ast.arg1(), sym, lim, rule, true);
+		return evalLimit(ast.arg1(), symbol, limit, rule, direction, true);
 	}
 
 	@Override
