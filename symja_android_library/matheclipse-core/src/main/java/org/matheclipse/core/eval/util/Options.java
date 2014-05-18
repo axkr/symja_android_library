@@ -10,7 +10,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Managing <i>Options</i> associated with a function symbol.
+ * Managing <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which could be used
+ * for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
  * 
  */
 public class Options {
@@ -19,6 +20,8 @@ public class Options {
 	private IAST fCurrentOptionsList;
 
 	/**
+	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which
+	 * could be used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
 	 * 
 	 * @param symbol
 	 *            the options symbol for determining &quot;default option values&quot;
@@ -44,6 +47,15 @@ public class Options {
 		}
 	}
 
+	/**
+	 * Construct <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which could be
+	 * used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
+	 * 
+	 * @param symbol
+	 *            the options symbol for determining &quot;default option values&quot;
+	 * @param optionExpr
+	 *            the value which should be defined for the option
+	 */
 	public Options(final ISymbol symbol, final IExpr optionExpr) {
 		// get the List of pre-defined options:
 		final IExpr temp = F.eval(Options(symbol));
@@ -57,7 +69,7 @@ public class Options {
 	}
 
 	/**
-	 * Get the option from the internal option list and check if it's <code>true</code> or <code>false</code>.
+	 * Get the option from the internal options list and check if it's <code>true</code> or <code>false</code>.
 	 * 
 	 * @param optionString
 	 *            the option string
@@ -69,7 +81,7 @@ public class Options {
 	}
 
 	/**
-	 * Get the option from the internal option list.
+	 * Get the option from the internal options list.
 	 * 
 	 * @param optionString
 	 *            the option string
