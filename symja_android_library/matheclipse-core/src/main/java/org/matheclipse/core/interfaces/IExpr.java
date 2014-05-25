@@ -539,10 +539,11 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @deprecated use {@link #isOne()} instead.
 	 */
 	public boolean isONE();
-	
+
 	/**
 	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
 	 * 
@@ -645,6 +646,15 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isNumeric();
 
 	/**
+	 * Test if this expression contains a numeric number (i.e. of type <code>INum</code> or <code>IComplexNum</code>.
+	 * 
+	 * @return <code>true</code>, if the given expression contains numeric number (i.e. of type <code>INum</code> or
+	 *         <code>IComplexNum</code>.
+	 * @see #isRealFunction
+	 */
+	public boolean isNumericMode();
+
+	/**
 	 * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function (with attribute
 	 * NumericFunction) where all arguments are also &quot;numeric functions&quot;)
 	 * 
@@ -740,10 +750,11 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @deprecated use {@link #isZero()} instead.
 	 */
 	public boolean isZERO();
-	
+
 	/**
 	 * @return a list of the the leaf expressions. Instances of ExprImpl should return null, while any other expression may not
 	 *         return null (but can return an empty list).

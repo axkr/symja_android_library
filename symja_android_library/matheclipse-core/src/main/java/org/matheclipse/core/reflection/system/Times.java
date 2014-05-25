@@ -100,6 +100,19 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return temp;
 		}
 
+		if (o0.isSymbol()) {
+			final ISymbol s0 = (ISymbol) o0;
+			if (o1.isPower()) {
+				final IAST f1 = (IAST) o1;
+				if (f1.arg2().isNumber()) {
+					if (s0.equals(f1.arg1())) {
+						// x*x^(b) => x ^ (1+b)
+						return Power(s0, Plus(F.C1, f1.arg2()));
+					}
+				}
+			}
+		}
+
 		if (o0.isPower()) {
 			final IAST f0 = (IAST) o0;
 			if (f0.arg2().isNumber()) {

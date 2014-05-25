@@ -169,12 +169,18 @@ public class Power extends AbstractArg2 implements INumeric {
 		}
 
 		if (o1.isSignedNumber()) {
-			ISignedNumber is = (ISignedNumber) o1;
+			ISignedNumber is1 = (ISignedNumber) o1;
 			if (o0.isInfinity()) {
-				if (is.isNegative()) {
+				if (is1.isNegative()) {
 					return F.C0;
 				} else {
 					return F.CInfinity;
+				}
+			} else if (o0.isPower() && is1.isNumIntValue() && is1.isPositive()) {
+				IAST a0 = (IAST) o0;
+				if (a0.arg2().isNumIntValue() && a0.arg2().isPositive()) {
+					// (x*n)^m => x ^(n*m)
+					return Power(a0.arg1(), is1.times(a0.arg2()));
 				}
 			} else if (o0.isNegativeInfinity() && o1.isInteger()) {
 				IInteger ii = (IInteger) o1;
@@ -211,7 +217,7 @@ public class Power extends AbstractArg2 implements INumeric {
 				if (o1.isNumber()) {
 					final IAST f0 = arg0;
 
-					if ((f0.size() > 1) && (f0.arg1().isNumber())) { 
+					if ((f0.size() > 1) && (f0.arg1().isNumber())) {
 						return Times(Power(f0.arg1(), o1), Power(F.ast(f0, F.Times, true, 2, f0.size()), o1));
 					}
 				}

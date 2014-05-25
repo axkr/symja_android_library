@@ -759,6 +759,21 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumericMode() {
+		ISymbol symbol = topHead();
+		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
+			// check if one of the arguments is &quot;numeric&quot;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isNumericMode()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNumericFunction() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {

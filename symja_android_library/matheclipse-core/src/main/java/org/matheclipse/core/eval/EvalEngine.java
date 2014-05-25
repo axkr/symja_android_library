@@ -1120,7 +1120,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * @return
+	 * @return <code>true</code> if the EvalEngine runs in numeric mode.
 	 */
 	public boolean isNumericMode() {
 		return fNumericMode;

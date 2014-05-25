@@ -585,6 +585,12 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumericMode() {
+		return isNumeric();
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNumericFunction() {
 		return isNumber() || isConstant();
 	}
