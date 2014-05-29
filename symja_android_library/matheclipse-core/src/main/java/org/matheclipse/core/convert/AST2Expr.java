@@ -211,6 +211,13 @@ public class AST2Expr {
 			String nodeStr = node.getString();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				nodeStr = nodeStr.toLowerCase();
+				if (nodeStr.equals("i")) {
+					// special - convert on input
+					return F.CI;
+				} else if (nodeStr.equals("infinity")) {
+					// special - convert on input
+					return F.CInfinity;
+				}
 				IExpr temp = PREDEFINED_ALIASES_MAP.get(nodeStr);
 				if (temp != null) {
 					return temp;

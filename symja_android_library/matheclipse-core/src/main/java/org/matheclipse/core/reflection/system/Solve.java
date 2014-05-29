@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.matheclipse.core.builtin.function.LeafCount;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -400,21 +401,9 @@ public class Solve extends AbstractFunctionEvaluator {
 	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer) {
 		IExpr expr = exprAnalyzer.getNumerator();
 		IExpr denom = exprAnalyzer.getDenominator();
-		// F.C1;
-		// if (expr.isAST()) {
-		// expr = Together.together((IAST) expr);
-		//
-		// // split expr into numerator and denominator
-		// denom = F.eval(F.Denominator(expr));
-		// if (!denom.isOne()) {
-		// // search roots for the numerator expression
-		// expr = F.eval(F.Numerator(expr));
-		// }
-		// }
-
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), false);
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym),false);//expr.isNumericMode());
 			if (temp != null) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {

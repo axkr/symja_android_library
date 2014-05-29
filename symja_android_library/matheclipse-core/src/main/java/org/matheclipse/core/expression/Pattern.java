@@ -187,7 +187,7 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		if (symbolsAsFactoryMethod) {
+//		if (symbolsAsFactoryMethod) {
 			final StringBuffer buffer = new StringBuffer();
 			buffer.append("$p(");
 			if (fSymbol == null) {
@@ -245,8 +245,8 @@ public class Pattern extends ExprImpl implements IPattern {
 			}
 			buffer.append(')');
 			return buffer.toString();
-		}
-		return toString();
+//		}
+//		return toString();
 	}
 
 	@Override

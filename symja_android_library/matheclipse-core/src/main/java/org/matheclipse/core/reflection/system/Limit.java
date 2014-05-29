@@ -1,31 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.CInfinity;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CNInfinity;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.E;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.Limit;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negative;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Rule;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.a;
-import static org.matheclipse.core.expression.F.a_;
-import static org.matheclipse.core.expression.F.n;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.x_Symbol;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -38,27 +12,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
+import org.matheclipse.core.reflection.system.rules.LimitRules;
 
 import edu.jas.poly.GenPolynomial;
 
 /**
  * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
-public class Limit extends AbstractFunctionEvaluator {
-
-	// {
-	// Limit[x_^n_IntegerQ, x_Symbol->Infinity]:= 0 /; Negative[n],
-	// Limit[x_^n_IntegerQ, x_Symbol->DirectedInfinity[-1]]:= 0 /; Negative[n],
-	// Limit[(1+x_^(-1))^x_, x_Symbol->Infinity]=E,
-	// Limit[(1+a_*(x_^(-1)))^x_, x_Symbol->Infinity]=E^(-1) /; FreeQ(a,x)
-	// }
-
-	final static IAST RULES = List(
-			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CInfinity)), Condition(C0, Negative(n))),
-			SetDelayed(Limit(Power(x_, $p(n, $s("IntegerQ"))), Rule(x_Symbol, CNInfinity)), Condition(C0, Negative(n))),
-			Set(Limit(Power(Plus(C1, Power(x_, CN1)), x_), Rule(x_Symbol, CInfinity)), E),
-			Set(Limit(Power(Plus(C1, Times(a_, Power(x_, CN1))), x_), Rule(x_Symbol, CInfinity)),
-					Condition(Power(E, a), FreeQ(a, x))));
+public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 	/**
 	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia L'Hôpital's rule</a>
@@ -156,7 +117,7 @@ public class Limit extends AbstractFunctionEvaluator {
 				// Limit[a_+b_+c_,sym->lim] ->
 				// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
 				if (limit.isInfinity() || limit.isNegativeInfinity()) {
-					GenPolynomial<IExpr> poly = PolynomialQ.polynomial(arg1, symbol, true);
+					GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol, true);
 					if (poly != null) {
 						IExpr coeff = poly.leadingBaseCoefficient();
 						long oddDegree = poly.degree() % 2;
@@ -177,9 +138,9 @@ public class Limit extends AbstractFunctionEvaluator {
 					IExpr numerator = parts[0];
 					IExpr denominator = parts[1];
 					if (limit.isInfinity() || limit.isNegativeInfinity()) {
-						GenPolynomial<IExpr> denominatorPoly = PolynomialQ.polynomial(denominator, symbol, true);
+						GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(denominator, symbol, true);
 						if (denominatorPoly != null) {
-							GenPolynomial<IExpr> numeratorPoly = PolynomialQ.polynomial(numerator, symbol, true);
+							GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(numerator, symbol, true);
 							if (numeratorPoly != null) {
 								return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, rule);
 							}
