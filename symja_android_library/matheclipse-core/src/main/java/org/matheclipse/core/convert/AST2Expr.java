@@ -262,12 +262,12 @@ public class AST2Expr {
 		}
 		if (node instanceof FractionNode) {
 			FractionNode fr = (FractionNode) node;
-			if (fr.isSign()) {
-				return F.fraction((IInteger) convert(fr.getNumerator()), (IInteger) convert(fr.getDenominator())).negate();
+			IInteger numerator = (IInteger) convert(fr.getNumerator());
+			IInteger denominator = (IInteger) convert(fr.getDenominator());
+			if (denominator.isZero()) {
+				return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
 			}
-			IInteger numerator = (IInteger) convert(((FractionNode) node).getNumerator());
-			IInteger denominator = (IInteger) convert(((FractionNode) node).getDenominator());
-			return F.Rational(numerator, denominator);
+			return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.stringx(node.getString());

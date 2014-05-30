@@ -187,66 +187,74 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-//		if (symbolsAsFactoryMethod) {
-			final StringBuffer buffer = new StringBuffer();
-			buffer.append("$p(");
-			if (fSymbol == null) {
-				buffer.append("(ISymbol)null");
-				if (fCondition != null) {
-					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+		// if (symbolsAsFactoryMethod) {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("$p(");
+		if (fSymbol == null) {
+			buffer.append("(ISymbol)null");
+			if (fCondition != null) {
+				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+			}
+			if (fDefault) {
+				if (fCondition == null) {
+					buffer.append(",null");
 				}
-				if (fDefault) {
-					if (fCondition == null) {
-						buffer.append(",null");
-					}
-					buffer.append(",true");
-				}
-			} else {
-				String symbolStr = fSymbol.toString();
-				char ch = symbolStr.charAt(0);
-				if (symbolStr.length() == 1) {
-					if ('a' <= ch && ch <= 'z') {
-						if (!fDefault) {
-							if (fCondition == null) {
-								if (ch == 'd' || ch == 'e' || ch == 'i') {
-									return "$p(" + symbolStr + ")";
-								} else {
-									return symbolStr + "_";
-								}
-							} else if (fCondition == F.SymbolHead) {
-								if (ch == 'x') {
-									return "x_Symbol";
-								}
+				buffer.append(",true");
+			}
+		} else {
+			String symbolStr = fSymbol.toString();
+			char ch = symbolStr.charAt(0);
+			if (symbolStr.length() == 1) {
+				if ('a' <= ch && ch <= 'z') {
+					if (!fDefault) {
+						if (fCondition == null) {
+							if (ch == 'd' || ch == 'e' || ch == 'i') {
+								return "$p(" + symbolStr + ")";
+							} else {
+								return symbolStr + "_";
 							}
-						} else {
-							if (fCondition == null) {
-								if (ch == 'd' || ch == 'e' || ch == 'i') {
-								} else {
-									return symbolStr + "_DEFAULT";
-								}
+						} else if (fCondition == F.SymbolHead) {
+							if (ch == 'x') {
+								return "x_Symbol";
+							} else if (ch == 'y') {
+								return "y_Symbol";
+							} else if (ch == 'z') {
+								return "z_Symbol";
+							}
+						}
+					} else {
+						if (fCondition == null) {
+							if (ch == 'd' || ch == 'e' || ch == 'i') {
+							} else {
+								return symbolStr + "_DEFAULT";
 							}
 						}
 					}
 				}
-				if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
-					buffer.append(symbolStr);
+			}
+			if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
+				buffer.append(symbolStr);
+			} else {
+				buffer.append("\"" + symbolStr + "\"");
+			}
+			if (fCondition != null) {
+				if (fCondition == F.SymbolHead) {
+					buffer.append(", SymbolHead");
 				} else {
-					buffer.append("\"" + symbolStr + "\"");
-				}
-				if (fCondition != null) {
 					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 				}
-				if (fDefault) {
-					// if (fCondition == null) {
-					// buffer.append(",null");
-					// }
-					buffer.append(",true");
-				}
 			}
-			buffer.append(')');
-			return buffer.toString();
-//		}
-//		return toString();
+			if (fDefault) {
+				// if (fCondition == null) {
+				// buffer.append(",null");
+				// }
+				buffer.append(",true");
+			}
+		}
+		buffer.append(')');
+		return buffer.toString();
+		// }
+		// return toString();
 	}
 
 	@Override

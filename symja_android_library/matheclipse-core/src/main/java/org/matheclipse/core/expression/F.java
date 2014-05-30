@@ -695,7 +695,9 @@ public class F {
 	public final static IPattern z_ = initPredefinedPattern(z);
 
 	public final static IPattern x_Symbol = new Pattern(x, SymbolHead);
-
+	public final static IPattern y_Symbol = new Pattern(y, SymbolHead);
+	public final static IPattern z_Symbol = new Pattern(z, SymbolHead);
+	
 	public final static IPattern a_DEFAULT = new Pattern(a, null, true);
 	public final static IPattern b_DEFAULT = new Pattern(b, null, true);
 	public final static IPattern c_DEFAULT = new Pattern(c, null, true);
