@@ -1,18 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.CComplexInfinity;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Sec;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.SignCmp;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -26,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.SecRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -33,7 +23,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
  */
-public class Sec extends AbstractTrigArg1 implements INumeric {
+public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 
 	// {
 	// Sec[0]=1,
@@ -51,21 +41,21 @@ public class Sec extends AbstractTrigArg1 implements INumeric {
 	// Sec[5/12*Pi]=Sqrt[6]+Sqrt[2]
 	// }
 
-	final static IAST RULES = List(
-			Set(Sec(C0), C1),
-			Set(Sec(Times(C1D2, Pi)), CComplexInfinity),
-			Set(Sec(Times(C1D3, Pi)), C2),
-			Set(Sec(Times(C1D4, Pi)), Sqrt(C2)),
-			Set(Sec(Times(fraction(1L, 5L), Pi)), Plus(Sqrt(C5), Times(CN1, C1))),
-			Set(Sec(Times(fraction(1L, 6L), Pi)), Times(fraction(2L, 3L), Sqrt(C3))),
-			Set(Sec(Times(fraction(1L, 8L), Pi)), Sqrt(Plus(C4, Times(CN1, Times(C2, Sqrt(C2)))))),
-			Set(Sec(Times(fraction(1L, 10L), Pi)),
-					Times(fraction(1L, 5L), Sqrt(Plus(integer(50L), Times(CN1, Times(integer(10L), Sqrt(C5))))))),
-			Set(Sec(Times(fraction(1L, 12L), Pi)), Plus(Sqrt(integer(6L)), Times(CN1, Sqrt(C2)))),
-			Set(Sec(Times(fraction(3L, 8L), Pi)), Sqrt(Plus(C4, Times(C2, Sqrt(C2))))),
-			Set(Sec(Times(fraction(3L, 10L), Pi)), Times(fraction(1L, 5L), Sqrt(Plus(integer(50L), Times(integer(10L), Sqrt(C5)))))),
-			Set(Sec(Times(fraction(2L, 5L), Pi)), Plus(C1, Sqrt(C5))),
-			Set(Sec(Times(fraction(5L, 12L), Pi)), Plus(Sqrt(integer(6L)), Sqrt(C2))));
+	// final static IAST RULES = List(
+	// Set(Sec(C0), C1),
+	// Set(Sec(Times(C1D2, Pi)), CComplexInfinity),
+	// Set(Sec(Times(C1D3, Pi)), C2),
+	// Set(Sec(Times(C1D4, Pi)), Sqrt(C2)),
+	// Set(Sec(Times(fraction(1L, 5L), Pi)), Plus(Sqrt(C5), Times(CN1, C1))),
+	// Set(Sec(Times(fraction(1L, 6L), Pi)), Times(fraction(2L, 3L), Sqrt(C3))),
+	// Set(Sec(Times(fraction(1L, 8L), Pi)), Sqrt(Plus(C4, Times(CN1, Times(C2, Sqrt(C2)))))),
+	// Set(Sec(Times(fraction(1L, 10L), Pi)),
+	// Times(fraction(1L, 5L), Sqrt(Plus(integer(50L), Times(CN1, Times(integer(10L), Sqrt(C5))))))),
+	// Set(Sec(Times(fraction(1L, 12L), Pi)), Plus(Sqrt(integer(6L)), Times(CN1, Sqrt(C2)))),
+	// Set(Sec(Times(fraction(3L, 8L), Pi)), Sqrt(Plus(C4, Times(C2, Sqrt(C2))))),
+	// Set(Sec(Times(fraction(3L, 10L), Pi)), Times(fraction(1L, 5L), Sqrt(Plus(integer(50L), Times(integer(10L), Sqrt(C5)))))),
+	// Set(Sec(Times(fraction(2L, 5L), Pi)), Plus(C1, Sqrt(C5))),
+	// Set(Sec(Times(fraction(5L, 12L), Pi)), Plus(Sqrt(integer(6L)), Sqrt(C2))));
 
 	@Override
 	public IAST getRuleAST() {

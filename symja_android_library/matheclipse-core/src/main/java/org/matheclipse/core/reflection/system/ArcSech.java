@@ -1,12 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
-
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.ArcSechRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -14,11 +12,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
  */
-public class ArcSech extends AbstractTrigArg1 {
-	/*
-	 * { ArcSech[0]=Infinity }
-	 */
-	final static IAST RULES = List(Set(ArcSech(C0), CInfinity));
+public class ArcSech extends AbstractTrigArg1 implements ArcSechRules {
 
 	@Override
 	public IAST getRuleAST() {

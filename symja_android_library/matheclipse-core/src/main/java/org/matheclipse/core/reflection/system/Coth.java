@@ -6,10 +6,6 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ComplexUtils;
-import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;

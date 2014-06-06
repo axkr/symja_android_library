@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.ArcCsc;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -8,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.ArcCscRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -15,19 +18,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
  */
-public class ArcCsc extends AbstractTrigArg1 {
-	/*
-	 * { 
-	 *   ArcCsc[0]=ComplexInfinity,
-	 *   ArcCsc[1]=1/2*Pi, 
-	 *   ArcCsc[21]=1/6*Pi, 
-	 * }
-	 */
-	final static IAST RULES = List(
-			Set(ArcCsc(C0), CComplexInfinity),
-			Set(ArcCsc(C1), Times(C1D2, Pi)),
-			Set(ArcCsc(C2), Times(fraction(1L,6L),Pi))
-			);
+public class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
 
 	@Override
 	public IAST getRuleAST() {

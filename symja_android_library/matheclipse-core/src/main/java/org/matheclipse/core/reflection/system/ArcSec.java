@@ -1,12 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.ArcSec;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.CComplexInfinity;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Set;
 
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.ArcSecRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -14,17 +19,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
  */
-public class ArcSec extends AbstractTrigArg1 {
-	/*
-	 * { 
-	 *   ArcSec[0]=ComplexInfinity,
-	 *   ArcSec[1]=0,
-	 * }
-	 */
-	final static IAST RULES = List(
-			Set(ArcSec(C0), CComplexInfinity),
-			Set(ArcSec(C1), C0)
-			);
+public class ArcSec extends AbstractTrigArg1 implements ArcSecRules {
 
 	@Override
 	public IAST getRuleAST() {

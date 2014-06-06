@@ -30,7 +30,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
  */
 public class AST2Expr {
 
-	private final static String[] FUNCTION_STRINGS = { "DirectedInfinity", "False", "Flat", "HoldAll", "HoldFirst", "HoldRest",
+	private final static String[] FUNCTION_STRINGS = { "ComplexInfinity", "DirectedInfinity", "False", "Flat", "HoldAll", "HoldFirst", "HoldRest",
 			"Indeterminate", "Integer", "List", "Listable", "Modulus", "Null", "NumericFunction", "OneIdentity", "Orderless",
 			"Real", "Slot", "SlotSequence", "String", "Symbol", "True", "Abs", "AddTo", "And", "Apart", "Append", "AppendTo",
 			"Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh",
@@ -75,11 +75,11 @@ public class AST2Expr {
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
-	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff", "I", "Infinity",
-			"Int", "Trunc" };
+	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
+			"I", "Infinity", "Int", "Trunc" };
 
-	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh, F.D, F.CI,
-			F.CInfinity, F.Integrate, F.IntegerPart };
+	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh,
+			F.CComplexInfinity, F.D, F.CI, F.CInfinity, F.Integrate, F.IntegerPart };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
@@ -217,6 +217,9 @@ public class AST2Expr {
 				} else if (nodeStr.equals("infinity")) {
 					// special - convert on input
 					return F.CInfinity;
+				} else if (nodeStr.equals("complexinfinity")) {
+					// special - convert on input
+					return F.CComplexInfinity;
 				}
 				IExpr temp = PREDEFINED_ALIASES_MAP.get(nodeStr);
 				if (temp != null) {
