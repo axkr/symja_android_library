@@ -697,7 +697,7 @@ public class F {
 	public final static IPattern x_Symbol = new Pattern(x, SymbolHead);
 	public final static IPattern y_Symbol = new Pattern(y, SymbolHead);
 	public final static IPattern z_Symbol = new Pattern(z, SymbolHead);
-	
+
 	public final static IPattern a_DEFAULT = new Pattern(a, null, true);
 	public final static IPattern b_DEFAULT = new Pattern(b, null, true);
 	public final static IPattern c_DEFAULT = new Pattern(c, null, true);
@@ -3206,13 +3206,25 @@ public class F {
 		return unary(Sow, a);
 	}
 
-	public static IAST Sqr(final IExpr a0) {
+	/**
+	 * Create a "square" expression: <code>Power(x, 2)</code>.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static IAST Sqr(final IExpr x) {
 
-		return binary(Power, a0, C2);
+		return binary(Power, x, C2);
 	}
 
-	public static IAST Sqrt(final IExpr a0) {
-		return binary(Power, a0, C1D2);
+	/**
+	 * Create a "square root" expression: <code>Power(x, 1/2)</code>.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static IAST Sqrt(final IExpr x) {
+		return binary(Power, x, C1D2);
 	}
 
 	public static IAST StringJoin(final IExpr a) {
