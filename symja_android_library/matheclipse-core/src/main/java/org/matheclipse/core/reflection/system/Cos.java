@@ -1,40 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.ArcSin;
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D3;
-import static org.matheclipse.core.expression.F.C1D4;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C5;
-import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.CN1D4;
-import static org.matheclipse.core.expression.F.Condition;
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.GreaterEqual;
-import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.IntegerPart;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Quotient;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
-import static org.matheclipse.core.expression.F.integer;
-import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -48,6 +16,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.CosRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -56,59 +25,59 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a> and <a
  * href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">Wikipedia - Exact trigonometric constants</a>
  */
-public class Cos extends AbstractTrigArg1 implements INumeric {
+public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 
-	// {
-	// Cos[1/10*Pi]=1/4*2^(1/2)*(5+5^(1/2))^(1/2),
-	// Cos[1/12*Pi]=1/4*(1+1/3*3^(1/2))*6^(1/2),
-	// Cos[1/6*Pi]=1/2*3^(1/2),
-	// Cos[3/8*Pi]=1/2*(2-2^(1/2))^(1/2),
-	// Cos[1/8*Pi]=1/2*(2+2^(1/2))^(1/2),
-	// Cos[Pi]=-1,
-	// Cos[5/12*Pi]=1/4*(1-1/3*3^(1/2))*6^(1/2),
-	// Cos[3/10*Pi]=1/4*2^(1/2)*(5-5^(1/2))^(1/2),
-	// Cos[1/2*Pi]=0,
-	// Cos[1/3*Pi]=1/2,
-	// Cos[1/4*Pi]=1/2*2^(1/2),
-	// Cos[2/5*Pi]=-1/4+1/4*5^(1/2),
-	// Cos[1/5*Pi]=1/4+1/4*5^(1/2),
-	// Cos[0]=1,
-	// Cos[I]=Cosh[1],
-	// Cos[ArcTan[x_]]:=(1+x^2)^(-1/2),
-	// Cos[Pi*x_NumberQ]:=If[x<1,(-1)*Cos[(1-x)*Pi],If[x<2,Cos[(2-x)*Pi],Cos[(x-2*Quotient[IntegerPart[x],2])*Pi]]]/;x>=1/2,
-	// Cos[ArcCos[x_]]:=x,
-	// Cos[ArcSin[x_]]:=(1-x^2)^(1/2)
-	// }
+//	 {
+//	 Cos[1/10*Pi]=1/4*2^(1/2)*(5+5^(1/2))^(1/2),
+//	 Cos[1/12*Pi]=1/4*(1+1/3*3^(1/2))*6^(1/2),
+//	 Cos[1/6*Pi]=1/2*3^(1/2),
+//	 Cos[3/8*Pi]=1/2*(2-2^(1/2))^(1/2),
+//	 Cos[1/8*Pi]=1/2*(2+2^(1/2))^(1/2),
+//	 Cos[Pi]=-1,
+//	 Cos[5/12*Pi]=1/4*(1-1/3*3^(1/2))*6^(1/2),
+//	 Cos[3/10*Pi]=1/4*2^(1/2)*(5-5^(1/2))^(1/2),
+//	 Cos[1/2*Pi]=0,
+//	 Cos[1/3*Pi]=1/2,
+//	 Cos[1/4*Pi]=1/2*2^(1/2),
+//	 Cos[2/5*Pi]=-1/4+1/4*5^(1/2),
+//	 Cos[1/5*Pi]=1/4+1/4*5^(1/2),
+//	 Cos[0]=1,
+//	 Cos[I]=Cosh[1],
+//	 Cos[ArcTan[x_]]:=(1+x^2)^(-1/2),
+//	 Cos[Pi*x_NumberQ]:=If[x<1,(-1)*Cos[(1-x)*Pi],If[x<2,Cos[(2-x)*Pi],Cos[(x-2*Quotient[IntegerPart[x],2])*Pi]]]/;x>=1/2,
+//	 Cos[ArcCos[x_]]:=x,
+//	 Cos[ArcSin[x_]]:=(1-x^2)^(1/2)
+//	 }
 
-	final static IAST RULES = List(
-			Set(Cos(Times(fraction(1L, 10L), Pi)), Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Power(C5, C1D2)), C1D2))),
-			Set(Cos(Times(fraction(1L, 12L), Pi)),
-					Times(Times(C1D4, Plus(C1, Times(C1D3, Power(C3, C1D2)))), Power(integer(6L), C1D2))),
-			Set(Cos(Times(fraction(1L, 6L), Pi)), Times(C1D2, Power(C3, C1D2))),
-			Set(Cos(Times(fraction(3L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Times(CN1, Power(C2, C1D2))), C1D2))),
-			Set(Cos(Times(fraction(1L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Power(C2, C1D2)), C1D2))),
-			Set(Cos(Pi), CN1),
-			Set(Cos(Times(fraction(5L, 12L), Pi)),
-					Times(Times(C1D4, Plus(C1, Times(CN1, Times(C1D3, Power(C3, C1D2))))), Power(integer(6L), C1D2))),
-			Set(Cos(Times(fraction(3L, 10L), Pi)),
-					Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Times(CN1, Power(C5, C1D2))), C1D2))),
-			Set(Cos(Times(C1D2, Pi)), C0),
-			Set(Cos(Times(C1D3, Pi)), C1D2),
-			Set(Cos(Times(C1D4, Pi)), Times(C1D2, Power(C2, C1D2))),
-			Set(Cos(Times(fraction(2L, 5L), Pi)), Plus(CN1D4, Times(C1D4, Power(C5, C1D2)))),
-			Set(Cos(Times(fraction(1L, 5L), Pi)), Plus(C1D4, Times(C1D4, Power(C5, C1D2)))),
-			Set(Cos(C0), C1),
-			Set(Cos(CI), Cosh(C1)),
-			SetDelayed(Cos(ArcTan($p(x))), Power(Plus(C1, Power(x, C2)), CN1D2)),
-			SetDelayed(
-					Cos(Times(Pi, $p(x, $s("NumberQ")))),
-					Condition(
-							If(Less(x, C1),
-									Times(CN1, Cos(Times(Plus(C1, Times(CN1, x)), Pi))),
-									If(Less(x, C2), Cos(Times(Plus(C2, Times(CN1, x)), Pi)),
-											Cos(Times(Plus(x, Times(CN1, Times(C2, Quotient(IntegerPart(x), C2)))), Pi)))),
-							GreaterEqual(x, C1D2))), SetDelayed(Cos(ArcCos($p(x))), x),
-			SetDelayed(Cos(ArcSin($p(x))), Power(Plus(C1, Times(CN1, Power(x, C2))), C1D2)));
+//	final static IAST RULES = List(
+//			Set(Cos(Times(fraction(1L, 10L), Pi)), Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Power(C5, C1D2)), C1D2))),
+//			Set(Cos(Times(fraction(1L, 12L), Pi)),
+//					Times(Times(C1D4, Plus(C1, Times(C1D3, Power(C3, C1D2)))), Power(integer(6L), C1D2))),
+//			Set(Cos(Times(fraction(1L, 6L), Pi)), Times(C1D2, Power(C3, C1D2))),
+//			Set(Cos(Times(fraction(3L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Times(CN1, Power(C2, C1D2))), C1D2))),
+//			Set(Cos(Times(fraction(1L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Power(C2, C1D2)), C1D2))),
+//			Set(Cos(Pi), CN1),
+//			Set(Cos(Times(fraction(5L, 12L), Pi)),
+//					Times(Times(C1D4, Plus(C1, Times(CN1, Times(C1D3, Power(C3, C1D2))))), Power(integer(6L), C1D2))),
+//			Set(Cos(Times(fraction(3L, 10L), Pi)),
+//					Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Times(CN1, Power(C5, C1D2))), C1D2))),
+//			Set(Cos(Times(C1D2, Pi)), C0),
+//			Set(Cos(Times(C1D3, Pi)), C1D2),
+//			Set(Cos(Times(C1D4, Pi)), Times(C1D2, Power(C2, C1D2))),
+//			Set(Cos(Times(fraction(2L, 5L), Pi)), Plus(CN1D4, Times(C1D4, Power(C5, C1D2)))),
+//			Set(Cos(Times(fraction(1L, 5L), Pi)), Plus(C1D4, Times(C1D4, Power(C5, C1D2)))),
+//			Set(Cos(C0), C1),
+//			Set(Cos(CI), Cosh(C1)),
+//			SetDelayed(Cos(ArcTan($p(x))), Power(Plus(C1, Power(x, C2)), CN1D2)),
+//			SetDelayed(
+//					Cos(Times(Pi, $p(x, $s("NumberQ")))),
+//					Condition(
+//							If(Less(x, C1),
+//									Times(CN1, Cos(Times(Plus(C1, Times(CN1, x)), Pi))),
+//									If(Less(x, C2), Cos(Times(Plus(C2, Times(CN1, x)), Pi)),
+//											Cos(Times(Plus(x, Times(CN1, Times(C2, Quotient(IntegerPart(x), C2)))), Pi)))),
+//							GreaterEqual(x, C1D2))), SetDelayed(Cos(ArcCos($p(x))), x),
+//			SetDelayed(Cos(ArcSin($p(x))), Power(Plus(C1, Times(CN1, Power(x, C2))), C1D2)));
 
 	@Override
 	public IAST getRuleAST() {

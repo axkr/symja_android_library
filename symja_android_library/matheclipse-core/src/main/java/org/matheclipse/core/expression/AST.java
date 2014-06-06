@@ -771,7 +771,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericFunction() {
@@ -1372,11 +1372,22 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (isNegativeInfinity()) {
 			return "CNInfinity";
 		}
+		if (isComplexInfinity()){
+			return "CComplexInfinity";
+		}
 		if (this.equals(F.Slot1)) {
 			return "Slot1";
 		}
 		if (this.equals(F.Slot2)) {
 			return "Slot2";
+		}
+		if (isPower()) {
+			if (arg2().equals(F.C1D2)) {
+				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+			}
+			if (arg2().equals(F.C2)) {
+				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+			}
 		}
 		StringBuffer text = new StringBuffer(size() * 10);
 		if (temp.isSymbol()) {

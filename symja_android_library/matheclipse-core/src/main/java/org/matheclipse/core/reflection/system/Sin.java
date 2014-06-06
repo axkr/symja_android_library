@@ -1,39 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.ArcSin;
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D3;
-import static org.matheclipse.core.expression.F.C1D4;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C5;
-import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.GreaterEqual;
-import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.IntegerPart;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Quotient;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
 import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
-import static org.matheclipse.core.expression.F.integer;
 import static org.matheclipse.core.expression.F.num;
-import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -45,8 +15,8 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.SinRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -54,7 +24,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
  */
-public class Sin extends AbstractTrigArg1 implements INumeric {
+public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 
 	// {
 	// Sin[0]=0,
@@ -79,36 +49,36 @@ public class Sin extends AbstractTrigArg1 implements INumeric {
 	// Sin[(x-2*Quotient[IntegerPart[x],2])*Pi] ] ] /; x>=1/2
 	// }
 
-	final static IAST RULES = List(
-			Set(Sin(C0), C0),
-			Set(Sin(Times(fraction(1L, 6L), Pi)), C1D2),
-			Set(Sin(Times(C1D4, Pi)), Times(C1D2, Power(C2, C1D2))),
-			Set(Sin(Times(C1D3, Pi)), Times(C1D2, Power(C3, C1D2))),
-			Set(Sin(Times(C1D2, Pi)), C1),
-			Set(Sin(Pi), C0),
-			Set(Sin(Times(fraction(5L, 12L), Pi)),
-					Times(Times(C1D4, Power(integer(6L), C1D2)), Plus(C1, Times(C1D3, Power(C3, C1D2))))),
-			Set(Sin(Times(fraction(1L, 5L), Pi)),
-					Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Times(CN1, Power(C5, C1D2))), C1D2))),
-			Set(Sin(Times(fraction(1L, 12L), Pi)),
-					Times(Times(C1D4, Power(integer(6L), C1D2)), Plus(C1, Times(CN1, Times(C1D3, Power(C3, C1D2)))))),
-			Set(Sin(Times(fraction(1L, 10L), Pi)), Plus(Times(C1D4, Power(C5, C1D2)), Times(CN1, C1D4))),
-			Set(Sin(Times(fraction(2L, 5L), Pi)), Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Power(C5, C1D2)), C1D2))),
-			Set(Sin(Times(fraction(3L, 10L), Pi)), Plus(Times(C1D4, Power(C5, C1D2)), C1D4)),
-			Set(Sin(Times(fraction(3L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Power(C2, C1D2)), C1D2))),
-			Set(Sin(Times(fraction(1L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Times(CN1, Power(C2, C1D2))), C1D2))),
-			Set(Sin(CI), Times(CI, Sinh(C1))),
-			SetDelayed(Sin(ArcSin($p(x))), x),
-			SetDelayed(Sin(ArcCos($p(x))), Power(Plus(C1, Times(CN1, Power(x, C2))), C1D2)),
-			SetDelayed(Sin(ArcTan($p(x))), Times(x, Power(Power(Plus(C1, Power(x, C2)), C1D2), CN1))),
-			SetDelayed(
-					Sin(Times($p(x, $s("NumberQ")), Pi)),
-					Condition(
-							If(Less(x, C1),
-									Sin(Times(Plus(C1, Times(CN1, x)), Pi)),
-									If(Less(x, C2), Times(CN1, Sin(Times(Plus(C2, Times(CN1, x)), Pi))),
-											Sin(Times(Plus(x, Times(CN1, Times(C2, Quotient(IntegerPart(x), C2)))), Pi)))),
-							GreaterEqual(x, C1D2))));
+	// final static IAST RULES = List(
+	// Set(Sin(C0), C0),
+	// Set(Sin(Times(fraction(1L, 6L), Pi)), C1D2),
+	// Set(Sin(Times(C1D4, Pi)), Times(C1D2, Power(C2, C1D2))),
+	// Set(Sin(Times(C1D3, Pi)), Times(C1D2, Power(C3, C1D2))),
+	// Set(Sin(Times(C1D2, Pi)), C1),
+	// Set(Sin(Pi), C0),
+	// Set(Sin(Times(fraction(5L, 12L), Pi)),
+	// Times(Times(C1D4, Power(integer(6L), C1D2)), Plus(C1, Times(C1D3, Power(C3, C1D2))))),
+	// Set(Sin(Times(fraction(1L, 5L), Pi)),
+	// Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Times(CN1, Power(C5, C1D2))), C1D2))),
+	// Set(Sin(Times(fraction(1L, 12L), Pi)),
+	// Times(Times(C1D4, Power(integer(6L), C1D2)), Plus(C1, Times(CN1, Times(C1D3, Power(C3, C1D2)))))),
+	// Set(Sin(Times(fraction(1L, 10L), Pi)), Plus(Times(C1D4, Power(C5, C1D2)), Times(CN1, C1D4))),
+	// Set(Sin(Times(fraction(2L, 5L), Pi)), Times(Times(C1D4, Power(C2, C1D2)), Power(Plus(C5, Power(C5, C1D2)), C1D2))),
+	// Set(Sin(Times(fraction(3L, 10L), Pi)), Plus(Times(C1D4, Power(C5, C1D2)), C1D4)),
+	// Set(Sin(Times(fraction(3L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Power(C2, C1D2)), C1D2))),
+	// Set(Sin(Times(fraction(1L, 8L), Pi)), Times(C1D2, Power(Plus(C2, Times(CN1, Power(C2, C1D2))), C1D2))),
+	// Set(Sin(CI), Times(CI, Sinh(C1))),
+	// SetDelayed(Sin(ArcSin($p(x))), x),
+	// SetDelayed(Sin(ArcCos($p(x))), Power(Plus(C1, Times(CN1, Power(x, C2))), C1D2)),
+	// SetDelayed(Sin(ArcTan($p(x))), Times(x, Power(Power(Plus(C1, Power(x, C2)), C1D2), CN1))),
+	// SetDelayed(
+	// Sin(Times($p(x, $s("NumberQ")), Pi)),
+	// Condition(
+	// If(Less(x, C1),
+	// Sin(Times(Plus(C1, Times(CN1, x)), Pi)),
+	// If(Less(x, C2), Times(CN1, Sin(Times(Plus(C2, Times(CN1, x)), Pi))),
+	// Sin(Times(Plus(x, Times(CN1, Times(C2, Quotient(IntegerPart(x), C2)))), Pi)))),
+	// GreaterEqual(x, C1D2))));
 
 	public Sin() {
 	}
@@ -132,7 +102,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric {
 				} else {
 					return F.Times(F.CN1, F.Sin(parts[0]));
 				}
-			} 
+			}
 		}
 		return null;
 	}

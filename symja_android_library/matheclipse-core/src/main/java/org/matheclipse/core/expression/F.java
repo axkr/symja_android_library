@@ -3212,7 +3212,6 @@ public class F {
 	}
 
 	public static IAST Sqrt(final IExpr a0) {
-
 		return binary(Power, a0, C1D2);
 	}
 

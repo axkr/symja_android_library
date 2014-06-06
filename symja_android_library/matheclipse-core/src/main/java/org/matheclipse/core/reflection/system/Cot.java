@@ -1,24 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C1D4;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C5;
-import static org.matheclipse.core.expression.F.CComplexInfinity;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
-import static org.matheclipse.core.expression.F.integer;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -30,6 +14,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.CotRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -39,7 +24,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
  * functions</a>
  */
-public class Cot extends AbstractTrigArg1 implements INumeric {
+public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 
 //{ 
 //Cot[Pi/4]=1,
@@ -53,18 +38,20 @@ public class Cot extends AbstractTrigArg1 implements INumeric {
 //Cot[2/5*Pi]=1/5*Sqrt[25-10*Sqrt[5]],
 //Cot[3/10*Pi]=Sqrt[5-2*Sqrt[5]]
 //}
-	final static IAST RULES = List(
-			Set(Cot(Times(C1D4,Pi)),C1),
-			Set(Cot(Times(fraction(1L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(integer(10L),Sqrt(C5)))))),
-			Set(Cot(Times(fraction(1L,6L),Pi)),Power(C3,C1D2)),
-			Set(Cot(Times(fraction(1L,8L),Pi)),Plus(Sqrt(C2),C1)),
-			Set(Cot(Times(fraction(1L,10L),Pi)),Sqrt(Plus(C5,Times(C2,Sqrt(C5))))),
-			Set(Cot(Times(fraction(1L,12L),Pi)),Plus(C2,Power(C3,C1D2))),
-			Set(Cot(C0),CComplexInfinity),
-			Set(Cot(Times(fraction(5L,12L),Pi)),Plus(C2,Times(CN1,Sqrt(C3)))),
-			Set(Cot(Times(fraction(2L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(CN1,Times(integer(10L),Sqrt(C5))))))),
-			Set(Cot(Times(fraction(3L,10L),Pi)),Sqrt(Plus(C5,Times(CN1,Times(C2,Sqrt(C5))))))
-			);
+	
+	
+//	final static IAST RULES = List(
+//			Set(Cot(Times(C1D4,Pi)),C1),
+//			Set(Cot(Times(fraction(1L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(integer(10L),Sqrt(C5)))))),
+//			Set(Cot(Times(fraction(1L,6L),Pi)),Power(C3,C1D2)),
+//			Set(Cot(Times(fraction(1L,8L),Pi)),Plus(Sqrt(C2),C1)),
+//			Set(Cot(Times(fraction(1L,10L),Pi)),Sqrt(Plus(C5,Times(C2,Sqrt(C5))))),
+//			Set(Cot(Times(fraction(1L,12L),Pi)),Plus(C2,Power(C3,C1D2))),
+//			Set(Cot(C0),CComplexInfinity),
+//			Set(Cot(Times(fraction(5L,12L),Pi)),Plus(C2,Times(CN1,Sqrt(C3)))),
+//			Set(Cot(Times(fraction(2L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(CN1,Times(integer(10L),Sqrt(C5))))))),
+//			Set(Cot(Times(fraction(3L,10L),Pi)),Sqrt(Plus(C5,Times(CN1,Times(C2,Sqrt(C5))))))
+//			);
 
 	@Override
 	public IAST getRuleAST() {

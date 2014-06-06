@@ -1,0 +1,22 @@
+ {
+	 Tan(0)=0,
+	 Tan(1/3*Pi)=3^(1/2),
+	 Tan(1/5*Pi)=(5-2*5^(1/2))^(1/2),
+	 Tan(1/4*Pi)=1,
+	 Tan(2/5*Pi)=(5+2*5^(1/2))^(1/2),
+	 Tan(1/6*Pi)=1/3*3^(1/2),
+	 Tan(3/8*Pi)=1+2^(1/2),
+	 Tan(1/8*Pi)=-1+2^(1/2),
+	 Tan(1/12*Pi)=2-3^(1/2),
+	 Tan(5/12*Pi)=2+3^(1/2),
+	 Tan(1/10*Pi)=1/5*Sqrt(25-10*Sqrt(5)),
+	 Tan(3/10*Pi)=1/5*Sqrt(25+10*Sqrt(5)),
+	 Tan(Pi)=0,
+	 Tan(Pi/2)=ComplexInfinity,
+	 Tan(I)=I*Tanh(1),
+	 Tan(ArcSin(x_)):=x*(1-x^2)^(1/2)^(-1),
+	 Tan(Pi*x_NumberQ):=If(x<1,(-1)*Tan((1-x)*Pi),If(x<2,Tan((x-1)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2,
+	 Tan(ArcTan(x_)):=x,
+	 Tan(ArcCos(x_)):=(1-x^2)^(1/2)*x^(-1),
+	 Tan(ArcCot(x_)):=x^(-1)
+}
