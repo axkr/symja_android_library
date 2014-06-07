@@ -29,13 +29,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.LogRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a>
  * 
  */
-public class Log extends AbstractArg12 implements INumeric {
+public class Log extends AbstractArg12 implements INumeric, LogRules {
 
 	/**
 	 * <pre>
@@ -43,16 +44,15 @@ public class Log extends AbstractArg12 implements INumeric {
 	 * Log[0]=(-Infinity) }
 	 * </pre>
 	 */
-	static IAST RULES = null;
 
 	@Override
 	public IAST getRuleAST() {
-		if (RULES == null) {
-			RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)), Set(Log(Power(E, CI)), CI),
-					Set(Log(C0), Times(CN1, CInfinity)), Set(Log(C1), C0), Set(Log(E), C1),
-					SetDelayed(Log(Power(E, $p("x", $s("Integer")))), $s("x")),
-					SetDelayed(Log(Power(E, $p("x", $s("Rational")))), $s("x")));
-		}
+		// if (RULES == null) {
+		// RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)), Set(Log(Power(E, CI)), CI),
+		// Set(Log(C0), Times(CN1, CInfinity)), Set(Log(C1), C0), Set(Log(E), C1),
+		// SetDelayed(Log(Power(E, $p("x", $s("Integer")))), $s("x")),
+		// SetDelayed(Log(Power(E, $p("x", $s("Rational")))), $s("x")));
+		// }
 		return RULES;
 	}
 

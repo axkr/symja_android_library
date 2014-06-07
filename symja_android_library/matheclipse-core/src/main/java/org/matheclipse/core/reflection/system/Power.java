@@ -1,26 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Csc;
-import static org.matheclipse.core.expression.F.E;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sec;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
@@ -44,39 +25,13 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.PowerRules;
 
-public class Power extends AbstractArg2 implements INumeric {
+public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	/**
 	 * Constructor for the singleton
 	 */
 	public final static Power CONST = new Power();
-	/**
-	 * <pre>
-	 * E^(I*Pi)=(-1),
-	 *      E^Log[x_]:=x,
-	 *      Tan[x_]^(n_IntegerQ):=Cot[x]^(-n)/;(n<0)
-	 *      Cot[x_]^(n_IntegerQ):=Tan[x]^(-n)/;(n<0),
-	 *      Sec[x_]^(n_IntegerQ):=Cos[x]^(-n)/;(n<0),
-	 *      Cos[x_]^(n_IntegerQ):=Sec[x]^(-n)/;(n<0),
-	 *      Csc[x_]^(n_IntegerQ):=Sin[x]^(-n)/;(n<0),
-	 *      Sin[x_]^(n_IntegerQ):=Csc[x]^(-n)/;(n<0),
-	 * </pre>
-	 */
-	final static IAST RULES = List(
-			Set(Power(E, Times(CI, Pi)), CN1),
-			SetDelayed(Power(E, Log($p("x"))), $s("x")),
-			SetDelayed(Power(Tan($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Cot($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Cot($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Tan($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Sec($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Cos($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Cos($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Sec($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Csc($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Sin($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))),
-			SetDelayed(Power(Sin($p("x")), $p("n", $s("IntegerQ"))),
-					Condition(Power(Csc($s("x")), Times(CN1, $s("n"))), Less($s("n"), C0))));
 
 	@Override
 	public IAST getRuleAST() {

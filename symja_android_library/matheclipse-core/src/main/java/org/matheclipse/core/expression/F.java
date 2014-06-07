@@ -1335,7 +1335,6 @@ public class F {
 	}
 
 	public static IAST BernoulliB(final IExpr a0) {
-
 		return unary($s("BernoulliB"), a0);
 	}
 
@@ -2178,7 +2177,7 @@ public class F {
 	}
 
 	public static IAST Function(final IExpr a0) {
-		return unary($s("Function"), a0);
+		return unary(Function, a0);
 	}
 
 	public static IAST Gamma(final IExpr a0) {
@@ -2554,7 +2553,7 @@ public class F {
 	}
 
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
-		return binary($s("LinearSolve"), a0, a1);
+		return binary(LinearSolve, a0, a1);
 	}
 
 	public static IAST List() {
@@ -2957,7 +2956,7 @@ public class F {
 
 	public static IAST PowerExpand(final IExpr a0) {
 
-		return unary($s("PowerExpand"), a0);
+		return unary(PowerExpand, a0);
 	}
 
 	/**
@@ -3000,7 +2999,7 @@ public class F {
 
 	public static IAST Product(final IExpr a0, final IExpr a1) {
 
-		return binary($s("Product"), a0, a1);
+		return binary(Product, a0, a1);
 	}
 
 	/**
@@ -3043,7 +3042,7 @@ public class F {
 	}
 
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
-		return binary($s("Quotient"), a0, a1);
+		return binary(Quotient, a0, a1);
 	}
 
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
@@ -3088,15 +3087,15 @@ public class F {
 
 	public static IAST Reverse(final IExpr a) {
 		// TODO fix this
-		return unary($s("Reverse"), a);
+		return unary(Reverse, a);
 	}
 
 	public static IAST Roots(final IExpr a0) {
-		return unary($s("Roots"), a0);
+		return unary(Roots, a0);
 	}
 
 	public static IAST Round(final IExpr a0) {
-		return unary($s("Round"), a0);
+		return unary(Round, a0);
 	}
 
 	public static IAST Rule(final IExpr a0, final IExpr a1) {
@@ -3284,7 +3283,7 @@ public class F {
 
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
 
-		return binary($s("Sum"), a0, a1);
+		return binary(Sum, a0, a1);
 	}
 
 	public static IAST SurfaceGraphics() {

@@ -1,0 +1,10 @@
+{
+ E^(I*Pi)=(-1),
+ E^Log(x_):=x,
+ Tan(x_)^(m_IntegerQ):=Cot(x)^(-m)/;(m<0),
+ Cot(x_)^(m_IntegerQ):=Tan(x)^(-m)/;(m<0),
+ Sec(x_)^(m_IntegerQ):=Cos(x)^(-m)/;(m<0),
+ Cos(x_)^(m_IntegerQ):=Sec(x)^(-m)/;(m<0),
+ Csc(x_)^(m_IntegerQ):=Sin(x)^(-m)/;(m<0),
+ Sin(x_)^(m_IntegerQ):=Csc(x)^(-m)/;(m<0)
+}

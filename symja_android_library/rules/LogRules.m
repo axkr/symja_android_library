@@ -1,0 +1,9 @@
+{ 
+ Log(1)=0, 
+ Log(E)=1, 
+ Log(E^(x_IntegerQ)):=x, 
+ Log(E^(x_Rational)):=x, 
+ Log(E^(I))=I, 
+ Log(Exp(-I))=(-I),
+ Log(0)=(-Infinity) 
+}
