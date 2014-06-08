@@ -46,13 +46,9 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * @param rat
 	 * @return
 	 * 
-	 * @deprecated
 	 */
-	@Deprecated
 	public static FractionSym valueOf(final BigFraction rat) {
-		FractionSym r = new FractionSym();
-		r.fRational = new BigFraction(rat.getNumerator(), rat.getDenominator());
-		return r;
+		return newInstance(rat);
 	}
 
 	public static FractionSym valueOf(final BigInteger numerator, final BigInteger denominator) {
@@ -178,6 +174,16 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public FractionSym eabs() {
 		return newInstance(fRational.abs());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		BigFraction temp = fRational;
+		if (fRational.compareTo(BigFraction.ZERO) < 0) {
+			temp = temp.negate();
+		}
+		return temp.compareTo(BigFraction.ONE);
 	}
 
 	/**

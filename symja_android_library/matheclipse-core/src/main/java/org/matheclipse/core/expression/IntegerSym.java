@@ -151,12 +151,20 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return newInstance(bigInteger);
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IntegerSym eabs() {
 		return newInstance(fInteger.abs());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		BigInteger temp = fInteger;
+		if (fInteger.compareTo(BigInteger.ZERO) < 0) {
+			temp = temp.negate();
+		}
+		return temp.compareTo(BigInteger.ONE);
 	}
 
 	/**

@@ -56,7 +56,7 @@ public class Num extends ExprImpl implements INum {
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return F.isNumEqualInteger(fDouble, ii);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {
@@ -132,12 +132,17 @@ public class Num extends ExprImpl implements INum {
 		return newInstance(doubleValue);
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public Num eabs() {
 		return newInstance(Math.abs(fDouble));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		double temp = Math.abs(fDouble);
+		return Double.compare(temp, 1.0);
 	}
 
 	/**
@@ -160,7 +165,7 @@ public class Num extends ExprImpl implements INum {
 	public ISignedNumber divideBy(ISignedNumber that) {
 		return Num.valueOf(doubleValue() / that.doubleValue());
 	}
-	
+
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
 		return Num.valueOf(doubleValue() - that.doubleValue());
@@ -512,7 +517,6 @@ public class Num extends ExprImpl implements INum {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
 
 	/** {@inheritDoc} */
 	@Override

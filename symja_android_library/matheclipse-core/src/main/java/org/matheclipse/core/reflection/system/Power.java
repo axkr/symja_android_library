@@ -85,13 +85,62 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	}
 
 	@Override
-	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		if (o0.equals(F.Indeterminate) || o1.equals(F.Indeterminate)) {
+	public IExpr e2ObjArg(final IExpr arg1, final IExpr arg2) {
+		if (arg1.equals(F.Indeterminate) || arg2.equals(F.Indeterminate)) {
 			return F.Indeterminate;
 		}
-		if (o0.isZero()) {
+
+		if (arg2.isInfinity() || arg2.isNegativeInfinity()) {
+			IExpr a1 = arg1;
+			if (arg1.isNegative()) {
+				a1 = ((ISignedNumber) a1).negate();
+			}
+			if (a1.isOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
+				return F.Indeterminate;
+			}
+			if (arg1.isNumber()) {
+				if (arg1.isSignedNumber()) {
+					if (arg2.isInfinity()) {
+						if (((ISignedNumber) arg1).isGreaterThan(F.C1)) {
+							// x^Infinity && x>1
+							return F.CInfinity;
+						}
+					} else {
+						if (((ISignedNumber) arg1).isLessThan(F.C1)) {
+							// x^(-Infinity) && x<1
+							return F.CInfinity;
+						}
+					}
+				}
+				int comp = ((INumber) arg1).compareAbsValueToOne();
+				switch (comp) {
+				case -1:
+					// Abs(x) < 1
+					if (arg2.isInfinity()) {
+						// x^Infinity
+						return F.C0;
+					}
+					// x^ -Infinity
+					return F.CComplexInfinity;
+				case 1:
+					// Abs(x) > 1
+					if (arg2.isInfinity()) {
+						// x^Infinity
+						return F.CComplexInfinity;
+					}
+					// x^ -Infinity
+					return F.C0;
+				}
+			}
+			if (arg2.isInfinity()) {
+
+			} else if (arg2.isNegativeInfinity()) {
+
+			}
+		}
+		if (arg1.isZero()) {
 			EvalEngine ee = EvalEngine.get();
-			if (o1.isZero()) {
+			if (arg2.isZero()) {
 				// 0^0
 				// TODO add a real log message
 				// throw new DivisionByZero("0^0");
@@ -101,7 +150,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Indeterminate;
 			}
 
-			if ((o1.isSignedNumber()) && ((ISignedNumber) o1).isNegative()) {
+			if ((arg2.isSignedNumber()) && ((ISignedNumber) arg2).isNegative()) {
 				if (!ee.isQuietMode()) {
 					ee.getOutPrintStream().println("Infinite expression 0^(negative number)");
 				}
@@ -110,35 +159,38 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 			return F.C0;
 		}
+		
+		if (arg2.isZero()) {
+			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
+				return F.Indeterminate;
+			}
+			return F.C1;
+		}
+		
+		if (arg2.isOne()) {
+			return arg1;
+		}
 
-		if (o1.isZero()) {
+		if (arg1.isOne()) {
 			return F.C1;
 		}
 
-		if (o1.isOne()) {
-			return o0;
-		}
-
-		if (o0.isOne()) {
-			return F.C1;
-		}
-
-		if (o1.isSignedNumber()) {
-			ISignedNumber is1 = (ISignedNumber) o1;
-			if (o0.isInfinity()) {
+		if (arg2.isSignedNumber()) {
+			ISignedNumber is1 = (ISignedNumber) arg2;
+			if (arg1.isInfinity()) {
 				if (is1.isNegative()) {
 					return F.C0;
 				} else {
 					return F.CInfinity;
 				}
-			} else if (o0.isPower() && is1.isNumIntValue() && is1.isPositive()) {
-				IAST a0 = (IAST) o0;
+			} else if (arg1.isPower() && is1.isNumIntValue() && is1.isPositive()) {
+				IAST a0 = (IAST) arg1;
 				if (a0.arg2().isNumIntValue() && a0.arg2().isPositive()) {
 					// (x*n)^m => x ^(n*m)
 					return Power(a0.arg1(), is1.times(a0.arg2()));
 				}
-			} else if (o0.isNegativeInfinity() && o1.isInteger()) {
-				IInteger ii = (IInteger) o1;
+			} else if (arg1.isNegativeInfinity() && arg2.isInteger()) {
+				IInteger ii = (IInteger) arg2;
 				if (ii.isNegative()) {
 					return F.C0;
 				} else {
@@ -151,37 +203,37 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			}
 		}
 
-		if (o1.isMinusOne()) {
-			if (o0.isNumber()) {
-				return ((INumber) o0).inverse();
+		if (arg2.isMinusOne()) {
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).inverse();
 			}
 		}
 
-		if (o0.isSignedNumber() && ((ISignedNumber) o0).isNegative() && o1.equals(F.C1D2)) {
+		if (arg1.isSignedNumber() && ((ISignedNumber) arg1).isNegative() && arg2.equals(F.C1D2)) {
 			// extract I for sqrt
-			return F.Times(F.CI, F.Power(F.Times(F.CN1, o0), o1));
+			return F.Times(F.CI, F.Power(F.Times(F.CN1, arg1), arg2));
 		}
 
-		if (o0.isAST()) {
-			IAST arg0 = (IAST) o0;
+		if (arg1.isAST()) {
+			IAST arg0 = (IAST) arg1;
 			if (arg0.isTimes()) {
-				if (o1.isInteger()) {
+				if (arg2.isInteger()) {
 					// (a * b * c)^n => a^n * b^n * c^n
-					return arg0.map(Functors.replace1st(Power(F.Null, o1)));
+					return arg0.map(Functors.replace1st(Power(F.Null, arg2)));
 				}
-				if (o1.isNumber()) {
+				if (arg2.isNumber()) {
 					final IAST f0 = arg0;
 
 					if ((f0.size() > 1) && (f0.arg1().isNumber())) {
-						return Times(Power(f0.arg1(), o1), Power(F.ast(f0, F.Times, true, 2, f0.size()), o1));
+						return Times(Power(f0.arg1(), arg2), Power(F.ast(f0, F.Times, true, 2, f0.size()), arg2));
 					}
 				}
 			}
 
 			if (arg0.isPower()) {
-				if (o1.isInteger()) {
+				if (arg2.isInteger()) {
 					// (a ^ b )^n => a ^ (b * n)
-					return F.Power(arg0.arg1(), F.Times(o1, arg0.arg2()));
+					return F.Power(arg0.arg1(), F.Times(arg2, arg0.arg2()));
 				}
 			}
 		}

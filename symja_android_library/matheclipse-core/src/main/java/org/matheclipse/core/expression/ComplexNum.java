@@ -250,6 +250,14 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return Num.valueOf(dabs());
 	}
 
+
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		double temp = dabs();
+		return Double.compare(temp, 1.0);
+	}
+	
 	/**
 	 * @return
 	 */

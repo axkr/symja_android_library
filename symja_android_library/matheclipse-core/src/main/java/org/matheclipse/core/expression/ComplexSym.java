@@ -122,10 +122,19 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return ComplexSym.valueOf(_real, _imaginary.negate());
 	}
 
+
+	/** {@inheritDoc} */
 	public IExpr eabs() {
-		return F.Sqrt(FractionSym.valueOf(_real.multiply(_real).add(_imaginary.multiply(_imaginary))));
+		return F.Sqrt(F.QQ(_real.multiply(_real).add(_imaginary.multiply(_imaginary))));
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		BigFraction temp = _real.multiply(_real).add(_imaginary.multiply(_imaginary));
+		return temp.compareTo(BigFraction.ONE);
+	}
+	
 	public ComplexSym add(final ComplexSym parm1) throws java.lang.ArithmeticException {
 		return ComplexSym.valueOf(_real.add(parm1._real), _imaginary.add(parm1._imaginary));
 	}

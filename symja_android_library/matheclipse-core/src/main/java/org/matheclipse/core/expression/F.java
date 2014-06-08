@@ -3011,6 +3011,19 @@ public class F {
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
+	public static IFraction QQ(final BigFraction frac) {
+		return FractionSym.valueOf(frac);
+	}
+	
+	/**
+	 * Create a "fractional" number
+	 * 
+	 * @param numerator
+	 *            numerator of the fractional number
+	 * @param denominator
+	 *            denumerator of the fractional number
+	 * @return IFraction
+	 */
 	public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
 		return FractionSym.valueOf(numerator, denominator);
 	}
