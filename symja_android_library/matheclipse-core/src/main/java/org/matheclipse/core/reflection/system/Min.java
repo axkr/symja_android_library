@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ITernaryComparator.COMPARE_RESULT;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 public class Min extends AbstractFunctionEvaluator {
@@ -20,39 +21,46 @@ public class Min extends AbstractFunctionEvaluator {
 		if (EvaluationSupport.flatten(F.List, list, resultList)) {
 			list = resultList;
 		}
-		// IExpr max = ExprFactory.Infinity;
-		IExpr max1;
-		IExpr max2;
-		max1 = list.arg1();
+		IExpr min1;
+		IExpr min2;
+		min1 = list.arg1();
 		IAST f = list.copyHead();
 		COMPARE_RESULT comp;
 		for (int i = 2; i < list.size(); i++) {
-			max2 = list.get(i);
-			comp = Greater.CONST.prepareCompare(max1, max2);
+			min2 = list.get(i);
+			if (min1.equals(min2)) {
+				continue;
+			}
+			comp = Greater.CONST.prepareCompare(min1, min2);
 
 			if (comp == COMPARE_RESULT.TRUE) {
-				max1 = max2;
+				min1 = min2;
 			} else {
 				if (comp == COMPARE_RESULT.UNDEFINED) {
 					// undetermined
-					if (max1.isNumber()) {
-						f.add(max2);
+					if (min1.isNumber()) {
+						f.add(min2);
 					} else {
-						f.add(max1);
-						max1 = max2;
+						f.add(min1);
+						min1 = min2;
 					}
 				}
 			}
 		}
 		if (f.size() > 1) {
-			f.add(1, max1);
+			f.add(1, min1);
 			if (f.equals(list)) {
 				return null;
 			}
 			return f;
 		} else {
-			return max1;
+			return min1;
 		}
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
+	}
 }

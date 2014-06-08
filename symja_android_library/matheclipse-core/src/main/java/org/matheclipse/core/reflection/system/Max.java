@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ITernaryComparator.COMPARE_RESULT;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 public class Max extends AbstractFunctionEvaluator {
@@ -28,6 +29,9 @@ public class Max extends AbstractFunctionEvaluator {
 		COMPARE_RESULT comp;
 		for (int i = 2; i < list.size(); i++) {
 			max2 = list.get(i);
+			if (max1.equals(max2)) {
+				continue;
+			}
 			comp = Less.CONST.prepareCompare(max1, max2);
 
 			if (comp == COMPARE_RESULT.TRUE) {
@@ -55,4 +59,9 @@ public class Max extends AbstractFunctionEvaluator {
 		}
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
+	}
 }

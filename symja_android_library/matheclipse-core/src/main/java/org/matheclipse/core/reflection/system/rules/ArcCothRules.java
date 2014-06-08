@@ -10,6 +10,10 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ArcCothRules {
   final public static IAST RULES = List(
     Set(ArcCoth(C0),
-      Times(CC(0L,1L,1L,2L),Pi))
+      Times(CC(0L,1L,1L,2L),Pi)),
+    Set(ArcCoth(C1),
+      CInfinity),
+    Set(ArcCoth(CInfinity),
+      C0)
   );
 }

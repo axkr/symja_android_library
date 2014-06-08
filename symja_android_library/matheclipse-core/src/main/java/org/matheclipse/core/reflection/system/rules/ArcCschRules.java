@@ -10,6 +10,8 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ArcCschRules {
   final public static IAST RULES = List(
     Set(ArcCsch(C0),
-      CComplexInfinity)
+      CComplexInfinity),
+    Set(ArcCsch(CInfinity),
+      C0)
   );
 }

@@ -33,9 +33,8 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		IAST ruleList;
-		final EvalEngine engine = EvalEngine.get();
 		if ((ruleList = getRuleAST()) != null) {
-			engine.addRules(ruleList);
+			EvalEngine.get().addRules(ruleList);
 		}
 
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
@@ -68,16 +67,18 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				return true;
 			}
 		} else if (expr.isTimes()) {
-			IAST times = (IAST) expr;
-			if (times.arg1().isNumber()) {
-				if (((INumber) times.arg1()).complexSign() < 0) {
+			IExpr arg1 = ((IAST) expr).arg1();
+			if (arg1.isNumber()) {
+				if (((INumber) arg1).complexSign() < 0) {
 					return true;
 				}
+			} else if (arg1.isNegativeInfinity()) {
+				return true;
 			}
 		} else if (expr.isPlus()) {
-			IAST plus = (IAST) expr;
-			if (plus.arg1().isNumber()) {
-				if (((INumber) plus.arg1()).complexSign() < 0) {
+			IExpr arg1 = ((IAST) expr).arg1();
+			if (arg1.isNumber()) {
+				if (((INumber) arg1).complexSign() < 0) {
 					return true;
 				}
 				// } else {
@@ -99,7 +100,11 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				// }
 				// }
 				// return true;
+			} else if (arg1.isNegativeInfinity()) {
+				return true;
 			}
+		} else if (expr.isNegativeInfinity()) {
+			return true;
 		}
 
 		return false;

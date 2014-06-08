@@ -10,6 +10,16 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ArcSechRules {
   final public static IAST RULES = List(
     Set(ArcSech(C0),
-      CInfinity)
+      CInfinity),
+    Set(ArcSech(C1),
+      C0),
+    Set(ArcSech(CN1),
+      Times(CI,Pi)),
+    Set(ArcSech(C2),
+      Times(CC(0L,1L,1L,3L),Pi)),
+    Set(ArcSech(CN2),
+      Times(CC(0L,1L,2L,3L),Pi)),
+    Set(ArcSech(CInfinity),
+      Times(CC(0L,1L,1L,2L),Pi))
   );
 }
