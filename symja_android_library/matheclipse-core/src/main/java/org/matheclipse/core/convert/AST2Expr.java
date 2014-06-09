@@ -55,7 +55,7 @@ public class AST2Expr {
 			"Limit", "Line", "LinearProgramming", "LinearSolve", "Log", "LowerCaseQ", "LUDecomposition", "ManhattanDistance",
 			"Map", "MapAll", "MapThread", "MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median",
 			"MemberQ", "Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "N", "Negative", "Nest",
-			"NestList", "NestWhile", "NestWhileList", "NextPrime", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm",
+			"NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm",
 			"Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Or", "Order", "OrderedQ", "Out",
 			"Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations", "Pi",
 			"Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM",
