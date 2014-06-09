@@ -46,6 +46,10 @@ public interface SinRules {
     SetDelayed(Sin(ArcTan(x_)),
       Times(x,Power(Sqrt(Plus(C1,Sqr(x))),CN1))),
     SetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2)))
+      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
+    Set(Sin(Times(CI,CInfinity)),
+      Times(CI,CInfinity)),
+    Set(Sin(CComplexInfinity),
+      Indeterminate)
   );
 }

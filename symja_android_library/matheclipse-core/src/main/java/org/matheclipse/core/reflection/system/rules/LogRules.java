@@ -22,6 +22,26 @@ public interface LogRules {
     Set(Log(Exp(CNI)),
       CNI),
     Set(Log(C0),
-      CNInfinity)
+      CNInfinity),
+    SetDelayed(Log(a_,E),
+      Power(Log(a),CN1)),
+    SetDelayed(Log(a_,Power(E,$p(m,IntegerQ))),
+      Times(m,Power(Log(a),CN1))),
+    SetDelayed(Log(a_,C0),
+      Times(CN1,CInfinity,Power(Log(a),CN1))),
+    Set(Log(a_,C1),
+      C0),
+    SetDelayed(Log(a_,CN1),
+      Times(CI,Pi,Power(Log(a),CN1))),
+    SetDelayed(Log(E,z_),
+      Log(z)),
+    Set(Log(C0,z_),
+      C0),
+    Set(Log(C1,z_),
+      CComplexInfinity),
+    SetDelayed(Log(CN1,z_),
+      Times(CN1,CI,Power(Pi,CN1),Log(z))),
+    Set(Log(a_,C1),
+      Indeterminate)
   );
 }
