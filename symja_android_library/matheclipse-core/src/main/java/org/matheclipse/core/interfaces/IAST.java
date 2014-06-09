@@ -305,7 +305,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * argument of this AST:
 	 * 
 	 * <pre>
-	 * plusAST.map(Functors.replace1st(F.D(F.Null, dAST.get(2))));
+	 * plusAST.map(Functors.replace1st(F.D(null, dAST.get(2))));
 	 * </pre>
 	 * 
 	 * @param functor
@@ -313,6 +313,26 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public IAST map(final Function<IExpr, IExpr> functor);
+
+	/**
+	 * Maps the elements of this IAST with the unary functor <code>Functors.replace1st(replacement)</code>, there
+	 * <code>replacement</code> is an IAST at which the first argument will be replace by the currently mapped element.
+	 * 
+	 * <br />
+	 * <br />
+	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the current
+	 * argument of this AST:
+	 * 
+	 * <pre>
+	 * plusAST.map(F.D(null, dAST.get(2)));
+	 * </pre>
+	 * 
+	 * @param replacement
+	 *            an IAST there the first argument is replaced by the currently mapped argument of this IAST.
+	 * @return
+	 * @see IAST#map(Function)
+	 */
+	public IAST mapFirst(final IAST replacement);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the

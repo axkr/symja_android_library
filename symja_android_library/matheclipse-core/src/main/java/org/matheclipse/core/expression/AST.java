@@ -13,6 +13,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.generic.interfaces.BiFunction;
@@ -843,12 +844,16 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return ast;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final IAST map(final Function<IExpr, IExpr> function) {
 		return map(clone(), function);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST mapFirst(final IAST replacement) {
+		return map(Functors.replace1st(replacement));
 	}
 
 	/**
@@ -1372,7 +1377,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (isNegativeInfinity()) {
 			return "CNInfinity";
 		}
-		if (isComplexInfinity()){
+		if (isComplexInfinity()) {
 			return "CComplexInfinity";
 		}
 		if (this.equals(F.Slot1)) {

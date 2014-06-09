@@ -209,6 +209,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Drop());
 	public final static ISymbol Do = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do",
 			new org.matheclipse.core.builtin.function.Do());
+	public final static ISymbol EvenQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ",
+			new org.matheclipse.core.builtin.function.EvenQ());
 	public final static ISymbol First = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First",
 			new org.matheclipse.core.builtin.function.First());
 	public final static ISymbol FixedPoint = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint",
@@ -231,6 +233,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.If());
 	public final static ISymbol Insert = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
 			new org.matheclipse.core.builtin.function.Insert());
+	public final static ISymbol IntegerQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ",
+			new org.matheclipse.core.builtin.function.IntegerQ());
 	public final static ISymbol JavaForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
 			new org.matheclipse.core.builtin.function.JavaForm());
 	public final static ISymbol Last = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last",
@@ -257,6 +261,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.NumberQ());
 	public final static ISymbol NumericQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ",
 			new org.matheclipse.core.builtin.function.NumericQ());
+	public final static ISymbol OddQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ",
+			new org.matheclipse.core.builtin.function.OddQ());
 	public final static ISymbol Position = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
 			new org.matheclipse.core.builtin.function.Position());
 	public final static ISymbol Prepend = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend",
@@ -380,7 +386,6 @@ public class F {
 	public final static ISymbol EuclidianDistance = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "euclidiandistance"
 			: "EuclidianDistance");
 	public final static ISymbol EulerPhi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulerphi" : "EulerPhi");
-	public final static ISymbol EvenQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ");
 	public final static ISymbol Exp = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exp" : "Exp");
 	public final static ISymbol Expand = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expand" : "Expand");
 	public final static ISymbol ExpandAll = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expandall" : "ExpandAll");
@@ -438,7 +443,6 @@ public class F {
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpart" : "IntegerPart");
 	public final static ISymbol IntegerPartitions = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpartitions"
 			: "IntegerPartitions");
-	public final static ISymbol IntegerQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
 	public final static ISymbol Integrate = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integrate" : "Integrate");
 	public final static ISymbol Intersection = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "intersection"
 			: "Intersection");
@@ -501,7 +505,6 @@ public class F {
 	public final static ISymbol NRoots = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nroots" : "NRoots");
 	public final static ISymbol NSolve = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nsolve" : "NSolve");
 	public final static ISymbol Numerator = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numerator" : "Numerator");
-	public final static ISymbol OddQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
 	public final static ISymbol Or = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or");
 	public final static ISymbol Order = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "order" : "Order");
 	public final static ISymbol OrderedQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
@@ -2630,6 +2633,11 @@ public class F {
 		return unary(Log, a0);
 	}
 
+	public static IAST Log(final IExpr a0, final IExpr a1) {
+
+		return binary(Log, a0, a1);
+	}
+
 	public static IAST Map(final IExpr a0) {
 
 		return unary(Map, a0);
@@ -3014,7 +3022,7 @@ public class F {
 	public static IFraction QQ(final BigFraction frac) {
 		return FractionSym.valueOf(frac);
 	}
-	
+
 	/**
 	 * Create a "fractional" number
 	 * 
