@@ -34,6 +34,10 @@ public class SetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
 		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
 		}
+		return putDownRule(leftHandSide, rightHandSide, packageMode);
+	}
+
+	public Object[] putDownRule(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
 		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();

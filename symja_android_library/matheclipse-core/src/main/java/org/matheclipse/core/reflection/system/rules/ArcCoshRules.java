@@ -9,11 +9,11 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface ArcCoshRules {
   final public static IAST RULES = List(
-    Set(ArcCosh(C0),
+    ISet(ArcCosh(C0),
       Times(CC(0L,1L,1L,2L),Pi)),
-    Set(ArcCosh(C1),
+    ISet(ArcCosh(C1),
       C0),
-    Set(ArcCosh(CInfinity),
+    ISet(ArcCosh(CInfinity),
       CInfinity)
   );
 }

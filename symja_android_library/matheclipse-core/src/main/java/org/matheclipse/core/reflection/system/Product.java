@@ -28,11 +28,11 @@ public class Product extends AbstractFunctionEvaluator {
 	// RULES must be defined in this class at the moment!
 
 	  final public static IAST RULES = List(
-			    SetDelayed(Product(x_Symbol,List(x_,C0,m_)),
+			    ISetDelayed(Product(x_Symbol,List(x_,C0,m_)),
 			      C0),
-			    SetDelayed(Product(x_Symbol,List(x_,C0,m_,s_)),
+			    ISetDelayed(Product(x_Symbol,List(x_,C0,m_,s_)),
 			      C0),
-			    SetDelayed(Product(x_Symbol,List(x_,C1,m_)),
+			    ISetDelayed(Product(x_Symbol,List(x_,C1,m_)),
 			      Condition(Factorial(m),FreeQ(x,m)))
 			  );
 	  

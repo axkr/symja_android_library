@@ -9,15 +9,15 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface ArcCotRules {
   final public static IAST RULES = List(
-    Set(ArcCot(C0),
+    ISet(ArcCot(C0),
       C0),
-    Set(ArcCot(C1),
+    ISet(ArcCot(C1),
       Times(C1D4,Pi)),
-    Set(ArcCot(CInfinity),
+    ISet(ArcCot(CInfinity),
       C0),
-    Set(ArcCot(CNInfinity),
+    ISet(ArcCot(CNInfinity),
       C0),
-    Set(ArcCot(CComplexInfinity),
+    ISet(ArcCot(CComplexInfinity),
       C0)
   );
 }

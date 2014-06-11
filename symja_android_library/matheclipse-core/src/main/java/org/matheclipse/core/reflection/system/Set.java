@@ -68,6 +68,10 @@ public class Set implements IFunctionEvaluator, ICreatePatternMatcher {
 			rightHandSide = e.getValue();
 		}
 
+		return putDownRule(leftHandSide, rightHandSide, packageMode);
+	}
+
+	public Object[] putDownRule(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
 		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();

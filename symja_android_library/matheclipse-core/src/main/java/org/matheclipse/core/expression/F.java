@@ -3164,10 +3164,6 @@ public class F {
 		return ast(a, Sequence);
 	}
 
-	public static IAST Set(final IExpr a0, final IExpr a1) {
-		return binary(Set, a0, a1);
-	}
-
 	public static IAST SetAttributes(final IExpr a0) {
 		return unary(SetAttributes, a0);
 	}
@@ -3176,11 +3172,49 @@ public class F {
 		return binary(SetAttributes, a0, a1);
 	}
 
-	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
-		if (a0.isAST()) {
-			((IAST) a0).setEvalFlags(((IAST) a0).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+	public static IAST Set(final IExpr a0, final IExpr a1) {
+		return binary(Set, a0, a1);
+	}
+	
+	/**
+	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
+	 * 
+	 * <b>Note:</b> this method returns <code>null</code>.
+	 * 
+	 * @param lhs
+	 *            left-hand-side of the assignment
+	 * @param rhs
+	 *            right-hand-side of the assignment
+	 * @return <code>null</code>
+	 */
+	public static IAST ISet(final IExpr lhs, final IExpr rhs) {
+		if (lhs.isAST()) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
-		org.matheclipse.core.reflection.system.SetDelayed.CONST.createPatternMatcher(a0, a1, true);
+		org.matheclipse.core.reflection.system.Set.CONST.putDownRule(lhs, rhs, true);
+		return null;
+	}
+
+	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
+		return binary(SetDelayed, a0, a1);
+	}
+	
+	/**
+	 * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br/>
+	 * 
+	 * <b>Note:</b> this method returns <code>null</code>.
+	 * 
+	 * @param lhs
+	 *            left-hand-side of the assignment
+	 * @param rhs
+	 *            right-hand-side of the assignment
+	 * @return <code>null</code>
+	 */
+	public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
+		if (lhs.isAST()) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		}
+		org.matheclipse.core.reflection.system.SetDelayed.CONST.putDownRule(lhs, rhs, true);
 		return null;
 	}
 

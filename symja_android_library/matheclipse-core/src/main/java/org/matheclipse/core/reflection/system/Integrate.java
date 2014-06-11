@@ -745,82 +745,82 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	}
 
-	private void getRuleASTRubi42(IAST ast) {
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms5.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms6.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms5.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingSpecialFunctions0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms10.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms11.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms12.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms13.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms14.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms15.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms16.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms17.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms18.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms19.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms20.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms21.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms22.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms23.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms24.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms25.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms26.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms27.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms28.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms29.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms30.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms31.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms32.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms33.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms34.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms35.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms36.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms37.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms5.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms6.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms7.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms8.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms9.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions5.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions6.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions7.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions8.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions9.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions10.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions11.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions12.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions13.RULES);
-		org.matheclipse.core.integrate.rubi42.UtilityFunctions.init();
-	}
+//	private void getRuleASTRubi42(IAST ast) {
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms4.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms5.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms6.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms4.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms5.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingSpecialFunctions0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms10.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms11.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms12.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms13.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms14.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms15.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms16.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms17.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms18.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms19.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms20.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms21.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms22.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms23.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms24.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms25.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms26.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms27.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms28.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms29.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms30.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms31.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms32.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms33.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms34.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms35.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms36.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms37.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms4.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms5.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms6.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms7.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms8.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms9.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions4.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions5.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions6.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions7.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions8.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions9.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions10.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions11.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions12.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions13.RULES);
+//		org.matheclipse.core.integrate.rubi42.UtilityFunctions.init();
+//	}
 
 	private void getRuleASTRubi2(IAST ast) {
 		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules0.RULES);
@@ -857,14 +857,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	}
 
-	private static void getUtilityFunctionsRuleASTRubi42(IAST ast) {
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions5.RULES);
-	}
+//	private static void getUtilityFunctionsRuleASTRubi42(IAST ast) {
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions0.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions1.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions2.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions3.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions4.RULES);
+//		ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions5.RULES);
+//	}
 
 	private static void getUtilityFunctionsRuleASTRubi2(IAST ast) {
 		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES);

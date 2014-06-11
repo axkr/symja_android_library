@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface ArcSinhRules {
   final public static IAST RULES = List(
-    Set(ArcSinh(C0),
+    ISet(ArcSinh(C0),
       C0)
   );
 }

@@ -9,9 +9,9 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface ArcSecRules {
   final public static IAST RULES = List(
-    Set(ArcSec(C0),
+    ISet(ArcSec(C0),
       CComplexInfinity),
-    Set(ArcSec(C1),
+    ISet(ArcSec(C1),
       C0)
   );
 }
