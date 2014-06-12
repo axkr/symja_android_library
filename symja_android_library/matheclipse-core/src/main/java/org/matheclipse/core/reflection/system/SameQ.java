@@ -26,6 +26,6 @@ public class SameQ extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT);
+		symbol.setAttributes(ISymbol.FLAT|ISymbol.NHOLDALL);
 	}
 }
