@@ -779,7 +779,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 
 	public IExpr power(final IExpr that);
 
-	public IExpr power(final Integer n);
+	public IExpr power(final int n);
 
 	/**
 	 * Replace all (sub-) expressions with the given unary function. If no substitution matches, the method returns

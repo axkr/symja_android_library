@@ -86,7 +86,7 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public final IExpr power(final Integer n) {
+	public final IExpr power(final int n) {
 		if (this.isNumber()) {
 			return F.eval(F.Power(this, F.integer(n)));
 		}

@@ -1719,7 +1719,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	@Override
-	public final IExpr power(final Integer n) {
+	public final IExpr power(final int n) {
 		return F.Power(this, F.integer(n));
 	}
 
