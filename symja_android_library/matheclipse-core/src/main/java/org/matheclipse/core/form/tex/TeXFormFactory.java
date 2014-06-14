@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.tex;
 
+import java.math.BigInteger;
 import java.util.Hashtable;
 
 import org.apache.commons.math3.fraction.BigFraction;
@@ -112,6 +113,25 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	public void convertFraction(final StringBuffer buf, final BigFraction f, final int precedence) {
+		boolean negative = f.compareTo(BigFraction.ZERO) < 0;
+		if (negative && (precedence > plusPrec)) {
+			buf.append("\\left( ");
+		}
+		if (f.getDenominator().equals(BigInteger.ONE)) {
+			buf.append(f.getNumerator().toString());
+		} else {
+			buf.append("\\frac{");
+			buf.append(f.getNumerator().toString());
+			buf.append("}{");
+			buf.append(f.getDenominator().toString());
+			buf.append('}');
+		}
+		if (negative && (precedence > plusPrec)) {
+			buf.append("\\right) ");
+		}
+	}
+
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
 		if (c.equals(F.CI)) {
 			buf.append("\\imag");
@@ -215,6 +235,10 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		if (o instanceof ISymbol) {
 			convertSymbol(buf, (ISymbol) o);
+			return;
+		}
+		if (o instanceof BigFraction) {
+			convertFraction(buf, (BigFraction) o, precedence);
 			return;
 		}
 		convertString(buf, o.toString());
