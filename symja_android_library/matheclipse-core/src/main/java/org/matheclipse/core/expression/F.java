@@ -384,6 +384,8 @@ public class F {
 			: "Eigenvectors");
 	public final static ISymbol Equal = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equal" : "Equal");
 	public final static ISymbol Erf = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erf" : "Erf");
+	public final static ISymbol Erfc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfc" : "Erfc");
+	public final static ISymbol Erfi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfi" : "Erfi");
 	public final static ISymbol EuclidianDistance = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "euclidiandistance"
 			: "EuclidianDistance");
 	public final static ISymbol EulerPhi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulerphi" : "EulerPhi");

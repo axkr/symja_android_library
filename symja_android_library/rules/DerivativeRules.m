@@ -12,6 +12,8 @@
   Derivative(ArcSec)=#^(-2)*(1-#^(-2))^(-1/2)&,
   Derivative(ArcSech)=-1*#^(-1)*(1-#^2)^(-1/2)&,
   Derivative(Erf)=(2*E^(-#^(2))/Sqrt(Pi))&,
+  Derivative(Erfc)=(-2*E^(-#^(2))/Sqrt(Pi))&,
+  Derivative(Erfi)=(2*E^(#^(2))/Sqrt(Pi))&,
   Derivative(InverseErf)=(1/2*Sqrt(Pi)*E^(InverseErf(x)^2))&,
   Derivative(Log)=#^(-1)&,
   Derivative(Cot)=(-1)*Sin(#)^(-2)&,
