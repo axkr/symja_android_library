@@ -93,7 +93,7 @@ public class JASConvert<C extends RingElem<C>> {
 		try {
 			return expr2Poly(exprPoly, numeric2Rational);
 		} catch (Exception ae) {
-			 ae.printStackTrace();
+//			 ae.printStackTrace();
 			throw new JASConversionException();
 		}
 	}
