@@ -84,7 +84,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		try {
 			result = F.List();
 			IExpr temp;
-			IAST factors = Factor.factorComplex(expr, varList, F.List, true, numericSolutions || expr.isNumericFunction());
+			IAST factors = Factor.factorComplex(expr, varList, F.List, true, numericSolutions);
 			for (int i = 1; i < factors.size(); i++) {
 				temp = F.evalExpand(factors.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());

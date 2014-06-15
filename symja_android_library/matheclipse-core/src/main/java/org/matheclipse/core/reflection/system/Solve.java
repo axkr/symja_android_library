@@ -403,7 +403,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym),false);//expr.isNumericMode());
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym),expr.isNumericMode());
 			if (temp != null) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
