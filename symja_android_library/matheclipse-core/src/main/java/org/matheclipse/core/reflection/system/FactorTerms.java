@@ -55,7 +55,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 		try {
 
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
-			GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
+			GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 			Object[] objects = jas.factorTerms(poly);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];

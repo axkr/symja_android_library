@@ -89,9 +89,9 @@ public class JASConvert<C extends RingElem<C>> {
 				fVariables.size(), fTermOrder, vars);
 	}
 
-	public GenPolynomial<C> expr2JAS(final IExpr exprPoly) throws JASConversionException {
+	public GenPolynomial<C> expr2JAS(final IExpr exprPoly, boolean numeric2Rational) throws JASConversionException {
 		try {
-			return expr2Poly(exprPoly, false);
+			return expr2Poly(exprPoly, numeric2Rational);
 		} catch (Exception ae) {
 			// ae.printStackTrace();
 			throw new JASConversionException();
@@ -656,10 +656,10 @@ public class JASConvert<C extends RingElem<C>> {
 		double red = re.doubleValue();
 		IFraction im = F.fraction(c.getIm().numerator(), c.getIm().denominator());
 		double imd = im.doubleValue();
-		if (F.isZero(imd, epsilon)) {
-			return F.num(red);
-		}
-		return F.complexNum(red, imd);
+		// if (F.isZero(imd, epsilon)) {
+		// return F.num(red);
+		// }
+		return F.chopNumber(F.complexNum(red, imd), epsilon);
 	}
 
 	/**

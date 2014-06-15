@@ -4,15 +4,14 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Chop extends AbstractFunctionEvaluator {
-	public final double DEFAULT_CHOP_DELTA = 10E-10;
+	public final static double DEFAULT_CHOP_DELTA = 1.0e-5;
 
 	public Chop() {
 	}
@@ -28,28 +27,14 @@ public class Chop extends AbstractFunctionEvaluator {
 		}
 		try {
 			arg1 = F.eval(arg1);
-			if (arg1 instanceof INum) {
-				if (F.isZero(((INum) arg1).getRealPart(), delta)) {
-					return F.C0;
-				}
-				return arg1;
-			} else if (arg1 instanceof IComplexNum) {
-				if (F.isZero(((IComplexNum) arg1).getRealPart(), delta)) {
-					if (F.isZero(((IComplexNum) arg1).getImaginaryPart(), delta)) {
-						return F.C0;
-					}
-					return F.complexNum(0.0, ((IComplexNum) arg1).getImaginaryPart());
-				}
-				if (F.isZero(((IComplexNum) arg1).getImaginaryPart(), delta)) {
-					return F.complexNum(((IComplexNum) arg1).getRealPart(), 0.0);
-				}
-				return arg1;
-			} else if (arg1.isAST()) {
-				IAST list = (IAST)arg1;
+			if (arg1.isAST()) {
+				IAST list = (IAST) arg1;
 				// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
-				return list.map(Functors.replace1st(F.Chop(F.Null)));
+				return list.mapFirst(F.Chop(F.Null));
 			}
-			return arg1;
+			if (arg1.isNumber()) {
+				return F.chopNumber((INumber)arg1, delta);
+			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

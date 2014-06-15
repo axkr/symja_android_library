@@ -69,7 +69,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 
 	public static boolean isSquarefree(IExpr expr, List<IExpr> varList) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-		GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
+		GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 
 		FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ONE);
 		return factorAbstract.isSquarefree(poly);
@@ -83,7 +83,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 			// found "Modulus" option => use ModIntegerRing
 			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
 			JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
-			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr);
+			GenPolynomial<ModInteger> poly = jas.expr2JAS(expr, false);
 
 			FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
 			return factorAbstract.isSquarefree(poly);

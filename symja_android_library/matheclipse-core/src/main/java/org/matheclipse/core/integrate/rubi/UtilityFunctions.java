@@ -44,7 +44,7 @@ public class UtilityFunctions {
 	 * @return
 	 */
 	public static IAST Int(final IExpr a0, final IExpr a1) {
-		// Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
+		Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
 		return binary(Integrate, a0, a1);
 	}
 

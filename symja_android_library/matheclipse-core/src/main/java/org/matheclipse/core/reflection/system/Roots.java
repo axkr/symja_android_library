@@ -65,29 +65,43 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables, boolean numericSolutions) {
 
-		if (numericSolutions) {
-			IAST result = List();
-			IAST resultList = RootIntervals.croots(expr, true);
-			if (resultList == null) {
-				return null;
-			}
-			if (resultList.size() > 0) {
-				result.addAll(resultList);
-			}
-			return result;
-		}
+		// if (expr.isNumericMode()) {
+		// IAST result = List();
+		// IAST resultList = RootIntervals.croots(expr, true);
+		// if (resultList == null) {
+		// return null;
+		// }
+		// if (resultList.size() > 0) {
+		// result.addAll(resultList);
+		// }
+		// return result;
+		// }
 
 		IAST result = null;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
+
 		try {
 			result = F.List();
-			IAST factors = Factor.factorComplex(expr, varList, F.List, true);
+			IExpr temp;
+			IAST factors = Factor.factorComplex(expr, varList, F.List, true, numericSolutions || expr.isNumericFunction());
 			for (int i = 1; i < factors.size(); i++) {
-				IAST quarticResultList = QuarticSolver.solve(F.evalExpand(factors.get(i)), variables.arg1());
+				temp = F.evalExpand(factors.get(i));
+				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
 				if (quarticResultList != null) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
-						result.add(quarticResultList.get(j));
+						if (numericSolutions) {
+							result.add(F.chopExpr(F.evaln(quarticResultList.get(j)), Chop.DEFAULT_CHOP_DELTA));
+						} else {
+							result.add(quarticResultList.get(j));
+						}
+					}
+				} else {
+					if (numericSolutions) {
+						IAST resultList = RootIntervals.croots(temp, true);
+						if (resultList != null && resultList.size() > 0) {
+							result.addAll(resultList);
+						}
 					}
 				}
 			}
@@ -99,6 +113,11 @@ public class Roots extends AbstractFunctionEvaluator {
 				JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
 				GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
 				result = rootsOfPolynomial(ePoly);
+				if (result != null && expr.isNumericMode()) {
+					for (int i = 1; i < result.size(); i++) {
+						result.set(i, F.chopExpr(result.get(i), Chop.DEFAULT_CHOP_DELTA));
+					}
+				}
 			} catch (JASConversionException e2) {
 				if (Config.SHOW_STACKTRACE) {
 					e2.printStackTrace();

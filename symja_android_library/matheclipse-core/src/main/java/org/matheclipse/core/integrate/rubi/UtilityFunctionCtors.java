@@ -25,9 +25,9 @@ public class UtilityFunctionCtors {
 
 	private static ISymbol $sDBG(final String symbolName) {
 		return $s(symbolName, false);
-		// ISymbol sym = $s(symbolName, false);
-		// sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		// return sym;
+//		 ISymbol sym = $s(symbolName, false);
+//		 sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
+//		 return sym;
 	}
 
 	public static IAST AlgebraicFunctionQ(final IExpr a0, final IExpr a1) {

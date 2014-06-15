@@ -90,8 +90,8 @@ public class Apart extends AbstractFunctionEvaluator {
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-			GenPolynomial<BigInteger> numerator = jas.expr2JAS(exprNumerator);
-			GenPolynomial<BigInteger> denominator = jas.expr2JAS(exprDenominator);
+			GenPolynomial<BigInteger> numerator = jas.expr2JAS(exprNumerator, false);
+			GenPolynomial<BigInteger> denominator = jas.expr2JAS(exprDenominator, false);
 
 			// get factors
 			FactorAbstract<BigInteger> factorAbstract = FactorFactory.getImplementation(BigInteger.ZERO);
@@ -161,8 +161,8 @@ public class Apart extends AbstractFunctionEvaluator {
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
-			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
+			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
 
 			// get factors
 			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);

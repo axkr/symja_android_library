@@ -24,6 +24,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -3175,7 +3176,7 @@ public class F {
 	public static IAST Set(final IExpr a0, final IExpr a1) {
 		return binary(Set, a0, a1);
 	}
-	
+
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 
@@ -3198,7 +3199,7 @@ public class F {
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
 		return binary(SetDelayed, a0, a1);
 	}
-	
+
 	/**
 	 * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 
@@ -3483,4 +3484,39 @@ public class F {
 		return IntegerSym.valueOf(integerValue);
 	}
 
+	/**
+	 * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a delta.
+	 * 
+	 * @param arg
+	 *            a numeric number
+	 * @param delta
+	 *            the delta for which
+	 * @return <code>arg</code> if the argument couldn't be chopped
+	 */
+	public static INumber chopNumber(INumber arg, double delta) {
+		if (arg instanceof INum) {
+			if (isZero(((INum) arg).getRealPart(), delta)) {
+				return C0;
+			}
+		} else if (arg instanceof IComplexNum) {
+			if (isZero(((IComplexNum) arg).getRealPart(), delta)) {
+				if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+					return C0;
+				}
+				return complexNum(0.0, ((IComplexNum) arg).getImaginaryPart());
+			}
+			if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+				return num(((IComplexNum) arg).getRealPart());
+			}
+
+		}
+		return arg;
+	}
+
+	public static IExpr chopExpr(IExpr arg, double delta) {
+		if (arg.isNumber()) {
+			return chopNumber((INumber) arg, delta);
+		}
+		return arg;
+	}
 }

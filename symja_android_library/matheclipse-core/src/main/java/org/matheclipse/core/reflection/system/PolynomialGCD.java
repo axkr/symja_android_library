@@ -48,7 +48,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		try {
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
-			GenPolynomial<BigRational> poly = jas.expr2JAS(expr);
+			GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 			GenPolynomial<BigRational> temp;
 			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
@@ -58,7 +58,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 					return null;
 				}
 				expr = F.evalExpandAll(ast.get(i));
-				temp = jas.expr2JAS(expr);
+				temp = jas.expr2JAS(expr, false);
 				poly = factory.gcd(poly, temp); 
 			}
 			return jas.rationalPoly2Expr(poly.monic());

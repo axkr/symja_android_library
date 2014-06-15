@@ -68,8 +68,8 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 
 		try {
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(variable, BigRational.ZERO);
-			GenPolynomial<BigRational> poly1 = jas.expr2JAS(arg1);
-			GenPolynomial<BigRational> poly2 = jas.expr2JAS(arg2);
+			GenPolynomial<BigRational> poly1 = jas.expr2JAS(arg1, false);
+			GenPolynomial<BigRational> poly2 = jas.expr2JAS(arg2, false);
 			GenPolynomial<BigRational>[] divRem = poly1.quotientRemainder(poly2);
 			IExpr[] result = new IExpr[2];
 			result[0] = jas.rationalPoly2Expr(divRem[0]);

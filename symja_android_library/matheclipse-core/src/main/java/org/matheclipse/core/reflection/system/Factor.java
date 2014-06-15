@@ -71,7 +71,7 @@ public class Factor extends AbstractFunctionEvaluator {
 	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 
-		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
+		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 		Object[] objects = jas.factorTerms(polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
@@ -98,7 +98,7 @@ public class Factor extends AbstractFunctionEvaluator {
 
 	public static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
+		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 		Object[] objects = jas.factorTerms(polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
@@ -142,11 +142,11 @@ public class Factor extends AbstractFunctionEvaluator {
 		}
 		option = options.getOption("GaussianIntegers");
 		if (option != null && option.isTrue()) {
-			return factorComplex(expr, varList, F.Times, false);
+			return factorComplex(expr, varList, F.Times, false, false);
 		}
 		option = options.getOption("Extension");
 		if (option != null && option.equals(F.CI)) {
-			return factorComplex(expr, varList, F.Times, false);
+			return factorComplex(expr, varList, F.Times, false, false);
 		}
 		return null; // no evaluation
 	}
@@ -159,13 +159,14 @@ public class Factor extends AbstractFunctionEvaluator {
 	 * @param head
 	 *            the head of the result AST
 	 * @param noGCDLCM
+	 * @param numeric2Rational TODO
 	 * @return
 	 * @throws JASConversionException
 	 */
-	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM) throws JASConversionException {
+	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM, boolean numeric2Rational) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 		TermOrder to = new TermOrder(TermOrder.INVLEX);
-		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr);
+		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
 		// Object[] objects = jas.factorTerms(polyRat);
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {

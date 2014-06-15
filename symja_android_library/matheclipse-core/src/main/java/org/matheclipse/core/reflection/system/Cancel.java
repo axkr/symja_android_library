@@ -136,8 +136,8 @@ public class Cancel extends AbstractFunctionEvaluator {
 
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
-			GenPolynomial<BigRational> p1 = jas.expr2JAS(poly1);
-			GenPolynomial<BigRational> p2 = jas.expr2JAS(poly2);
+			GenPolynomial<BigRational> p1 = jas.expr2JAS(poly1, false);
+			GenPolynomial<BigRational> p2 = jas.expr2JAS(poly2, false);
 
 			BigRational cofac = new BigRational();
 			GreatestCommonDivisor<BigRational> engine;

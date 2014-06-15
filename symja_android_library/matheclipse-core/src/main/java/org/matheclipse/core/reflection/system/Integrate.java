@@ -451,8 +451,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator);
-			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator);
+			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
 
 			// get factors
 			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
