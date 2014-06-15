@@ -23,8 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
- * rule-based integrator</a>.
+ * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  * TODO a lot of functions are only placeholders at the moment.
  * 
@@ -44,7 +43,7 @@ public class UtilityFunctions {
 	 * @return
 	 */
 	public static IAST Int(final IExpr a0, final IExpr a1) {
-		Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
+		// Integrate.setAttributes(ISymbol.CONSOLE_OUTPUT);
 		return binary(Integrate, a0, a1);
 	}
 
@@ -124,7 +123,7 @@ public class UtilityFunctions {
 	public static IAST IntIntegerQ(final IExpr a) {
 		return unary(IntIntegerQ, a);
 	}
-	
+
 	static ISymbol IntPolynomialQ = new Symbol(INTEGRATE_PREFIX + "IntPolynomialQ", new IntPolynomialQ());
 
 	public static IAST IntPolynomialQ(final IExpr a0, final IExpr a1) {
@@ -232,7 +231,8 @@ public class UtilityFunctions {
 		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist($p("u"), $p("v")), Dist($p("w"), $p("v")),
 				If(ZeroQ(Plus($s("u"), $s("w"))), C0, Dist(Plus($s("u"), $s("w")), $s("v"))), null);
 		// Dist[u_,v_]-Dist[w_,v_] := If[ZeroQ[u-w], 0, Dist[u-w,v]],
-		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist($p("u"), $p("v")), Times(CN1, Dist($p("w"), $p("v"))),
+		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist($p("u"), $p("v")),
+				Times(CN1, Dist($p("w"), $p("v"))),
 				If(ZeroQ(Plus($s("u"), Times(CN1, $s("w")))), C0, Dist(Plus($s("u"), Times(CN1, $s("w"))), $s("v"))), null);
 		// Dist[u_,v_]*w_ := Dist[w*u,v] /; w=!=-1
 		org.matheclipse.core.reflection.system.Times.CONST.defineHashRule(Dist($p("u"), $p("v")), $p("w"),

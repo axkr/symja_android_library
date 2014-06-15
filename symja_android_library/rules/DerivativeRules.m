@@ -11,6 +11,7 @@
   Derivative(ArcTanh)=(1-#^2)^(-1)&,
   Derivative(ArcSec)=#^(-2)*(1-#^(-2))^(-1/2)&,
   Derivative(ArcSech)=-1*#^(-1)*(1-#^2)^(-1/2)&,
+  Derivative(Erf)=(2*E^(-#^(2))/Sqrt(Pi))&,
   Derivative(Log)=#^(-1)&,
   Derivative(Cot)=(-1)*Sin(#)^(-2)&,
   Derivative(Coth)=(-1)*Sinh(#)^(-2)&,

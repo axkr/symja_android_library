@@ -2333,7 +2333,7 @@ public class F {
 				isSystemStarted = true;
 
 				if (Config.SHOW_PATTERN_EVAL_STEPS) {
-					// watch the rules whichare used in pattern matching in system.out
+					// watch the rules which are used in pattern matching in system.out
 					Config.SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
 				}
 				if (symbolObserver != null) {

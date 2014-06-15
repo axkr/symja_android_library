@@ -33,6 +33,8 @@ public interface DerivativeRules {
       Function(Times(Power(Slot1,CN2),Power(Plus(C1,Times(CN1,Power(Slot1,CN2))),CN1D2)))),
     ISet(Derivative(ArcSech),
       Function(Times(CN1,Power(Slot1,CN1),Power(Plus(C1,Times(CN1,Sqr(Slot1))),CN1D2)))),
+    ISet(Derivative(Erf),
+      Function(Times(C2,Power(E,Times(CN1,Sqr(Slot1))),Power(Sqrt(Pi),CN1)))),
     ISet(Derivative(Log),
       Function(Power(Slot1,CN1))),
     ISet(Derivative(Cot),
