@@ -65,7 +65,7 @@ public class AST2Expr {
 			"Quiet", "Quotient", "RandomInteger", "RandomReal", "Range", "Rational", "Rationalize", "Re", "Reap", "ReplaceAll",
 			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "Roots",
 			"RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select",
-			"Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "SingularValueDecomposition",
+			"Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition",
 			"Sinh", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop",
 			"StringJoin", "StringLength", "StringTake", "Subsets", "SubtractFrom", "Sum", "Switch", "SyntaxLength", "SyntaxQ",
 			"Table", "Take", "Tan", "Tanh", "Taylor", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy",

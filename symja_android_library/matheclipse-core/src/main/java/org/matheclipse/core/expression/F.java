@@ -587,6 +587,7 @@ public class F {
 	public final static ISymbol SignCmp = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");
 	public final static ISymbol Simplify = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "simplify" : "Simplify");
 	public final static ISymbol Sin = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sin" : "Sin");
+	public final static ISymbol Sinc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinc" : "Sinc");
 	public final static ISymbol SingularValueDecomposition = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "singularvaluedecomposition" : "SingularValueDecomposition");
 	public final static ISymbol Sinh = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinh" : "Sinh");
@@ -3238,10 +3239,13 @@ public class F {
 	}
 
 	public static IAST Sin(final IExpr a0) {
-
 		return unary(Sin, a0);
 	}
 
+	public static IAST Sinc(final IExpr a0) {
+		return unary(Sinc, a0);
+	}
+	
 	public static IAST Sinh(final IExpr a0) {
 
 		return unary(Sinh, a0);
