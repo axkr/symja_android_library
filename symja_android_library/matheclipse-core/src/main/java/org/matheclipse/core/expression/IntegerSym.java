@@ -891,6 +891,15 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (obj instanceof FractionSym) {
 			return -((FractionSym) obj).fRational.compareTo(new BigFraction(fInteger, BigInteger.ONE));
 		}
+		if (obj instanceof Num) {
+			double d = fInteger.doubleValue() - ((Num) obj).getRealPart();
+			if (d < 0.0) {
+				return -1;
+			}
+			if (d > 0.0) {
+				return 1;
+			}
+		}
 		return (hierarchy() - (obj).hierarchy());
 	}
 

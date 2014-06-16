@@ -273,56 +273,59 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 
-		IExpr temp;
+		IExpr plusArg;
 		int size = plusAST.size() - 1;
 		// print Plus[] in reverse order (i.e. numbers at last)
 		for (int i = size; i > 0; i--) {
-			temp = plusAST.get(i);
+			plusArg = plusAST.get(i);
 
-			if (temp.isTimes()) {
+			if (plusArg.isTimes()) {
 				final String multCh = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getOperatorString();
-				boolean flag = false;
-				final IAST multFun = (IAST) temp;
-				IExpr temp1 = multFun.get(1);
+				boolean showOperator = true;
+				final IAST timesAST = (IAST) plusArg;
+				IExpr arg1 = timesAST.arg1();
 
-				if (temp1.isNumber() && (((INumber) temp1).complexSign() < 0)) {
-					if (((INumber) temp1).equalsInt(1)) {
-						flag = true;
+				if (arg1.isNumber() && (((INumber) arg1).complexSign() < 0)) {
+					if (((INumber) arg1).isOne()) {
+						showOperator = false;
 					} else {
-						if (((INumber) temp1).equalsInt(-1)) {
+						if (((INumber) arg1).isMinusOne()) {
 							append(buf, "-");
-							flag = true;
+							showOperator = false;
 						} else {
-							convertNumber(buf, (INumber) temp1, oper.getPrecedence());
+							convertNumber(buf, (INumber) arg1, oper.getPrecedence());
 						}
 					}
 				} else {
 					if (i < size) {
 						append(buf, oper.getOperatorString());
 					}
-					convert(buf, temp1, ASTNodeFactory.TIMES_PRECEDENCE);
+					convert(buf, arg1, ASTNodeFactory.TIMES_PRECEDENCE);
 				}
 
-				for (int j = 2; j < multFun.size(); j++) {
-					temp1 = multFun.get(j);
+				IExpr timesArg;
+				for (int j = 2; j < timesAST.size(); j++) {
+					timesArg = timesAST.get(j);
 
-					if ((j > 2) || (!flag)) {
+					if (showOperator) {
 						append(buf, multCh);
+					} else {
+						showOperator=true;
 					}
 
-					convert(buf, temp1, ASTNodeFactory.TIMES_PRECEDENCE);
+					convert(buf, timesArg, ASTNodeFactory.TIMES_PRECEDENCE);
 
 				}
 			} else {
-				if (temp.isNumber() && (((INumber) temp).complexSign() < 0)) {
+				if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
 					// special case negative number:
-					convert(buf, temp);
+					convert(buf, plusArg);
 				} else {
 					if (i < size) {
 						append(buf, oper.getOperatorString());
 					}
 
-					convert(buf, temp, ASTNodeFactory.PLUS_PRECEDENCE);
+					convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
 
 				}
 			}
@@ -333,7 +336,7 @@ public class OutputFormFactory {
 		}
 	}
 
-	private void convertTimesOperator(final Appendable buf, final IAST list, final InfixOperator oper, final int precedence)
+	private void convertTimesOperator(final Appendable buf, final IAST timesAST, final InfixOperator oper, final int precedence)
 			throws IOException {
 		boolean showOperator = true;
 		int currPrecedence = oper.getPrecedence();
@@ -341,29 +344,29 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 
-		if (list.size() > 1) {
-			if (list.get(1).isSignedNumber() && list.size() > 2 && !list.get(2).isNumber()) {
-				if (list.get(1).equals(F.CN1)) {
+		if (timesAST.size() > 1) {
+			if (timesAST.get(1).isSignedNumber() && timesAST.size() > 2 && !timesAST.get(2).isNumber()) {
+				if (timesAST.get(1).equals(F.CN1)) {
 					append(buf, "-");
 					showOperator = false;
 				} else {
-					if (((ISignedNumber) list.get(1)).isNegative()) {
-						convertNumber(buf, (INumber) list.get(1), oper.getPrecedence());
+					if (((ISignedNumber) timesAST.get(1)).isNegative()) {
+						convertNumber(buf, (INumber) timesAST.get(1), oper.getPrecedence());
 					} else {
-						convert(buf, list.get(1), oper.getPrecedence());
+						convert(buf, timesAST.get(1), oper.getPrecedence());
 					}
 				}
 			} else {
-				convert(buf, list.get(1), oper.getPrecedence());
+				convert(buf, timesAST.get(1), oper.getPrecedence());
 			}
 		}
-		for (int i = 2; i < list.size(); i++) {
+		for (int i = 2; i < timesAST.size(); i++) {
 			if (showOperator) {
 				append(buf, oper.getOperatorString());
 			} else {
 				showOperator = true;
 			}
-			convert(buf, list.get(i), oper.getPrecedence());
+			convert(buf, timesAST.get(i), oper.getPrecedence());
 		}
 		if (currPrecedence < precedence) {
 			append(buf, ")");

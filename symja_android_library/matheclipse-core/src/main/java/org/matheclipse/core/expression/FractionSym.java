@@ -533,6 +533,15 @@ public class FractionSym extends ExprImpl implements IFraction {
 		if (obj instanceof IntegerSym) {
 			return fRational.compareTo(new BigFraction(((IntegerSym) obj).fInteger, BigInteger.ONE));
 		}
+		if (obj instanceof Num) {
+			double d = fRational.doubleValue() - ((Num) obj).getRealPart();
+			if (d < 0.0) {
+				return -1;
+			}
+			if (d > 0.0) {
+				return 1;
+			}
+		}
 		return (hierarchy() - (obj).hierarchy());
 	}
 
