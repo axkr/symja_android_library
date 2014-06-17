@@ -132,15 +132,18 @@ public class DoubleEvaluator {
 		}
 
 		public double evaluate(DoubleEvaluator engine, FunctionNode function) {
-			double result = Double.MIN_VALUE;
+			double result = Double.NaN;
 			double temp;
 			int end = function.size();
-			for (int i = 1; i < end; i++) {
-				temp = Math.max(result, engine.evaluateNode(function.getNode(i)));
-				if (temp > result) {
-					result = temp;
+			if (end > 1) {
+				result = engine.evaluateNode(function.getNode(1));
+				for (int i = 2; i < end; i++) {
+					temp = Math.max(result, engine.evaluateNode(function.getNode(i)));
+					if (temp > result) {
+						result = temp;
+					}
 				}
-			}
+			}  
 			return result;
 		}
 	}
@@ -151,13 +154,16 @@ public class DoubleEvaluator {
 		}
 
 		public double evaluate(DoubleEvaluator engine, FunctionNode function) {
-			double result = Double.MAX_VALUE;
+			double result = Double.NaN;
 			double temp;
 			int end = function.size();
-			for (int i = 1; i < end; i++) {
-				temp = Math.min(result, engine.evaluateNode(function.getNode(i)));
-				if (temp < result) {
-					result = temp;
+			if (end > 1) {
+				result = engine.evaluateNode(function.getNode(1));
+				for (int i = 2; i < end; i++) {
+					temp = Math.min(result, engine.evaluateNode(function.getNode(i)));
+					if (temp < result) {
+						result = temp;
+					}
 				}
 			}
 			return result;
@@ -864,7 +870,7 @@ public class DoubleEvaluator {
 			return fVariableMap.get(variableName);
 		}
 	}
-	
+
 	/**
 	 * Define a boolean value for a given variable name.
 	 * 
