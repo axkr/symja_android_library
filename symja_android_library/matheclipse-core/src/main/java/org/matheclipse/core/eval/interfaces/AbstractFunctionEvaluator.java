@@ -114,7 +114,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	 * Check if <code>expr</code> is a pure imaginary number without a real part.
 	 * 
 	 * @param expr
-	 * @return <code>null</code>, if <code>expr</code> is not prue imaginary number.
+	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary number.
 	 */
 	public static IExpr getPureImaginaryPart(final IExpr expr) {
 		if (expr.isComplex() && ((IComplex) expr).getRe().isZero()) {

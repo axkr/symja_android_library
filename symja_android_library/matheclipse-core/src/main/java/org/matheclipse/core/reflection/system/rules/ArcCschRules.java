@@ -11,7 +11,21 @@ public interface ArcCschRules {
   final public static IAST RULES = List(
     ISet(ArcCsch(C0),
       CComplexInfinity),
+    ISet(ArcCsch(CI),
+      Times(CC(0L,1L,-1L,2L),Pi)),
+    ISet(ArcCsch(Times(CC(0L,1L,2L,1L),Power(C3,CN1D2))),
+      Times(CC(0L,1L,-1L,3L),Pi)),
+    ISet(ArcCsch(Times(CI,Sqrt(C2))),
+      Times(CC(0L,1L,-1L,4L),Pi)),
+    ISet(ArcCsch(CC(0L,1L,2L,1L)),
+      Times(CC(0L,1L,-1L,6L),Pi)),
+    ISet(ArcCsch(C1),
+      Log(Plus(C1,Sqrt(C2)))),
     ISet(ArcCsch(CInfinity),
+      C0),
+    ISet(ArcCsch(Times(CI,CInfinity)),
+      C0),
+    ISet(ArcCsch(CComplexInfinity),
       C0)
   );
 }

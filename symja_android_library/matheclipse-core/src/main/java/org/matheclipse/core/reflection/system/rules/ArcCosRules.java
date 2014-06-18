@@ -30,7 +30,7 @@ public interface ArcCosRules {
     ISet(ArcCos(C1D2),
       Times(C1D3,Pi)),
     ISet(ArcCos(CI),
-      Plus(Times(C1D2,Pi),Times(CNI,ArcSinh(C1)))),
+      Plus(Times(C1D2,Pi),Times(CNI,Log(Plus(C1,Sqrt(C2)))))),
     ISet(ArcCos(CInfinity),
       Times(CI,CInfinity)),
     ISet(ArcCos(Times(C1D4,Sqrt(C2),Sqrt(Plus(C5,Sqrt(C5))))),

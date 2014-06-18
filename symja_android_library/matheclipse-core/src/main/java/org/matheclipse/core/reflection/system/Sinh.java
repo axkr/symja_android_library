@@ -7,12 +7,14 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -21,8 +23,13 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * function</a>
  */
-public class Sinh extends AbstractTrigArg1 implements INumeric {
+public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
 
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
+	}
+	
 	public Sinh() {
 	}
 
@@ -35,7 +42,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric {
 		if (imPart != null) {
 			return F.Times(F.CI, F.Sin(imPart));
 		}
-		if (arg1.isZero()){
+		if (arg1.isZero()) {
 			return F.C0;
 		}
 		return null;

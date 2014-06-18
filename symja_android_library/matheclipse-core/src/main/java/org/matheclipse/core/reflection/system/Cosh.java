@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Cosh;
+import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -11,17 +11,23 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.CoshRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Hyperbolic cosine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
- * function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
  */
-public class Cosh extends AbstractTrigArg1 implements INumeric {
+public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules {
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
+	}
 
 	public Cosh() {
 	}
@@ -35,12 +41,12 @@ public class Cosh extends AbstractTrigArg1 implements INumeric {
 		if (imPart != null) {
 			return F.Cos(imPart);
 		}
-		if (arg1.isZero()){
+		if (arg1.isZero()) {
 			return F.C1;
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IExpr numericEvalD1(final Num arg1) {
 		return F.num(Math.cosh(arg1.getRealPart()));

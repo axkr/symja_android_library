@@ -10,6 +10,22 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ArcSinhRules {
   final public static IAST RULES = List(
     ISet(ArcSinh(C0),
-      C0)
+      C0),
+    ISet(ArcSinh(CC(0L,1L,1L,2L)),
+      Times(CC(0L,1L,1L,6L),Pi)),
+    ISet(ArcSinh(Times(CC(0L,1L,1L,2L),Sqrt(C2))),
+      Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(ArcSinh(Times(CC(0L,1L,1L,2L),Sqrt(C3))),
+      Times(CC(0L,1L,1L,3L),Pi)),
+    ISet(ArcSinh(CI),
+      Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(ArcSinh(C1),
+      Log(Plus(C1,Sqrt(C2)))),
+    ISet(ArcSinh(CInfinity),
+      CInfinity),
+    ISet(ArcSinh(Times(CI,CInfinity)),
+      CInfinity),
+    ISet(ArcSinh(CComplexInfinity),
+      CComplexInfinity)
   );
 }

@@ -16,7 +16,7 @@ public interface ArcSinRules {
     ISet(ArcSin(Plus(C1D4,Times(C1D4,Sqrt(C5)))),
       Times(QQ(3L,10L),Pi)),
     ISet(ArcSin(CI),
-      Times(CI,ArcSinh(C1))),
+      Times(CI,Log(Plus(C1,Sqrt(C2))))),
     ISet(ArcSin(C1D2),
       Times(QQ(1L,6L),Pi)),
     ISet(ArcSin(Times(C1D2,Sqrt(C2))),
