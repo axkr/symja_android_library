@@ -128,11 +128,11 @@
 	                             name      ="*" />
 	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.eval.MathUtils">
-	                     <method access    ="public static"
+	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.eval.EvalUtilities">
-	                     <method access    ="public static"
+	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
 	           <keep access="public" name="org.matheclipse.core.eval.EvalDouble">
@@ -151,7 +151,63 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
- 
+	           <keep access="public" name="org.matheclipse.core.interfaces.IAST">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IInteger">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IFraction">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IComplex">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.INum">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IComplexNum">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IBigNumber">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.INumber">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IPattern">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IPatternSequence">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IRational">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.ISignedNumber">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.IStringX">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.interfaces.ISymbol">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+
 	           <keep access="public" name="${main-class}">
 	                     <method access    ="public static"
 	                             type      ="void"
