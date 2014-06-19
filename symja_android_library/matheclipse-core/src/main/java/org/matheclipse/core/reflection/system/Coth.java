@@ -6,9 +6,14 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.CothRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -16,7 +21,12 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
  */
-public class Coth extends AbstractTrigArg1 {
+public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
+	}
 
 	public Coth() {
 	}
@@ -29,16 +39,28 @@ public class Coth extends AbstractTrigArg1 {
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
 			return F.Times(F.CNI, F.Cot(imPart));
-		}  
-		if (arg1.isZero()){
+		}
+		if (arg1.isZero()) {
 			return F.CComplexInfinity;
 		}
 		return null;
 	}
-  
+
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.cosh(stack[top]) / Math.sinh(stack[top]);
+	}
+
 	@Override
-  public void setUp(final ISymbol symbol) throws SyntaxError {
-    symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-    super.setUp(symbol);
-  }
+	public IExpr numericEvalDC1(final ComplexNum arg1) {
+		return ComplexUtils.cosh(arg1).divide(ComplexUtils.sinh(arg1));
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
+	}
 }
