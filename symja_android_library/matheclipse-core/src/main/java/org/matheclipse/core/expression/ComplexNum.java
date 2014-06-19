@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -250,14 +251,13 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return Num.valueOf(dabs());
 	}
 
-
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
 		double temp = dabs();
 		return Double.compare(temp, 1.0);
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -586,7 +586,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() { 
+	public ISignedNumber getIm() {
 		return F.num(getImaginaryPart());
 	}
 
@@ -595,4 +595,15 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	public ISignedNumber getRe() {
 		return F.num(getRealPart());
 	}
+
+	@Override
+	public INumber ceil() throws ArithmeticException {
+		return valueOf(Math.ceil(fComplex.getReal()), Math.ceil(fComplex.getImaginary()));
+	}
+
+	@Override
+	public INumber floor() throws ArithmeticException {
+		return valueOf(Math.floor(fComplex.getReal()), Math.floor(fComplex.getImaginary()));
+	}
+
 }

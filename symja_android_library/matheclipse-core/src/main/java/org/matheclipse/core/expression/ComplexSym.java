@@ -122,7 +122,6 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return ComplexSym.valueOf(_real, _imaginary.negate());
 	}
 
-
 	/** {@inheritDoc} */
 	public IExpr eabs() {
 		return F.Sqrt(F.QQ(_real.multiply(_real).add(_imaginary.multiply(_imaginary))));
@@ -134,7 +133,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		BigFraction temp = _real.multiply(_real).add(_imaginary.multiply(_imaginary));
 		return temp.compareTo(BigFraction.ONE);
 	}
-	
+
 	public ComplexSym add(final ComplexSym parm1) throws java.lang.ArithmeticException {
 		return ComplexSym.valueOf(_real.add(parm1._real), _imaginary.add(parm1._imaginary));
 	}
@@ -438,5 +437,15 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	@Override
 	public boolean equalsInt(int i) {
 		return false;
+	}
+
+	@Override
+	public INumber ceil() throws ArithmeticException {
+		return valueOf(NumberUtil.ceiling(_real), NumberUtil.ceiling(_imaginary));
+	}
+
+	@Override
+	public INumber floor() throws ArithmeticException {
+		return valueOf(NumberUtil.floor(_real), NumberUtil.floor(_imaginary));
 	}
 }

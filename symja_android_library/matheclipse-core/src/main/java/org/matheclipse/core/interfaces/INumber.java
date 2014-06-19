@@ -57,4 +57,25 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public ISignedNumber getRe();
+	
+
+	/**
+	 * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
+	 * is equal to a mathematical integer. This method raises {@link ArithmeticException} if a numeric value cannot be represented
+	 * by an <code>long</code> type.
+	 * 
+	 * @return the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
+	 *         is equal to a mathematical integer.
+	 */
+	public INumber ceil() throws ArithmeticException;
+
+	/**
+	 * Returns the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
+	 * is equal to a mathematical integer. <br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
+	 * 
+	 * @return the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
+	 *         is equal to a mathematical integer.
+	 */
+	public INumber floor() throws ArithmeticException;
 }

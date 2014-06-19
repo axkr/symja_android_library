@@ -64,7 +64,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			if (arg1.isSignedNumber()) {
 				return ((ISignedNumber) arg1).floor();
 			}
-			if (NumericQ.CONST.apply(arg1)) {
+			if (arg1.isNumericFunction()) {
 				IExpr result = F.evaln(arg1);
 				if (result.isSignedNumber()) {
 					return ((ISignedNumber) result).floor();

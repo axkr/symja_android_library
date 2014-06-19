@@ -82,26 +82,6 @@ public interface ISignedNumber extends INumber {
 	public long toLong() throws ArithmeticException;
 
 	/**
-	 * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
-	 * is equal to a mathematical integer. This method raises {@link ArithmeticException} if a numeric value cannot be represented
-	 * by an <code>long</code> type.
-	 * 
-	 * @return the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and
-	 *         is equal to a mathematical integer.
-	 */
-	public IInteger ceil() throws ArithmeticException;
-
-	/**
-	 * Returns the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
-	 * is equal to a mathematical integer. <br/>
-	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
-	 * 
-	 * @return the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than <code>this</code> and
-	 *         is equal to a mathematical integer.
-	 */
-	public IInteger floor() throws ArithmeticException;
-
-	/**
 	 * Returns the closest <code>IInteger</code> to the argument. The result is rounded to an integer by adding 1/2 and taking the
 	 * floor of the result.<br/>
 	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
@@ -115,4 +95,10 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber opposite();
 
 	public double doubleValue();
+	
+	/** {@inheritDoc} */
+	public IInteger ceil() throws ArithmeticException;
+
+	/** {@inheritDoc} */
+	public IInteger floor() throws ArithmeticException;
 }
