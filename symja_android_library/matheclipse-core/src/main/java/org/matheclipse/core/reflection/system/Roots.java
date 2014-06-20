@@ -6,16 +6,22 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.List;
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
 import edu.jas.poly.GenPolynomial;
@@ -63,20 +69,48 @@ public class Roots extends AbstractFunctionEvaluator {
 		return rootsOfVariable(expr, denom, variables, numericSolutions);
 	}
 
+	/**
+	 * <p>
+	 * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the polynomial being considered the
+	 * roots may contain complex number. When complex numbers are present they will come in pairs of complex conjugates.
+	 * </p>
+	 * 
+	 * @param coefficients
+	 *            coefficients of the polynomial.
+	 * @return the roots of the polynomial
+	 */
+	public static IAST findRoots(double... coefficients) {
+		int N = coefficients.length - 1;
+
+		// Construct the companion matrix
+		RealMatrix c = new Array2DRowRealMatrix(N, N);
+
+		double a = coefficients[N];
+		for (int i = 0; i < N; i++) {
+			c.setEntry(i, N - 1, -coefficients[i] / a);
+		}
+		for (int i = 1; i < N; i++) {
+			c.setEntry(i, i - 1, 1);
+		}
+
+		try {
+			IAST roots = F.List();
+			EigenDecomposition ed = new EigenDecomposition(c);
+
+			double[] realValues = ed.getRealEigenvalues();
+			double[] imagValues = ed.getImagEigenvalues();
+
+			for (int i = 0; i < N; i++) {
+				roots.add(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Chop.DEFAULT_CHOP_DELTA));
+			}
+			return roots;
+		} catch (Exception ime) {
+			throw new WrappedException(ime);
+		}
+
+	}
+
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables, boolean numericSolutions) {
-
-		// if (expr.isNumericMode()) {
-		// IAST result = List();
-		// IAST resultList = RootIntervals.croots(expr, true);
-		// if (resultList == null) {
-		// return null;
-		// }
-		// if (resultList.size() > 0) {
-		// result.addAll(resultList);
-		// }
-		// return result;
-		// }
-
 		IAST result = null;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
@@ -97,12 +131,14 @@ public class Roots extends AbstractFunctionEvaluator {
 						}
 					}
 				} else {
-					if (numericSolutions) {
-						IAST resultList = RootIntervals.croots(temp, true);
-						if (resultList != null && resultList.size() > 0) {
-							result.addAll(resultList);
-						}
+					// if (numericSolutions) {
+					double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
+					IAST resultList = findRoots(coefficients);
+					// IAST resultList = RootIntervals.croots(temp, true);
+					if (resultList != null && resultList.size() > 0) {
+						result.addAll(resultList);
 					}
+					// }
 				}
 			}
 			result = QuarticSolver.createSet(result);

@@ -11,7 +11,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 
 /**
- * 
+ * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric floating-point number.
  */
 public class Num extends ExprImpl implements INum {
 	/**

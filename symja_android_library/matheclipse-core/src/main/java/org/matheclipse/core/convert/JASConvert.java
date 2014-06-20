@@ -93,7 +93,7 @@ public class JASConvert<C extends RingElem<C>> {
 		try {
 			return expr2Poly(exprPoly, numeric2Rational);
 		} catch (Exception ae) {
-//			 ae.printStackTrace();
+			// ae.printStackTrace();
 			throw new JASConversionException();
 		}
 	}
@@ -656,9 +656,12 @@ public class JASConvert<C extends RingElem<C>> {
 		double red = re.doubleValue();
 		IFraction im = F.fraction(c.getIm().numerator(), c.getIm().denominator());
 		double imd = im.doubleValue();
-		// if (F.isZero(imd, epsilon)) {
-		// return F.num(red);
-		// }
+		return F.chopNumber(F.complexNum(red, imd), epsilon);
+	}
+
+	public static INumber jas2Numeric(org.apache.commons.math3.complex.Complex c, double epsilon) {
+		double red = c.getReal();
+		double imd = c.getImaginary();
 		return F.chopNumber(F.complexNum(red, imd), epsilon);
 	}
 

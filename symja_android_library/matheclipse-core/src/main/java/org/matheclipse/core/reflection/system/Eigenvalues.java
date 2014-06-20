@@ -1,22 +1,22 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.util.Precision;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Compute the numerical Eigenvalues of a real symmetric matrix
  * 
- * See: <a
- * href="http://en.wikipedia.org/wiki/Eigenvalue,_eigenvector_and_eigenspace"
- * >Wikipedia - Eigenvalue, eigenvector and eigenspace</a>
+ * See: <a href="http://en.wikipedia.org/wiki/Eigenvalue,_eigenvector_and_eigenspace" >Wikipedia - Eigenvalue, eigenvector and
+ * eigenspace</a>
  */
 public class Eigenvalues extends AbstractMatrix1Expr {
 

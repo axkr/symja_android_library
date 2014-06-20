@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.List;
 
-import org.matheclipse.core.basic.Config; 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import edu.jas.poly.ExpVectorLong;
@@ -57,11 +58,30 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 * 
 	 * @param polynomial
 	 * @param variable
+	 * @return
+	 */
+	public static double[] coefficientList(IExpr polynomial, final ISymbol variable) throws JASConversionException {
+		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
+		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
+		int degree = (int) polyExpr.degree();
+		double[] result = new double[degree + 1];
+		for (int i = 0; i <= degree; i++) {
+			IExpr temp = polyExpr.coefficient(new ExpVectorLong(1, 0, i));
+			if (temp.isSignedNumber()) {
+				result[i] = ((ISignedNumber) temp).doubleValue();
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get the coefficient list of a univariate polynomial
+	 * 
+	 * @param polynomial
+	 * @param variable
 	 * @param resultList
-	 *          the coefficient list of the given univariate polynomial
-	 * @return the degree of the univariate polynomial; if
-	 *         <code>degree >= Short.MAX_VALUE</code>, the result list will be
-	 *         empty.
+	 *            the coefficient list of the given univariate polynomial
+	 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list will be empty.
 	 */
 	public static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
 			throws JASConversionException {
@@ -83,14 +103,10 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 * @param polynomial
 	 * @param variable
 	 * @param resultList
-	 *          the coefficient list of the given univariate polynomial in
-	 *          increasing order
+	 *            the coefficient list of the given univariate polynomial in increasing order
 	 * @param resultListDiff
-	 *          the coefficient list of the derivative of the given univariate
-	 *          polynomial
-	 * @return the degree of the univariate polynomial; if
-	 *         <code>degree >= Short.MAX_VALUE</code>, the result list will be
-	 *         empty.
+	 *            the coefficient list of the derivative of the given univariate polynomial
+	 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list will be empty.
 	 */
 	public static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
 			List<IExpr> resultListDiff) throws JASConversionException {

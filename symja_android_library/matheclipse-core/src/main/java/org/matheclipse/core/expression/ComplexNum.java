@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -15,22 +14,10 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 
 /**
- * 
+ * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to represent a
+ * numeric complex floating-point number.
  */
 public class ComplexNum extends ExprImpl implements IComplexNum {
-
-	// private static final ObjectFactory<ComplexNum> FACTORY = new
-	// ObjectFactory<ComplexNum>() {
-	// @Override
-	// protected ComplexNum create() {
-	// if (Config.SERVER_MODE && currentQueue().getSize() >=
-	// Config.DOUBLECOMPLEX_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("DoubleComplex",
-	// currentQueue().getSize());
-	// }
-	// return new ComplexNum(0.0, 0.0);
-	// }
-	// };
 
 	/**
 	 * Be cautious with this method, no new internal couble complex is created
