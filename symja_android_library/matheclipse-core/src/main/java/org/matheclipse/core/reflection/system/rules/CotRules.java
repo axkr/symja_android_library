@@ -28,6 +28,12 @@ public interface CotRules {
     ISet(Cot(Times(QQ(2L,5L),Pi)),
       Times(QQ(1L,5L),Sqrt(Plus(ZZ(25L),Times(ZZ(-10L),Sqrt(C5)))))),
     ISet(Cot(Times(QQ(3L,10L),Pi)),
-      Sqrt(Plus(C5,Times(CN2,Sqrt(C5)))))
+      Sqrt(Plus(C5,Times(CN2,Sqrt(C5))))),
+    ISet(Cot(Times(CI,CInfinity)),
+      CNI),
+    ISet(Cot(Times(CNI,CInfinity)),
+      CI),
+    ISet(Cot(CComplexInfinity),
+      Indeterminate)
   );
 }

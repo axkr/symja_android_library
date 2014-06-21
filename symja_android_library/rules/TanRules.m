@@ -18,5 +18,8 @@
 	 Tan(Pi*x_NumberQ):=If(x<1,(-1)*Tan((1-x)*Pi),If(x<2,Tan((x-1)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2,
 	 Tan(ArcTan(x_)):=x,
 	 Tan(ArcCos(x_)):=(1-x^2)^(1/2)*x^(-1),
-	 Tan(ArcCot(x_)):=x^(-1)
+	 Tan(ArcCot(x_)):=x^(-1),
+	 
+	 Tan(I*Infinity)=I,
+	 Tan(ComplexInfinity)=Indeterminate
 }

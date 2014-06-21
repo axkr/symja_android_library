@@ -11,5 +11,9 @@
  Csc(3/8*Pi)=Sqrt(4-2*Sqrt(2)),
  Csc(3/10*Pi)=Sqrt(5)-1,
  Csc(2/5*Pi)=1/5*Sqrt(50-10*Sqrt(5)),
- Csc(5/12*Pi)=Sqrt(6)-Sqrt(2)
+ Csc(5/12*Pi)=Sqrt(6)-Sqrt(2),
+ 
+ Csc(I*Infinity)=0,
+ Csc(-I*Infinity)=0,
+ Csc(ComplexInfinity)=Indeterminate
 }

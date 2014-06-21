@@ -34,6 +34,12 @@ public interface CscRules {
     ISet(Csc(Times(QQ(2L,5L),Pi)),
       Times(QQ(1L,5L),Sqrt(Plus(ZZ(50L),Times(ZZ(-10L),Sqrt(C5)))))),
     ISet(Csc(Times(QQ(5L,12L),Pi)),
-      Plus(Times(CN1,Sqrt(C2)),Sqrt(ZZ(6L))))
+      Plus(Times(CN1,Sqrt(C2)),Sqrt(ZZ(6L)))),
+    ISet(Csc(Times(CI,CInfinity)),
+      C0),
+    ISet(Csc(Times(CNI,CInfinity)),
+      C0),
+    ISet(Csc(CComplexInfinity),
+      Indeterminate)
   );
 }

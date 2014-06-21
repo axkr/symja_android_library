@@ -46,6 +46,12 @@ public interface CosRules {
     ISetDelayed(Cos(ArcCos(x_)),
       x),
     ISetDelayed(Cos(ArcSin(x_)),
-      Sqrt(Plus(C1,Times(CN1,Sqr(x)))))
+      Sqrt(Plus(C1,Times(CN1,Sqr(x))))),
+    ISet(Cos(Times(CI,CInfinity)),
+      CInfinity),
+    ISet(Cos(Times(CNI,CInfinity)),
+      CInfinity),
+    ISet(Cos(CComplexInfinity),
+      Indeterminate)
   );
 }

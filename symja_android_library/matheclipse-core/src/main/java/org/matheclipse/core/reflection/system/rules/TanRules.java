@@ -48,6 +48,10 @@ public interface TanRules {
     ISetDelayed(Tan(ArcCos(x_)),
       Times(Sqrt(Plus(C1,Times(CN1,Sqr(x)))),Power(x,CN1))),
     ISetDelayed(Tan(ArcCot(x_)),
-      Power(x,CN1))
+      Power(x,CN1)),
+    ISet(Tan(Times(CI,CInfinity)),
+      CI),
+    ISet(Tan(CComplexInfinity),
+      Indeterminate)
   );
 }

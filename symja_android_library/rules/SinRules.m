@@ -18,6 +18,7 @@
 	 Sin(ArcCos(x_)):=(1-x^2)^(1/2),
 	 Sin(ArcTan(x_)):=x/(1+x^2)^(1/2),
 	 Sin(x_NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotient(IntegerPart(x),2))*Pi) ) ) /; x>=1/2,
+	 
 	 Sin(I*Infinity)=I*Infinity,
 	 Sin(ComplexInfinity)=Indeterminate
 }
