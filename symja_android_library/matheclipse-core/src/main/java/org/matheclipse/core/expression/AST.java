@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -67,6 +68,28 @@ import edu.jas.structure.ElemFactory;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
 public class AST extends HMArrayList<IExpr> implements IAST {
+
+	/**
+	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
+	 * 
+	 */
+	protected EnumMap<PROPERTY, Object> fProperties = null;
+
+	/** {@inheritDoc} */
+	public Object getProperty(PROPERTY key) {
+		if (fProperties == null) {
+			return null;
+		}
+		return fProperties.get(key);
+	}
+
+	/** {@inheritDoc} */
+	public Object putProperty(PROPERTY key, Object value) {
+		if (fProperties == null) {
+			fProperties = new EnumMap<PROPERTY, Object>(PROPERTY.class);
+		}
+		return fProperties.put(key, value);
+	}
 
 	/**
 	 * 

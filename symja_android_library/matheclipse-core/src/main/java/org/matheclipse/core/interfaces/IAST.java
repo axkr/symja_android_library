@@ -20,11 +20,11 @@ import com.google.common.base.Predicate;
  * </p>
  * 
  * <p>
- * In MathEclipse, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the MathEclipse
- * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that
- * it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node
- * for the header <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja source code.
+ * Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that it does not
+ * represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree structure,
+ * and a syntactic construct such as a <code>Sin(x)</code> expression will be denoted by an AST with 2 nodes. One node for the
+ * header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
  * Internally an AST is represented as a <code>java.util.List</code> which contains
@@ -37,6 +37,15 @@ import com.google.common.base.Predicate;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
 public interface IAST extends IExpr, List<IExpr>, Cloneable {
+
+	/**
+	 * The enumeration for the properties (keys) of the map possibly associated with this <code>IAST</code> object.
+	 * 
+	 */
+	public enum PROPERTY {
+		CSS;
+	}
+
 	/**
 	 * NO_FLAG ACTIVATED
 	 */
@@ -111,39 +120,29 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
 
 	/**
-	 * Get the evaluation flags for this list.
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
-	 * @return
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * @see #add(Object)
 	 */
-	public int getEvalFlags();
+	public boolean addAll(List<? extends IExpr> ast);
 
 	/**
-	 * Returns the header. If the header itself is an ISymbol it will return the symbol object. If the header itself is an IAST it
-	 * will recursively call headSymbol(). If the head is of type INumbers, the head will return one of these headers:
-	 * "DoubleComplex", "Double", "Integer", "Fraction", "Complex". All other objects return <code>null</code>.
-	 */
-	public ISymbol topHead();
-
-	/**
-	 * Are the given evaluation flags disabled for this list ?
+	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to the end of
+	 * this AST.
 	 * 
-	 * @return
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * @see #add(Object)
 	 */
-	public boolean isEvalFlagOff(int i);
-
-	/**
-	 * Are the given evaluation flags enabled for this list ?
-	 * 
-	 * @return
-	 */
-	public boolean isEvalFlagOn(int i);
-
-	/**
-	 * Set the evaluation flags for this list.
-	 * 
-	 * @param i
-	 */
-	public void setEvalFlags(int i);
+	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition);
 
 	/**
 	 * Add an evaluation flag to the existing ones.
@@ -162,6 +161,170 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST addOneIdentity(IAST subAST);
 
 	/**
+	 * Append an expression to this list.
+	 * 
+	 * @return <code>this</code> after appending the given expression.
+	 */
+	public IAST append(IExpr expr);
+
+	/**
+	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
+	 * 
+	 * @param head
+	 * @return
+	 */
+	public IAST apply(IExpr head);
+
+	/**
+	 * Apply the given head to this expression (i.e. create a sublist clone starting from index start and replacing the old head
+	 * with the given one)
+	 * 
+	 * @param head
+	 * @return
+	 */
+	public IAST apply(IExpr head, int start);
+
+	/**
+	 * Apply the given head to this expression (i.e. create a sublist clone from index start to end, and replacing the old head with
+	 * the given one)
+	 * 
+	 * @param head
+	 * @return
+	 */
+	public IAST apply(IExpr head, int start, int end);
+
+	/**
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(1) ).
+	 * 
+	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg1();
+
+	/**
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(2) ).
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg2();
+
+	/**
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(3) ).
+	 * 
+	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg3();
+
+	/**
+	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
+	 * 
+	 * @return
+	 */
+	public ASTRange args();
+
+	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
+	 * 
+	 * @return a clone of this <code>IAST</code> instance.
+	 */
+	public IAST clone();
+
+	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
+	 * <code>expr</code> at the given <code>position</code>.
+	 * 
+	 * @return a clone of this <code>IAST</code> instance.
+	 */
+	public IAST cloneSet(int position, IExpr expr);
+
+	/**
+	 * Create a copy of this <code>IAST</code>, which only contains the head element of the list (i.e. the element with index 0).
+	 */
+	public IAST copyHead();
+
+	/**
+	 * Create a copy of this <code>IAST</code>, which contains alls elements up to <code>index</code> (exclusive).
+	 */
+	public IAST copyUntil(int index);
+
+	/**
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>filterAST</code>, or otherwise append it to the <code>restAST</code>.
+	 * 
+	 * @param filterAST
+	 *            the elements satisfy match the predicate
+	 * @param restAST
+	 *            the elements which don't match the predicate
+	 * @param predicate
+	 *            the predicate which filters each element in the range
+	 * @return the <code>filterList</code>
+	 */
+	public IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate);
+
+	/**
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>filterAST</code>.
+	 * 
+	 * @param filterAST
+	 *            the elements which satisfy the predicate
+	 * @param predicate
+	 *            the predicate which filters each element in the range
+	 * @return the <code>filterList</code>
+	 */
+	public IAST filter(IAST filterAST, Predicate<IExpr> predicate);
+
+	/**
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
+	 * 
+	 * @param index
+	 * @return
+	 * @throws WrongArgumentType
+	 *             if the cast is not possible
+	 */
+	public IAST getAST(int index);
+
+	/**
+	 * Get the evaluation flags for this list.
+	 * 
+	 * @return
+	 */
+	public int getEvalFlags();
+
+	/**
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IInteger</code>.
+	 * 
+	 * @param index
+	 * @return
+	 * @throws WrongArgumentType
+	 *             if the cast is not possible
+	 */
+	public IInteger getInt(int index);
+
+	/**
+	 * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST</code>.
+	 * 
+	 * @param index
+	 * @return
+	 * @throws WrongArgumentType
+	 */
+	public IAST getList(int index);
+
+	/**
+	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
+	 * 
+	 * @param index
+	 * @return
+	 * @throws WrongArgumentType
+	 *             if the cast is not possible
+	 */
+	public INumber getNumber(int index);
+
+	/**
 	 * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>size() > 2</code> (useful for
 	 * ASTs with attribute <code>OneIdentity</code> for example for <code>Plus[]</code> you can call
 	 * <code>getOneIdentity(F.C0)</code> or for <code>Times[]</code>) you can call <code>getOneIdentity(F.C1)</code>.
@@ -173,29 +336,28 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr getOneIdentity(IExpr defaultValue);
 
 	/**
-	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to the end of
-	 * this AST.
+	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping for the
+	 * property.
 	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * @see #add(Object)
+	 * @param property
+	 * @return
+	 * @see #putProperty(PROPERTY, Object)
 	 */
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition);
+	public Object getProperty(PROPERTY property);
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
+	 * Are the given evaluation flags disabled for this list ?
 	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * @see #add(Object)
+	 * @return
 	 */
-	public boolean addAll(List<? extends IExpr> ast);
+	public boolean isEvalFlagOff(int i);
+
+	/**
+	 * Are the given evaluation flags enabled for this list ?
+	 * 
+	 * @return
+	 */
+	public boolean isEvalFlagOn(int i);
 
 	/**
 	 * Is this a list (i.e. with header == List)
@@ -235,33 +397,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public Iterator<IExpr> iterator0();
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ).
-	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg1();
-
-	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ).
-	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg2();
-
-	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).
-	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg3();
-
-	/**
 	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1).
 	 * 
 	 * @return the last argument of the function represented by this <code>AST</code>.
@@ -270,30 +405,9 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr last();
 
 	/**
-	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
-	 * 
-	 * @param head
-	 * @return
+	 * Set the head element of this list
 	 */
-	public IAST apply(IExpr head);
-
-	/**
-	 * Apply the given head to this expression (i.e. create a sublist clone starting from index start and replacing the old head
-	 * with the given one)
-	 * 
-	 * @param head
-	 * @return
-	 */
-	public IAST apply(IExpr head, int start);
-
-	/**
-	 * Apply the given head to this expression (i.e. create a sublist clone from index start to end, and replacing the old head with
-	 * the given one)
-	 * 
-	 * @param head
-	 * @return
-	 */
-	public IAST apply(IExpr head, int start, int end);
+	// public void setHeader(IExpr expr);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element is used
@@ -313,38 +427,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public IAST map(final Function<IExpr, IExpr> functor);
-
-	/**
-	 * Maps the elements of this IAST with the unary functor <code>Functors.replace1st(replacement)</code>, there
-	 * <code>replacement</code> is an IAST at which the first argument will be replace by the currently mapped element.
-	 * 
-	 * <br />
-	 * <br />
-	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the current
-	 * argument of this AST:
-	 * 
-	 * <pre>
-	 * plusAST.map(F.D(null, dAST.get(2)));
-	 * </pre>
-	 * 
-	 * @param replacement
-	 *            an IAST there the first argument is replaced by the currently mapped argument of this IAST.
-	 * @return
-	 * @see IAST#map(Function)
-	 */
-	public IAST mapFirst(final IAST replacement);
-
-	/**
-	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the
-	 * result list is used.
-	 * 
-	 * @param head
-	 *            the new head element of the result list
-	 * @param functor
-	 *            a unary function
-	 * @return
-	 */
-	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the
@@ -370,88 +452,36 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
 
 	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
-	 * <code>filterAST</code>.
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original element of the
+	 * result list is used.
 	 * 
-	 * @param filterAST
-	 *            the elements which satisfy the predicate
-	 * @param predicate
-	 *            the predicate which filters each element in the range
-	 * @return the <code>filterList</code>
+	 * @param head
+	 *            the new head element of the result list
+	 * @param functor
+	 *            a unary function
+	 * @return
 	 */
-	public IAST filter(IAST filterAST, Predicate<IExpr> predicate);
+	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
 	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
-	 * <code>filterAST</code>, or otherwise append it to the <code>restAST</code>.
+	 * Maps the elements of this IAST with the unary functor <code>Functors.replace1st(replacement)</code>, there
+	 * <code>replacement</code> is an IAST at which the first argument will be replace by the currently mapped element.
 	 * 
-	 * @param filterAST
-	 *            the elements satisfy match the predicate
-	 * @param restAST
-	 *            the elements which don't match the predicate
-	 * @param predicate
-	 *            the predicate which filters each element in the range
-	 * @return the <code>filterList</code>
-	 */
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate);
-
-	/**
-	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
-	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the result array.
+	 * <br />
+	 * <br />
+	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the current
+	 * argument of this AST:
 	 * 
-	 * @param predicate
-	 *            the predicate which filters each element in the range
-	 * @return the resulting ASTs in the 0-th and 1-st element of the array
-	 */
-	public IAST[] split(Predicate<IExpr> predicate);
-
-	/**
-	 * Apply the function to each element in this <code>AST</code> and append the result elements for which the function returns
-	 * non-null elements to the <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code>
-	 * of the result array.
+	 * <pre>
+	 * plusAST.map(F.D(null, dAST.get(2)));
+	 * </pre>
 	 * 
-	 * @param function
-	 *            the function which filters each element in the range by returning a non-null result.
-	 * @return the resulting ASTs in the 0-th and 1-st element of the array
+	 * @param replacement
+	 *            an IAST there the first argument is replaced by the currently mapped argument of this IAST.
+	 * @return
+	 * @see IAST#map(Function)
 	 */
-	public IAST[] split(final Function<IExpr, IExpr> function);
-
-	/**
-	 * Set the head element of this list
-	 */
-	// public void setHeader(IExpr expr);
-
-	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
-	 * 
-	 * @return a clone of this <code>IAST</code> instance.
-	 */
-	public IAST clone();
-
-	/**
-	 * Append an expression to this list.
-	 * 
-	 * @return <code>this</code> after appending the given expression.
-	 */
-	public IAST append(IExpr expr);
-
-	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
-	 * <code>expr</code> at the given <code>position</code>.
-	 * 
-	 * @return a clone of this <code>IAST</code> instance.
-	 */
-	public IAST cloneSet(int position, IExpr expr);
-
-	/**
-	 * Create a copy of this <code>IAST</code>, which only contains the head element of the list (i.e. the element with index 0).
-	 */
-	public IAST copyHead();
-
-	/**
-	 * Create a copy of this <code>IAST</code>, which contains alls elements up to <code>index</code> (exclusive).
-	 */
-	public IAST copyUntil(int index);
+	public IAST mapFirst(final IAST replacement);
 
 	/**
 	 * Calculate a special hash value for pattern matching
@@ -468,11 +498,15 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST prepend(IExpr expr);
 
 	/**
-	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
+	 * Associates the specified value with the specified property in the associated <code>EnumMap<PROPERTY, Object></code> map. If
+	 * the map previously contained a mapping for this key, the old value is replaced.
 	 * 
+	 * @param key
+	 * @param value
 	 * @return
+	 * @see #getProperty(PROPERTY)
 	 */
-	public ASTRange args();
+	public Object putProperty(PROPERTY property, Object value);
 
 	/**
 	 * Get the range of elements [0..ast.size()[ of the AST. This range elements are the head of the function prepended by the
@@ -497,41 +531,37 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public ASTRange range(int start, int end);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IInteger</code>.
+	 * Set the evaluation flags for this list.
 	 * 
-	 * @param index
-	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
+	 * @param i
 	 */
-	public IInteger getInt(int index);
+	public void setEvalFlags(int i);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
+	 * Apply the function to each element in this <code>AST</code> and append the result elements for which the function returns
+	 * non-null elements to the <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code>
+	 * of the result array.
 	 * 
-	 * @param index
-	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
+	 * @param function
+	 *            the function which filters each element in the range by returning a non-null result.
+	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
-	public INumber getNumber(int index);
+	public IAST[] split(final Function<IExpr, IExpr> function);
 
 	/**
-	 * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
+	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
+	 * <code>0th element</code> of the result array, or otherwise append it to the <code>1st element</code> of the result array.
 	 * 
-	 * @param index
-	 * @return
-	 * @throws WrongArgumentType
-	 *             if the cast is not possible
+	 * @param predicate
+	 *            the predicate which filters each element in the range
+	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
-	public IAST getAST(int index);
+	public IAST[] split(Predicate<IExpr> predicate);
 
 	/**
-	 * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST</code>.
-	 * 
-	 * @param index
-	 * @return
-	 * @throws WrongArgumentType
+	 * Returns the header. If the header itself is an ISymbol it will return the symbol object. If the header itself is an IAST it
+	 * will recursively call headSymbol(). If the head is of type INumbers, the head will return one of these headers:
+	 * "DoubleComplex", "Double", "Integer", "Fraction", "Complex". All other objects return <code>null</code>.
 	 */
-	public IAST getList(int index);
+	public ISymbol topHead();
 }
