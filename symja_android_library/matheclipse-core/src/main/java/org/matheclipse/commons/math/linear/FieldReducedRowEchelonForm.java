@@ -5,14 +5,22 @@ import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.linear.FieldMatrix;
 
 /**
+ * <p>
  * Matrix class that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which is transformed to reduced row echelon format.
- * 
+ * </p>
+ * <p>
  * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
- * 
+ * </p>
+ * <p>
  * The code was adapted from: <a href="http://rosettacode.org/wiki/Reduced_row_echelon_form#Java">Rosetta Code - Reduced row echelon
  * form</a>
+ * </p>
  */
 public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
+	/**
+	 * Wrapper for a row and column index.
+	 * 
+	 */
 	private static class RowColIndex {
 		int row;
 		int col;
@@ -30,10 +38,25 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	private final FieldMatrix<T> rowReducedMatrix;
 	private FieldMatrix<T> nullSpaceCache;
 	private int matrixRankCache;
-	
+
+	/**
+	 * Cached zero element of the field.
+	 */
 	private final T zero;
+
+	/**
+	 * Cached one element of the field.
+	 */
 	private final T one;
+
+	/**
+	 * Number of rows.
+	 */
 	private final int numRows;
+
+	/**
+	 * Number of columns.
+	 */
 	private final int numCols;
 
 	/**
@@ -56,6 +79,26 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		rowReduce();
 	}
 
+	/**
+	 * Test if <code>expr</code> equals the zero element.
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	protected boolean isZero(T expr) {
+		return expr.equals(zero);
+	}
+
+	/**
+	 * Test if <code>expr</code> equals the one element.
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	protected boolean isOne(T expr) {
+		return expr.equals(one);
+	}
+
 	private RowColIndex findPivot(RowColIndex a) {
 		int first_row = a.row;
 		RowColIndex pivot = new RowColIndex(a.row, a.col);
@@ -63,7 +106,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 		for (int i = a.row + 1; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (rowReducedMatrix.getEntry(current.row, current.col).equals(one)) {
+			if (isOne(rowReducedMatrix.getEntry(current.row, current.col))) {
 				swapRow(current, a);
 			}
 		}
@@ -71,7 +114,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		current.row = a.row;
 		for (int i = current.row; i < (numRows - first_row); i++) {
 			current.row = i;
-			if (!rowReducedMatrix.getEntry(current.row, current.col).equals(zero)) {
+			if (!isZero(rowReducedMatrix.getEntry(current.row, current.col))) {
 				pivot.row = i;
 				break;
 			}
@@ -120,7 +163,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 */
 	private boolean isColumnZeroFromRow(RowColIndex a) {
 		for (int i = a.row; i < numRows; i++) {
-			if (!rowReducedMatrix.getEntry(i, a.col).equals(zero)) {
+			if (!isZero(rowReducedMatrix.getEntry(i, a.col))) {
 				return false;
 			}
 		}
@@ -137,7 +180,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	private boolean isRowZeroes(int row) {
 		T[] temp = rowReducedMatrix.getRow(row);
 		for (int i = 0; i < numCols; i++) {
-			if (!temp[i].equals(zero)) {
+			if (!isZero(temp[i])) {
 				return false;
 			}
 		}
@@ -191,7 +234,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		for (int i = 0; i < rank; i++) {
 			if (!columns[i]) {
 				for (int k = i; k < rowReducedMatrix.getColumnDimension(); k++) {
-					if (rowReducedMatrix.getEntry(i, k).equals(zero)) {
+					if (isZero(rowReducedMatrix.getEntry(i, k))) {
 						columns[k] = true;
 						// free column
 						int offset = 0;
@@ -264,7 +307,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			// Select a nonzero entry in the pivot column with the highest absolute value as a pivot.
 			pivot = findPivot(pivot);
 
-			if (getCoordinate(pivot).equals(zero)) {
+			if (isZero(getCoordinate(pivot))) {
 				pivot.row++;
 				if (pivot.row >= maxRows) {
 					break;
@@ -279,7 +322,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			}
 
 			// Force pivot to be 1
-			if (!getCoordinate(pivot).equals(one)) {
+			if (!isOne(getCoordinate(pivot))) {
 				T scalar = getCoordinate(pivot).reciprocal();
 				scaleRow(pivot, scalar);
 			}
@@ -300,7 +343,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			// Use row replacement operations to create zeroes in all positions above the pivot
 			for (int i = pivot.row; i >= 0; i--) {
 				if (i == pivot.row) {
-					if (!getCoordinate(pivot).equals(one)) {
+					if (!isOne(getCoordinate(pivot))) {
 						scaleRow(pivot, getCoordinate(pivot).reciprocal());
 					}
 					continue;
