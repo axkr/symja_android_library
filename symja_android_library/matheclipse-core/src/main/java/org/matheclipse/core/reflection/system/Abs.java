@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Function;
@@ -19,8 +20,13 @@ import com.google.common.base.Function;
  * href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
  * value</a>
  */
-public class Abs extends AbstractTrigArg1 implements INumeric {
+public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
+	}  
+	
 	private final class AbsTimesFunction implements Function<IExpr, IExpr> {
 		public IExpr apply(IExpr expr) {
 			if (expr.isNumber()) {
