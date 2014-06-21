@@ -17,22 +17,22 @@ public class Sum extends AbstractConverter {
 					buf.append("\\sum_{");
 
 					if (list.size() > 1) {
-						fFactory.convert(buf, list.get(1), 0);
+						fFactory.convert(buf, list.arg1(), 0);
 					}
 					if (list.size() > 2) {
 						buf.append(" = ");
-						fFactory.convert(buf, list.get(2), 0);
+						fFactory.convert(buf, list.arg2(), 0);
 					}
 					if (list.size() > 3) {
 						buf.append("}^{");
-						fFactory.convert(buf, list.get(3), 0);
+						fFactory.convert(buf, list.arg3(), 0);
 					}
 					buf.append('}');
 				} else {
 					return false;
 				}
 			}
-			fFactory.convert(buf, f.get(1), 0);
+			fFactory.convert(buf, f.arg1(), 0);
 			return true;
 		}
 		return false;

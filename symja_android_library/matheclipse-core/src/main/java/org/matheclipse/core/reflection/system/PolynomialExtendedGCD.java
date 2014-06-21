@@ -37,11 +37,8 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 4, 5);
-		if (!(ast.get(3) instanceof ISymbol)) {
-			return null;
-		}
 
-		ISymbol x = (ISymbol) ast.get(3);
+		ISymbol x = Validate.checkSymbolType(ast, 3);
 		IExpr expr1 = F.evalExpandAll(ast.arg1());
 		IExpr expr2 = F.evalExpandAll(ast.arg2());
 		ExprVariables eVar = new ExprVariables();

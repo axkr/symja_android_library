@@ -15,9 +15,9 @@ public class ReplacePart implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		if (ast.size() == 4) {
-			if (ast.get(3).isList()) {
+			if (ast.arg3().isList()) {
 				IExpr result = ast.arg1();
-				for (IExpr subList : (IAST) ast.get(3)) {
+				for (IExpr subList : (IAST) ast.arg3()) {
 					IExpr expr = result.replacePart(F.Rule(subList, ast.get(2)));
 					if (expr != null) {
 						result = expr;
@@ -25,12 +25,12 @@ public class ReplacePart implements IFunctionEvaluator {
 				}
 				return result;
 			}
-			final IExpr result = ast.arg1().replacePart(F.Rule(ast.get(3), ast.get(2)));
+			final IExpr result = ast.arg1().replacePart(F.Rule(ast.arg3(), ast.arg2()));
 			return (result == null) ? ast.arg1() : result;
 		}
-		if (ast.get(2).isList()) {
+		if (ast.arg2().isList()) {
 			IExpr result = ast.arg1();
-			for (IExpr subList : (IAST) ast.get(2)) {
+			for (IExpr subList : (IAST) ast.arg2()) {
 				if (subList.isRuleAST()) {
 					IExpr expr = result.replacePart((IAST) subList);
 					if (expr != null) {
@@ -41,8 +41,8 @@ public class ReplacePart implements IFunctionEvaluator {
 			return result;
 		}
 		IExpr result = ast.arg1();
-		if (ast.get(2).isRuleAST()) {
-			result = ast.arg1().replacePart((IAST) ast.get(2));
+		if (ast.arg2().isRuleAST()) {
+			result = ast.arg1().replacePart((IAST) ast.arg2());
 			return (result == null) ? ast.arg1() : result;
 		}
 		return result;

@@ -27,10 +27,10 @@ public class NestList extends AbstractCoreFunctionEvaluator {
 	}
 
 	public static IExpr evaluateNestList(final IAST ast, final IAST resultList) {
-		IExpr arg3 = F.eval(ast.get(3));
+		IExpr arg3 = F.eval(ast.arg3());
 		if (arg3.isInteger()) {
 			final int n = Validate.checkIntType(arg3);
-			nestList(ast.get(2), n, Functors.append(F.ast(ast.arg1())), resultList);
+			nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList);
 			return resultList;
 		}
 		return null;

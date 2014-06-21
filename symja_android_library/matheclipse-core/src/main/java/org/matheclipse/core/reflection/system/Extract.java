@@ -24,7 +24,7 @@ public class Extract extends AbstractFunctionEvaluator {
 			return extract((IAST) ast.arg1(), (IAST) ast.arg2());
 		}
 		// if (ast.size() == 4 && ast.arg1().isAST()) {
-		// LevelSpec level = new LevelSpecification(f, (IExpr) ast.get(3));
+		// LevelSpec level = new LevelSpecification(f, (IExpr) ast.arg3());
 		// return extract((IAST) ast.arg1(), ast.arg2(), level);
 		// }
 		return null;

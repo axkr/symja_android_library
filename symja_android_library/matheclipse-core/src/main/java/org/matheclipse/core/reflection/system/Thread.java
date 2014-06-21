@@ -22,7 +22,7 @@ public class Thread extends AbstractFunctionEvaluator {
     }
     // LevelSpec level = null;
     // if (functionList.size() == 4) {
-    // level = new LevelSpecification(functionList.get(3));
+    // level = new LevelSpecification(functionList.arg3());
     // } else {
     // level = new LevelSpec(1);
     // }

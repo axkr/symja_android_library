@@ -33,7 +33,7 @@ public class If extends AbstractCoreFunctionEvaluator {
 		}
 
 		if (ast.size() == 5) {
-			return ast.get(4);
+			return ast.arg4();
 		}
 
 		return F.Null;

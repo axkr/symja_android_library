@@ -26,7 +26,7 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 	public static IExpr evaluateNestList(final IAST ast, final IAST resultList) {
 
 		try {
-			IExpr temp = F.eval(ast.get(3));
+			IExpr temp = F.eval(ast.arg3());
 			if (temp.isAST()) {
 				final IAST list = (IAST) temp;
 				IExpr arg1 = F.eval(ast.arg1());

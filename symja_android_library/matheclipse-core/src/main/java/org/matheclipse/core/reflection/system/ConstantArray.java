@@ -72,7 +72,6 @@ public class ConstantArray implements IFunctionEvaluator {
 		try {
 			if ((ast.size() >= 3) && (ast.size() <= 5)) {
 				int indx1, indx2;
-				final EvalEngine engine = EvalEngine.get();
 				final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
 				if ((ast.size() == 3) && (ast.get(2).isInteger())) {
 					indx1 = Validate.checkIntType(ast, 2);
@@ -84,13 +83,13 @@ public class ConstantArray implements IFunctionEvaluator {
 						iterList.add(new ArrayIterator(indx1));
 					}
 				} else if (ast.size() >= 4) {
-					if (ast.get(2).isInteger() && ast.get(3).isInteger()) {
+					if (ast.arg2().isInteger() && ast.arg3().isInteger()) {
 						indx1 = Validate.checkIntType(ast, 3);
 						indx2 = Validate.checkIntType(ast, 2);
 						iterList.add(new ArrayIterator(indx1, indx2));
-					} else if (ast.get(2).isList() && ast.get(3).isList()) {
+					} else if (ast.arg2().isList() && ast.arg3().isList()) {
 						final IAST dimIter = (IAST) ast.get(2); // dimensions
-						final IAST originIter = (IAST) ast.get(3); // origins
+						final IAST originIter = (IAST) ast.arg3(); // origins
 						for (int i = 1; i < dimIter.size(); i++) {
 							indx1 = Validate.checkIntType(originIter, i);
 							indx2 = Validate.checkIntType(dimIter, i);
@@ -101,7 +100,7 @@ public class ConstantArray implements IFunctionEvaluator {
 
 				if (iterList.size() > 0) {
 					if (ast.size() == 5) {
-						resultList = F.ast(ast.get(4));
+						resultList = F.ast(ast.arg4());
 					}
 					final IExpr constantExpr = ast.arg1();
 					final TableGenerator generator = new TableGenerator(iterList, resultList, new MultipleConstArrayFunction(

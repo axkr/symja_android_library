@@ -22,7 +22,7 @@ public class Product extends AbstractConverter {
 		if (f.size() >= 3) {
 			for (int i = 2; i < f.size(); i++) {
 				fFactory.tagStart(buf, "mrow");
-				if ((f.get(i) instanceof IAST) && f.get(i).isList()) {
+				if (f.get(i).isList()) {
 					final IAST list = (IAST) f.get(i);
 					fFactory.tagStart(buf, "munderover");
 					// &Product; &#x220F;
@@ -30,15 +30,15 @@ public class Product extends AbstractConverter {
 
 					fFactory.tagStart(buf, "mrow");
 					if (list.size() > 1) {
-						fFactory.convert(buf, list.get(1), 0);
+						fFactory.convert(buf, list.arg1(), 0);
 					}
 					if (list.size() > 2) {
 						fFactory.tag(buf, "mo", "=");
-						fFactory.convert(buf, list.get(2), 0);
+						fFactory.convert(buf, list.arg2(), 0);
 						fFactory.tagEnd(buf, "mrow");
 					}
 					if (list.size() > 3) {
-						fFactory.convert(buf, list.get(3), 0);
+						fFactory.convert(buf, list.arg3(), 0);
 					}
 					fFactory.tagEnd(buf, "munderover");
 				} else {

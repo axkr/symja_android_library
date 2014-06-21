@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader; 
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -19,8 +19,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Package[{&lt;list of public package rule headers&gt;}, {&lt;list of rules in
- * this package&gt;}}
+ * Package[{&lt;list of public package rule headers&gt;}, {&lt;list of rules in this package&gt;}}
  * 
  */
 public class Package implements IFunctionEvaluator {
@@ -31,14 +30,14 @@ public class Package implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
-		if (!(ast.arg1() instanceof IStringX) || !ast.get(2).isList() || !ast.get(3).isList()) {
+		if (!(ast.arg1() instanceof IStringX) || !ast.arg2().isList() || !ast.arg3().isList()) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		if (Config.SERVER_MODE) {
 			throw new RuleCreationError(null);
 		}
-		IAST symbols = (IAST) ast.get(2);
-		IAST list = (IAST) ast.get(3);
+		IAST symbols = (IAST) ast.arg2();
+		IAST list = (IAST) ast.arg3();
 		evalPackage(symbols, list);
 		// System.out.println(resultList);
 		return F.Null;
@@ -116,8 +115,8 @@ public class Package implements IFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in
-	 * the given <code>expr</code> and return the resulting expression.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>expr</code> and return the resulting
+	 * expression.
 	 * 
 	 * @param expr
 	 * @param convertedSymbols
@@ -138,8 +137,8 @@ public class Package implements IFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in
-	 * the given <code>ast</code> list and return the resulting list.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>ast</code> list and return the
+	 * resulting list.
 	 * 
 	 * @param ast
 	 * @param convertedSymbols

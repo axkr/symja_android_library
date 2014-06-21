@@ -27,8 +27,8 @@ public class Integrate extends AbstractConverter {
         fFactory.tagStart(buf, "msubsup");
         // &Integral;  &#x222B;
         fFactory.tag(buf, "mo", "&#x222B;");
-        fFactory.convert(buf, list.get(2), 0);
-        fFactory.convert(buf, list.get(3), 0);
+        fFactory.convert(buf, list.arg2(), 0);
+        fFactory.convert(buf, list.arg3(), 0);
         fFactory.tagEnd(buf, "msubsup");
       } else {
         list = null;

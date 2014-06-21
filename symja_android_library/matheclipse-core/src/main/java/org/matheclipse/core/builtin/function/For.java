@@ -36,7 +36,7 @@ public class For extends AbstractCoreFunctionEvaluator {
 		IExpr incr = ast.arg3();
 		IExpr body = F.Null;
 		if (ast.size() == 5) {
-			body = ast.get(4);
+			body = ast.arg4();
 		}
 		boolean exit = false;
 		while (true) {

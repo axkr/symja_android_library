@@ -32,13 +32,13 @@ public class Distribute extends AbstractFunctionEvaluator {
 		if (arg1.isAST()) {
 			IAST resultCollector;
 			if (ast.size() >= 5) {
-				resultCollector = F.ast(ast.get(4));
+				resultCollector = F.ast(ast.arg4());
 			} else {
 				resultCollector = F.ast(head);
 			}
 			IAST stepResult;
 			if (ast.size() >= 6) {
-				stepResult = F.ast(ast.get(5));
+				stepResult = F.ast(ast.arg5());
 			} else {
 				stepResult = F.ast(arg1.head());
 			}

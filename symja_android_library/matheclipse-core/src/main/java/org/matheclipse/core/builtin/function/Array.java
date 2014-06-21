@@ -106,7 +106,7 @@ public class Array  extends AbstractCoreFunctionEvaluator {
 
 				if (iterList.size() > 0) {
 					if (ast.size() == 5) {
-						resultList = F.ast(ast.get(4));
+						resultList = F.ast(ast.arg4());
 					}
 					final IAST list = F.ast(ast.arg1());
 					final TableGenerator generator = new TableGenerator(iterList, resultList, new MultipleArrayFunction(engine,

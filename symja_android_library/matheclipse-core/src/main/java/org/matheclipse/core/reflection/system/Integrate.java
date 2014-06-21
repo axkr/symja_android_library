@@ -94,7 +94,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				IExpr temp = F.eval(clone);
 				if (temp.isFree(F.Integrate, true)) {
 					// F(b)-F(a)
-					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.get(3))));
+					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
 					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
 					EvalEngine engine = EvalEngine.get();
 					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
@@ -103,7 +103,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							stream = System.out;
 						}
 						if (!engine.isQuietMode()) {
-							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.get(3));
+							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
 						}
 						return null;
 					}

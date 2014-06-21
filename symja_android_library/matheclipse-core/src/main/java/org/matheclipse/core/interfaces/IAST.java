@@ -221,6 +221,24 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr arg3();
 
 	/**
+	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(4) ).
+	 * 
+	 * @return the fourth argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg4();
+
+	/**
+	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(5) ).
+	 * 
+	 * @return the fifth argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg5();	
+	
+	/**
 	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
 	 * 
 	 * @return

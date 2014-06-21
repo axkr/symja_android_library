@@ -115,30 +115,30 @@ public class EvaluationSupport {
 			IExpr temp;
 			switch (astSize) {
 			case 3:
-				if (ast.get(1).compareTo(ast.get(2)) > 0) {
+				if (ast.arg1().compareTo(ast.arg2()) > 0) {
 					// swap arguments
-					temp = ast.get(2);
-					ast.set(2, ast.get(1));
+					temp = ast.arg2();
+					ast.set(2, ast.arg1());
 					ast.set(1, temp);
 				}
 				break;
 			case 4:
 				// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
-				if (ast.get(1).compareTo(ast.get(2)) > 0) {
+				if (ast.get(1).compareTo(ast.arg2()) > 0) {
 					// swap arguments
-					temp = ast.get(2);
-					ast.set(2, ast.get(1));
+					temp = ast.arg2();
+					ast.set(2, ast.arg1());
 					ast.set(1, temp);
 				}
-				if (ast.get(2).compareTo(ast.get(3)) > 0) {
+				if (ast.arg2().compareTo(ast.arg3()) > 0) {
 					// swap arguments
-					temp = ast.get(3);
+					temp = ast.arg3();
 					ast.set(3, ast.get(2));
 					ast.set(2, temp);
-					if (ast.get(1).compareTo(ast.get(2)) > 0) {
+					if (ast.get(1).compareTo(ast.arg2()) > 0) {
 						// swap arguments
-						temp = ast.get(2);
-						ast.set(2, ast.get(1));
+						temp = ast.arg2();
+						ast.set(2, ast.arg1());
 						ast.set(1, temp);
 					}
 				}

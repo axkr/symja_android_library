@@ -50,9 +50,9 @@ public class Count implements IFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		final VisitorLevelSpecification level;
-		CountFunctor mf = new CountFunctor(ast.get(2));
+		CountFunctor mf = new CountFunctor(ast.arg2());
 		if (ast.size() == 4) {
-			level = new VisitorLevelSpecification(mf, ast.get(3), false);
+			level = new VisitorLevelSpecification(mf, ast.arg3(), false);
 		} else {
 			level = new VisitorLevelSpecification(mf, 1);
 		}

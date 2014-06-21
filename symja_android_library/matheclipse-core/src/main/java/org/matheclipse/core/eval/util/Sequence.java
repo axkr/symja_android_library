@@ -72,11 +72,11 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTStep(final IAST lst) {
-		if ((lst.size() > 3) && !(lst.get(3) instanceof IInteger)) {
-			throw new WrongArgumentType(lst, lst.get(3), 3);
+		if ((lst.size() > 3) && !(lst.arg3().isInteger())) {
+			throw new WrongArgumentType(lst, lst.arg3(), 3);
 		}
 		if (lst.size() > 3) {
-			return ((IInteger) lst.get(3)).toInt();
+			return ((IInteger) lst.arg3()).toInt();
 		}
 		return 1;
 	}

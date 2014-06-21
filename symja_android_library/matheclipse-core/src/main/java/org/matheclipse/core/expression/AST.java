@@ -2122,6 +2122,18 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	final public IExpr arg4() {
+		return get(4);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	final public IExpr arg5() {
+		return get(5);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	final public IExpr last() {
 		return get(size() - 1);
 	}

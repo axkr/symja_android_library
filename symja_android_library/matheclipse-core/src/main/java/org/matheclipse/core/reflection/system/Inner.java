@@ -15,26 +15,24 @@ public class Inner extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 4, 5);
 
-		if ((ast.get(2).isVector() < 0) || (ast.get(3).isVector() < 0)) {
+		if ((ast.arg2().isVector() < 0) || (ast.arg3().isVector() < 0)) {
 			return null;
 		}
 		IAST result;
 		if (ast.size() == 4) {
 			result = F.ast(F.Plus);
 		} else {
-			result = F.ast(ast.get(4));
+			result = F.ast(ast.arg4());
 		}
-		
-		
-		
-		IAST l2 = (IAST) ast.get(2);
-		IAST l3 = (IAST) ast.get(3);
+
+		IAST l2 = (IAST) ast.arg2();
+		IAST l3 = (IAST) ast.arg3();
 		if (l2.size() != l2.size()) {
 			return null;
 		}
 		IAST temp;
 		for (int i = 1; i < l2.size(); i++) {
-			temp = F.ast(ast.get(1));
+			temp = F.ast(ast.arg1());
 			temp.add(l2.get(i));
 			temp.add(l3.get(i));
 			result.add(temp);

@@ -23,7 +23,7 @@ public class Nest extends AbstractCoreFunctionEvaluator {
 	}
 
 	public static IExpr evaluateNest(final IAST ast) {
-		IExpr arg3 = F.eval(ast.get(3));
+		IExpr arg3 = F.eval(ast.arg3());
 		if (arg3.isInteger()) {
 			final int n = Validate.checkIntType(arg3);
 			return nest(ast.get(2), n, Functors.append(F.ast(ast.arg1())));

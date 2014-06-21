@@ -55,7 +55,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			if (optionMethod != null && optionMethod.isSymbol()) {
 				method = ((ISymbol) optionMethod);
 			} else {
-				if (ast.get(3).isSymbol()) {
+				if (ast.arg3().isSymbol()) {
 					method = (ISymbol) ast.arg3();
 				}
 			}
@@ -77,8 +77,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		ISymbol xVar = (ISymbol) list.arg1();
 		ISignedNumber min = (ISignedNumber) list.arg2();
 		ISignedNumber max = null;
-		if (list.size() > 3 && list.get(3) instanceof ISignedNumber) {
-			max = (ISignedNumber) list.get(3);
+		if (list.size() > 3 && list.arg3() instanceof ISignedNumber) {
+			max = (ISignedNumber) list.arg3();
 		}
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);

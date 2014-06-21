@@ -55,11 +55,11 @@ public class Sum extends Table {
 			sum.set(1, F.Null);
 			return ((IAST) arg1).map(Functors.replace1st(sum));
 		}
-		IExpr arg2 = ast.get(2);
+		IExpr arg2 = ast.arg2();
 		IExpr temp;
 		if (ast.size() == 3 && arg2.isList() && ((IAST) arg2).size() == 4) {
 			IAST list = (IAST) arg2;
-			if (list.arg1().isSymbol() && list.get(2).isInteger() && list.get(3).isSymbol()) {
+			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
 				temp = definiteSum(arg1, list);
 				if (temp != null) {
 					return temp;
@@ -90,8 +90,8 @@ public class Sum extends Table {
 	 */
 	public IExpr definiteSum(IExpr arg1, final IAST list) {
 		final ISymbol var = (ISymbol) list.arg1();
-		final IInteger from = (IInteger) list.get(2);
-		final ISymbol to = (ISymbol) list.get(3);
+		final IInteger from = (IInteger) list.arg2();
+		final ISymbol to = (ISymbol) list.arg3();
 		if (arg1.isFree(var, true) && arg1.isFree(to, true)) {
 			if (from.equals(F.C1)) {
 				return F.Times(to, arg1);

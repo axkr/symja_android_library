@@ -18,7 +18,7 @@ public class Select implements IFunctionEvaluator {
 		if (ast.arg1().isAST()) {
 			if (ast.size() == 3) {
 				return select((IAST) ast.arg1(), ast.arg2());
-			} else if ((ast.size() == 4) && ast.get(3).isInteger()) {
+			} else if ((ast.size() == 4) && ast.arg3().isInteger()) {
 				final int resultLimit = Validate.checkIntType(ast, 3);
 				return select((IAST) ast.arg1(), ast.arg2(), resultLimit);
 			}

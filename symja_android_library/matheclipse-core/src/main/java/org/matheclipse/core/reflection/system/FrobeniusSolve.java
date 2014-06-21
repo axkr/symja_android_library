@@ -31,10 +31,10 @@ public class FrobeniusSolve implements IFunctionEvaluator {
 				for (int i = 1; i < list.size(); i++) {
 					equations[0][i - 1] = ((ISignedNumber) list.get(i)).toInt();
 				}
-				equations[0][list.size() - 1] = ((ISignedNumber) ast.get(2)).toInt();
+				equations[0][list.size() - 1] = ((ISignedNumber) ast.arg2()).toInt();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {
-					numberOfSolutions = ((ISignedNumber) ast.get(3)).toInt();
+					numberOfSolutions = ((ISignedNumber) ast.arg3()).toInt();
 				}
 
 				FrobeniusSolver solver = new FrobeniusSolver(equations);
