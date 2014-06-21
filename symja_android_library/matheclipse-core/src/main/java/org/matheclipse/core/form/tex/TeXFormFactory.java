@@ -18,8 +18,14 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
- * PresentationGenerator generates MathML presentation output
+ * <p>
+ * PresentationGenerator generates TeX presentation output
+ * </p>
  * 
+ * <p>
+ * In the method <code>getReflectionNamespace()</code> the package is set which is used by Java reflection to determine special
+ * function implementations.
+ * </p>
  */
 public class TeXFormFactory extends AbstractTeXFormFactory {
 
@@ -257,6 +263,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	}
 
+	/** {@inheritDoc} */
 	public String getReflectionNamespace() {
 		return "org.matheclipse.core.form.tex.reflection.";
 	}

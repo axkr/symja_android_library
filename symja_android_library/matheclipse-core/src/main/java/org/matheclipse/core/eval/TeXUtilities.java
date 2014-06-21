@@ -15,8 +15,6 @@ import org.matheclipse.parser.client.ast.ASTNode;
 public class TeXUtilities {
 	protected EvalEngine fEvalEngine;
 
-	// protected ExprFactory fFactory;
-
 	protected TeXFormFactory fTeXFactory;
 
 	Parser fParser;

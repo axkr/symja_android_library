@@ -26,12 +26,7 @@ public abstract class AbstractOperator extends AbstractConverter {
     }
   }
 
-  /**
-     * Converts a given function into the corresponding MathML output
-     * 
-     *@param  buf  StringBuffer for MathML output
-     *@param  f    The math function which should be converted to MathML
-     */
+  /** {@inheritDoc} */
   public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
     precedenceOpen(buf, precedence);
     for (int i = 1; i < f.size(); i++) {

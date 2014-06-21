@@ -9,6 +9,7 @@ public class DirectedInfinity extends AbstractConverter {
 	public DirectedInfinity() {
 	}
 
+	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() == 2) {
 			if (f.get(1).equals(F.C1)) {

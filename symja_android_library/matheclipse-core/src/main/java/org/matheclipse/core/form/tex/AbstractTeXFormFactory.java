@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Abstract Factory for generating MathML output
+ * Abstract Factory for generating TeX output
  * 
  */
 abstract public class AbstractTeXFormFactory {
@@ -16,9 +16,9 @@ abstract public class AbstractTeXFormFactory {
 	public final static boolean USE_IDENTIFIERS = false;
 
 	/**
+	 * 
 	 */
 	public AbstractTeXFormFactory() {
-//		fExprFactory = exprFactory;
 	}
 
 	/**

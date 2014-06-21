@@ -13,14 +13,7 @@ public class MatrixForm extends AbstractConverter {
 	public MatrixForm() {
 	}
 
-	/**
-	 * Converts a given function into the corresponding TeX output
-	 * 
-	 * @param buf
-	 *            StringBuffer for TeX output
-	 * @param f
-	 *            The math function which should be converted to TeX
-	 */
+	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() != 2) {
 			return false;

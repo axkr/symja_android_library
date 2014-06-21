@@ -7,8 +7,7 @@ public class LessEqual extends AbstractOperator {
 
 	public LessEqual() {
 		// &leq; &#02264;
-		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(),
-				"\\leq ");
+		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(), "\\leq ");
 	}
 
 }

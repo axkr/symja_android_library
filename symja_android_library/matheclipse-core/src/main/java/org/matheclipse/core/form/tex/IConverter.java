@@ -2,16 +2,17 @@ package org.matheclipse.core.form.tex;
 
 import org.matheclipse.core.interfaces.IAST;
 
-/** 
- * General conversion interface
+/**
+ * General conversion interface for TeX functions.
  */
 public interface IConverter {
-  /**
-   * Converts a given function into the corresponding MathML output
-   * 
-   *@param  buffer    StringBuffer for MathML output
-   *@param  function  the math function which should be converted to MathML
-   */
-  public boolean convert(StringBuffer buffer, IAST function, int precedence);
+	/**
+	 * Converts a given function into the corresponding TeX output
+	 * 
+	 * @param buffer
+	 *            StringBuffer for TeX output
+	 * @param function
+	 *            the math function which should be converted to TeX
+	 */
+	public boolean convert(StringBuffer buffer, IAST function, int precedence);
 }
- 

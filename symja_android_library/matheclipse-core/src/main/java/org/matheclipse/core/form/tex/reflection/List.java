@@ -9,14 +9,7 @@ public class List extends AbstractConverter {
 	public List() {
 	}
 
-	/**
-	 * Converts a given function into the corresponding MathML output
-	 * 
-	 *@param buf
-	 *          StringBuffer for MathML output
-	 *@param ast
-	 *          The math function which should be converted to MathML
-	 */
+	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST ast, final int precedence) {
 
 		if ((ast.getEvalFlags() & IAST.IS_MATRIX) == IAST.IS_MATRIX) {
