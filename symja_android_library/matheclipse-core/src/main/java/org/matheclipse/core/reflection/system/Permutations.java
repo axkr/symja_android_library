@@ -47,7 +47,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 					return null;
 				}
 			}
-			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()));
+			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()), 1);
 			for (IAST temp : perm) {
 				result.add(temp);
 			}
