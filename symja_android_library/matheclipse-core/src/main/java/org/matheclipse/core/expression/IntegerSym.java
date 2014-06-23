@@ -4,14 +4,15 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.generic.combinatoric.KSubsetsList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -486,12 +487,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	/**
-	 * Get the factors of this integer
+	 * Get all prime factors of this integer
 	 * 
 	 * @return
 	 */
-	public List<IInteger> factorize() {
-		final ArrayList<IInteger> result = new ArrayList<IInteger>();
+	public IAST factorize(IAST result) {
+		// final ArrayList<IInteger> result = new ArrayList<IInteger>();
 		IntegerSym b = this;
 		if (sign() < 0) {
 			b = b.multiply(IntegerSym.valueOf(-1));
@@ -557,11 +558,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		IInteger factor;
 		IInteger last = IntegerSym.valueOf(-2);
 		int count = 0;
-		final List<IInteger> iFactors = factorize();
+		// final List<IInteger> iFactors = factorize();
+		final IAST iFactors = factorize(F.List());
 		final IAST list = List();
 		IAST subList = null;
-		for (int i = 0; i < iFactors.size(); i++) {
-			factor = iFactors.get(i);
+		for (int i = 1; i < iFactors.size(); i++) {
+			factor = (IInteger) iFactors.get(i);
 			if (!last.equals(factor)) {
 				if (subList != null) {
 					subList.add(IntegerSym.valueOf(count));
@@ -578,6 +580,44 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			list.add(subList);
 		}
 		return list;
+	}
+
+	/**
+	 * Return the divisors of this integer number.
+	 * 
+	 * <pre>
+	 * divisors(24) ==> {1,2,3,4,6,8,12,24}
+	 * </pre>
+	 */
+	public IAST divisors() {
+		Set<IInteger> set = new TreeSet<IInteger>();
+		final IAST primeFactorsList = factorize(F.List());
+		int len = primeFactorsList.size() - 1;
+
+		// build the k-subsets from the primeFactorsList
+		for (int k = 1; k < len; k++) {
+			final KSubsetsList iter = KSubsetsList.createKSubsets(primeFactorsList, k, F.List(), 1);
+			for (IAST subset : iter) {
+				if (subset == null) {
+					break;
+				}
+				// create the product of all integers in the k-subset
+				IInteger factor = F.C1;
+				for (int j = 1; j < subset.size(); j++) {
+					factor = factor.multiply((IInteger) subset.get(j));
+				}
+				// add this divisor to the set collection
+				set.add(factor);
+			}
+		}
+
+		// build the final divisors list from the tree set
+		final IAST resultList = List(F.C1);
+		for (IInteger entry : set) {
+			resultList.add(entry);
+		}
+		resultList.add(this);
+		return resultList;
 	}
 
 	public IInteger eulerPhi() throws ArithmeticException {
