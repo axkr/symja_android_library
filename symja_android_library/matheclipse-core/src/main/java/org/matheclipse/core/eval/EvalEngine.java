@@ -199,7 +199,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @see org.matheclipse.core.reflection.Out
 	 */
-	transient protected List<IExpr> fOutList = new ArrayList<IExpr>(10);
+	transient protected LastCalculationsHistory fOutList = null;
 
 	/**
 	 * Contains the last result (&quot;answer&quot;) expression of this evaluation engine or <code>null</code> if no answer is
@@ -212,7 +212,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @see org.matheclipse.core.reflection.Out
 	 */
-	transient boolean fOutListDisabled = true;
+	transient private boolean fOutListDisabled = true;
 
 	/**
 	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages are shown during evaluation).
@@ -326,7 +326,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @see #setOutListDisabled(boolean)
 	 */
-	public boolean addOut(IExpr arg0) {
+	public void addOut(IExpr arg0) {
 		// remember the last result
 		if (arg0 == null) {
 			fAnswer = F.Null;
@@ -336,9 +336,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		ISymbol ans = F.$s("$ans");
 		ans.putDownRule(F.Set, true, ans, fAnswer, false);
 		if (fOutListDisabled) {
-			return true;
+			return;
 		}
-		return fOutList.add(fAnswer);
+		fOutList.add(fAnswer);
 	}
 
 	public void addRules(IAST ruleList) {
@@ -1008,17 +1008,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fModifiedVariablesList;
 	}
 
-	/**
-	 * Get the expression of the <code>Out[]</code> list at the given index
-	 * 
-	 * @param index
-	 * @return
-	 */
-	public IExpr getOut(int index) {
-		return fOutList.get(index);
-	}
-
-	public List<IExpr> getOutList() {
+	public LastCalculationsHistory getOutList() {
 		return fOutList;
 	}
 
@@ -1229,7 +1219,22 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fNumericMode = b;
 	}
 
-	public void setOutListDisabled(boolean outListDisabled) {
+	/**
+	 * 
+	 * @param outListDisabled
+	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the
+	 *            last calculations will be saved and the <code>Out()</code> function (or % operator) will be unevaluated.
+	 * @param historyCapacity
+	 *            the number of last entries of the calculations which should be stored.
+	 */
+	public void setOutListDisabled(boolean outListDisabled, int historyCapacity) {
+		if (outListDisabled == false) {
+			if (fOutList == null) {
+				fOutList = new LastCalculationsHistory(100);
+			}
+		} else {
+			fOutList = null;
+		}
 		this.fOutListDisabled = outListDisabled;
 	}
 
