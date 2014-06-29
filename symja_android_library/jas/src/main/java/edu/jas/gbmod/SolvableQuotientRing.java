@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotientRing.java 4678 2013-10-27 12:39:44Z kredel $
+ * $Id: SolvableQuotientRing.java 4792 2014-04-09 09:48:16Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -17,10 +17,9 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.PolynomialList;
-import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.RingFactory;
 import edu.jas.structure.QuotPairFactory;
+import edu.jas.structure.RingFactory;
 
 
 /**
@@ -28,8 +27,8 @@ import edu.jas.structure.QuotPairFactory;
  * Objects of this class are immutable.
  * @author Heinz Kredel
  */
-public class SolvableQuotientRing<C extends GcdRingElem<C>> 
-       implements RingFactory<SolvableQuotient<C>>, QuotPairFactory<GenPolynomial<C>,SolvableQuotient<C>> {
+public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFactory<SolvableQuotient<C>>,
+                QuotPairFactory<GenPolynomial<C>, SolvableQuotient<C>> {
 
 
     private static final Logger logger = Logger.getLogger(SolvableQuotientRing.class);
@@ -62,7 +61,6 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>>
     }
 
 
-
     /**
      * Factory for base elements.
      */
@@ -75,7 +73,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>>
      * Create from numerator.
      */
     public SolvableQuotient<C> create(GenPolynomial<C> n) {
-        return new SolvableQuotient<C>(this,(GenSolvablePolynomial<C>)n);
+        return new SolvableQuotient<C>(this, (GenSolvablePolynomial<C>) n);
     }
 
 
@@ -83,7 +81,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>>
      * Create from numerator, denominator pair.
      */
     public SolvableQuotient<C> create(GenPolynomial<C> n, GenPolynomial<C> d) {
-        return new SolvableQuotient<C>(this,(GenSolvablePolynomial<C>)n,(GenSolvablePolynomial<C>)d);
+        return new SolvableQuotient<C>(this, (GenSolvablePolynomial<C>) n, (GenSolvablePolynomial<C>) d);
     }
 
 

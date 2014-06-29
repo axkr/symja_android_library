@@ -1,5 +1,5 @@
 /*
- * $Id: BigDecimal.java 4640 2013-09-14 11:32:01Z kredel $
+ * $Id: BigDecimal.java 4836 2014-06-28 13:02:57Z axelclk $
  */
 
 package edu.jas.arith;
@@ -112,7 +112,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      * @param mc MathContext.
      */
     public BigDecimal(double a, MathContext mc) {
-        this(new java.math.BigDecimal(a), mc);
+        this(new java.math.BigDecimal(a, mc), mc);
     }
 
 
@@ -343,6 +343,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      */
     public boolean isZERO() {
         return val.compareTo(java.math.BigDecimal.ZERO) == 0;
+        //return compareTo(ZERO) == 0;
     }
 
 
@@ -352,6 +353,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
      */
     public boolean isONE() {
         return val.compareTo(java.math.BigDecimal.ONE) == 0;
+        //return compareTo(ONE) == 0;
     }
 
 
@@ -372,6 +374,16 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     public String toString() {
         //return val.toString() + "(ulp=" + val.ulp() + ")";
         return val.toString();
+    }
+
+
+    /**
+     * Get this decimal as a <tt>double</tt>. 
+     * @return the decimal as a <tt>double</tt>
+     * @see java.lang.Number#doubleValue()
+     */
+    public double doubleValue() {
+        return val.doubleValue();
     }
 
 
@@ -402,7 +414,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     /**
      * Compare to BigDecimal b. Experimental, is hacked.
      * @param b BigDecimal.
-     * @return 0 if abs(this-b) < epsilon, 1 if this > b, -1 if this < b.
+     * @return 0 if abs(this-b) &lt; epsilon, 1 if this &gt; b, -1 if this &lt; b.
      */
     @Override
     public int compareTo(BigDecimal b) {
@@ -442,6 +454,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
         }
         BigDecimal bi = (BigDecimal) b;
         return val.equals(bi.val);
+        //return this.compareTo(bi) == 0;
     }
 
 

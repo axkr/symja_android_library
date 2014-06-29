@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseParallel.java 4548 2013-07-31 08:43:51Z kredel $
+ * $Id: SolvableGroebnerBaseParallel.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
@@ -141,6 +141,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
     /**
      * Cleanup and terminate ThreadPool.
      */
+    @Override
     public void terminate() {
         if (pool == null) {
             return;
@@ -165,7 +166,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
         while (it.hasNext()) {
             p = it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -332,7 +333,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
         while (it.hasNext()) {
             p = it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -474,7 +475,7 @@ class LeftSolvableReducer<C extends RingElem<C>> implements Runnable {
             if (debug) {
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             // System.out.println("H   = " + H);
             if (H.isONE()) {
                 pairlist.putOne(); // not really required
@@ -594,7 +595,7 @@ class TwosidedSolvableReducer<C extends RingElem<C>> implements Runnable {
             if (debug) {
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             // System.out.println("H   = " + H);
             if (H.isONE()) {
                 pairlist.putOne(); // not really required
@@ -617,7 +618,7 @@ class TwosidedSolvableReducer<C extends RingElem<C>> implements Runnable {
                 p = H.multiply(x);
                 p = sred.leftNormalform(G, p);
                 if (!p.isZERO()) {
-                    p = (GenSolvablePolynomial<C>) p.monic();
+                    p = p.monic();
                     if (p.isONE()) {
                         synchronized (G) {
                             G.clear();

@@ -1,21 +1,20 @@
 /*
- * $Id: SolvableReduction.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: SolvableReduction.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
 
-import java.util.List;
+
 import java.io.Serializable;
+import java.util.List;
 
 import edu.jas.poly.GenSolvablePolynomial;
-
 import edu.jas.structure.RingElem;
 
 
 /**
- * Solvable polynomial Reduction interface.
- * Defines S-Polynomial, normalform
- * and irreducible set.
+ * Solvable polynomial Reduction interface. Defines S-Polynomial, normalform and
+ * irreducible set.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -29,9 +28,7 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Bp solvable polynomial.
      * @return left-spol(Ap,Bp) the left S-polynomial of Ap and Bp.
      */
-    public GenSolvablePolynomial<C> 
-           leftSPolynomial(GenSolvablePolynomial<C> Ap, 
-                           GenSolvablePolynomial<C> Bp);
+    public GenSolvablePolynomial<C> leftSPolynomial(GenSolvablePolynomial<C> Ap, GenSolvablePolynomial<C> Bp);
 
 
     /**
@@ -43,12 +40,8 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Bp a polynomial.
      * @return leftSpol(Ap, Bp), the left S-Polynomial for Ap and Bp.
      */
-    public GenSolvablePolynomial<C> 
-           leftSPolynomial(List<GenSolvablePolynomial<C>> S,
-                           int i,
-                           GenSolvablePolynomial<C> Ap, 
-                           int j,
-                           GenSolvablePolynomial<C> Bp);
+    public GenSolvablePolynomial<C> leftSPolynomial(List<GenSolvablePolynomial<C>> S, int i,
+                    GenSolvablePolynomial<C> Ap, int j, GenSolvablePolynomial<C> Bp);
 
 
     /**
@@ -57,9 +50,8 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Pp solvable polynomial list.
      * @return left-nf(Ap) with respect to Pp.
      */
-    public GenSolvablePolynomial<C> 
-           leftNormalform(List<GenSolvablePolynomial<C>> Pp, 
-                          GenSolvablePolynomial<C> Ap);
+    public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap);
 
 
     /**
@@ -69,10 +61,8 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the left normal form of Ap wrt. Pp.
      */
-    public GenSolvablePolynomial<C> 
-           leftNormalform(List<GenSolvablePolynomial<C>> row,
-                          List<GenSolvablePolynomial<C>> Pp, 
-                          GenSolvablePolynomial<C> Ap);
+    public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> row,
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap);
 
 
     /**
@@ -81,9 +71,8 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Pp solvable polynomial list.
      * @return list of left-nf(a) with respect to Pp for all a in Ap.
      */
-    public List<GenSolvablePolynomial<C>> 
-           leftNormalform(List<GenSolvablePolynomial<C>> Pp, 
-                          List<GenSolvablePolynomial<C>> Ap);
+    public List<GenSolvablePolynomial<C>> leftNormalform(List<GenSolvablePolynomial<C>> Pp,
+                    List<GenSolvablePolynomial<C>> Ap);
 
 
     /**
@@ -91,8 +80,7 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Pp solvable polynomial list.
      * @return a list P of solvable polynomials which are in normalform wrt. P.
      */
-    public List<GenSolvablePolynomial<C>> 
-           leftIrreducibleSet(List<GenSolvablePolynomial<C>> Pp); 
+    public List<GenSolvablePolynomial<C>> leftIrreducibleSet(List<GenSolvablePolynomial<C>> Pp);
 
 
     /**
@@ -104,11 +92,8 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @return true, if Np + sum( row[i]*Pp[i] ) == Ap, else false.
      */
 
-    public boolean 
-           isLeftReductionNF(List<GenSolvablePolynomial<C>> row,
-                             List<GenSolvablePolynomial<C>> Pp, 
-                             GenSolvablePolynomial<C> Ap,
-                             GenSolvablePolynomial<C> Np);
+    public boolean isLeftReductionNF(List<GenSolvablePolynomial<C>> row, List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap, GenSolvablePolynomial<C> Np);
 
 
     /**
@@ -117,9 +102,7 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Bp solvable polynomial.
      * @return right-spol(Ap,Bp) the right S-polynomial of Ap and Bp.
      */
-    public GenSolvablePolynomial<C> 
-           rightSPolynomial(GenSolvablePolynomial<C> Ap, 
-                            GenSolvablePolynomial<C> Bp);
+    public GenSolvablePolynomial<C> rightSPolynomial(GenSolvablePolynomial<C> Ap, GenSolvablePolynomial<C> Bp);
 
 
     /**
@@ -128,9 +111,9 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Pp solvable polynomial list.
      * @return right-nf(Ap) with respect to Pp.
      */
-    public GenSolvablePolynomial<C> 
-           rightNormalform(List<GenSolvablePolynomial<C>> Pp, 
-                           GenSolvablePolynomial<C> Ap);
+    public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap);
+
 
     /**
      * RightNormalform with recording.
@@ -139,9 +122,7 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
      */
-    public GenSolvablePolynomial<C> 
-           rightNormalform(List<GenSolvablePolynomial<C>> row,
-                           List<GenSolvablePolynomial<C>> Pp, 
-                           GenSolvablePolynomial<C> Ap);
+    public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap);
 
 }

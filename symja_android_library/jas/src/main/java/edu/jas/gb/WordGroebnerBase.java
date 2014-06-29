@@ -1,26 +1,25 @@
 /*
- * $Id: WordGroebnerBase.java 4150 2012-09-01 09:18:23Z kredel $
+ * $Id: WordGroebnerBase.java 4782 2014-04-06 21:56:08Z kredel $
  */
 
 package edu.jas.gb;
 
 
-import java.util.List;
 import java.io.Serializable;
+import java.util.List;
 
-import edu.jas.structure.RingElem;
 import edu.jas.poly.GenWordPolynomial;
+import edu.jas.structure.RingElem;
 
 
 /**
- * Non-commutative Groebner Bases interface for GenWordPolynomials.
- * Defines methods for Groebner bases and GB test.
+ * Non-commutative Groebner Bases interface for GenWordPolynomials. Defines
+ * methods for Groebner bases and GB test.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public interface WordGroebnerBase<C extends RingElem<C>> 
-                 extends Serializable {
+public interface WordGroebnerBase<C extends RingElem<C>> extends Serializable {
 
 
     /**
@@ -36,7 +35,7 @@ public interface WordGroebnerBase<C extends RingElem<C>>
      * @param F word polynomial list.
      * @return GB(F) a non-commutative Groebner base of F.
      */
-    public List<GenWordPolynomial<C>> GB( List<GenWordPolynomial<C>> F );
+    public List<GenWordPolynomial<C>> GB(List<GenWordPolynomial<C>> F);
 
 
     /**

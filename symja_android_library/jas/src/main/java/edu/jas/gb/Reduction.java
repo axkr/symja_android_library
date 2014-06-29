@@ -1,12 +1,12 @@
 /*
- * $Id: Reduction.java 4279 2012-11-03 10:34:03Z kredel $
+ * $Id: Reduction.java 4783 2014-04-06 21:58:40Z kredel $
  */
 
 package edu.jas.gb;
 
-import java.util.List;
 
 import java.io.Serializable;
+import java.util.List;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -14,15 +14,13 @@ import edu.jas.structure.RingElem;
 
 
 /**
- * Polynomial Reduction interface.
- * Defines S-Polynomial, normalform, criterion 4, module criterion
- * and irreducible set.
+ * Polynomial Reduction interface. Defines S-Polynomial, normalform, criterion
+ * 4, module criterion and irreducible set.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public interface Reduction<C extends RingElem<C>> 
-                 extends Serializable {
+public interface Reduction<C extends RingElem<C>> extends Serializable {
 
 
     /**
@@ -31,8 +29,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param Bp polynomial.
      * @return spol(Ap,Bp) the S-polynomial of Ap and Bp.
      */
-    public GenPolynomial<C> SPolynomial(GenPolynomial<C> Ap, 
-                                        GenPolynomial<C> Bp);
+    public GenPolynomial<C> SPolynomial(GenPolynomial<C> Ap, GenPolynomial<C> Bp);
 
 
     /**
@@ -44,12 +41,8 @@ public interface Reduction<C extends RingElem<C>>
      * @param Bp a polynomial.
      * @return Spol(Ap, Bp), the S-Polynomial for Ap and Bp.
      */
-    public GenPolynomial<C> 
-           SPolynomial(List<GenPolynomial<C>> S,
-                       int i,
-                       GenPolynomial<C> Ap, 
-                       int j,
-                       GenPolynomial<C> Bp);
+    public GenPolynomial<C> SPolynomial(List<GenPolynomial<C>> S, int i, GenPolynomial<C> Ap, int j,
+                    GenPolynomial<C> Bp);
 
 
     /**
@@ -59,9 +52,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param B polynomial.
      * @return true if the module S-polynomial(i,j) is required.
      */
-    public boolean moduleCriterion(int modv, 
-                                   GenPolynomial<C> A, 
-                                   GenPolynomial<C> B);
+    public boolean moduleCriterion(int modv, GenPolynomial<C> A, GenPolynomial<C> B);
 
 
     /**
@@ -75,31 +66,26 @@ public interface Reduction<C extends RingElem<C>>
 
 
     /**
-     * GB criterium 4.
-     * Use only for commutative polynomial rings.
+     * GB criterium 4. Use only for commutative polynomial rings.
      * @param A polynomial.
      * @param B polynomial.
      * @param e = lcm(ht(A),ht(B))
      * @return true if the S-polynomial(i,j) is required, else false.
      */
-    public boolean criterion4(GenPolynomial<C> A, 
-                              GenPolynomial<C> B, 
-                              ExpVector e);
+    public boolean criterion4(GenPolynomial<C> A, GenPolynomial<C> B, ExpVector e);
 
 
     /**
-     * GB criterium 4.
-     * Use only for commutative polynomial rings.
+     * GB criterium 4. Use only for commutative polynomial rings.
      * @param A polynomial.
      * @param B polynomial.
      * @return true if the S-polynomial(i,j) is required, else false.
      */
-    public boolean criterion4(GenPolynomial<C> A, 
-                              GenPolynomial<C> B);
+    public boolean criterion4(GenPolynomial<C> A, GenPolynomial<C> B);
 
 
     /**
-     * GB criterium 4. 
+     * GB criterium 4.
      * @param ei exponent vector.
      * @param ej exponent vector.
      * @param e = lcm(ei,ej)
@@ -109,14 +95,12 @@ public interface Reduction<C extends RingElem<C>>
 
 
     /**
-     * Is top reducible.
-     * Condition is lt(B) | lt(A) for some B in F.
+     * Is top reducible. Condition is lt(B) | lt(A) for some B in F.
      * @param A polynomial.
      * @param P polynomial list.
      * @return true if A is top reducible with respect to P.
      */
-    public boolean isTopReducible(List<GenPolynomial<C>> P, 
-                                  GenPolynomial<C> A);
+    public boolean isTopReducible(List<GenPolynomial<C>> P, GenPolynomial<C> A);
 
 
     /**
@@ -125,8 +109,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return true if A is reducible with respect to P.
      */
-    public boolean isReducible(List<GenPolynomial<C>> P, 
-                               GenPolynomial<C> A);
+    public boolean isReducible(List<GenPolynomial<C>> P, GenPolynomial<C> A);
 
 
     /**
@@ -135,8 +118,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return true if A is in normalform with respect to P.
      */
-    public boolean isNormalform(List<GenPolynomial<C>> P, 
-                                GenPolynomial<C> A);
+    public boolean isNormalform(List<GenPolynomial<C>> P, GenPolynomial<C> A);
 
 
     /**
@@ -144,7 +126,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param Pp polynomial list.
      * @return true if each A in Pp is in normalform with respect to Pp\{A}.
      */
-    public boolean isNormalform( List<GenPolynomial<C>> Pp );
+    public boolean isNormalform(List<GenPolynomial<C>> Pp);
 
 
     /**
@@ -153,8 +135,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return nf(A) with respect to P.
      */
-    public GenPolynomial<C> normalform(List<GenPolynomial<C>> P, 
-                                       GenPolynomial<C> A);
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> P, GenPolynomial<C> A);
 
 
     /**
@@ -163,8 +144,7 @@ public interface Reduction<C extends RingElem<C>>
      * @param Pp polynomial list.
      * @return list of nf(a) with respect to Pp for all a in Ap.
      */
-    public List<GenPolynomial<C>> normalform(List<GenPolynomial<C>> Pp, 
-                                             List<GenPolynomial<C>> Ap);
+    public List<GenPolynomial<C>> normalform(List<GenPolynomial<C>> Pp, List<GenPolynomial<C>> Ap);
 
 
     /**
@@ -174,19 +154,17 @@ public interface Reduction<C extends RingElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
      */
-    public GenPolynomial<C> 
-           normalform(List<GenPolynomial<C>> row,
-                      List<GenPolynomial<C>> Pp, 
-                      GenPolynomial<C> Ap);
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap);
 
 
     /**
      * Irreducible set.
      * @param Pp polynomial list.
-     * @return a list P of polynomials which are in normalform wrt. P and with ideal(Pp) = ideal(P).
+     * @return a list P of polynomials which are in normalform wrt. P and with
+     *         ideal(Pp) = ideal(P).
      */
     public List<GenPolynomial<C>> irreducibleSet(List<GenPolynomial<C>> Pp);
-
 
 
     /**
@@ -198,10 +176,7 @@ public interface Reduction<C extends RingElem<C>>
      * @return true, if Np + sum( row[i]*Pp[i] ) == Ap, else false.
      */
 
-    public boolean 
-           isReductionNF(List<GenPolynomial<C>> row,
-                         List<GenPolynomial<C>> Pp, 
-                         GenPolynomial<C> Ap,
-                         GenPolynomial<C> Np);
+    public boolean isReductionNF(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap,
+                    GenPolynomial<C> Np);
 
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseAbstract.java 4627 2013-09-11 14:49:39Z kredel $
+ * $Id: SolvableGroebnerBaseAbstract.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
@@ -323,7 +323,7 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
                     logger.info("isRightGB non zero h = " + h + " :: " + h.ring);
                     logger.info("p" + i + " = " + pi + ", p" + j + " = " + pj);
                     return false;
-                } else {
+                    //} else {
                     //logger.info("isRightGB zero h = " + h);
                 }
             }

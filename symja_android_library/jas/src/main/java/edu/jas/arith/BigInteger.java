@@ -1,5 +1,5 @@
 /*
- * $Id: BigInteger.java 4698 2013-12-25 17:44:43Z kredel $
+ * $Id: BigInteger.java 4743 2014-01-19 21:47:34Z axelclk $
  */
 
 package edu.jas.arith;
@@ -674,6 +674,16 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
         return new BigInteger(val.multiply(S.val));
     }
 
+
+    /**
+     * BigInteger shift left.
+     * @param n bits to shift.
+     * @return this &lt;&lt; n.
+     */
+    public BigInteger shiftLeft(int n) {
+        return new BigInteger(val.shiftLeft(n));
+    }
+    
 
     /**
      * BigInteger multiply.

@@ -1,16 +1,15 @@
 /*
- * $Id: WordPairList.java 4150 2012-09-01 09:18:23Z kredel $
+ * $Id: WordPairList.java 4782 2014-04-06 21:56:08Z kredel $
  */
 
 package edu.jas.gb;
 
+
 import java.util.List;
 
-import edu.jas.structure.RingElem;
-import edu.jas.poly.Word;
-import edu.jas.poly.TermOrder;
 import edu.jas.poly.GenWordPolynomial;
 import edu.jas.poly.GenWordPolynomialRing;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -18,7 +17,7 @@ import edu.jas.poly.GenWordPolynomialRing;
  * @author Heinz Kredel
  */
 
-public interface WordPairList<C extends RingElem<C> > {
+public interface WordPairList<C extends RingElem<C>> {
 
 
     /**
@@ -86,4 +85,3 @@ public interface WordPairList<C extends RingElem<C> > {
     public int remCount();
 
 }
-

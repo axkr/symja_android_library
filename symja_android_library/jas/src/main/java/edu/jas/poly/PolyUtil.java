@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4713 2013-12-28 19:08:29Z kredel $
+ * $Id: PolyUtil.java 4831 2014-06-21 21:26:23Z axelclk $
  */
 
 package edu.jas.poly;
@@ -103,7 +103,7 @@ public class PolyUtil {
                 ExpVector f = x.getKey();
                 C b = x.getValue();
                 ExpVector g = e.combine(f);
-                assert (Cm.get(g) != null);
+                assert (Cm.get(g) == null);
                 //if ( Cm.get(g) != null ) { // todo assert, done
                 //   throw new RuntimeException("PolyUtil debug error");
                 //}

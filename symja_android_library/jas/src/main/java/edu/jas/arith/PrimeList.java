@@ -1,5 +1,5 @@
 /*
- * $Id: PrimeList.java 4262 2012-10-21 13:24:47Z kredel $
+ * $Id: PrimeList.java 4830 2014-06-01 21:15:45Z axelclk $
  */
 
 package edu.jas.arith;
@@ -9,8 +9,6 @@ package edu.jas.arith;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import edu.jas.structure.Power;
 
 
 /**
@@ -296,13 +294,10 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * @return 2**n - m
      */
     public static java.math.BigInteger getLongPrime(int n, int m) {
-        long prime = 2; // knuth (2,390)
-        for (int i = 1; i < n; i++) {
-            prime *= 2;
+        if (n < 30) {
+            return java.math.BigInteger.valueOf((1 << n) - m);
         }
-        prime -= m;
-        // System.out.println("p1 = " + prime);
-        return java.math.BigInteger.valueOf(prime);
+        return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.valueOf(m));
     }
 
 
@@ -312,12 +307,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
      * @return 2**n - 1
      */
     public static java.math.BigInteger getMersennePrime(int n) {
-        BigInteger t = new BigInteger(2);
-        BigInteger p = Power.positivePower(t, n);
-        p = p.subtract(new BigInteger(1));
-        java.math.BigInteger prime = p.getVal();
-        // System.out.println("p1 = " + prime);
-        return prime;
+        return java.math.BigInteger.ONE.shiftLeft(n).subtract(java.math.BigInteger.ONE);
     }
 
 

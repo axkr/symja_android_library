@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionAbstract.java 4283 2012-11-03 18:31:09Z kredel $
+ * $Id: ReductionAbstract.java 4783 2014-04-06 21:58:40Z kredel $
  */
 
 package edu.jas.gb;
@@ -77,7 +77,7 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
         //GenPolynomial<C> App = A.multiply(b, e1);
         //GenPolynomial<C> Bpp = B.multiply(a, f1);
         //GenPolynomial<C> Cp = App.subtract(Bpp);
-        GenPolynomial<C> Cp = A.scaleSubtractMultiple(b,e1,a,f1,B);
+        GenPolynomial<C> Cp = A.scaleSubtractMultiple(b, e1, a, f1, B);
         return Cp;
     }
 
@@ -121,7 +121,7 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
         //GenPolynomial<C> App = A.multiply(b, e1);
         //GenPolynomial<C> Bpp = B.multiply(a, f1);
         //GenPolynomial<C> Cp = App.subtract(Bpp);
-        GenPolynomial<C> Cp = A.scaleSubtractMultiple(b,e1,a,f1,B);
+        GenPolynomial<C> Cp = A.scaleSubtractMultiple(b, e1, a, f1, B);
 
         GenPolynomial<C> zero = A.ring.getZERO();
         GenPolynomial<C> As = zero.sum(b.negate(), e1);
@@ -186,7 +186,7 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
         }
         ExpVector ei = A.leadingExpVector();
         ExpVector ej = B.leadingExpVector();
-        return criterion4(ei,ej,e);
+        return criterion4(ei, ej, e);
     }
 
 
@@ -221,7 +221,7 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
         ExpVector ei = A.leadingExpVector();
         ExpVector ej = B.leadingExpVector();
         ExpVector e = ei.lcm(ej);
-        return criterion4(ei,ej,e);
+        return criterion4(ei, ej, e);
     }
 
 

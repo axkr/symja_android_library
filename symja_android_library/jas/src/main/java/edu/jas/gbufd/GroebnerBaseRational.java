@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseRational.java 4291 2012-11-04 18:16:27Z kredel $
+ * $Id: GroebnerBaseRational.java 4791 2014-04-09 09:36:41Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.gb.GroebnerBaseAbstract;
+import edu.jas.gb.PairList;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
@@ -41,17 +42,45 @@ public class GroebnerBaseRational<C extends BigRational> extends GroebnerBaseAbs
      * Constructor.
      */
     public GroebnerBaseRational() {
-        super();
-        bba = new GroebnerBasePseudoSeq<BigInteger>(new BigInteger());
+        this(new GroebnerBasePseudoSeq<BigInteger>(new BigInteger()));
     }
 
 
     /**
      * Constructor.
+     * @param threads the number of parallel threads.
      */
     public GroebnerBaseRational(int threads) {
+        this(new GroebnerBasePseudoParallel<BigInteger>(threads, new BigInteger()));
+    }
+
+
+    /**
+     * Constructor.
+     * @param pl pair selection strategy
+     */
+    public GroebnerBaseRational(PairList<BigInteger> pl) {
+        this(new GroebnerBasePseudoSeq<BigInteger>(new BigInteger(), pl));
+    }
+
+
+    /**
+     * Constructor.
+     * @param threads the number of parallel threads.
+     * @param pl pair selection strategy
+     */
+    public GroebnerBaseRational(int threads, PairList<BigInteger> pl) {
+        this(new GroebnerBasePseudoParallel<BigInteger>(threads, new BigInteger(), pl));
+    }
+
+
+    /**
+     * Constructor.
+     * @param bba Groebner base algorithm for BigInteger coefficients.
+     */
+    public GroebnerBaseRational(GroebnerBaseAbstract<BigInteger> bba) {
         super();
-        bba = new GroebnerBasePseudoParallel<BigInteger>(threads,new BigInteger());
+        this.bba = bba;
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4668 2013-10-19 17:41:05Z kredel $
+ * $Id: SolvableQuotient.java 4792 2014-04-09 09:48:16Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -9,11 +9,11 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.kern.PrettyPrint;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
-import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.QuotPair;
 
@@ -24,8 +24,8 @@ import edu.jas.structure.QuotPair;
  * immutable.
  * @author Heinz Kredel
  */
-public class SolvableQuotient<C extends GcdRingElem<C>> 
-    implements GcdRingElem<SolvableQuotient<C>>, QuotPair<GenPolynomial<C>> {
+public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<SolvableQuotient<C>>,
+                QuotPair<GenPolynomial<C>> {
 
 
     private static final Logger logger = Logger.getLogger(SolvableQuotient.class);
@@ -102,7 +102,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>>
             n = (GenSolvablePolynomial<C>) n.negate();
             d = (GenSolvablePolynomial<C>) d.negate();
         }
-        if (isred) { 
+        if (isred) {
             num = n;
             den = d;
             return;
@@ -128,22 +128,22 @@ public class SolvableQuotient<C extends GcdRingElem<C>>
             den = ring.ring.getONE();
             return;
         }
-        if (n.isONE()||d.isONE()) {
+        if (n.isONE() || d.isONE()) {
             num = n;
             den = d;
             return;
         }
         // must reduce to lowest terms
         // not perfect, TODO 
-        GenSolvablePolynomial<C>[] gcd = PolyGBUtil.<C> syzGcdCofactors(r.ring,n,d);
+        GenSolvablePolynomial<C>[] gcd = PolyGBUtil.<C> syzGcdCofactors(r.ring, n, d);
         if (!gcd[0].isONE()) {
             logger.info("constructor: gcd = " + Arrays.toString(gcd)); // + ", " + n + ", " +d);
             n = gcd[1];
             d = gcd[2];
         }
         // not perfect, TODO 
-        GenSolvablePolynomial<C>[] simp = ring.engine.leftSimplifier(n,d);
-        logger.info("simp: " + Arrays.toString(simp) + ", " + n + ", " +d);
+        GenSolvablePolynomial<C>[] simp = ring.engine.leftSimplifier(n, d);
+        logger.info("simp: " + Arrays.toString(simp) + ", " + n + ", " + d);
         num = simp[0];
         den = simp[1];
     }
@@ -357,32 +357,34 @@ public class SolvableQuotient<C extends GcdRingElem<C>>
 
 
     /**
-     * SolvableQuotient right fraction.  <b>Note:</b> It is not
-     * possible to distinguish right from left fractions in the
-     * current implementation. So it is not possible to compute with right fractions.
-     * @return SolvableQuotient(a,b), where den<sup>-1</sup> num = a b<sup>-1</sup>
+     * SolvableQuotient right fraction. <b>Note:</b> It is not possible to
+     * distinguish right from left fractions in the current implementation. So
+     * it is not possible to compute with right fractions.
+     * @return SolvableQuotient(a,b), where den<sup>-1</sup> num = a
+     *         b<sup>-1</sup>
      */
     public SolvableQuotient<C> rightFraction() {
-        if ( isZERO() || isONE() ) {
+        if (isZERO() || isONE()) {
             return this;
         }
-        GenSolvablePolynomial<C>[] oc = ring.engine.rightOreCond(num,den);
+        GenSolvablePolynomial<C>[] oc = ring.engine.rightOreCond(num, den);
         return new SolvableQuotient<C>(ring, oc[1], oc[0], true); // reversed, true is wrong but okay
     }
 
 
     /**
-     * Test if SolvableQuotient right fraction.  <b>Note:</b> It is not
-     * possible to distinguish right from left fractions in the
-     * current implementation. So it is not possible to compute with right fractions.
+     * Test if SolvableQuotient right fraction. <b>Note:</b> It is not possible
+     * to distinguish right from left fractions in the current implementation.
+     * So it is not possible to compute with right fractions.
      * @param s = SolvableQuotient(a,b)
-     * @return true if s is a right fraction of this, i.e. den<sup>-1</sup> num = a b<sup>-1</sup>
+     * @return true if s is a right fraction of this, i.e. den<sup>-1</sup> num
+     *         = a b<sup>-1</sup>
      */
     public boolean isRightFraction(SolvableQuotient<C> s) {
-        if ( isZERO() ) {
+        if (isZERO()) {
             return s.isZERO();
         }
-        if ( isONE() ) {
+        if (isONE()) {
             return s.isONE();
         }
         GenSolvablePolynomial<C> x = den.multiply(s.num);
@@ -669,6 +671,9 @@ public class SolvableQuotient<C extends GcdRingElem<C>>
         }
         if (this.isZERO()) {
             return b;
+        }
+        if (this.equals(b)) {
+            return this;
         }
         return ring.getONE();
     }

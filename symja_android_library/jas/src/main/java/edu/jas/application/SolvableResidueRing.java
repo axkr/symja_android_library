@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableResidueRing.java 4487 2013-07-10 20:25:23Z kredel $
+ * $Id: SolvableResidueRing.java 4792 2014-04-09 09:48:16Z kredel $
  */
 
 package edu.jas.application;
@@ -22,8 +22,8 @@ import edu.jas.structure.RingFactory;
 
 
 /**
- * SolvableResidue ring factory based on GenSolvablePolynomial with RingFactory
- * interface. Objects of this class are immutable.
+ * SolvableResidue ring factory based on GenSolvablePolynomialRing with
+ * GcdRingFactory interface. Objects of this class are immutable.
  * @author Heinz Kredel
  */
 public class SolvableResidueRing<C extends GcdRingElem<C>> implements RingFactory<SolvableResidue<C>> {

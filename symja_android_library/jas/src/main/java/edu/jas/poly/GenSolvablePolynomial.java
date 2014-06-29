@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomial.java 4735 2014-01-03 18:33:11Z kredel $
+ * $Id: GenSolvablePolynomial.java 4824 2014-04-27 12:45:05Z kredel $
  */
 
 package edu.jas.poly;
@@ -11,8 +11,8 @@ import java.util.SortedMap;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.structure.RingElem;
 import edu.jas.structure.NotInvertibleException;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -128,7 +128,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param Bp GenSolvablePolynomial.
      * @return this*Bp, where * denotes solvable multiplication.
      */
-    // not @Override
+    // cannot @Override, @NoOverride
     public GenSolvablePolynomial<C> multiply(GenSolvablePolynomial<C> Bp) {
         if (Bp == null || Bp.isZERO()) {
             return ring.getZERO();
@@ -140,7 +140,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         if (debug) {
             logger.debug("ring = " + ring);
         }
-        if (this instanceof RecSolvablePolynomial || Bp instanceof RecSolvablePolynomial) {
+        if (this instanceof RecSolvablePolynomial && Bp instanceof RecSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
             logger.info("warn: wrong method dispatch in JRE multiply(Bp) - trying to fix");
             RecSolvablePolynomial T = (RecSolvablePolynomial) this; // no <C>
@@ -243,6 +243,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param T GenSolvablePolynomial.
      * @return S*this*T.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiply(GenSolvablePolynomial<C> S, GenSolvablePolynomial<C> T) {
         if (S.isZERO() || T.isZERO() || this.isZERO()) {
             return ring.getZERO();
@@ -269,6 +270,13 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         if (b == null || b.isZERO()) {
             return Cp;
         }
+        if (this instanceof RecSolvablePolynomial && b instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            logger.info("warn: wrong method dispatch in JRE multiply(b) - trying to fix");
+            RecSolvablePolynomial T = (RecSolvablePolynomial) this; // no <C>
+            GenSolvablePolynomial Sp = (GenSolvablePolynomial) b;
+            return (GenSolvablePolynomial<C>) T.recMultiply(Sp);
+        }
         Map<ExpVector, C> Cm = Cp.val; //getMap();
         Map<ExpVector, C> Am = val;
         for (Map.Entry<ExpVector, C> y : Am.entrySet()) {
@@ -290,6 +298,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param c coefficient.
      * @return b*this*c, where * is coefficient multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiply(C b, C c) {
         GenSolvablePolynomial<C> Cp = ring.getZERO().copy();
         if (b == null || b.isZERO()) {
@@ -297,6 +306,15 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         }
         if (c == null || c.isZERO()) {
             return Cp;
+        }
+        if (this instanceof RecSolvablePolynomial && b instanceof GenSolvablePolynomial
+                 && c instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            logger.info("warn: wrong method dispatch in JRE multiply(b,c) - trying to fix");
+            RecSolvablePolynomial T = (RecSolvablePolynomial) this; // no <C>
+            GenSolvablePolynomial Bp = (GenSolvablePolynomial) b;
+            GenSolvablePolynomial Dp = (GenSolvablePolynomial) c;
+            return (GenSolvablePolynomial<C>) T.multiply(Bp,Dp);
         }
         Map<ExpVector, C> Cm = Cp.val; //getMap();
         Map<ExpVector, C> Am = val;
@@ -335,6 +353,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @return x<sup>e</sup> * this * x<sup>f</sup>, where * denotes solvable
      *         multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiply(ExpVector e, ExpVector f) {
         if (e == null || e.isZERO()) {
             return this;
@@ -374,6 +393,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @return b x<sup>e</sup> * this * c x<sup>f</sup>, where * denotes
      *         solvable multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiply(C b, ExpVector e, C c, ExpVector f) {
         if (b == null || b.isZERO()) {
             return ring.getZERO();
@@ -394,6 +414,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param e exponent.
      * @return b x<sup>e</sup> * this, where * denotes solvable multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiplyLeft(C b, ExpVector e) {
         if (b == null || b.isZERO()) {
             return ring.getZERO();
@@ -408,6 +429,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param e exponent.
      * @return x<sup>e</sup> * this, where * denotes solvable multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiplyLeft(ExpVector e) {
         if (e == null || e.isZERO()) {
             return this;
@@ -424,6 +446,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param b coefficient.
      * @return b*this, where * is coefficient multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiplyLeft(C b) {
         GenSolvablePolynomial<C> Cp = ring.getZERO().copy();
         if (b == null || b.isZERO()) {
@@ -448,6 +471,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param m 'monomial'.
      * @return m * this, where * denotes solvable multiplication.
      */
+    // new method, @NoOverride
     public GenSolvablePolynomial<C> multiplyLeft(Map.Entry<ExpVector, C> m) {
         if (m == null) {
             return ring.getZERO();
@@ -471,8 +495,8 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
 
 
     /**
-     * GenSolvablePolynomial monic, i.e. leadingCoefficient == 1. If leadingCoefficient
-     * is not invertible returns this unmodified.
+     * GenSolvablePolynomial left monic, i.e. leadingCoefficient == 1. If
+     * leadingCoefficient is not invertible returns this unmodified.
      * @return monic(this).
      */
     @Override
@@ -489,7 +513,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
             C lm = lc.inverse();
             //System.out.println("lm = "+lm);
             return multiplyLeft(lm);
-        } catch(NotInvertibleException e) {
+        } catch (NotInvertibleException e) {
             //e.printStackTrace();
         }
         return this;
@@ -497,15 +521,16 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
 
 
     /**
-     * GenSolvablePolynomial left division with remainder. Fails, if exact division by
-     * leading base coefficient is not possible. Meaningful only for univariate
-     * polynomials over fields, but works in any case.
-     * @param S nonzero GenSolvablePolynomial with invertible leading coefficient.
+     * GenSolvablePolynomial left division with remainder. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
      * @return [ quotient , remainder ] with this = quotient * S + remainder and
      *         deg(remainder) &lt; deg(S) or remiander = 0.
-     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial).
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
      */
-    //@Override
+    // cannot @Override, @NoOverride
     @SuppressWarnings("unchecked")
     public GenSolvablePolynomial<C>[] quotientRemainder(GenSolvablePolynomial<C> S) {
         if (S == null || S.isZERO()) {
@@ -531,7 +556,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
                 a = a.multiply(ci); // this is correct!
                 q = (GenSolvablePolynomial<C>) q.sum(a, f);
                 h = S.multiplyLeft(a, f);
-                if ( !h.leadingBaseCoefficient().equals(r.leadingBaseCoefficient()) ) {
+                if (!h.leadingBaseCoefficient().equals(r.leadingBaseCoefficient())) {
                     throw new RuntimeException("something is wrong: r = " + r + ", h = " + h);
                 }
                 r = (GenSolvablePolynomial<C>) r.subtract(h);
@@ -543,6 +568,92 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
         ret[0] = q;
         ret[1] = r;
         return ret;
+    }
+
+
+    /**
+     * RecSolvablePolynomial right coefficients from left coefficients.
+     * <b>Note:</b> R is represented as a polynomial with left coefficients, the
+     * implementation can at the moment not distinguish between left and right
+     * coefficients.
+     * @return R = sum( X<sup>i</sup> b<sub>i</sub> ), with P =
+     *         sum(a<sub>i</sub> X<sup>i</sup> ) and eval(sum(X<sup>i</sup>
+     *         b<sub>i</sub>)) == sum(a<sub>i</sub> X<sup>i</sup>)
+     */
+    public GenSolvablePolynomial<C> rightRecursivePolynomial() {
+        if (this.isONE() || this.isZERO()) {
+            return this;
+        }
+        if (!(this instanceof RecSolvablePolynomial)) {
+            return this;
+        }
+        RecSolvablePolynomialRing<C> rfac = (RecSolvablePolynomialRing<C>) ring;
+        if (rfac.coeffTable.isEmpty()) {
+            return this;
+        }
+        RecSolvablePolynomial<C> p = (RecSolvablePolynomial<C>) this;
+        RecSolvablePolynomial<C> R = (RecSolvablePolynomial<C>) p.rightRecursivePolynomial();
+        return (GenSolvablePolynomial<C> ) R;
+    }
+
+
+    /**
+     * Evaluate RecSolvablePolynomial as right coefficients polynomial.
+     * <b>Note:</b> R is represented as a polynomial with left coefficients, the
+     * implementation can at the moment not distinguish between left and right
+     * coefficients.
+     * @return this as evaluated polynomial R. R = sum( X<sup>i</sup> b<sub>i</sub>
+     *         ), this = sum(a<sub>i</sub> X<sup>i</sup> ) = eval(sum(X<sup>i</sup>
+     *         b<sub>i</sub>))
+     */
+    public GenSolvablePolynomial<C> evalAsRightRecursivePolynomial() {
+        if (this.isONE() || this.isZERO()) {
+            return this;
+        }
+        if (!(this instanceof RecSolvablePolynomial)) {
+            return this;
+        }
+        RecSolvablePolynomialRing<C> rfac = (RecSolvablePolynomialRing<C>) ring;
+        if (rfac.coeffTable.isEmpty()) {
+            return this;
+        }
+        RecSolvablePolynomial<C> p = (RecSolvablePolynomial<C>) this;
+        RecSolvablePolynomial<C> R = (RecSolvablePolynomial<C>) p.evalAsRightRecursivePolynomial();
+        return (GenSolvablePolynomial<C> ) R;
+    }
+
+
+    /**
+     * Test RecSolvablePolynomial right coefficients polynomial. <b>Note:</b> R
+     * is represented as a polynomial with left coefficients, the implementation
+     * can at the moment not distinguish between left and right coefficients.
+     * @param R GenSolvablePolynomial with right coefficients.
+     * @return true, if R is polynomial with right coefficients of this. R = sum(
+     *         X<sup>i</sup> b<sub>i</sub> ), with this = sum(a<sub>i</sub>
+     *         X<sup>i</sup> ) and eval(sum(X<sup>i</sup> b<sub>i</sub>)) ==
+     *         sum(a<sub>i</sub> X<sup>i</sup>)
+     */
+    public boolean isRightRecursivePolynomial(GenSolvablePolynomial<C> R) {
+        if (this.isZERO()) {
+            return R.isZERO();
+        }
+        if (this.isONE()) {
+            return R.isONE();
+        }
+        if (!(this instanceof RecSolvablePolynomial)) {
+            return !(R instanceof RecSolvablePolynomial);
+        }
+        if (!(R instanceof RecSolvablePolynomial)) {
+            return false;
+        }
+        RecSolvablePolynomialRing<C> rfac = (RecSolvablePolynomialRing<C>) ring;
+        if (rfac.coeffTable.isEmpty()) {
+            RecSolvablePolynomialRing<C> rf = (RecSolvablePolynomialRing<C>) R.ring;
+            return rf.coeffTable.isEmpty();
+        }
+        RecSolvablePolynomial<C> p = (RecSolvablePolynomial<C>) this;
+        RecSolvablePolynomial<C> q = (RecSolvablePolynomial<C>) R;
+        return p.isRightRecursivePolynomial(q);
     }
 
 }

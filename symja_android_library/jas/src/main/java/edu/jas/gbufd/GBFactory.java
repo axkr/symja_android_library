@@ -1,5 +1,5 @@
 /*
- * $Id: GBFactory.java 4535 2013-07-28 15:45:50Z kredel $
+ * $Id: GBFactory.java 4794 2014-04-09 11:21:53Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -21,7 +21,9 @@ import edu.jas.gb.GBProxy;
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.GroebnerBaseParallel;
 import edu.jas.gb.GroebnerBaseSeq;
+import edu.jas.gb.OrderedMinPairlist;
 import edu.jas.gb.OrderedPairlist;
+import edu.jas.gb.OrderedSyzPairlist;
 import edu.jas.gb.PairList;
 import edu.jas.gb.ReductionSeq;
 import edu.jas.kern.ComputerThreads;
@@ -264,7 +266,15 @@ public class GBFactory {
             bba = new GroebnerBaseSeq<BigRational>(pl);
             break;
         case ffgb:
-            bba = new GroebnerBaseRational<BigRational>(); // pl not possible
+            PairList<BigInteger> pli;
+            if (pl instanceof OrderedMinPairlist) {
+                pli = new OrderedMinPairlist<BigInteger>();
+            } else if (pl instanceof OrderedSyzPairlist) {
+                pli = new OrderedSyzPairlist<BigInteger>();
+            } else {
+                pli = new OrderedPairlist<BigInteger>();
+            }
+            bba = new GroebnerBaseRational<BigRational>(pli); // pl not possible
             break;
         default:
             throw new IllegalArgumentException("algorithm not available for BigRational " + a);
@@ -327,7 +337,15 @@ public class GBFactory {
             bba = new GroebnerBaseSeq<Quotient<C>>(new ReductionSeq<Quotient<C>>(), pl);
             break;
         case ffgb:
-            bba = new GroebnerBaseSeqQuotient<C>(fac); // pl not possible
+            PairList<GenPolynomial<C>> pli;
+            if (pl instanceof OrderedMinPairlist) {
+                pli = new OrderedMinPairlist<GenPolynomial<C>>();
+            } else if (pl instanceof OrderedSyzPairlist) {
+                pli = new OrderedSyzPairlist<GenPolynomial<C>>();
+            } else {
+                pli = new OrderedPairlist<GenPolynomial<C>>();
+            }
+            bba = new GroebnerBaseQuotient<C>(fac, pli); // pl not possible
             break;
         default:
             throw new IllegalArgumentException("algorithm not available for Quotient " + a);
@@ -344,8 +362,68 @@ public class GBFactory {
      */
     public static <C extends GcdRingElem<C>> GroebnerBaseAbstract<GenPolynomial<C>> getImplementation(
                     GenPolynomialRing<C> fac) {
+        return getImplementation(fac, Algo.igb);
+    }
+
+
+    /**
+     * Determine suitable implementation of GB algorithms, case (recursive)
+     * polynomial.
+     * @param fac GenPolynomialRing&lt;C&gt;.
+     * @param a algorithm, a = igb or egb, dgb if fac is univariate over a
+     *            field.
+     * @return GB algorithm implementation.
+     */
+    public static <C extends GcdRingElem<C>> GroebnerBaseAbstract<GenPolynomial<C>> getImplementation(
+                    GenPolynomialRing<C> fac, Algo a) {
+        return getImplementation(fac, a, new OrderedPairlist<GenPolynomial<C>>());
+    }
+
+
+    /**
+     * Determine suitable implementation of GB algorithms, case (recursive)
+     * polynomial.
+     * @param fac GenPolynomialRing&lt;C&gt;.
+     * @param pl pair selection strategy
+     * @return GB algorithm implementation.
+     */
+    public static <C extends GcdRingElem<C>> GroebnerBaseAbstract<GenPolynomial<C>> getImplementation(
+                    GenPolynomialRing<C> fac, PairList<GenPolynomial<C>> pl) {
+        return getImplementation(fac, Algo.igb, pl);
+    }
+
+
+    /**
+     * Determine suitable implementation of GB algorithms, case (recursive)
+     * polynomial.
+     * @param fac GenPolynomialRing&lt;C&gt;.
+     * @param a algorithm, a = igb or egb, dgb if fac is univariate over a
+     *            field.
+     * @param pl pair selection strategy
+     * @return GB algorithm implementation.
+     */
+    public static <C extends GcdRingElem<C>> GroebnerBaseAbstract<GenPolynomial<C>> getImplementation(
+                    GenPolynomialRing<C> fac, Algo a, PairList<GenPolynomial<C>> pl) {
         GroebnerBaseAbstract<GenPolynomial<C>> bba;
-        bba = new GroebnerBasePseudoRecSeq<C>(fac);
+        switch (a) {
+        case igb:
+            bba = new GroebnerBasePseudoRecSeq<C>(fac, pl);
+            break;
+        case egb:
+            if (fac.nvar > 1 || !fac.coFac.isField()) {
+                throw new IllegalArgumentException("coefficients not univariate or not over a field" + fac);
+            }
+            bba = new EGroebnerBaseSeq<GenPolynomial<C>>(); // pl not suitable
+            break;
+        case dgb:
+            if (fac.nvar > 1 || !fac.coFac.isField()) {
+                throw new IllegalArgumentException("coefficients not univariate or not over a field" + fac);
+            }
+            bba = new DGroebnerBaseSeq<GenPolynomial<C>>(); // pl not suitable
+            break;
+        default:
+            throw new IllegalArgumentException("algorithm not available for GenPolynomial<C> " + a);
+        }
         return bba;
     }
 
@@ -394,8 +472,16 @@ public class GBFactory {
         GroebnerBaseAbstract bba = null;
         Object ofac = fac;
         if (ofac instanceof GenPolynomialRing) {
+            PairList<GenPolynomial<C>> pli;
+            if (pl instanceof OrderedMinPairlist) {
+                pli = new OrderedMinPairlist<GenPolynomial<C>>();
+            } else if (pl instanceof OrderedSyzPairlist) {
+                pli = new OrderedSyzPairlist<GenPolynomial<C>>();
+            } else {
+                pli = new OrderedPairlist<GenPolynomial<C>>();
+            }
             GenPolynomialRing<C> rofac = (GenPolynomialRing<C>) ofac;
-            GroebnerBaseAbstract<GenPolynomial<C>> bbr = new GroebnerBasePseudoRecSeq<C>(rofac); // no pl
+            GroebnerBaseAbstract<GenPolynomial<C>> bbr = new GroebnerBasePseudoRecSeq<C>(rofac, pli); // not pl
             bba = (GroebnerBaseAbstract) bbr;
         } else if (ofac instanceof ProductRing) {
             ProductRing pfac = (ProductRing) ofac;
@@ -447,7 +533,7 @@ public class GBFactory {
             GroebnerBaseAbstract<C> e2 = new GroebnerBasePseudoParallel<C>(th, fac, pl);
             return new GBProxy<C>(e1, e2);
         }
-        return getImplementation(fac);
+        return getImplementation(fac, pl);
     }
 
 }

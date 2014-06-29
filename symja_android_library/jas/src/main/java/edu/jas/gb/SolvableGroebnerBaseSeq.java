@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseSeq.java 4538 2013-07-29 16:31:14Z kredel $
+ * $Id: SolvableGroebnerBaseSeq.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
@@ -68,7 +68,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
         for (GenSolvablePolynomial<C> p : F) {
             //  p = (SolvablePolynomial) it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -121,7 +121,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                 logger.info("ht(H) = " + H.leadingExpVector());
             }
 
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             if (H.isONE()) {
                 G.clear();
                 G.add(H);
@@ -409,7 +409,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
         while (it.hasNext()) {
             p = it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -419,7 +419,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                 if (pairlist == null) {
                     // pairlist = new OrderedPairlist<C>( modv, p.ring );
                     pairlist = strategy.create(modv, p.ring);
-                    if ( ! p.ring.coFac.isField() ) {
+                    if (!p.ring.coFac.isField()) {
                         //throw new IllegalArgumentException("coefficients not from a field");
                         logger.warn("coefficients not from a field " + p.ring.coFac);
                     }
@@ -468,7 +468,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
 
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             if (H.isONE()) {
                 G.clear();
                 G.add(H);
@@ -487,7 +487,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                     p = H.multiply(x);
                     p = sred.leftNormalform(G, p);
                     if (!p.isZERO()) {
-                        p = (GenSolvablePolynomial<C>) p.monic();
+                        p = p.monic();
                         if (p.isONE()) {
                             G.clear();
                             G.add(p);

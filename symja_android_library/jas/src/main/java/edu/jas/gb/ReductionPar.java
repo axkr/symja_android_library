@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionPar.java 4535 2013-07-28 15:45:50Z kredel $
+ * $Id: ReductionPar.java 4783 2014-04-06 21:58:40Z kredel $
  */
 
 package edu.jas.gb;
@@ -14,7 +14,7 @@ import edu.jas.structure.RingElem;
 
 
 /**
- * Polynomial Reduction parallel usable algorithm. Implements normalform.
+ * Polynomial reduction parallel usable algorithm. Implements normalform.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */

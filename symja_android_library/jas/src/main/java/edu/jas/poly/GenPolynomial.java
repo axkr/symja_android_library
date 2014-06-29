@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4715 2013-12-29 13:07:32Z kredel $
+ * $Id: GenPolynomial.java 4809 2014-04-18 17:27:00Z kredel $
  */
 
 package edu.jas.poly;
@@ -1188,7 +1188,7 @@ Iterable<Monomial<C>> {
             return this;
         }
         assert (ring.nvar == S.ring.nvar);
-        if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
+        if (this instanceof GenSolvablePolynomial && S instanceof GenSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
             logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
             GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
@@ -1238,6 +1238,12 @@ Iterable<Monomial<C>> {
         }
         if (this.isZERO()) {
             return this;
+        }
+        if (this instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            logger.debug("warn: wrong method dispatch in JRE multiply(s) - trying to fix");
+            GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
+            return T.multiply(s);
         }
         GenPolynomial<C> p = ring.getZERO().copy();
         SortedMap<ExpVector, C> pv = p.val;
@@ -1396,7 +1402,6 @@ Iterable<Monomial<C>> {
      * @return [ quotient , remainder ] with this = quotient * S + remainder and
      *         deg(remainder) &lt; deg(S) or remiander = 0.
      * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
-     *      .
      */
     @SuppressWarnings("unchecked")
     public GenPolynomial<C>[] quotientRemainder(GenPolynomial<C> S) {
@@ -1441,7 +1446,6 @@ Iterable<Monomial<C>> {
      * @return [ quotient , remainder ] with this = quotient * S + remainder and
      *         deg(remainder) &lt; deg(S) or remiander = 0.
      * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
-     *      .
      * @deprecated use quotientRemainder()
      */
     @Deprecated
@@ -1457,7 +1461,6 @@ Iterable<Monomial<C>> {
      * @param S nonzero GenPolynomial with invertible leading coefficient.
      * @return quotient with this = quotient * S + remainder.
      * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
-     *      .
      */
     public GenPolynomial<C> divide(GenPolynomial<C> S) {
         if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
@@ -1478,7 +1481,6 @@ Iterable<Monomial<C>> {
      * @param S nonzero GenPolynomial with invertible leading coefficient.
      * @return remainder with this = quotient * S + remainder.
      * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
-     *      .
      */
     public GenPolynomial<C> remainder(GenPolynomial<C> S) {
         if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {

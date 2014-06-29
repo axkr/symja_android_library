@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "../DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Factorization Domain package</title>
+  </head>
+
+  <body>
+    <h1>Factorization domain package.</h1>
+
+<p>
+  This package contains classes for solvable polynomials rings as
+  (non-unique) factorization domains.  Methods provided with interface
+  <code>GreatestCommonDivisor</code> are e.g. greatest common divisors
+  <code>gcd()</code>, primitive part <code>primitivePart()</code> or
+  <code>coPrime()</code>.  <!-- The different classes implement
+  variants of polynomial remainder sequences (PRS) and modular
+  methods.  -->
+</p>
+<!--p>
+  To choose the correct implementation always use the factory classes
+  <code>GCDFactory</code>, <code>SquarefreeFactory</code> and
+  <code>FactorFactory</code> with methods
+  <code>getImplementation()</code> or <code>getProxy()</code>.  These
+  methods will take care of all possible (implemented) coefficient
+  rings properties.  The polynomial coefficients must implement the
+  <code>GcdRingElem</code> interface and so must allow greatest common
+  divisor computations.  Greatest common divisor computation is
+  completely generic and works for any implemented integral domain.
+  If special, optimized implementations exist they will be used.
+  Squarefree decomposition is also completely generic and works for
+  any implemented integral domain. There are no special, optimized
+  implementations.  Factorization is generic relative to the
+  implemented ring constructions: algebraic field extensions and
+  transcendent field extensions. Implemented base cases are modular
+  coefficient, integer coefficients and rational number coefficients.
+</p-->
+<p>
+  The implementation is new research.
+</p>
+ 
+    <hr />
+    <address><a href="mailto:kredel at rz.uni-mannheim.de">Heinz Kredel</a></address>
+<p>
+<!-- Created: Thu Dec 26 18:11:18 CET 2013 -->
+<!-- hhmts start -->
+Last modified: Thu Dec 26 18:18:12 CET 2013
+<!-- hhmts end -->
+</p>
+<p>$Id: package.html 4705 2013-12-26 17:18:43Z kredel $ 
+</p>
+  </body>
+</html>
+

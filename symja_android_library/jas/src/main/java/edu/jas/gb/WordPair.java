@@ -1,14 +1,12 @@
 /*
- * $Id: WordPair.java 4150 2012-09-01 09:18:23Z kredel $
+ * $Id: WordPair.java 4782 2014-04-06 21:56:08Z kredel $
  */
 
 package edu.jas.gb;
 
-import java.io.Serializable;
 
-import edu.jas.structure.RingElem;
-import edu.jas.poly.Word;
 import edu.jas.poly.GenWordPolynomial;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -16,13 +14,20 @@ import edu.jas.poly.GenWordPolynomial;
  * @param <C> coefficient type
  * @author Heinz Kredel.
  */
-public class WordPair<C extends RingElem<C> > implements Comparable<WordPair> {
+public class WordPair<C extends RingElem<C>> implements Comparable<WordPair> {
 
 
     public final GenWordPolynomial<C> pi;
+
+
     public final GenWordPolynomial<C> pj;
+
+
     public final int i;
+
+
     public final int j;
+
 
     protected int n;
 
@@ -34,8 +39,7 @@ public class WordPair<C extends RingElem<C> > implements Comparable<WordPair> {
      * @param i first index.
      * @param j second index.
      */
-    public WordPair(GenWordPolynomial<C> a, GenWordPolynomial<C> b, 
-                    int i, int j) {
+    public WordPair(GenWordPolynomial<C> a, GenWordPolynomial<C> b, int i, int j) {
         pi = a;
         pj = b;
         this.i = i;
@@ -49,7 +53,7 @@ public class WordPair<C extends RingElem<C> > implements Comparable<WordPair> {
      */
     @Override
     public String toString() {
-        return "wordPair(" + i + "," + j + ",{" + pi.length() + "," + pj.length() + "},"  + n + ")"; 
+        return "wordPair(" + i + "," + j + ",{" + pi.length() + "," + pj.length() + "}," + n + ")";
     }
 
 
@@ -78,27 +82,27 @@ public class WordPair<C extends RingElem<C> > implements Comparable<WordPair> {
      */
     @Override
     public boolean equals(Object ob) {
-        if ( ! (ob instanceof WordPair) ) {
-           return false;
-           // throw new ClassCastException("Pair "+n+" o "+o);
+        if (!(ob instanceof WordPair)) {
+            return false;
+            // throw new ClassCastException("Pair "+n+" o "+o);
         }
-        return 0 == compareTo( (WordPair)ob );
+        return 0 == compareTo((WordPair) ob);
     }
 
 
     /**
-     * compareTo used in TreeMap // not used at moment.
-     * Comparison is based on the number of the pairs.
+     * compareTo used in TreeMap // not used at moment. Comparison is based on
+     * the number of the pairs.
      * @param p a WordPair.
      * @return 1 if (this &lt; o), 0 if (this == o), -1 if (this &gt; o).
      */
     public int compareTo(WordPair p) {
         int x = p.getPairNumber();
-        if ( n > x ) { 
-           return 1;
+        if (n > x) {
+            return 1;
         }
-        if ( n < x ) { 
-           return -1;
+        if (n < x) {
+            return -1;
         }
         return 0;
     }
@@ -114,4 +118,3 @@ public class WordPair<C extends RingElem<C> > implements Comparable<WordPair> {
     }
 
 }
-

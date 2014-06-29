@@ -1,28 +1,28 @@
 /*
- * $Id: SolvableReductionPar.java 4635 2013-09-12 12:41:41Z kredel $
+ * $Id: SolvableReductionPar.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
 
+
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.log4j.Logger;
-
-import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.RingElem;
+// import org.apache.log4j.Logger;
+import edu.jas.poly.ExpVector;
 
 
 /**
- * Solvable polynomial Reduction parallel usable algorithm.
- * Implements left normalform.
+ * Solvable polynomial Reduction parallel usable algorithm. Implements left
+ * normalform.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public class SolvableReductionPar<C extends RingElem<C>>
-             extends SolvableReductionAbstract<C> {
+public class SolvableReductionPar<C extends RingElem<C>> extends SolvableReductionAbstract<C> {
+
 
     //private static final Logger logger = Logger.getLogger(SolvableReductionPar.class);
 
@@ -41,23 +41,22 @@ public class SolvableReductionPar<C extends RingElem<C>>
      * @return left-nf(Ap) with respect to Pp.
      */
     @SuppressWarnings("unchecked")
-    public GenSolvablePolynomial<C> 
-           leftNormalform(List<GenSolvablePolynomial<C>> Pp, 
-                          GenSolvablePolynomial<C> Ap) {  
-        if ( Pp == null || Pp.isEmpty() ) {
-           return Ap;
+    public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
-           return Ap;
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
         }
         int l;
-        Map.Entry<ExpVector,C> m;
+        Map.Entry<ExpVector, C> m;
         GenSolvablePolynomial<C>[] P;
         synchronized (Pp) {
             l = Pp.size();
             P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
             //P = Pp.toArray();
-            for ( int j = 0; j < Pp.size(); j++ ) {
+            for (int j = 0; j < Pp.size(); j++) {
                 P[j] = Pp.get(j);
             }
         }
@@ -71,46 +70,47 @@ public class SolvableReductionPar<C extends RingElem<C>>
         GenSolvablePolynomial<C> p = null;
         GenSolvablePolynomial<C> Q = null;
         GenSolvablePolynomial<C> S = Ap;
-        while ( S.length() > 0 ) { 
-              if ( Pp.size() != l ) { 
-                 //long t = System.currentTimeMillis();
-                 synchronized (Pp) { // required, bad in parallel
+        while (S.length() > 0) {
+            if (Pp.size() != l) {
+                //long t = System.currentTimeMillis();
+                synchronized (Pp) { // required, bad in parallel
                     l = Pp.size();
-                    P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[ l ];
+                    P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
                     //P = Pp.toArray();
-                    for ( int i = 0; i < Pp.size(); i++ ) {
+                    for (int i = 0; i < Pp.size(); i++) {
                         P[i] = Pp.get(i);
                     }
-                 }
-                 //t = System.currentTimeMillis()-t;
-                 //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
-                 S = Ap; // S.add(R)? // restart reduction ?
-                 R = Rz; 
-              }
-              m = S.leadingMonomial();
-              e = m.getKey();
-              a = m.getValue();
-              for ( int i = 0; i < P.length ; i++ ) {
-                  p = P[i];
-                  f = p.leadingExpVector();
-                  if ( f != null ) {
-                     mt =  e.multipleOf( f );
-                     if ( mt ) break; 
-                  }
-              }
-              if ( ! mt ) { 
-                 //logger.debug("irred");
-                 R = (GenSolvablePolynomial<C>)R.sum( a, e );
-                 S = (GenSolvablePolynomial<C>)S.subtract( a, e ); 
-                 // System.out.println(" S = " + S);
-              } else { 
-                 //logger.debug("red");
-                 e =  e.subtract( f );
-                 Q = p.multiplyLeft( e );
-                 a = a.divide( Q.leadingBaseCoefficient() );
-                 Q = Q.multiplyLeft( a );
-                 S = (GenSolvablePolynomial<C>)S.subtract( Q );
-              }
+                }
+                //t = System.currentTimeMillis()-t;
+                //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
+                S = Ap; // S.add(R)? // restart reduction ?
+                R = Rz;
+            }
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (int i = 0; i < P.length; i++) {
+                p = P[i];
+                f = p.leadingExpVector();
+                if (f != null) {
+                    mt = e.multipleOf(f);
+                    if (mt)
+                        break;
+                }
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                R = (GenSolvablePolynomial<C>) R.sum(a, e);
+                S = (GenSolvablePolynomial<C>) S.subtract(a, e);
+                // System.out.println(" S = " + S);
+            } else {
+                //logger.debug("red");
+                e = e.subtract(f);
+                Q = p.multiplyLeft(e);
+                a = a.divide(Q.leadingBaseCoefficient());
+                Q = Q.multiplyLeft(a);
+                S = (GenSolvablePolynomial<C>) S.subtract(Q);
+            }
         }
         return R;
     }
@@ -123,10 +123,8 @@ public class SolvableReductionPar<C extends RingElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the left normal form of Ap wrt. Pp.
      */
-    public GenSolvablePolynomial<C> 
-           leftNormalform(List<GenSolvablePolynomial<C>> row,
-                          List<GenSolvablePolynomial<C>> Pp, 
-                          GenSolvablePolynomial<C> Ap) {  
+    public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> row,
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
         throw new UnsupportedOperationException("normalform with recording not implemented");
     }
 
@@ -138,23 +136,22 @@ public class SolvableReductionPar<C extends RingElem<C>>
      * @return right-nf(Ap) with respect to Pp.
      */
     @SuppressWarnings("unchecked")
-    public GenSolvablePolynomial<C> 
-           rightNormalform(List<GenSolvablePolynomial<C>> Pp, 
-                           GenSolvablePolynomial<C> Ap) {
-        if ( Pp == null || Pp.isEmpty() ) {
-           return Ap;
+    public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
         }
-        if ( Ap == null || Ap.isZERO() ) {
-           return Ap;
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
         }
         int l;
-        Map.Entry<ExpVector,C> m;
+        Map.Entry<ExpVector, C> m;
         GenSolvablePolynomial<C>[] P;
         synchronized (Pp) {
             l = Pp.size();
             P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
             //P = Pp.toArray();
-            for ( int j = 0; j < Pp.size(); j++ ) {
+            for (int j = 0; j < Pp.size(); j++) {
                 P[j] = Pp.get(j);
             }
         }
@@ -168,46 +165,47 @@ public class SolvableReductionPar<C extends RingElem<C>>
         GenSolvablePolynomial<C> p = null;
         GenSolvablePolynomial<C> Q = null;
         GenSolvablePolynomial<C> S = Ap;
-        while ( S.length() > 0 ) { 
-              if ( Pp.size() != l ) { 
-                 //long t = System.currentTimeMillis();
-                 synchronized (Pp) { // required, bad in parallel
+        while (S.length() > 0) {
+            if (Pp.size() != l) {
+                //long t = System.currentTimeMillis();
+                synchronized (Pp) { // required, bad in parallel
                     l = Pp.size();
-                    P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[ l ];
+                    P = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
                     //P = Pp.toArray();
-                    for ( int i = 0; i < Pp.size(); i++ ) {
+                    for (int i = 0; i < Pp.size(); i++) {
                         P[i] = Pp.get(i);
                     }
-                 }
-                 //t = System.currentTimeMillis()-t;
-                 //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
-                 S = Ap; // S.add(R)? // restart reduction ?
-                 R = Rz; 
-              }
-              m = S.leadingMonomial();
-              e = m.getKey();
-              a = m.getValue();
-              for ( int i = 0; i < P.length ; i++ ) {
-                  p = P[i];
-                  f = p.leadingExpVector();
-                  if ( f != null ) {
-                     mt =  e.multipleOf( f );
-                     if ( mt ) break; 
-                  }
-              }
-              if ( ! mt ) { 
-                 //logger.debug("irred");
-                 R = (GenSolvablePolynomial<C>)R.sum( a, e );
-                 S = (GenSolvablePolynomial<C>)S.subtract( a, e ); 
-                 // System.out.println(" S = " + S);
-              } else { 
-                 //logger.debug("red");
-                 e =  e.subtract( f );
-                 Q = p.multiply( e );
-                 a = a.divide( Q.leadingBaseCoefficient() );
-                 Q = Q.multiply( a );
-                 S = (GenSolvablePolynomial<C>)S.subtract( Q );
-              }
+                }
+                //t = System.currentTimeMillis()-t;
+                //logger.info("Pp.toArray() = " + t + " ms, size() = " + l);
+                S = Ap; // S.add(R)? // restart reduction ?
+                R = Rz;
+            }
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (int i = 0; i < P.length; i++) {
+                p = P[i];
+                f = p.leadingExpVector();
+                if (f != null) {
+                    mt = e.multipleOf(f);
+                    if (mt)
+                        break;
+                }
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                R = (GenSolvablePolynomial<C>) R.sum(a, e);
+                S = (GenSolvablePolynomial<C>) S.subtract(a, e);
+                // System.out.println(" S = " + S);
+            } else {
+                //logger.debug("red");
+                e = e.subtract(f);
+                Q = p.multiply(e);
+                a = a.divide(Q.leadingBaseCoefficient());
+                Q = Q.multiply(a);
+                S = (GenSolvablePolynomial<C>) S.subtract(Q);
+            }
         }
         return R;
     }
@@ -220,10 +218,8 @@ public class SolvableReductionPar<C extends RingElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
      */
-    public GenSolvablePolynomial<C> 
-           rightNormalform(List<GenSolvablePolynomial<C>> row,
-                           List<GenSolvablePolynomial<C>> Pp, 
-                           GenSolvablePolynomial<C> Ap) {  
+    public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
         throw new UnsupportedOperationException("normalform with recording not implemented");
     }
 

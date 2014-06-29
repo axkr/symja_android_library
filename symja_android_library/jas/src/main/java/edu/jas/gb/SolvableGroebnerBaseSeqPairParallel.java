@@ -111,6 +111,7 @@ public class SolvableGroebnerBaseSeqPairParallel<C extends RingElem<C>> extends
     /**
      * Cleanup and terminate ThreadPool.
      */
+    @Override
     public void terminate() {
         if (pool == null) {
             return;
@@ -135,7 +136,7 @@ public class SolvableGroebnerBaseSeqPairParallel<C extends RingElem<C>> extends
         while (it.hasNext()) {
             p = it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -301,7 +302,7 @@ public class SolvableGroebnerBaseSeqPairParallel<C extends RingElem<C>> extends
         while (it.hasNext()) {
             p = it.next();
             if (p.length() > 0) {
-                p = (GenSolvablePolynomial<C>) p.monic();
+                p = p.monic();
                 if (p.isONE()) {
                     G.clear();
                     G.add(p);
@@ -436,7 +437,7 @@ class LeftSolvableReducerSeqPair<C extends RingElem<C>> implements Runnable {
             if (debug) {
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             // System.out.println("H   = " + H);
             if (H.isONE()) {
                 // pairlist.update( pair, H );
@@ -563,7 +564,7 @@ class TwosidedSolvableReducerSeqPair<C extends RingElem<C>> implements Runnable 
             if (debug) {
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
-            H = (GenSolvablePolynomial<C>) H.monic();
+            H = H.monic();
             // System.out.println("H   = " + H);
             if (H.isONE()) {
                 // pairlist.update( pair, H );
@@ -587,7 +588,7 @@ class TwosidedSolvableReducerSeqPair<C extends RingElem<C>> implements Runnable 
                 p = H.multiply(x);
                 p = sred.leftNormalform(G, p);
                 if (!p.isZERO()) {
-                    p = (GenSolvablePolynomial<C>) p.monic();
+                    p = p.monic();
                     if (p.isONE()) {
                         synchronized (G) {
                             G.clear();

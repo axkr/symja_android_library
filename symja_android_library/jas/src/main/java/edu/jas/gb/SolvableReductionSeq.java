@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionSeq.java 4627 2013-09-11 14:49:39Z kredel $
+ * $Id: SolvableReductionSeq.java 4781 2014-04-06 21:50:57Z kredel $
  */
 
 package edu.jas.gb;
@@ -22,7 +22,7 @@ import edu.jas.structure.RingElem;
 public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReductionAbstract<C> {
 
 
-    //private static final Logger logger = Logger.getLogger(SolvableReductionSeq.class);
+    //private static final Logger logger = Logger.getLogger(SolvableReductionSeq.class); 
 
 
     /**
@@ -40,7 +40,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
      */
     @SuppressWarnings("unchecked")
     public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> Pp,
-            GenSolvablePolynomial<C> Ap) {
+                    GenSolvablePolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
@@ -121,7 +121,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
      */
     @SuppressWarnings("unchecked")
     public GenSolvablePolynomial<C> leftNormalform(List<GenSolvablePolynomial<C>> row,
-            List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
@@ -208,7 +208,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
      */
     @SuppressWarnings("unchecked")
     public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> Pp,
-            GenSolvablePolynomial<C> Ap) {
+                    GenSolvablePolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
@@ -289,7 +289,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
      */
     @SuppressWarnings("unchecked")
     public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
-            List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+                    List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }

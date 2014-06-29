@@ -1,28 +1,26 @@
 /*
- * $Id: WordReduction.java 4149 2012-09-01 09:01:54Z kredel $
+ * $Id: WordReduction.java 4782 2014-04-06 21:56:08Z kredel $
  */
 
 package edu.jas.gb;
 
-import java.util.List;
 
 import java.io.Serializable;
+import java.util.List;
 
-import edu.jas.poly.Word;
 import edu.jas.poly.GenWordPolynomial;
+import edu.jas.poly.Word;
 import edu.jas.structure.RingElem;
 
 
 /**
- * Polynomial WordReduction interface.
- * Defines S-Polynomial, normalform, module criterion
- * and irreducible set.
+ * Polynomial WordReduction interface. Defines S-Polynomial, normalform, module
+ * criterion and irreducible set.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
 
-public interface WordReduction<C extends RingElem<C>> 
-                 extends Serializable {
+public interface WordReduction<C extends RingElem<C>> extends Serializable {
 
 
     /**
@@ -31,8 +29,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param Bp word polynomial.
      * @return list of all spol(Ap,Bp) the S-polynomials of Ap and Bp.
      */
-    public List<GenWordPolynomial<C>> SPolynomials(GenWordPolynomial<C> Ap, 
-                                                   GenWordPolynomial<C> Bp);
+    public List<GenWordPolynomial<C>> SPolynomials(GenWordPolynomial<C> Ap, GenWordPolynomial<C> Bp);
 
 
     /**
@@ -47,19 +44,17 @@ public interface WordReduction<C extends RingElem<C>>
      * @param r2 word.
      * @return list of all spol(Ap,Bp) the S-polynomials of Ap and Bp.
      */
-    public GenWordPolynomial<C> SPolynomial(C a, Word l1, GenWordPolynomial<C> A, Word r1,
-                                            C b, Word l2, GenWordPolynomial<C> B, Word r2);
+    public GenWordPolynomial<C> SPolynomial(C a, Word l1, GenWordPolynomial<C> A, Word r1, C b, Word l2,
+                    GenWordPolynomial<C> B, Word r2);
 
 
     /**
-     * Is top reducible.
-     * Condition is lt(B) | lt(A) for some B in F.
+     * Is top reducible. Condition is lt(B) | lt(A) for some B in F.
      * @param A polynomial.
      * @param P polynomial list.
      * @return true if A is top reducible with respect to P.
      */
-    public boolean isTopReducible(List<GenWordPolynomial<C>> P, 
-                                  GenWordPolynomial<C> A);
+    public boolean isTopReducible(List<GenWordPolynomial<C>> P, GenWordPolynomial<C> A);
 
 
     /**
@@ -68,8 +63,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return true if A is reducible with respect to P.
      */
-    public boolean isReducible(List<GenWordPolynomial<C>> P, 
-                               GenWordPolynomial<C> A);
+    public boolean isReducible(List<GenWordPolynomial<C>> P, GenWordPolynomial<C> A);
 
 
     /**
@@ -78,8 +72,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return true if A is in normalform with respect to P.
      */
-    public boolean isNormalform(List<GenWordPolynomial<C>> P, 
-                                GenWordPolynomial<C> A);
+    public boolean isNormalform(List<GenWordPolynomial<C>> P, GenWordPolynomial<C> A);
 
 
     /**
@@ -87,7 +80,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param Pp polynomial list.
      * @return true if each A in Pp is in normalform with respect to Pp\{A}.
      */
-    public boolean isNormalform( List<GenWordPolynomial<C>> Pp );
+    public boolean isNormalform(List<GenWordPolynomial<C>> Pp);
 
 
     /**
@@ -96,8 +89,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param P polynomial list.
      * @return nf(A) with respect to P.
      */
-    public GenWordPolynomial<C> normalform(List<GenWordPolynomial<C>> P, 
-                                           GenWordPolynomial<C> A);
+    public GenWordPolynomial<C> normalform(List<GenWordPolynomial<C>> P, GenWordPolynomial<C> A);
 
 
     /**
@@ -106,8 +98,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param Pp polynomial list.
      * @return list of nf(a) with respect to Pp for all a in Ap.
      */
-    public List<GenWordPolynomial<C>> normalform(List<GenWordPolynomial<C>> Pp, 
-                                                 List<GenWordPolynomial<C>> Ap);
+    public List<GenWordPolynomial<C>> normalform(List<GenWordPolynomial<C>> Pp, List<GenWordPolynomial<C>> Ap);
 
 
     /**
@@ -118,15 +109,15 @@ public interface WordReduction<C extends RingElem<C>>
      * @param Ap a polynomial.
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
      */
-    public GenWordPolynomial<C> 
-           normalform(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow,
-                      List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
+    public GenWordPolynomial<C> normalform(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow,
+                    List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
 
 
     /**
      * Irreducible set.
      * @param Pp polynomial list.
-     * @return a list P of polynomials which are in normalform wrt. P and with ideal(Pp) = ideal(P).
+     * @return a list P of polynomials which are in normalform wrt. P and with
+     *         ideal(Pp) = ideal(P).
      */
     public List<GenWordPolynomial<C>> irreducibleSet(List<GenWordPolynomial<C>> Pp);
 
@@ -140,8 +131,7 @@ public interface WordReduction<C extends RingElem<C>>
      * @param Np nf(Pp,Ap), a normal form of Ap wrt. Pp.
      * @return true, if Np + sum( row[i]*Pp[i] ) == Ap, else false.
      */
-    public boolean isReductionNF(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow, 
-                                 List<GenWordPolynomial<C>> Pp, 
-                                 GenWordPolynomial<C> Ap, GenWordPolynomial<C> Np);
+    public boolean isReductionNF(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow,
+                    List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap, GenWordPolynomial<C> Np);
 
 }
