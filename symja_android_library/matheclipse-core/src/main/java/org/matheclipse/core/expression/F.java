@@ -834,17 +834,17 @@ public class F {
 	public final static INum CD1 = Num.valueOf(1.0);
 
 	/**
-	 * Represents <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity[1]</code>)
+	 * Represents <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity(1)</code>)
 	 */
 	public static IAST CInfinity;
 
 	/**
-	 * Represents <code>-Infinity</code> (i.e. <code>-Infinity->DirectedInfinity[-1]</code>)
+	 * Represents <code>-Infinity</code> (i.e. <code>-Infinity->DirectedInfinity(-1)</code>)
 	 */
 	public static IAST CNInfinity;
 
 	/**
-	 * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity->DirectedInfinity[</code>)
+	 * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity->DirectedInfinity()</code>)
 	 */
 	public static IAST CComplexInfinity;
 
