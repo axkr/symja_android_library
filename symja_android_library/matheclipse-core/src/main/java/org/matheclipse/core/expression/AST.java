@@ -1411,10 +1411,46 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		if (isPower()) {
 			if (arg2().equals(F.C1D2)) {
+				if (arg1().isInteger()) {
+					// square root of an integer number
+					IInteger i = (IInteger) arg1();
+					if (i.equals(F.C2)) {
+						return "CSqrt2";
+					} else if (i.equals(F.C3)) {
+						return "CSqrt3";
+					} else if (i.equals(F.C5)) {
+						return "CSqrt5";
+					} else if (i.equals(F.C6)) {
+						return "CSqrt6";
+					} else if (i.equals(F.C7)) {
+						return "CSqrt7";
+					} else if (i.equals(F.C10)) {
+						return "CSqrt10";
+					}
+				}
 				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
 			}
 			if (arg2().equals(F.C2)) {
 				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+			}
+			if (arg2().equals(F.CN1D2)) {
+				if (arg1().isInteger()) {
+					// negative square root of an integer number
+					IInteger i = (IInteger) arg1();
+					if (i.equals(F.C2)) {
+						return "C1DSqrt2";
+					} else if (i.equals(F.C3)) {
+						return "C1DSqrt3";
+					} else if (i.equals(F.C5)) {
+						return "C1DSqrt5";
+					} else if (i.equals(F.C6)) {
+						return "C1DSqrt6";
+					} else if (i.equals(F.C7)) {
+						return "C1DSqrt7";
+					} else if (i.equals(F.C10)) {
+						return "C1DSqrt10";
+					}
+				}
 			}
 		}
 		StringBuffer text = new StringBuffer(size() * 10);
@@ -2125,13 +2161,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	final public IExpr arg4() {
 		return get(4);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public IExpr arg5() {
 		return get(5);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	final public IExpr last() {

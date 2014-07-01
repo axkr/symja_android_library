@@ -986,7 +986,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		int value = NumberUtil.toInt(fInteger);
 		switch (value) {
-		case -1:
+		case -1:  
 			return "CN1";
 		case -2:
 			return "CN2";
@@ -996,6 +996,16 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return "CN4";
 		case -5:
 			return "CN5";
+		case -6:
+			return "CN6";
+		case -7:
+			return "CN7";
+		case -8:
+			return "CN8";
+		case -9:
+			return "CN9";
+		case -10:
+			return "CN10";
 		case 0:
 			return "C0";
 		case 1:
@@ -1008,6 +1018,16 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return "C4";
 		case 5:
 			return "C5";
+		case 6:
+			return "C6";
+		case 7:
+			return "C7";
+		case 8:
+			return "C8";
+		case 9:
+			return "C9";
+		case 10:
+			return "C10";
 		}
 		return "ZZ(" + value + "L)";
 	}

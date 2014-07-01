@@ -759,6 +759,26 @@ public class F {
 	public final static IInteger C5 = IntegerSym.valueOf(5);
 
 	/**
+	 * Constant integer &quot;6&quot;
+	 */
+	public final static IInteger C6 = IntegerSym.valueOf(6);
+
+	/**
+	 * Constant integer &quot;7&quot;
+	 */
+	public final static IInteger C7 = IntegerSym.valueOf(7);
+
+	/**
+	 * Constant integer &quot;8&quot;
+	 */
+	public final static IInteger C8 = IntegerSym.valueOf(8);
+
+	/**
+	 * Constant integer &quot;9&quot;
+	 */
+	public final static IInteger C9 = IntegerSym.valueOf(9);
+
+	/**
 	 * Constant integer &quot;10&quot;
 	 */
 	public final static IInteger C10 = IntegerSym.valueOf(10);
@@ -829,6 +849,66 @@ public class F {
 	public static IAST CComplexInfinity;
 
 	/**
+	 * Represents <code>Sqrt(2)</code>
+	 */
+	public static IAST CSqrt2;
+
+	/**
+	 * Represents <code>Sqrt(3)</code>
+	 */
+	public static IAST CSqrt3;
+
+	/**
+	 * Represents <code>Sqrt(5)</code>
+	 */
+	public static IAST CSqrt5;
+
+	/**
+	 * Represents <code>Sqrt(6)</code>
+	 */
+	public static IAST CSqrt6;
+
+	/**
+	 * Represents <code>Sqrt(7)</code>
+	 */
+	public static IAST CSqrt7;
+
+	/**
+	 * Represents <code>Sqrt(10)</code>
+	 */
+	public static IAST CSqrt10;
+
+	/**
+	 * Represents <code>1/Sqrt(2)</code>
+	 */
+	public static IAST C1DSqrt2;
+
+	/**
+	 * Represents <code>1/Sqrt(3)</code>
+	 */
+	public static IAST C1DSqrt3;
+
+	/**
+	 * Represents <code>1/Sqrt(5)</code>
+	 */
+	public static IAST C1DSqrt5;
+
+	/**
+	 * Represents <code>1/Sqrt(6)</code>
+	 */
+	public static IAST C1DSqrt6;
+
+	/**
+	 * Represents <code>1/Sqrt(7)</code>
+	 */
+	public static IAST C1DSqrt7;
+
+	/**
+	 * Represents <code>1/Sqrt(10)</code>
+	 */
+	public static IAST C1DSqrt10;
+
+	/**
 	 * Represents <code>#1</code>
 	 */
 	public static IAST Slot1;
@@ -864,6 +944,26 @@ public class F {
 	public final static IInteger CN5 = IntegerSym.valueOf(-5);
 
 	/**
+	 * Constant integer &quot;-6&quot;
+	 */
+	public final static IInteger CN6 = IntegerSym.valueOf(-6);
+
+	/**
+	 * Constant integer &quot;-7&quot;
+	 */
+	public final static IInteger CN7 = IntegerSym.valueOf(-7);
+
+	/**
+	 * Constant integer &quot;-8&quot;
+	 */
+	public final static IInteger CN8 = IntegerSym.valueOf(-8);
+
+	/**
+	 * Constant integer &quot;-9&quot;
+	 */
+	public final static IInteger CN9 = IntegerSym.valueOf(-9);
+
+	/**
 	 * Constant integer &quot;-10&quot;
 	 */
 	public final static IInteger CN10 = IntegerSym.valueOf(-10);
@@ -885,6 +985,20 @@ public class F {
 			CInfinity = $(DirectedInfinity, C1);
 			CNInfinity = $(DirectedInfinity, CN1);
 			CComplexInfinity = $(DirectedInfinity);
+
+			CSqrt2 = $(Power, C2, C1D2);
+			CSqrt3 = $(Power, C3, C1D2);
+			CSqrt5 = $(Power, C5, C1D2);
+			CSqrt6 = $(Power, C6, C1D2);
+			CSqrt7 = $(Power, C7, C1D2);
+			CSqrt10 = $(Power, C10, C1D2);
+
+			C1DSqrt2 = $(Power, C2, CN1D2);
+			C1DSqrt3 = $(Power, C3, CN1D2);
+			C1DSqrt5 = $(Power, C5, CN1D2);
+			C1DSqrt6 = $(Power, C6, CN1D2);
+			C1DSqrt7 = $(Power, C7, CN1D2);
+			C1DSqrt10 = $(Power, C10, CN1D2);
 
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
@@ -3245,7 +3359,7 @@ public class F {
 	public static IAST Sinc(final IExpr a0) {
 		return unary(Sinc, a0);
 	}
-	
+
 	public static IAST Sinh(final IExpr a0) {
 
 		return unary(Sinh, a0);
