@@ -11,11 +11,11 @@ public interface ArcCothRules {
   final public static IAST RULES = List(
     ISet(ArcCoth(C0),
       Times(CC(0L,1L,1L,2L),Pi)),
-    ISet(ArcCoth(Times(CI,Power(C3,CN1D2))),
+    ISet(ArcCoth(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
     ISet(ArcCoth(CI),
       Times(CC(0L,1L,-1L,4L),Pi)),
-    ISet(ArcCoth(Times(CI,Sqrt(C3))),
+    ISet(ArcCoth(Times(CI,CSqrt3)),
       Times(CC(0L,1L,-1L,6L),Pi)),
     ISet(ArcCoth(C1),
       CInfinity),

@@ -11,11 +11,11 @@ public interface ArcTanhRules {
   final public static IAST RULES = List(
     ISet(ArcTanh(C0),
       C0),
-    ISet(ArcTanh(Times(CI,Power(C3,CN1D2))),
+    ISet(ArcTanh(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
     ISet(ArcTanh(CI),
       Times(CC(0L,1L,1L,4L),Pi)),
-    ISet(ArcTanh(Times(CI,Sqrt(C3))),
+    ISet(ArcTanh(Times(CI,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
     ISet(ArcTanh(C1),
       CInfinity),
