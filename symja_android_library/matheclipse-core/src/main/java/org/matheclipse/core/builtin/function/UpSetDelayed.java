@@ -3,8 +3,8 @@ package org.matheclipse.core.builtin.function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
-public class UpSetDelayed implements IFunctionEvaluator, ICreatePatternMatcher {
+public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICreatePatternMatcher {
 
 	public UpSetDelayed() {
 	}
