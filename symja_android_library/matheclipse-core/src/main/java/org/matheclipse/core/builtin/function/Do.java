@@ -7,7 +7,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
@@ -43,8 +42,6 @@ public class Do extends AbstractCoreFunctionEvaluator {
 								iter.next();
 								F.eval(input);
 							} catch (final ReturnException e) {
-								return e.getValue();
-							} catch (final ThrowException e) {
 								return e.getValue();
 							} catch (final BreakException e) {
 								return F.Null;

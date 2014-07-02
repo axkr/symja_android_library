@@ -191,6 +191,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Clear());
 	public final static ISymbol ClearAll = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearall" : "ClearAll",
 			new org.matheclipse.core.builtin.function.ClearAll());
+	public final static ISymbol CompoundExpression = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression"
+			: "CompoundExpression", new org.matheclipse.core.builtin.function.CompoundExpression());
 	public final static ISymbol Condition = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "condition" : "Condition",
 			new org.matheclipse.core.builtin.function.Condition());
 	public final static ISymbol Continue = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continue" : "Continue",
@@ -287,8 +289,12 @@ public class F {
 	public final static ISymbol RotateRight = F.initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight",
 			new org.matheclipse.core.builtin.function.RotateRight());
+	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set",
+			new org.matheclipse.core.builtin.function.Set());
 	public final static ISymbol SetAttributes = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes"
 			: "SetAttributes", new org.matheclipse.core.builtin.function.SetAttributes());
+	public final static ISymbol SetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed",
+			new org.matheclipse.core.builtin.function.SetDelayed());
 	public final static ISymbol Sow = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow",
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
@@ -302,6 +308,10 @@ public class F {
 			new org.matheclipse.core.builtin.function.Unevaluated());
 	public final static ISymbol Unique = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unique" : "Unique",
 			new org.matheclipse.core.builtin.function.Unique());
+	public final static ISymbol UpSet = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet",
+			new org.matheclipse.core.builtin.function.UpSet());
+	public final static ISymbol UpSetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed"
+			: "UpSetDelayed", new org.matheclipse.core.builtin.function.UpSetDelayed());
 	public final static ISymbol ValueQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ",
 			new org.matheclipse.core.builtin.function.ValueQ());
 	public final static ISymbol Which = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which",
@@ -342,8 +352,6 @@ public class F {
 	public final static ISymbol Complex = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex");
 	public final static ISymbol ComposeList = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composelist" : "ComposeList");
-	public final static ISymbol CompoundExpression = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression"
-			: "CompoundExpression");
 	public final static ISymbol Conjugate = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugate" : "Conjugate");
 	public final static ISymbol ConjugateTranspose = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugatetranspose"
 			: "ConjugateTranspose");
@@ -580,9 +588,7 @@ public class F {
 	public final static ISymbol Sec = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
 	public final static ISymbol Sech = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sech" : "Sech");
 	public final static ISymbol Select = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
-	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set");
 
-	public final static ISymbol SetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed");
 	public final static ISymbol Sign = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sign" : "Sign");
 	public final static ISymbol SignCmp = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");
 	public final static ISymbol Simplify = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "simplify" : "Simplify");
@@ -639,9 +645,6 @@ public class F {
 	public final static ISymbol UnitStep = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unitstep" : "UnitStep");
 	public final static ISymbol UnsameQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unsameq" : "UnsameQ");
 	public final static ISymbol UpperCaseQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ");
-	public final static ISymbol UpSet = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet");
-	public final static ISymbol UpSetDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed"
-			: "UpSetDelayed");
 	public final static ISymbol VandermondeMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vandermondematrix"
 			: "VandermondeMatrix");
 	public final static ISymbol Variables = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "variables" : "Variables");
@@ -3309,7 +3312,7 @@ public class F {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
-		org.matheclipse.core.reflection.system.Set.CONST.putDownRule(lhs, rhs, true);
+		org.matheclipse.core.builtin.function.Set.CONST.putDownRule(lhs, rhs, true);
 		return null;
 	}
 
@@ -3332,7 +3335,7 @@ public class F {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
-		org.matheclipse.core.reflection.system.SetDelayed.CONST.putDownRule(lhs, rhs, true);
+		org.matheclipse.core.builtin.function.SetDelayed.CONST.putDownRule(lhs, rhs, true);
 		return null;
 	}
 
