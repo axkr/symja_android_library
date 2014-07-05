@@ -798,14 +798,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * @throws ArithmeticException
 	 *             if this integer is negative.
 	 */
-	/**
-	 * Returns the square root of {@code this}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if {@code this < 0}
-	 * @throws ArithmeticException
-	 *             if {@code sqrt(this)} is not an integer
-	 */
 	public IInteger sqrt() throws ArithmeticException {
 		return valueOf(BigIntegerMath.sqrt(fInteger, RoundingMode.UNNECESSARY));
 	}

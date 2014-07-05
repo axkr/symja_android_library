@@ -12,7 +12,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * 
+ * See: <a href="http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/">Exploring Number Theory - Finding
+ * Primitive Roots</a>
  */
 public class PrimitiveRoots extends AbstractTrigArg1 {
 
@@ -47,8 +48,8 @@ public class PrimitiveRoots extends AbstractTrigArg1 {
 	}
 
 	@Override
-  public void setUp(final ISymbol symbol) throws SyntaxError {
-    symbol.setAttributes(ISymbol.LISTABLE);
-    super.setUp(symbol);
-  }
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(symbol);
+	}
 }
