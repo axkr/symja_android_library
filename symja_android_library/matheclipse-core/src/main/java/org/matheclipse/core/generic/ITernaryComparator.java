@@ -15,10 +15,10 @@ public interface ITernaryComparator<T extends IExpr> {
 	 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be evaluated)</li>
 	 * </ul>
 	 * 
-	 * @param o1
-	 * @param o2
+	 * @param arg1
+	 * @param arg2
 	 * @return
 	 */
-	COMPARE_RESULT compareGreater(T o1, T o2);
+	COMPARE_RESULT compare(T arg1, T arg2);
 
 }

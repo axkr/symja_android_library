@@ -4,6 +4,10 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * <code>!=</code> operator implementation.
+ * 
+ */
 public class Unequal extends Equal {
 
 	public Unequal() {
@@ -18,7 +22,7 @@ public class Unequal extends Equal {
 					return result;
 				}
 			}
-			int b = 0;
+			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 			IAST result = ast.clone();
 			int i = 2;
 			int j;
@@ -26,10 +30,10 @@ public class Unequal extends Equal {
 				j = i;
 				while (j < result.size()) {
 					b = compare(result.get(i - 1), result.get(j++));
-					if (b == (1)) {
+					if (b == COMPARE_RESULT.TRUE) {
 						return F.False;
 					}
-					if (b == 0) {
+					if (b == COMPARE_RESULT.UNDEFINED) {
 						return null;
 					}
 				}

@@ -3,6 +3,10 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * <code>&lt;</code> operator implementation.
+ * 
+ */
 public class Less extends Greater {
 	public final static Less CONST = new Less();
 
@@ -14,10 +18,11 @@ public class Less extends Greater {
 		return simplifyCompare(a1, a2, F.Less, F.Greater);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public COMPARE_RESULT compareGreater(final IExpr a0, final IExpr a1) {
+	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
 		// swap arguments
-		return super.compareGreater(a1, a0);
+		return super.compare(a1, a0);
 	}
 
 }

@@ -6,6 +6,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <code>=!=</code> operator implementation.
+ * 
+ */
 public class UnsameQ extends AbstractFunctionEvaluator {
 
 	public UnsameQ() {

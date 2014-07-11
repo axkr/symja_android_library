@@ -3,13 +3,17 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
+import org.matheclipse.core.generic.ITernaryComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Equal extends AbstractFunctionEvaluator {
+/**
+ * <code>==</code> operator implementation.
+ * 
+ */
+public class Equal extends AbstractFunctionEvaluator implements ITernaryComparator<IExpr> {
 
 	public Equal() {
 	}
@@ -79,16 +83,16 @@ public class Equal extends AbstractFunctionEvaluator {
 				}
 			}
 
-			int b = 0;
+			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 			boolean evaled = false;
 			IAST result = ast.clone();
 			int i = 2;
 			while (i < result.size()) {
 				b = compare(result.get(i - 1), result.get(i));
-				if (b == (-1)) {
+				if (b == COMPARE_RESULT.FALSE) {
 					return F.False;
 				}
-				if (b == 1) {
+				if (b == COMPARE_RESULT.TRUE) {
 					evaled = true;
 					result.remove(i - 1);
 				} else {
@@ -106,36 +110,31 @@ public class Equal extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	/**
-	 * 1->True -1 ->False 0->Otherwise
-	 * 
-	 * @param o0
-	 * @param o1
-	 * @return
-	 */
-	public int compare(final IExpr o0, final IExpr o1) {
+	/** {@inheritDoc} */
+	@Override
+	public COMPARE_RESULT compare(final IExpr o0, final IExpr o1) {
 		if (o0.isSame(o1)) {
-			return 1;
+			return COMPARE_RESULT.TRUE;
 		}
 
 		if (o0.isConstant() && o1.isConstant()) {
-			return -1;
+			return COMPARE_RESULT.FALSE;
 		}
 
 		if (o0.isNumber() && o1.isNumber()) {
-			return -1;
+			return COMPARE_RESULT.FALSE;
 		}
 
 		if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
 
 			if (o0.isSymbol() || o1.isSymbol()) {
-				return 0;
+				return COMPARE_RESULT.UNDEFINED;
 			}
 
-			return 1;
+			return COMPARE_RESULT.TRUE;
 		}
 
-		return 0;
+		return COMPARE_RESULT.UNDEFINED;
 	}
 
 	@Override

@@ -10,6 +10,10 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <code>&gt;</code> operator implementation.
+ * 
+ */
 public class Greater extends AbstractFunctionEvaluator implements ITernaryComparator<IExpr> {
 	public final static Greater CONST = new Greater();
 
@@ -167,10 +171,12 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		if (a1.isNumeric() && a0.isRational()) {
 			a0 = F.evaln(a0);
 		}
-		return compareGreater(a0, a1);
+		return compare(a0, a1);
 	}
 
-	public COMPARE_RESULT compareGreater(final IExpr a0, final IExpr a1) {
+	/** {@inheritDoc} */
+	@Override
+	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
 		// don't compare strings
 		if (a0.isSignedNumber()) {
 			if (a1.isSignedNumber()) {
@@ -189,6 +195,9 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
 			return COMPARE_RESULT.TRUE;
 		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
+			return COMPARE_RESULT.FALSE;
+		}
+		if (a0.equals(a1)) {
 			return COMPARE_RESULT.FALSE;
 		}
 		return COMPARE_RESULT.UNDEFINED;
