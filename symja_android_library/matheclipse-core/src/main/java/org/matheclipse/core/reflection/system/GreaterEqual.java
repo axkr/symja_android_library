@@ -15,18 +15,11 @@ public class GreaterEqual extends Greater {
 	}
 
 	@Override
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public COMPARE_RESULT compareGreater(final IExpr a0, final IExpr a1) {
 		if (a0.equals(a1)) {
 			return COMPARE_RESULT.TRUE;
 		}
-		// don't compare strings
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			if (a1.isLTOrdered(a0)) {
-				return COMPARE_RESULT.TRUE;
-			}
-			return COMPARE_RESULT.FALSE;
-		}
-		return COMPARE_RESULT.UNDEFINED;
+		return super.compareGreater(a0,a1);
 	}
 
 }

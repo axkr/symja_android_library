@@ -17,7 +17,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to <code>x &gt; 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
@@ -30,7 +30,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to <code>x &gt; 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
@@ -54,7 +54,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			rhs = (ISignedNumber) a1;
 			useOppositeHeader = true;
 		} else {
-			lhs = F.eval(F.Subtract(a1,a2));
+			lhs = F.eval(F.Subtract(a1, a2));
 			rhs = F.C0;
 		}
 		if (lhs.isAST()) {
@@ -167,15 +167,28 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		if (a1.isNumeric() && a0.isRational()) {
 			a0 = F.evaln(a0);
 		}
-		return compare(a0, a1);
+		return compareGreater(a0, a1);
 	}
 
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public COMPARE_RESULT compareGreater(final IExpr a0, final IExpr a1) {
 		// don't compare strings
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			if (a1.isLTOrdered(a0)) {
+		if (a0.isSignedNumber()) {
+			if (a1.isSignedNumber()) {
+				return (a1.isLTOrdered(a0)) ? COMPARE_RESULT.TRUE : COMPARE_RESULT.FALSE;
+			} else if (a1.isInfinity()) {
+				return COMPARE_RESULT.FALSE;
+			} else if (a1.isNegativeInfinity()) {
 				return COMPARE_RESULT.TRUE;
 			}
+		} else if (a1.isSignedNumber()) {
+			if (a0.isInfinity()) {
+				return COMPARE_RESULT.TRUE;
+			} else if (a0.isNegativeInfinity()) {
+				return COMPARE_RESULT.FALSE;
+			}
+		} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
+			return COMPARE_RESULT.TRUE;
+		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
 			return COMPARE_RESULT.FALSE;
 		}
 		return COMPARE_RESULT.UNDEFINED;
