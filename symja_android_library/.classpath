@@ -3,6 +3,7 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="src" path="jas/src/main/java"/>
+	<classpathentry kind="src" path="apfloat/src"/>
 	<classpathentry kind="src" path="guava/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-core/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-parser/src/main/java"/>
