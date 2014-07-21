@@ -4,6 +4,10 @@ import static org.matheclipse.core.expression.F.ArcSinh;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -40,6 +44,16 @@ public class ArcSinh extends AbstractTrigArg1 implements ArcSinhRules {
 		return null;
 	}
 
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.asinh(arg1));
+	}
+	
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.asinh(arg1));
+	}
+	
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

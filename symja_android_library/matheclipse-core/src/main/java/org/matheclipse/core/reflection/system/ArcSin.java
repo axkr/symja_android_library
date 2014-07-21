@@ -55,8 +55,7 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.asin());
 	}
-
-
+	
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.asin(arg1));

@@ -1,6 +1,10 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -30,7 +34,13 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
+					if (arg0 instanceof ApfloatNum) {
+						return e1ApfloatArg(((ApfloatNum) arg0).apfloatValue());
+					}
 					return e1DblArg((INum) arg0);
+				}
+				if (arg0 instanceof ApcomplexNum) {
+					return e1ApcomplexArg(((ApcomplexNum) arg0).apcomplexValue());
 				}
 				return e1DblComArg((IComplexNum) arg0);
 			} else {
@@ -61,6 +71,14 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr e1DblComArg(final IComplexNum c) {
+		return null;
+	}
+
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return null;
+	}
+
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return null;
 	}
 
@@ -178,6 +196,14 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		return null;
 	}
 
+	public IExpr e2ApfloatArg(final ApfloatNum d0, final ApfloatNum d1) {
+		return null;
+	}
+
+	public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
+		return null;
+	}
+	
 	public IExpr e2FraArg(final IFraction f0, final IFraction f1) {
 		return null;
 	}

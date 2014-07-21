@@ -4,6 +4,10 @@ import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -24,40 +28,6 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"> Inverse_trigonometric functions</a>
  */
 public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
-	// final static String[] RULES = { "ArcTan[0]=0", "ArcTan[0, 0]=0",
-	// "ArcTan[1]=Pi/4", "ArcTan[3^(1/2)]=Pi/3",
-	// "ArcTan[3^(1/2)/3]=Pi/6", "ArcTan[Infinity]=Pi/2",
-	// "ArcTan[2^(1/2)-1]=1/8*Pi",
-	// "ArcTan[1/5*5^(1/2)*(5-2*5^(1/2))^(1/2)]=1/10*Pi",
-	// "ArcTan[2-3^(1/2)]=1/12*Pi",
-	// "ArcTan[1/5*5^(1/2)*(5+2*5^(1/2))^(1/2)]=3/10*Pi",
-	// "ArcTan[2+3^(1/2)]=5/12*Pi", "ArcTan[2^(1/2)+1]=3/8*Pi",
-	// "ArcTan[(5+2*5^(1/2))^(1/2)]=2/5*Pi",
-	// "ArcTan[(5-2*5^(1/2))^(1/2)]=1/5*Pi",
-	// "ArcTan[x_NumberQ]:= -ArcTan[-x] /; SignCmp[x]<0",
-	// "ArcTan[x_NumberQ*y_]:= -ArcTan[-x*y] /; SignCmp[x]<0" };
-
-	/*
-	 * { ArcTan[(5-2*5^(1/2))^(1/2)*1/5*5^(1/2)]=1/10*Pi, ArcTan[(5+2*5^(1/2))^(1/2)*1/5*5^(1/2)]=3/10*Pi, ArcTan[3^(1/2)]=1/3*Pi,
-	 * ArcTan[DirectedInfinity[1]]=1/2*Pi, ArcTan[2-3^(1/2)]=1/12*Pi, ArcTan[2+3^(1/2)]=5/12*Pi, ArcTan[1+2^(1/2)]=3/8*Pi,
-	 * ArcTan[0]=0, ArcTan[(5-2*5^(1/2))^(1/2)]=1/5*Pi, ArcTan[0,0]=0, ArcTan[1]=1/4*Pi, ArcTan[(5+2*5^(1/2))^(1/2)]=2/5*Pi,
-	 * ArcTan[1/3*3^(1/2)]=1/6*Pi, ArcTan[2^(1/2)-1]=1/8*Pi, ArcTan[1,1]=1/4*Pi, ArcTan[-1,-1]=-3/4*Pi }
-	 */
-	// final static IAST RULES = List(
-	// Set(ArcTan(Times(Times(Power(Plus(C5, Times(CN1, Times(C2, Power(C5, C1D2)))), C1D2), fraction(1L, 5L)),
-	// Power(C5, C1D2))), Times(fraction(1L, 10L), Pi)),
-	// Set(ArcTan(Times(Times(Power(Plus(C5, Times(C2, Power(C5, C1D2))), C1D2), fraction(1L, 5L)), Power(C5, C1D2))),
-	// Times(fraction(3L, 10L), Pi)), Set(ArcTan(Power(C3, C1D2)), Times(C1D3, Pi)),
-	// Set(ArcTan(CInfinity), Times(C1D2, Pi)),
-	// Set(ArcTan(Plus(C2, Times(CN1, Power(C3, C1D2)))), Times(fraction(1L, 12L), Pi)),
-	// Set(ArcTan(Plus(C2, Power(C3, C1D2))), Times(fraction(5L, 12L), Pi)),
-	// Set(ArcTan(Plus(C1, Power(C2, C1D2))), Times(fraction(3L, 8L), Pi)), Set(ArcTan(C0), C0),
-	// Set(ArcTan(Power(Plus(C5, Times(CN1, Times(C2, Power(C5, C1D2)))), C1D2)), Times(fraction(1L, 5L), Pi)),
-	// Set(ArcTan(C0, C0), C0), Set(ArcTan(C1), Times(C1D4, Pi)),
-	// Set(ArcTan(Power(Plus(C5, Times(C2, Power(C5, C1D2))), C1D2)), Times(fraction(2L, 5L), Pi)),
-	// Set(ArcTan(Times(C1D3, Power(C3, C1D2))), Times(fraction(1L, 6L), Pi)),
-	// Set(ArcTan(Plus(Power(C2, C1D2), Times(CN1, C1))), Times(fraction(1L, 8L), Pi)), Set(ArcTan(C1, C1), Times(C1D4, Pi)),
-	// Set(ArcTan(CN1, CN1), Times(fraction(-3L, 4L), Pi)));
 
 	@Override
 	public IAST getRuleAST() {
@@ -91,6 +61,16 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 
 	public IExpr e2DblArg(final INum d0, final INum d1) {
 		return F.num(Math.atan2(d0.getRealPart(), d1.getRealPart()));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.atan(arg1));
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.atan(arg1));
 	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {
