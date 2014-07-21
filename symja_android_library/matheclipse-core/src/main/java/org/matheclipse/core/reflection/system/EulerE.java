@@ -25,16 +25,6 @@ public class EulerE extends AbstractTrigArg1 {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		return null;
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return null;
-	}
-
-	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
 			try {

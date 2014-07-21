@@ -1,14 +1,25 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.num;
 
+import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.fraction.BigFraction;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
-import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -95,11 +106,10 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		final double d = arg1.getRealPart();
-		if (d < 0) {
+	public IExpr e1DblArg(final double arg1) {
+		if (arg1 < 0) {
 			return F.num(Math.PI);
-		} else if (d > 0) {
+		} else if (arg1 > 0) {
 			return F.CD0;
 		}
 		return null;
@@ -109,13 +119,23 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 	 * Evaluate this function for one double complex argument
 	 * 
 	 * @param arg1
-	 *          a double complex number
+	 *            a double complex number
 	 * 
 	 * @return
 	 */
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return num(Math.atan2(arg1.getImaginaryPart(), arg1.getRealPart()));
-	} 
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return num(Math.atan2(arg1.getImaginary(), arg1.getReal()));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApcomplexMath.arg(arg1));
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.num(ApcomplexMath.arg(arg1));
+	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {

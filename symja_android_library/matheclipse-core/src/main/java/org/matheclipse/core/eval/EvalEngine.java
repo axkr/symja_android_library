@@ -160,6 +160,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	transient boolean fNumericMode;
 
+	/**
+	 * The precision for numeric operations.
+	 */
+	transient int fNumericPrecision = 15;
+
 	transient boolean fEvalLHSMode;
 
 	transient String fSessionID;
@@ -477,6 +482,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (result != null) {
 			return result;
 		}
+		// System.out.println(ast.toString());
 		return evalRules(symbol, ast);
 	}
 
@@ -1217,6 +1223,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public void setNumericMode(final boolean b) {
 		fNumericMode = b;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setNumericMode(final boolean b, int precision) {
+		fNumericMode = b;
+		fNumericPrecision = precision;
+	}
+
+	public int getNumericPrecision() {
+		return fNumericPrecision;
 	}
 
 	/**

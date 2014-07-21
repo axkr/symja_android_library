@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Reduce thea matrix to row form.
+ * Reduce the matrix to row form.
  * 
  * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
  */
@@ -22,12 +22,12 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST function) {
+	public IExpr evaluate(final IAST ast) {
 		FieldMatrix<ExprFieldElement> matrix;
 		try {
-			Validate.checkSize(function, 2);
+			Validate.checkSize(ast, 2);
 
-			final IAST list = (IAST) function.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
 			return Convert.matrix2List(fmw.getRowReducedMatrix());

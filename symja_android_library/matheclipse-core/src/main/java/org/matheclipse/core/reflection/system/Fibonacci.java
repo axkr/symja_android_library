@@ -17,16 +17,6 @@ public class Fibonacci extends AbstractTrigArg1 {
 	public Fibonacci() {
 	}
 
-	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		return null;
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return null;
-	}
-
 	public static IInteger fibonacci(final IInteger iArg) {
 		BigInteger a = BigInteger.ONE;
 		BigInteger b = BigInteger.ZERO;

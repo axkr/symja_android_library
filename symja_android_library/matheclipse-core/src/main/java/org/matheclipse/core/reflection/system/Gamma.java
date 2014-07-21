@@ -35,19 +35,13 @@ public class Gamma extends AbstractTrigArg1 {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		double x = arg1.doubleValue();
-		if (x > 0.0) {
+	public IExpr e1DblArg(final double arg1) {
+		if (arg1 > 0.0) {
 			double gamma;
-			gamma = org.apache.commons.math3.special.Gamma.logGamma(x);
+			gamma = org.apache.commons.math3.special.Gamma.logGamma(arg1);
 			gamma = Math.exp(gamma);
 			return F.num(gamma);
 		}
-		return null;
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
 		return null;
 	}
 

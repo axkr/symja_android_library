@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Compute the rank of a matrix.
@@ -23,15 +24,18 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST function) {
+	public IExpr evaluate(final IAST ast) {
 		FieldMatrix<ExprFieldElement> matrix;
 		try {
-			Validate.checkSize(function, 2);
+			Validate.checkSize(ast, 2);
 
-			final IAST list = (IAST) function.get(1);
-			matrix = Convert.list2Matrix(list);
-			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			return F.integer(fmw.getMatrixRank());
+			IExpr arg1 = F.eval(ast.arg1());
+			if (arg1.isMatrix() != null) {
+				final IAST astMatrix = (IAST) arg1;
+				matrix = Convert.list2Matrix(astMatrix);
+				FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
+				return F.integer(fmw.getMatrixRank());
+			}
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -49,5 +53,10 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr numericEval(final IAST function) {
 		return evaluate(function);
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.HOLDALL);
 	}
 }

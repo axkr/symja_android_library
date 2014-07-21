@@ -17,16 +17,6 @@ public class Factorial2 extends AbstractTrigArg1 {
 	public Factorial2() {
 	}
 
-	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		return null;
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return null;
-	}
-
 	public IInteger factorial(final IInteger iArg) {
 		BigInteger result = BigInteger.ONE;
 		final BigInteger biggi = iArg.getBigNumerator();

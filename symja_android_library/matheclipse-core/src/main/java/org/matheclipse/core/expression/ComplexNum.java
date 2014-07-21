@@ -41,6 +41,10 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return newInstance(new Complex(d.getRealPart(), 0.0));
 	}
 
+	public static ComplexNum valueOf(final Complex c) {
+		return newInstance(c);
+	}
+
 	public static ComplexNum valueOf(final double real) {
 		return newInstance(new Complex(real, 0.0));
 	}
@@ -188,6 +192,9 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		if (engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
+		}
 		if (F.isZero(getImaginaryPart())) {
 			return F.num(getRealPart());
 		}
@@ -210,26 +217,30 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public double dabs() {
-		if (isNaN()) {
+		return dabs(fComplex);
+	}
+
+	public static double dabs(Complex c) {
+		if (c.isNaN()) {
 			return Double.NaN;
 		}
 
-		if (isInfinite()) {
+		if (c.isInfinite()) {
 			return Double.POSITIVE_INFINITY;
 		}
 
-		if (Math.abs(getReal()) < Math.abs(getImaginary())) {
-			if (getImaginary() == 0.0) {
-				return Math.abs(getReal());
+		if (Math.abs(c.getReal()) < Math.abs(c.getImaginary())) {
+			if (c.getImaginary() == 0.0) {
+				return Math.abs(c.getReal());
 			}
-			final double q = getReal() / getImaginary();
-			return (Math.abs(getImaginary()) * Math.sqrt(1 + q * q));
+			final double q = c.getReal() / c.getImaginary();
+			return (Math.abs(c.getImaginary()) * Math.sqrt(1 + q * q));
 		} else {
-			if (getReal() == 0.0) {
-				return Math.abs(getImaginary());
+			if (c.getReal() == 0.0) {
+				return Math.abs(c.getImaginary());
 			}
-			final double q = getImaginary() / getReal();
-			return (Math.abs(getReal()) * Math.sqrt(1 + q * q));
+			final double q = c.getImaginary() / c.getReal();
+			return (Math.abs(c.getReal()) * Math.sqrt(1 + q * q));
 		}
 	}
 
@@ -540,7 +551,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return F.Complex;
 	}
 
-	public Complex getComplex() {
+	public Complex complexValue() {
 		return fComplex;
 	}
 

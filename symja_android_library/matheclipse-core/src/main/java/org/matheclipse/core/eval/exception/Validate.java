@@ -73,6 +73,11 @@ public final class Validate {
 				+ " - " + Integer.MAX_VALUE);
 	}
 
+	/**
+	 * Check the expression, if it's a Java {@code int} value in the range [0 , Integer.MAX_VALUE]
+	 * 
+	 * @throws WrongArgumentType
+	 */
 	public static int checkIntType(IExpr expr) {
 		return checkIntType(expr, 0);
 	}
@@ -80,6 +85,9 @@ public final class Validate {
 	/**
 	 * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
+	 * @param expr
+	 *            a signed number which will be converted to a Java <code>int</code> if possible, otherwise throw a
+	 *            <code>WrongArgumentType</code> exception.
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IExpr expr, int startValue) {

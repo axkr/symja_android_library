@@ -21,12 +21,16 @@ public class N extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr numericEval(final IAST ast) {
-		Validate.checkSize(ast, 2);
+		Validate.checkRange(ast, 2, 3);
 
+		int numericPrecision = 15;
+		if (ast.size() == 3) {
+			numericPrecision = Validate.checkIntType(ast.arg2());
+		}
 		final EvalEngine engine = EvalEngine.get();
 		final boolean numericMode = engine.isNumericMode();
 		try {
-			engine.setNumericMode(true);
+			engine.setNumericMode(true, numericPrecision);
 			return engine.evalWithoutNumericReset(ast.arg1());
 		} finally {
 			engine.setNumericMode(numericMode);

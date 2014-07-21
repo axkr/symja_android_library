@@ -45,6 +45,6 @@ public class Chop extends AbstractFunctionEvaluator {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
 	}
 }

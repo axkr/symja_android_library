@@ -1,8 +1,8 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
 
 /**
  *
@@ -17,7 +17,11 @@ public abstract class AbstractSymbolEvaluator implements ISymbolEvaluator {
 		return evaluate(symbol);
 	}
 
-  public void setUp(final ISymbol symbol) {
-    // do nothing
-  }
+	public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+		return numericEval(symbol);
+	}
+
+	public void setUp(final ISymbol symbol) {
+		// do nothing
+	}
 }

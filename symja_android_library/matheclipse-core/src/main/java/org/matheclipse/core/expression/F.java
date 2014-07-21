@@ -10,7 +10,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.fraction.BigFraction;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1732,6 +1735,14 @@ public class F {
 		return ComplexNum.valueOf(r, i);
 	}
 
+	public static IComplexNum complexNum(final Complex c) {
+		return ComplexNum.valueOf(c);
+	}
+
+	public static IComplexNum complexNum(final Apcomplex c) {
+		return ApcomplexNum.valueOf(c);
+	}
+	
 	public static IComplexNum complexNum(final IComplex obj) {
 		final BigFraction r = obj.getRealPart();
 		final BigFraction i = obj.getImaginaryPart();
@@ -2944,7 +2955,15 @@ public class F {
 	 * @return
 	 */
 	public static INum num(final String doubleString) {
+		EvalEngine engine = EvalEngine.get();
+		if (engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+			return ApfloatNum.valueOf(doubleString, engine.getNumericPrecision());
+		}
 		return Num.valueOf(Double.parseDouble(doubleString));
+	}
+
+	public static INum num(final Apfloat af) {
+		return ApfloatNum.valueOf(af);
 	}
 
 	public static IAST NumberQ(final IExpr a0) {

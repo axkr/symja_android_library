@@ -1,13 +1,18 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -18,28 +23,32 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		// if (functionList.size() != 2) {
-		// throw new WrongNumberOfArguments(functionList, 1, functionList.size()-1);
-		// } else {
-		final IExpr arg0 = ast.get(1);
-		final IExpr result = e1ObjArg(arg0);
 
+		final IExpr arg1 = ast.arg1();
+		final IExpr result = e1ObjArg(arg1);
 		if (result != null) {
 			return result;
 		}
+
 		// argument dispatching
-		if (arg0 instanceof IAST) {
-			e1FunArg((IAST) arg0);
+		if (arg1 instanceof IAST) {
+			e1FunArg((IAST) arg1);
 		}
 		final int hier = ast.get(1).hierarchy();
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
-					return e1DblArg((INum) ast.get(1));
+					if (arg1 instanceof ApfloatNum) {
+						return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
+					}
+					return e1DblArg(((Num) arg1).doubleValue());
 				}
-				return e1DblComArg((IComplexNum) ast.get(1));
+				if (arg1 instanceof ApcomplexNum) {
+					return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
+				}
+				return e1ComplexArg(((ComplexNum) arg1).complexValue());
 			} else {
-				return e1IntArg((IInteger) ast.get(1));
+				return e1IntArg((IInteger) arg1);
 			}
 		} else {
 			if (hier <= IExpr.COMPLEXID) {
@@ -62,11 +71,19 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr e1DblArg(final INum d) {
+	public IExpr e1DblArg(final double d) {
 		return null;
 	}
 
-	public IExpr e1DblComArg(final IComplexNum d) {
+	public IExpr e1ApfloatArg(final Apfloat d) {
+		return null;
+	}
+
+	public IExpr e1ComplexArg(final Complex c) {
+		return null;
+	}
+	
+	public IExpr e1ApcomplexArg(final Apcomplex c) {
 		return null;
 	}
 

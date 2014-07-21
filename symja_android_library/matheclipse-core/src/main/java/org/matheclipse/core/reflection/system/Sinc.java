@@ -1,11 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.CD1;
+import static org.matheclipse.core.expression.F.Sinc;
+import static org.matheclipse.core.expression.F.num;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -47,12 +53,27 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		double a1 = arg1.getRealPart();
-		if (a1 == 0.0) {
+	public IExpr e1DblArg(final double arg1) {
+		if (arg1 == 0.0) {
 			return CD1;
 		}
-		return num(Math.sin(a1) / a1);
+		return num(Math.sin(arg1) / arg1);
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		if (arg1.equals(Apfloat.ZERO)) {
+			return F.num(Apfloat.ONE);
+		}
+		return F.num(ApfloatMath.sin(arg1).divide(arg1));
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		if (arg1.equals(Apcomplex.ZERO)) {
+			return F.num(Apcomplex.ONE);
+		}
+		return F.complexNum(ApcomplexMath.sin(arg1).divide(arg1));
 	}
 
 	@Override

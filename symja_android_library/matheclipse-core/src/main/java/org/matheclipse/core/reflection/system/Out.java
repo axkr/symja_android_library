@@ -1,13 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.List;
-
-import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 
 /**
  * Get the specified history line fro the <code>EvalEngine's</code> history list. <br />
@@ -20,11 +18,12 @@ public class Out extends AbstractArg1 {
 	 * <b>Note</b> that the history maybe disabled in the <code>EvalEngine</code>.
 	 */
 	@Override
-	public IExpr e1DblArg(final INum iNum) {
+	public IExpr e1DblArg(final double iNum) {
 		try {
-			int i = iNum.toInt();
+			// int i = iNum.toInt();
+			int i = NumberUtil.toInt(iNum);
 			final LastCalculationsHistory list = EvalEngine.get().getOutList();
-			return list.get(i); 
+			return list.get(i);
 		} catch (final Exception ae) {
 
 		}
@@ -40,7 +39,7 @@ public class Out extends AbstractArg1 {
 		try {
 			int i = ii.toInt();
 			final LastCalculationsHistory list = EvalEngine.get().getOutList();
-			return list.get(i); 
+			return list.get(i);
 		} catch (final Exception ae) {
 
 		}

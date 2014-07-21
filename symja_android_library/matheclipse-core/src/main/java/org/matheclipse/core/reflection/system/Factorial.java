@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import java.math.BigInteger;
+
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -11,8 +11,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.math.BigIntegerMath;
-
-import java.math.BigInteger;
 
 /**
  * Returns the factorial of an integer n
@@ -26,14 +24,9 @@ public class Factorial extends AbstractTrigArg1 {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		double d = org.apache.commons.math3.special.Gamma.logGamma(arg1.doubleValue() + 1);
+	public IExpr e1DblArg(final double arg1) {
+		double d = org.apache.commons.math3.special.Gamma.logGamma(arg1 + 1.0);
 		return F.num(Math.exp(d));
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return null;
 	}
 
 	public static BigInteger factorial(final BigInteger biggi) {

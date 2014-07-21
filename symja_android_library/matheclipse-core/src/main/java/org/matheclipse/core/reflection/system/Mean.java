@@ -26,11 +26,6 @@ public class Mean extends AbstractTrigArg1 {
 	} 
 
 	@Override
-	public IExpr numericEvalArg1(final IExpr arg1) {
-		return evaluateArg1(arg1);
-	}
-
-	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.NOATTRIBUTE);
 	}

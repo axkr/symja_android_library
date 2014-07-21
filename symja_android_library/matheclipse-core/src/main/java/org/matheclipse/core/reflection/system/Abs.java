@@ -1,10 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -88,18 +92,29 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		return null;
 	}
 
-	public IExpr numericEvalD1(final Num arg1) {
-		return F.num(Math.abs(arg1.getRealPart()));
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.abs(arg1));
+	}
+	
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.num(ComplexNum.dabs(arg1));
 	}
 
 	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return F.num(arg1.dabs());
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.abs(arg1));
 	}
 
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.num(ApcomplexMath.abs(arg1));
+	}
+	
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
+
 }

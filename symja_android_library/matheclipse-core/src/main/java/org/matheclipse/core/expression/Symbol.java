@@ -231,6 +231,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 		final IEvaluator module = getEvaluator();
 		if (module instanceof ISymbolEvaluator) {
 			if (engine.isNumericMode()) {
+				if (engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+					return ((ISymbolEvaluator) module).apfloatEval(this, engine);
+				}
 				return ((ISymbolEvaluator) module).numericEval(this);
 			}
 			return ((ISymbolEvaluator) module).evaluate(this);
@@ -244,6 +247,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		if (fDownRulesData == null) {
 			return null;
 		}
+		// System.out.println(toString());
 		return fDownRulesData.evalDownRule(ee, expression);
 	}
 

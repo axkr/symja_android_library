@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Sech;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -48,13 +49,13 @@ public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
-		return F.num(1.0D / Math.cosh(arg1.getRealPart()));
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(1.0D / Math.cosh(arg1));
 	}
 
 	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return ComplexUtils.cosh(arg1).inverse();
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cosh().reciprocal());
 	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {

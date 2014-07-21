@@ -10,7 +10,6 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
@@ -27,9 +26,9 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 	}
 
 	@Override
-	public IExpr numericEvalD1(final Num arg1) {
+	public IExpr e1DblArg(final double arg1) {
 		try {
-			return Num.valueOf(org.apache.commons.math3.special.Erf.erf(arg1.getRealPart()));
+			return Num.valueOf(org.apache.commons.math3.special.Erf.erf(arg1));
 		} catch (final MaxCountExceededException e) {
 		}
 		return null;
@@ -49,11 +48,6 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, Erf(Times(CN1, arg1)));
 		}
-		return null;
-	}
-
-	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
 		return null;
 	}
 

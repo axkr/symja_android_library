@@ -3,8 +3,10 @@ package org.matheclipse.core.convert;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -281,7 +283,7 @@ public class AST2Expr {
 			return F.stringx(node.getString());
 		}
 		if (node instanceof FloatNode) {
-			return F.num(node.getString());
+			return F.num(new Apfloat(node.getString(), ApfloatNum.DOUBLE_PRECISION));
 		}
 
 		return F.$s(node.toString());

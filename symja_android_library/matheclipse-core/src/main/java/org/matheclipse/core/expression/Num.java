@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.util.MathUtils;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -79,6 +80,14 @@ public class Num extends ExprImpl implements INum {
 	@Override
 	public boolean equalsInt(final int i) {
 		return fDouble == i;
+	}
+
+	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		if (engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
+		}
+		return null;
 	}
 
 	@Override

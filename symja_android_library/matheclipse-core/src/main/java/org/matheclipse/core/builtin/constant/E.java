@@ -1,5 +1,8 @@
 package org.matheclipse.core.builtin.constant;
 
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
@@ -23,6 +26,10 @@ public class E extends AbstractSymbolEvaluator implements ISignedNumberConstant 
 	@Override
 	public IExpr numericEval(final ISymbol symbol) {
 		return F.num(Math.E);
+	}
+
+	public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+		return F.num(ApfloatMath.exp(new Apfloat(1, engine.getNumericPrecision())));
 	}
 
 	public double evalReal() {

@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Coth;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -54,8 +55,9 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 	}
 
 	@Override
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
-		return ComplexUtils.cosh(arg1).divide(ComplexUtils.sinh(arg1));
+//		return ComplexUtils.cosh(arg1).divide(ComplexUtils.sinh(arg1));
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cosh().divide(arg1.sinh()));
 	}
 
 	@Override

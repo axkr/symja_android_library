@@ -1,17 +1,22 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 
 /**
- * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes
- * <i>Listable</i> and <i>NumericFunction</i>
+ * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes <i>Listable</i> and <i>NumericFunction</i>
  * 
  */
-public abstract class AbstractTrigArg1 extends AbstractFunctionEvaluator {
+public abstract class AbstractTrigArg1 extends AbstractArg1 {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
@@ -20,47 +25,34 @@ public abstract class AbstractTrigArg1 extends AbstractFunctionEvaluator {
 		return evaluateArg1(ast.get(1));
 	}
 
-	public IExpr evaluateArg1(final IExpr arg1) {
-		return null;
-	}
-
 	@Override
 	public IExpr numericEval(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		if (ast.get(1) instanceof Num) {
-			return numericEvalD1((Num) ast.get(1));
+		IExpr arg1 = ast.arg1();
+		if (arg1 instanceof INum) {
+			if (arg1 instanceof ApfloatNum) {
+				return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
+			}
+			return e1DblArg(((Num) arg1).doubleValue());
 		}
-		if (ast.get(1) instanceof ComplexNum) {
-			return numericEvalDC1((ComplexNum) ast.get(1));
+		if (ast.arg1() instanceof IComplexNum) {
+			if (arg1 instanceof ApcomplexNum) {
+				return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
+			}
+			return e1ComplexArg(((ComplexNum) arg1).complexValue());
 		}
-		return numericEvalArg1(ast.get(1));
+		return evaluateArg1(ast.arg1());
 	}
 
-	/**
-	 * Evaluate this function for one double argument
-	 * 
-	 * @param arg1
-	 *          a double number
-	 * 
-	 * @return
-	 */
-	public IExpr numericEvalD1(final Num arg1) {
+	public IExpr e1DblArg(final double d) {
 		return null;
 	}
 
-	/**
-	 * Evaluate this function for one double complex argument
-	 * 
-	 * @param arg1
-	 *          a double complex number
-	 * 
-	 * @return
-	 */
-	public IExpr numericEvalDC1(final ComplexNum arg1) {
+	public IExpr e1ComplexArg(final Complex c) {
 		return null;
 	}
 
-	public IExpr numericEvalArg1(final IExpr arg1) {
+	public IExpr evaluateArg1(final IExpr arg1) {
 		return null;
 	}
 }
