@@ -5,13 +5,14 @@ import static org.matheclipse.core.expression.F.Csch;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -58,6 +59,16 @@ public class Csch extends AbstractTrigArg1 implements INumeric, CschRules {
 		return F.complexNum(arg1.sinh().reciprocal());
 	}
 
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.sinh(arg1).inverse());
+	}
+	
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.sinh(arg1).inverse());
+	}
+	
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

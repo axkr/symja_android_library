@@ -612,6 +612,12 @@ public class Apfloat
     {
         return new Apfloat(this.impl.negate());
     }
+    
+    public Apfloat inverse()
+            throws ApfloatRuntimeException
+    {
+        return ONE.divide(this);
+    }
 
     /**
      * Adds two apfloats.

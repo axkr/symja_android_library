@@ -371,6 +371,11 @@ public class Apcomplex
         return new Apcomplex(real().negate(), imag().negate());
     }
 
+    public Apcomplex inverse()
+        throws ApfloatRuntimeException
+    {
+        return ONE.divide(this);
+    }
     /**
      * Adds two apcomplex numbers.
      *

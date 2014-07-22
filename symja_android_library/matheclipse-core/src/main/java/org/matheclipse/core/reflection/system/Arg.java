@@ -15,7 +15,6 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -120,7 +119,6 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 	 * 
 	 * @param arg1
 	 *            a double complex number
-	 * 
 	 * @return
 	 */
 	public IExpr e1ComplexArg(final Complex arg1) {
