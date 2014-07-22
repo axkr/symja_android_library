@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomial.java 4824 2014-04-27 12:45:05Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

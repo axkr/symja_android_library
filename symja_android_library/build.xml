@@ -30,7 +30,12 @@
         <copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
     	<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
         
-    	<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" />
+    	<javac srcdir="${src.dir}" destdir="${classes.dir}" 
+    	       classpathref="classpath"  
+    	       source="1.6"  
+    	       target="1.6" 
+    	       debug="true"
+    	       includeantruntime="false" />
     </target>
 
 	<target name="jar" depends="compile">

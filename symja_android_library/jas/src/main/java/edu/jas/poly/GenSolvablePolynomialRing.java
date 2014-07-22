@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomialRing.java 4720 2013-12-30 14:23:32Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
