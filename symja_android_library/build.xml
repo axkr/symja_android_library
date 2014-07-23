@@ -27,6 +27,7 @@
 
     <target name="compile" depends="clean">
         <mkdir dir="${classes.dir}"/>
+        <copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
         <copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
     	<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
         
@@ -111,22 +112,16 @@
 	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalComplex" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" /> 
-	            <keep access="public"
-	extends="org.matheclipse.core.interfaces.IExpr" /> 
-	           <keep access="public"
-	extends="org.matheclipse.core.interfaces.IEvaluator" />
-	           <keep access="public"
-	extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
-	           <keep access="public"
-	extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
-	           <keep access="public"
-	extends="org.matheclipse.core.form.mathml.IConverter" />
-	           <keep access="public" 
-	extends="org.matheclipse.core.form.tex.IConverter" />
-	           <keep access="public" 
-	extends="org.apache.log4j.Appender" />
-	           <keep access="public" 
-	extends="org.apache.log4j.spi.OptionHandler" />
+	            
+	           <keep access="public" extends="org.matheclipse.core.interfaces.IExpr" /> 
+	           <keep access="public" extends="org.matheclipse.core.interfaces.IEvaluator" />
+	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
+	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
+	           <keep access="public" extends="org.matheclipse.core.form.mathml.IConverter" />
+	           <keep access="public" extends="org.matheclipse.core.form.tex.IConverter" />
+	           <keep access="public" extends="org.apache.log4j.Appender" />
+	           <keep access="public" extends="org.apache.log4j.spi.OptionHandler" />
+	           <keep access="public" extends="org.apfloat.spi.BuilderFactory" />
 	
                <keep access="public" name="org.matheclipse.core.integrate.rubi.UtilityFunctions">
 	                     <method access    ="public static"
