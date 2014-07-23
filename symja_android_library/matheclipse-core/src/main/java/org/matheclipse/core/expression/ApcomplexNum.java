@@ -58,14 +58,14 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	/** A complex number representing "0.0 + 0.0i" */
 	public static final ApcomplexNum ZERO = new ApcomplexNum(Apcomplex.ZERO);
 
-	Apcomplex fComplex;
+	Apcomplex fApcomplex;
 
 	private ApcomplexNum(Apcomplex complex) {
-		fComplex = complex;
+		fApcomplex = complex;
 	}
 
 	private ApcomplexNum(Apfloat real, Apfloat imag) {
-		fComplex = new Apcomplex(real, imag);
+		fApcomplex = new Apcomplex(real, imag);
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public double getImaginaryPart() {
-		double temp = fComplex.imag().doubleValue();
+		double temp = fApcomplex.imag().doubleValue();
 		if (temp == (-0.0)) {
 			temp = 0.0;
 		}
@@ -81,7 +81,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public Apcomplex apcomplexValue() {
-		return fComplex;
+		return fApcomplex;
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public double getRealPart() {
-		double temp = fComplex.real().doubleValue();
+		double temp = fApcomplex.real().doubleValue();
 		if (temp == (-0.0)) {
 			temp = 0.0;
 		}
@@ -98,7 +98,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public boolean isZero() {
-		return fComplex.intValue() == 0;
+		return fApcomplex.intValue() == 0;
 	}
 
 	@Override
@@ -108,21 +108,21 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public IComplexNum add(final IComplexNum val) {
-		return newInstance(fComplex.add(((ApcomplexNum) val).fComplex));
+		return newInstance(fApcomplex.add(((ApcomplexNum) val).fApcomplex));
 	}
 
 	public ApcomplexNum add(final ApcomplexNum that) {
-		return newInstance(fComplex.add(that.fComplex));
+		return newInstance(fApcomplex.add(that.fApcomplex));
 	}
 
 	@Override
 	public IComplexNum multiply(final IComplexNum val) {
-		return newInstance(fComplex.multiply(((ApcomplexNum) val).fComplex));
+		return newInstance(fApcomplex.multiply(((ApcomplexNum) val).fApcomplex));
 	}
 
 	@Override
 	public IComplexNum pow(final IComplexNum val) {
-		return newInstance(ApcomplexMath.pow(fComplex, ((ApcomplexNum) val).fComplex));
+		return newInstance(ApcomplexMath.pow(fApcomplex, ((ApcomplexNum) val).fApcomplex));
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public Apcomplex add(final Apcomplex that) {
-		return fComplex.add(that);
+		return fApcomplex.add(that);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public IComplexNum conjugate() {
-		return newInstance(fComplex.conj());
+		return newInstance(fApcomplex.conj());
 	}
 
 	/**
@@ -146,11 +146,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public Apcomplex divide(final Apcomplex that) {
-		return fComplex.divide(that);
+		return fApcomplex.divide(that);
 	}
 
 	public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
-		return newInstance(fComplex.divide(that.fComplex));
+		return newInstance(fApcomplex.divide(that.fApcomplex));
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 			return true;
 		}
 		if (obj instanceof ApcomplexNum) {
-			return fComplex.equals(((ApcomplexNum) obj).fComplex);
+			return fApcomplex.equals(((ApcomplexNum) obj).fApcomplex);
 		}
 		return false;
 	}
@@ -167,11 +167,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
-			return ComplexNum.valueOf(fComplex.real().doubleValue(), fComplex.imag().doubleValue());
-		}
-		if (fComplex.imag().intValue() == 0) {
-			return ApfloatNum.newInstance(fComplex.real());
+		// if (engine.isNumericMode() && engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
+		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
+		// }
+		if (fApcomplex.imag().intValue() == 0) {
+			return ApfloatNum.newInstance(fApcomplex.real());
 		}
 		return null;
 	}
@@ -179,7 +179,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApcomplexNum) {
-			return fComplex.equals(((ApcomplexNum) expression).fComplex);
+			return fApcomplex.equals(((ApcomplexNum) expression).fApcomplex);
 		}
 		return false;
 	}
@@ -244,19 +244,19 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public double getImaginary() {
-		return fComplex.imag().doubleValue();
+		return fApcomplex.imag().doubleValue();
 	}
 
 	/**
 	 * @return
 	 */
 	public double getReal() {
-		return fComplex.real().doubleValue();
+		return fApcomplex.real().doubleValue();
 	}
 
 	@Override
 	public final int hashCode() {
-		return fComplex.hashCode();
+		return fApcomplex.hashCode();
 	}
 
 	/**
@@ -264,7 +264,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public ApcomplexNum multiply(final ApcomplexNum that) {
-		return newInstance(fComplex.multiply(that.fComplex));
+		return newInstance(fApcomplex.multiply(that.fApcomplex));
 	}
 
 	/**
@@ -272,7 +272,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public ApcomplexNum negate() {
-		return newInstance(fComplex.negate());
+		return newInstance(fApcomplex.negate());
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public INumber opposite() {
-		return newInstance(fComplex.negate());
+		return newInstance(fApcomplex.negate());
 	}
 
 	/**
@@ -290,14 +290,14 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ApcomplexNum) {
-			return newInstance(fComplex.add(((ApcomplexNum) that).fComplex));
+			return newInstance(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
 		}
 		return super.plus(that);
 	}
 
 	@Override
 	public IExpr inverse() {
-		return newInstance(Apcomplex.ONE.divide(fComplex));
+		return newInstance(Apcomplex.ONE.divide(fApcomplex));
 		// final double tmp = (fComplex.getReal() * fComplex.getReal()) + (fComplex.getImaginary() * fComplex.getImaginary());
 		// return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
 	}
@@ -307,11 +307,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public Apcomplex subtract(final Apcomplex that) {
-		return fComplex.subtract(that);
+		return fApcomplex.subtract(that);
 	}
 
 	public ApcomplexNum subtract(final ApcomplexNum that) {
-		return newInstance(fComplex.subtract(that.fComplex));
+		return newInstance(fApcomplex.subtract(that.fApcomplex));
 	}
 
 	/**
@@ -321,7 +321,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApcomplexNum) {
-			return newInstance(fComplex.multiply(((ApcomplexNum) that).fComplex));
+			return newInstance(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
 		}
 		return super.times(that);
 	}
@@ -335,26 +335,26 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		} catch (Exception e1) {
 		}
 		// fall back to simple output format
-		return fComplex.toString();
+		return fApcomplex.toString();
 	}
 
 	@Override
 	public int complexSign() {
-		final int i = (int) fComplex.real().signum();
+		final int i = (int) fApcomplex.real().signum();
 		if (i == 0) {
-			return (int) fComplex.imag().signum();
+			return (int) fApcomplex.imag().signum();
 		}
 		return i;
 	}
 
 	public int compareTo(final Apcomplex that) {
-		if (fComplex.real().compareTo(that.real()) < 0) {
+		if (fApcomplex.real().compareTo(that.real()) < 0) {
 			return -1;
 		}
-		if (fComplex.real().compareTo(that.real()) > 0) {
+		if (fApcomplex.real().compareTo(that.real()) > 0) {
 			return 1;
 		}
-		return fComplex.imag().compareTo(that.imag());
+		return fApcomplex.imag().compareTo(that.imag());
 	}
 
 	/**
@@ -364,7 +364,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof ApcomplexNum) {
-			return compareTo(((ApcomplexNum) obj).fComplex);
+			return compareTo(((ApcomplexNum) obj).fApcomplex);
 			// return fComplex.compareTo(((DoubleComplexImpl) obj).fComplex);
 		}
 		return (hierarchy() - (obj).hierarchy());
@@ -376,11 +376,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public Apcomplex getComplex() {
-		return fComplex;
+		return fApcomplex;
 	}
 
 	public org.matheclipse.parser.client.math.Complex getCMComplex() {
-		return new org.matheclipse.parser.client.math.Complex(fComplex.real().doubleValue(), fComplex.imag().doubleValue());
+		return new org.matheclipse.parser.client.math.Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 	}
 
 	/** {@inheritDoc} */
@@ -420,14 +420,14 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public INumber ceil() throws ArithmeticException {
-		return F.complex(F.integer(ApfloatMath.ceil(fComplex.real()).toBigInteger()),
-				F.integer(ApfloatMath.ceil(fComplex.imag()).toBigInteger()));
+		return F.complex(F.integer(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
+				F.integer(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
 	}
 
 	@Override
 	public INumber floor() throws ArithmeticException {
-		return F.complex(F.integer(ApfloatMath.floor(fComplex.real()).toBigInteger()),
-				F.integer(ApfloatMath.floor(fComplex.imag()).toBigInteger()));
+		return F.complex(F.integer(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
+				F.integer(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
 	}
 
 }

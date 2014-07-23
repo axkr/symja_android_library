@@ -422,7 +422,7 @@ public class Functors {
 		final EvalEngine engine = EvalEngine.get();
 		for (String str : strRules) {
 			final ASTNode parsedAST = parser.parse(str);
-			IExpr expr = AST2Expr.CONST.convert(parsedAST);
+			IExpr expr = AST2Expr.CONST.convert(parsedAST, engine);
 			expr = engine.evaluate(expr);
 			astRules.add(expr);
 		}

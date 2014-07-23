@@ -4,6 +4,7 @@ import java.math.RoundingMode;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -29,7 +30,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	public static final int DOUBLE_PRECISION = 15;
 
-	Apfloat fDouble;
+	Apfloat fApfloat;
 
 	/**
 	 * Create a new instance.
@@ -50,15 +51,15 @@ public class ApfloatNum extends ExprImpl implements INum {
 	}
 
 	private ApfloatNum(final double value, int precision) {
-		fDouble = new Apfloat(value, precision);
+		fApfloat = new Apfloat(value, precision);
 	}
 
 	private ApfloatNum(final String value, int precision) {
-		fDouble = new Apfloat(value, precision);
+		fApfloat = new Apfloat(value, precision);
 	}
 
 	private ApfloatNum(final Apfloat value) {
-		fDouble = value;
+		fApfloat = value;
 	}
 
 	@Override
@@ -83,41 +84,41 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
-		return fDouble.compareTo(Apfloat.ZERO) < 0;
+		return fApfloat.compareTo(Apfloat.ZERO) < 0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
-		return fDouble.compareTo(Apfloat.ZERO) > 0;
+		return fApfloat.compareTo(Apfloat.ZERO) > 0;
 	}
 
 	@Override
 	public boolean equalsInt(final int i) {
-		return fDouble.intValue() == i;
+		return fApfloat.intValue() == i;
 	}
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
-			return Num.valueOf(fDouble.doubleValue());
-		}
+		// if (engine.isNumericMode() && engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
+		// return Num.valueOf(fApfloat.doubleValue());
+		// }
 		return null;
 	}
 
 	@Override
 	public INum add(final INum val) {
-		return newInstance(fDouble.add(((ApfloatNum) val).fDouble));
+		return newInstance(fApfloat.add(((ApfloatNum) val).fApfloat));
 	}
 
 	@Override
 	public INum multiply(final INum val) {
-		return newInstance(fDouble.multiply(((ApfloatNum) val).fDouble));
+		return newInstance(fApfloat.multiply(((ApfloatNum) val).fApfloat));
 	}
 
 	@Override
 	public INum pow(final INum val) {
-		return newInstance(ApfloatMath.pow(fDouble, ((ApfloatNum) val).fDouble));
+		return newInstance(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
 	}
 
 	public static ApfloatNum valueOf(final double doubleValue, int precision) {
@@ -131,17 +132,17 @@ public class ApfloatNum extends ExprImpl implements INum {
 	public static ApfloatNum valueOf(final Apfloat af) {
 		return newInstance(af);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ApfloatNum eabs() {
-		return newInstance(ApfloatMath.abs(fDouble));
+		return newInstance(ApfloatMath.abs(fApfloat));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
-		return ApfloatMath.abs(fDouble).compareTo(Apfloat.ONE);
+		return ApfloatMath.abs(fApfloat).compareTo(Apfloat.ONE);
 	}
 
 	@Override
@@ -154,12 +155,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
-		return newInstance(fDouble.divide(((ApfloatNum) that).fDouble));
+		return newInstance(fApfloat.divide(((ApfloatNum) that).fApfloat));
 	}
 
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
-		return newInstance(fDouble.subtract(((ApfloatNum) that).fDouble));
+		return newInstance(fApfloat.subtract(((ApfloatNum) that).fApfloat));
 	}
 
 	/**
@@ -167,11 +168,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public double doubleValue() {
-		return fDouble.doubleValue();
+		return fApfloat.doubleValue();
 	}
 
 	public Apfloat apfloatValue() {
-		return fDouble;
+		return fApfloat;
 	}
 
 	@Override
@@ -180,7 +181,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 			return true;
 		}
 		if (arg0 instanceof ApfloatNum) {
-			return fDouble == ((ApfloatNum) arg0).fDouble;
+			return fApfloat == ((ApfloatNum) arg0).fApfloat;
 		}
 		return false;
 	}
@@ -188,19 +189,19 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApfloatNum) {
-			return fDouble.equals(((ApfloatNum) expression).fDouble);
+			return fApfloat.equals(((ApfloatNum) expression).fApfloat);
 			// return F.isZero(fDouble - ((ApfloatNum) expression).fDouble, epsilon);
 		}
 		return false;
 	}
 
 	public Apfloat exp() {
-		return ApfloatMath.exp(fDouble);
+		return ApfloatMath.exp(fApfloat);
 	}
 
 	@Override
 	public final int hashCode() {
-		return fDouble.hashCode();
+		return fApfloat.hashCode();
 	}
 
 	/**
@@ -208,7 +209,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public int intValue() {
-		return fDouble.intValue();
+		return fApfloat.intValue();
 	}
 
 	/**
@@ -216,7 +217,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public int toInt() throws ArithmeticException {
-		int i = fDouble.intValue();
+		int i = fApfloat.intValue();
 		if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
 			throw new ArithmeticException("ApfloatNum:toInt: number out of range");
 		}
@@ -228,7 +229,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public long toLong() throws ArithmeticException {
-		long l = fDouble.longValue();
+		long l = fApfloat.longValue();
 		if (l == Long.MAX_VALUE || l == Long.MIN_VALUE) {
 			throw new ArithmeticException("ApfloatNum:toLong: number out of range");
 		}
@@ -239,20 +240,20 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * @return
 	 */
 	public Apfloat log() {
-		return ApfloatMath.log(fDouble);
+		return ApfloatMath.log(fApfloat);
 	}
 
 	/**
 	 * @return
 	 */
 	public long longValue() {
-		return fDouble.longValue();
+		return fApfloat.longValue();
 	}
 
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApfloatNum) {
-			return newInstance(fDouble.multiply(((ApfloatNum) that).fDouble));
+			return newInstance(fApfloat.multiply(((ApfloatNum) that).fApfloat));
 		}
 		return super.times(that);
 	}
@@ -262,7 +263,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public ISignedNumber negate() {
-		return newInstance(fDouble.negate());
+		return newInstance(fApfloat.negate());
 	}
 
 	/**
@@ -270,24 +271,24 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public ISignedNumber opposite() {
-		return newInstance(fDouble.negate());
+		return newInstance(fApfloat.negate());
 	}
 
 	@Override
 	public ISignedNumber inverse() {
-		return newInstance(Apfloat.ONE.divide(fDouble));
+		return newInstance(Apfloat.ONE.divide(fApfloat));
 	}
 
 	/**
 	 * @return
 	 */
 	public Apfloat sqrt() {
-		return ApfloatMath.sqrt(fDouble);
+		return ApfloatMath.sqrt(fApfloat);
 	}
 
 	@Override
 	public double getRealPart() {
-		double temp = fDouble.doubleValue();
+		double temp = fApfloat.doubleValue();
 		if (temp == (-0.0)) {
 			temp = 0.0;
 		}
@@ -296,28 +297,30 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public boolean isZero() {
-		return fDouble.equals(Apfloat.ZERO);
+		return fApfloat.equals(Apfloat.ZERO);
 		// return fDouble == 0.0;
 	}
 
 	@Override
 	public boolean isOne() {
-		return fDouble.equals(Apfloat.ONE);
+		return fApfloat.equals(Apfloat.ONE);
 	}
 
 	@Override
 	public boolean isMinusOne() {
-		return fDouble.equals(Apfloat.MINUS_ONE);
+		return fApfloat.equals(Apfloat.MINUS_ONE);
 	}
 
 	@Override
 	public IInteger round() {
-		return F.integer(ApfloatMath.floor(ApfloatMath.round(fDouble, 0L, RoundingMode.HALF_UP)).toBigInteger());
+		Apfloat f = ApfloatMath.round(fApfloat, fApfloat.precision(), RoundingMode.HALF_UP);
+		Apint r = ApfloatMath.floor(f);
+		return F.integer(r.toBigInteger());
 	}
 
 	@Override
 	public int sign() {
-		return fDouble.signum();
+		return fApfloat.signum();
 	}
 
 	/** {@inheritDoc} */
@@ -329,13 +332,13 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger ceil() {
-		return F.integer(ApfloatMath.ceil(fDouble).toBigInteger());
+		return F.integer(ApfloatMath.ceil(fApfloat).toBigInteger());
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IInteger floor() {
-		return F.integer(ApfloatMath.floor(fDouble).toBigInteger());
+		return F.integer(ApfloatMath.floor(fApfloat).toBigInteger());
 	}
 
 	/**
@@ -345,19 +348,19 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public int compareTo(final IExpr obj) {
 		if (obj instanceof ApfloatNum) {
-			return fDouble.compareTo(((ApfloatNum) obj).fDouble);
+			return fApfloat.compareTo(((ApfloatNum) obj).fApfloat);
 		}
 		return (hierarchy() - (obj).hierarchy());
 	}
 
 	@Override
 	public boolean isLessThan(ISignedNumber that) {
-		return fDouble.compareTo(((ApfloatNum) that).fDouble) < 0;
+		return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
 	}
 
 	@Override
 	public boolean isGreaterThan(ISignedNumber that) {
-		return fDouble.compareTo(((ApfloatNum) that).fDouble) > 0;
+		return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
 	}
 
 	@Override
@@ -370,7 +373,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public String toString() {
-		return fDouble.toString();
+		return fApfloat.toString();
 	}
 
 	/**

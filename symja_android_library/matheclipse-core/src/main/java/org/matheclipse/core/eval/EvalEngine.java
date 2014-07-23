@@ -1177,11 +1177,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (fRelaxedSyntax) {
 			final Parser parser = new Parser(fRelaxedSyntax);
 			final ASTNode node = parser.parse(expression);
-			return AST2Expr.CONST_LC.convert(node);
+			return AST2Expr.CONST_LC.convert(node, this);
 		} else {
 			final Parser parser = new Parser();
 			final ASTNode node = parser.parse(expression);
-			return AST2Expr.CONST.convert(node);
+			return AST2Expr.CONST.convert(node, this);
 		}
 	}
 
@@ -1235,6 +1235,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public int getNumericPrecision() {
 		return fNumericPrecision;
+	}
+
+	public void setNumericPrecision(int precision) {
+		fNumericPrecision = precision;
 	}
 
 	/**

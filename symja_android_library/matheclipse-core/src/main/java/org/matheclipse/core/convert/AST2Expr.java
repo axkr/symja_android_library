@@ -6,6 +6,9 @@ import java.util.Map;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -126,6 +129,8 @@ public class AST2Expr {
 
 	public final static AST2Expr CONST_LC = new AST2Expr(true);
 
+	private int fPrecision;
+
 	private boolean fLowercaseEnabled;
 
 	/**
@@ -158,6 +163,14 @@ public class AST2Expr {
 		return ast;
 	}
 
+	public IExpr convert(ASTNode node, EvalEngine engine) throws ConversionException {
+		fPrecision = 15;
+		if (engine != null) {
+			fPrecision = engine.getNumericPrecision();
+		}
+		return convert(node);
+	}
+
 	/**
 	 * Converts a parsed ASTNode expression into an IExpr expression
 	 */
@@ -179,7 +192,18 @@ public class AST2Expr {
 				ast.add(convert(functionNode.get(i)));
 			}
 			IExpr head = ast.head();
-			if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
+			if (ast.isAST(F.N, 3)) {
+				try {
+					int precision = Validate.checkIntType(ast.arg2());
+					if (precision > ApfloatNum.DOUBLE_PRECISION) {
+						fPrecision = precision;
+						ast.set(1, convert(functionNode.get(1)));
+					}
+					return ast;
+				} catch (WrongArgumentType wat) {
+
+				}
+			} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
 				ISymbol compareHead = F.Greater;
 				return rewriteLessGreaterAST(ast, compareHead);
 			} else if (ast.isASTSizeGE(F.Greater, 3)) {
@@ -283,7 +307,10 @@ public class AST2Expr {
 			return F.stringx(node.getString());
 		}
 		if (node instanceof FloatNode) {
-			return F.num(new Apfloat(node.getString(), ApfloatNum.DOUBLE_PRECISION));
+			if (fPrecision > ApfloatNum.DOUBLE_PRECISION) {
+				return F.num(new Apfloat(node.getString(), fPrecision));
+			}
+			return F.num(Double.parseDouble(node.getString()));
 		}
 
 		return F.$s(node.toString());

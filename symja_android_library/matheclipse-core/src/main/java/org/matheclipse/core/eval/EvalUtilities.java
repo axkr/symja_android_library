@@ -116,7 +116,7 @@ public class EvalUtilities extends MathMLUtilities {
 				}
 			}
 			if (node != null) {
-				IExpr parsedExpression = AST2Expr.CONST.convert(node);
+				IExpr parsedExpression = AST2Expr.CONST.convert(node, evalEngine);
 				if (parsedExpression != null) {
 					evalEngine.reset();
 					IExpr temp = evalEngine.evaluate(parsedExpression);
@@ -157,7 +157,7 @@ public class EvalUtilities extends MathMLUtilities {
 		ASTNode node;
 		if (inputExpression != null) {
 			node = fEvalEngine.parseNode(inputExpression);
-			parsedExpression = AST2Expr.CONST.convert(node);
+			parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 			return parsedExpression.internalFormString(false, 0);
 		}
 		return "";

@@ -71,7 +71,7 @@ public class MathMLUtilities {
 		if (inputExpression != null) {
 			try {
 				node = fEvalEngine.parseNode(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node);
+				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 			} catch (final Throwable e) {
 				return;
 				// parsedExpression == null ==> fError occured
@@ -124,7 +124,7 @@ public class MathMLUtilities {
 		if (inputExpression != null) {
 			try {
 				node = fEvalEngine.parseNode(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node);
+				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 				out.write(parsedExpression.internalFormString(strictJava, 0));
 			} catch (final Throwable e) {
 				return;
