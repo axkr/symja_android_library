@@ -2,11 +2,9 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -17,6 +15,7 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.MethodSymbol;
 import org.matheclipse.core.interfaces.IAST;
@@ -225,6 +224,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see org.matheclipse.core.builtin.function.Quiet
 	 */
 	transient boolean fQuietMode = false;
+
+	/**
+	 * Use <code>Num</code> objects for numeric calculations up to 15 digits precision.
+	 */
+	public static final int DOUBLE_PRECISION = 15;
 
 	public final static boolean DEBUG = false;
 
@@ -1235,6 +1239,32 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public int getNumericPrecision() {
 		return fNumericPrecision;
+	}
+
+	/**
+	 * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code> type and the
+	 * <code>ApcomplexxNum</code> number type should be used instead of the <code>ComplexNum</code> type for numeric evaluations.
+	 * 
+	 * @return <code>true</code> if the required precision is greater than <code>EvalEngine.DOUBLE_PRECISION</code>
+	 * @see ApfloatNum
+	 * @see ApcomplexNum
+	 */
+	public boolean isApfloat() {
+		return fNumericPrecision > EvalEngine.DOUBLE_PRECISION;
+	}
+
+	/**
+	 * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code> type and the
+	 * <code>ApcomplexxNum</code> number type should be used instead of the <code>ComplexNum</code> type for numeric evaluations.
+	 * 
+	 * @param precision
+	 *            the given precision
+	 * @return <code>true</code> if the given precision is greater than <code>EvalEngine.DOUBLE_PRECISION</code>
+	 * @see ApfloatNum
+	 * @see ApcomplexNum
+	 */
+	public static boolean isApfloat(int precision) {
+		return precision > EvalEngine.DOUBLE_PRECISION;
 	}
 
 	public void setNumericPrecision(int precision) {

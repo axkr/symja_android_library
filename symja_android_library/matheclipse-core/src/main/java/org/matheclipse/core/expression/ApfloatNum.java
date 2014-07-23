@@ -25,11 +25,6 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	private static final long serialVersionUID = 2500259920655377884L;
 
-	/**
-	 * Use <code>Num</code> objects for numeric calculations up to 15 digits precision.
-	 */
-	public static final int DOUBLE_PRECISION = 15;
-
 	Apfloat fApfloat;
 
 	/**

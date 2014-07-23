@@ -84,7 +84,7 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode() && engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
 		}
 		return null;

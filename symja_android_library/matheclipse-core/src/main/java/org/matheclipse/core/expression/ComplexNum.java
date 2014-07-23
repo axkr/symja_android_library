@@ -192,7 +192,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode() && engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
 		}
 		if (F.isZero(getImaginaryPart())) {

@@ -2956,7 +2956,7 @@ public class F {
 	 */
 	public static INum num(final String doubleString) {
 		EvalEngine engine = EvalEngine.get();
-		if (engine.getNumericPrecision() > ApfloatNum.DOUBLE_PRECISION) {
+		if (engine.isApfloat()) {
 			return ApfloatNum.valueOf(doubleString, engine.getNumericPrecision());
 		}
 		return Num.valueOf(Double.parseDouble(doubleString));

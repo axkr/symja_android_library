@@ -9,7 +9,6 @@ import org.matheclipse.core.builtin.function.Blank;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -195,7 +194,7 @@ public class AST2Expr {
 			if (ast.isAST(F.N, 3)) {
 				try {
 					int precision = Validate.checkIntType(ast.arg2());
-					if (precision > ApfloatNum.DOUBLE_PRECISION) {
+					if (EvalEngine.isApfloat(precision)) {
 						fPrecision = precision;
 						ast.set(1, convert(functionNode.get(1)));
 					}
@@ -307,7 +306,7 @@ public class AST2Expr {
 			return F.stringx(node.getString());
 		}
 		if (node instanceof FloatNode) {
-			if (fPrecision > ApfloatNum.DOUBLE_PRECISION) {
+			if (EvalEngine.isApfloat(fPrecision)) {
 				return F.num(new Apfloat(node.getString(), fPrecision));
 			}
 			return F.num(Double.parseDouble(node.getString()));
