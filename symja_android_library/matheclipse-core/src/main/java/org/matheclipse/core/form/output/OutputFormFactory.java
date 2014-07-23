@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
@@ -86,6 +89,10 @@ public class OutputFormFactory {
 	}
 
 	public void convertDoubleComplex(final Appendable buf, final IComplexNum dc, final int precedence) throws IOException {
+		if (dc instanceof ApcomplexNum) {
+			convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence);
+			return;
+		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			append(buf, "(");
 		}
@@ -106,6 +113,35 @@ public class OutputFormFactory {
 			} else {
 				append(buf, "I*");
 				final boolean isNegative = dc.getImaginaryPart() < 0;
+				convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+			}
+		}
+		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			append(buf, ")");
+		}
+	}
+
+	public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence) throws IOException {
+		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+			append(buf, "(");
+		}
+		Apfloat realPart = dc.real();
+		Apfloat imaginaryPart = dc.imag();
+		boolean realZero = realPart.equals(Apfloat.ZERO);
+		boolean imaginaryZero = imaginaryPart.equals(Apfloat.ZERO);
+		if (realZero && imaginaryZero) {
+			convertDoubleValue(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+		} else {
+			if (!realZero) {
+				append(buf, String.valueOf(realPart));
+				if (!imaginaryZero) {
+					append(buf, "+I*");
+					final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
+					convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				}
+			} else {
+				append(buf, "I*");
+				final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
 				convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}
@@ -310,7 +346,7 @@ public class OutputFormFactory {
 					if (showOperator) {
 						append(buf, multCh);
 					} else {
-						showOperator=true;
+						showOperator = true;
 					}
 
 					convert(buf, timesArg, ASTNodeFactory.TIMES_PRECEDENCE);

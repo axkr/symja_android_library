@@ -1739,10 +1739,18 @@ public class F {
 		return ComplexNum.valueOf(c);
 	}
 
-	public static IComplexNum complexNum(final Apcomplex c) {
-		return ApcomplexNum.valueOf(c);
+	public static IComplexNum complexNum(final Apfloat r, final Apfloat i) {
+		return ApcomplexNum.newInstance(r, i);
 	}
 	
+	public static IComplexNum complexNum(final Apfloat r) {
+		return ApcomplexNum.newInstance(r, Apfloat.ZERO);
+	}
+
+	public static IComplexNum complexNum(final Apcomplex c) {
+		return ApcomplexNum.newInstance(c);
+	}
+
 	public static IComplexNum complexNum(final IComplex obj) {
 		final BigFraction r = obj.getRealPart();
 		final BigFraction i = obj.getImaginaryPart();

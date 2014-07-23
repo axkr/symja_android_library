@@ -170,7 +170,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		// if (engine.isNumericMode() && engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
 		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 		// }
-		if (fApcomplex.imag().intValue() == 0) {
+		if (fApcomplex.imag().equals(Apfloat.ZERO)) {
 			return ApfloatNum.newInstance(fApcomplex.real());
 		}
 		return null;
@@ -330,7 +330,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE);
+			OutputFormFactory.get().convertApcomplex(sb, this.apcomplexValue(), Integer.MIN_VALUE);
 			return sb.toString();
 		} catch (Exception e1) {
 		}

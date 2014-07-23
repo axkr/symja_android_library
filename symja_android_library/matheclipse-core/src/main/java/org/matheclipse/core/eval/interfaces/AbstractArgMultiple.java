@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -167,7 +168,11 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			} else if (o1.isFraction()) {
 				result = e2DblArg((INum) o0, F.num((IFraction) o1));
 			} else if (o1 instanceof IComplexNum) {
-				result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
+				if (o0 instanceof ApfloatNum) {
+					result = e2DblComArg(F.complexNum(((ApfloatNum) o0).apfloatValue()), (IComplexNum) o1);
+				} else {
+					result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
+				}
 			}
 			if (result != null) {
 				return result;
@@ -180,7 +185,11 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			} else if (o0.isFraction()) {
 				result = e2DblArg(F.num((IFraction) o0), (INum) o1);
 			} else if (o0 instanceof IComplexNum) {
-				result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
+				if (o0 instanceof ApfloatNum) {
+					result = e2DblComArg((IComplexNum) o0, F.complexNum(((ApfloatNum) o1).apfloatValue()));
+				} else {
+					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
+				}
 			}
 			if (result != null) {
 				return result;
