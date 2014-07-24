@@ -4,6 +4,11 @@ import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -38,6 +43,38 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 			return F.Times(F.CNI, F.ArcCot(imPart));
 		}
 		return null;
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		double c = 1.0 / arg1;
+		return F.num((Math.log(1.0 + c) - Math.log(1.0 - c)) / 2.0);
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		// 1/arg1
+		Complex c = arg1.reciprocal();
+
+		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
+		Complex result = new Complex(0.5).multiply(Complex.ONE.add(c).log().subtract(Complex.ONE.subtract(c).log()));
+		return F.complexNum(result);
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.atanh(arg1.inverse()));
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		// 1/arg1
+		Apcomplex c = arg1.inverse();
+
+		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
+		Apcomplex result = ApcomplexMath.log(Apcomplex.ONE.add(c)).subtract(ApcomplexMath.log(Apcomplex.ONE.subtract(c)))
+				.divide(new Apfloat(2));
+		return F.complexNum(result);
 	}
 
 	@Override
