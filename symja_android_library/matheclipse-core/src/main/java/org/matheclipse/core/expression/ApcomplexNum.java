@@ -297,9 +297,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public IExpr inverse() {
-		return newInstance(Apcomplex.ONE.divide(fApcomplex));
-		// final double tmp = (fComplex.getReal() * fComplex.getReal()) + (fComplex.getImaginary() * fComplex.getImaginary());
-		// return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
+		return newInstance(ApcomplexMath.inverseRoot(fApcomplex, 1));
 	}
 
 	/**

@@ -26,32 +26,6 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 
-	// {
-	// Cot[Pi/4]=1,
-	// Cot[Pi/5]=1/5*Sqrt[25+10*Sqrt[5]],
-	// Cot[Pi/6]=3^(1/2),
-	// Cot[Pi/8]=Sqrt[2]+1,
-	// Cot[Pi/10]=Sqrt[5+2*Sqrt[5]],
-	// Cot[Pi/12]=2+3^(1/2),
-	// Cot[0]=ComplexInfinity,
-	// Cot[5/12*Pi]=2-Sqrt[3],
-	// Cot[2/5*Pi]=1/5*Sqrt[25-10*Sqrt[5]],
-	// Cot[3/10*Pi]=Sqrt[5-2*Sqrt[5]]
-	// }
-
-	// final static IAST RULES = List(
-	// Set(Cot(Times(C1D4,Pi)),C1),
-	// Set(Cot(Times(fraction(1L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(integer(10L),Sqrt(C5)))))),
-	// Set(Cot(Times(fraction(1L,6L),Pi)),Power(C3,C1D2)),
-	// Set(Cot(Times(fraction(1L,8L),Pi)),Plus(Sqrt(C2),C1)),
-	// Set(Cot(Times(fraction(1L,10L),Pi)),Sqrt(Plus(C5,Times(C2,Sqrt(C5))))),
-	// Set(Cot(Times(fraction(1L,12L),Pi)),Plus(C2,Power(C3,C1D2))),
-	// Set(Cot(C0),CComplexInfinity),
-	// Set(Cot(Times(fraction(5L,12L),Pi)),Plus(C2,Times(CN1,Sqrt(C3)))),
-	// Set(Cot(Times(fraction(2L,5L),Pi)),Times(fraction(1L,5L),Sqrt(Plus(integer(25L),Times(CN1,Times(integer(10L),Sqrt(C5))))))),
-	// Set(Cot(Times(fraction(3L,10L),Pi)),Sqrt(Plus(C5,Times(CN1,Times(C2,Sqrt(C5))))))
-	// );
-
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
@@ -88,7 +62,17 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.tan().reciprocal());
 	}
-	
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.tan(arg1).inverse());
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.tan(arg1).inverse());
+	}
+
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

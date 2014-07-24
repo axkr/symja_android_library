@@ -271,7 +271,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public ISignedNumber inverse() {
-		return newInstance(Apfloat.ONE.divide(fApfloat));
+		return newInstance(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
 
 	/**

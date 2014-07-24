@@ -5,11 +5,13 @@ import static org.matheclipse.core.expression.F.Coth;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -55,9 +57,23 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 	}
 
 	@Override
-//		return ComplexUtils.cosh(arg1).divide(ComplexUtils.sinh(arg1));
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.cosh(arg1) / Math.sinh(arg1));
+	}
+
+	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.cosh().divide(arg1.sinh()));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.cosh(arg1).divide(ApfloatMath.sinh(arg1)));
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.cosh(arg1).divide(ApcomplexMath.sinh(arg1)));
 	}
 
 	@Override
