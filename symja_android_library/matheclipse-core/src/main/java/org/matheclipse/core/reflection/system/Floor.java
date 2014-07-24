@@ -34,16 +34,6 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		}
 	}
 
-	// private final class FloorNumericFunction implements INumericFunction<IExpr> {
-	// public IExpr apply(double value) {
-	// if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-	// long result = Math.round(Math.floor(value));
-	// return F.integer(result);
-	// }
-	// return null;
-	// }
-	// }
-
 	public Floor() {
 	}
 
@@ -60,7 +50,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = ast.arg1();
+			IExpr arg1 = F.eval(ast.arg1());
 			if (arg1.isSignedNumber()) {
 				return ((ISignedNumber) arg1).floor();
 			}
@@ -95,7 +85,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 }

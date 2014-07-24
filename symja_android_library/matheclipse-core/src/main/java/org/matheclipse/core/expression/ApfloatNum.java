@@ -1,10 +1,10 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.apfloat.Apint;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -33,15 +33,25 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * @param numerator
 	 * @return
 	 */
-	protected static ApfloatNum newInstance(final double value, int precision) {
+	public static ApfloatNum valueOf(final double value, int precision) {
 		return new ApfloatNum(value, precision);
 	}
 
-	protected static ApfloatNum newInstance(final Apfloat value) {
+	public static ApfloatNum valueOf(final Apfloat value) {
 		return new ApfloatNum(value);
 	}
 
-	protected static ApfloatNum newInstance(final String value, int precision) {
+	public static ApfloatNum valueOf(final BigInteger numerator, int precision) {
+		return new ApfloatNum(numerator, precision);
+	}
+
+	public static ApfloatNum valueOf(final BigInteger numerator, final BigInteger denominator, int precision) {
+		Apfloat n = new Apfloat(numerator, precision);
+		Apfloat d = new Apfloat(denominator, precision);
+		return new ApfloatNum(n.divide(d));
+	}
+
+	public static ApfloatNum valueOf(final String value, int precision) {
 		return new ApfloatNum(value, precision);
 	}
 
@@ -50,6 +60,10 @@ public class ApfloatNum extends ExprImpl implements INum {
 	}
 
 	private ApfloatNum(final String value, int precision) {
+		fApfloat = new Apfloat(value, precision);
+	}
+
+	private ApfloatNum(final BigInteger value, int precision) {
 		fApfloat = new Apfloat(value, precision);
 	}
 
@@ -103,35 +117,23 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public INum add(final INum val) {
-		return newInstance(fApfloat.add(((ApfloatNum) val).fApfloat));
+		return valueOf(fApfloat.add(((ApfloatNum) val).fApfloat));
 	}
 
 	@Override
 	public INum multiply(final INum val) {
-		return newInstance(fApfloat.multiply(((ApfloatNum) val).fApfloat));
+		return valueOf(fApfloat.multiply(((ApfloatNum) val).fApfloat));
 	}
 
 	@Override
 	public INum pow(final INum val) {
-		return newInstance(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
-	}
-
-	public static ApfloatNum valueOf(final double doubleValue, int precision) {
-		return newInstance(doubleValue, precision);
-	}
-
-	public static ApfloatNum valueOf(final String strValue, int precision) {
-		return newInstance(strValue, precision);
-	}
-
-	public static ApfloatNum valueOf(final Apfloat af) {
-		return newInstance(af);
+		return valueOf(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public ApfloatNum eabs() {
-		return newInstance(ApfloatMath.abs(fApfloat));
+		return valueOf(ApfloatMath.abs(fApfloat));
 	}
 
 	/** {@inheritDoc} */
@@ -150,12 +152,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
-		return newInstance(fApfloat.divide(((ApfloatNum) that).fApfloat));
+		return valueOf(fApfloat.divide(((ApfloatNum) that).fApfloat));
 	}
 
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
-		return newInstance(fApfloat.subtract(((ApfloatNum) that).fApfloat));
+		return valueOf(fApfloat.subtract(((ApfloatNum) that).fApfloat));
 	}
 
 	/**
@@ -248,7 +250,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApfloatNum) {
-			return newInstance(fApfloat.multiply(((ApfloatNum) that).fApfloat));
+			return valueOf(fApfloat.multiply(((ApfloatNum) that).fApfloat));
 		}
 		return super.times(that);
 	}
@@ -258,7 +260,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public ISignedNumber negate() {
-		return newInstance(fApfloat.negate());
+		return valueOf(fApfloat.negate());
 	}
 
 	/**
@@ -266,12 +268,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 */
 	@Override
 	public ISignedNumber opposite() {
-		return newInstance(fApfloat.negate());
+		return valueOf(fApfloat.negate());
 	}
 
 	@Override
 	public ISignedNumber inverse() {
-		return newInstance(ApfloatMath.inverseRoot(fApfloat, 1));
+		return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
 
 	/**
@@ -308,9 +310,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public IInteger round() {
-		Apfloat f = ApfloatMath.round(fApfloat, fApfloat.precision(), RoundingMode.HALF_UP);
-		Apint r = ApfloatMath.floor(f);
-		return F.integer(r.toBigInteger());
+		Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_UP);
+		return F.integer(ApfloatMath.floor(f).toBigInteger());
 	}
 
 	@Override

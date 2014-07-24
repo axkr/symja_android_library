@@ -18,7 +18,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 
 /**
- * A concrete complex implementation
+ * A symbolic complex implementation
  * 
  */
 public class ComplexSym extends ExprImpl implements IComplex {

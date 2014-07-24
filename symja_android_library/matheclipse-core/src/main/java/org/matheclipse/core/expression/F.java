@@ -1740,47 +1740,50 @@ public class F {
 	}
 
 	public static IComplexNum complexNum(final Apfloat r, final Apfloat i) {
-		return ApcomplexNum.newInstance(r, i);
+		return ApcomplexNum.valueOf(r, i);
 	}
-	
+
 	public static IComplexNum complexNum(final Apfloat r) {
-		return ApcomplexNum.newInstance(r, Apfloat.ZERO);
+		return ApcomplexNum.valueOf(r, Apfloat.ZERO);
 	}
 
 	public static IComplexNum complexNum(final Apcomplex c) {
-		return ApcomplexNum.newInstance(c);
+		return ApcomplexNum.valueOf(c);
 	}
 
-	public static IComplexNum complexNum(final IComplex obj) {
-		final BigFraction r = obj.getRealPart();
-		final BigFraction i = obj.getImaginaryPart();
-		double nr = 0.0;
-		double dr = 1.0;
-		double ni = 0.0;
-		double di = 1.0;
-		// if (r instanceof IFraction) {
-		nr = r.getNumerator().doubleValue();
-		dr = r.getDenominator().doubleValue();
-		// }
-		// if (r instanceof IInteger) {
-		// nr = ((IInteger) r).getNumerator().doubleValue();
-		// }
-		// if (i instanceof IFraction) {
-		ni = i.getNumerator().doubleValue();
-		di = i.getDenominator().doubleValue();
-		// }
-		// if (i instanceof IInteger) {
-		// ni = ((IInteger) i).getNumerator().doubleValue();
-		// }
+	public static IComplexNum complexNum(final IComplex value) {
+		final BigFraction realFraction = value.getRealPart();
+		final BigFraction imagFraction = value.getImaginaryPart();
+		final EvalEngine engine = EvalEngine.get();
+		if (engine.isApfloat()) {
+			return ApcomplexNum.valueOf(realFraction.getNumerator(), realFraction.getDenominator(), imagFraction.getNumerator(),
+					imagFraction.getDenominator(), engine.getNumericPrecision());
+		}
+		// double precision complex number
+		double nr = realFraction.getNumerator().doubleValue();
+		double dr = realFraction.getDenominator().doubleValue();
+		double ni = imagFraction.getNumerator().doubleValue();
+		double di = imagFraction.getDenominator().doubleValue();
+
 		return F.complexNum(nr / dr, ni / di);
 	}
 
-	public static IComplexNum complexNum(final IFraction obj) {
-		return F.complexNum(obj.doubleValue(), 0.0d);
+	public static IComplexNum complexNum(final IFraction value) {
+		final EvalEngine engine = EvalEngine.get();
+		if (engine.isApfloat()) {
+			return ApcomplexNum.valueOf(value.getBigNumerator(), value.getBigDenominator(), BigInteger.ZERO, BigInteger.ONE,
+					engine.getNumericPrecision());
+		}
+		return F.complexNum(value.doubleValue(), 0.0d);
 	}
 
-	public static IComplexNum complexNum(final IInteger obj) {
-		return F.complexNum(obj.doubleValue(), 0.0d);
+	public static IComplexNum complexNum(final IInteger value) {
+		final EvalEngine engine = EvalEngine.get();
+		if (engine.isApfloat()) {
+			return ApcomplexNum.valueOf(value.getBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE,
+					engine.getNumericPrecision());
+		}
+		return F.complexNum(value.doubleValue(), 0.0d);
 	}
 
 	public static IAST Chop(final IExpr a0) {
@@ -2946,28 +2949,37 @@ public class F {
 		return Num.valueOf(d);
 	}
 
-	public static INum num(final IFraction obj) {
-		final double n = obj.getBigNumerator().doubleValue();
-		final double d = obj.getBigDenominator().doubleValue();
+	public static INum num(final IFraction value) {
+		EvalEngine engine = EvalEngine.get();
+		if (engine.isApfloat()) {
+			return ApfloatNum.valueOf(value.getBigNumerator(), value.getBigDenominator(), engine.getNumericPrecision());
+		}
+		final double n = value.getBigNumerator().doubleValue();
+		final double d = value.getBigDenominator().doubleValue();
 		return num(n / d);
 	}
 
-	public static INum num(final IInteger obj) {
-		return num(obj.doubleValue());
+	public static INum num(final IInteger value) {
+		EvalEngine engine = EvalEngine.get();
+		if (engine.isApfloat()) {
+			return ApfloatNum.valueOf(value.getBigNumerator(), engine.getNumericPrecision());
+		}
+		return num(value.doubleValue());
 	}
 
 	/**
-	 * Create a numeric value
+	 * Create a numeric value from the input string.
 	 * 
-	 * @param d
+	 * @param valueString
+	 *            the numeric value represented as a string.
 	 * @return
 	 */
-	public static INum num(final String doubleString) {
+	public static INum num(final String valueString) {
 		EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApfloatNum.valueOf(doubleString, engine.getNumericPrecision());
+			return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
 		}
-		return Num.valueOf(Double.parseDouble(doubleString));
+		return Num.valueOf(Double.parseDouble(valueString));
 	}
 
 	public static INum num(final Apfloat af) {

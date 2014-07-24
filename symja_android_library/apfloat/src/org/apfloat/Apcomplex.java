@@ -374,8 +374,9 @@ public class Apcomplex
     public Apcomplex inverse()
         throws ApfloatRuntimeException
     {
-        return ONE.divide(this);
+    	return ApcomplexMath.inverseRoot(this, 1);
     }
+    
     /**
      * Adds two apcomplex numbers.
      *
@@ -383,7 +384,6 @@ public class Apcomplex
      *
      * @return <code>this + z</code>.
      */
-
     public Apcomplex add(Apcomplex z)
         throws ApfloatRuntimeException
     {

@@ -616,7 +616,7 @@ public class Apfloat
     public Apfloat inverse()
             throws ApfloatRuntimeException
     {
-        return ONE.divide(this);
+        return ApfloatMath.inverseRoot(this, 1);
     }
 
     /**

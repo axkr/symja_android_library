@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigInteger;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -21,24 +23,42 @@ import org.matheclipse.core.visit.IVisitorInt;
  */
 public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
-	protected static ApcomplexNum newInstance(final Apcomplex value) {
+	public static ApcomplexNum valueOf(final Apcomplex value) {
 		return new ApcomplexNum(value);
 	}
 
-	protected static ApcomplexNum newInstance(final Apfloat real, final Apfloat imag) {
+	public static ApcomplexNum valueOf(final Apfloat real, final Apfloat imag) {
 		return new ApcomplexNum(real, imag);
 	}
 
 	public static ApcomplexNum valueOf(final double real, int precision) {
-		return newInstance(new Apcomplex(new Apfloat(real, precision), Apfloat.ZERO));
+		return valueOf(new Apcomplex(new Apfloat(real, precision), Apfloat.ZERO));
 	}
 
 	public static ApcomplexNum valueOf(final double real, final double imaginary, int precision) {
-		return newInstance(new Apcomplex(new Apfloat(real, precision), new Apfloat(imaginary, precision)));
+		return valueOf(new Apcomplex(new Apfloat(real, precision), new Apfloat(imaginary, precision)));
 	}
 
-	public static ApcomplexNum valueOf(final Apcomplex value) {
-		return newInstance(value);
+	/**
+	 * Create a <code>ApcomplexNum</code> complex number from the real and imaginary <code>BigInteger</code> parts.
+	 * 
+	 * @param realNumerator
+	 *            the real numbers numerator part
+	 * @param realDenominator
+	 *            the real numbers denominator part
+	 * @param imagNumerator
+	 *            the imaginary numbers numerator part
+	 * @param imagDenominator
+	 *            the imaginary numbers denominator part
+	 * @param precision
+	 *            the precision of the number.
+	 * @return a new <code>ApcomplexNum</code> complex number object
+	 */
+	public static ApcomplexNum valueOf(final BigInteger realNumerator, final BigInteger realDenominator,
+			final BigInteger imagNumerator, final BigInteger imagDenominator, int precision) {
+		Apfloat real = new Apfloat(realNumerator, precision).divide(new Apfloat(realDenominator, precision));
+		Apfloat imag = new Apfloat(imagNumerator, precision).divide(new Apfloat(imagDenominator, precision));
+		return new ApcomplexNum(real, imag);
 	}
 
 	/**
@@ -108,21 +128,21 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public IComplexNum add(final IComplexNum val) {
-		return newInstance(fApcomplex.add(((ApcomplexNum) val).fApcomplex));
+		return valueOf(fApcomplex.add(((ApcomplexNum) val).fApcomplex));
 	}
 
 	public ApcomplexNum add(final ApcomplexNum that) {
-		return newInstance(fApcomplex.add(that.fApcomplex));
+		return valueOf(fApcomplex.add(that.fApcomplex));
 	}
 
 	@Override
 	public IComplexNum multiply(final IComplexNum val) {
-		return newInstance(fApcomplex.multiply(((ApcomplexNum) val).fApcomplex));
+		return valueOf(fApcomplex.multiply(((ApcomplexNum) val).fApcomplex));
 	}
 
 	@Override
 	public IComplexNum pow(final IComplexNum val) {
-		return newInstance(ApcomplexMath.pow(fApcomplex, ((ApcomplexNum) val).fApcomplex));
+		return valueOf(ApcomplexMath.pow(fApcomplex, ((ApcomplexNum) val).fApcomplex));
 	}
 
 	/**
@@ -138,7 +158,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public IComplexNum conjugate() {
-		return newInstance(fApcomplex.conj());
+		return valueOf(fApcomplex.conj());
 	}
 
 	/**
@@ -150,7 +170,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
-		return newInstance(fApcomplex.divide(that.fApcomplex));
+		return valueOf(fApcomplex.divide(that.fApcomplex));
 	}
 
 	@Override
@@ -171,7 +191,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 		// }
 		if (fApcomplex.imag().equals(Apfloat.ZERO)) {
-			return ApfloatNum.newInstance(fApcomplex.real());
+			return ApfloatNum.valueOf(fApcomplex.real());
 		}
 		return null;
 	}
@@ -264,7 +284,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public ApcomplexNum multiply(final ApcomplexNum that) {
-		return newInstance(fApcomplex.multiply(that.fApcomplex));
+		return valueOf(fApcomplex.multiply(that.fApcomplex));
 	}
 
 	/**
@@ -272,7 +292,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public ApcomplexNum negate() {
-		return newInstance(fApcomplex.negate());
+		return valueOf(fApcomplex.negate());
 	}
 
 	/**
@@ -280,7 +300,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 */
 	@Override
 	public INumber opposite() {
-		return newInstance(fApcomplex.negate());
+		return valueOf(fApcomplex.negate());
 	}
 
 	/**
@@ -290,14 +310,14 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ApcomplexNum) {
-			return newInstance(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
+			return valueOf(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
 		}
 		return super.plus(that);
 	}
 
 	@Override
 	public IExpr inverse() {
-		return newInstance(ApcomplexMath.inverseRoot(fApcomplex, 1));
+		return valueOf(ApcomplexMath.inverseRoot(fApcomplex, 1));
 	}
 
 	/**
@@ -309,7 +329,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public ApcomplexNum subtract(final ApcomplexNum that) {
-		return newInstance(fApcomplex.subtract(that.fApcomplex));
+		return valueOf(fApcomplex.subtract(that.fApcomplex));
 	}
 
 	/**
@@ -319,7 +339,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApcomplexNum) {
-			return newInstance(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
+			return valueOf(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
 		}
 		return super.times(that);
 	}

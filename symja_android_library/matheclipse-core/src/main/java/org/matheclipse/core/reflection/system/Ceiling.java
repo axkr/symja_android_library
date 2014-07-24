@@ -59,7 +59,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = ast.arg1();
+			IExpr arg1 = F.eval(ast.arg1());
 			if (arg1.isSignedNumber()) {
 				return ((ISignedNumber) arg1).ceil();
 			}
@@ -92,7 +92,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 }
