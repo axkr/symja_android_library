@@ -36,21 +36,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 			}
 		}
 		Object[] result;
-		// if (rightHandSide.isCondition()) {
-		// result = createPatternMatcher(leftHandSide, ((IAST)
-		// rightHandSide).arg1(), ((IAST) rightHandSide).get(2), null);
-		// } else if (rightHandSide.isModule()) {
-		// IAST module = (IAST) rightHandSide;
-		// if (module.get(2).isCondition()) {
-		// IAST condition = (IAST) module.get(2);
-		// result = createPatternMatcher(leftHandSide, condition.arg1(),
-		// condition.get(2), module.arg1());
-		// } else {
-		// result = createPatternMatcher(leftHandSide, rightHandSide, null, null);
-		// }
-		// } else {
 		result = createPatternMatcher(leftHandSide, rightHandSide, EvalEngine.get().isPackageMode());
-		// }
 		return (IExpr) result[1];
 	}
 
