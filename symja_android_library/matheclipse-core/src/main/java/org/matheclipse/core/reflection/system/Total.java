@@ -10,6 +10,10 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 import com.google.common.base.Function;
 
+/**
+ * Sums up all elements of a list.
+ * 
+ */
 public class Total extends AbstractFunctionEvaluator {
 
 	public Total() {

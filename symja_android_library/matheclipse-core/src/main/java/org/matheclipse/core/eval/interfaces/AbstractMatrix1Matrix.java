@@ -21,7 +21,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		try {
 			Validate.checkSize(ast, 2);
 
-			final IAST list = (IAST) ast.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			matrix = matrixEval(matrix);
 			return Convert.matrix2List(matrix);
@@ -48,12 +48,12 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
 			EvalEngine engine = EvalEngine.get();
 			if (engine.isApfloat()) {
-				final IAST list = (IAST) ast.get(1);
+				final IAST list = (IAST) ast.arg1();
 				FieldMatrix<ExprFieldElement> fieldMatrix = Convert.list2Matrix(list);
 				fieldMatrix = matrixEval(fieldMatrix);
 				return Convert.matrix2List(fieldMatrix);
 			}
-			final IAST list = (IAST) ast.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2RealMatrix(list);
 			matrix = realMatrixEval(matrix);
 

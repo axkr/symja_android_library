@@ -14,6 +14,7 @@ public class ReplacePart implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
+		
 		if (ast.size() == 4) {
 			if (ast.arg3().isList()) {
 				IExpr result = ast.arg1();

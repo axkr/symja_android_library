@@ -22,7 +22,7 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return evaluateArg1(ast.get(1));
+		return evaluateArg1(ast.arg1());
 	}
 
 	@Override

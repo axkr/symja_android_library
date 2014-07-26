@@ -121,13 +121,13 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 		IExpr temp = null;
 		switch (ast.size()) {
 		case 1:
-			temp = visit1(ast.get(0));
+			temp = visit1(ast.head());
 			break;
 		case 2:
-			temp = visit2(ast.get(0), ast.get(1));
+			temp = visit2(ast.head(), ast.arg1());
 			break;
 		case 3:
-			temp = visit3(ast.get(0), ast.get(1), ast.get(2));
+			temp = visit3(ast.head(), ast.arg1(), ast.arg2());
 			break;
 		}
 		if (temp != null) {

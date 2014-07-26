@@ -21,9 +21,9 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		FieldMatrix<ExprFieldElement> matrix;
 		try {
 
-			int[] dim = ast.get(1).isMatrix();
+			int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
-				final IAST list = (IAST) ast.get(1);
+				final IAST list = (IAST) ast.arg1();
 				matrix = Convert.list2Matrix(list);
 				return matrixEval(matrix).getExpr();
 			}
@@ -46,7 +46,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		RealMatrix matrix;
-		final IAST list = (IAST) ast.get(1);
+		final IAST list = (IAST) ast.arg1();
 		try {
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);

@@ -53,8 +53,8 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 
 				return result == null ? ast.arg2() : result;
 			} else if (ast.size() == 3) {
-				if (ast.get(1).isFunction()) {
-					IAST fun = F.ast(ast.get(1));
+				if (ast.arg1().isFunction()) {
+					IAST fun = F.ast(ast.arg1());
 					fun.add(ast.arg2());
 					return fun;
 				}

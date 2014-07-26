@@ -414,7 +414,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					} else {
 						fNumericMode = localNumericMode;
 					}
-					if ((evaledExpr = evalLoop(ast.get(1))) != null) {
+					if ((evaledExpr = evalLoop(ast.arg1())) != null) {
 						resultList = ast.clone();
 						resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						resultList.set(1, evaledExpr);
@@ -646,11 +646,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
-			return ast.get(1);
+			return ast.arg1();
 		}
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
-			final IExpr arg1 = ast.get(1);
+			final IExpr arg1 = ast.arg1();
 			if (arg1.topHead().equals(symbol)) {
 				// associative
 				return arg1;
@@ -662,7 +662,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
-			final IExpr arg1 = ast.get(1);
+			final IExpr arg1 = ast.arg1();
 			if (arg1.isList()) {
 				// thread over the list
 				if ((result = EvaluationSupport.threadList(ast, ((IAST) arg1).size() - 1, 1)) != null) {
@@ -671,8 +671,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		if (!(ast.get(1) instanceof IPatternObject)) {
-			final IExpr arg1 = ast.get(1);
+		if (!(ast.arg1() instanceof IPatternObject)) {
+			final IExpr arg1 = ast.arg1();
 			ISymbol lhsSymbol = null;
 			if (arg1.isSymbol()) {
 				lhsSymbol = (ISymbol) arg1;
@@ -828,8 +828,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				resultList = ast.clone();
 				if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 					// the HoldFirst attribute isn't set here
-					if (astSize > 1 && ast.get(1).isAST()) {
-						IAST temp = (IAST) ast.get(1);
+					if (astSize > 1 && ast.arg1().isAST()) {
+						IAST temp = (IAST) ast.arg1();
 						resultList.set(1, evaluate(temp));
 					}
 				}

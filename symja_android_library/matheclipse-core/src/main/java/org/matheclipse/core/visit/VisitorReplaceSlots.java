@@ -53,7 +53,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 	@Override
 	public IExpr visit(IAST ast) {
 		if (ast.isSlot()) {
-			return getSlot((IInteger) ast.get(1));
+			return getSlot((IInteger) ast.arg1());
 		}
 		return visitAST(ast);
 	}
@@ -68,7 +68,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 				IAST slotSequence = (IAST) ast.get(i);
 				// something may be evaluated - return a new IAST:
 				result = ast.clone();
-				j = getSlotSequence(result, i, (IInteger) slotSequence.get(1));
+				j = getSlotSequence(result, i, (IInteger) slotSequence.arg1());
 				i++;
 				break;
 			}
@@ -86,7 +86,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 		while (i < ast.size()) {
 			if (ast.get(i).isSlotSequence()) {
 				IAST slotSequence = (IAST) ast.get(i);
-				j = getSlotSequence(result, j, (IInteger) slotSequence.get(1));
+				j = getSlotSequence(result, j, (IInteger) slotSequence.arg1());
 				i++;
 				continue;
 			}

@@ -189,7 +189,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		return binaryOperator(ast.get(1), ast.get(2));
+		return binaryOperator(ast.arg1(), ast.arg2());
 	}
 
 }

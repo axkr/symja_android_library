@@ -33,13 +33,13 @@ public class Resultant extends AbstractFunctionEvaluator {
 			IAST result = F.List();
 			long degree1 = CoefficientList.univariateCoefficientList(arg1, (ISymbol) arg3, result);
 			if (degree1 >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.get(1), 1, "Polynomial degree" + degree1 + " is larger than: " + " - "
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree1 + " is larger than: " + " - "
 						+ Short.MAX_VALUE);
 			}
 			IAST resultListDiff = F.List();
 			long degree2 = CoefficientList.univariateCoefficientList(arg2, (ISymbol) arg3, resultListDiff);
 			if (degree2 >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.get(1), 1, "Polynomial degree" + degree2 + " is larger than: " + " - "
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree2 + " is larger than: " + " - "
 						+ Short.MAX_VALUE);
 			}
 			return resultant(result, resultListDiff);

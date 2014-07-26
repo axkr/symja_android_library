@@ -25,15 +25,15 @@ public class HashValueVisitor extends AbstractVisitorInt {
 	public int visit(IAST list) {
 		int hash = 0;
 		if (list.size() > 1) {
-			if (list.get(1).isAST()) {
-				IAST temp = (IAST) list.get(1);
-				hash = list.get(0).hashCode() + (31 * temp.head().hashCode() + temp.size()) + list.size();
+			if (list.arg1().isAST()) {
+				IAST temp = (IAST) list.arg1();
+				hash = list.head().hashCode() + (31 * temp.head().hashCode() + temp.size()) + list.size();
 			} else {
-				hash = (31 * list.get(0).hashCode() + list.size());
+				hash = (31 * list.head().hashCode() + list.size());
 			}
 		} else {
 			if (list.size() == 1) {
-				hash = (17 * list.get(0).hashCode());
+				hash = (17 * list.head().hashCode());
 			} else {
 				// this case shouldn't happen
 				hash = 41;

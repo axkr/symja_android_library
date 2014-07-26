@@ -339,7 +339,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	public IAST addOneIdentity(IAST value) {
 		if (value.size() == 2) {
-			add(value.get(1));
+			add(value.arg1());
 		} else {
 			add(value);
 		}
@@ -352,7 +352,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			return this;
 		}
 		if (size() == 2) {
-			return get(1);
+			return arg1();
 		}
 		return defaultValue;
 	}
@@ -514,13 +514,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isSlot() {
-		return isSameHead(F.Slot, 2) && get(1).isInteger();
+		return isSameHead(F.Slot, 2) && arg1().isInteger();
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isSlotSequence() {
-		return isSameHead(F.SlotSequence, 2) && get(1).isInteger();
+		return isSameHead(F.SlotSequence, 2) && arg1().isInteger();
 	}
 
 	/** {@inheritDoc} */
@@ -616,7 +616,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			// if (size() <= 1) {
 			// dim[1] = 0;
 			// } else {
-			dim[1] = ((IAST) get(1)).size() - 1;
+			dim[1] = ((IAST) arg1()).size() - 1;
 			// }
 			return dim;
 		}
@@ -625,8 +625,8 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			dim[0] = size() - 1;
 			dim[1] = 0;
 			if (dim[0] > 0) {
-				if (get(1).isList()) {
-					dim[1] = ((IAST) get(1)).size() - 1;
+				if (arg1().isList()) {
+					dim[1] = ((IAST) arg1()).size() - 1;
 
 					for (int i = 2; i < size(); i++) {
 						if (!get(i).isList()) {
@@ -658,7 +658,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (head().equals(F.List)) {
 			final int dim = size() - 1;
 			if (dim > 0) {
-				if (get(1).isList()) {
+				if (arg1().isList()) {
 					return -1;
 				}
 				for (int i = 2; i < size(); i++) {
@@ -1142,29 +1142,29 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			final IExpr lastTimes = get(size() - 1);
 			int cp;
 			if (!(lastTimes instanceof IAST)) {
-				cp = lastTimes.compareTo(ast.get(1));
+				cp = lastTimes.compareTo(ast.arg1());
 				if (cp != 0) {
 					return cp;
 				}
-				return F.C1.compareTo(ast.get(2));
+				return F.C1.compareTo(ast.arg2());
 			} else {
 				if (lastTimes.isPower()) {
 					// compare 2 Power ast's
-					cp = ((IAST) lastTimes).get(1).compareTo(ast.get(1));
+					cp = ((IAST) lastTimes).arg1().compareTo(ast.arg1());
 					if (cp != 0) {
 						return cp;
 					}
-					cp = ((IAST) lastTimes).get(2).compareTo(ast.get(2));
+					cp = ((IAST) lastTimes).arg2().compareTo(ast.arg2());
 					if (cp != 0) {
 						return cp;
 					}
 					return 1;
 				} else {
-					cp = lastTimes.compareTo(ast.get(1));
+					cp = lastTimes.compareTo(ast.arg1());
 					if (cp != 0) {
 						return cp;
 					}
-					return F.C1.compareTo(ast.get(2));
+					return F.C1.compareTo(ast.arg2());
 				}
 			}
 		} else if (ast.isTimes()) {
@@ -1268,26 +1268,26 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				final int attr = topHead().getAttributes() & ISymbol.FLATORDERLESS;
 				if (attr != ISymbol.NOATTRIBUTE) {
 					if (attr == ISymbol.FLATORDERLESS) {
-						fPatternMatchingHashValue = (17 * get(0).hashCode());
+						fPatternMatchingHashValue = (17 * head().hashCode());
 					} else if (attr == ISymbol.FLAT) {
-						if (get(1) instanceof IAST) {
-							fPatternMatchingHashValue = (31 * get(0).hashCode() + ((IAST) get(1)).get(0).hashCode());
+						if (arg1() instanceof IAST) {
+							fPatternMatchingHashValue = (31 * head().hashCode() + ((IAST) arg1()).head().hashCode());
 						} else {
-							fPatternMatchingHashValue = (37 * get(0).hashCode() + get(1).hashCode());
+							fPatternMatchingHashValue = (37 * head().hashCode() + arg1().hashCode());
 						}
 					} else { // attr == ISymbol.ORDERLESS
-						fPatternMatchingHashValue = (17 * get(0).hashCode() + size());
+						fPatternMatchingHashValue = (17 * head().hashCode() + size());
 					}
 				} else {
-					if (get(1) instanceof IAST) {
-						fPatternMatchingHashValue = (31 * get(0).hashCode() + ((IAST) get(1)).get(0).hashCode() + size());
+					if (arg1() instanceof IAST) {
+						fPatternMatchingHashValue = (31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size());
 					} else {
-						fPatternMatchingHashValue = (37 * get(0).hashCode() + get(1).hashCode() + size());
+						fPatternMatchingHashValue = (37 * head().hashCode() + arg1().hashCode() + size());
 					}
 				}
 			} else {
 				if (size() == 1) {
-					fPatternMatchingHashValue = (17 * get(0).hashCode());
+					fPatternMatchingHashValue = (17 * head().hashCode());
 				} else {
 					// this case shouldn't happen
 					fPatternMatchingHashValue = 41;
@@ -1392,7 +1392,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		final String sep = ",";
 		final IExpr temp = head();
 		if (temp.equals(F.Hold) && size() == 2) {
-			return get(1).internalFormString(symbolsAsFactoryMethod, depth);
+			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
 		}
 		if (isInfinity()) {
 			return "CInfinity";
@@ -1552,9 +1552,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				buf.append('}');
 				return buf.toString();
 
-			} else if (isAST(F.Slot, 2) && (get(1).isSignedNumber())) {
+			} else if (isAST(F.Slot, 2) && (arg1().isSignedNumber())) {
 				try {
-					final int slot = ((ISignedNumber) get(1)).toInt();
+					final int slot = ((ISignedNumber) arg1()).toInt();
 					if (slot <= 0) {
 						return toFullFormString();
 					}
@@ -1946,7 +1946,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public int signum() {
 		if (isTimes()) {
-			IExpr temp = get(1);
+			IExpr temp = arg1();
 			if (temp.isSignedNumber() && ((ISignedNumber) temp).isNegative()) {
 				return -1;
 			}

@@ -34,7 +34,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 		if (arg1 instanceof IAST) {
 			e1FunArg((IAST) arg1);
 		}
-		final int hier = ast.get(1).hierarchy();
+		final int hier = ast.arg1().hierarchy();
 		if (hier <= IExpr.INTEGERID) {
 			if (hier <= IExpr.DOUBLECOMPLEXID) {
 				if (hier == IExpr.DOUBLEID) {
@@ -53,12 +53,12 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 		} else {
 			if (hier <= IExpr.COMPLEXID) {
 				if (hier == IExpr.FRACTIONID) {
-					return e1FraArg((IFraction) ast.get(1));
+					return e1FraArg((IFraction) ast.arg1());
 				}
-				return e1ComArg((IComplex) ast.get(1));
+				return e1ComArg((IComplex) ast.arg1());
 			} else {
 				if (hier == IExpr.SYMBOLID) {
-					return e1SymArg((ISymbol) ast.get(1));
+					return e1SymArg((ISymbol) ast.arg1());
 				}
 			}
 		}

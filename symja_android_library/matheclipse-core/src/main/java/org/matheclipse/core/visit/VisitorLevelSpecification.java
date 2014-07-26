@@ -88,8 +88,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 			final IAST lst = (IAST) levelExpr;
 
 			if (lst.size() == 2) {
-				if (lst.get(1) instanceof IInteger) {
-					final IInteger i = (IInteger) lst.get(1);
+				if (lst.arg1() instanceof IInteger) {
+					final IInteger i = (IInteger) lst.arg1();
 
 					if (i.isNegative()) {
 						fFromDepth = i.getBigNumerator().intValue();
@@ -112,9 +112,9 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 				}
 			} else {
 				if ((lst.size() == 3)) {
-					if ((lst.get(1) instanceof IInteger) && (lst.get(2) instanceof IInteger)) {
-						final IInteger i0 = (IInteger) lst.get(1);
-						final IInteger i1 = (IInteger) lst.get(2);
+					if ((lst.arg1() instanceof IInteger) && (lst.arg2() instanceof IInteger)) {
+						final IInteger i0 = (IInteger) lst.arg1();
+						final IInteger i1 = (IInteger) lst.arg2();
 						if (i0.isNegative() && i1.isNegative()) {
 							fFromDepth = i0.getBigNumerator().intValue();
 							fToDepth = i1.getBigNumerator().intValue();
@@ -134,8 +134,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 							fToLevel = i1.getBigNumerator().intValue();
 						}
 						return;
-					} else if ((lst.get(1) instanceof IInteger) && (lst.get(2).isInfinity())) {
-						final IInteger i0 = (IInteger) lst.get(1);
+					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
+						final IInteger i0 = (IInteger) lst.arg1();
 						if (i0.isNegative()) {
 							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else {

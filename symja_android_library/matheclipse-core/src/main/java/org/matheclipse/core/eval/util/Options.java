@@ -94,7 +94,7 @@ public class Options {
 				for (int i = 1; i < fCurrentOptionsList.size(); i++) {
 					if (fCurrentOptionsList.get(i).isAST()) {
 						rule = (IAST) fCurrentOptionsList.get(i);
-						if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
+						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
 							return rule.get(2);
 						}
 					}
@@ -108,7 +108,7 @@ public class Options {
 				for (int i = 1; i < fDefaultOptionsList.size(); i++) {
 					if (fDefaultOptionsList.get(i).isAST()) {
 						rule = (IAST) fDefaultOptionsList.get(i);
-						if (rule.isRuleAST() && rule.get(1).toString().equalsIgnoreCase(optionString)) {
+						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
 							return rule.get(2);
 						}
 					}

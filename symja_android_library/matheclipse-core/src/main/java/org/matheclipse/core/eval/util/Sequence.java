@@ -49,24 +49,26 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTFrom(final IAST lst) {
-		if ((lst.size() > 1) && !(lst.get(1) instanceof IInteger)) {
-			throw new WrongArgumentType(lst, lst.get(1), 1);
+		if ((lst.size() > 1) && !(lst.arg1() instanceof IInteger)) {
+			throw new WrongArgumentType(lst, lst.arg1(), 1);
 		}
 		if (lst.size() > 1) {
-			return ((IInteger) lst.get(1)).toInt();
+			// TODO check correct ISignedNumber#toInt() usage
+			return ((IInteger) lst.arg1()).toInt();
 		}
 		return 0;
 	}
 
 	private static int getASTTo(final IAST lst) {
-		if ((lst.size() == 2) && (lst.get(1) instanceof IInteger)) {
-			return ((IInteger) lst.get(1)).toInt();
+		if ((lst.size() == 2) && (lst.arg1() instanceof IInteger)) {
+			// TODO check correct ISignedNumber#toInt() usage
+			return ((IInteger) lst.arg1()).toInt();
 		}
-		if ((lst.size() > 2) && !(lst.get(2) instanceof IInteger)) {
-			throw new WrongArgumentType(lst, lst.get(2), 2);
+		if ((lst.size() > 2) && !(lst.arg2() instanceof IInteger)) {
+			throw new WrongArgumentType(lst, lst.arg2(), 2);
 		}
 		if (lst.size() > 2) {
-			return ((IInteger) lst.get(2)).toInt();
+			return ((IInteger) lst.arg2()).toInt();
 		}
 		return Integer.MIN_VALUE;
 	}

@@ -24,12 +24,12 @@ public class NullSpace extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST function) {
+	public IExpr evaluate(final IAST ast) {
 		FieldMatrix<ExprFieldElement> matrix;
 		try {
-			Validate.checkSize(function, 2);
+			Validate.checkSize(ast, 2);
 
-			final IAST list = (IAST) function.get(1);
+			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
 			return Convert.matrix2List(fmw.getNullSpace(new ExprFieldElement(F.CN1)));

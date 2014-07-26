@@ -91,7 +91,7 @@ public class Iterator implements IIterator<IExpr> {
 			// illegalIterator = true;
 			// }
 			// }
-			if (lst.get(1) instanceof Symbol) {
+			if (lst.arg1()  instanceof Symbol) {
 				variable = (Symbol) lst.arg1();
 			} else {
 				variable = null;
@@ -274,7 +274,7 @@ public class Iterator implements IIterator<IExpr> {
 	// }
 	// }
 	// } else {
-	// return evalEngine.evaluate(ast.get(1));
+	// return evalEngine.evaluate(ast.arg1() );
 	// }
 	//
 	// return null;

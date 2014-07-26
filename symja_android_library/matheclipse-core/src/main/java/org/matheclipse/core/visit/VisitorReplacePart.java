@@ -13,8 +13,8 @@ public class VisitorReplacePart extends AbstractVisitor<IExpr> {
 
 	public VisitorReplacePart(IAST rule) {
 		super();
-		IExpr fromPositions = rule.get(1);
-		this.fReplaceExpr = rule.get(2);
+		IExpr fromPositions = rule.arg1();
+		this.fReplaceExpr = rule.arg2();
 		if (fromPositions.isList()) {
 			IAST list = (IAST) fromPositions;
 			this.fPositions = new int[list.size() - 1];

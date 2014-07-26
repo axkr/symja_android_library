@@ -34,17 +34,6 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		}
 	}
 
-	// private final class CeilingNumericFunction implements
-	// INumericFunction<IExpr> {
-	// public IExpr apply(double value) {
-	// if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-	// long result = Math.round(Math.ceil(value));
-	// return F.integer(result);
-	// }
-	// return null;
-	// }
-	// }
-
 	public Ceiling() {
 	}
 

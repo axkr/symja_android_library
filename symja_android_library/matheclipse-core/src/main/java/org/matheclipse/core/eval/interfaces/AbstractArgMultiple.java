@@ -27,14 +27,14 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			}
 		}
 		if (ast.size() == 3) {
-			return binaryOperator(ast.get(1), ast.get(2));
+			return binaryOperator(ast.arg1(), ast.arg2());
 		}
 
 		if (ast.size() > 3) {
 			final ISymbol sym = ast.topHead();
 			final IAST result = F.ast(sym);
 			IExpr tres;
-			IExpr temp = ast.get(1);
+			IExpr temp = ast.arg1();
 			boolean evaled = false;
 			int i = 2;
 
@@ -82,7 +82,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (evaled) {
 
 				if ((result.size() == 2) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
-					return result.get(1);
+					return result.arg1();
 				}
 
 				return result;

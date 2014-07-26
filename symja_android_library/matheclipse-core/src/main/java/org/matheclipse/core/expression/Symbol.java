@@ -417,8 +417,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 			final AST ast = (AST) obj;
 			if (ast.size() > 1) {
 				if (ast.isPower()) {
-					if (ast.get(1) instanceof ISymbol) {
-						final int cp = fSymbolName.compareTo(((Symbol) ast.get(1)).fSymbolName);
+					if (ast.arg1() instanceof ISymbol) {
+						final int cp = fSymbolName.compareTo(((Symbol) ast.arg1()).fSymbolName);
 						if (cp != 0) {
 							return cp;
 						}
@@ -433,11 +433,11 @@ public class Symbol extends ExprImpl implements ISymbol {
 					if (lastTimes instanceof AST) {
 						final IExpr lastTimesHeader = ((IAST) lastTimes).head();
 						if ((lastTimesHeader == F.Power) && (((IAST) lastTimes).size() == 3)) {
-							final int cp = compareTo(((IAST) lastTimes).get(1));
+							final int cp = compareTo(((IAST) lastTimes).arg1());
 							if (cp != 0) {
 								return cp;
 							}
-							return F.C1.compareTo(((IAST) lastTimes).get(2));
+							return F.C1.compareTo(((IAST) lastTimes).arg2());
 						}
 					}
 					final int cp = compareTo(lastTimes);

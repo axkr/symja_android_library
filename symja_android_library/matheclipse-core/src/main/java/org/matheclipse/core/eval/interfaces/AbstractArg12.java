@@ -203,7 +203,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
 		return null;
 	}
-	
+
 	public IExpr e2FraArg(final IFraction f0, final IFraction f1) {
 		return null;
 	}
@@ -233,16 +233,12 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
-		Validate.checkRange(functionList, 2, 3);
-		if (functionList.size() != 3) {
-			// if (functionList.size() != 2) {
-			// throw new WrongNumberOfArguments(functionList, 2,
-			// functionList.size()-1);
-			// }
-			return unaryOperator(functionList.get(1));
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkRange(ast, 2, 3);
+		if (ast.size() != 3) {
+			return unaryOperator(ast.arg1());
 		}
-		return binaryOperator(functionList.get(1), functionList.get(2));
+		return binaryOperator(ast.arg1(), ast.arg2());
 	}
 
 }

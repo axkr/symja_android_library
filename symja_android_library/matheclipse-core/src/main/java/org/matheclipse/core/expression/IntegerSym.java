@@ -625,8 +625,8 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		IInteger phi = IntegerSym.valueOf(1);
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
-			IntegerSym q = (IntegerSym) element.get(1);
-			int c = ((IInteger) element.get(2)).toInt();
+			IntegerSym q = (IntegerSym) element.arg1();
+			int c = ((IInteger) element.arg2()).toInt();
 			if (c == 1) {
 				phi = phi.multiply(q.subtract(IntegerSym.valueOf(1)));
 			} else {
@@ -713,7 +713,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		IAST element;
 		for (int i = 1; i < ast.size(); i++) {
 			element = (IAST) ast.get(i);
-			IntegerSym q = (IntegerSym) element.get(1);
+			IntegerSym q = (IntegerSym) element.arg1();
 			d[i - 1] = phi.quotient(q);
 		}
 		int k = 0;
