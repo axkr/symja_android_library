@@ -27,14 +27,9 @@ public class Sign implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isNumber()) {
-			return numberSign((INumber) arg1);
-		}
-		if (NumericQ.CONST.apply(arg1)) {
-			IExpr result = F.evaln(arg1);
-			if (result.isSignedNumber()) {
-				return numberSign((INumber) result);
-			}
+		ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+		if (signedNumber != null) {
+			return numberSign(signedNumber);
 		}
 		return null;
 	}

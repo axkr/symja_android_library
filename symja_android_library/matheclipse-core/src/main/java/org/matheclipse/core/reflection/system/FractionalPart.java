@@ -34,14 +34,9 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
-			return signedNumberFractionalPart((ISignedNumber) arg1);
-		}
-		if (NumericQ.CONST.apply(arg1)) {
-			IExpr result = F.evaln(arg1);
-			if (result.isSignedNumber()) {
-				return signedNumberFractionalPart((ISignedNumber) result);
-			}
+		ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+		if (signedNumber != null) {
+			return signedNumberFractionalPart(signedNumber);
 		}
 		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 			return Times(CN1, FractionalPart(Times(CN1, arg1)));

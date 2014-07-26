@@ -24,14 +24,9 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 
 		try {
 			IExpr arg1 = ast.arg1();
-			if (arg1.isSignedNumber()) {
-				return signedNumberIntegerPart((ISignedNumber) arg1);
-			}
-			if (NumericQ.CONST.apply(arg1)) {
-				IExpr result = F.evaln(arg1);
-				if (result.isSignedNumber()) {
-					return signedNumberIntegerPart((ISignedNumber) result);
-				}
+			ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+			if (signedNumber != null) {
+				return signedNumberIntegerPart(signedNumber);
 			}
 			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
 				return Times(CN1, IntegerPart(Times(CN1, arg1)));

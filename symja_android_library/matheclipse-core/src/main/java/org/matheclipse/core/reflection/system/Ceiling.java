@@ -60,14 +60,9 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 
 		try {
 			IExpr arg1 = F.eval(ast.arg1());
-			if (arg1.isSignedNumber()) {
-				return ((ISignedNumber) arg1).ceil();
-			}
-			if (NumericQ.CONST.apply(arg1)) {
-				IExpr result = F.evaln(arg1);
-				if (result.isSignedNumber()) {
-					return ((ISignedNumber) result).ceil();
-				}
+			ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+			if (signedNumber != null) {
+				return signedNumber.ceil();
 			}
 			if (arg1.isPlus()) {
 				IAST[] result = ((IAST) arg1).split(new CeilingPlusFunction());

@@ -5,6 +5,8 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -41,5 +43,50 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 
 	@Override
 	public void setUp(ISymbol symbol) throws SyntaxError {
+	}
+
+	/**
+	 * Do a numerical evaluation of the given expression, if <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
+	 * <code>ISignedNumber</code> if the evaluation result is a <code>ISignedNumber</code> and <code>null</code> in all other cases
+	 * 
+	 * @param arg1
+	 *            an expression
+	 * @return a signed number if possible
+	 */
+	public static ISignedNumber getSignedNumberNumericQ(IExpr arg1) {
+		if (arg1.isSignedNumber()) {
+			return (ISignedNumber) arg1;
+		}
+		if (arg1.isNumber()) {
+			return null;
+		}
+		if (arg1.isNumericFunction()) {
+			IExpr result = F.evaln(arg1);
+			if (result.isSignedNumber()) {
+				return (ISignedNumber) result;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Do a numerical evaluation of the given expression, if <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
+	 * <code>INumber</code> if the evaluation result is a <code>INumber</code> and <code>null</code> in all other cases
+	 * 
+	 * @param arg1
+	 *            an expression
+	 * @return a number if possible
+	 */
+	public static INumber getNumberNumericQ(IExpr arg1) {
+		if (arg1.isNumber()) {
+			return (INumber) arg1;
+		}
+		if (arg1.isNumericFunction()) {
+			IExpr result = F.evaln(arg1);
+			if (result.isNumber()) {
+				return (INumber) result;
+			}
+		}
+		return null;
 	}
 }

@@ -526,7 +526,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isNot();
 
 	/**
-	 * Test if this expression is a number
+	 * Test if this expression is a number. I.e. an instance of type <code>INumber</code>.
 	 * 
 	 */
 	public boolean isNumber();
@@ -634,13 +634,13 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isSame(IExpr expression, double epsilon);
 
 	/**
-	 * Test if this expression is a signed number
+	 * Test if this expression is a signed number. I.e. an instance of type <code>ISignedNumber</code>.
 	 * 
 	 */
 	public boolean isSignedNumber();
 
 	/**
-	 * Test if this expression is a numeric number (i.e. of type <code>INum</code> or <code>IComplexNum</code>.
+	 * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type <code>IComplexNum</code>.
 	 * 
 	 */
 	public boolean isNumeric();
