@@ -974,7 +974,7 @@ public class ApfloatContext
             }
             else if (propertyName.equals(CLEANUP_AT_EXIT))
             {
-                setCleanupAtExit(Boolean.parseBoolean(propertyValue));
+              // setCleanupAtExit(Boolean.parseBoolean(propertyValue));
             }
             else
             {
