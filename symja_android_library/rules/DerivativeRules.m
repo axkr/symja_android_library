@@ -19,7 +19,7 @@
   Derivative(Cot)=(-1)*Sin(#)^(-2)&,
   Derivative(Coth)=(-1)*Sinh(#)^(-2)&,
   Derivative(Cos)=(-1)*Sin(#)&,
-  Derivative(Cosh)=(-1)*Sinh(#)&,
+  Derivative(Cosh)=Sinh(#)&,
   Derivative(Csc)=(-1)*Cot(#)*Csc(#)&,
   Derivative(Csch)=(-1)*Coth(#)*Csch(#)&,
   Derivative(Sin)=Cos(#)&,

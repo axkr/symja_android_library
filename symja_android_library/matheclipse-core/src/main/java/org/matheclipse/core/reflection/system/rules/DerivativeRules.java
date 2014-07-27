@@ -50,7 +50,7 @@ public interface DerivativeRules {
     ISet(Derivative(Cos),
       Function(Times(CN1,Sin(Slot1)))),
     ISet(Derivative(Cosh),
-      Function(Times(CN1,Sinh(Slot1)))),
+      Function(Sinh(Slot1))),
     ISet(Derivative(Csc),
       Function(Times(CN1,Cot(Slot1),Csc(Slot1)))),
     ISet(Derivative(Csch),
