@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 public class Sequence extends ListSizeSequence {
 
@@ -49,20 +50,18 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTFrom(final IAST lst) {
-		if ((lst.size() > 1) && !(lst.arg1() instanceof IInteger)) {
+		if ((lst.size() > 1) && !(lst.arg1().isSignedNumber())) {
 			throw new WrongArgumentType(lst, lst.arg1(), 1);
 		}
 		if (lst.size() > 1) {
-			// TODO check correct ISignedNumber#toInt() usage
-			return ((IInteger) lst.arg1()).toInt();
+			return ((ISignedNumber) lst.arg1()).toInt();
 		}
 		return 0;
 	}
 
 	private static int getASTTo(final IAST lst) {
-		if ((lst.size() == 2) && (lst.arg1() instanceof IInteger)) {
-			// TODO check correct ISignedNumber#toInt() usage
-			return ((IInteger) lst.arg1()).toInt();
+		if ((lst.size() == 2) && (lst.arg1().isSignedNumber())) {
+			return ((ISignedNumber) lst.arg1()).toInt();
 		}
 		if ((lst.size() > 2) && !(lst.arg2() instanceof IInteger)) {
 			throw new WrongArgumentType(lst, lst.arg2(), 2);
@@ -74,11 +73,11 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTStep(final IAST lst) {
-		if ((lst.size() > 3) && !(lst.arg3().isInteger())) {
+		if ((lst.size() > 3) && !(lst.arg1().isSignedNumber())) {
 			throw new WrongArgumentType(lst, lst.arg3(), 3);
 		}
 		if (lst.size() > 3) {
-			return ((IInteger) lst.arg3()).toInt();
+			return ((ISignedNumber) lst.arg3()).toInt();
 		}
 		return 1;
 	}
