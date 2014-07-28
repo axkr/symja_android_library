@@ -47,9 +47,9 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 				if (o1.isMatrix() != null) {
 					list = (IAST) o1;
 					matrix1 = Convert.list2Matrix(list);
-					FieldElement<ExprFieldElement>[] av = vector0.getData();
+					FieldElement<ExprFieldElement>[] av = vector0.toArray();
 					BlockFieldMatrix<ExprFieldElement> m = new BlockFieldMatrix<ExprFieldElement>(ExprField.CONST,1,av.length);
-					m.setRow(0, vector0.getData());
+					m.setRow(0, vector0.toArray());
 					return Convert.matrix2List(m.multiply(
 							matrix1));
 				} else if (o1.isVector() != (-1)) {
