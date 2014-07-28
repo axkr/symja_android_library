@@ -14,6 +14,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatContext;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -983,6 +984,8 @@ public class F {
 			if (Config.SHOW_STACKTRACE) {
 				System.out.println("Config.SHOW_STACKTRACE == true");
 			}
+			ApfloatContext ctx = ApfloatContext.getContext();
+			ctx.setNumberOfProcessors(1);
 			// long start = System.currentTimeMillis();
 
 			Slot.setAttributes(ISymbol.NHOLDALL);
