@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.interfaces.IAST;
@@ -48,6 +49,11 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		RealMatrix matrix;
 		final IAST list = (IAST) ast.arg1();
 		try {
+			EvalEngine engine = EvalEngine.get();
+			if (engine.isApfloat()) {
+				FieldMatrix<ExprFieldElement> fieldMatrix = Convert.list2Matrix(list);
+				return matrixEval(fieldMatrix).getExpr();
+			}
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);
 		} catch (final ClassCastException e) {
