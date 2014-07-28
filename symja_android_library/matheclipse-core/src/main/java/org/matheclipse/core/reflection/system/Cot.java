@@ -55,22 +55,22 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		return F.num(1.0D / Math.tan(arg1));
+		return F.num(Math.cos(arg1) / Math.sin(arg1));
 	}
 
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.tan().reciprocal());
+		return F.complexNum(arg1.cos().divide(arg1.sin()));
 	}
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.tan(arg1).inverse());
+		return F.num(ApfloatMath.cos(arg1).divide(ApfloatMath.sin(arg1)));
 	}
 
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.tan(arg1).inverse());
+		return F.complexNum(ApcomplexMath.cos(arg1).divide(ApcomplexMath.sin(arg1)));
 	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {
