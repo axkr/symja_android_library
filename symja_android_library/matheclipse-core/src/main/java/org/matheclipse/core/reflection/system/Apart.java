@@ -223,31 +223,6 @@ public class Apart extends AbstractFunctionEvaluator {
 				parts[0] = F.C1;
 				parts[1] = denom;
 			}
-			// if (temp.arg2().isSignedNumber()) {
-			// ISignedNumber sn = (ISignedNumber) temp.arg2();
-			// parts = new IExpr[2];
-			// if (sn.equals(F.CN1)) {
-			// parts[0] = F.C1;
-			// parts[1] = temp.arg1();
-			// } else if (sn.isNegative()) {
-			// parts[0] = F.C1;
-			// parts[1] = F.Power(temp.arg1(), sn.negate());
-			// } else {
-			// if (sn.isInteger() && temp.arg1().isAST()) {
-			// // positive integer
-			// IAST function = (IAST) temp.arg1();
-			// IAST denomForm = Denominator.getDenominatorForm(function);
-			// if (denomForm != null) {
-			// parts[0] = F.C1;
-			// parts[1] = F.Power(denomForm, sn);
-			// return parts;
-			// }
-			//
-			// }
-			// parts[0] = arg;
-			// parts[1] = F.C1;
-			// }
-			// }
 		} else {
 			if (arg.isAST()) {
 				IAST denomForm = Denominator.getDenominatorForm((IAST) arg);
@@ -297,27 +272,6 @@ public class Apart extends AbstractFunctionEvaluator {
 						denominator.add(denom);
 						continue;
 					}
-					// if (argAST.arg2().isSignedNumber()) {
-					// ISignedNumber sn = (ISignedNumber) argAST.arg2();
-					// if (sn.equals(F.CN1)) {
-					// denominator.add(argAST.arg1());
-					// continue;
-					// }
-					// if (sn.isNegative()) {
-					// denominator.add(F.Power(argAST.arg1(), ((ISignedNumber) argAST.arg2()).negate()));
-					// continue;
-					// }
-					// if (sn.isInteger() && argAST.arg1().isAST()) {
-					// // positive integer
-					// IAST function = (IAST) argAST.arg1();
-					// IAST denomForm = Denominator.getDenominatorForm(function);
-					// if (denomForm != null) {
-					// denominator.add(F.Power(denomForm, sn));
-					// continue;
-					// }
-					//
-					// }
-					// }
 				}
 			} else if (splitFractionalNumbers && arg.isRational()) {
 				IInteger numer = ((IRational) arg).getNumerator();
@@ -349,7 +303,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		IExpr arg2 = powerAST.arg2();
 		if (arg2.isSignedNumber()) {
 			ISignedNumber sn = (ISignedNumber) arg2;
-			if (sn.equals(F.CN1)) {
+			if (sn.isMinusOne()) {
 				return powerAST.arg1();
 			} else if (sn.isNegative()) {
 				return F.Power(powerAST.arg1(), sn.negate());
