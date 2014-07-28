@@ -20,6 +20,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Namespace;
 import org.matheclipse.core.eval.SystemNamespace;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -3472,9 +3473,24 @@ public class F {
 	}
 
 	/**
+	 * Substitute all (sub-) expressions with the given replacement expression. If no (sub-) expression matches, the method returns
+	 * the given <code>expr</code>.
+	 * 
+	 * @param expr
+	 * @param subExpr
+	 * @param replacementExpr
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
+	 */
+	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
+		final IExpr result = expr.replaceAll(Functors.rules(F.Rule(subExpr, replacementExpr)));
+		return (result == null) ? expr : result;
+	}
+
+	/**
 	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns the given
 	 * <code>expr</code>.
-	 * 
+	 *  
+	 * @param expr
 	 * @param function
 	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't substituted.
 	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted expression.
@@ -3488,6 +3504,7 @@ public class F {
 	 * Substitute all (sub-) expressions with the given rule set. If no substitution matches, the method returns the given
 	 * <code>expr</code>.
 	 * 
+	 * @param expr
 	 * @param astRules
 	 *            rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the rule can
 	 *            contain pattern objects.

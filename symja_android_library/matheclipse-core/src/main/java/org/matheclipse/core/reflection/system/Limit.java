@@ -114,58 +114,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				}
 			}
 			if (header == F.Plus) {
-				// Limit[a_+b_+c_,sym->lim] ->
-				// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
-				if (limit.isInfinity() || limit.isNegativeInfinity()) {
-					GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol, true);
-					if (poly != null) {
-						IExpr coeff = poly.leadingBaseCoefficient();
-						long oddDegree = poly.degree() % 2;
-						if (oddDegree == 1) {
-							// odd degree
-							return F.Limit(F.Times(coeff, limit), rule);
-						} else {
-							// even degree
-							return F.Limit(F.Times(coeff, F.CInfinity), rule);
-						}
-					}
-				}
-				return mapLimit(arg1, rule);
+				return plusLimit(arg1, symbol, limit, rule);
 			} else if (header == F.Times) {
-				IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false);
-				if (parts != null) {
-
-					IExpr numerator = parts[0];
-					IExpr denominator = parts[1];
-					if (limit.isInfinity() || limit.isNegativeInfinity()) {
-						GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(denominator, symbol, true);
-						if (denominatorPoly != null) {
-							GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(numerator, symbol, true);
-							if (numeratorPoly != null) {
-								return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, rule);
-							}
-						}
-					}
-
-					IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
-							new PartialFractionGenerator(), parts, symbol);
-					if (plusResult != null) {
-						// OneIdentity if plusResult.size() == 2
-						if (plusResult.size() > 2) {
-							return mapLimit(plusResult, rule);
-						}
-					}
-
-					IExpr temp = timesLimit(numerator, denominator, symbol, limit, rule, direction);
-					if (temp != null) {
-						return temp;
-					}
-				}
-				return mapLimit(arg1, rule);
+				return timesLimit(arg1, symbol, limit, direction, rule);
 			} else if (arg1.isAST(F.Power, 3)) {
-				if (arg1.get(2).isInteger()) {
+				if (arg1.arg2().isInteger()) {
 					// Limit[a_^n_,sym->lim] -> Limit[a,sym->lim]^n
-					IInteger n = (IInteger) arg1.get(2);
+					IInteger n = (IInteger) arg1.arg2();
 					IExpr temp = F.eval(F.Limit(arg1.arg1(), rule));
 					if (temp.isInfinity()) {
 						if (n.isPositive()) {
@@ -200,6 +155,85 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 
 		return null;
+	}
+
+	public static IExpr plusLimit(final IAST arg1, ISymbol symbol, IExpr limit, IAST rule) {
+		// Limit[a_+b_+c_,sym->lim] ->
+		// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
+		if (limit.isInfinity() || limit.isNegativeInfinity()) {
+			GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol, true);
+			if (poly != null) {
+				IExpr coeff = poly.leadingBaseCoefficient();
+				long oddDegree = poly.degree() % 2;
+				if (oddDegree == 1) {
+					// odd degree
+					return F.Limit(F.Times(coeff, limit), rule);
+				} else {
+					// even degree
+					return F.Limit(F.Times(coeff, F.CInfinity), rule);
+				}
+			}
+		}
+		return mapLimit(arg1, rule);
+	}
+
+	public static IExpr timesLimit(final IAST arg1, ISymbol symbol, IExpr limit, int direction, IAST rule) {
+		IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false);
+		if (parts != null) {
+
+			IExpr numerator = parts[0];
+			IExpr denominator = parts[1];
+			if (limit.isInfinity() || limit.isNegativeInfinity()) {
+				GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(denominator,
+						symbol, true);
+				if (denominatorPoly != null) {
+					GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(numerator,
+							symbol, true);
+					if (numeratorPoly != null) {
+						return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, rule);
+					}
+				}
+			}
+
+			IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
+					new PartialFractionGenerator(), parts, symbol);
+			if (plusResult != null) {
+				// OneIdentity if plusResult.size() == 2
+				if (plusResult.size() > 2) {
+					return mapLimit(plusResult, rule);
+				}
+			}
+
+			if (denominator.isOne()) {
+				if (limit.isInfinity() || limit.isNegativeInfinity()) {
+					IExpr expr = F.Power(symbol, F.CN1);
+					if (limit.isNegativeInfinity()) {
+						expr = F.Negate(F.Power(symbol, F.CN1));
+					}
+					IExpr temp = F.eval(F.subst(arg1, symbol, expr));
+					if (temp.isTimes()) {
+						parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false);
+						if (parts != null) {
+							IExpr numerator2 = parts[0];
+							IExpr denominator2 = parts[1];
+							if (!denominator2.isOne()) {
+								temp = numeratorDenominatorLimit(numerator2, denominator2, symbol, F.C0, F.Rule(symbol, F.C0),
+										direction);
+								if (temp != null) {
+									return temp;
+								}
+							}
+						}
+					}
+				}
+			}
+			IExpr temp = numeratorDenominatorLimit(numerator, denominator, symbol, limit, rule, direction);
+			if (temp != null) {
+				return temp;
+			}
+
+		}
+		return mapLimit(arg1, rule);
 	}
 
 	/**
@@ -265,8 +299,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 *            <li>-1 - approach from larger values</li>
 	 * @return <code>null</code> if no limit found
 	 */
-	private static IExpr timesLimit(final IExpr numerator, final IExpr denominator, ISymbol symbol, IExpr limit, IAST rule,
-			int direction) {
+	private static IExpr numeratorDenominatorLimit(final IExpr numerator, final IExpr denominator, ISymbol symbol, IExpr limit,
+			IAST rule, int direction) {
 		IExpr numValue;
 		IExpr denValue;
 		if (denominator.isOne() && numerator.isTimes()) {
@@ -298,6 +332,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				return null;
 			}
 		}
+
 		return F.Times(F.Limit(numerator, rule), F.Power(F.Limit(denominator, rule), F.CN1));
 	}
 
@@ -309,32 +344,32 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		Validate.checkRange(ast, 3, 4);
 
 		if (!ast.arg2().isRuleAST()) {
-			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: rule definition expected!");
+			throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: rule definition expected!");
 		}
 		IAST rule = (IAST) ast.arg2();
 		if (!(rule.arg1().isSymbol())) {
-			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: variable symbol for rule definition expected!");
+			throw new WrongArgumentType(ast, ast.arg1(), 2, "Limit: variable symbol for rule definition expected!");
 		}
 		int direction = 0;
 		if (ast.size() == 4) {
 			final Options options = new Options(ast.topHead(), ast, 2);
 			IExpr option = options.getOption("Direction");
 			if (option != null) {
-				if (option.equals(F.C1)) {
+				if (option.isOne()) {
 					direction = 1;
-				} else if (option.equals(F.C1)) {
+				} else if (option.isMinusOne()) {
 					direction = -1;
 				} else {
-					throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: direction option expected!");
+					throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: direction option expected!");
 				}
 			} else {
-				throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: direction option expected!");
+				throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: direction option expected!");
 			}
 		}
 		ISymbol symbol = (ISymbol) rule.arg1();
 		IExpr limit = null;
 		if (rule.arg2().isFree(symbol, true)) {
-			limit = rule.get(2);
+			limit = rule.arg2();
 		} else {
 			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: limit value contains variable symbol for rule definition!");
 		}
