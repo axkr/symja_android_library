@@ -263,6 +263,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
+	public ComplexSym negate() {
+		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
+	}
+
+	@Override
 	public INumber opposite() {
 		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
 	}
