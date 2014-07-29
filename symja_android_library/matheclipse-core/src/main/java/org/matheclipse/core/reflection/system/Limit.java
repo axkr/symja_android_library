@@ -26,7 +26,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 * 
 	 * @param numerator
 	 * @param denominator
-	 * @param symbol
+	 * @param x
 	 *            the variable for which to approach to the limit
 	 * @param limit
 	 *            the limit value which the variable should approach to
@@ -38,20 +38,20 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 *            <li>-1 - approach from larger values</li>
 	 * @return
 	 */
-	private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, ISymbol symbol, IExpr limit, IAST rule, int direction) {
+	private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, ISymbol x, IExpr limit, IAST rule, int direction) {
 		EvalEngine engine = EvalEngine.get();
 		int recursionLimit = engine.getRecursionLimit();
 		if (recursionLimit > 0) {
-			IExpr expr = F.eval(F.Times(F.D(numerator, symbol), F.Power(F.D(denominator, symbol), F.CN1)));
-			return evalLimit(expr, symbol, limit, rule, direction, false);
+			IExpr expr = F.eval(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+			return evalLimit(expr, x, limit, rule, direction, false);
 		}
 		try {
 			if (recursionLimit <= 0) {
 				// set recursion limit for using l'Hospitales rule
 				engine.setRecursionLimit(128);
 			}
-			IExpr expr = F.eval(F.Times(F.D(numerator, symbol), F.Power(F.D(denominator, symbol), F.CN1)));
-			return evalLimit(expr, symbol, limit, rule, direction, false);
+			IExpr expr = F.eval(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+			return evalLimit(expr, x, limit, rule, direction, false);
 		} catch (RecursionLimitExceeded rle) {
 			engine.setRecursionLimit(recursionLimit);
 		} finally {
@@ -107,17 +107,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 		if (expression.isAST()) {
 			final IAST arg1 = (IAST) expression;
-			final IExpr header = arg1.head();
-			if (arg1.size() == 2) {
-				if (header.equals(F.Sin) || header.equals(F.Cos)) {
-					return F.$(header, F.Limit(arg1.arg1(), rule));
-				}
-			}
-			if (header == F.Plus) {
+			if (arg1.isSin() || arg1.isCos()) {
+				return F.$(arg1.head(), F.Limit(arg1.arg1(), rule));
+			} else if (arg1.isPlus()) {
 				return plusLimit(arg1, symbol, limit, rule);
-			} else if (header == F.Times) {
+			} else if (arg1.isTimes()) {
 				return timesLimit(arg1, symbol, limit, direction, rule);
-			} else if (arg1.isAST(F.Power, 3)) {
+			} else if (arg1.isPower()) {
 				if (arg1.arg2().isInteger()) {
 					// Limit[a_^n_,sym->lim] -> Limit[a,sym->lim]^n
 					IInteger n = (IInteger) arg1.arg2();
@@ -206,24 +202,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 			if (denominator.isOne()) {
 				if (limit.isInfinity() || limit.isNegativeInfinity()) {
-					IExpr expr = F.Power(symbol, F.CN1);
-					if (limit.isNegativeInfinity()) {
-						expr = F.Negate(F.Power(symbol, F.CN1));
-					}
-					IExpr temp = F.eval(F.subst(arg1, symbol, expr));
-					if (temp.isTimes()) {
-						parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false);
-						if (parts != null) {
-							IExpr numerator2 = parts[0];
-							IExpr denominator2 = parts[1];
-							if (!denominator2.isOne()) {
-								temp = numeratorDenominatorLimit(numerator2, denominator2, symbol, F.C0, F.Rule(symbol, F.C0),
-										direction);
-								if (temp != null) {
-									return temp;
-								}
-							}
-						}
+					IExpr temp = substituteInfinity(arg1, symbol, limit, direction);
+					if (temp != null) {
+						return temp;
 					}
 				}
 			}
@@ -234,6 +215,34 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 		}
 		return mapLimit(arg1, rule);
+	}
+
+	/**
+	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches <code>Infinity</code> or <code>-Infinity</code>,
+	 * <code>y</code> approaches <code>0</code>.
+	 * 
+	 * @param arg1
+	 * @param x
+	 * @param limit
+	 *            must be Infinity or -Infinity
+	 * @param direction
+	 * @return <code>null</code> if the substitution didn't succeed.
+	 */
+	private static IExpr substituteInfinity(final IAST arg1, ISymbol x, IExpr limit, int direction) {
+		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
+		IExpr temp = F.eval(F.subst(arg1, x, y));
+		if (temp.isTimes()) {
+			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false);
+			if (parts != null) {
+				if (!parts[1].isOne()) { // denominator != 1
+					temp = numeratorDenominatorLimit(parts[0], parts[1], x, F.C0, F.Rule(x, F.C0), direction);
+					if (temp != null) {
+						return temp;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -284,10 +293,11 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
+	 * Try l'Hospitales rule for numerator and denominator expression.
 	 * 
 	 * @param numerator
 	 * @param denominator
-	 * @param symbol
+	 * @param x
 	 *            the variable for which to approach to the limit
 	 * @param limit
 	 *            the limit value which the variable should approach to
@@ -299,7 +309,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 *            <li>-1 - approach from larger values</li>
 	 * @return <code>null</code> if no limit found
 	 */
-	private static IExpr numeratorDenominatorLimit(final IExpr numerator, final IExpr denominator, ISymbol symbol, IExpr limit,
+	private static IExpr numeratorDenominatorLimit(final IExpr numerator, final IExpr denominator, ISymbol x, IExpr limit,
 			IAST rule, int direction) {
 		IExpr numValue;
 		IExpr denValue;
@@ -309,25 +319,25 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			return mapLimit((IAST) numerator, rule);
 		}
 		if (!denominator.isNumber() || denominator.isZero()) {
-			denValue = F.evalBlock(denominator, symbol, limit);
+			denValue = F.evalBlock(denominator, x, limit);
 			if (denValue.equals(F.Indeterminate)) {
 				return null;
 			} else if (denValue.isZero()) {
-				numValue = F.evalBlock(numerator, symbol, limit);
+				numValue = F.evalBlock(numerator, x, limit);
 				if (numValue.isZero()) {
-					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
+					return lHospitalesRule(numerator, denominator, x, limit, rule, direction);
 				}
 				return null;
 			} else if (F.CInfinity.equals(denValue)) {
-				numValue = F.evalBlock(numerator, symbol, limit);
+				numValue = F.evalBlock(numerator, x, limit);
 				if (F.CInfinity.equals(numValue)) {
-					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
+					return lHospitalesRule(numerator, denominator, x, limit, rule, direction);
 				}
 				return null;
 			} else if (denValue.isNegativeInfinity()) {
-				numValue = F.evalBlock(numerator, symbol, limit);
+				numValue = F.evalBlock(numerator, x, limit);
 				if (numValue.isNegativeInfinity()) {
-					return lHospitalesRule(numerator, denominator, symbol, limit, rule, direction);
+					return lHospitalesRule(numerator, denominator, x, limit, rule, direction);
 				}
 				return null;
 			}
