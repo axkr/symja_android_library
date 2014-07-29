@@ -16,17 +16,17 @@
  */
 package org.apache.commons.math3.fitting;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
+
 import org.apache.commons.math3.analysis.function.HarmonicOscillator;
-import org.apache.commons.math3.exception.ZeroException;
-import org.apache.commons.math3.exception.NumberIsTooSmallException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.WithStartPoint;
-import org.apache.commons.math3.fitting.leastsquares.WithMaxIterations;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.linear.DiagonalMatrix;
 import org.apache.commons.math3.util.FastMath;
 
@@ -44,12 +44,10 @@ import org.apache.commons.math3.util.FastMath;
  * </ul>
  * The optimal values will be returned in the same order.
  *
- * @version $Id: HarmonicCurveFitter.java 1522089 2013-09-11 22:53:56Z tn $
+ * @version $Id: HarmonicCurveFitter.java 1571640 2014-02-25 10:27:21Z erans $
  * @since 3.3
  */
-public class HarmonicCurveFitter extends AbstractCurveFitter<LevenbergMarquardtOptimizer>
-    implements WithStartPoint<HarmonicCurveFitter>,
-               WithMaxIterations<HarmonicCurveFitter> {
+public class HarmonicCurveFitter extends AbstractCurveFitter {
     /** Parametric function to be fitted. */
     private static final HarmonicOscillator.Parametric FUNCTION = new HarmonicOscillator.Parametric();
     /** Initial guess. */
@@ -85,21 +83,29 @@ public class HarmonicCurveFitter extends AbstractCurveFitter<LevenbergMarquardtO
         return new HarmonicCurveFitter(null, Integer.MAX_VALUE);
     }
 
-    /** {@inheritDoc} */
-    public HarmonicCurveFitter withStartPoint(double[] start) {
-        return new HarmonicCurveFitter(start.clone(),
+    /**
+     * Configure the start point (initial guess).
+     * @param newStart new start point (initial guess)
+     * @return a new instance.
+     */
+    public HarmonicCurveFitter withStartPoint(double[] newStart) {
+        return new HarmonicCurveFitter(newStart.clone(),
                                        maxIter);
     }
 
-    /** {@inheritDoc} */
-    public HarmonicCurveFitter withMaxIterations(int max) {
+    /**
+     * Configure the maximum number of iterations.
+     * @param newMaxIter maximum number of iterations
+     * @return a new instance.
+     */
+    public HarmonicCurveFitter withMaxIterations(int newMaxIter) {
         return new HarmonicCurveFitter(initialGuess,
-                                       max);
+                                       newMaxIter);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LevenbergMarquardtOptimizer getOptimizer(Collection<WeightedObservedPoint> observations) {
+    protected LeastSquaresProblem getProblem(Collection<WeightedObservedPoint> observations) {
         // Prepare least-squares problem.
         final int len = observations.size();
         final double[] target  = new double[len];
@@ -123,14 +129,15 @@ public class HarmonicCurveFitter extends AbstractCurveFitter<LevenbergMarquardtO
 
         // Return a new optimizer set up to fit a Gaussian curve to the
         // observed points.
-        return LevenbergMarquardtOptimizer.create()
-            .withMaxEvaluations(Integer.MAX_VALUE)
-            .withMaxIterations(maxIter)
-            .withStartPoint(startPoint)
-            .withTarget(target)
-            .withWeight(new DiagonalMatrix(weights))
-            .withModelAndJacobian(model.getModelFunction(),
-                                  model.getModelFunctionJacobian());
+        return new LeastSquaresBuilder().
+                maxEvaluations(Integer.MAX_VALUE).
+                maxIterations(maxIter).
+                start(startPoint).
+                target(target).
+                weight(new DiagonalMatrix(weights)).
+                model(model.getModelFunction(), model.getModelFunctionJacobian()).
+                build();
+
     }
 
     /**

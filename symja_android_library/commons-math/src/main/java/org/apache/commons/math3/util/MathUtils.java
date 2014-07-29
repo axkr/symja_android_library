@@ -32,14 +32,21 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * @see Precision
  * @see MathArrays
  *
- * @version $Id: MathUtils.java 1478681 2013-05-03 09:04:58Z erans $
+ * @version $Id: MathUtils.java 1613723 2014-07-26 20:51:41Z psteitz $
  */
 public final class MathUtils {
     /**
-     * 2 &pi;.
+     * \(2\pi\)
      * @since 2.1
      */
     public static final double TWO_PI = 2 * FastMath.PI;
+
+    /**
+     * \(\pi^2\)
+     * @since 3.4
+     */
+    public static final double PI_SQUARED = FastMath.PI * FastMath.PI;
+
 
     /**
      * Class contains only static methods.
@@ -55,6 +62,18 @@ public final class MathUtils {
      */
     public static int hash(double value) {
         return new Double(value).hashCode();
+    }
+
+    /**
+     * Returns {@code true} if the values are equal according to semantics of
+     * {@link Double#equals(Object)}.
+     *
+     * @param x Value
+     * @param y Value
+     * @return {@code new Double(x).equals(new Double(y))}
+     */
+    public static boolean equals(double x, double y) {
+        return new Double(x).equals(new Double(y));
     }
 
     /**

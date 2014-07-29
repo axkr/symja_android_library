@@ -23,7 +23,7 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
  * <a href="http://mathworld.wolfram.com/Field.html">field</a>.
  * @param <T> the type of the field elements
  * @see FieldElement
- * @version $Id: RealFieldElement.java 1455053 2013-03-11 08:37:12Z luc $
+ * @version $Id: RealFieldElement.java 1591835 2014-05-02 09:04:01Z tn $
  * @since 3.2
  */
 public interface RealFieldElement<T> extends FieldElement<T> {
@@ -51,7 +51,7 @@ public interface RealFieldElement<T> extends FieldElement<T> {
      */
     T multiply(double a);
 
-    /** '&divides;' operator.
+    /** '&divide;' operator.
      * @param a right hand side parameter of the operator
      * @return this&divides;a
      */

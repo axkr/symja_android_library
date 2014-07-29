@@ -46,7 +46,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  *                       standard deviation = <code>sigma</code></li>
  * <li> CONSTANT_MODE -- returns <code>mu</code> every time.</li></ul></p>
  *
- * @version $Id: ValueServer.java 1517416 2013-08-26 03:04:38Z dbrosius $
+ * @version $Id: ValueServer.java 1587494 2014-04-15 10:02:54Z erans $
  *
  */
 public class ValueServer {
@@ -287,6 +287,7 @@ public class ValueServer {
      * Resets REPLAY_MODE file pointer to the beginning of the <code>valuesFileURL</code>.
      *
      * @throws IOException if an error occurs opening the file
+     * @throws NullPointerException if the {@code valuesFileURL} has not been set.
      */
     public void resetReplayFile() throws IOException {
         if (filePointer != null) {

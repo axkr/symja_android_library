@@ -17,6 +17,7 @@
 
 package org.apache.commons.math3.util;
 
+import java.util.NoSuchElementException;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
@@ -41,7 +42,7 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * </ul>
  *
  * @since 2.2
- * @version $Id: MultidimensionalCounter.java 1382887 2012-09-10 14:37:27Z luc $
+ * @version $Id: MultidimensionalCounter.java 1558833 2014-01-16 15:26:29Z erans $
  */
 public class MultidimensionalCounter implements Iterable<Integer> {
     /**
@@ -77,6 +78,10 @@ public class MultidimensionalCounter implements Iterable<Integer> {
          * Unidimensional counter.
          */
         private int count = -1;
+        /**
+         * Maximum value for {@link #count}.
+         */
+        private final int maxCount = totalSize - 1;
 
         /**
          * Create an iterator
@@ -90,19 +95,20 @@ public class MultidimensionalCounter implements Iterable<Integer> {
          * {@inheritDoc}
          */
         public boolean hasNext() {
-            for (int i = 0; i < dimension; i++) {
-                if (counter[i] != size[i] - 1) {
-                    return true;
-                }
-            }
-            return false;
+            return count < maxCount;
         }
 
         /**
          * @return the unidimensional count after the counter has been
          * incremented by {@code 1}.
+         * @throws NoSuchElementException if {@link #hasNext()} would have
+         * returned {@code false}.
          */
         public Integer next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
             for (int i = last; i >= 0; i--) {
                 if (counter[i] == size[i] - 1) {
                     counter[i] = 0;

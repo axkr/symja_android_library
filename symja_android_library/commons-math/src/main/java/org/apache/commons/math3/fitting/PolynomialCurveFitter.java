@@ -17,11 +17,11 @@
 package org.apache.commons.math3.fitting;
 
 import java.util.Collection;
+
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.exception.MathInternalError;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.WithStartPoint;
-import org.apache.commons.math3.fitting.leastsquares.WithMaxIterations;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.linear.DiagonalMatrix;
 
 /**
@@ -34,12 +34,10 @@ import org.apache.commons.math3.linear.DiagonalMatrix;
  * They must be sorted in increasing order of the polynomial's degree.
  * The optimal values of the coefficients will be returned in the same order.
  *
- * @version $Id: PolynomialCurveFitter.java 1543906 2013-11-20 18:57:53Z erans $
+ * @version $Id: PolynomialCurveFitter.java 1571640 2014-02-25 10:27:21Z erans $
  * @since 3.3
  */
-public class PolynomialCurveFitter extends AbstractCurveFitter<LevenbergMarquardtOptimizer>
-    implements WithStartPoint<PolynomialCurveFitter>,
-               WithMaxIterations<PolynomialCurveFitter> {
+public class PolynomialCurveFitter extends AbstractCurveFitter {
     /** Parametric function to be fitted. */
     private static final PolynomialFunction.Parametric FUNCTION = new PolynomialFunction.Parametric();
     /** Initial guess. */
@@ -76,21 +74,29 @@ public class PolynomialCurveFitter extends AbstractCurveFitter<LevenbergMarquard
         return new PolynomialCurveFitter(new double[degree + 1], Integer.MAX_VALUE);
     }
 
-    /** {@inheritDoc} */
-    public PolynomialCurveFitter withStartPoint(double[] start) {
-        return new PolynomialCurveFitter(start.clone(),
+    /**
+     * Configure the start point (initial guess).
+     * @param newStart new start point (initial guess)
+     * @return a new instance.
+     */
+    public PolynomialCurveFitter withStartPoint(double[] newStart) {
+        return new PolynomialCurveFitter(newStart.clone(),
                                          maxIter);
     }
 
-    /** {@inheritDoc} */
-    public PolynomialCurveFitter withMaxIterations(int max) {
+    /**
+     * Configure the maximum number of iterations.
+     * @param newMaxIter maximum number of iterations
+     * @return a new instance.
+     */
+    public PolynomialCurveFitter withMaxIterations(int newMaxIter) {
         return new PolynomialCurveFitter(initialGuess,
-                                         max);
+                                         newMaxIter);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LevenbergMarquardtOptimizer getOptimizer(Collection<WeightedObservedPoint> observations) {
+    protected LeastSquaresProblem getProblem(Collection<WeightedObservedPoint> observations) {
         // Prepare least-squares problem.
         final int len = observations.size();
         final double[] target  = new double[len];
@@ -103,23 +109,24 @@ public class PolynomialCurveFitter extends AbstractCurveFitter<LevenbergMarquard
             ++i;
         }
 
-        final AbstractCurveFitter.TheoreticalValuesFunction model
-            = new AbstractCurveFitter.TheoreticalValuesFunction(FUNCTION,
-                                                                observations);
+        final AbstractCurveFitter.TheoreticalValuesFunction model =
+                new AbstractCurveFitter.TheoreticalValuesFunction(FUNCTION, observations);
 
         if (initialGuess == null) {
             throw new MathInternalError();
         }
 
-        // Return a new optimizer set up to fit a Gaussian curve to the
+        // Return a new least squares problem set up to fit a polynomial curve to the
         // observed points.
-        return LevenbergMarquardtOptimizer.create()
-            .withMaxEvaluations(Integer.MAX_VALUE)
-            .withMaxIterations(maxIter)
-            .withStartPoint(initialGuess)
-            .withTarget(target)
-            .withWeight(new DiagonalMatrix(weights))
-            .withModelAndJacobian(model.getModelFunction(),
-                                  model.getModelFunctionJacobian());
+        return new LeastSquaresBuilder().
+                maxEvaluations(Integer.MAX_VALUE).
+                maxIterations(maxIter).
+                start(initialGuess).
+                target(target).
+                weight(new DiagonalMatrix(weights)).
+                model(model.getModelFunction(), model.getModelFunctionJacobian()).
+                build();
+
     }
+
 }

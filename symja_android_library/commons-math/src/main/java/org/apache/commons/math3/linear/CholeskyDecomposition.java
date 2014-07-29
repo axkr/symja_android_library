@@ -42,7 +42,7 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see <a href="http://mathworld.wolfram.com/CholeskyDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Cholesky_decomposition">Wikipedia</a>
- * @version $Id: CholeskyDecomposition.java 1416643 2012-12-03 19:37:14Z tn $
+ * @version $Id: CholeskyDecomposition.java 1566017 2014-02-08 14:13:34Z tn $
  * @since 2.0 (changed to concrete class in 3.0)
  */
 public class CholeskyDecomposition {
@@ -299,7 +299,11 @@ public class CholeskyDecomposition {
             return new Array2DRowRealMatrix(x);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * Get the inverse of the decomposed matrix.
+         *
+         * @return the inverse matrix.
+         */
         public RealMatrix getInverse() {
             return solve(MatrixUtils.createRealIdentityMatrix(lTData.length));
         }

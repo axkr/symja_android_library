@@ -45,7 +45,7 @@ import org.apache.commons.math3.util.FastMath;
  * @see <a href="http://mathworld.wolfram.com/QRDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/QR_decomposition">Wikipedia</a>
  *
- * @version $Id: RRQRDecomposition.java 1503290 2013-07-15 15:16:29Z sebb $
+ * @version $Id: RRQRDecomposition.java 1570994 2014-02-23 11:10:41Z luc $
  * @since 3.2
  */
 public class RRQRDecomposition extends QRDecomposition {
@@ -184,6 +184,14 @@ public class RRQRDecomposition extends QRDecomposition {
 
     /**
      * Get a solver for finding the A &times; X = B solution in least square sense.
+     * <p>
+     * Least Square sense means a solver can be computed for an overdetermined system,
+     * (i.e. a system with more equations than unknowns, which corresponds to a tall A
+     * matrix with more rows than columns). In any case, if the matrix is singular
+     * within the tolerance set at {@link RRQRDecomposition#RRQRDecomposition(RealMatrix,
+     * double) construction}, an error will be triggered when
+     * the {@link DecompositionSolver#solve(RealVector) solve} method will be called.
+     * </p>
      * @return a solver
      */
     @Override
@@ -226,7 +234,10 @@ public class RRQRDecomposition extends QRDecomposition {
             return p.multiply(upper.solve(b));
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         * @throws SingularMatrixException if the decomposed matrix is singular.
+         */
         public RealMatrix getInverse() {
             return solve(MatrixUtils.createRealIdentityMatrix(p.getRowDimension()));
         }

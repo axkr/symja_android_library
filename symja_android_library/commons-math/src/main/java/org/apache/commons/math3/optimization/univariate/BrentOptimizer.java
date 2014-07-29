@@ -38,7 +38,7 @@ import org.apache.commons.math3.optimization.GoalType;
  *  <li>to ensure that the best point encountered is the one returned.</li>
  * </ul>
  *
- * @version $Id: BrentOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
+ * @version $Id: BrentOptimizer.java 1591835 2014-05-02 09:04:01Z tn $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */

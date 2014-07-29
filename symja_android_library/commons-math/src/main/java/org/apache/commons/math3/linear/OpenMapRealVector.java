@@ -30,14 +30,17 @@ import org.apache.commons.math3.util.OpenIntToDoubleHashMap.Iterator;
 /**
  * This class implements the {@link RealVector} interface with a
  * {@link OpenIntToDoubleHashMap} backing store.
- * @version $Id: OpenMapRealVector.java 1462503 2013-03-29 15:48:27Z luc $
+ * <p>
+ *  Caveat: This implementation assumes that, for any {@code x},
+ *  the equality {@code x * 0d == 0d} holds. But it is is not true for
+ *  {@code NaN}. Moreover, zero entries will lose their sign.
+ *  Some operations (that involve {@code NaN} and/or infinities) may
+ *  thus give incorrect results, like multiplications, divisions or
+ *  functions mapping.
+ * </p>
+ * @version $Id: OpenMapRealVector.java 1570254 2014-02-20 16:16:19Z luc $
  * @since 2.0
- * @deprecated As of version 3.1, this class is deprecated, for reasons exposed
- * in this JIRA
- * <a href="https://issues.apache.org/jira/browse/MATH-870">ticket</a>. This
- * class will be removed in version 4.0.
  */
-@Deprecated
 public class OpenMapRealVector extends SparseRealVector
     implements Serializable {
     /** Default Tolerance for having a value considered zero. */
@@ -363,25 +366,6 @@ public class OpenMapRealVector extends SparseRealVector
         while (iter.hasNext()) {
             iter.advance();
             res.setEntry(iter.key(), iter.value() * v.getEntry(iter.key()));
-        }
-        /*
-         * MATH-803: the above loop assumes that 0d * x  = 0d for any double x,
-         * which allows to consider only the non-zero entries of this. However,
-         * this fails if this[i] == 0d and (v[i] = NaN or v[i] = Infinity).
-         *
-         * These special cases are handled below.
-         */
-        if (v.isNaN() || v.isInfinite()) {
-            final int n = getDimension();
-            for (int i = 0; i < n; i++) {
-                final double y = v.getEntry(i);
-                if (Double.isNaN(y)) {
-                    res.setEntry(i, Double.NaN);
-                } else if (Double.isInfinite(y)) {
-                    final double x = this.getEntry(i);
-                    res.setEntry(i, x * y);
-                }
-            }
         }
         return res;
     }

@@ -16,183 +16,285 @@
  */
 package org.apache.commons.math3.fitting.leastsquares;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.MathInternalError;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.NonPositiveDefiniteMatrixException;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.optim.ConvergenceChecker;
-import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.util.Incrementor;
+import org.apache.commons.math3.util.Pair;
 
 /**
  * Gauss-Newton least-squares solver.
- *
- * <p>
- * This class solve a least-square problem by solving the normal equations
- * of the linearized problem at each iteration. Either LU decomposition or
- * QR decomposition can be used to solve the normal equations. LU decomposition
- * is faster but QR decomposition is more robust for difficult problems.
+ * <p> This class solve a least-square problem by
+ * solving the normal equations of the linearized problem at each iteration. Either LU
+ * decomposition or Cholesky decomposition can be used to solve the normal equations,
+ * or QR decomposition or SVD decomposition can be used to solve the linear system. LU
+ * decomposition is faster but QR decomposition is more robust for difficult problems,
+ * and SVD can compute a solution for rank-deficient problems.
  * </p>
  *
- * @version $Id: GaussNewtonOptimizer.java 1517359 2013-08-25 18:19:06Z luc $
+ * @version $Id: GaussNewtonOptimizer.java 1573351 2014-03-02 19:54:43Z luc $
  * @since 3.3
  */
-public class GaussNewtonOptimizer extends AbstractLeastSquaresOptimizer<GaussNewtonOptimizer> {
+public class GaussNewtonOptimizer implements LeastSquaresOptimizer {
+
+    /** The decomposition algorithm to use to solve the normal equations. */
+    //TODO move to linear package and expand options?
+    public static enum Decomposition {
+        /**
+         * Solve by forming the normal equations (J<sup>T</sup>Jx=J<sup>T</sup>r) and
+         * using the {@link LUDecomposition}.
+         *
+         * <p> Theoretically this method takes mn<sup>2</sup>/2 operations to compute the
+         * normal matrix and n<sup>3</sup>/3 operations (m > n) to solve the system using
+         * the LU decomposition. </p>
+         */
+        LU {
+            @Override
+            protected RealVector solve(final RealMatrix jacobian,
+                                       final RealVector residuals) {
+                try {
+                    final Pair<RealMatrix, RealVector> normalEquation =
+                            computeNormalMatrix(jacobian, residuals);
+                    final RealMatrix normal = normalEquation.getFirst();
+                    final RealVector jTr = normalEquation.getSecond();
+                    return new LUDecomposition(normal, SINGULARITY_THRESHOLD)
+                            .getSolver()
+                            .solve(jTr);
+                } catch (SingularMatrixException e) {
+                    throw new ConvergenceException(LocalizedFormats.UNABLE_TO_SOLVE_SINGULAR_PROBLEM, e);
+                }
+            }
+        },
+        /**
+         * Solve the linear least squares problem (Jx=r) using the {@link
+         * QRDecomposition}.
+         *
+         * <p> Theoretically this method takes mn<sup>2</sup> - n<sup>3</sup>/3 operations
+         * (m > n) and has better numerical accuracy than any method that forms the normal
+         * equations. </p>
+         */
+        QR {
+            @Override
+            protected RealVector solve(final RealMatrix jacobian,
+                                       final RealVector residuals) {
+                try {
+                    return new QRDecomposition(jacobian, SINGULARITY_THRESHOLD)
+                            .getSolver()
+                            .solve(residuals);
+                } catch (SingularMatrixException e) {
+                    throw new ConvergenceException(LocalizedFormats.UNABLE_TO_SOLVE_SINGULAR_PROBLEM, e);
+                }
+            }
+        },
+        /**
+         * Solve by forming the normal equations (J<sup>T</sup>Jx=J<sup>T</sup>r) and
+         * using the {@link CholeskyDecomposition}.
+         *
+         * <p> Theoretically this method takes mn<sup>2</sup>/2 operations to compute the
+         * normal matrix and n<sup>3</sup>/6 operations (m > n) to solve the system using
+         * the Cholesky decomposition. </p>
+         */
+        CHOLESKY {
+            @Override
+            protected RealVector solve(final RealMatrix jacobian,
+                                       final RealVector residuals) {
+                try {
+                    final Pair<RealMatrix, RealVector> normalEquation =
+                            computeNormalMatrix(jacobian, residuals);
+                    final RealMatrix normal = normalEquation.getFirst();
+                    final RealVector jTr = normalEquation.getSecond();
+                    return new CholeskyDecomposition(
+                            normal, SINGULARITY_THRESHOLD, SINGULARITY_THRESHOLD)
+                            .getSolver()
+                            .solve(jTr);
+                } catch (NonPositiveDefiniteMatrixException e) {
+                    throw new ConvergenceException(LocalizedFormats.UNABLE_TO_SOLVE_SINGULAR_PROBLEM, e);
+                }
+            }
+        },
+        /**
+         * Solve the linear least squares problem using the {@link
+         * SingularValueDecomposition}.
+         *
+         * <p> This method is slower, but can provide a solution for rank deficient and
+         * nearly singular systems.
+         */
+        SVD {
+            @Override
+            protected RealVector solve(final RealMatrix jacobian,
+                                       final RealVector residuals) {
+                return new SingularValueDecomposition(jacobian)
+                        .getSolver()
+                        .solve(residuals);
+            }
+        };
+
+        /**
+         * Solve the linear least squares problem Jx=r.
+         *
+         * @param jacobian  the Jacobian matrix, J. the number of rows >= the number or
+         *                  columns.
+         * @param residuals the computed residuals, r.
+         * @return the solution x, to the linear least squares problem Jx=r.
+         * @throws ConvergenceException if the matrix properties (e.g. singular) do not
+         *                              permit a solution.
+         */
+        protected abstract RealVector solve(RealMatrix jacobian,
+                                            RealVector residuals);
+    }
+
+    /**
+     * The singularity threshold for matrix decompositions. Determines when a {@link
+     * ConvergenceException} is thrown. The current value was the default value for {@link
+     * LUDecomposition}.
+     */
+    private static final double SINGULARITY_THRESHOLD = 1e-11;
+
     /** Indicator for using LU decomposition. */
-    private boolean useLU = true;
+    private final Decomposition decomposition;
 
     /**
-     * Default constructor.
+     * Creates a Gauss Newton optimizer.
+     * <p/>
+     * The default for the algorithm is to solve the normal equations using QR
+     * decomposition.
      */
-    protected GaussNewtonOptimizer() {}
-
-    /**
-     * Copy constructor.
-     *
-     * @param other object to copy.
-     */
-    protected GaussNewtonOptimizer(GaussNewtonOptimizer other) {
-        super(other);
-
-        this.useLU = other.useLU;
+    public GaussNewtonOptimizer() {
+        this(Decomposition.QR);
     }
 
     /**
-     * Creates a bare-bones instance.
-     * Several calls to {@code withXxx} methods are necessary to obtain
-     * an object with all necessary fields set to sensible values.
-     * <br/>
-     * The default for the algorithm is to solve the normal equations
-     * using LU decomposition.
+     * Create a Gauss Newton optimizer that uses the given decomposition algorithm to
+     * solve the normal equations.
      *
-     * @return an instance of this class.
+     * @param decomposition the {@link Decomposition} algorithm.
      */
-    public static GaussNewtonOptimizer create() {
-        return new GaussNewtonOptimizer();
+    public GaussNewtonOptimizer(final Decomposition decomposition) {
+        this.decomposition = decomposition;
+    }
+
+    /**
+     * Get the matrix decomposition algorithm used to solve the normal equations.
+     *
+     * @return the matrix {@link Decomposition} algoritm.
+     */
+    public Decomposition getDecomposition() {
+        return this.decomposition;
+    }
+
+    /**
+     * Configure the decomposition algorithm.
+     *
+     * @param newDecomposition the {@link Decomposition} algorithm to use.
+     * @return a new instance.
+     */
+    public GaussNewtonOptimizer withDecomposition(final Decomposition newDecomposition) {
+        return new GaussNewtonOptimizer(newDecomposition);
     }
 
     /** {@inheritDoc} */
-    @Override
-    public GaussNewtonOptimizer shallowCopy() {
-        return new GaussNewtonOptimizer(this);
-    }
-
-    /**
-     * @param newUseLU Whether to use LU decomposition.
-     * @return this instance.
-     */
-    public GaussNewtonOptimizer withLU(boolean newUseLU) {
-        this.useLU = newUseLU;
-        return self();
-    }
-
-    /**
-     * @return {@code true} if LU decomposition is used.
-     */
-    public boolean getLU() {
-        return useLU;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public PointVectorValuePair doOptimize() {
-        final ConvergenceChecker<PointVectorValuePair> checker
-            = getConvergenceChecker();
+    public Optimum optimize(final LeastSquaresProblem lsp) {
+        //create local evaluation and iteration counts
+        final Incrementor evaluationCounter = lsp.getEvaluationCounter();
+        final Incrementor iterationCounter = lsp.getIterationCounter();
+        final ConvergenceChecker<Evaluation> checker
+                = lsp.getConvergenceChecker();
 
         // Computation will be useless without a checker (see "for-loop").
         if (checker == null) {
             throw new NullArgumentException();
         }
 
-        final double[] targetValues = getTarget();
-        final int nR = targetValues.length; // Number of observed data.
-
-        final RealMatrix weightMatrix = getWeight();
-        if (weightMatrix.getRowDimension() != nR) {
-            throw new DimensionMismatchException(weightMatrix.getRowDimension(), nR);
-        }
-        if (weightMatrix.getColumnDimension() != nR) {
-            throw new DimensionMismatchException(weightMatrix.getColumnDimension(), nR);
-        }
-
-        // Diagonal of the weight matrix.
-        final double[] residualsWeights = new double[nR];
-        for (int i = 0; i < nR; i++) {
-            residualsWeights[i] = weightMatrix.getEntry(i, i);
-        }
-
-        final double[] currentPoint = getStart();
-        final int nC = currentPoint.length;
+        RealVector currentPoint = lsp.getStart();
 
         // iterate until convergence is reached
-        PointVectorValuePair current = null;
-        for (boolean converged = false; !converged;) {
-            incrementIterationCount();
+        Evaluation current = null;
+        while (true) {
+            iterationCounter.incrementCount();
 
             // evaluate the objective function and its jacobian
-            PointVectorValuePair previous = current;
+            Evaluation previous = current;
             // Value of the objective function at "currentPoint".
-            final double[] currentObjective = computeObjectiveValue(currentPoint);
-            final double[] currentResiduals = computeResiduals(currentObjective);
-            final RealMatrix weightedJacobian = computeWeightedJacobian(currentPoint);
-            current = new PointVectorValuePair(currentPoint, currentObjective);
-
-            // build the linear problem
-            final double[]   b = new double[nC];
-            final double[][] a = new double[nC][nC];
-            for (int i = 0; i < nR; ++i) {
-
-                final double[] grad   = weightedJacobian.getRow(i);
-                final double weight   = residualsWeights[i];
-                final double residual = currentResiduals[i];
-
-                // compute the normal equation
-                final double wr = weight * residual;
-                for (int j = 0; j < nC; ++j) {
-                    b[j] += wr * grad[j];
-                }
-
-                // build the contribution matrix for measurement i
-                for (int k = 0; k < nC; ++k) {
-                    double[] ak = a[k];
-                    double wgk = weight * grad[k];
-                    for (int l = 0; l < nC; ++l) {
-                        ak[l] += wgk * grad[l];
-                    }
-                }
-            }
+            evaluationCounter.incrementCount();
+            current = lsp.evaluate(currentPoint);
+            final RealVector currentResiduals = current.getResiduals();
+            final RealMatrix weightedJacobian = current.getJacobian();
 
             // Check convergence.
             if (previous != null) {
-                converged = checker.converged(getIterations(), previous, current);
-                if (converged) {
-                    return current;
+                if (checker.converged(iterationCounter.getCount(), previous, current)) {
+                    return new OptimumImpl(
+                            current,
+                            evaluationCounter.getCount(),
+                            iterationCounter.getCount());
                 }
             }
 
-            try {
-                // solve the linearized least squares problem
-                RealMatrix mA = new BlockRealMatrix(a);
-                DecompositionSolver solver = useLU ?
-                        new LUDecomposition(mA).getSolver() :
-                        new QRDecomposition(mA).getSolver();
-                final double[] dX = solver.solve(new ArrayRealVector(b, false)).toArray();
-                // update the estimated parameters
-                for (int i = 0; i < nC; ++i) {
-                    currentPoint[i] += dX[i];
+            // solve the linearized least squares problem
+            final RealVector dX = this.decomposition.solve(weightedJacobian, currentResiduals);
+            // update the estimated parameters
+            currentPoint = currentPoint.add(dX);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "GaussNewtonOptimizer{" +
+                "decomposition=" + decomposition +
+                '}';
+    }
+
+    /**
+     * Compute the normal matrix, J<sup>T</sup>J.
+     *
+     * @param jacobian  the m by n jacobian matrix, J. Input.
+     * @param residuals the m by 1 residual vector, r. Input.
+     * @return  the n by n normal matrix and  the n by 1 J<sup>Tr vector.
+     */
+    private static Pair<RealMatrix, RealVector> computeNormalMatrix(final RealMatrix jacobian,
+                                                                    final RealVector residuals) {
+        //since the normal matrix is symmetric, we only need to compute half of it.
+        final int nR = jacobian.getRowDimension();
+        final int nC = jacobian.getColumnDimension();
+        //allocate space for return values
+        final RealMatrix normal = MatrixUtils.createRealMatrix(nC, nC);
+        final RealVector jTr = new ArrayRealVector(nC);
+        //for each measurement
+        for (int i = 0; i < nR; ++i) {
+            //compute JTr for measurement i
+            for (int j = 0; j < nC; j++) {
+                jTr.setEntry(j, jTr.getEntry(j) +
+                        residuals.getEntry(i) * jacobian.getEntry(i, j));
+            }
+
+            // add the the contribution to the normal matrix for measurement i
+            for (int k = 0; k < nC; ++k) {
+                //only compute the upper triangular part
+                for (int l = k; l < nC; ++l) {
+                    normal.setEntry(k, l, normal.getEntry(k, l) +
+                            jacobian.getEntry(i, k) * jacobian.getEntry(i, l));
                 }
-            } catch (SingularMatrixException e) {
-                throw new ConvergenceException(LocalizedFormats.UNABLE_TO_SOLVE_SINGULAR_PROBLEM);
             }
         }
-        // Must never happen.
-        throw new MathInternalError();
+        //copy the upper triangular part to the lower triangular part.
+        for (int i = 0; i < nC; i++) {
+            for (int j = 0; j < i; j++) {
+                normal.setEntry(i, j, normal.getEntry(j, i));
+            }
+        }
+        return new Pair<RealMatrix, RealVector>(normal, jTr);
     }
+
 }

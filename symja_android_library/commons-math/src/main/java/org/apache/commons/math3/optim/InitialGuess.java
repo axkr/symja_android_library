@@ -22,7 +22,7 @@ package org.apache.commons.math3.optim;
  * <br/>
  * Immutable class.
  *
- * @version $Id: InitialGuess.java 1435539 2013-01-19 13:27:24Z tn $
+ * @version $Id: InitialGuess.java 1591835 2014-05-02 09:04:01Z tn $
  * @since 3.1
  */
 public class InitialGuess implements OptimizationData {

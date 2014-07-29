@@ -47,7 +47,8 @@ import org.apache.commons.math3.util.FastMath;
  * Jacobian and error estimation.
  * <br/>
  * This class constructs the Jacobian matrix of the function argument in method
- * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,MultivariateVectorFunction,OptimizationData[])
+ * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,
+ * org.apache.commons.math3.analysis.MultivariateVectorFunction,OptimizationData[])
  * optimize} and assumes that the rows of that matrix iterate on the model
  * functions while the columns iterate on the parameters; thus, the numbers
  * of rows is equal to the dimension of the
@@ -55,7 +56,7 @@ import org.apache.commons.math3.util.FastMath;
  * the number of columns is equal to the dimension of the
  * {@link org.apache.commons.math3.optimization.InitialGuess InitialGuess}.
  *
- * @version $Id: AbstractLeastSquaresOptimizer.java 1426759 2012-12-29 13:26:44Z erans $
+ * @version $Id: AbstractLeastSquaresOptimizer.java 1591835 2014-05-02 09:04:01Z tn $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 1.2
  */
@@ -410,7 +411,8 @@ public abstract class AbstractLeastSquaresOptimizer
 
     /** {@inheritDoc}
      * @deprecated As of 3.1. Please use
-     * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,MultivariateVectorFunction,OptimizationData[])
+     * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,
+     * org.apache.commons.math3.analysis.MultivariateVectorFunction,OptimizationData[])
      * optimize(int,MultivariateDifferentiableVectorFunction,OptimizationData...)}
      * instead.
      */
@@ -447,7 +449,8 @@ public abstract class AbstractLeastSquaresOptimizer
      * @throws org.apache.commons.math3.exception.NullArgumentException if
      * any argument is {@code null}.
      * @deprecated As of 3.1. Please use
-     * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,MultivariateVectorFunction,OptimizationData[])
+     * {@link BaseAbstractMultivariateVectorOptimizer#optimize(int,
+     * org.apache.commons.math3.analysis.MultivariateVectorFunction,OptimizationData[])
      * optimize(int,MultivariateDifferentiableVectorFunction,OptimizationData...)}
      * instead.
      */
@@ -482,7 +485,8 @@ public abstract class AbstractLeastSquaresOptimizer
      * the maximal number of evaluations is exceeded.
      * @throws DimensionMismatchException if the target, and weight arguments
      * have inconsistent dimensions.
-     * @see BaseAbstractMultivariateVectorOptimizer#optimizeInternal(int,MultivariateVectorFunction,OptimizationData[])
+     * @see BaseAbstractMultivariateVectorOptimizer#optimizeInternal(int,
+     * org.apache.commons.math3.analysis.MultivariateVectorFunction,OptimizationData[])
      * @since 3.1
      * @deprecated As of 3.1. Override is necessary only until this class's generic
      * argument is changed to {@code MultivariateDifferentiableVectorFunction}.

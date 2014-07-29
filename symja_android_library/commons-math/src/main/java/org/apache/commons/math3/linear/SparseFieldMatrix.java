@@ -23,16 +23,17 @@ import org.apache.commons.math3.util.OpenIntToFieldHashMap;
 /**
  * Sparse matrix implementation based on an open addressed map.
  *
+ * <p>
+ *  Caveat: This implementation assumes that, for any {@code x},
+ *  the equality {@code x * 0d == 0d} holds. But it is is not true for
+ *  {@code NaN}. Moreover, zero entries will lose their sign.
+ *  Some operations (that involve {@code NaN} and/or infinities) may
+ *  thus give incorrect results.
+ * </p>
  * @param <T> the type of the field elements
- * @version $Id: SparseFieldMatrix.java 1416643 2012-12-03 19:37:14Z tn $
+ * @version $Id: SparseFieldMatrix.java 1569825 2014-02-19 17:19:59Z luc $
  * @since 2.0
- * @deprecated As of version 3.1, this class is deprecated, for reasons exposed
- * in this JIRA
- * <a href="https://issues.apache.org/jira/browse/MATH-870">ticket</a>. This
- * class will be removed in version 4.0.
- *
  */
-@Deprecated
 public class SparseFieldMatrix<T extends FieldElement<T>> extends AbstractFieldMatrix<T> {
 
     /** Storage for (sparse) matrix elements. */

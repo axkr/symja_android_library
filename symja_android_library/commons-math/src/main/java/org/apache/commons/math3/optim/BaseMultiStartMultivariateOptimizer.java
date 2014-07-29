@@ -32,7 +32,7 @@ import org.apache.commons.math3.random.RandomVectorGenerator;
  * @param <PAIR> Type of the point/value pair returned by the optimization
  * algorithm.
  *
- * @version $Id: BaseMultiStartMultivariateOptimizer.java 1454746 2013-03-09 17:37:30Z luc $
+ * @version $Id: BaseMultiStartMultivariateOptimizer.java 1591835 2014-05-02 09:04:01Z tn $
  * @since 3.0
  */
 public abstract class BaseMultiStartMultivariateOptimizer<PAIR>
