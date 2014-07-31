@@ -26,8 +26,13 @@ public class Extract extends AbstractFunctionEvaluator {
 			IAST arg2 = (IAST) ast.arg2();
 			if (arg2.isListOfLists()) {
 				IAST result = F.List();
-				for (int i = 1; i < arg2.size(); i++) {
-					result.add(extract(arg1, arg2.getAST(i))); 
+				final int arg2Size = arg2.size();
+				for (int i = 1; i < arg2Size; i++) {
+					IExpr temp = extract(arg1, arg2.getAST(i));
+					if (temp == null) {
+						return null;
+					}
+					result.add(temp);
 				}
 				return result;
 			}
@@ -42,7 +47,7 @@ public class Extract extends AbstractFunctionEvaluator {
 
 	public static IExpr extract(final IAST list, final IAST position) {
 		final PositionConverter converter = new PositionConverter();
-		if ((position.size() > 1) && (position.arg1() instanceof IInteger)) {
+		if ((position.size() > 1) && (position.arg1().isSignedNumber())) {
 			return extract(list, position, converter, 1);
 		} else {
 			// construct an array
@@ -75,7 +80,7 @@ public class Extract extends AbstractFunctionEvaluator {
 		IExpr expr = list;
 		for (int i = headOffset; i <= posSize; i++) {
 			p = positionConverter.toInt(positions.get(i));
-			if (temp == null || temp.size() <= p) {
+			if (temp == null || temp.size() <= p || p < 0) {
 				return null;
 			}
 			expr = temp.get(p);

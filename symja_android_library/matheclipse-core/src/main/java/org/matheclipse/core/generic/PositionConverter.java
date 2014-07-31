@@ -3,9 +3,9 @@ package org.matheclipse.core.generic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
-public class PositionConverter implements IPositionConverter<IExpr>{
+public class PositionConverter implements IPositionConverter<IExpr> {
 	public IExpr toObject(final int i) {
 		if (i < 3) {
 			switch (i) {
@@ -21,8 +21,12 @@ public class PositionConverter implements IPositionConverter<IExpr>{
 	}
 
 	public int toInt(final IExpr position) {
-		if (position instanceof IInteger) {
-			return ((IInteger)position).toInt();
+		if (position.isSignedNumber()) {
+			try {
+				return ((ISignedNumber) position).toInt();
+			} catch (ArithmeticException ae) {
+				//
+			}
 		}
 		return -1;
 	}
