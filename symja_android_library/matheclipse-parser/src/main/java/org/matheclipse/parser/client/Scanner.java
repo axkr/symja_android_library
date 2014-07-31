@@ -104,14 +104,12 @@ public class Scanner {
 	final static public int TT_LIST_CLOSE = 17;
 
 	/**
-	 * Token type: opening brackets for starting the &quot;index part&quot; of an
-	 * expression
+	 * Token type: opening brackets for starting the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTOPEN = 18;
 
 	/**
-	 * Token type: closing brackets for ending the &quot;index part&quot; of an
-	 * expression
+	 * Token type: closing brackets for ending the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTCLOSE = 19;
 
@@ -178,9 +176,9 @@ public class Scanner {
 			string_u = "u", string_v = "v", string_w = "w", string_x = "x", string_y = "y", string_z = "z";
 
 	static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f", var_g = "$g",
-			var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m", var_n = "$n", var_o = "$o", var_p = "$p",
-			var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t", var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y",
-			var_z = "$z";
+			var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m", var_n = "$n", var_o = "$o",
+			var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t", var_u = "$u", var_v = "$v", var_w = "$w",
+			var_x = "$x", var_y = "$y", var_z = "$z";
 
 	protected int numFormat = 0;
 
@@ -217,9 +215,8 @@ public class Scanner {
 	}
 
 	/**
-	 * Verify the length of the input string and get the next character from the
-	 * input string. If the current position is greater than the input length, set
-	 * current character to SPACE and token to TT_EOF.
+	 * Verify the length of the input string and get the next character from the input string. If the current position is greater
+	 * than the input length, set current character to SPACE and token to TT_EOF.
 	 * 
 	 */
 	private void getChar() {
@@ -236,17 +233,15 @@ public class Scanner {
 		fLastChar = fCurrentChar;
 		fCurrentChar = fInputString.charAt(fCurrentPosition++);
 		if (fCurrentChar == '\\') {
-			if (fInputString.length() > fCurrentPosition) {
-				if (fInputString.charAt(fCurrentPosition) == '[') {
-					int indx = fInputString.indexOf(']', fCurrentPosition + 1);
-					if (indx > 0) {
-						String uStr = fInputString.substring(fCurrentPosition + 1, indx);
-						String uChStr = CHAR_MAP.get(uStr);
-						if (uChStr != null) {
-							fCurrentChar = uChStr.charAt(0);
-							fCurrentPosition = indx + 1;
-						}
-					}
+			// search next non-whitespace character
+			while (fInputString.length() > fCurrentPosition) {
+				fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				if (!Character.isWhitespace(fCurrentChar) && fCurrentChar != '\\') {
+					return;
+				}
+				if (fCurrentChar == '\n') {
+					rowCount++;
+					fCurrentColumnStartPosition = fCurrentPosition;
 				}
 			}
 		}
@@ -471,12 +466,13 @@ public class Scanner {
 	}
 
 	protected void throwSyntaxError(final String error) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, 1);
+		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(),
+				error, 1);
 	}
 
 	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(),
-				error, errorLength);
+		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, errorLength);
 	}
 
 	private String getErrorLine() {
