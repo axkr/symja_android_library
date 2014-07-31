@@ -68,7 +68,9 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">
  * Kolmogorov-Smirnov test (Wikipedia)</a>
- * @version $Id: KolmogorovSmirnovDistribution.java 1547633 2013-12-03 23:03:06Z tn $
+ * @version $Id: KolmogorovSmirnovDistribution.java 1591211 2014-04-30 08:20:51Z luc $
+ * @deprecated to be removed in version 4.0 -
+ *  use {@link org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest}
  */
 public class KolmogorovSmirnovDistribution implements Serializable {
 

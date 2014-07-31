@@ -29,7 +29,7 @@ import org.apache.commons.math3.random.Well19937c;
  *
  * @see <a href="http://en.wikipedia.org/wiki/Binomial_distribution">Binomial distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/BinomialDistribution.html">Binomial Distribution (MathWorld)</a>
- * @version $Id: BinomialDistribution.java 1534358 2013-10-21 20:13:52Z tn $
+ * @version $Id: BinomialDistribution.java 1609775 2014-07-11 19:22:18Z psteitz $
  */
 public class BinomialDistribution extends AbstractIntegerDistribution {
     /** Serializable version identifier. */
@@ -106,6 +106,9 @@ public class BinomialDistribution extends AbstractIntegerDistribution {
     /** {@inheritDoc} **/
     @Override
     public double logProbability(int x) {
+        if (numberOfTrials == 0) {
+            return (x == 0) ? 0. : Double.NEGATIVE_INFINITY;
+        }
         double ret;
         if (x < 0 || x > numberOfTrials) {
             ret = Double.NEGATIVE_INFINITY;
