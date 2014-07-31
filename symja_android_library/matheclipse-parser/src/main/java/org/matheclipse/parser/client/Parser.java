@@ -772,7 +772,7 @@ public class Parser extends Scanner {
 			getNextToken();
 		} while (fToken == TT_PARTOPEN);
 
-		return function;
+		return parseArguments(function);
 	}
 
 }
