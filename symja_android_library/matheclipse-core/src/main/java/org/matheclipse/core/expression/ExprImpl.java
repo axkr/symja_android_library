@@ -476,14 +476,18 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPattern() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternDefault(){
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternExpr() {

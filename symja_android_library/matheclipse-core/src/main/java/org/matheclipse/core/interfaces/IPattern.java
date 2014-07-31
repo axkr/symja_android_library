@@ -30,11 +30,6 @@ public interface IPattern extends IPatternObject, IExpr {
 	 */
 	public boolean isBlank();
 
-	/**
-	 * Return <code>true</code>, if the expression is a pattern with an associated
-	 * default value,
-	 * 
-	 * @return
-	 */
-	public boolean isDefault();
+	/** {@inheritDoc} */
+	public boolean isPatternDefault();
 }

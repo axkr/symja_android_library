@@ -429,7 +429,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * 
 	 * @return
 	 */
-	public boolean isDefault() {
+	public boolean isPatternDefault() {
 		return fDefault;
 	}
 

@@ -688,6 +688,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPatternDefault(){
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPatternExpr() {
 		return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
 	}

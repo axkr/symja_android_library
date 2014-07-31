@@ -114,45 +114,6 @@ public class UpRulesData implements Serializable {
 		return pmEvaluator;
 	}
 
-	private boolean isComplicatedPatternRule(final IExpr lhsExpr) {
-		if (lhsExpr.isAST()) {
-			final IAST lhsAST = ((IAST) lhsExpr);
-			if (lhsAST.size() > 1) {
-				final int attr = lhsAST.topHead().getAttributes();
-				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					return true;
-				}
-				if (lhsAST.get(1).isAST()) {
-					IAST arg1 = (IAST) lhsAST.get(1);
-					if (arg1.isCondition()) {
-						return true;
-					}
-					// the left hand side is associated with the first argument
-					// see if the first argument is complicated
-					for (int i = 2; i < arg1.size(); i++) {
-						if (arg1.get(i).isPattern() && ((IPattern) arg1.get(i)).isDefault()) {
-							return true;
-						}
-					}
-				} else if (lhsAST.get(1).isPattern()) {
-					return true;
-				} else if (lhsAST.get(1).isPatternSequence()) {
-					return true;
-				}
-				for (int i = 2; i < lhsAST.size(); i++) {
-					if (lhsAST.get(i).isPattern() && ((IPattern) lhsAST.get(i)).isDefault()) {
-						return true;
-					}
-				}
-			}
-		} else if (lhsExpr.isPattern()) {
-			return true;
-		} else if (lhsExpr.isPatternSequence()) {
-			return true;
-		}
-		return false;
-	}
-
 	/**
 	 * @return Returns the equalRules.
 	 */
@@ -256,7 +217,6 @@ public class UpRulesData implements Serializable {
 		IExpr lhs;
 		IExpr rhs;
 		IExpr condition;
-		int listLength;
 		int condLength;
 		PatternMatcherAndEvaluator pmEvaluator;
 		if (len > 0) {

@@ -173,7 +173,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 				if (temp.isPattern()) {
 					IPattern pat = (IPattern) temp;
 					addPattern(patternIndexMap, pat);
-					if (pat.isDefault()) {
+					if (pat.isPatternDefault()) {
 						// the ast contains a pattern with default value (i.e. "x_.")
 						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
 					} else {

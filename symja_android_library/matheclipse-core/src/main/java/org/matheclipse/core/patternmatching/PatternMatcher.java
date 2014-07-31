@@ -512,7 +512,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	private IExpr matchDefaultAST(ISymbol symbol, int attr, IAST ast) {
 		IAST cloned = F.ast(ast.head(), ast.size(), false);
 		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isPattern() && ((IPattern) ast.get(i)).isDefault()) {
+			if (ast.get(i).isPatternDefault()) {
 				IExpr positionDefaultValue = symbol.getDefaultValue(i);
 				if (positionDefaultValue != null) {
 					if (!matchPattern((IPattern) ast.get(i), positionDefaultValue)) {

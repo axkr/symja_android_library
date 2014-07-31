@@ -83,10 +83,10 @@ public class DownRulesData implements Serializable {
 						pmEvaluator = (IPatternMatcher) list.get(i).clone();
 						if (showSteps) {
 							IExpr rhs = pmEvaluator.getRHS();
-							if (rhs==null){
+							if (rhs == null) {
 								rhs = F.Null;
 							}
-							System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  "+ rhs.toString());
+							System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
 						}
 						result = pmEvaluator.eval(expression);
 						if (result != null) {
@@ -104,10 +104,10 @@ public class DownRulesData implements Serializable {
 					pmEvaluator = (IPatternMatcher) fPatternDownRules.get(i).clone();
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
-						if (rhs==null){
+						if (rhs == null) {
 							rhs = F.Null;
 						}
-						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  "+ rhs.toString());
+						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
 					}
 					result = pmEvaluator.eval(expression);
 					if (result != null) {
@@ -218,25 +218,29 @@ public class DownRulesData implements Serializable {
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					return true;
 				}
-				if (lhsAST.get(1).isAST()) {
-					IAST arg1 = (IAST) lhsAST.get(1);
+				if (lhsAST.arg1().isAST()) {
+					IAST arg1 = (IAST) lhsAST.arg1();
 					if (arg1.isCondition()) {
 						return true;
 					}
+					if (arg1.head().isPatternExpr()) {
+						// the head contains a pattern F_(a1, a2,...)
+						return true;
+					}
 					// the left hand side is associated with the first argument
-					// see if the first argument is complicated
-					for (int i = 2; i < arg1.size(); i++) {
-						if (arg1.get(i).isPattern() && ((IPattern) arg1.get(i)).isDefault()) {
+					// see if one of the arguments contain a pattern with defaut value
+					for (int i = 1; i < arg1.size(); i++) {
+						if (arg1.get(i).isPatternDefault()) {
 							return true;
 						}
 					}
-				} else if (lhsAST.get(1).isPattern()) {
+				} else if (lhsAST.arg1().isPattern()) {
 					return true;
-				} else if (lhsAST.get(1).isPatternSequence()) {
+				} else if (lhsAST.arg1().isPatternSequence()) {
 					return true;
 				}
 				for (int i = 2; i < lhsAST.size(); i++) {
-					if (lhsAST.get(i).isPattern() && ((IPattern) lhsAST.get(i)).isDefault()) {
+					if (lhsAST.get(i).isPatternDefault()) {
 						return true;
 					}
 				}
