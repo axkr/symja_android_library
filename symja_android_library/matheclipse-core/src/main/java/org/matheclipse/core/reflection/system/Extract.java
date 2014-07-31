@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
@@ -19,9 +20,18 @@ public class Extract extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
-		
-		if (ast.arg1().isAST() && ast.arg2().isAST()) {
-			return extract((IAST) ast.arg1(), (IAST) ast.arg2());
+
+		if (ast.arg1().isAST() && ast.arg2().isList()) {
+			IAST arg1 = (IAST) ast.arg1();
+			IAST arg2 = (IAST) ast.arg2();
+			if (arg2.isListOfLists()) {
+				IAST result = F.List();
+				for (int i = 1; i < arg2.size(); i++) {
+					result.add(extract(arg1, arg2.getAST(i))); 
+				}
+				return result;
+			}
+			return extract(arg1, arg2);
 		}
 		// if (ast.size() == 4 && ast.arg1().isAST()) {
 		// LevelSpec level = new LevelSpecification(f, (IExpr) ast.arg3());
