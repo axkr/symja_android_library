@@ -10,7 +10,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
- *  
+ * Get the exponent of a subexpression in a polynomial expression
  */
 public class Exponent extends AbstractFunctionEvaluator {
 
@@ -61,40 +61,13 @@ public class Exponent extends AbstractFunctionEvaluator {
 							collector.add(F.C0);
 						}
 					} else if (arg1.get(i).isTimes()) {
-						IAST times = (IAST) arg1.get(i);
-						boolean evaled = false;
-						for (int j = 1; j < times.size(); j++) {
-							if (times.get(j).isPower()) {
-								IAST pow = (IAST) times.get(j);
-								if (matcher.apply(pow.arg1())) {
-									collector.add(pow.arg2());
-									evaled = true;
-									break;
-								}
-							}
-						}
-						if (!evaled) {
-							collector.add(F.C0);
-						}
+						timesExponent((IAST) arg1.get(i), matcher, collector);
 					} else {
 						collector.add(F.C0);
 					}
 				}
 			} else if (arg1.isTimes()) {
-				boolean evaled = false;
-				for (int i = 1; i < arg1.size(); i++) {
-					if (arg1.get(i).isPower()) {
-						IAST pow = (IAST) arg1.get(i);
-						if (matcher.apply(pow.arg1())) {
-							collector.add(pow.arg2());
-							evaled = true;
-							break;
-						}
-					}
-				}
-				if (!evaled) {
-					collector.add(F.C0);
-				}
+				timesExponent(arg1, matcher, collector);
 			}
 
 		} else if (expr.isSymbol()) {
@@ -108,6 +81,31 @@ public class Exponent extends AbstractFunctionEvaluator {
 			collector.add(F.C0);
 		}
 		return collector;
+	}
+
+	private void timesExponent(IAST timesAST, final IPatternMatcher matcher, IAST collector) {
+		boolean evaled = false;
+		IExpr argi;
+		for (int i = 1; i < timesAST.size(); i++) {
+			argi = timesAST.get(i);
+			if (argi.isPower()) {
+				IAST pow = (IAST) timesAST.get(i);
+				if (matcher.apply(pow.arg1())) {
+					collector.add(pow.arg2());
+					evaled = true;
+					break;
+				}
+			} else if (argi.isSymbol()) {
+				if (matcher.apply(argi)) {
+					collector.add(F.C1);
+					evaled = true;
+					break;
+				}
+			}
+		}
+		if (!evaled) {
+			collector.add(F.C0);
+		}
 	}
 
 }
