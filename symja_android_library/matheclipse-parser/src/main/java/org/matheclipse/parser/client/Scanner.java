@@ -500,7 +500,7 @@ public class Scanner {
 			getChar();
 		}
 		while (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-				|| ((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+				|| ((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '$')) {
 			getChar();
 		}
 
