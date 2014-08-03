@@ -23,8 +23,7 @@ import java.util.ListIterator;
 
 /**
  * A list of <code>ASTNode</code>'s which represents a parsed function.<br/s>
- * The head of the function (i.e. Sin, Cos, Times,...) is stored in the 0-th
- * index of the list.<br/>
+ * The head of the function (i.e. Sin, Cos, Times,...) is stored in the 0-th index of the list.<br/>
  * The arguments of the function are stored in the 1...n-th index of the list.
  */
 public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
@@ -167,8 +166,7 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 	}
 
 	/**
-	 * Because GWT doesn't support the subList() method, we also throw an
-	 * UnsupportedOperationException
+	 * Because GWT doesn't support the subList() method, we also throw an UnsupportedOperationException
 	 */
 	public List<ASTNode> subList(final int fromIndex, final int toIndex) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("Arraylist#subList() not supported");
@@ -183,14 +181,19 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 	}
 
 	public String toString() {
-		ASTNode temp = fNodesList.get(0);
+		ASTNode head = fNodesList.get(0);
 		final StringBuffer buf = new StringBuffer();
-		if (temp == null) {
+		if (head == null) {
 			buf.append("<null-tag>");
 		} else {
-			buf.append(temp.toString());
+			buf.append(head.toString());
 		}
-		buf.append('(');
+		ASTNode temp;
+		if (head instanceof FunctionNode) {
+			buf.append('[');
+		} else {
+			buf.append('(');
+		}
 		for (int i = 1; i < size(); i++) {
 			temp = get(i);
 			buf.append(temp == this ? "(this ListNode)" : String.valueOf(temp));
@@ -198,7 +201,11 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 				buf.append(", ");
 			}
 		}
-		buf.append(')');
+		if (head instanceof FunctionNode) {
+			buf.append(']');
+		} else {
+			buf.append(')');
+		}
 		return buf.toString();
 	}
 
