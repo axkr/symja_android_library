@@ -7,7 +7,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -22,23 +21,30 @@ public class Block extends AbstractCoreFunctionEvaluator {
 
 		if (ast.arg1().isList()) {
 			final EvalEngine engine = EvalEngine.get();
-			final IAST lst = (IAST) ast.arg1();
-			final List<IExpr> variables = new ArrayList<IExpr>();
+			final IAST blockVariablesList = (IAST) ast.arg1();
+			final List<ISymbol> variables = new ArrayList<ISymbol>();
 			IExpr result;
+			IExpr temp;
 
 			try {
 				// remember which local variables we use:
-				for (int i = 1; i < lst.size(); i++) {
-					if (lst.get(i).isSymbol()) {
-						variables.add(lst.get(i));
-						((Symbol) lst.get(i)).pushLocalVariable();
+				ISymbol blockVariableSymbol;
+
+				for (int i = 1; i < blockVariablesList.size(); i++) {
+					if (blockVariablesList.get(i).isSymbol()) {
+						blockVariableSymbol = (ISymbol) blockVariablesList.get(i);
+						blockVariableSymbol.pushLocalVariable();
+						variables.add(blockVariableSymbol);
 					} else {
-						if (lst.get(i).isAST(F.Set, 3)) {
+						if (blockVariablesList.get(i).isAST(F.Set, 3)) {
 							// lhs = rhs
-							final IAST setFun = (IAST) lst.get(i);
+							final IAST setFun = (IAST) blockVariablesList.get(i);
 							if (setFun.arg1().isSymbol()) {
-								variables.add(setFun.arg1());
-								((Symbol) setFun.arg1()).pushLocalVariable(engine.evaluate(setFun.get(2)));
+								blockVariableSymbol = (ISymbol) setFun.arg1();
+								// this evaluation step may throw an exception
+								temp = engine.evaluate(setFun.get(2));
+								blockVariableSymbol.pushLocalVariable(temp);
+								variables.add(blockVariableSymbol);
 							}
 						}
 					}
@@ -48,7 +54,7 @@ public class Block extends AbstractCoreFunctionEvaluator {
 			} finally {
 				// pop all local variables from local variable stack
 				for (int i = 0; i < variables.size(); i++) {
-					((Symbol) variables.get(i)).popLocalVariable();
+					variables.get(i).popLocalVariable();
 				}
 			}
 
