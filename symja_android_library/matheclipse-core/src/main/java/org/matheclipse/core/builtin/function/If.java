@@ -20,7 +20,7 @@ public class If extends AbstractCoreFunctionEvaluator {
 
 		final IExpr temp = engine.evaluate(ast.arg1());
 
-		if (temp.equals(F.False)) {
+		if (temp.isFalse()) {
 			if (ast.size() >= 4) {
 				return ast.arg3();
 			}
