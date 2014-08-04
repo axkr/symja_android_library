@@ -37,12 +37,6 @@ public class Range implements IFunctionEvaluator {
       }
     } catch (final ClassCastException e) {
       // the iterators are generated only from IASTs
-    } finally {
-      if (iterList != null) {
-        for (int i = 0; i < iterList.size(); i++) {
-          iterList.get(i).tearDown();
-        }
-      }
     }
     return null;
   }
