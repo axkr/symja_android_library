@@ -1,5 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -26,7 +29,7 @@ public class Exponent extends AbstractFunctionEvaluator {
 		if (ast.size() == 4) {
 			sym = Validate.checkSymbolType(ast, 3);
 		}
-		IAST collector = F.ast(sym);
+		Set<IExpr> collector = new TreeSet<IExpr>();
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (expr.equals(F.C0)) {
@@ -80,10 +83,14 @@ public class Exponent extends AbstractFunctionEvaluator {
 		} else {
 			collector.add(F.C0);
 		}
-		return collector;
+		IAST result = F.ast(sym);
+		for (IExpr exponent : collector) {
+			result.add(exponent);
+		}
+		return result;
 	}
 
-	private void timesExponent(IAST timesAST, final IPatternMatcher matcher, IAST collector) {
+	private void timesExponent(IAST timesAST, final IPatternMatcher matcher, Set<IExpr> collector) {
 		boolean evaled = false;
 		IExpr argi;
 		for (int i = 1; i < timesAST.size(); i++) {
