@@ -201,7 +201,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 			if (resultant.isPlus()) {
 				IAST res = (IAST) resultant;
 				// distribute the factor over the sum
-				res = res.map(Functors.replace1st(F.Times(F.Null, factor)));
+				res = res.mapAt(F.Times(null, factor),1);
 				disc = F.eval(res);
 			} else {
 				disc = F.eval(F.Times(resultant, factor));

@@ -54,7 +54,7 @@ public class D extends AbstractFunctionEvaluator {
 
 		if (fx.isList()) {
 			// thread over first list
-			return ((IAST) fx).args().map(F.List(), Functors.replace1st(ast));
+			return ((IAST) fx).mapAt(F.List(), ast, 1);
 		}
 
 		IExpr x = ast.arg2();
@@ -104,7 +104,7 @@ public class D extends AbstractFunctionEvaluator {
 			final IExpr header = listArg1.head();
 			if (header == F.Plus) {
 				// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
-				return listArg1.map(Functors.replace1st(F.D(F.Null, x)));
+				return listArg1.mapAt(F.D(F.Null, x), 1);
 			} else if (header == F.Times) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 			} else if (listArg1.isPower()) {

@@ -20,7 +20,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isList()) {
 			// thread over first list
-			return ((IAST) ast.arg1()).args().map(F.List(), Functors.replace1st(ast));
+			return ((IAST) ast.arg1()).mapAt(F.List(), ast, 1);
 		}
 
 		IExpr result = F.eval(F.Divide(ast.arg1(), ast.arg2()));

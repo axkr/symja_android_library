@@ -82,7 +82,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			fx = F.eval(F.Expand(ast.arg1()));
 			if (fx.isPlus()) {
 				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, ast.arg2())));
+				return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
 			}
 		}
 
@@ -386,7 +386,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						F.List(F.Rule(F.Sin(F.$p(pSymbol)), F.Sin(F.Collect(pSymbol, arg2))),
 								F.Rule(F.Cos(F.$p(pSymbol)), F.Cos(F.Collect(pSymbol, arg2))))));
 				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).map(Functors.replace1st(F.Integrate(F.Null, arg2)));
+				return ((IAST) fx).mapAt(F.Integrate(null, arg2), 1);
 			}
 		}
 		return null;

@@ -31,7 +31,7 @@ public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IEx
 		final IExpr temp = F.eval(ast.arg1());
 		if (temp.isList()) {
 			// thread over list
-			return ((IAST) temp).mapFirst(F.OddQ(null));
+			return ((IAST) temp).mapAt(F.OddQ(null),1);
 		}
 		return F.bool(apply(temp));
 	}

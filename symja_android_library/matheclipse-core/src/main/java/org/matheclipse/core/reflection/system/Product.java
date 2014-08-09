@@ -50,8 +50,8 @@ public class Product extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isTimes()) {
 			IAST prod = ast.clone();
-			prod.set(1, F.Null);
-			return ((IAST) ast.arg1()).map(Functors.replace1st(prod));
+			prod.set(1, null);
+			return ((IAST) ast.arg1()).mapAt(prod,1);
 		}
 		if (ast.arg1().isPower()) {
 			IExpr powArg1 = ast.arg1().getAt(1);

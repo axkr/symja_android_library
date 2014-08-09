@@ -52,8 +52,8 @@ public class Sum extends Table {
 
 		if (arg1.isPlus()) {
 			IAST sum = ast.clone();
-			sum.set(1, F.Null);
-			return ((IAST) arg1).map(Functors.replace1st(sum));
+			sum.set(1, null);
+			return ((IAST) arg1).mapAt(sum, 1);
 		}
 		IExpr arg2 = ast.arg2();
 		IExpr temp;

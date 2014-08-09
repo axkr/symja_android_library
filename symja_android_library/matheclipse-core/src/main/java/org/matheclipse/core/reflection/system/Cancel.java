@@ -72,10 +72,11 @@ public class Cancel extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		
+
 		IExpr arg1 = ast.arg1();
 		if (arg1.isPlus()) {
-			IAST result = ((IAST) arg1).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
+			// IAST result = ((IAST) arg1).map(Functors.replaceArg(F.Cancel(F.Slot1), 1));
+			IAST result = ((IAST) arg1).mapAt(F.Cancel(null), 1);
 			if (result != null) {
 				return result;
 			}
@@ -83,7 +84,8 @@ public class Cancel extends AbstractFunctionEvaluator {
 		IExpr expandedArg1 = F.evalExpandAll(arg1);
 		try {
 			if (expandedArg1.isPlus()) {
-				IAST result = ((IAST) expandedArg1).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
+				// IAST result = ((IAST) expandedArg1).map(Functors.replaceArg(F.Cancel(F.Slot1), 1));
+				IAST result = ((IAST) expandedArg1).mapAt(F.Cancel(null), 1);
 				if (result != null) {
 					return result;
 				}

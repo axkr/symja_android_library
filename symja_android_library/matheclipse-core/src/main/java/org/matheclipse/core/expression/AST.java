@@ -19,7 +19,6 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.generic.interfaces.BiFunction;
-import org.matheclipse.core.generic.util.HMArrayList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -217,6 +216,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		AST ast = (AST) super.clone();
 		ast.fEvalFlags = 0;
 		ast.fPatternMatchingHashValue = 0;
+		ast.fProperties = null;
 		return ast;
 	}
 
@@ -883,8 +883,22 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST mapFirst(final IAST replacement) {
-		return map(Functors.replace1st(replacement));
+	public IAST mapAt(final IAST replacement, int position) {
+		return map(Functors.replaceArg(replacement, position));
+	}
+
+	/** {@inheritDoc} */
+	 @Override
+	public IAST mapAt(IAST appendAST, final IAST replacement, int position) {
+		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
+		IExpr temp;
+		for (int i = 1; i < size(); i++) {
+			temp = function.apply(get(i));
+			if (temp != null) {
+				appendAST.add( temp);
+			}
+		}
+		return appendAST;
 	}
 
 	/**

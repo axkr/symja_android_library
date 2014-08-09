@@ -204,7 +204,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
 				// distribute the number over the sum:
 				final IAST arg2 = (IAST) ast.arg2();
-				return arg2.map(Functors.replace2nd(F.Times(ast.arg1(), F.Null)));
+				return arg2.mapAt(F.Times(ast.arg1(), null), 2);
 			}
 			return binaryOperator(ast.arg1(), ast.arg2());
 		}

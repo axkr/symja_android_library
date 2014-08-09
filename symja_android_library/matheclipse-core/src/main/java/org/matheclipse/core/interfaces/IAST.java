@@ -236,8 +236,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return the fifth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg5();	
-	
+	public IExpr arg5();
+
 	/**
 	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as an AST).
 	 * 
@@ -482,24 +482,38 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor <code>Functors.replace1st(replacement)</code>, there
-	 * <code>replacement</code> is an IAST at which the first argument will be replace by the currently mapped element.
+	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>, there
+	 * <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the currently mapped
+	 * element.
 	 * 
 	 * <br />
 	 * <br />
-	 * Example for mapping with <code>Functors#replace1st()</code>, where the first argument will be replaced by the current
-	 * argument of this AST:
+	 * Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given position will be replaced by the
+	 * current argument of this AST:
 	 * 
 	 * <pre>
-	 * plusAST.map(F.D(null, dAST.get(2)));
+	 * plusAST.mapAt(F.D(null, F.x), 1);
 	 * </pre>
 	 * 
 	 * @param replacement
-	 *            an IAST there the first argument is replaced by the currently mapped argument of this IAST.
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this IAST.
 	 * @return
 	 * @see IAST#map(Function)
 	 */
-	public IAST mapFirst(final IAST replacement);
+	public IAST mapAt(final IAST replacement, int position);
+
+	/**
+	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>, there
+	 * <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the currently mapped
+	 * element and appends the element to <code>appendAST</code>.
+	 * 
+	 * @param appendAST
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this IAST.
+	 * @return <code>appendAST</code>
+	 * @see IAST#map(Function)
+	 */
+	public IAST mapAt(IAST appendAST, final IAST replacement, int position);
 
 	/**
 	 * Calculate a special hash value for pattern matching

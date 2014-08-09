@@ -656,6 +656,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param list
 	 * @param function
+	 * @deprecated use {@link IAST#mapAt(IAST, IAST, int)} instead
 	 */
 	public IAST map(IAST list, Function<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {

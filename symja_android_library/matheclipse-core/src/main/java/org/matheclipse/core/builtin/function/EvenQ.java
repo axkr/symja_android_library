@@ -30,7 +30,7 @@ public class EvenQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 		final IExpr temp = F.eval(ast.arg1());
 		if (temp.isList()) {
 			// thread over list
-			return ((IAST) temp).mapFirst(F.EvenQ(null));
+			return ((IAST) temp).mapAt(F.EvenQ(null), 1);
 		}
 		return F.bool(apply(temp));
 	}

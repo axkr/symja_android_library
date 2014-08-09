@@ -30,7 +30,7 @@ public class Chop extends AbstractFunctionEvaluator {
 			if (arg1.isAST()) {
 				IAST list = (IAST) arg1;
 				// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
-				return list.mapFirst(F.Chop(F.Null));
+				return list.mapAt(F.Chop(F.Null),1);
 			}
 			if (arg1.isNumber()) {
 				return F.chopNumber((INumber)arg1, delta);

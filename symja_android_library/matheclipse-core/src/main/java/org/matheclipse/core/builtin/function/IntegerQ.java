@@ -24,7 +24,7 @@ public class IntegerQ extends AbstractCoreFunctionEvaluator {
 		final IExpr temp = F.eval(ast.arg1());
 		if (temp.isList()) {
 			// thread over list
-			return ((IAST) temp).mapFirst(F.IntegerQ(null));
+			return ((IAST) temp).mapAt(F.IntegerQ(null),1);
 		}
 		return F.bool(temp.isInteger());
 	}

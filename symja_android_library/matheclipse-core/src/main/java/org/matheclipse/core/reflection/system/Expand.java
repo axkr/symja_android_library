@@ -77,7 +77,7 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 				return F.Times(temp[0], F.Power(temp[1], F.CN1));
 			} else if (ast.isPlus()) {
-				return ast.map(Functors.replace1st(Expand(F.Null)));
+				return ast.mapAt(Expand(null),1);
 			}
 			return null;
 		}
@@ -164,11 +164,11 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		private IAST expandTimesPlus(final IAST plusAST0, final IAST plusAST1) {
 			// (a+b)*(c+d) -> a*c+a*d+b*c+b*d
-			final IAST pList = Plus();
+			final IAST plusAST = Plus();
 			for (int i = 1; i < plusAST0.size(); i++) {
-				plusAST1.args().map(pList, Functors.replace2nd(Times(plusAST0.get(i), F.Null)));
+				plusAST1.mapAt(plusAST, Times(plusAST0.get(i), F.Null), 2);
 			}
-			return pList;
+			return plusAST;
 		}
 
 		private IAST expandTimesPlus(final IExpr expr1, final IAST plusAST) {

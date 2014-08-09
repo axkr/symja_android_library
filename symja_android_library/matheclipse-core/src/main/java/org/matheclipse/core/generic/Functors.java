@@ -359,6 +359,7 @@ public class Functors {
 	 *            an AST where the first argument is replaced with the argument
 	 *            of the functors <code>apply()</code> method.
 	 * @return
+	 * @deprecated use {@link #replaceArg(IAST, int)} instead
 	 */
 	public static Function<IExpr, IExpr> replace1st(@Nonnull IAST ast) {
 		return new ReplaceArgFunctor(ast, 1);
@@ -373,6 +374,7 @@ public class Functors {
 	 *            an AST where the second argument is replaced with the argument
 	 *            of the functors <code>apply()</code> method.
 	 * @return
+	 * @deprecated use {@link #replaceArg(IAST, int)} instead
 	 */
 	public static Function<IExpr, IExpr> replace2nd(@Nonnull IAST ast) {
 		return new ReplaceArgFunctor(ast, 2);

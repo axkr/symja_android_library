@@ -219,7 +219,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			if (arg0.isTimes()) {
 				if (arg2.isInteger()) {
 					// (a * b * c)^n => a^n * b^n * c^n
-					return arg0.map(Functors.replace1st(Power(F.Null, arg2)));
+					return arg0.mapAt(Power(null, arg2),1);
 				}
 				if (arg2.isNumber()) {
 					final IAST f0 = arg0;

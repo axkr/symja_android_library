@@ -65,7 +65,7 @@ public class Im implements IFunctionEvaluator {
 			}
 		}
 		if (arg1.isPlus()) {
-			return ((IAST) arg1).map(Functors.replace1st(F.Im(F.Null)));
+			return ((IAST) arg1).mapAt(F.Im(null), 1);
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;
