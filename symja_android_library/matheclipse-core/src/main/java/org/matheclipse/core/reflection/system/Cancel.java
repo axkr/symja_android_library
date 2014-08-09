@@ -72,6 +72,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
+		
 		IExpr arg1 = ast.arg1();
 		if (arg1.isPlus()) {
 			IAST result = ((IAST) arg1).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
@@ -79,23 +80,17 @@ public class Cancel extends AbstractFunctionEvaluator {
 				return result;
 			}
 		}
-		IExpr evaledArg1 = F.evalExpandAll(arg1);
+		IExpr expandedArg1 = F.evalExpandAll(arg1);
 		try {
-			if (evaledArg1.isPlus()) {
-				IAST result = ((IAST) evaledArg1).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
+			if (expandedArg1.isPlus()) {
+				IAST result = ((IAST) expandedArg1).map(Functors.evalArg(F.Cancel(F.Slot1), 1, EvalEngine.get()));
 				if (result != null) {
 					return result;
 				}
-				if (evaledArg1.leafCount() > arg1.leafCount()) {
-					return arg1;
-				}
-			} else if (evaledArg1.isTimes() || evaledArg1.isPower()) {
-				IExpr result = cancelPowerTimes(evaledArg1);
+			} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
+				IExpr result = cancelPowerTimes(expandedArg1);
 				if (result != null) {
 					return result;
-				}
-				if (evaledArg1.leafCount() > arg1.leafCount()) {
-					return arg1;
 				}
 			}
 		} catch (JASConversionException jce) {
@@ -103,7 +98,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 				jce.printStackTrace();
 			}
 		}
-		return evaledArg1;
+		return arg1;
 	}
 
 	/**
