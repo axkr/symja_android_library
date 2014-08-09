@@ -15,6 +15,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.base.Predicate;
 
@@ -105,7 +106,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	}
 
 	/** package private */
-	Pattern(final ISymbol symbol, IExpr condition, boolean def) {
+	public Pattern(final ISymbol symbol, IExpr condition, boolean def) {
 		fHashValue = (symbol == null) ? 199 : 19 + symbol.hashCode();
 		fSymbol = symbol;
 		fCondition = condition;
@@ -232,6 +233,23 @@ public class Pattern extends ExprImpl implements IPattern {
 					}
 				}
 			}
+			if (Config.RUBI_CONVERT_SYMBOLS) {
+				if (ch == '§' && symbolStr.length() == 2) {
+					char ch2 = symbolStr.charAt(1);
+					if ('a' <= ch2 && ch2 <= 'z') {
+						if (!fDefault) {
+							if (fCondition == null) {
+								return "p" + ch2 + "_";
+							}
+						} else {
+							if (fCondition == null) {
+								return "p" + ch2 + "_DEFAULT";
+							}
+						}
+					}
+				}
+			}
+
 			if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
 				buffer.append(symbolStr);
 			} else {
@@ -421,6 +439,12 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * {@inheritDoc}
 	 */
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 

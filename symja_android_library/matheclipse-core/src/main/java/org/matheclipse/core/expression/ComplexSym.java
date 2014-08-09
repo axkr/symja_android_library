@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * A symbolic complex implementation
@@ -185,6 +186,9 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	public ISignedNumber getIm() {
+		if (_imaginary.getDenominator().equals(BigInteger.ONE)) {
+			return IntegerSym.newInstance(_imaginary.getNumerator());
+		}
 		return FractionSym.newInstance(_imaginary);
 	}
 
@@ -198,6 +202,9 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	public ISignedNumber getRe() {
+		if (_real.getDenominator().equals(BigInteger.ONE)) {
+			return IntegerSym.newInstance(_real.getNumerator());
+		}
 		return FractionSym.newInstance(_real);
 	}
 
@@ -398,11 +405,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return i;
 	}
 
-	public static void main(final String[] args) {
-		final ComplexSym c = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
-		final IExpr e = c.times(c);
-		System.out.println(e);
-	}
+	// public static void main(final String[] args) {
+	// final ComplexSym c = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
+	// final IExpr e = c.times(c);
+	// System.out.println(e);
+	// }
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
@@ -436,6 +443,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	/** {@inheritDoc} */
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 

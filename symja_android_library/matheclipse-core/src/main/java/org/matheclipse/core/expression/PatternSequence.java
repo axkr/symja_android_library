@@ -15,6 +15,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.base.Predicate;
 
@@ -317,6 +318,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * {@inheritDoc}
 	 */
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 

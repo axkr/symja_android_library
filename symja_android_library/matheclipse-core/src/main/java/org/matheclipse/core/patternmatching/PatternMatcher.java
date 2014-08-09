@@ -230,6 +230,12 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
+	 * priority of this matcher
+	 * 
+	 */
+	protected int fPriority;
+
+	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
 	 * 
 	 */
@@ -248,6 +254,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	public PatternMatcher() {
 		super(null);
+		this.fPriority = PatternMap.DEFAULT_RULE_PRIORITY;
 		this.fLhsPatternExpr = null;
 		this.fPatternCondition = null;
 		this.fPatternMap = new PatternMap();
@@ -255,6 +262,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 	public PatternMatcher(final IExpr patternExpr) {
 		super(patternExpr);
+		this.fPriority = PatternMap.DEFAULT_RULE_PRIORITY;
 		this.fLhsPatternExpr = patternExpr;
 		this.fPatternCondition = null;
 		if (patternExpr.isCondition()) {
@@ -266,7 +274,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	protected final void init(IExpr patternExpr) {
-		fPatternMap.determinePatterns(patternExpr);
+		fPriority = fPatternMap.determinePatterns(patternExpr);
 	}
 
 	/**
@@ -313,7 +321,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * @param pm2
 	 * @return
 	 */
-	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1, PatternMap  pm2) {
+	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1, PatternMap pm2) {
 		if (!patternExpr1.isPatternExpr()) {
 			if (!patternExpr2.isPatternExpr()) {
 				return patternExpr1.equals(patternExpr2);
@@ -336,7 +344,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 					}
 				}
 				for (int i = 0; i < l1.size(); i++) {
-					if (!equivalent(l1.get(i), l2.get(i) ,pm1, pm2)) {
+					if (!equivalent(l1.get(i), l2.get(i), pm1, pm2)) {
 						return false;
 					}
 				}
@@ -349,7 +357,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				// test if the pattern indices are equal
 				final IPattern p1 = (IPattern) patternExpr1;
 				final IPattern p2 = (IPattern) patternExpr2;
-				if (p1.getIndex(pm1) != p2.getIndex( pm2)) {
+				if (p1.getIndex(pm1) != p2.getIndex(pm2)) {
 					return false;
 				}
 				// test if the "check" expressions are equal
@@ -367,7 +375,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				// test if the pattern indices are equal
 				final IPatternSequence p1 = (IPatternSequence) patternExpr1;
 				final IPatternSequence p2 = (IPatternSequence) patternExpr2;
-				if (p1.getIndex(pm1) != p2.getIndex( pm2)) {
+				if (p1.getIndex(pm1) != p2.getIndex(pm2)) {
 					return false;
 				}
 				// test if the "check" expressions are equal
@@ -409,6 +417,15 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	protected IExpr getPatternValue0() {
 		return fPatternMap.getValue(0);
+	}
+
+	/**
+	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
+	 * 
+	 * @return the priority
+	 */
+	public int getPriority() {
+		return fPriority;
 	}
 
 	/**
@@ -753,28 +770,29 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof PatternMatcher) {
-			final PatternMatcher pm = (PatternMatcher) obj;
-			if (fPatternMap.size() != pm.fPatternMap.size()) {
-				return false;
-			}
-			if (isRuleWithoutPatterns()) {
-				return fLhsPatternExpr.equals(pm.fLhsPatternExpr);
-			}
-			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
-				if ((fPatternCondition != null) && (pm.fPatternCondition != null)) {
-					return fPatternCondition.equals(pm.fPatternCondition);
-				}
-				if ((fPatternCondition != null) || (pm.fPatternCondition != null)) {
-					return false;
-				}
-				return true;
-			}
-		}
-		return false;
+		return equivalent(obj) == 0;
+		// if (this == obj) {
+		// return true;
+		// }
+		// if (obj instanceof PatternMatcher) {
+		// final PatternMatcher pm = (PatternMatcher) obj;
+		// if (fPatternMap.size() != pm.fPatternMap.size()) {
+		// return false;
+		// }
+		// if (isRuleWithoutPatterns()) {
+		// return fLhsPatternExpr.equals(pm.fLhsPatternExpr);
+		// }
+		// if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
+		// if ((fPatternCondition != null) && (pm.fPatternCondition != null)) {
+		// return fPatternCondition.equals(pm.fPatternCondition);
+		// }
+		// if ((fPatternCondition != null) || (pm.fPatternCondition != null)) {
+		// return false;
+		// }
+		// return true;
+		// }
+		// }
+		// return false;
 	}
 
 	@Override
@@ -787,6 +805,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		PatternMatcher v = (PatternMatcher) super.clone();
 		v.fPatternCondition = fPatternCondition;
 		v.fPatternMap = fPatternMap.clone();
+		v.fPriority = fPriority;
 		return v;
 	}
 
@@ -826,4 +845,48 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		return evalLeftHandSide(leftHandSide, EvalEngine.get());
 	}
 
+	@Override
+	public int compareTo(IPatternMatcher o) {
+		if (fPriority < o.getPriority()) {
+			return -1;
+		}
+		if (fPriority > o.getPriority()) {
+			return 1;
+		}
+		return equivalent(o);
+	}
+
+	public int equivalent(final Object obj) {
+		if (this == obj) {
+			return 0;
+		}
+		if (obj instanceof PatternMatcher) {
+			final PatternMatcher pm = (PatternMatcher) obj;
+			if (fPatternMap.size() != pm.fPatternMap.size()) {
+				if (fPatternMap.size() < pm.fPatternMap.size()) {
+					return -1;
+				}
+				return 1;
+			}
+			if (isRuleWithoutPatterns()) {
+				return fLhsPatternExpr.compareTo(pm.fLhsPatternExpr);
+			}
+			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
+				if (fPatternCondition != null) {
+					if (pm.fPatternCondition != null) {
+						if (fPatternCondition.equals(pm.fPatternCondition)) {
+							return 0;
+						}
+						return 1;
+					}
+					return -1;
+				}
+				if (pm.fPatternCondition != null) {
+					return 1;
+				}
+				return 0;
+			}
+		}
+		return 1;
+	}
 }

@@ -9,7 +9,7 @@ import com.google.common.base.Predicate;
 /**
  * Interface for the pattern matcher
  */
-public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
+public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher> {
 
 	/**
 	 * Contains the "pattern-matching" expression
@@ -54,6 +54,13 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable {
 	 */
 	public abstract void getPatterns(List<IExpr> resultList, IExpr patternExpr);
 
+	/**
+	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
+	 * 
+	 * @return the priority
+	 */
+	public abstract int getPriority();
+	
 	/**
 	 * Check if the pattern-matchings left-hand-side expression contains no patterns.
 	 * 

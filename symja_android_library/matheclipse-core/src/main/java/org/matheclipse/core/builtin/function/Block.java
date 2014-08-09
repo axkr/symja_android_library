@@ -41,9 +41,10 @@ public class Block extends AbstractCoreFunctionEvaluator {
 							final IAST setFun = (IAST) blockVariablesList.get(i);
 							if (setFun.arg1().isSymbol()) {
 								blockVariableSymbol = (ISymbol) setFun.arg1();
+								blockVariableSymbol.pushLocalVariable();
 								// this evaluation step may throw an exception
-								temp = engine.evaluate(setFun.get(2));
-								blockVariableSymbol.pushLocalVariable(temp);
+								temp = engine.evaluate(setFun.arg2());
+								blockVariableSymbol.set(temp);
 								variables.add(blockVariableSymbol);
 							}
 						}

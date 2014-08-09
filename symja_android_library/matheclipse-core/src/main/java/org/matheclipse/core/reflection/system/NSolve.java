@@ -169,7 +169,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 						}
 						getTimesEquationType(((IAST) expr).arg1());
 					} else {
-						leafCount += LeafCount.leafCount(eqExpr);
+						leafCount += eqExpr.leafCount();
 						if (equationType <= POLYNOMIAL) {
 							equationType = OTHERS;
 						}
@@ -234,7 +234,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					return;
 				}
 			}
-			leafCount += LeafCount.leafCount(expr);
+			leafCount += expr.leafCount();
 			if (equationType <= POLYNOMIAL) {
 				equationType = OTHERS;
 			}

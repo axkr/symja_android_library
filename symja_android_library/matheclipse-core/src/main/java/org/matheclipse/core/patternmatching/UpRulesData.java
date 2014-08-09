@@ -13,10 +13,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.TreeMultimap;
 
 /**
  * The pattern matching rules associated with a symbol.
@@ -29,7 +28,7 @@ public class UpRulesData implements Serializable {
 	private static final long serialVersionUID = 779382003637253257L;
 
 	private transient Map<IExpr, PatternMatcherEquals> fEqualUpRules;
-	private transient ArrayListMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
+	private transient TreeMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
 
 	public UpRulesData() {
 		this.fEqualUpRules = null;
@@ -55,10 +54,10 @@ public class UpRulesData implements Serializable {
 			IPatternMatcher pmEvaluator;
 			if ((fSimplePatternUpRules != null) && (expression.isAST())) {
 				final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
-				final List<IPatternMatcher> list = fSimplePatternUpRules.get(hash);
+				final IPatternMatcher[] list = fSimplePatternUpRules.get(hash).toArray(new IPatternMatcher[0]);
 				if (list != null) {
-					for (int i = 0; i < list.size(); i++) {
-						pmEvaluator = (IPatternMatcher) list.get(i).clone();
+					for (int i = 0; i < list.length; i++) {
+						pmEvaluator = (IPatternMatcher) list[i].clone();
 						result = pmEvaluator.eval(expression);
 						if (result != null) {
 							return result;
@@ -74,7 +73,7 @@ public class UpRulesData implements Serializable {
 	}
 
 	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
-			final IExpr rightHandSide, final int priority) {
+			final IExpr rightHandSide) {
 		if (equalRule) {
 			fEqualUpRules = getEqualUpRules();
 			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
@@ -124,9 +123,9 @@ public class UpRulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	private ArrayListMultimap<Integer, IPatternMatcher> getSimplePatternUpRules() {
+	private TreeMultimap<Integer, IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
-			fSimplePatternUpRules = ArrayListMultimap.create();
+			fSimplePatternUpRules = TreeMultimap.create();
 		}
 		return fSimplePatternUpRules;
 	}
@@ -220,7 +219,7 @@ public class UpRulesData implements Serializable {
 		int condLength;
 		PatternMatcherAndEvaluator pmEvaluator;
 		if (len > 0) {
-			fSimplePatternUpRules = ArrayListMultimap.create();
+			fSimplePatternUpRules = TreeMultimap.create();
 			for (int i = 0; i < len; i++) {
 				astString = stream.readUTF();
 				setSymbol = F.$s(astString);

@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -30,7 +31,7 @@ public class While extends AbstractCoreFunctionEvaluator {
 		if (ast.size() == 3) {
 			body = ast.arg2();
 		}
-		
+
 		while (engine.evaluate(test).isTrue()) {
 			try {
 				if (ast.size() == 3) {
@@ -43,6 +44,8 @@ public class While extends AbstractCoreFunctionEvaluator {
 				return F.Null;
 			} catch (final ContinueException e) {
 				continue;
+			} catch (final ReturnException e) {
+				return e.getValue();
 			}
 		}
 

@@ -484,10 +484,10 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPatternDefault(){
+	public boolean isPatternDefault() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternExpr() {
@@ -655,9 +655,12 @@ public abstract class ExprImpl implements IExpr {
 		return toString();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	public long leafCount() {
+		return isAtom() ? 1L : 0L;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public List<IExpr> leaves() {
 		return null;

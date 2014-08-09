@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.DownRulesData;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
@@ -33,6 +34,7 @@ import org.matheclipse.core.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.base.Function;
 
@@ -178,8 +180,8 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public void popLocalVariable() {
-		final Stack<IExpr> fLocalVariableStack = EvalEngine.localStack(this);
-		fLocalVariableStack.pop();
+		final Stack<IExpr> localVariableStack = EvalEngine.localStack(this);
+		localVariableStack.pop();
 	}
 
 	/** {@inheritDoc} */
@@ -329,7 +331,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	@Override
 	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY, packageMode);
+		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY, packageMode);
 	}
 
 	/** {@inheritDoc} */
@@ -346,7 +348,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		if (fDownRulesData == null) {
 			fDownRulesData = new DownRulesData();
 		}
-		return fDownRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		return fDownRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
 	/** {@inheritDoc} */
@@ -361,7 +363,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
-		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, DEFAULT_RULE_PRIORITY);
+		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
@@ -379,7 +381,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 		if (fUpRulesData == null) {
 			fUpRulesData = new UpRulesData();
 		}
-		return fUpRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+		return fUpRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
 	/** {@inheritDoc} */
@@ -535,6 +537,14 @@ public class Symbol extends ExprImpl implements ISymbol {
 				char ch = fSymbolName.charAt(0);
 				if ('a' <= ch && ch <= 'z') {
 					return fSymbolName;
+				}
+			}
+			if (Config.RUBI_CONVERT_SYMBOLS) {
+				if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0) && Character.isLowerCase(fSymbolName.charAt(1))) {
+					char ch = fSymbolName.charAt(1);
+					if ('a' <= ch && ch <= 'z') {
+						return "p" + ch;
+					}
 				}
 			}
 			if (Character.isUpperCase(fSymbolName.charAt(0))) {
@@ -716,6 +726,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	@Override
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 

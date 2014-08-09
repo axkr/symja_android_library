@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * 
@@ -590,6 +591,12 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return visitor.visit(this);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber getIm() {

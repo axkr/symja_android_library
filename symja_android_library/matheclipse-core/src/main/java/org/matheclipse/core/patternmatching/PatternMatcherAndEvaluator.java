@@ -25,13 +25,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	/**
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set,
-	 *            SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
@@ -79,8 +77,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	/**
-	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code>
-	 * is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -115,8 +112,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides
-	 * <code>Module[] or Condition[]</code> expressions evaluates to
+	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>.
 	 * 
 	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
@@ -139,8 +135,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	/**
-	 * Match the (left-hand-side) pattern with the given expression. If true
-	 * evaluate the right-hand-side for the determined values of the patterns
+	 * Match the (left-hand-side) pattern with the given expression. If true evaluate the right-hand-side for the determined values
+	 * of the patterns
 	 * 
 	 * @param ee
 	 * @param evalExpr
@@ -175,8 +171,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 				// is
 				// Orderless or Flat
 			}
-		} 
-		
+		}
+
 		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {
 			fPatternMap.initPattern();
 			IExpr result = evalAST((IAST) fLhsPatternExpr, (IAST) lhsEvalExpr, fRightHandSide, new StackMatcher());
@@ -190,13 +186,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			IExpr result = fPatternMap.substitutePatternSymbols(fRightHandSide);
 			try {
 				result = F.eval(result);
-			} catch (final ConditionException e) { 
+			} catch (final ConditionException e) {
 				return null;
 			} catch (final ReturnException e) {
 				result = e.getValue();
-			} 
+			}
 			return result;
-		} 
+		}
 		return null;
 	}
 
@@ -209,4 +205,37 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 		return fSetSymbol;
 	}
 
+	@Override
+	public int equivalent(final Object obj) {
+		// don't compare fSetSymbol here
+		int comp = super.equivalent(obj);
+		if (comp == 0) {
+			if (obj instanceof PatternMatcherAndEvaluator) {
+				PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
+				if (fRightHandSide.isCondition()) {
+					if (pm.fRightHandSide.isCondition()) {
+						if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
+							return 0;
+						}
+						return 1;
+					}
+					return -1;
+				} else if (pm.fRightHandSide.isCondition()) {
+					return 1;
+				} else if (fRightHandSide.isModule()) {
+					if (pm.fRightHandSide.isModule()) {
+						if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
+							return 0;
+						}
+						return 1;
+					}
+					return -1;
+				} else if (pm.fRightHandSide.isModule()) {
+					return 1;
+				}
+				return 0;
+			}
+		}
+		return comp;
+	}
 }

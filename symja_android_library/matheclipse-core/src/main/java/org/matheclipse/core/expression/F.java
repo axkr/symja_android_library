@@ -237,6 +237,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.FullForm());
 	public final static ISymbol Head = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",
 			new org.matheclipse.core.builtin.function.Head());
+	public final static ISymbol Identity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity",
+			new org.matheclipse.core.builtin.function.Identity());
 	public final static ISymbol If = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
 			new org.matheclipse.core.builtin.function.If());
 	public final static ISymbol Insert = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
@@ -251,6 +253,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.LeafCount());
 	public final static ISymbol Length = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length",
 			new org.matheclipse.core.builtin.function.Length());
+	public final static ISymbol ListQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ",
+			new org.matheclipse.core.builtin.function.ListQ());
 	public final static ISymbol MemberQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
 			new org.matheclipse.core.builtin.function.MemberQ());
 	public final static ISymbol Module = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
@@ -390,6 +394,7 @@ public class F {
 	public final static ISymbol Distribute = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "distribute" : "Distribute");
 	public final static ISymbol Divergence = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divergence" : "Divergence");
 	public final static ISymbol DivideBy = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divideby" : "DivideBy");
+	public final static ISymbol Divisible = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divisible" : "Divisible");
 	public final static ISymbol Dot = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dot" : "Dot");
 	public final static ISymbol Eigenvalues = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvalues" : "Eigenvalues");
@@ -1936,6 +1941,10 @@ public class F {
 		return binary(Times, a0, binary(Power, a1, CN1));
 	}
 
+	public static IAST Divisible(final IExpr a0, final IExpr a1) {
+		return binary(Divisible, a0, a1);
+	}
+
 	public static IAST Do(final IExpr a0, final IExpr a1) {
 		return binary(Do, a0, a1);
 	}
@@ -2212,6 +2221,10 @@ public class F {
 		return ternary(Exponent, a0, a1, a2);
 	}
 
+	public static IAST Extract(final IExpr a0, final IExpr a1) {
+		return binary(Extract, a0, a1);
+	}
+
 	public static IAST Factor(final IExpr a0) {
 		return unary(Factor, a0);
 	}
@@ -2380,6 +2393,10 @@ public class F {
 	public static IAST Hold(final IExpr a0) {
 		return unary(Hold, a0);
 	}
+	
+	public static IAST Identity(final IExpr a0) {
+		return unary(Identity, a0);
+	}
 
 	public static IAST If(final IExpr a0, final IExpr a1) {
 		return binary(If, a0, a1);
@@ -2438,7 +2455,7 @@ public class F {
 	// return unary(Permutations, a0);
 	// }
 
-	private static IPattern initPredefinedPattern(final ISymbol symbol) {
+	public static IPattern initPredefinedPattern(final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);
 		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
 		return temp;
@@ -2740,6 +2757,10 @@ public class F {
 			a[i] = F.integer(numbers[i]);
 		}
 		return ast(a, List);
+	}
+
+	public static IAST ListQ(final IExpr a) {
+		return unary(ListQ, a);
 	}
 
 	/**
@@ -3096,13 +3117,21 @@ public class F {
 		return ternary(PolynomialRemainder, a0, a1, a2);
 	}
 
+	public static IAST PolynomialQuotientRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(PolynomialQuotientRemainder, a0, a1, a2);
+	}
+
 	/**
 	 * Pop the current top value from the symbols local variable stack.
 	 * 
 	 * @param temp
 	 */
-	public static void popLocal(ISymbol temp) {
-		temp.popLocalVariable();
+	// public static void popLocal(ISymbol temp) {
+	// temp.popLocalVariable();
+	// }
+
+	public static IAST Position(final IExpr a0, final IExpr a1) {
+		return binary(Position, a0, a1);
 	}
 
 	public static IAST Positive(final IExpr a0) {
@@ -3419,6 +3448,10 @@ public class F {
 		return unary(Slot, integer(i));
 	}
 
+	public static IAST Solve(final IExpr a0, final IExpr a1) {
+		return binary(Solve, a0, a1);
+	}
+	
 	public static IAST Sort(final IExpr a0, final IExpr a1) {
 		return binary(Sort, a0, a1);
 	}
@@ -3489,7 +3522,7 @@ public class F {
 	/**
 	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns the given
 	 * <code>expr</code>.
-	 *  
+	 * 
 	 * @param expr
 	 * @param function
 	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't substituted.

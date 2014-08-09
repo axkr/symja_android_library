@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to represent a
@@ -577,6 +578,12 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return visitor.visit(this);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+	
 	@Override
 	public boolean equalsInt(int i) {
 		return false;

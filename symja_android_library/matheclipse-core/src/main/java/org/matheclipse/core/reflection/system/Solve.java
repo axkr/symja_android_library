@@ -33,7 +33,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IExpr fExpr;
 		private IExpr fNumer;
 		private IExpr fDenom;
-		private int fLeafCount;
+		private long fLeafCount;
 
 		IAST row;
 		HashSet<ISymbol> symbolSet;
@@ -172,7 +172,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						}
 						getTimesEquationType(((IAST) expr).arg1());
 					} else {
-						fLeafCount += LeafCount.leafCount(eqExpr);
+						fLeafCount += eqExpr.leafCount();
 						if (fEquationType <= POLYNOMIAL) {
 							fEquationType = OTHERS;
 						}
@@ -237,7 +237,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					return;
 				}
 			}
-			fLeafCount += LeafCount.leafCount(expr);
+			fLeafCount += expr.leafCount();
 			if (fEquationType <= POLYNOMIAL) {
 				fEquationType = OTHERS;
 			}

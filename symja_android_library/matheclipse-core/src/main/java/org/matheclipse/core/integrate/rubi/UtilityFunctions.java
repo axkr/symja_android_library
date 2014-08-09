@@ -105,19 +105,6 @@ public class UtilityFunctions {
 		return binary($sDBG(INTEGRATE_PREFIX + "LinearSinhCoshQ"), a0, a1);
 	}
 
-	public static IExpr isList(IAST ast) {
-		if (ast.size() > 1) {
-			return F.bool(ast.get(1).isList());
-		}
-		return F.False;
-	}
-
-	static ISymbol ListQ = F.method(INTEGRATE_PREFIX + "ListQ", PACKAGE_NAME, CLASS_NAME, "isList");
-
-	public static IAST ListQ(final IExpr a) {
-		return unary(ListQ, a);
-	}
-
 	static ISymbol IntIntegerQ = new Symbol(INTEGRATE_PREFIX + "IntIntegerQ", new IntIntegerQ());
 
 	public static IAST IntIntegerQ(final IExpr a) {

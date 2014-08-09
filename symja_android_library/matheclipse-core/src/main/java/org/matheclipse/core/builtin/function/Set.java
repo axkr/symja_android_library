@@ -47,6 +47,8 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
 		try {
+//			System.out.println(leftHandSide);
+//			System.out.println("   ==>  "+rightHandSide);
 			rightHandSide = engine.evaluate(rightHandSide);
 		} catch (final ConditionException e) {
 			System.out.println("Condition[] in right-hand-side of Set[]");

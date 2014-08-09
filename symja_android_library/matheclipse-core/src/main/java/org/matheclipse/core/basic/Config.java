@@ -65,10 +65,12 @@ public class Config {
 	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
 	 
 	/**
-	 * If <code>true</code> the parser don't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
-	 */
+	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
+	 */  
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
+	public static boolean RUBI_CONVERT_SYMBOLS = false;
+	
 	/**
 	 * Version string for console application
 	 * 

@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -60,6 +61,14 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * @return
 	 */
 	public int accept(IVisitorInt visitor);
+
+	/**
+	 * Accept a visitor with return type <code>long</code>
+	 * 
+	 * @param visitor
+	 * @return
+	 */
+	public long accept(IVisitorLong visitor);
 
 	public IExpr and(final IExpr that);
 
@@ -764,8 +773,17 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isZERO();
 
 	/**
-	 * @return a list of the the leaf expressions. Instances of ExprImpl should return null, while any other expression may not
-	 *         return null (but can return an empty list).
+	 * Count the number of leaves of this expression.
+	 * 
+	 * @return
+	 */
+	public long leafCount();
+
+	/**
+	 * Get a list of the the leaf expressions.
+	 * 
+	 * @return Instances of ExprImpl should return null, while any other expression may not return null (but can return an empty
+	 *         list).
 	 */
 	public List<IExpr> leaves();
 

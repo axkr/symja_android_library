@@ -66,6 +66,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
+		boolean calledRubi = false;
 		if (ast.size() < 3) {
 			return null;
 		}
@@ -190,10 +191,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 
 				if (!ast.arg1().equals(fx)) {
-					return F.Integrate.evalDownRule(EvalEngine.get(), ast);
-					// IAST clon = ast.clone();
-					// clon.set(1, fx);
-					// return clon;
+					return integrateByRubiRules(ast);
 				}
 
 				final IExpr header = arg1.head();
@@ -202,8 +200,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (!arg1.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
 							IExpr[] parts = Apart.getFractionalParts(arg1);
 							if (parts != null) {
-								// IAST apartPlus =
-								// integrateByPartialFractions(parts, symbol);
+								// try Rubi rules first
+								// System.out.println(parts[0]);
+								// System.out.println(parts[1]);
+								IExpr result = integrateByRubiRules(ast);
+								if (result != null) {
+									return result;
+								}
+								calledRubi = true;
+
 								IAST apartPlus = Apart.partialFractionDecompositionRational(
 										new PartialFractionIntegrateGenerator(x), parts, x);
 
@@ -220,7 +225,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 									return apartPlus;
 								}
 								if (arg1.isTimes()) {
-									IExpr result = integratePolynomialByParts(arg1, x);
+									result = integratePolynomialByParts(ast, arg1, x);
 									if (result != null) {
 										return result;
 									}
@@ -232,7 +237,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 				// EvalEngine engine= EvalEngine.get();
 				// engine.setIterationLimit(8);
-				return F.Integrate.evalDownRule(EvalEngine.get(), ast);
+				if (!calledRubi) {
+					return integrateByRubiRules(ast);
+				}
 			}
 		}
 
@@ -637,12 +644,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
+	 * @param ast
+	 *            TODO
+	 * @param symbol
 	 * @param f
 	 * @param g
-	 * @param symbol
+	 * 
 	 * @return
 	 */
-	private static IExpr integratePolynomialByParts(final IAST arg1, ISymbol symbol) {
+	private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, ISymbol symbol) {
 		IAST fTimes = F.Times();
 		IAST gTimes = F.Times();
 		collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
@@ -660,11 +670,22 @@ public class Integrate extends AbstractFunctionEvaluator {
 			// OneIdentity
 			f = fTimes.arg1();
 		}
-		if (g.isAtom()) {
-			// only call integrateBy Parts for simple Times() expression
-			return integrateByParts(f, g, symbol);
-		}
-		return null;
+		// if (g.isAtom()) {
+
+		// }
+		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
+		// ONLY call integrateBy Parts for simple Times() expression
+		return integrateByParts(f, g, symbol);
+	}
+
+	/**
+	 * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to integrate the expression.
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	private static IExpr integrateByRubiRules(IAST ast) {
+		return F.Integrate.evalDownRule(EvalEngine.get(), ast);
 	}
 
 	/**
@@ -689,12 +710,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// set recursion limit
 				engine.setRecursionLimit(128);
 			}
-			IExpr fIntegrated = F.eval(F.Integrate(f, x));
-			if (!fIntegrated.isFree(Integrate, true)) {
+			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
+			if (!firstIntegrate.isFree(Integrate, true)) {
 				return null;
 			}
 			IExpr gDerived = F.eval(F.D(g, x));
-			return F.eval(F.Plus(F.Times(g, fIntegrated), F.Times(F.CN1, F.Integrate(F.Times(gDerived, fIntegrated), x))));
+			IExpr second2Integrate = F.eval(F.Integrate(F.Times(gDerived, firstIntegrate), x));
+			if (!second2Integrate.isFree(Integrate, true)) {
+				return null;
+			}
+			return F.eval(F.Subtract(F.Times(g, firstIntegrate), second2Integrate));
 		} catch (RecursionLimitExceeded rle) {
 			engine.setRecursionLimit(limit);
 		} finally {
@@ -704,29 +729,31 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Collect all found polynomial terms into <code>fTimes</code> and the rest into <code>gTimes</code>.
+	 * Collect all found polynomial terms into <code>polyTimes</code> and the rest into <code>restTimes</code>.
 	 * 
 	 * @param timesAST
 	 *            an AST representing a <code>Times[...]</code> expression.
 	 * @param symbol
-	 * @param fTimes
-	 * @param gTimes
+	 * @param polyTimes
+	 *            the polynomial terms part
+	 * @param restTimes
+	 *            the non-polynomil terms part
 	 */
-	private static void collectPolynomialTerms(final IAST timesAST, ISymbol symbol, IAST fTimes, IAST gTimes) {
+	private static void collectPolynomialTerms(final IAST timesAST, ISymbol symbol, IAST polyTimes, IAST restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);
 			if (temp.isFree(symbol, true)) {
-				fTimes.add(temp);
+				polyTimes.add(temp);
 				continue;
 			} else if (temp.equals(symbol)) {
-				fTimes.add(temp);
+				polyTimes.add(temp);
 				continue;
 			} else if (PolynomialQ.polynomialQ(temp, List(symbol))) {
-				fTimes.add(temp);
+				polyTimes.add(temp);
 				continue;
 			}
-			gTimes.add(temp);
+			restTimes.add(temp);
 		}
 	}
 
@@ -741,9 +768,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// long start = System.currentTimeMillis();
 
 		IAST ast = F.ast(F.List, 10000, false);
-		getRuleASTRubi2(ast);
 
-		// getRuleASTRubi42(ast);
+		getRuleASTRubi45(ast);
 
 		// if (Config.SHOW_STACKTRACE) {
 		// long end = System.currentTimeMillis();
@@ -753,102 +779,151 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	}
 
-	// private void getRuleASTRubi42(IAST ast) {
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicBinomialsOfTheFollowingForms2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms4.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms5.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingAlgebraicTrinomialsOfTheFollowingForms6.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingExponentialOrLogarithmFunctions3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms4.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingHyperbolicFunctionsOfTheFollowingForms5.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingSpecialFunctions0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms10.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms11.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms12.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms13.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms14.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms15.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms16.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms17.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms18.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms19.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms20.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms21.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms22.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms23.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms24.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms25.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms26.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms27.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms28.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms29.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms30.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms31.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms32.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms33.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms34.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms35.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms36.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms37.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms4.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms5.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms6.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms7.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms8.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForExpressionsInvolvingTrigFunctionsOfTheFollowingForms9.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions4.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions5.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions6.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions7.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions8.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions9.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions10.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions11.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions12.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.IntegrationRulesForMiscellaneousExpressions13.RULES);
-	// org.matheclipse.core.integrate.rubi42.UtilityFunctions.init();
-	// }
+	private void getRuleASTRubi45(IAST ast) {
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules0.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules1.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules2.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules3.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules4.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules5.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules6.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules7.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules8.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules9.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules10.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules11.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules12.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules13.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules14.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules15.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules16.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules17.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules18.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules19.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules20.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules21.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules22.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules23.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules24.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules25.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules26.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules27.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules28.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules29.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules30.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules31.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules32.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules33.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules34.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules35.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules36.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules37.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules38.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules39.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules40.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules41.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules42.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules43.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules44.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules45.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules46.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules47.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules48.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules49.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules50.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules51.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules52.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules53.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules54.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules55.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules56.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules57.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules58.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules59.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules60.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules61.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules62.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules63.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules64.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules65.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules66.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules67.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules68.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules69.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules70.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules71.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules72.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules73.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules74.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules75.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules76.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules77.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules78.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules79.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules80.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules81.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules82.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules83.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules84.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules85.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules86.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules87.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules88.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules89.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules90.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules91.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules92.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules93.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules94.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules95.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules96.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules97.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules98.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules99.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules100.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules101.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules102.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules103.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules104.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules105.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules106.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules107.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules108.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules109.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules110.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules111.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules112.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules113.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules114.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules115.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules116.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules117.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules118.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules119.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules120.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules121.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules122.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules123.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules124.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules125.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules126.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules127.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules128.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules129.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules130.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules131.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules132.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules133.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules134.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
+		// ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
+		// ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
 
-	private void getRuleASTRubi2(IAST ast) {
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules5.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules6.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules7.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules8.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules9.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules10.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules11.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules12.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules13.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules14.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules15.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.IndefiniteIntegrationRules16.RULES);
-		org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
+		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 	}
 
 	/**
@@ -858,29 +933,22 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	public static IAST getUtilityFunctionsRuleAST() {
 		IAST ast = F.ast(F.List, 10000, false);
-		getUtilityFunctionsRuleASTRubi2(ast);
 
-		// getUtilityFunctionsRuleASTRubi42(ast);
+		getUtilityFunctionsRuleASTRubi45(ast);
 		return ast;
 
 	}
 
-	// private static void getUtilityFunctionsRuleASTRubi42(IAST ast) {
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions0.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions1.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions2.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions3.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions4.RULES);
-	// ast.addAll(org.matheclipse.core.integrate.rubi42.UtilityFunctions5.RULES);
-	// }
-
-	private static void getUtilityFunctionsRuleASTRubi2(IAST ast) {
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions1.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions2.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions3.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions4.RULES);
-		ast.addAll(org.matheclipse.core.integrate.rubi.UtilityFunctions5.RULES);
+	private static void getUtilityFunctionsRuleASTRubi45(IAST ast) {
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions0.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions1.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions2.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions3.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions4.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES);
+		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES);
+		org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
 	}
 
 }

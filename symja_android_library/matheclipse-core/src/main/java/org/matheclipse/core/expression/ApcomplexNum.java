@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Apcomplex</code> value to represent
@@ -416,6 +417,12 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 

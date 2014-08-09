@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -59,6 +60,8 @@ public class For extends AbstractCoreFunctionEvaluator {
 					IterationLimitExceeded.throwIt(iterationCounter, ast);
 				}
 				continue;
+			} catch (final ReturnException e) {
+				return e.getValue();
 			} finally {
 				if (!exit) {
 					engine.evaluate(incr);

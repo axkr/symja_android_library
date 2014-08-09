@@ -85,13 +85,13 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 		private IExpr tryTransformations(IAST plusAST, IExpr test) {
 			IExpr result = null;
-			int minCounter = LeafCount.leafCount(plusAST);
+			long minCounter = plusAST.leafCount();
 			IExpr temp;
-			int count;
+			long count;
 
 			try {
 				temp = F.evalExpandAll(test);
-				count = LeafCount.leafCount(temp);
+				count = temp.leafCount();
 				if (count < minCounter) {
 					minCounter = count;
 					result = temp;
@@ -107,13 +107,13 @@ public class Simplify extends AbstractFunctionEvaluator {
 			IExpr result = null;
 			if (expr.isAST()) {
 				// try ExpandAll, Together, Apart, Factor to reduce the expression
-				int minCounter = LeafCount.leafCount(expr);
+				long minCounter = expr.leafCount();
 				IExpr temp;
-				int count;
+				long count;
 
 				try {
 					temp = F.evalExpandAll(expr);
-					count = LeafCount.leafCount(temp);
+					count = temp.leafCount();
 					if (count < minCounter) {
 						minCounter = count;
 						result = temp;
@@ -124,7 +124,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 				try {
 					temp = F.eval(F.Together(expr));
-					count = LeafCount.leafCount(temp);
+					count = temp.leafCount();
 					if (count < minCounter) {
 						minCounter = count;
 						result = temp;
@@ -135,7 +135,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 				try {
 					temp = F.eval(F.Factor(expr));
-					count = LeafCount.leafCount(temp);
+					count = temp.leafCount();
 					if (count < minCounter) {
 						minCounter = count;
 						result = temp;
@@ -146,7 +146,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 				try {
 					temp = F.eval(F.Apart(expr));
-					count = LeafCount.leafCount(temp);
+					count = temp.leafCount();
 					if (count < minCounter) {
 						minCounter = count;
 						result = temp;
@@ -233,8 +233,8 @@ public class Simplify extends AbstractFunctionEvaluator {
 			}
 
 			temp = F.evalExpandAll(ast);
-			int minCounter = LeafCount.leafCount(ast);
-			int count = LeafCount.leafCount(temp);
+			long minCounter = ast.leafCount();
+			long count = temp.leafCount();
 			if (count < minCounter) {
 				return temp;
 			}
@@ -260,13 +260,13 @@ public class Simplify extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		IExpr expr = ast.arg1();
-		int minCounter = LeafCount.leafCount(expr);
+		long minCounter = expr.leafCount();
 
 		IExpr result = expr;
-		int count = 0;
+		long count = 0L;
 		IExpr temp = expr.accept(new SimplifyVisitor());
 		while (temp != null) {
-			count = LeafCount.leafCount(temp);
+			count = temp.leafCount();
 			if (count < minCounter) {
 				minCounter = count;
 				result = temp;

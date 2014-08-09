@@ -6,6 +6,7 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 
@@ -105,11 +106,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 */
 	public final static int FLATORDERLESS = FLAT | ORDERLESS;
-
-	/**
-	 * The default priority when associating a new rule to a symbol. Lower numbers have higher priorities
-	 */
-	public final static int DEFAULT_RULE_PRIORITY = 100000;
 
 	/**
 	 * Get the current evaluator for this symbol
@@ -225,7 +221,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @return
 	 * 
-	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
 	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
 			boolean packageMode);
@@ -249,7 +245,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @return
 	 * 
-	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
 	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide, int priority,
 			boolean packageMode);
@@ -269,7 +265,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param rightHandSide
 	 * @return
 	 * 
-	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
 	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
 
@@ -290,7 +286,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @return
 	 * 
-	 * @see ISymbol#DEFAULT_RULE_PRIORITY
+	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
 	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide, final int priority);

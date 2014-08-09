@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 import com.google.common.math.BigIntegerMath;
 
@@ -1038,14 +1039,18 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return visitor.visit(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber getIm() {

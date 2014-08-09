@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * A concrete IString implementation
@@ -291,7 +292,7 @@ public class StringX extends ExprImpl implements IStringX {
 
 	@Override
 	public int hashCode() {
-		return fString.hashCode();    
+		return fString.hashCode();
 	}
 
 	public int hierarchy() {
@@ -564,6 +565,12 @@ public class StringX extends ExprImpl implements IStringX {
 	 * {@inheritDoc}
 	 */
 	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
 }

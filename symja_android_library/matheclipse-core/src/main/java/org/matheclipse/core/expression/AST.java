@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -36,6 +37,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
@@ -688,10 +690,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPatternDefault(){
+	public boolean isPatternDefault() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternExpr() {
@@ -1759,6 +1761,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return visitor.visit(this);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+
 	/**
 	 * Additional <code>negative</code> method, which works like opposite to fulfill groovy's method signature
 	 * 
@@ -1914,6 +1922,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		throw new WrongArgumentType(this, temp, index);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public long leafCount() {
+		return accept(new LeafCount.LeafCountVisitor(0));
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public List<IExpr> leaves() {
 		int sz = size();

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
@@ -49,8 +52,9 @@ public class ASTNodeFactory implements IParserFactory {
 			// "Repeated",
 			"ReplaceAll" };
 
-	static final String[] OPERATOR_STRINGS = { "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&", "/", "=", "++", "!!",
-			"<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "/=", "||", "==", "<>", "!=", "--", "-=", "+",
+	static final String[] OPERATOR_STRINGS = { "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&", "/", "=", "++",
+			"!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "/=", "||", "==", "<>", "!=", "--", "-=",
+			"+",
 			// "...",
 			"=!=", "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=",
 			// "..",
@@ -68,10 +72,12 @@ public class ASTNodeFactory implements IParserFactory {
 			new DivideOperator("/", "Divide", 4500, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator("=", "Set", 300, InfixOperator.RIGHT_ASSOCIATIVE), new PostfixOperator("++", "Increment", 6400),
 			new PostfixOperator("!!", "Factorial2", 6000), new InfixOperator("<=", "LessEqual", 2600, InfixOperator.NONE),
-			new InfixOperator("**", "NonCommutativeMultiply", 5000, InfixOperator.NONE), new PostfixOperator("!", "Factorial", 6000),
+			new InfixOperator("**", "NonCommutativeMultiply", 5000, InfixOperator.NONE),
+			new PostfixOperator("!", "Factorial", 6000),
 			new InfixOperator("*", "Times", TIMES_PRECEDENCE, InfixOperator.NONE),
 			new InfixOperator("^", "Power", POWER_PRECEDENCE, InfixOperator.RIGHT_ASSOCIATIVE),
-			new InfixOperator(".", "Dot", 4700, InfixOperator.NONE), new PrefixOperator("!", "Not", 2100),
+			new InfixOperator(".", "Dot", 4700, InfixOperator.NONE),
+			new PrefixOperator("!", "Not", 2100),
 			new PreMinusOperator("-", "PreMinus", 4600),
 			new InfixOperator("===", "SameQ", 2400, InfixOperator.NONE),
 			new InfixOperator(":>", "RuleDelayed", 1100, InfixOperator.RIGHT_ASSOCIATIVE),
@@ -91,9 +97,11 @@ public class ASTNodeFactory implements IParserFactory {
 			new InfixOperator("->", "Rule", 1100, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("^;=", "UpSetDelayed", 300, InfixOperator.NONE), new PrefixOperator("++", "PreIncrement", 6400),
 			new PostfixOperator("&", "Function", 800), new InfixOperator(">", "Greater", 2600, InfixOperator.NONE),
-			new PrefixOperator("--", "PreDecrement", 6400), new SubtractOperator("-", "Subtract", 2900, InfixOperator.LEFT_ASSOCIATIVE),
+			new PrefixOperator("--", "PreDecrement", 6400),
+			new SubtractOperator("-", "Subtract", 2900, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator(":=", "SetDelayed", 300, InfixOperator.NONE),
-			new InfixOperator("|", "Alternatives", 1400, InfixOperator.NONE), new InfixOperator("+=", "AddTo", 900, InfixOperator.NONE),
+			new InfixOperator("|", "Alternatives", 1400, InfixOperator.NONE),
+			new InfixOperator("+=", "AddTo", 900, InfixOperator.NONE),
 			// new PostfixOperator("..", "Repeated", 1500),
 			new InfixOperator("/.", "ReplaceAll", 1000, InfixOperator.LEFT_ASSOCIATIVE) };
 
@@ -125,7 +133,7 @@ public class ASTNodeFactory implements IParserFactory {
 	 */
 	public ASTNodeFactory(boolean ignoreCase) {
 		this.fIgnoreCase = ignoreCase;
-	} 
+	}
 
 	static public void addOperator(final Map<String, Operator> operatorMap,
 			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr, final String headStr,
@@ -256,14 +264,52 @@ public class ASTNodeFactory implements IParserFactory {
 	}
 
 	public SymbolNode createSymbol(final String symbolName) {
-		if (fIgnoreCase){
-			return new SymbolNode(symbolName.toLowerCase());
+		String name = symbolName;
+		if (fIgnoreCase) {
+			name = symbolName.toLowerCase();
 		}
-		return new SymbolNode(symbolName);
+		if (Config.RUBI_CONVERT_SYMBOLS) {
+			name = toRubiString(name);
+		}
+		// if (fIgnoreCase) {
+		// return new SymbolNode(symbolName.toLowerCase());
+		// }
+		return new SymbolNode(name);
 	}
 
 	public boolean isValidIdentifier(String identifier) {
 		return true;
 	}
 
+	private String toRubiString(final String nodeStr) {
+		if (!Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String lowercaseName = nodeStr.toLowerCase();
+			String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
+			if (temp != null) {
+				if (!temp.equals(nodeStr)) {
+					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+					if (temp == null) {
+						if (lowercaseName.length() > 1) {
+							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos") && !lowercaseName.equals("tan")
+									&& !lowercaseName.equals("cot") && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
+								System.out.println(nodeStr + " => " + '§' + lowercaseName);
+							}
+						}
+						return '§' + lowercaseName;
+					}
+				}
+			} else {
+				if (!nodeStr.equals(nodeStr.toLowerCase())) {
+					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
+					if (temp == null) {
+						if (lowercaseName.length() > 1) {
+							System.out.println(nodeStr + " => " + '§' + lowercaseName);
+						}
+						return '§' + lowercaseName;
+					}
+				}
+			}
+		}
+		return nodeStr;
+	}
 }

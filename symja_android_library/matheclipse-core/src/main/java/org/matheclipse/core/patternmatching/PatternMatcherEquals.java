@@ -103,4 +103,20 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 		fRightHandSide = rightHandSide;
 	}
 
+	@Override
+	public int compareTo(IPatternMatcher o) {
+		if (getPriority() < o.getPriority()) {
+			return -1;
+		}
+		if (getPriority() > o.getPriority()) {
+			return 1;
+		}
+		return 0;
+	}
+
+	@Override
+	public int getPriority() {
+		return 0;
+	}
+
 }

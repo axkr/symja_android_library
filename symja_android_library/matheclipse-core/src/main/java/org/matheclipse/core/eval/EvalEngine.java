@@ -756,21 +756,22 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (fTraceMode) {
 				fTraceStack.pushList();
 			}
+			
 			IExpr temp = expr.evaluate(this);
 			if (temp != null) {
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
 				// if (expr.isAST(F.Integrate)) {
-				// System.out.println(expr.toString());
-				// System.out.println(" --> " + temp.toString());
+//				 System.out.println("(0):" +expr.toString());
+//				 System.out.println("(1) --> " + temp.toString());
 				// }
 				if (fTraceMode) {
 					fTraceStack.addIfEmpty(expr);
 					fTraceStack.add(temp);
 				}
 				IExpr result = temp;
-				int iterationCounter = 1;
+				int iterationCounter = 2;
 				do {
 					temp = result.evaluate(this);
 					if (temp != null) {
@@ -778,8 +779,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// System.out.println(expr.toString());
 						// }
 						// if (result.isAST(F.Integrate)) {
-						// System.out.println(result.toString());
-						// System.out.println(" --> " + temp.toString());
+//						 System.out.println(result.toString());
+//						 System.out.println("("+iterationCounter+") --> " + temp.toString());
 						// }
 						if (fTraceMode) {
 							fTraceStack.add(temp);
@@ -830,7 +831,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					// the HoldFirst attribute isn't set here
 					if (astSize > 1 && ast.arg1().isAST()) {
 						IAST temp = (IAST) ast.arg1();
-						resultList.set(1, evaluate(temp));
+						resultList.set(1, evalSetAttributes(temp));
 					}
 				}
 				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
@@ -838,7 +839,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					for (int i = 2; i < astSize; i++) {
 						if (ast.get(i).isAST()) {
 							IAST temp = (IAST) ast.get(i);
-							resultList.set(i, evaluate(temp));
+							resultList.set(i, evalSetAttributes(temp));
 						}
 					}
 				}

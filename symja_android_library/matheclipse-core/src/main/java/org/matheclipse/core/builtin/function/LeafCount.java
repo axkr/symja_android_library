@@ -8,14 +8,18 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.visit.AbstractVisitorInt;
+import org.matheclipse.core.visit.AbstractVisitorLong;
 
+/**
+ * Count the number of leaves of an expression.
+ * 
+ */
 public class LeafCount extends AbstractCoreFunctionEvaluator {
 
 	/**
 	 * Calculate the number of leaves in an AST
 	 */
-	public static class LeafCountVisitor extends AbstractVisitorInt {
+	public static class LeafCountVisitor extends AbstractVisitorLong {
 		int fHeadOffset;
 
 		public LeafCountVisitor() {
@@ -27,22 +31,22 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 		}
 
 		@Override
-		public int visit(IFraction element) {
+		public long visit(IFraction element) {
 			return 3;
 		}
 
 		@Override
-		public int visit(IComplex element) {
+		public long visit(IComplex element) {
 			return 3;
 		}
 
 		@Override
-		public int visit(IComplexNum element) {
+		public long visit(IComplexNum element) {
 			return 3;
 		}
 
-		public int visit(IAST list) {
-			int sum = 0;
+		public long visit(IAST list) {
+			long sum = 0;
 			for (int i = fHeadOffset; i < list.size(); i++) {
 				sum += list.get(i).accept(this);
 			}
@@ -57,16 +61,7 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
-		return F.integer(leafCount(F.eval(ast.arg1())));
+		return F.integer(F.eval(ast.arg1()).leafCount());
 	}
 
-	public static int leafCount(IExpr expr) {
-		int leafCount = 0;
-		if (expr.isAST()) {
-			leafCount = expr.accept(new LeafCountVisitor(0));
-		} else {
-			leafCount = expr.isAtom() ? 1 : 0;
-		}
-		return leafCount;
-	}
 }
