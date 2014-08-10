@@ -62,8 +62,9 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 					return result[0];
 				}
 			}
-			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-				return Times(CN1, Floor(Times(CN1, arg1)));
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr != null) {
+				return Times(CN1, Floor(negExpr));
 			}
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException

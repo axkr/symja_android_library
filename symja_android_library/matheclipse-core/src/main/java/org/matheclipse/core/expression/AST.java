@@ -438,6 +438,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isSignedNumber()) {
+				return ((ISignedNumber) result).isNegative();
+			}
+		}
 		return false;
 	}
 
@@ -709,6 +715,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isSignedNumber()) {
+				return ((ISignedNumber) result).isPositive();
+			}
+		}
 		return false;
 	}
 
@@ -888,14 +900,14 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	 @Override
+	@Override
 	public IAST mapAt(IAST appendAST, final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
 			temp = function.apply(get(i));
 			if (temp != null) {
-				appendAST.add( temp);
+				appendAST.add(temp);
 			}
 		}
 		return appendAST;
@@ -2070,6 +2082,22 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public final IExpr negate() {
+		if (isTimes()) {
+			IAST timesAST = clone();
+			IExpr arg1 = timesAST.arg1();
+			if (arg1.isNumber()) {
+				timesAST.set(1, ((INumber) arg1).negate());
+				return timesAST;
+			}
+			timesAST.add(1, F.CN1);
+			return timesAST;
+		}
+		if (isNegativeInfinity()) {
+			return F.CInfinity;
+		}
+		if (isInfinity()) {
+			return F.CNInfinity;
+		}
 		return F.eval(F.Times(F.CN1, this));
 	}
 

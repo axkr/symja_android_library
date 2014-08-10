@@ -48,8 +48,9 @@ public class Im implements IFunctionEvaluator {
 		if (arg1 instanceof IComplexNum) {
 			return F.num(((IComplexNum) arg1).getImaginaryPart());
 		}
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, Im(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, Im(negExpr));
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {

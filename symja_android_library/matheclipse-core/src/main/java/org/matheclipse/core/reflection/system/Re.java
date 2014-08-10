@@ -47,8 +47,9 @@ public class Re implements IFunctionEvaluator {
 		if (arg1 instanceof IComplexNum) {
 			return F.num(((IComplexNum) arg1).getRealPart());
 		}
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, Re(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, Re(negExpr));
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {

@@ -41,8 +41,9 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Sinc(arg1);
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Sinc(negExpr);
 		}
 		return null;
 	}

@@ -36,8 +36,9 @@ public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, Tanh(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, Tanh(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

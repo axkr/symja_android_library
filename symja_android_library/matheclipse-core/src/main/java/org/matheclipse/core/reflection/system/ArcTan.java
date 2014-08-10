@@ -39,8 +39,9 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 
 	@Override
 	public IExpr e1ObjArg(final IExpr arg1) {
-		if (isNegativeExpression(arg1)) {
-			return Times(CN1, ArcTan(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, ArcTan(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

@@ -44,8 +44,9 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 		if (arg1.isMinusOne()) {
 			return F.CNInfinity;
 		}
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, InverseErf(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, InverseErf(negExpr));
 		}
 		return null;
 	}

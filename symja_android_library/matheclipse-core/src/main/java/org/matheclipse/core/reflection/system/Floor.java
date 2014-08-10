@@ -64,8 +64,9 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 					return result[0];
 				}
 			}
-			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-				return Times(CN1, Ceiling(Times(CN1, arg1)));
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr != null) {
+				return Times(CN1, Ceiling(negExpr));
 			}
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() may throw ArithmeticException

@@ -38,8 +38,9 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		if (signedNumber != null) {
 			return signedNumberFractionalPart(signedNumber);
 		}
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, FractionalPart(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, FractionalPart(negExpr));
 		}
 		return null;
 	}

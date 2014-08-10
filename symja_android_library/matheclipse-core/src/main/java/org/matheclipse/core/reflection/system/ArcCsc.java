@@ -30,8 +30,9 @@ public class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Times(CN1, ArcCsc(Times(CN1, arg1)));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Times(CN1, ArcCsc(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

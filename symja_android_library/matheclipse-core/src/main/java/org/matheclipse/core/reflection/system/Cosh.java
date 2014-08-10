@@ -36,8 +36,9 @@ public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			return Cosh(Times(CN1, arg1));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Cosh(negExpr);
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

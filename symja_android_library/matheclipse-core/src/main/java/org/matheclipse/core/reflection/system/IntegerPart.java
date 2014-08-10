@@ -28,8 +28,9 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 			if (signedNumber != null) {
 				return signedNumberIntegerPart(signedNumber);
 			}
-			if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-				return Times(CN1, IntegerPart(Times(CN1, arg1)));
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr != null) {
+				return Times(CN1, IntegerPart(negExpr));
 			}
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException

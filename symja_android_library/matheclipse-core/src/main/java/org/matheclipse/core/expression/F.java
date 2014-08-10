@@ -2393,7 +2393,7 @@ public class F {
 	public static IAST Hold(final IExpr a0) {
 		return unary(Hold, a0);
 	}
-	
+
 	public static IAST Identity(final IExpr a0) {
 		return unary(Identity, a0);
 	}
@@ -2938,8 +2938,9 @@ public class F {
 	 * @param a
 	 * @return
 	 */
-	public static IAST Negate(final IExpr a) {
-		return binary(Times, CN1, a);
+	public static IExpr Negate(final IExpr a) {
+		return a.negate();
+		// return binary(Times, CN1, a);
 	}
 
 	public static IAST Negative(final IExpr a0) {
@@ -3451,7 +3452,7 @@ public class F {
 	public static IAST Solve(final IExpr a0, final IExpr a1) {
 		return binary(Solve, a0, a1);
 	}
-	
+
 	public static IAST Sort(final IExpr a0, final IExpr a1) {
 		return binary(Sort, a0, a1);
 	}

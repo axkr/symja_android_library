@@ -136,10 +136,10 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 
 	@Override
 	public IExpr e1ObjArg(IExpr arg1) {
-		if (AbstractFunctionEvaluator.isNegativeExpression(arg1)) {
-			IExpr temp = F.eval(Times(CN1, arg1));
-			if (temp.isPositive()) {
-				return F.Plus(Log(temp), Times(CI, F.Pi));
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			if (negExpr.isPositive()) {
+				return F.Plus(Log(negExpr), Times(CI, F.Pi));
 			}
 		}
 		return null;

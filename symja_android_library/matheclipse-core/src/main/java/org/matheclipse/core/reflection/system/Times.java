@@ -11,10 +11,7 @@ import static org.matheclipse.core.expression.F.y;
 
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -155,6 +152,10 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 		}
 
+		if (o0.isNumber() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
+			final IAST f1 = (IAST) o1;
+			return f1.mapAt(F.Times(o0, null), 2);
+		}
 		return null;
 	}
 
