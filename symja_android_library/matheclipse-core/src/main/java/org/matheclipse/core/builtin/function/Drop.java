@@ -24,9 +24,10 @@ public class Drop extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 3);
 
 		final IExpr arg1 = F.eval(ast.arg1());
+		final IExpr arg2 = F.eval(ast.arg2());
 		try {
 			if (arg1.isAST()) {
-				final ISequence sequ = Sequence.createSequence(ast.arg2());
+				final ISequence sequ = Sequence.createSequence(arg2);
 				final IAST list = (IAST) arg1;
 				if (sequ != null) {
 					final IAST resultList = list.clone();
