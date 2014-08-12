@@ -854,9 +854,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public IAST apply(final IExpr head) {
-		final IAST ast = clone();
-		ast.set(0, head);
-		return ast;
+		return cloneSet(0,head);
 	}
 
 	@Override
@@ -918,9 +916,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 */
 	@Override
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
-		final IAST f = clone();
-		f.set(0, head);
-		return map(f, function);
+		return map(cloneSet(0,head), function);
 	}
 
 	/**
@@ -1366,8 +1362,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			final IExpr head = nestedList.get(0);
 			IExpr temp = variables2Slots(head, from, to);
 			if (temp != null) {
-				result = nestedList.clone();
-				result.set(0, temp);
+				result = nestedList.apply(temp);
 			} else {
 				return null;
 			}
@@ -2083,12 +2078,11 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public final IExpr negate() {
 		if (isTimes()) {
-			IAST timesAST = clone();
-			IExpr arg1 = timesAST.arg1();
+			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
-				timesAST.set(1, ((INumber) arg1).negate());
-				return timesAST;
+				return cloneSet(1, ((INumber) arg1).negate());
 			}
+			IAST timesAST = clone();
 			timesAST.add(1, F.CN1);
 			return timesAST;
 		}

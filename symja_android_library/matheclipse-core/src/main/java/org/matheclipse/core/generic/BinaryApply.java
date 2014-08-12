@@ -12,7 +12,7 @@ public class BinaryApply extends BinaryFunctorImpl<IExpr> {
 	}
 
 	public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
-		final IAST ast = fConstant.cloneSet(0, secondArg);
+		final IAST ast = fConstant.apply(secondArg);
 		ast.add(firstArg);
 		return ast;
 	}

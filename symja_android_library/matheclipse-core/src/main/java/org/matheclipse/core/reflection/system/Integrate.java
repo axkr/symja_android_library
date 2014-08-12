@@ -77,21 +77,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 			return ast.range(2).foldRight(new BinaryEval(F.Integrate), fx);
 		}
 
-		if (ast.arg1().isAST()) {
-			// fx = F.evalExpandAll(ast.arg1());
-			fx = F.eval(F.Expand(ast.arg1()));
-			if (fx.isPlus()) {
-				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
-			}
-		}
-
 		if (ast.arg2().isList()) {
 			IAST xList = (IAST) ast.arg2();
 			if (xList.isVector() == 3) {
 				// Integrate[f[x], {x,a,b}]
-				IAST clone = ast.clone();
-				clone.set(2, xList.arg1());
+				IAST clone = ast.cloneSet(2, xList.arg1());
 				IExpr temp = F.eval(clone);
 				if (temp.isFree(F.Integrate, true)) {
 					// F(b)-F(a)
@@ -120,6 +110,21 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 					return F.Subtract(Fb, Fa);
 				}
+			}
+		}
+
+		if (ast.arg1().isAST()) {
+//			if (ast.arg2().isSymbol()&&ast.arg1().isTimes()) {
+//				IExpr result = integrateByRubiRules(ast);
+//				if (result != null) {
+//					return result;
+//				}
+//				calledRubi = true;
+//			}
+			fx = F.eval(F.Expand(ast.arg1()));
+			if (fx.isPlus()) {
+				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
+				return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
 			}
 		}
 
@@ -656,23 +661,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IAST fTimes = F.Times();
 		IAST gTimes = F.Times();
 		collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
-		IExpr g = gTimes;
-		IExpr f = fTimes;
-		if (gTimes.size() == 1) {
-			return null;
-		} else if (gTimes.size() == 2) {
-			// OneIdentity
-			g = gTimes.arg1();
-		}
-		if (fTimes.size() == 1) {
-			return null;
-		} else if (fTimes.size() == 2) {
-			// OneIdentity
-			f = fTimes.arg1();
-		}
-		// if (g.isAtom()) {
-
-		// }
+		IExpr g = gTimes.getOneIdentity(F.C1);
+		IExpr f = fTimes.getOneIdentity(F.C1);
 		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
 		// ONLY call integrateBy Parts for simple Times() expression
 		return integrateByParts(f, g, symbol);

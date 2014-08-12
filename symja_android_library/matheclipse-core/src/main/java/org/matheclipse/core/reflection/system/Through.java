@@ -28,7 +28,7 @@ public class Through extends AbstractFunctionEvaluator {
 				IAST result = F.ast(l2.head());
 				for (int i = 1; i < l2.size(); i++) {
 					if (l1.get(i).isSymbol() || l2.get(i).isAST()) {
-						clonedList = l1.cloneSet(0, l2.get(i));
+						clonedList = l1.apply(l2.get(i));
 						result.add(clonedList);
 					} else {
 						result.add(l2.get(i));
