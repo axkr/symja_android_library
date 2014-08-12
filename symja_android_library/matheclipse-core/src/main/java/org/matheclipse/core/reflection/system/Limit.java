@@ -285,11 +285,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr mapLimit(final IAST expr, IAST rule) {
-		final IAST resultList = expr.clone();
-		for (int i = 1; i < resultList.size(); i++) {
-			resultList.set(i, F.Limit(resultList.get(i), rule));
-		}
-		return resultList;
+		return expr.mapAt(F.Limit(null, rule), 1);
 	}
 
 	/**

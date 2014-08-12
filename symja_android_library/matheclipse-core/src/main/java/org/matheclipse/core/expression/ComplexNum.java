@@ -539,12 +539,11 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof ComplexNum) {
-			return compareTo(((ComplexNum) obj).fComplex);
-			// return fComplex.compareTo(((DoubleComplexImpl) obj).fComplex);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof ComplexNum) {
+			return compareTo(((ComplexNum) expr).fComplex);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override

@@ -471,11 +471,11 @@ public class Num extends ExprImpl implements INum {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof Num) {
-			return Double.compare(fDouble, ((Num) obj).fDouble);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof Num) {
+			return Double.compare(fDouble, ((Num) expr).fDouble);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override

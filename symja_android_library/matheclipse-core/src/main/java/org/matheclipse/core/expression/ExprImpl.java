@@ -853,6 +853,17 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
+	public int compareTo(IExpr expr) {
+		if (hierarchy() > expr.hierarchy()) {
+			return 1;
+		}
+		if (hierarchy() < expr.hierarchy()) {
+			return -1;
+		}
+		return 0;
+	}
+
+	@Override
 	public IExpr copy() {
 		try {
 			return (IExpr) clone();

@@ -81,7 +81,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			IAST xList = (IAST) ast.arg2();
 			if (xList.isVector() == 3) {
 				// Integrate[f[x], {x,a,b}]
-				IAST clone = ast.cloneSet(2, xList.arg1());
+				IAST clone = ast.applyAt(2, xList.arg1());
 				IExpr temp = F.eval(clone);
 				if (temp.isFree(F.Integrate, true)) {
 					// F(b)-F(a)

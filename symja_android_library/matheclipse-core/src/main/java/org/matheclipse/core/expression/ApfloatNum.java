@@ -343,11 +343,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof ApfloatNum) {
-			return fApfloat.compareTo(((ApfloatNum) obj).fApfloat);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof ApfloatNum) {
+			return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -394,7 +394,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	@Override
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);

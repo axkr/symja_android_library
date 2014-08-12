@@ -145,6 +145,14 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition);
 
 	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and add the
+	 * <code>expr</code> at the given <code>position</code>.
+	 * 
+	 * @return a clone with added <code>expr</code> element at the given <code>position</code>.
+	 */
+	public IAST addAt(int position, IExpr expr);
+
+	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
 	 * @param i
@@ -189,9 +197,17 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * the given one)
 	 * 
 	 * @param head
-	 * @return
+	 * @return a clone with element set to <code>head</code> at the given <code>0</code>.
 	 */
 	public IAST apply(IExpr head, int start, int end);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
+	 * <code>expr</code> at the given <code>position</code>.
+	 * 
+	 * @return a clone with element set to <code>expr</code> at the given <code>position</code>.
+	 */
+	public IAST applyAt(int position, IExpr expr);
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
@@ -251,14 +267,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
 	public IAST clone();
-
-	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
-	 * <code>expr</code> at the given <code>position</code>.
-	 * 
-	 * @return a clone of this <code>IAST</code> instance.
-	 */
-	public IAST cloneSet(int position, IExpr expr);
 
 	/**
 	 * Create a copy of this <code>IAST</code>, which only contains the head element of the list (i.e. the element with index 0).
@@ -526,6 +534,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * Prepend an expression to this list.
 	 * 
 	 * @return <code>this</code> after prepending the given expression.
+	 * @deprecated
 	 */
 	public IAST prepend(IExpr expr);
 
@@ -561,6 +570,14 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public ASTRange range(int start, int end);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the element at
+	 * the given <code>position</code>.
+	 * 
+	 * @return a clone with removed element at the given position.
+	 */
+	public IAST removeAt(int position);
 
 	/**
 	 * Set the evaluation flags for this list.

@@ -15,11 +15,10 @@ public class Most extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		final IAST sublist = Validate.checkASTType(ast, 1).clone();
+		final IAST sublist = Validate.checkASTType(ast, 1);
 
 		if (sublist.size() > 1) {
-			sublist.remove(sublist.size() - 1);
-			return sublist;
+			return sublist.removeAt(sublist.size() - 1);
 		}
 
 		return null;

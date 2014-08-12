@@ -51,8 +51,7 @@ public class Sum extends Table {
 		IExpr arg1 = ast.arg1();
 
 		if (arg1.isPlus()) {
-			IAST sum = ast.clone();
-			sum.set(1, null);
+			IAST sum = ast.applyAt(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
 		IExpr arg2 = ast.arg2();

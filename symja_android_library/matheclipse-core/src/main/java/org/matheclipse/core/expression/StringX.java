@@ -193,11 +193,11 @@ public class StringX extends ExprImpl implements IStringX {
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof StringX) {
-			return fString.compareTo(((StringX) obj).fString);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof StringX) {
+			return fString.compareTo(((StringX) expr).fString);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	/**

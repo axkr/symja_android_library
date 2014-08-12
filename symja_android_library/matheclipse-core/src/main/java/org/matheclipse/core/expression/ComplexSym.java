@@ -405,25 +405,19 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return i;
 	}
 
-	// public static void main(final String[] args) {
-	// final ComplexSym c = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
-	// final IExpr e = c.times(c);
-	// System.out.println(e);
-	// }
-
 	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof ComplexSym) {
-			final int cp = _real.compareTo(((ComplexSym) obj)._real);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof ComplexSym) {
+			final int cp = _real.compareTo(((ComplexSym) expr)._real);
 			if (cp != 0) {
 				return cp;
 			}
-			return _imaginary.compareTo(((ComplexSym) obj)._imaginary);
+			return _imaginary.compareTo(((ComplexSym) expr)._imaginary);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override

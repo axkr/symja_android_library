@@ -87,9 +87,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 				IAST pow = (IAST) times.get(i);
 				if (pow.arg1().equals(arg2)) {
 					if (pow.arg2().isNumEqualInteger(n)) {
-						times = times.clone();
-						times.remove(i);
-						return times;
+						return times.removeAt(i);
 					}
 					return F.C0;
 				}
@@ -97,9 +95,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 				if (n.equals(F.C0)) {
 					return F.C0;
 				} else if (n.equals(F.C1)) {
-					times = times.clone();
-					times.remove(i);
-					return times;
+					return times.removeAt(i);
 				}
 				return F.C0;
 			}

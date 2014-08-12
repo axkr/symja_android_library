@@ -354,37 +354,37 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof Pattern) {
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof Pattern) {
 			int cp;
 			if (fSymbol == null) {
-				if (((Pattern) obj).fSymbol == null) {
+				if (((Pattern) expr).fSymbol == null) {
 					cp = -1;
 				} else {
 					cp = 0;
 				}
-			} else if (((Pattern) obj).fSymbol == null) {
+			} else if (((Pattern) expr).fSymbol == null) {
 				cp = 1;
 			} else {
-				cp = fSymbol.compareTo(((Pattern) obj).fSymbol);
+				cp = fSymbol.compareTo(((Pattern) expr).fSymbol);
 			}
 			if (cp != 0) {
 				return cp;
 			}
 			if (fCondition == null) {
-				if (((Pattern) obj).fCondition != null) {
+				if (((Pattern) expr).fCondition != null) {
 					return -1;
 				}
 				return 0;
 			} else {
-				if (((Pattern) obj).fCondition == null) {
+				if (((Pattern) expr).fCondition == null) {
 					return 1;
 				} else {
-					return fCondition.compareTo(((Pattern) obj).fCondition);
+					return fCondition.compareTo(((Pattern) expr).fCondition);
 				}
 			}
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	public ISymbol head() {

@@ -20,11 +20,10 @@ public class Rest extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 		
 		IExpr arg1 = F.eval(ast.arg1());
-		final IAST sublist = Validate.checkASTType(arg1).clone();
+		final IAST sublist = Validate.checkASTType(arg1);
 
 		if (sublist.size() > 1) {
-			sublist.remove(1);
-			return sublist;
+			return sublist.removeAt(1);
 		}
  
 		return null;

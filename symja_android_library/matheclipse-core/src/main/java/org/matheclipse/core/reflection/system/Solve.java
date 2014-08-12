@@ -158,8 +158,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (fEquationType == LINEAR) {
-										IAST cloned = arg.clone();
-										cloned.remove(i);
+										IAST cloned = arg.removeAt(i);;
 										row.set(j, F.Plus(row.get(j), cloned));
 									}
 								}

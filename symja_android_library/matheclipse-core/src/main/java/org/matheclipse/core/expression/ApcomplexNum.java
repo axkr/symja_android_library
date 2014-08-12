@@ -381,12 +381,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof ApcomplexNum) {
-			return compareTo(((ApcomplexNum) obj).fApcomplex);
-			// return fComplex.compareTo(((DoubleComplexImpl) obj).fComplex);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof ApcomplexNum) {
+			return compareTo(((ApcomplexNum) expr).fApcomplex);
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -419,7 +418,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public long accept(IVisitorLong visitor) {

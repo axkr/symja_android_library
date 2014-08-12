@@ -26,29 +26,17 @@ public class Not extends AbstractArg1 {
 			if (temp.size() == 3) {
 				IExpr head = temp.head();
 				if (head.equals(F.Equal)) {
-					temp = temp.clone();
-					temp.set(0, F.Unequal);
-					return temp;
+					return temp.apply(F.Unequal); 
 				} else if (head.equals(F.Unequal)) {
-					temp = temp.clone();
-					temp.set(0, F.Equal);
-					return temp;
+					return temp.apply(F.Equal); 
 				} else if (head.equals(F.Greater)) {
-					temp = temp.clone();
-					temp.set(0, F.LessEqual);
-					return temp;
+					return temp.apply(F.LessEqual); 
 				} else if (head.equals(F.GreaterEqual)) {
-					temp = temp.clone();
-					temp.set(0, F.Less);
-					return temp;
+					return temp.apply(F.Less); 
 				} else if (head.equals(F.Less)) {
-					temp = temp.clone();
-					temp.set(0, F.GreaterEqual);
-					return temp;
+					return temp.apply(F.GreaterEqual); 
 				} else if (head.equals(F.LessEqual)) {
-					temp = temp.clone();
-					temp.set(0, F.Greater);
-					return temp;
+					return temp.apply(F.Greater); 
 				}
 			}
 		}

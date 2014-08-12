@@ -917,15 +917,15 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof IntegerSym) {
-			return fInteger.compareTo(((IntegerSym) obj).fInteger);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof IntegerSym) {
+			return fInteger.compareTo(((IntegerSym) expr).fInteger);
 		}
-		if (obj instanceof FractionSym) {
-			return -((FractionSym) obj).fRational.compareTo(new BigFraction(fInteger, BigInteger.ONE));
+		if (expr instanceof FractionSym) {
+			return -((FractionSym) expr).fRational.compareTo(new BigFraction(fInteger, BigInteger.ONE));
 		}
-		if (obj instanceof Num) {
-			double d = fInteger.doubleValue() - ((Num) obj).getRealPart();
+		if (expr instanceof Num) {
+			double d = fInteger.doubleValue() - ((Num) expr).getRealPart();
 			if (d < 0.0) {
 				return -1;
 			}
@@ -933,7 +933,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 				return 1;
 			}
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override

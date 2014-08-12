@@ -53,14 +53,12 @@ public class Re implements IFunctionEvaluator {
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {
-				IAST temp = ((IAST) arg1).clone();
-				temp.remove(1);
+				IAST temp = ((IAST) arg1).removeAt(1);
 				return F.Times(arg1.getAt(1), F.Re(temp));
 			}
 			if (arg1.getAt(1).equals(F.CI)) {
 				// Re(I*temp) -> -Im(temp)
-				IAST temp = ((IAST) arg1).clone();
-				temp.remove(1);
+				IAST temp = ((IAST) arg1).removeAt(1);
 				return F.Times(F.CN1, F.Im(temp));
 			}
 		}

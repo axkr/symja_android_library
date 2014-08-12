@@ -109,14 +109,10 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				IExpr arg1 = timesAST.arg1();
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
-						result = timesAST.clone();
-						result.set(1, ((INumber) arg1).negate());
-						return result;
+						return timesAST.applyAt(1, ((INumber) arg1).negate());
 					}
 				} else if (arg1.isNegativeInfinity()) {
-					result = timesAST.clone();
-					result.set(1, F.CInfinity);
-					return result;
+					return timesAST.applyAt(1, F.CInfinity);
 //				} else {
 //					IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
 //					if (arg1Negated != null) {
@@ -200,9 +196,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 			IAST times = ((IAST) expr);
 			IExpr arg1 = times.arg1();
 			if (arg1.isComplex() && ((IComplex) arg1).getRe().isZero()) {
-				times = times.clone();
-				times.set(1, ((IComplex) arg1).getIm());
-				return times;
+				return times.applyAt(1, ((IComplex) arg1).getIm());
 			}
 		}
 		return null;
@@ -217,9 +211,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 					if (times.size() == 3 && times.arg2().equals(F.Pi)) {
 						if (times.arg1().isRational()) {
 							IExpr[] result = new IExpr[2];
-							IAST cloned = plus.clone();
-							cloned.remove(i);
-							result[0] = cloned;
+							result[0] = plus.removeAt(i);
 							result[1] = times.arg1();
 							return result;
 						}

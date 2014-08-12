@@ -406,17 +406,17 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof Symbol) {
-			if (this == obj) {
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof Symbol) {
+			if (this == expr) {
 				// Symbols are unique objects
 				// Makes no sense to compare the symbol names, if they are equal
 				return 0;
 			}
-			return fSymbolName.compareTo(((Symbol) obj).fSymbolName);
+			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
-		if (obj instanceof AST) {
-			final AST ast = (AST) obj;
+		if (expr instanceof AST) {
+			final AST ast = (AST) expr;
 			if (ast.size() > 1) {
 				if (ast.isPower()) {
 					if (ast.arg1() instanceof ISymbol) {
@@ -450,7 +450,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 			}
 			return -1;
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	/** {@inheritDoc} */

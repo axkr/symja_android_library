@@ -527,15 +527,15 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(final IExpr obj) {
-		if (obj instanceof FractionSym) {
-			return fRational.compareTo(((FractionSym) obj).fRational);
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof FractionSym) {
+			return fRational.compareTo(((FractionSym) expr).fRational);
 		}
-		if (obj instanceof IntegerSym) {
-			return fRational.compareTo(new BigFraction(((IntegerSym) obj).fInteger, BigInteger.ONE));
+		if (expr instanceof IntegerSym) {
+			return fRational.compareTo(new BigFraction(((IntegerSym) expr).fInteger, BigInteger.ONE));
 		}
-		if (obj instanceof Num) {
-			double d = fRational.doubleValue() - ((Num) obj).getRealPart();
+		if (expr instanceof Num) {
+			double d = fRational.doubleValue() - ((Num) expr).getRealPart();
 			if (d < 0.0) {
 				return -1;
 			}
@@ -543,7 +543,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 				return 1;
 			}
 		}
-		return (hierarchy() - (obj).hierarchy());
+		return super.compareTo(expr);
 	}
 
 	@Override

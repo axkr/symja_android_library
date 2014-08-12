@@ -27,15 +27,10 @@ public class Product extends AbstractFunctionEvaluator {
 	// TODO solve initialization problem in using 'implements ProductRules {'
 	// RULES must be defined in this class at the moment!
 
-	  final public static IAST RULES = List(
-			    ISetDelayed(Product(x_Symbol,List(x_,C0,m_)),
-			      C0),
-			    ISetDelayed(Product(x_Symbol,List(x_,C0,m_,s_)),
-			      C0),
-			    ISetDelayed(Product(x_Symbol,List(x_,C1,m_)),
-			      Condition(Factorial(m),FreeQ(x,m)))
-			  );
-	  
+	final public static IAST RULES = List(ISetDelayed(Product(x_Symbol, List(x_, C0, m_)), C0),
+			ISetDelayed(Product(x_Symbol, List(x_, C0, m_, s_)), C0),
+			ISetDelayed(Product(x_Symbol, List(x_, C1, m_)), Condition(Factorial(m), FreeQ(x, m))));
+
 	public Product() {
 	}
 
@@ -49,9 +44,8 @@ public class Product extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3);
 
 		if (ast.arg1().isTimes()) {
-			IAST prod = ast.clone();
-			prod.set(1, null);
-			return ((IAST) ast.arg1()).mapAt(prod,1);
+			IAST prod = ast.applyAt(1, null);
+			return ((IAST) ast.arg1()).mapAt(prod, 1);
 		}
 		if (ast.arg1().isPower()) {
 			IExpr powArg1 = ast.arg1().getAt(1);

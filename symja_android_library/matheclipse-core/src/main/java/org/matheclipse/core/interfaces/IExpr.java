@@ -24,7 +24,7 @@ import edu.jas.structure.RingElem;
  */
 public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable {
 
-	public final static int ASTID = 256;
+	public final static int ASTID = 512;
 
 	public final static int COMPLEXID = 32;
 
@@ -38,7 +38,7 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 
 	public final static int METHODSYMBOLID = 1024;
 
-	public final static int PATTERNID = 512;
+	public final static int PATTERNID = 256;
 
 	public final static int STRINGID = 64;
 

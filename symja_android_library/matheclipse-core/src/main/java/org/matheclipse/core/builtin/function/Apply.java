@@ -19,15 +19,16 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST inp) {
-		Validate.checkRange(inp, 3, 5);
-		IAST ast = inp.clone();
-		for (int i = 1; i < ast.size(); i++) {
-			ast.set(i, F.eval(ast.get(i)));
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkRange(ast, 3, 5);
+		
+		IAST evaledAST = ast.clone();
+		for (int i = 1; i < evaledAST.size(); i++) {
+			evaledAST.set(i, F.eval(evaledAST.get(i)));
 		}
-		int lastIndex = ast.size() - 1;
+		int lastIndex = evaledAST.size() - 1;
 		boolean heads = false;
-		final Options options = new Options(ast.topHead(), ast, lastIndex);
+		final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex);
 		IExpr option = options.getOption("Heads");
 		if (option != null) {
 			lastIndex--;
@@ -35,30 +36,30 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 				heads = true;
 			}
 		} else {
-			Validate.checkRange(ast, 3, 4);
+			Validate.checkRange(evaledAST, 3, 4);
 		}
 
 		VisitorLevelSpecification level = null;
-		Function<IExpr, IExpr> af = Functors.apply(ast.arg1());
+		Function<IExpr, IExpr> af = Functors.apply(evaledAST.arg1());
 		if (lastIndex == 3) {
-			level = new VisitorLevelSpecification(af, ast.get(lastIndex), heads);
+			level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads);
 		} else {
 			level = new VisitorLevelSpecification(af, 0);
 		}
 
 		try {
 
-			if (!ast.arg2().isAtom()) {
-				final IExpr result = ast.arg2().accept(level);
+			if (!evaledAST.arg2().isAtom()) {
+				final IExpr result = evaledAST.arg2().accept(level);
 
-				return result == null ? ast.arg2() : result;
-			} else if (ast.size() == 3) {
-				if (ast.arg1().isFunction()) {
-					IAST fun = F.ast(ast.arg1());
-					fun.add(ast.arg2());
+				return result == null ? evaledAST.arg2() : result;
+			} else if (evaledAST.size() == 3) {
+				if (evaledAST.arg1().isFunction()) {
+					IAST fun = F.ast(evaledAST.arg1());
+					fun.add(evaledAST.arg2());
 					return fun;
 				}
-				return ast.arg2();
+				return evaledAST.arg2();
 			}
 		} catch (final ArithmeticException e) {
 
