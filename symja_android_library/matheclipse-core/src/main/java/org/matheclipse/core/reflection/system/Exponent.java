@@ -25,6 +25,9 @@ public class Exponent extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		IExpr form = ast.arg2();
+		if (form.isList()) {
+			return ((IAST)form).mapAt(ast, 2);
+		}
 		ISymbol sym = F.Max;
 		if (ast.size() == 4) {
 			sym = Validate.checkSymbolType(ast, 3);
