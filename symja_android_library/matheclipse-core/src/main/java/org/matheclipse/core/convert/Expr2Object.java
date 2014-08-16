@@ -137,7 +137,7 @@ public class Expr2Object {
 						}
 						return null;
 					} else if (plus.get(i).isSymbol()) {
-						if (plus.get(i).equals(sym)) {
+						if (plus.equalsAt(i, sym)) {
 							addCoefficient(map, 1.0, 1);
 							continue;
 						}

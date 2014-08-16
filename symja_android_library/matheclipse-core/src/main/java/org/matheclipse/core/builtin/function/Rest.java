@@ -23,7 +23,7 @@ public class Rest extends AbstractCoreFunctionEvaluator {
 		final IAST sublist = Validate.checkASTType(arg1);
 
 		if (sublist.size() > 1) {
-			return sublist.removeAt(1);
+			return sublist.removeAtClone(1);
 		}
  
 		return null;

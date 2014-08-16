@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.NumberUtil;
  * 
  */
 public interface INum extends ISignedNumber {
+	
 	public double getRealPart();
 
 	public INum add(INum val);

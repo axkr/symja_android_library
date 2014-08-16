@@ -1937,6 +1937,15 @@ public class F {
 		return Times(integer(i), Power(b, CN1));
 	}
 
+	/**
+	 * The division <code>a0 / a1</code> will be represented by <code>Times(a0, Power(a1, -1))</code>.
+	 * 
+	 * @param a0
+	 *            numerator
+	 * @param a1
+	 *            denominator
+	 * @return
+	 */
 	public static IAST Divide(final IExpr a0, final IExpr a1) {
 		return binary(Times, a0, binary(Power, a1, CN1));
 	}
@@ -3095,10 +3104,12 @@ public class F {
 		return unary(Plus, a0);
 	}
 
-	public static IAST Plus(final IExpr... a) {// 0, final IExpr a1, final IExpr
-		// a2) {
+	public static IAST Plus(final IExpr... a) { 
 		return ast(a, Plus);
-		// return ternary(Plus, a0, a1, a2);
+	}
+	
+	public static IAST Plus(final long num, final IExpr... a) {
+		return ast(a, Plus).prependClone(ZZ(num));
 	}
 
 	public static IAST Plus(final IExpr a0, final IExpr a1) {
@@ -3607,6 +3618,10 @@ public class F {
 
 	public static IAST Times(final IExpr... a) {
 		return ast(a, Times);
+	}
+	
+	public static IAST Times(final long num, final IExpr... a) {
+		return ast(a, Times).prependClone(ZZ(num));
 	}
 
 	public static IAST Times(final IExpr a0, final IExpr a1) {

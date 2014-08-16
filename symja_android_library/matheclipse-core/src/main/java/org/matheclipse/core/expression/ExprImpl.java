@@ -179,14 +179,18 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isDirectedInfinity() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isE() {
+		return false;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -444,6 +448,12 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isFree(final IExpr pattern) {
+		return isFree(pattern, true);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isFree(final IExpr pattern, boolean heads) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return !matcher.apply(this);
@@ -500,6 +510,12 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPi() {
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {

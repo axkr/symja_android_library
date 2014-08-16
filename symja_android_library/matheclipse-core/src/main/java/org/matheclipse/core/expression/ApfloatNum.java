@@ -293,20 +293,35 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return temp;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isZero() {
-		return fApfloat.equals(Apfloat.ZERO);
-		// return fDouble == 0.0;
+	public boolean isE() {
+		return fApfloat.equals(ApfloatMath.exp(Apfloat.ONE));
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isMinusOne() {
+		return fApfloat.equals(Apfloat.MINUS_ONE);
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
 		return fApfloat.equals(Apfloat.ONE);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isMinusOne() {
-		return fApfloat.equals(Apfloat.MINUS_ONE);
+	public boolean isPi() {
+		return fApfloat.equals(ApfloatMath.pi(fApfloat.precision()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isZero() {
+		return fApfloat.equals(Apfloat.ZERO);
+		// return fDouble == 0.0;
 	}
 
 	@Override

@@ -63,14 +63,17 @@ public class Config {
 	public final static boolean SHOW_PATTERN_EVAL_STEPS = false;
 
 	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
-	 
+
 	/**
 	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
-	 */  
+	 */
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
+	/**
+	 * Used to parse Rubi files. See <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a>
+	 */
 	public static boolean RUBI_CONVERT_SYMBOLS = false;
-	
+
 	/**
 	 * Version string for console application
 	 * 

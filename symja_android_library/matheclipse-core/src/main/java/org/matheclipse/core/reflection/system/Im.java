@@ -39,27 +39,30 @@ public class Im implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
-			return F.C0;
+		if (arg1.isNumber()) {
+			return ((INumber) arg1).getIm();
 		}
-		if (arg1.isComplex()) {
-			return ((IComplex) arg1).getIm();
-		}
-		if (arg1 instanceof IComplexNum) {
-			return F.num(((IComplexNum) arg1).getImaginaryPart());
-		}
+//		if (arg1.isSignedNumber()) {
+//			return F.C0;
+//		}
+//		if (arg1.isComplex()) {
+//			return ((IComplex) arg1).getIm();
+//		}
+//		if (arg1 instanceof IComplexNum) {
+//			return F.num(((IComplexNum) arg1).getImaginaryPart());
+//		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
 			return Times(CN1, Im(negExpr));
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {
-				IAST temp = ((IAST) arg1).removeAt(1);
+				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Times(arg1.getAt(1), F.Im(temp));
 			}
 			if (arg1.getAt(1).equals(F.CI)) {
 				// Im(I*temp) -> Re(temp)
-				IAST temp = ((IAST) arg1).removeAt(1);
+				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Re(temp);
 			}
 		}
@@ -99,7 +102,7 @@ public class Im implements IFunctionEvaluator {
 	 * @return
 	 */
 	private IExpr imPowerComplex(IExpr x, IExpr a, IExpr b) {
-		if (x.equals(F.E)) {
+		if (x.isE()) {
 			// Im(E^(a+I*b)) -> E^a*Sin[b]
 			return Times(Power(F.E, a), Sin(b));
 		}

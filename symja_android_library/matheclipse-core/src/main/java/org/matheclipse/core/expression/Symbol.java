@@ -467,6 +467,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isE() {
+		return equals(F.E);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isTrue() {
 		return this.equals(F.True);
 	}
@@ -495,6 +501,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPi() {
+		return equals(F.Pi);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {

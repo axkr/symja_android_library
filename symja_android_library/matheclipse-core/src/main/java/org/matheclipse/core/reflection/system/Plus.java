@@ -96,7 +96,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 			if (f0.arg1().isNumber()) {
 				// Times(number, o1) + o1 => Times(Plus(1, number), o1)
-				if ((f0.size() == 3) && f0.arg2().equals(o1)) {
+				if ((f0.size() == 3) && f0.equalsAt(2, o1)) {
 					return Times(Plus(F.C1, f0.arg1()), o1);
 				}
 
@@ -135,7 +135,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		if (o1.isTimes() && (((IAST) o1).arg1().isNumber())) {
 			final IAST f1 = (IAST) o1;
 			// o0 + Times(o0, number) => Times(Plus(1, number), o0)
-			if ((f1.size() == 3) && f1.arg2().equals(o0)) {
+			if ((f1.size() == 3) && f1.equalsAt(2, o0)) {
 				return Times(Plus(F.C1, f1.arg1()), o0);
 			}
 		}

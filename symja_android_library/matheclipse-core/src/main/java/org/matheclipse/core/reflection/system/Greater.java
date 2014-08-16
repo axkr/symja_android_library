@@ -95,7 +95,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 */
 	private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
 			ISymbol oppositeHead) {
-		IAST lhsClone = lhsAST.removeAt(1);
+		IAST lhsClone = lhsAST.removeAtClone(1);
 		if (useOppositeHeader) {
 			return F.binary(oppositeHead, lhsClone, rhs);
 		} else {

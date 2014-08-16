@@ -23,7 +23,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 			if (!symbolValue.isAST()) {
 				return null;
 			}
-			return ((IAST) symbolValue).addAt(1, value);
+			return ((IAST) symbolValue).addAtClone(1, value);
 		}
 
 	}

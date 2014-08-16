@@ -73,29 +73,17 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			if (ast.size() == 4) {
+				// TODO see Cases implementation
+				Validate.checkSize(ast, 3);
 
-				IAST result = F.List();
-				if (ast.get(2).isRuleAST()) {
-					Function<IExpr, IExpr> function = Functors.rules((IAST) ast.arg2());
-					CasesRulesFunctor crf = new CasesRulesFunctor(function, result);
-					VisitorLevelSpecification level = new VisitorLevelSpecification(crf, ast.arg3(), false);
-					ast.arg1().accept(level);
-					return result;
-				}
-
-				final PatternMatcher matcher = new PatternMatcher(ast.arg2());
-				CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result);
-				VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, ast.arg3(), false);
-				ast.arg1().accept(level);
-				return result;
 			} else {
-				return cases((IAST) ast.arg1(), ast.arg2());
+				return deleteCases((IAST) ast.arg1(), ast.arg2());
 			}
 		}
 		return null;
 	}
 
-	public static IAST cases(final IAST ast, final IExpr pattern) {
+	public static IAST deleteCases(final IAST ast, final IExpr pattern) {
 		if (pattern.isRuleAST()) {
 			Function<IExpr, IExpr> function = Functors.rules((IAST) pattern);
 			IAST[] results = ast.split(function);

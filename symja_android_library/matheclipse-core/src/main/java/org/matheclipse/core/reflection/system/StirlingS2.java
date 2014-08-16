@@ -38,7 +38,7 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 
 		try {
 			if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
-				if (ast.arg1().equals(ast.arg2())) {
+				if (ast.equalsAt(1, ast.arg2())) {
 					// {n,n}==1
 					return C1;
 				}

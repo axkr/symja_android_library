@@ -112,13 +112,14 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		return fNodesList.isEmpty();
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isFree(final ASTNode n) {
-		if (this.equals(n)) {
+	public boolean isFree(final ASTNode node) {
+		if (this.equals(node)) {
 			return false;
 		}
 		for (int i = 0; i < fNodesList.size(); i++) {
-			if (!fNodesList.get(i).isFree(n)) {
+			if (!fNodesList.get(i).isFree(node)) {
 				return false;
 			}
 		}

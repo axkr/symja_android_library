@@ -42,10 +42,10 @@ public class BinaryBindIth1st implements IUnaryIndexFunction<IExpr, IExpr> {
 	 *          the i-th argument in the new AST
 	 */
 	public IExpr apply(int index, final IExpr firstArg) {
-		final IAST ast2 = fConstant2.applyAt(1, firstArg);
+		final IAST ast2 = fConstant2.setAtClone(1, firstArg);
 		final IAST ast1 = fConstant1.clone();
 		ast1.set(index, ast2);
-		return fConstant1.applyAt(index, ast2);
+		return fConstant1.setAtClone(index, ast2);
 	}
 
 }

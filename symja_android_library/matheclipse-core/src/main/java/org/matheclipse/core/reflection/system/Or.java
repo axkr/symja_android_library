@@ -60,7 +60,7 @@ public class Or extends AbstractFunctionEvaluator {
 		for (int i = 1; i < symbols.length; i++) {
 			if (symbols[i] != 0) {
 				for (int j = 1; j < notSymbols.length; j++) {
-					if (i != j && symbols[i] == notSymbols[j] && (result.get(i).equals(result.get(j).getAt(1)))) {
+					if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
 						// Or[a, Not[a]] => True
 						return F.True;
 					}

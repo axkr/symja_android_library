@@ -158,6 +158,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 					}
 					return result;
 				} catch (final ConditionException e) {
+					logConditionFalse(lhsEvalExpr, fLhsPatternExpr, fRightHandSide);
 					return null;
 				} catch (final ReturnException e) {
 					return e.getValue();
@@ -187,6 +188,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			try {
 				result = F.eval(result);
 			} catch (final ConditionException e) {
+				logConditionFalse(lhsEvalExpr, fLhsPatternExpr, fRightHandSide);
 				return null;
 			} catch (final ReturnException e) {
 				result = e.getValue();

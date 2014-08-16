@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -18,7 +19,9 @@ import static org.matheclipse.core.expression.F.Times;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.matheclipse.core.basic.Config;
@@ -31,7 +34,6 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.BinaryEval;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -61,6 +63,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	public final static Integrate CONST = new Integrate();
 
+	public final static Set<ISymbol> INT_FUNCTIONS = new HashSet<ISymbol>(64);
+
+	public final static Set<IExpr> DEBUG_EXPR = new HashSet<IExpr>(64);
+
 	public Integrate() {
 	}
 
@@ -81,7 +87,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			IAST xList = (IAST) ast.arg2();
 			if (xList.isVector() == 3) {
 				// Integrate[f[x], {x,a,b}]
-				IAST clone = ast.applyAt(2, xList.arg1());
+				IAST clone = ast.setAtClone(2, xList.arg1());
 				IExpr temp = F.eval(clone);
 				if (temp.isFree(F.Integrate, true)) {
 					// F(b)-F(a)
@@ -120,7 +126,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// Integrate[x_NumberQ,y_Symbol] -> x*y
 				return Times(arg1, x);
 			}
-			if (arg1.isFree(x, false)) {
+			if (arg1.isFree(x, true)) {
 				// Integrate[x_,y_Symbol] -> x*y /; FreeQ[x,y]
 				return Times(arg1, x);
 			}
@@ -128,13 +134,63 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// Integrate[x_,x_Symbol] -> x^2 / 2
 				return Times(F.C1D2, Power(arg1, F.C2));
 			}
+			boolean showSteps = false;
+			if (showSteps) {
+				System.out.println("\nINTEGRATE: " + arg1.toString());
+				if (DEBUG_EXPR.contains(arg1)) {
+					// System.exit(-1);
+				}
+				DEBUG_EXPR.add(arg1);
+			}
 			if (arg1.isAST()) {
-				IExpr fExpanded = F.eval(F.Expand(arg1));
-				if (fExpanded.isAST()) {
-					if (fExpanded.isPlus()) {
-						IExpr polyQ = F.eval(F.PolynomialQ(fExpanded, x));
+				IAST fx = (IAST) arg1;
+				// if (astArg1.isTimes()) {
+				// IAST freeTimes = F.Times();
+				// IAST restTimes = F.Times();
+				// collectFreeTerms(astArg1, x, freeTimes, restTimes);
+				// IExpr free = freeTimes.getOneIdentity(F.C1);
+				// IExpr rest = restTimes.getOneIdentity(F.C1);
+				// if (!free.isOne()) {
+				// // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,y]
+				// // IExpr result = integrateByRubiRules(Integrate(rest, x));
+				// // if (result != null) {
+				// // return Times(free, result);
+				// // }
+				// return Times(free, Integrate(rest, x));
+				// }
+				// }
+
+				if (fx.isPower()) {
+					if (fx.equalsAt(1, x) && fx.isFreeAt(2, x)) {
+						if (fx.arg2().isMinusOne()) {
+							// Integrate[ 1 / x_ , x_ ] -> Log[x]
+							return Log(x);
+						}
+						// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
+						IExpr temp = Plus(F.C1, fx.arg2());
+						return Divide(Power(x, temp), temp);
+					}
+					if (fx.equalsAt(2, x) && fx.isFreeAt(1, x)) {
+						if (fx.arg1().isE()) {
+							// E^x
+							return arg1;
+						}
+						// a^x / Log(a)
+						return F.Divide(fx, F.Log(fx.arg1()));
+					}
+				}
+				if (INT_FUNCTIONS.contains(arg1.head())) {
+					IExpr result = integrateByRubiRules(ast);
+					if (result != null) {
+						return result;
+					}
+				}
+				IExpr fxExpanded = F.evalExpand(fx);
+				if (fxExpanded.isAST()) {
+					if (fxExpanded.isPlus()) {
+						IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
 						if (polyQ.isTrue()) {
-							if (ast.arg1().isTimes()) {
+							if (arg1.isTimes()) {
 								IExpr result = integrateByRubiRules(ast);
 								if (result != null) {
 									return result;
@@ -143,10 +199,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 
 						// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-						return ((IAST) fExpanded).mapAt(F.Integrate(null, ast.arg2()), 1);
+						return ((IAST) fxExpanded).mapAt(F.Integrate(null, x), 1);
 					}
 
-					final IAST arg1AST = (IAST) fExpanded;
+					final IAST arg1AST = (IAST) fxExpanded;
 
 					if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
 						IExpr head = arg1AST.head();
@@ -155,25 +211,25 @@ public class Integrate extends AbstractFunctionEvaluator {
 							return temp;
 						}
 					}
-					if (arg1AST.isPower()) {
-						if (x.equals(arg1AST.arg1()) && arg1AST.arg2().isFree(x, false)) {
-							IExpr i = arg1AST.arg2();
-							if (!i.isMinusOne()) {
-								// Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^(i+1)
-								i = Plus(i, C1);
-								return F.Times(F.Power(i, F.CN1), F.Power(x, i));
-							}
-						}
-						if (x.equals(arg1AST.arg2()) && arg1AST.arg1().isFree(x, false)) {
-							if (arg1AST.arg1().equals(F.E)) {
-								// E^x
-								return arg1;
-							}
-							// a^x / Log(a)
-							return F.Times(arg1AST, F.Power(F.Log(arg1AST.arg1()), F.CN1));
-
-						}
-					}
+					// if (arg1AST.isPower()) {
+					// if (x.equals(arg1AST.arg1()) && arg1AST.isFreeAt(2, x)) {
+					// IExpr i = arg1AST.arg2();
+					// if (!i.isMinusOne()) {
+					// // Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^(i+1)
+					// i = Plus(i, C1);
+					// return F.Times(F.Power(i, F.CN1), F.Power(x, i));
+					// }
+					// }
+					// if (x.equals(arg1AST.arg2()) && arg1AST.isFreeAt(1, x)) {
+					// if (arg1AST.equalsAt(1, F.E)) {
+					// // E^x
+					// return arg1;
+					// }
+					// // a^x / Log(a)
+					// return F.Times(arg1AST, F.Power(F.Log(arg1AST.arg1()), F.CN1));
+					//
+					// }
+					// }
 
 					if (arg1AST.isTimes()) {
 						IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
@@ -198,7 +254,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 
-					if (!ast.arg1().equals(fExpanded)) {
+					if (!ast.equalsAt(1, fxExpanded)) {
 						return integrateByRubiRules(ast);
 					}
 
@@ -675,6 +731,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IExpr f = fTimes.getOneIdentity(F.C1);
 		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
 		// ONLY call integrateBy Parts for simple Times() expression
+		if (f.isOne() || g.isOne()) {
+			return null;
+		}
 		return integrateByParts(f, g, symbol);
 	}
 
@@ -757,6 +816,29 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 	}
 
+	/**
+	 * Collect all found free terms (independent of x) into <code>freeTimes</code> and the rest into <code>restTimes</code>.
+	 * 
+	 * @param timesAST
+	 *            an AST representing a <code>Times[...]</code> expression.
+	 * @param x
+	 * @param freeTimes
+	 *            the polynomial terms part
+	 * @param restTimes
+	 *            the non-polynomil terms part
+	 */
+	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IAST freeTimes, IAST restTimes) {
+		IExpr temp;
+		for (int i = 1; i < timesAST.size(); i++) {
+			temp = timesAST.get(i);
+			if (temp.isFree(x, true)) {
+				freeTimes.add(temp);
+				continue;
+			}
+			restTimes.add(temp);
+		}
+	}
+
 	@Override
 	/**
 	 * Get the rules defined for Integrate function. These rules are loaded, if the Integrate function is used the first time.
@@ -770,6 +852,37 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IAST ast = F.ast(F.List, 10000, false);
 
 		getRuleASTRubi45(ast);
+
+		// INT_FUNCTIONS.add(F.Times);
+		INT_FUNCTIONS.add(F.Power);
+
+		INT_FUNCTIONS.add(F.Cos);
+		INT_FUNCTIONS.add(F.Cot);
+		INT_FUNCTIONS.add(F.Csc);
+		INT_FUNCTIONS.add(F.Sec);
+		INT_FUNCTIONS.add(F.Sin);
+		INT_FUNCTIONS.add(F.Tan);
+
+		INT_FUNCTIONS.add(F.ArcCos);
+		INT_FUNCTIONS.add(F.ArcCot);
+		INT_FUNCTIONS.add(F.ArcCsc);
+		INT_FUNCTIONS.add(F.ArcSec);
+		INT_FUNCTIONS.add(F.ArcSin);
+		INT_FUNCTIONS.add(F.ArcTan);
+
+		INT_FUNCTIONS.add(F.Cosh);
+		INT_FUNCTIONS.add(F.Coth);
+		INT_FUNCTIONS.add(F.Csch);
+		INT_FUNCTIONS.add(F.Sech);
+		INT_FUNCTIONS.add(F.Sinh);
+		INT_FUNCTIONS.add(F.Tanh);
+
+		INT_FUNCTIONS.add(F.ArcCosh);
+		INT_FUNCTIONS.add(F.ArcCoth);
+		INT_FUNCTIONS.add(F.ArcCsc);
+		INT_FUNCTIONS.add(F.ArcSec);
+		INT_FUNCTIONS.add(F.ArcSinh);
+		INT_FUNCTIONS.add(F.ArcTanh);
 
 		// if (Config.SHOW_STACKTRACE) {
 		// long end = System.currentTimeMillis();

@@ -108,7 +108,7 @@ public class D extends AbstractFunctionEvaluator {
 			} else if (header == F.Times) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 			} else if (listArg1.isPower()) {
-				if (listArg1.arg2().isFree(x, true)) {
+				if (listArg1.isFreeAt(2, x)) {
 					// D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
 					final IAST timesList = F.Times();
 					timesList.add(listArg1.arg2());
@@ -147,7 +147,7 @@ public class D extends AbstractFunctionEvaluator {
 					return resultList;
 				}
 			} else if ((header == F.Log) && (listArg1.size() == 3)) {
-				if (listArg1.arg1().isFree(x, true)) {
+				if (listArg1.isFreeAt(1, x)) {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
 					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1), F.D(listArg1.arg2(), x));
 				}

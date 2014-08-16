@@ -84,17 +84,20 @@ public class TrigReduce implements IFunctionEvaluator {
 
 	public void setUp(final ISymbol symbol) {
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]", "Cos[y_]", "Sin[x+y]/2+Sin[x-y]/2");
-		ORDERLESS_MATCHER.defineHashRule(Sin($p(x)), Cos($p(y)),
+		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),
 				Plus(Times(C1D2, Sin(Plus(x, y))), Times(C1D2, Sin(Plus(x, Times(CN1, y))))));
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]", "Sin[y_]", "Cos[x-y]/2-Cos[x+y]/2");
-		ORDERLESS_MATCHER.defineHashRule(Sin($p(x)), Sin($p(y)),
+		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Sin(y_),
 				Plus(Times(C1D2, Cos(Plus(x, Times(CN1, y)))), Times(CN1, C1D2, Cos(Plus(x, y)))));
 		// ORDERLESS_MATCHER.setUpHashRule("Cos[x_]", "Cos[y_]", "Cos[x+y]/2+Cos[x-y]/2");
-		ORDERLESS_MATCHER.defineHashRule(Cos($p(x)), Cos($p(y)),
+		ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cos(y_),
 				Plus(Times(C1D2, Cos(Plus(x, y))), Times(C1D2, Cos(Plus(x, Times(CN1, y))))));
 		// ORDERLESS_MATCHER.setUpHashRule("Sinh[x_]", "Cosh[y_]", "Sinh[x-y]/2+Sinh[x+y]/2");
-		ORDERLESS_MATCHER.defineHashRule(Sinh($p(x)), Cosh($p(y)),
-				Plus(Times(C1D2,Sinh(Plus(x,Times(CN1,y)))),Times(C1D2,Sinh(Plus(x,y)))));
+		ORDERLESS_MATCHER.defineHashRule(Sinh(x_), Cosh(y_),
+				Plus(Times(C1D2, Sinh(Plus(x, Times(CN1, y)))), Times(C1D2, Sinh(Plus(x, y)))));
+		// ORDERLESS_MATCHER.setUpHashRule("Tan[x_]", "Tan[y_]", "(Cos[x - y] - Cos[x + y])/(Cos[x - y] + Cos[x + y])");
+		// ORDERLESS_MATCHER.defineHashRule(Tan(x_), Tan(y_),
+		// Divide(Subtract(Cos(Subtract(x,y)),Cos(Plus(x,y))),Plus(Cos(Subtract(x,y)),Cos(Plus(x,y)))));
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 

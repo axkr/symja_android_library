@@ -222,7 +222,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST applyAt(int position, IExpr expr) {
+	public IAST setAtClone(int position, IExpr expr) {
 		IAST ast = clone();
 		ast.set(position, expr);
 		return ast;
@@ -428,6 +428,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public boolean isDirectedInfinity() {
 		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isE() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -715,6 +721,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPi() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPositive() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
@@ -855,7 +867,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public IAST apply(final IExpr head) {
-		return applyAt(0, head);
+		return setAtClone(0, head);
 	}
 
 	@Override
@@ -917,7 +929,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 */
 	@Override
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
-		return map(applyAt(0, head), function);
+		return map(setAtClone(0, head), function);
 	}
 
 	/**
@@ -1119,6 +1131,18 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isFreeAt(int position, final IExpr pattern) {
+		return get(position).isFree(pattern, true);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFree(final IExpr pattern) {
+		return isFree(pattern, true);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isFree(final IExpr pattern, boolean heads) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return !isMember(matcher, heads);
@@ -1265,12 +1289,19 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return size() - ast.size();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof AST) {
 			return super.equals(obj);
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean equalsAt(int position, final IExpr expr) {
+		return get(position).equals(expr);
 	}
 
 	@Override
@@ -1373,7 +1404,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			} else {
 				return null;
 			}
-			
+
 			final int size = nestedList.size();
 			for (int i = 1; i < size; i++) {
 				temp = variables2Slots(nestedList.get(i), from, to);
@@ -1383,10 +1414,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 					return null;
 				}
 			}
-			
+
 			return result;
 		}
-		
+
 		return expr;
 	}
 
@@ -1447,7 +1478,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			return "Slot2";
 		}
 		if (isPower()) {
-			if (arg2().equals(F.C1D2)) {
+			if (equalsAt(2, F.C1D2)) {
 				if (arg1().isInteger()) {
 					// square root of an integer number
 					IInteger i = (IInteger) arg1();
@@ -1467,10 +1498,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				}
 				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
 			}
-			if (arg2().equals(F.C2)) {
+			if (equalsAt(2, F.C2)) {
 				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
 			}
-			if (arg2().equals(F.CN1D2)) {
+			if (equalsAt(2, F.CN1D2)) {
 				if (arg1().isInteger()) {
 					// negative square root of an integer number
 					IInteger i = (IInteger) arg1();
@@ -1664,7 +1695,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST addAt(int position, IExpr expr) {
+	public IAST addAtClone(int position, IExpr expr) {
 		IAST ast = clone();
 		ast.add(position, expr);
 		return ast;
@@ -2093,7 +2124,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST removeAt(int position) {
+	public IAST removeAtClone(int position) {
 		IAST ast = clone();
 		ast.remove(position);
 		return ast;
@@ -2105,7 +2136,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (isTimes()) {
 			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
-				return applyAt(1, ((INumber) arg1).negate());
+				return setAtClone(1, ((INumber) arg1).negate());
 			}
 			IAST timesAST = clone();
 			timesAST.add(1, F.CN1);
@@ -2256,17 +2287,18 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return get(size() - 1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IAST append(IExpr expr) {
-		add(expr);
-		return this;
+	public IAST appendClone(IExpr expr) {
+		IAST ast = clone();
+		ast.add(expr);
+		return ast;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	@Deprecated
-	public IAST prepend(IExpr expr) {
-		return addAt(1, expr);
+	public IAST prependClone(IExpr expr) {
+		return addAtClone(1, expr);
 	}
 
 }

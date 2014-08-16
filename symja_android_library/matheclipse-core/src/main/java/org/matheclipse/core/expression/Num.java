@@ -413,6 +413,8 @@ public class Num extends ExprImpl implements INum {
 	// public Text toText() {
 	// return fDouble.toText();
 	// }
+	
+	
 	@Override
 	public double getRealPart() {
 		double temp = fDouble;
@@ -422,22 +424,36 @@ public class Num extends ExprImpl implements INum {
 		return temp;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isZero() {
-		return F.isZero(fDouble);
-		// return fDouble == 0.0;
+	public boolean isE() {
+		return F.isZero(fDouble - Math.E);
 	}
-
+	
+	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
 		return F.isZero(fDouble - 1.0);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isMinusOne() {
 		return F.isZero(fDouble + 1.0);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPi() {
+		return F.isZero(fDouble - Math.PI);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isZero() {
+		return F.isZero(fDouble);
+	}
+	
 	@Override
 	public IInteger round() {
 		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));

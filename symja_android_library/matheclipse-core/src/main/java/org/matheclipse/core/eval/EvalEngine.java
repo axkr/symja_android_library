@@ -415,7 +415,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						fNumericMode = localNumericMode;
 					}
 					if ((evaledExpr = evalLoop(ast.arg1())) != null) {
-						resultList = ast.applyAt(1, evaledExpr);
+						resultList = ast.setAtClone(1, evaledExpr);
 						resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						if (astSize == 2) {
 							return resultList;
@@ -839,7 +839,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					IAST temp = (IAST) ast.arg1();
 					result = evalSetAttributesRecursive(temp);
 					if (result != null) {
-						resultList = ast.applyAt(1, result);
+						resultList = ast.setAtClone(1, result);
 					}
 				}
 			}

@@ -41,8 +41,8 @@ public class Together extends AbstractFunctionEvaluator {
 				return visitPlus(astTemp);
 			} else if (astTemp.isTimes() || astTemp.isPower()) {
 				try {
-					IExpr result= Cancel.cancelPowerTimes(astTemp);
-					if (result!=null){
+					IExpr result = Cancel.cancelPowerTimes(astTemp);
+					if (result != null) {
 						return result;
 					}
 				} catch (JASConversionException jce) {
@@ -83,7 +83,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 			int i = 1;
 			while (denom.size() > i) {
-				if (denom.get(i).equals(F.C1)) {
+				if (denom.equalsAt(i, F.C1)) {
 					denom.remove(i);
 					continue;
 				}

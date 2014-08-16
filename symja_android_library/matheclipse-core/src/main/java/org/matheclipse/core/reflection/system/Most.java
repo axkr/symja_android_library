@@ -18,7 +18,7 @@ public class Most extends AbstractFunctionEvaluator {
 		final IAST sublist = Validate.checkASTType(ast, 1);
 
 		if (sublist.size() > 1) {
-			return sublist.removeAt(sublist.size() - 1);
+			return sublist.removeAtClone(sublist.size() - 1);
 		}
 
 		return null;

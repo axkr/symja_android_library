@@ -44,7 +44,7 @@ public class Product extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3);
 
 		if (ast.arg1().isTimes()) {
-			IAST prod = ast.applyAt(1, null);
+			IAST prod = ast.setAtClone(1, null);
 			return ((IAST) ast.arg1()).mapAt(prod, 1);
 		}
 		if (ast.arg1().isPower()) {
@@ -74,7 +74,7 @@ public class Product extends AbstractFunctionEvaluator {
 				final ISymbol var = (ISymbol) list.arg1();
 				final IInteger from = (IInteger) list.arg2();
 				final ISymbol to = (ISymbol) list.arg3();
-				if (ast.arg1().isFree(var, true) && ast.arg1().isFree(to, true)) {
+				if (ast.isFreeAt(1, var) && ast.isFreeAt(1, to)) {
 					if (from.equals(F.C1)) {
 						return F.Power(ast.arg1(), to);
 					}

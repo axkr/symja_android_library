@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -9,9 +10,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Predicate function
- *
- * Returns <code>True</code> if the 1st argument evaluates to
- * <code>True</code>; <code>False</code> otherwise
+ * 
+ * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>; <code>False</code> otherwise
  */
 public class TrueQ extends AbstractFunctionEvaluator {
 
@@ -19,11 +19,10 @@ public class TrueQ extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
-		if (functionList.size() != 2) {
-			throw new WrongNumberOfArguments(functionList, 1, functionList.size() - 1);
-		}
-		return F.bool(functionList.arg1().equals(F.True));
+	public IExpr evaluate(final IAST ast) {
+		Validate.checkSize(ast, 2);
+
+		return F.bool(ast.equalsAt(1, F.True));
 	}
 
 	@Override

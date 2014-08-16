@@ -27,7 +27,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	 * @return
 	 */
 	private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, ISymbol originalHead) {
-		IAST lhsClone = lhsAST.removeAt(1);
+		IAST lhsClone = lhsAST.removeAtClone(1);
 		return F.binary(originalHead, lhsClone, rhs);
 	}
 

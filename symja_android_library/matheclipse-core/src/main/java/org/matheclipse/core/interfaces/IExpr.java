@@ -330,6 +330,16 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	public boolean isDirectedInfinity();
 
 	/**
+	 * Test if this expression equals <code>E</code> (base of the natural logarithm; approximately equal to 2.71828...) in symbolic
+	 * or numeric mode.
+	 * 
+	 * <br>
+	 * See <a href="http://en.wikipedia.org/wiki/E_%28mathematical_constant%29">e (mathematical constant)</a>
+	 * 
+	 */
+	public boolean isE();
+
+	/**
 	 * Test if this expression is representing <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity[1]</code>)
 	 * 
 	 */
@@ -371,6 +381,16 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * 
 	 */
 	public boolean isFraction();
+
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not match the
+	 * given pattern. Calls <code>isFree(pattern, true)</code>.
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * 
+	 */
+	public boolean isFree(IExpr pattern);
 
 	/**
 	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not match the
@@ -597,6 +617,16 @@ public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable 
 	 * 
 	 */
 	public boolean isPatternSequence();
+
+	/**
+	 * Test if this expression equals <code>Pi</code> (the ratio of a circle's circumference to its diameter, approx. 3.141592...)
+	 * in symbolic or numeric mode.
+	 * 
+	 * <br>
+	 * See <a href="http://en.wikipedia.org/wiki/Pi">Pi</a>
+	 * 
+	 */
+	public boolean isPi();
 
 	/**
 	 * Test if this object is a positive signed number.

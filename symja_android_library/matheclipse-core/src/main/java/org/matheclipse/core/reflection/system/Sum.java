@@ -51,7 +51,7 @@ public class Sum extends Table {
 		IExpr arg1 = ast.arg1();
 
 		if (arg1.isPlus()) {
-			IAST sum = ast.applyAt(1, null);
+			IAST sum = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
 		IExpr arg2 = ast.arg2();
@@ -195,8 +195,8 @@ public class Sum extends Table {
 	 * @return
 	 */
 	public IExpr sumPower(final IAST powAST, final ISymbol var, final IExpr to) {
-		if (powAST.arg1().equals(var) && powAST.get(2).isInteger()) {
-			IInteger p = (IInteger) powAST.get(2);
+		if (powAST.equalsAt(1, var) && powAST.arg2().isInteger()) {
+			IInteger p = (IInteger) powAST.arg2();
 			if (p.isPositive()) {
 				return sumPowerFormula(to, p);
 			}

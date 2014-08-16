@@ -30,7 +30,7 @@ public class Delete extends AbstractCoreFunctionEvaluator {
 					// negative n counts from the end
 					indx = list1.size() + indx;
 				}
-				return list1.removeAt(indx);
+				return list1.removeAtClone(indx);
 			} catch (final IndexOutOfBoundsException e) {
 				if (Config.DEBUG) {
 					e.printStackTrace();

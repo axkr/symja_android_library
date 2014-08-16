@@ -129,7 +129,7 @@ public class Collect extends AbstractFunctionEvaluator {
 			IAST timesAST = (IAST) expr;
 			for (int i = 1; i < timesAST.size(); i++) {
 				if (matcher.apply(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
-					IAST clone = timesAST.removeAt(i);
+					IAST clone = timesAST.removeAtClone(i);
 					addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 					return true;
 				}

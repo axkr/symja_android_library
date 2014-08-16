@@ -2,6 +2,7 @@ package org.matheclipse.core.convert;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -83,6 +84,8 @@ public class AST2Expr {
 			"Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed",
 			"ValueQ", "VandermondeMatrix", "Variables", "VectorQ", "Which", "While", "Zeta" };
 
+	public static Map<String, Integer> RUBI_STATISTICS_MAP;
+
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
@@ -129,6 +132,10 @@ public class AST2Expr {
 				PREDEFINED_SYMBOLS_MAP.put(ALIASES_STRINGS[i].toLowerCase(), ALIASES_STRINGS[i]);
 			}
 		}
+		if (Config.RUBI_CONVERT_SYMBOLS) {
+			RUBI_STATISTICS_MAP = new TreeMap<String, Integer>();
+		}
+
 	}
 	/**
 	 * Typical instance of an ASTNode to IExpr converter
@@ -287,6 +294,15 @@ public class AST2Expr {
 					}
 				}
 
+				if (Config.RUBI_CONVERT_SYMBOLS) {
+					Integer num = RUBI_STATISTICS_MAP.get(nodeStr);
+					if (num == null) {
+						RUBI_STATISTICS_MAP.put(nodeStr, 1);
+					} else {
+						RUBI_STATISTICS_MAP.put(nodeStr, num + 1);
+					}
+				}
+				
 				if (nodeStr.equals("I")) {
 					// special - convert on input
 					return F.CI;

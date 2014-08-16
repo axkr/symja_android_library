@@ -23,7 +23,7 @@ public class AppendTo extends AbstractCoreFunctionEvaluator {
 			if (!symbolValue.isAST()) {
 				return null;
 			}
-			return ((IAST) symbolValue).clone().append(value);
+			return ((IAST) symbolValue).appendClone(value);
 		}
 
 	}

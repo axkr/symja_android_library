@@ -150,7 +150,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * 
 	 * @return a clone with added <code>expr</code> element at the given <code>position</code>.
 	 */
-	public IAST addAt(int position, IExpr expr);
+	public IAST addAtClone(int position, IExpr expr);
 
 	/**
 	 * Add an evaluation flag to the existing ones.
@@ -173,7 +173,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * 
 	 * @return <code>this</code> after appending the given expression.
 	 */
-	public IAST append(IExpr expr);
+	public IAST appendClone(IExpr expr);
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
@@ -200,14 +200,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return a clone with element set to <code>head</code> at the given <code>0</code>.
 	 */
 	public IAST apply(IExpr head, int start, int end);
-
-	/**
-	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
-	 * <code>expr</code> at the given <code>position</code>.
-	 * 
-	 * @return a clone with element set to <code>expr</code> at the given <code>position</code>.
-	 */
-	public IAST applyAt(int position, IExpr expr);
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
@@ -277,6 +269,15 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * Create a copy of this <code>IAST</code>, which contains alls elements up to <code>index</code> (exclusive).
 	 */
 	public IAST copyUntil(int index);
+
+	/**
+	 * Calls <code>get(position).equals(expr)</code>.
+	 * 
+	 * @param position
+	 * @param expr
+	 *            the expr which should be test for equality
+	 */
+	public boolean equalsAt(int position, final IExpr expr);
 
 	/**
 	 * Apply the predicate to each element in this <code>AST</code> and append the elements which satisfy the predicate to the
@@ -384,6 +385,17 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public boolean isEvalFlagOn(int i);
+
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the expressions or the expression itself at the given
+	 * <code>position</code>, did not match the <code>pattern</code>. Calls <code>get(Position).isFree(pattern, true)</code>.
+	 * 
+	 * @param position
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * 
+	 */
+	public boolean isFreeAt(int position, final IExpr pattern);
 
 	/**
 	 * Is this a list (i.e. with header == List)
@@ -534,9 +546,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * Prepend an expression to this list.
 	 * 
 	 * @return <code>this</code> after prepending the given expression.
-	 * @deprecated
 	 */
-	public IAST prepend(IExpr expr);
+	public IAST prependClone(IExpr expr);
 
 	/**
 	 * Associates the specified value with the specified property in the associated <code>EnumMap<PROPERTY, Object></code> map. If
@@ -577,7 +588,15 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * 
 	 * @return a clone with removed element at the given position.
 	 */
-	public IAST removeAt(int position);
+	public IAST removeAtClone(int position);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
+	 * <code>expr</code> at the given <code>position</code>.
+	 * 
+	 * @return a clone with element set to <code>expr</code> at the given <code>position</code>.
+	 */
+	public IAST setAtClone(int position, IExpr expr);
 
 	/**
 	 * Set the evaluation flags for this list.

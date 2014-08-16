@@ -17,7 +17,7 @@ public class Append extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = F.eval(ast.arg1());
 		IAST arg1AST = Validate.checkASTType(arg1);
 		IExpr arg2 = F.eval(ast.arg2());
-		return arg1AST.clone().append(arg2);
+		return arg1AST.appendClone(arg2);
 	}
 
 }

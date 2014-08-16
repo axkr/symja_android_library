@@ -38,27 +38,30 @@ public class Re implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
-			return arg1;
+		if (arg1.isNumber()) {
+			return ((INumber) arg1).getRe();
 		}
-		if (arg1.isComplex()) {
-			return ((IComplex) arg1).getRe();
-		}
-		if (arg1 instanceof IComplexNum) {
-			return F.num(((IComplexNum) arg1).getRealPart());
-		}
+//		if (arg1.isSignedNumber()) {
+//			return arg1;
+//		}
+//		if (arg1.isComplex()) {
+//			return ((IComplex) arg1).getRe();
+//		}
+//		if (arg1 instanceof IComplexNum) {
+//			return F.num(((IComplexNum) arg1).getRealPart());
+//		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
 			return Times(CN1, Re(negExpr));
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {
-				IAST temp = ((IAST) arg1).removeAt(1);
+				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Times(arg1.getAt(1), F.Re(temp));
 			}
 			if (arg1.getAt(1).equals(F.CI)) {
 				// Re(I*temp) -> -Im(temp)
-				IAST temp = ((IAST) arg1).removeAt(1);
+				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Times(F.CN1, F.Im(temp));
 			}
 		}
@@ -96,7 +99,7 @@ public class Re implements IFunctionEvaluator {
 	 * @return
 	 */
 	private IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
-		if (x.equals(F.E)) {
+		if (x.isE()) {
 			// Re(E^(a+I*b)) -> E^a*Cos[b]
 			return Times(Power(F.E, a), Cos(b));
 		}

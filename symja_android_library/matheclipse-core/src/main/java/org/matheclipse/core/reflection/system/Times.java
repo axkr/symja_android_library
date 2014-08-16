@@ -122,7 +122,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (o0.isPower()) {
 			final IAST f0 = (IAST) o0;
 			if (f0.arg2().isNumber()) {
-				if (f0.arg1().equals(o1)) {
+				if (f0.equalsAt(1, o1)) {
 					return Power(o1, Plus(F.C1, f0.arg2()));
 				}
 
@@ -130,11 +130,11 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					final IAST f1 = (IAST) o1;
 
 					if (f1.arg2().isNumber()) {
-						if (f0.arg1().equals(f1.arg1())) {
+						if (f0.equalsAt(1, f1.arg1())) {
 							// x^(a)*x^(b) => x ^(a+b)
 							return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
 						}
-						if (f0.arg2().equals(f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()
+						if (f0.equalsAt(2, f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()
 								&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
 							// a^(c)*b^(c) => (a*b) ^c
 							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
@@ -147,7 +147,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (o1.isPower() && (((IAST) o1).arg2().isInteger())) {
 			final IAST f1 = (IAST) o1;
 
-			if (f1.arg1().equals(o0)) {
+			if (f1.equalsAt(1, o0)) {
 				return Power(o0, Plus(F.C1, f1.arg2()));
 			}
 		}

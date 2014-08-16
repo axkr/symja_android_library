@@ -158,7 +158,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (fEquationType == LINEAR) {
-										IAST cloned = arg.removeAt(i);;
+										IAST cloned = arg.removeAtClone(i);;
 										row.set(j, F.Plus(row.get(j), cloned));
 									}
 								}
@@ -206,7 +206,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (expr.isSymbol()) {
 				fLeafCount++;
 				for (int i = 1; i < vars.size(); i++) {
-					if (vars.get(i).equals(expr)) {
+					if (vars.equalsAt(i, expr)) {
 						symbolSet.add((ISymbol) expr);
 						if (fEquationType == LINEAR) {
 							row.set(i, F.Plus(row.get(i), F.C1));

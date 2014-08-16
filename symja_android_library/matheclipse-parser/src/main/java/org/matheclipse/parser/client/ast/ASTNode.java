@@ -30,8 +30,7 @@ public abstract class ASTNode {
 	/**
 	 * Returns the parsed string of this node.
 	 * 
-	 * @return <code>null</code> if there's another representation in the derived
-	 *         class
+	 * @return <code>null</code> if there's another representation in the derived class
 	 */
 	public String getString() {
 		return fStringValue;
@@ -45,8 +44,16 @@ public abstract class ASTNode {
 		return false;
 	}
 
-	public boolean isFree(final ASTNode n) {
-		return !this.equals(n);
+	/**
+	 * Returns <code>true</code>, if <b>none of the elements</b> in the subexpressions or the expression itself equals
+	 * <code>node</code> .
+	 * 
+	 * @param node
+	 *            a node to compare with
+	 * 
+	 */
+	public boolean isFree(final ASTNode node) {
+		return !this.equals(node);
 	}
 
 	// public ASTNode derivative(String variableName) {

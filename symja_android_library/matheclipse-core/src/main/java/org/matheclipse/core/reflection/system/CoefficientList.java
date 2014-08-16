@@ -31,11 +31,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		IExpr expr = F.evalExpandAll(ast.arg1());
-		IExpr arg2 = ast.arg2();
-		if (!arg2.isSymbol()) {
-			// TODO allow multinomials
-			return null;
-		}
+		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
 		try {
 			IAST result = F.List();
 			long degree = univariateCoefficientList(expr, (ISymbol) arg2, result);
@@ -69,6 +65,8 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 			IExpr temp = polyExpr.coefficient(new ExpVectorLong(1, 0, i));
 			if (temp.isSignedNumber()) {
 				result[i] = ((ISignedNumber) temp).doubleValue();
+			} else {
+				return null;
 			}
 		}
 		return result;

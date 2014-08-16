@@ -17,7 +17,7 @@ import com.google.common.base.Function;
  */
 public class Coefficient extends AbstractFunctionEvaluator {
 
-	private class PlusFunction implements Function<IExpr, IExpr> {
+	private static class PlusFunction implements Function<IExpr, IExpr> {
 		IExpr arg2;
 		IInteger n;
 
@@ -45,12 +45,8 @@ public class Coefficient extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		IExpr expr = F.evalExpandAll(ast.arg1());
-		IExpr arg2 = ast.arg2();
-		if (!arg2.isSymbol()) {
-			// TODO allow multinomials
-			return null;
-		}
-		
+		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
+
 		try {
 			IInteger n = F.C1;
 			if (ast.size() == 4) {
@@ -59,43 +55,56 @@ public class Coefficient extends AbstractFunctionEvaluator {
 				}
 				n = Validate.checkIntegerType(ast, 3);
 			}
-			if (expr.isAST()) {
-				IAST expAST = (IAST) expr;
-				Function<IExpr, IExpr> plusFunction = new PlusFunction(arg2, n);
-				if (expAST.isPlus()) {
-					// TODO implement a special sum() method instead of map
-					IAST filterAST = expAST.map(plusFunction);
-					if (filterAST.size() == 1) {
-						return F.C0;
-					}
-					return F.eval(filterAST);
-				} else {
-					return plusFunction.apply(expAST);
-				}
-			} else {
-				return coefficientAtom(expr, arg2, n);
-			}
+			return coefficient(expr, (ISymbol) arg2, n);
 		} catch (ArithmeticException ae) {
 
 		}
 		return null;
 	}
 
+	/**
+	 * <code>Coefficient(expr, x, n)</code>
+	 * 
+	 * @param expr
+	 * @param x
+	 *            a symbol to compare with
+	 * @param n
+	 * @return
+	 */
+	public static IExpr coefficient(IExpr expr, ISymbol x, IInteger n) {
+		if (expr.isAST()) {
+			IAST expAST = (IAST) expr;
+			Function<IExpr, IExpr> plusFunction = new PlusFunction(x, n);
+			if (expAST.isPlus()) {
+				// TODO implement a special sum() method instead of map
+				IAST filterAST = expAST.map(plusFunction);
+				if (filterAST.size() == 1) {
+					return F.C0;
+				}
+				return F.eval(filterAST);
+			} else {
+				return plusFunction.apply(expAST);
+			}
+		} else {
+			return coefficientAtom(expr, x, n);
+		}
+	}
+
 	private static IExpr coefficientTimes(IAST times, IExpr arg2, IInteger n) throws ArithmeticException {
 		for (int i = 1; i < times.size(); i++) {
 			if (times.get(i).isPower()) {
 				IAST pow = (IAST) times.get(i);
-				if (pow.arg1().equals(arg2)) {
+				if (pow.equalsAt(1, arg2)) {
 					if (pow.arg2().isNumEqualInteger(n)) {
-						return times.removeAt(i);
+						return times.removeAtClone(i);
 					}
 					return F.C0;
 				}
-			} else if (times.get(i).equals(arg2)) {
+			} else if (times.equalsAt(i, arg2)) {
 				if (n.equals(F.C0)) {
 					return F.C0;
 				} else if (n.equals(F.C1)) {
-					return times.removeAt(i);
+					return times.removeAtClone(i);
 				}
 				return F.C0;
 			}
@@ -107,7 +116,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 	}
 
 	private static IExpr coefficientPower(IAST powerAST, IExpr arg2, IInteger n) {
-		if (powerAST.arg1().equals(arg2)) {
+		if (powerAST.equalsAt(1, arg2)) {
 			if (powerAST.arg2().isNumEqualInteger(n)) {
 				return F.C1;
 			}
