@@ -12,9 +12,12 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcher extends IPatternMatcher implements Serializable {
@@ -638,7 +641,19 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 			return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, stackMatcher);
 		}
-
+		if (lhsPatternAST.isAST(F.Rational, 3) && lhsEvalExpr.isRational()) {
+			IRational numer = ((IRational) lhsEvalExpr).getNumerator();
+			IRational denom = ((IRational) lhsEvalExpr).getDenominator();  
+			if (matchExpr(lhsPatternAST.arg1(), numer) && matchExpr(lhsPatternAST.arg2(), denom)) {
+				return true;
+			}
+		} else if (lhsPatternAST.isAST(F.Complex, 3) && lhsEvalExpr.isNumber()) {
+			ISignedNumber re = ((INumber) lhsEvalExpr).getRe();
+			ISignedNumber im = ((INumber) lhsEvalExpr).getIm();
+			if (matchExpr(lhsPatternAST.arg1(), re) && matchExpr(lhsPatternAST.arg2(), im)) {
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -693,11 +708,13 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 					IAST lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
 					try {
+
 						IExpr result = fPatternMap.substitutePatternSymbols(rhsExpr);
 						result = F.eval(result);
 						lhsResultAST.add(result);
 						return lhsResultAST;
 					} catch (final ConditionException e) {
+						logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
 						// fall through
 					} catch (final ReturnException e) {
 						lhsResultAST.add(e.getValue());
@@ -724,7 +741,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 							lhsResultAST.add(i + 1, result);
 							return lhsResultAST;
 						} catch (final ConditionException e) {
-							// fall through
+							logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
 						} catch (final ReturnException e) {
 							lhsResultAST.add(i + 1, e.getValue());
 							return lhsResultAST;
@@ -735,6 +752,11 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			}
 		}
 		return null;
+	}
+
+	protected void logConditionFalse(final IExpr lhsEvalAST, final IExpr lhsPatternAST, IExpr rhsAST) {
+		// System.out.println("\nCONDITION false: " + lhsEvalAST.toString() + "\n   >>> " + lhsPatternAST.toString() + "   :=   "
+		// + rhsAST.toString());
 	}
 
 	private boolean matchPattern(final IPattern pattern, final IExpr expr) {
