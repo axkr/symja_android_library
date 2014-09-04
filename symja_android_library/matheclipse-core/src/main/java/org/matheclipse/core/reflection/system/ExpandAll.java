@@ -45,14 +45,20 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 		if (j >= ast.size()) {
 			return null;
 		}
-		IAST result = ast.clone();
+		IAST result = null;
 		for (int i = j; i < ast.size(); i++) {
 			if (ast.get(i).isAST()) {
 				temp = expandAll(ast.get(i), patt);
 				if (temp != null) {
+					if (result == null) {
+						result = ast.clone();
+					}
 					result.set(i, temp);
 				}
 			}
+		}
+		if (result == null) {
+			return Expand.expand(ast, patt);
 		}
 		temp = Expand.expand(result, patt);
 		if (temp != null) {

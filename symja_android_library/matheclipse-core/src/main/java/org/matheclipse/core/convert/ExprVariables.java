@@ -41,7 +41,7 @@ public class ExprVariables {
 	public ExprVariables() {
 		super();
 	}
-	
+
 	/**
 	 * Determine the variable symbols from a Symja expression.
 	 */
@@ -54,8 +54,7 @@ public class ExprVariables {
 	 * Add the symbol to the set of variables.
 	 * 
 	 * @param symbol
-	 * @return <tt>true</tt> if the underlying set did not already contain the
-	 *         symbol
+	 * @return <tt>true</tt> if the underlying set did not already contain the symbol
 	 */
 	public boolean add(final ISymbol symbol) {
 		return set.add(symbol);
@@ -108,7 +107,15 @@ public class ExprVariables {
 		}
 		return list;
 	}
-	
+
+	public List<IExpr> appendToList(final List<IExpr> list) {
+		final Iterator<IExpr> iter = set.iterator();
+		while (iter.hasNext()) {
+			list.add(iter.next());
+		}
+		return list;
+	}
+
 	public String[] getVarListAsString() {
 		String[] result = new String[set.size()];
 		final Iterator<IExpr> iter = set.iterator();
@@ -131,11 +138,19 @@ public class ExprVariables {
 	 * Check if the expression contains the given number of variables.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the expr contains the given number of
-	 *         variables.
+	 * @return <code>true</code> if the expr contains the given number of variables.
 	 */
 	public boolean isSize(int size) {
 		return set.size() == size;
+	}
+
+	/**
+	 * The number of determined variables.
+	 * 
+	 * @return
+	 */
+	public int size() {
+		return set.size();
 	}
 
 	/**

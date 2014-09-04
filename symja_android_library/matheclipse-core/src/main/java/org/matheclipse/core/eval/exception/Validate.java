@@ -51,6 +51,37 @@ public final class Validate {
 	}
 
 	/**
+	 * Get the exponent <code>long</code> value of the <code>ast</code> expressions, which is identified as a
+	 * <code>Power[&lt;something&gt;, exponent]</code> expression. The <code>long</code> value can be determined from an IInteger or
+	 * INum expression.
+	 * 
+	 * @param ast
+	 * @return the exponent <code>long</code> value of the <code>Power[&lt;something&gt;, exponent]</code> expression.
+	 * @throws WrongArgumentType
+	 */
+	public static long checkLongPowerExponent(final IAST ast) {
+		IExpr arg2 = ast.arg2();
+		return checkLongType(arg2);
+	}
+
+	public static long checkLongType(IExpr arg2) {
+		long exponent = 0;
+		try {
+			// the following may throw ArithmeticException
+			if (arg2 instanceof IInteger) {
+				exponent = ((IInteger) arg2).toLong();
+				return exponent;
+			} else if (arg2 instanceof INum) {
+				exponent = ((INum) arg2).toLong();
+				return exponent;
+			}
+		} catch (ArithmeticException ae) {
+			//
+		}
+		throw new WrongArgumentType(arg2, "Trying to convert the argument into a Java long exponent: " + arg2);
+	}
+
+	/**
 	 * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue}, Integer.MAX_VALUE]
 	 * 
 	 * @throws WrongArgumentType

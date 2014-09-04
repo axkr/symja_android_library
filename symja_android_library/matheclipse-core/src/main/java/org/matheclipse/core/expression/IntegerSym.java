@@ -229,6 +229,14 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return newInstance(fInteger.gcd(((IntegerSym) that).fInteger));
 	}
 
+	@Override
+	public IExpr gcd(IExpr that) {
+		if (that instanceof IInteger) {
+			return gcd((IInteger) that);
+		}
+		return F.C1;
+	}
+
 	/**
 	 * Returns the least common multiple of this large integer and the one specified.
 	 * 
@@ -753,6 +761,17 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return res;
 	}
 
+	public IntegerSym remainder(final IntegerSym that) {
+		return newInstance(fInteger.remainder(that.fInteger));
+	}
+	
+	public IExpr remainder(final IExpr that) {
+		if (that instanceof IntegerSym) {
+			return newInstance(fInteger.remainder(((IntegerSym) that).fInteger));
+		}
+		return this;
+	}
+
 	@Override
 	public boolean isEven() {
 		return NumberUtil.isEven(fInteger);
@@ -979,7 +998,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		int value = NumberUtil.toInt(fInteger);
 		switch (value) {
-		case -1:  
+		case -1:
 			return "CN1";
 		case -2:
 			return "CN2";
@@ -1050,7 +1069,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber getIm() {

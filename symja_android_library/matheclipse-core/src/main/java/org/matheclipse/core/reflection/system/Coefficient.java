@@ -7,6 +7,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.Polynomial;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Function;
@@ -48,14 +49,16 @@ public class Coefficient extends AbstractFunctionEvaluator {
 		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
 
 		try {
-			IInteger n = F.C1;
+			long n = 1;
 			if (ast.size() == 4) {
 				if (ast.arg3().isNegativeInfinity()) {
 					return F.C0;
 				}
-				n = Validate.checkIntegerType(ast, 3);
+				n = Validate.checkLongType(ast.arg3());
 			}
-			return coefficient(expr, (ISymbol) arg2, n);
+			Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
+			return poly.coefficient(n);
+//			return coefficient(expr, (ISymbol) arg2, n);
 		} catch (ArithmeticException ae) {
 
 		}

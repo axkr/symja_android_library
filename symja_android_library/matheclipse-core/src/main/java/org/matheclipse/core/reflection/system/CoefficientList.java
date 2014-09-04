@@ -2,22 +2,15 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.List;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import edu.jas.poly.ExpVectorLong;
-import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.PolyUtil;
+import org.matheclipse.core.polynomials.Polynomial;
 
 /**
  * 
@@ -32,21 +25,26 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
-		try {
-			IAST result = F.List();
-			long degree = univariateCoefficientList(expr, (ISymbol) arg2, result);
-			if (degree >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + " - "
-						+ Short.MAX_VALUE);
-			}
-			return result;
-		} catch (JASConversionException jce) {
-			// toInt() conversion failed
-			if (Config.DEBUG) {
-				jce.printStackTrace();
-			}
+		// try {
+		Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
+		if (poly.isZero()) {
+			return F.List();
 		}
-		return null;
+		return poly.coefficientList();
+		// IAST result = F.List();
+		// long degree = univariateCoefficientList(expr, (ISymbol) arg2, result);
+		// if (degree >= Short.MAX_VALUE) {
+		// throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + " - "
+		// + Short.MAX_VALUE);
+		// }
+		// return result;
+		// } catch (JASConversionException jce) {
+		// // toInt() conversion failed
+		// if (Config.DEBUG) {
+		// jce.printStackTrace();
+		// }
+		// }
+		// return null;
 	}
 
 	/**
@@ -57,40 +55,38 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	public static double[] coefficientList(IExpr polynomial, final ISymbol variable) throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
-		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		int degree = (int) polyExpr.degree();
+		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		IAST list = poly.coefficientList();
+		int degree = list.size() - 2;
 		double[] result = new double[degree + 1];
-		for (int i = 0; i <= degree; i++) {
-			IExpr temp = polyExpr.coefficient(new ExpVectorLong(1, 0, i));
+		for (int i = 1; i < list.size(); i++) {
+			IExpr temp = list.get(i);
 			if (temp.isSignedNumber()) {
-				result[i] = ((ISignedNumber) temp).doubleValue();
-			} else {
-				return null;
+				result[i - 1] = ((ISignedNumber) temp).doubleValue();
+				continue;
 			}
+			if (temp.isNumericFunction()) {
+				temp = F.eval(temp);
+				if (temp.isSignedNumber()) {
+					result[i - 1] = ((ISignedNumber) temp).doubleValue();
+					continue;
+				}
+			}
+			return null;
 		}
 		return result;
 	}
 
-	/**
-	 * Get the coefficient list of a univariate polynomial
-	 * 
-	 * @param polynomial
-	 * @param variable
-	 * @param resultList
-	 *            the coefficient list of the given univariate polynomial
-	 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list will be empty.
-	 */
 	public static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
 			throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
-		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		long degree = polyExpr.degree();
+		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		IAST list = poly.coefficientList();
+		int degree = list.size() - 2;
 		if (degree >= Short.MAX_VALUE) {
 			return degree;
 		}
 		for (int i = 0; i <= degree; i++) {
-			IExpr temp = polyExpr.coefficient(new ExpVectorLong(1, 0, i));
+			IExpr temp = list.get(i + 1);
 			resultList.add(temp);
 		}
 		return degree;
@@ -108,24 +104,22 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 */
 	public static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
 			List<IExpr> resultListDiff) throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
-		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		// derivative of the given polynomial
-		GenPolynomial<IExpr> polyExprDiff = PolyUtil.<IExpr> baseDeriviative(polyExpr);
+		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		IAST polyExpr = poly.coefficientList();
 
-		long degree = polyExpr.degree();
+		int degree = polyExpr.size() - 2;
 		if (degree >= Short.MAX_VALUE) {
 			return degree;
 		}
 		for (int i = 0; i <= degree; i++) {
-			IExpr temp = polyExpr.coefficient(new ExpVectorLong(1, 0, i));
+			IExpr temp = polyExpr.get(i + 1);
 			resultList.add(temp);
 		}
-
-		long degreeDiff = polyExprDiff.degree();
+		IAST polyDiff = poly.derivative().coefficientList();
+		int degreeDiff = polyDiff.size() - 2;
 		for (int i = 0; i <= degreeDiff; i++) {
-			IExpr temp = polyExprDiff.coefficient(new ExpVectorLong(1, 0, i));
-			resultListDiff.add(F.eval(temp));
+			IExpr temp = polyDiff.get(i + 1);
+			resultListDiff.add(temp);
 		}
 		return degree;
 	}

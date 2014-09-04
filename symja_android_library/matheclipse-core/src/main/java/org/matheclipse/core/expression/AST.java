@@ -2012,8 +2012,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr gcd(IExpr b) {
-		throw new UnsupportedOperationException();
+	public IExpr gcd(IExpr that) {
+		if (equals(that)){
+			return that;
+		}
+		return F.C1;
+		// throw new UnsupportedOperationException(toString());
 	}
 
 	@Override
@@ -2118,8 +2122,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr remainder(IExpr S) {
-		throw new UnsupportedOperationException();
+	public IExpr remainder(IExpr that) {
+		if (equals(that)) {
+			return F.C0;
+		}
+		return this;
+		// throw new UnsupportedOperationException(toString());
 	}
 
 	/** {@inheritDoc} */

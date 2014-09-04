@@ -1,22 +1,23 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ExprVariables;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExponentArray;
+import org.matheclipse.core.polynomials.Polynomial;
 
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -40,30 +41,42 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 5);
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
+		IAST vars = F.List();
 		ExprVariables eVar;
 		if (ast.size() == 2) {
 			// extract all variables from the polynomial expression
 			eVar = new ExprVariables(ast.arg1());
+			eVar.appendToList(vars);
 		} else {
 			IAST symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 			eVar = new ExprVariables(symbolList);
+			eVar.appendToList(vars);
 		}
 		int termOrder = TermOrder.INVLEX;
+		Comparator<ExponentArray> comparator = ExponentArray.lexicographic();
 		try {
 			if (ast.size() > 3) {
 				if (ast.arg3() instanceof IStringX) {
 					String orderStr = ast.arg3().toString();
 					if (orderStr.equals("DegreeLexicographic")) {
 						termOrder = TermOrder.LEX;
+						comparator = ExponentArray.degreeLexicographic();
+					} else {
+						return null;
+					}
+				} else {
+					final Options options = new Options(ast.topHead(), ast, 2);
+					IExpr option = options.getOption("Modulus");
+					if (option != null && option.isSignedNumber()) {
+						return monomialListModulus(expr, eVar.getArrayList(), termOrder, option);
+					} else {
+						return null;
 					}
 				}
-				final Options options = new Options(ast.topHead(), ast, 2);
-				IExpr option = options.getOption("Modulus");
-				if (option != null && option.isSignedNumber()) {
-					return monomialListModulus(expr, eVar.getArrayList(), termOrder, option);
-				}
 			}
-			return monomialList(expr, eVar.getArrayList(), termOrder);
+			Polynomial poly = new Polynomial(expr, vars, comparator);
+			return poly.monomialList();
+			// return monomialList(expr, eVar.getArrayList(), termOrder);
 		} catch (JASConversionException jce) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {
@@ -82,28 +95,28 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	 *            the JAS term ordering
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	public static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final int termOrder)
-			throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), new TermOrder(termOrder), false);
-		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		IAST list = F.List();
-		for (Monomial<IExpr> monomial : polyExpr) {
-			IExpr coeff = monomial.coefficient();
-			ExpVector exp = monomial.exponent();
-			IAST monomTimes = F.Times(coeff);
-			long lExp;
-			ISymbol variable;
-			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0) {
-					variable = (ISymbol) variablesList.get(i);
-					monomTimes.add(F.Power(variable, F.integer(lExp)));
-				}
-			}
-			list.add(monomTimes);
-		}
-		return list;
-	}
+	// public static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final int termOrder)
+	// throws JASConversionException {
+	// JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), new TermOrder(termOrder), false);
+	// GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
+	// IAST list = F.List();
+	// for (Monomial<IExpr> monomial : polyExpr) {
+	// IExpr coeff = monomial.coefficient();
+	// ExpVector exp = monomial.exponent();
+	// IAST monomTimes = F.Times(coeff);
+	// long lExp;
+	// ISymbol variable;
+	// for (int i = 0; i < exp.length(); i++) {
+	// lExp = exp.getVal(i);
+	// if (lExp != 0) {
+	// variable = (ISymbol) variablesList.get(i);
+	// monomTimes.add(F.Power(variable, F.integer(lExp)));
+	// }
+	// }
+	// list.add(monomTimes);
+	// }
+	// return list;
+	// }
 
 	/**
 	 * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.

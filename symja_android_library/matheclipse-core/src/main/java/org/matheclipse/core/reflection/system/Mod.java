@@ -17,11 +17,10 @@ public class Mod extends AbstractArg2 {
 
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-		IInteger temp = i1;
-		if (temp.compareTo(F.C0) < 0) {
-			temp = temp.multiply(F.CN1);
+		if (i1.isNegative()) {
+			return ((IntegerSym)(i0.negate())).mod((IntegerSym)(i1.negate())).negate();
 		}
-		return ((IntegerSym) i0).mod((IntegerSym) temp);
+		return ((IntegerSym) i0).mod((IntegerSym)i1);
 	}
 
 }

@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class VisitorCollectionBoolean extends AbstractVisitorBoolean {
-	int fHeadOffset;
+	protected int fHeadOffset;
 
 	private Collection<IExpr> fCollection;
 

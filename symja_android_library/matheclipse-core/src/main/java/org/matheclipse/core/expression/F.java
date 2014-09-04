@@ -2209,7 +2209,6 @@ public class F {
 	}
 
 	public static IAST Expand(final IExpr a0) {
-
 		return unary(Expand, a0);
 	}
 
@@ -3307,6 +3306,10 @@ public class F {
 		return unary(Rest, a0);
 	}
 
+	public static IAST Resultant(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(Resultant, a0, a1, a2);
+	}
+	
 	public static IAST Return(final IExpr a) {
 		return unary(Return, a);
 	}

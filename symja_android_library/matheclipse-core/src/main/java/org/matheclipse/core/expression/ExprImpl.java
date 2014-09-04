@@ -190,7 +190,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isE() {
 		return false;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -515,7 +515,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isPi() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
@@ -780,8 +780,12 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public IExpr gcd(IExpr b) {
-		throw new UnsupportedOperationException(toString());
+	public IExpr gcd(IExpr that) {
+		if (equals(that)) {
+			return that;
+		}
+		return F.C1;
+		// throw new UnsupportedOperationException(toString());
 	}
 
 	@Override
@@ -859,8 +863,12 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public IExpr remainder(IExpr S) {
-		throw new UnsupportedOperationException(toString());
+	public IExpr remainder(IExpr that) {
+		if (equals(that)) {
+			return F.C0;
+		}
+		return this;
+		// throw new UnsupportedOperationException(toString());
 	}
 
 	@Override

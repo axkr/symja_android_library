@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Expand;
+//import static org.matheclipse.core.expression.F.Expand;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
@@ -35,7 +35,8 @@ public class Expand extends AbstractFunctionEvaluator {
 			return (pattern != null && expression.isFree(pattern, false));
 		}
 
-		public IExpr expand(final IAST ast) {
+		public IExpr expandAST(final IAST ast) {
+
 			if (isPatternFree(ast)) {
 				return null;
 			}
@@ -45,12 +46,15 @@ public class Expand extends AbstractFunctionEvaluator {
 				// (a+b)*(c+d)...
 
 				IExpr[] temp = Apart.getFractionalPartsTimes(ast, false);
+				if (temp == null) {
+					return expandTimes(ast);
+				}
 				if (temp[0].equals(F.C1)) {
 					if (temp[1].isTimes()) {
 						return F.Power(expandTimes((IAST) temp[1]), F.CN1);
 					}
 					if (temp[1].isPower() || temp[1].isPlus()) {
-						IExpr denom = expand((IAST) temp[1]);
+						IExpr denom = expandAST((IAST) temp[1]);
 						if (denom != null) {
 							return F.Power(denom, F.CN1);
 						}
@@ -69,7 +73,7 @@ public class Expand extends AbstractFunctionEvaluator {
 					temp[1] = expandTimes((IAST) temp[1]);
 				} else {
 					if (temp[1].isPower() || temp[1].isPlus()) {
-						IExpr denom = expand((IAST) temp[1]);
+						IExpr denom = expandAST((IAST) temp[1]);
 						if (denom != null) {
 							temp[1] = denom;
 						}
@@ -77,7 +81,20 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 				return F.Times(temp[0], F.Power(temp[1], F.CN1));
 			} else if (ast.isPlus()) {
-				return ast.mapAt(Expand(null),1);
+				IAST result = null;
+				for (int i = 1; i < ast.size(); i++) {
+					if (ast.get(i).isAST()) {
+						IExpr temp = expand((IAST) ast.get(i), pattern);
+						if (temp != null) {
+							if (result == null) {
+								result = ast.clone();
+							}
+							result.set(i, temp);
+						}
+					}
+				}
+				return result;
+				// return ast.mapAt(Expand(null),1);
 			}
 			return null;
 		}
@@ -263,7 +280,7 @@ public class Expand extends AbstractFunctionEvaluator {
 
 	public static IExpr expand(final IAST ast, IExpr patt) {
 		Expander expander = new Expander(patt);
-		return expander.expand(ast);
+		return expander.expandAST(ast);
 	}
 
 	public Expand() {

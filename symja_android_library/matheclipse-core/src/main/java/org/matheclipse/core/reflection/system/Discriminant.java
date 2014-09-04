@@ -1,16 +1,23 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.exception.JASConversionException;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.C4;
+import static org.matheclipse.core.expression.F.C5;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.integer;
+
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.Polynomial;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -20,13 +27,13 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class Discriminant extends AbstractFunctionEvaluator {
 	// b^2-4*a*c
-	private final static IExpr QUADRATIC = Plus(Power($s("b"), C2), Times(CN1, Times(Times(C4, $s("a")), $s("c"))));
+ 	private final static IExpr QUADRATIC = Plus(Power($s("b"), C2), Times(CN1, Times(Times(C4, $s("a")), $s("c"))));
 
 	// b^2*c^2-4*a*c^3-4*b^3*d-27*a^2*d^2+18*a*b*c*d
-	private final static IExpr CUBIC = Plus(Plus(Plus(Plus(Times(Power($s("b"), C2), Power($s("c"), C2)), Times(CN1, Times(Times(C4,
-			$s("a")), Power($s("c"), C3)))), Times(CN1, Times(Times(C4, Power($s("b"), C3)), $s("d")))), Times(CN1, Times(Times(
-			integer(27L), Power($s("a"), C2)), Power($s("d"), C2)))), Times(Times(Times(Times(integer(18L), $s("a")), $s("b")), $s("c")),
-			$s("d")));
+ 	private final static IExpr CUBIC = Plus(Plus(Plus(Plus(Times(Power($s("b"), C2), Power($s("c"), C2)), Times(CN1, Times(Times(C4,
+ 			$s("a")), Power($s("c"), C3)))), Times(CN1, Times(Times(C4, Power($s("b"), C3)), $s("d")))), Times(CN1, Times(Times(
+ 			integer(27L), Power($s("a"), C2)), Power($s("d"), C2)))), Times(Times(Times(Times(integer(18L), $s("a")), $s("b")), $s("c")),
+ 			$s("d")));
 
 	// Page 405
 	// http://books.google.com/books?id=-gGzjSnNnR0C&lpg=PA402&vq=quartic&hl=de&pg=PA405#v=snippet&q=quartic&f=false
@@ -158,13 +165,39 @@ public class Discriminant extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		IExpr expr = F.evalExpandAll(ast.arg1());
 		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {
 			return null;
 		}
-		IAST result = F.List();
-		IAST resultListDiff = F.List();
+		IExpr expr = F.evalExpandAll(ast.arg1());
+		Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
+		if (poly.isPolynomial()){
+			long n = poly.maximumDegree();
+			if (n >= 2L && n <= 5L) {
+			    IAST result = poly.coefficientList();
+				IAST rules = F.List();
+				for (int i = 1; i < result.size(); i++) {
+					rules.add(F.Rule(vars[i - 1], result.get(i)));
+				}
+				switch ((int) n) {
+				case 2:
+					return QUADRATIC.replaceAll(rules);
+				case 3:
+					return CUBIC.replaceAll(rules);
+				case 4:
+					return QUARTIC.replaceAll(rules);
+				case 5:
+					return QUINTIC.replaceAll(rules);
+				}
+
+			}
+			IExpr fN = poly.coefficient(n);
+		    Polynomial polyDiff = poly.derivative();
+			// see: http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
+		    return F.Divide(F.Times(F.Power(F.CN1, (n*(n-1)/2)),F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
+		}
+		return null;
+		/* 
 		try {
 			long degree = org.matheclipse.core.reflection.system.CoefficientList.univariateCoefficientList(expr, (ISymbol) arg2, result, resultListDiff);
 			if (degree >= Short.MAX_VALUE) {
@@ -213,6 +246,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 			}
 		}
 		return null;
+		*/
 	}
 
 	@Override

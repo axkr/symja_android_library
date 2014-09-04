@@ -22,34 +22,49 @@ public class Resultant extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
-		IExpr arg1 = F.evalExpandAll(ast.arg1());
-		IExpr arg2 = F.evalExpandAll(ast.arg2());
+		IExpr a = F.evalExpandAll(ast.arg1());
+		IExpr b = F.evalExpandAll(ast.arg2());
 		IExpr arg3 = ast.arg3();
 		if (!arg3.isSymbol()) {
 			// TODO allow multinomials
 			return null;
 		}
-		try {
-			IAST result = F.List();
-			long degree1 = CoefficientList.univariateCoefficientList(arg1, (ISymbol) arg3, result);
-			if (degree1 >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree1 + " is larger than: " + " - "
-						+ Short.MAX_VALUE);
-			}
-			IAST resultListDiff = F.List();
-			long degree2 = CoefficientList.univariateCoefficientList(arg2, (ISymbol) arg3, resultListDiff);
-			if (degree2 >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree2 + " is larger than: " + " - "
-						+ Short.MAX_VALUE);
-			}
-			return resultant(result, resultListDiff);
-		} catch (JASConversionException jce) {
-			// toInt() conversion failed
-			if (Config.DEBUG) {
-				jce.printStackTrace();
-			}
+		ISymbol x = (ISymbol) arg3;
+		IExpr aExp = F.eval(F.Exponent(a, x));
+		IExpr bExp = F.eval(F.Exponent(b, x));
+		if (b.isFree(x)) {
+			return F.Power(b, aExp);
 		}
-		return null;
+		IExpr abExp = aExp.times(bExp);
+		if (F.evalTrue(F.Less(aExp, F.Exponent(b, x)))) {
+			return F.Times(F.Power(F.CN1, abExp), F.Resultant(b, a, x));
+		}
+
+		IExpr r = F.eval(F.PolynomialRemainder(a, b, x));
+		// TODO optimize Together() function
+		return F.Together(F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, F.Exponent(r, x))),
+				F.Resultant(b, r, x)));
+		// try {
+		// IAST result = F.List();
+		// long degree1 = CoefficientList.univariateCoefficientList(a, (ISymbol) arg3, result);
+		// if (degree1 >= Short.MAX_VALUE) {
+		// throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree1 + " is larger than: " + " - "
+		// + Short.MAX_VALUE);
+		// }
+		// IAST resultListDiff = F.List();
+		// long degree2 = CoefficientList.univariateCoefficientList(b, (ISymbol) arg3, resultListDiff);
+		// if (degree2 >= Short.MAX_VALUE) {
+		// throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree2 + " is larger than: " + " - "
+		// + Short.MAX_VALUE);
+		// }
+		// return resultant(result, resultListDiff);
+		// } catch (JASConversionException jce) {
+		// // toInt() conversion failed
+		// if (Config.DEBUG) {
+		// jce.printStackTrace();
+		// }
+		// }
+		// return null;
 	}
 
 	public static IExpr resultant(IAST result, IAST resultListDiff) {

@@ -15,14 +15,14 @@ import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
-import edu.jas.structure.RingElem;
+import edu.jas.structure.GcdRingElem;
 
 /**
  * 
  * (I)nterface for a mathematical (Expr)ession
  * 
  */
-public interface IExpr extends Comparable<IExpr>, RingElem<IExpr>, Serializable {
+public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable {
 
 	public final static int ASTID = 512;
 

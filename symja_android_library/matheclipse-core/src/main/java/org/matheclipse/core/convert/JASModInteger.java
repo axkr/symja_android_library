@@ -297,7 +297,7 @@ public class JASModInteger {
 		return fPolyFactory;
 	} 
 
-	public IAST modLongPoly2Expr(final GenPolynomial<ModLong> poly) throws ArithmeticException, ClassCastException {
+	public IExpr modLongPoly2Expr(final GenPolynomial<ModLong> poly) throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
 			return F.Plus(F.C0);
 		}
@@ -314,9 +314,9 @@ public class JASModInteger {
 					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
-			result.add(monomTimes);
+			result.add(monomTimes.getOneIdentity(F.C1));
 		}
-		return result;
+		return result.getOneIdentity(F.C0);
 	}
 
 	public static ModLongRing option2ModLongRing(ISignedNumber option) {

@@ -13,6 +13,7 @@ import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.Polynomial;
 
 import edu.jas.poly.GenPolynomial;
 
@@ -38,36 +39,55 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 		} else {
 			list = List(ast.arg2());
 		}
+		// return F.bool(polynomialQ(ast.arg1(), list));
 		return F.bool(polynomialQ(ast.arg1(), list));
 
 	}
 
+	// public static boolean isPolynomial(final IExpr polnomialExpr, final IAST variables) {
+	// IExpr expr = F.evalExpandAll(polnomialExpr);
+	// Polynomial poly = new Polynomial(expr, variables, null, false);
+	// return poly.isPolynomial(expr);
+	// // return isPolynomial(expr, variables, false, true);
+	// }
+
 	public static boolean polynomialQ(final IExpr polnomialExpr, final IAST variables) {
-		try {
-			IExpr expr = F.evalExpandAll(polnomialExpr);
-			ASTRange r = new ASTRange(variables, 1);
-			JASIExpr jas = new JASIExpr(r.toList(), new ExprRingFactory());
-			return jas.expr2IExprJAS(expr) != null;
-		} catch (JASConversionException e) {
-			// exception will be thrown if the expression is not a JAS polynomial
-		}
-		return false;
+		IExpr expr = F.evalExpandAll(polnomialExpr);
+		Polynomial poly = new Polynomial(expr, variables, null, false);
+		return poly.isPolynomial(expr);
+		// try {
+		// IExpr expr = F.evalExpandAll(polnomialExpr);
+		// ASTRange r = new ASTRange(variables, 1);
+		// JASIExpr jas = new JASIExpr(r.toList(), new ExprRingFactory());
+		// return jas.expr2IExprJAS(expr) != null;
+		// } catch (JASConversionException e) {
+		// // exception will be thrown if the expression is not a JAS polynomial
+		// }
+		// return false;
 	}
 
-	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,boolean numericFunction) {
-		try {
-			IExpr expr = F.evalExpandAll(polnomialExpr);
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables, boolean numericFunction) {
+		IExpr expr = F.evalExpandAll(polnomialExpr);
+//		ASTRange r = new ASTRange(variables, 1);
+//		JASIExpr jas = new JASIExpr(r.toList(), numericFunction);
+//		try {
+//			return jas.expr2IExprJAS(expr);
+//		} catch (JASConversionException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return null;
+		Polynomial poly = new Polynomial(expr, variables, null, false);
+		if (poly.createPolynomial(expr, true, true)) {
 			ASTRange r = new ASTRange(variables, 1);
-			JASIExpr jas = new JASIExpr(r.toList(),numericFunction);
-			return jas.expr2IExprJAS(expr);
-		} catch (JASConversionException e) {
-			// exception will be thrown if the expression is not a JAS polynomial
+			JASIExpr jas = new JASIExpr(r.toList(), numericFunction);
+			return jas.expr2IExprJAS(poly);
 		}
 		return null;
 	}
 
-	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,boolean numericFunction) {
-		return polynomial(polnomialExpr, List(symbol),numericFunction);
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol, boolean numericFunction) {
+		return polynomial(polnomialExpr, List(symbol), numericFunction);
 	}
 
 	@Override

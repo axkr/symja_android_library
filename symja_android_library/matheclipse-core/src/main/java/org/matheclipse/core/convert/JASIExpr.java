@@ -2,6 +2,7 @@ package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -13,6 +14,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExponentArray;
+import org.matheclipse.core.polynomials.Polynomial;
 
 import com.google.common.base.Predicates;
 
@@ -171,6 +174,19 @@ public class JASIExpr {
 		}
 	}
 
+	public GenPolynomial<IExpr> expr2IExprJAS(final Polynomial exprPoly) {
+		GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(fPolyFactory);// fPolyFactory.getZERO();
+		SortedMap<ExponentArray, org.matheclipse.core.polynomials.Monomial> monoms = exprPoly.getMonomials();
+		for (org.matheclipse.core.polynomials.Monomial monom : monoms.values()) {
+			long[] arr = monom.getExponents().getExponents();
+			IExpr coeff = monom.getCoefficient();
+			if (!coeff.isZero()) {
+				result.doPutToMap(ExpVector.create(arr), monom.getCoefficient());
+			}
+		}
+		return result;
+	}
+
 	private GenPolynomial<IExpr> expr2IExprPoly(final IExpr exprPoly) throws ArithmeticException, ClassCastException {
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
@@ -268,12 +284,25 @@ public class JASIExpr {
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
+	 * @return
+	 * @throws ArithmeticException
+	 * @throws ClassCastException
+	 */
+	public IExpr exprPoly2Expr(final GenPolynomial<IExpr> poly) {
+		return exprPoly2Expr(poly, null);
+	}
+
+	/**
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * 
+	 * @param poly
+	 *            a JAS polynomial
 	 * @param variable
 	 * @return
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	public IAST exprPoly2Expr(final GenPolynomial<IExpr> poly, IExpr variable) {
+	public IExpr exprPoly2Expr(final GenPolynomial<IExpr> poly, IExpr variable) {
 		if (poly.length() == 0) {
 			return F.Plus(F.C0);
 		}
@@ -296,9 +325,9 @@ public class JASIExpr {
 					monomTimes.add(F.Power(variable, F.integer(lExp)));
 				}
 			}
-			result.add(monomTimes);
+			result.add(monomTimes.getOneIdentity(F.C1));
 		}
-		return result;
+		return result.getOneIdentity(F.C0);
 	}
 
 	/**
@@ -378,7 +407,7 @@ public class JASIExpr {
 	 * 
 	 * @see {@link #expr2IExprJAS(IExpr)}
 	 */
-	public boolean isNoComplexNumber() {
+	private boolean isNoComplexNumber() {
 		return fNoComplexNumber;
 	}
 
@@ -389,7 +418,7 @@ public class JASIExpr {
 	 * 
 	 * @see {@link #expr2IExprJAS(IExpr)}
 	 */
-	public void setNoComplexNumber(boolean noComplexNumber) {
+	private void setNoComplexNumber(boolean noComplexNumber) {
 		this.fNoComplexNumber = fNoComplexNumber;
 	}
 

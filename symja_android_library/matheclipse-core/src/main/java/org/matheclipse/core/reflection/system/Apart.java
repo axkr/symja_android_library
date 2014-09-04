@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -209,6 +210,23 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * @param arg
 	 * @return the numerator and denominator expression
 	 */
+	public static IExpr[] getFractionalPartsRational(final IExpr arg) {
+		if (arg.isFraction()) {
+			IFraction fr = (IFraction) arg;
+			IExpr[] parts = new IExpr[2];
+			parts[0] = fr.getNumerator();
+			parts[1] = fr.getDenominator();
+			return parts;
+		}
+		return getFractionalParts(arg);
+	}
+
+	/**
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
+	 * 
+	 * @param arg
+	 * @return the numerator and denominator expression or <code>null</code> if no denominator was found.
+	 */
 	public static IExpr[] getFractionalParts(final IExpr arg) {
 		IExpr[] parts = null;
 		if (arg.isTimes()) {
@@ -217,8 +235,9 @@ public class Apart extends AbstractFunctionEvaluator {
 			parts = new IExpr[2];
 			IExpr denom = getFractionalPartsPower((IAST) arg);
 			if (denom == null) {
-				parts[0] = arg;
-				parts[1] = F.C1;
+				return null;
+				// parts[0] = arg;
+				// parts[1] = F.C1;
 			} else {
 				parts[0] = F.C1;
 				parts[1] = denom;
@@ -233,9 +252,9 @@ public class Apart extends AbstractFunctionEvaluator {
 					return parts;
 				}
 			}
-			parts = new IExpr[2];
-			parts[0] = arg;
-			parts[1] = F.C1;
+			// parts = new IExpr[2];
+			// parts[0] = arg;
+			// parts[1] = F.C1;
 		}
 		return parts;
 	}
@@ -256,6 +275,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		IAST denominator = F.Times();
 		IExpr arg;
 		IAST argAST;
+		boolean evaled = false;
 		for (int i = 1; i < timesAST.size(); i++) {
 			arg = timesAST.get(i);
 			if (arg.isAST()) {
@@ -264,32 +284,40 @@ public class Apart extends AbstractFunctionEvaluator {
 					IAST denomForm = Denominator.getDenominatorForm(argAST);
 					if (denomForm != null) {
 						denominator.add(denomForm);
+						evaled = true;
 						continue;
 					}
 				} else if (arg.isPower()) {
 					IExpr denom = getFractionalPartsPower((IAST) arg);
 					if (denom != null) {
 						denominator.add(denom);
+						evaled = true;
 						continue;
 					}
 				}
-			} else if (splitFractionalNumbers && arg.isRational()) {
-				IInteger numer = ((IRational) arg).getNumerator();
-				if (!numer.equals(F.C1)) {
-					numerator.add(numer);
-				}
-				IInteger denom = ((IRational) arg).getDenominator();
-				if (!denom.equals(F.C1)) {
-					denominator.add(denom);
-				}
+			} else if (splitFractionalNumbers && arg.isFraction()) {
+				IFraction fr = (IFraction) arg;
+				numerator.add(fr.getNumerator());
+				denominator.add(fr.getDenominator());
+				evaled = true;
+				// IInteger numer = ((IRational) arg).getNumerator();
+				// if (!numer.equals(F.C1)) {
+				// numerator.add(numer);
+				// }
+				// IInteger denom = ((IRational) arg).getDenominator();
+				// if (!denom.equals(F.C1)) {
+				// denominator.add(denom);
+				// }
 				continue;
 			}
 			numerator.add(arg);
 		}
-		result[0] = numerator.getOneIdentity(F.C1);
-		result[1] = denominator.getOneIdentity(F.C1);
-		return result;
-
+		if (evaled) {
+			result[0] = numerator.getOneIdentity(F.C1);
+			result[1] = denominator.getOneIdentity(F.C1);
+			return result;
+		}
+		return null;
 	}
 
 	/**

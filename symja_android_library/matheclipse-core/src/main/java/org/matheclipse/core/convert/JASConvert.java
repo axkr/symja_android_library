@@ -506,7 +506,7 @@ public class JASConvert<C extends RingElem<C>> {
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	public IAST exprPoly2Expr(final GenPolynomial<IExpr> poly, IExpr variable) throws ArithmeticException, ClassCastException {
+	public IExpr exprPoly2Expr(final GenPolynomial<IExpr> poly, IExpr variable) throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
 			return F.Plus(F.C0);
 		}
@@ -529,9 +529,9 @@ public class JASConvert<C extends RingElem<C>> {
 					monomTimes.add(F.Power(variable, F.integer(lExp)));
 				}
 			}
-			result.add(monomTimes);
+			result.add(monomTimes.getOneIdentity(F.C1));
 		}
-		return result;
+		return result.getOneIdentity(F.C0);
 	}
 
 	public IAST polyAlgebraicNumber2Expr(final GenPolynomial<AlgebraicNumber<BigRational>> poly) throws ArithmeticException,

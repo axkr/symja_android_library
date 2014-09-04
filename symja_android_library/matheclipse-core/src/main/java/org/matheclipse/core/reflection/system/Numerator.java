@@ -10,8 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Get the numerator part of an expression
  * 
- * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia:
- * Fraction (mathematics)</a>
+ * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
  * 
  * @see org.matheclipse.core.reflection.system.Denominator
  */
@@ -28,6 +27,9 @@ public class Numerator implements IFunctionEvaluator {
 			return ((IRational) arg).getNumerator();
 		}
 		IExpr[] parts = Apart.getFractionalParts(arg);
+		if (parts == null) {
+			return arg;
+		}
 		return parts[0];
 	}
 

@@ -32,6 +32,9 @@ public class Denominator implements IFunctionEvaluator {
 			return ((IRational) expr).getDenominator();
 		}
 		IExpr[] parts = Apart.getFractionalParts(expr);
+		if (parts == null) {
+			return F.C1;
+		}
 		return parts[1];
 	}
 
