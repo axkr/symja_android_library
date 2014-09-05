@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExponentArray;
 import org.matheclipse.core.polynomials.Polynomial;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -148,35 +149,37 @@ public class Cancel extends AbstractFunctionEvaluator {
 				return null;
 			}
 
-			Polynomial pol1 = new Polynomial(poly1, eVar);
-			Polynomial pol2 = new Polynomial(poly2, eVar);
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			JASIExpr jas = new JASIExpr(r.toList(), true);
-			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-			GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+			Polynomial pol1 = new Polynomial(poly1, eVar.getVarList(), false);
+			Polynomial pol2 = new Polynomial(poly2, eVar.getVarList(), false);
+			if (pol1.createPolynomial(poly1, true, false) && pol2.createPolynomial(poly2, true, false)) {
+				ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				JASIExpr jas = new JASIExpr(r.toList(), true);
+				GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+				GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
-			GreatestCommonDivisor<IExpr> engine;
-			engine = GCDFactory.getImplementation(new ExprRingFactory());
-			GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
-			IExpr[] result = new IExpr[3];
-			if (gcd.isONE()) {
-				result[0] = jas.exprPoly2Expr(gcd);
-				result[1] = jas.exprPoly2Expr(p1);
-				result[2] = jas.exprPoly2Expr(p2);
-			} else {
-				result[0] = F.C1;
-				result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
-				result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));
-				// java.math.BigInteger commonNumerator, commonDenominator;
-				// Object[] objects = jas.factorTerms(p1.divide(gcd));
-				// commonNumerator = (java.math.BigInteger) objects[0];
-				// result[1] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
-				// objects = jas.factorTerms(p2.divide(gcd));
-				// commonDenominator = (java.math.BigInteger) objects[0];
-				// result[2] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
-				// result[0] = F.fraction(commonNumerator, commonDenominator);
+				GreatestCommonDivisor<IExpr> engine;
+				engine = GCDFactory.getImplementation(new ExprRingFactory());
+				GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
+				IExpr[] result = new IExpr[3];
+				if (gcd.isONE()) {
+					result[0] = jas.exprPoly2Expr(gcd);
+					result[1] = jas.exprPoly2Expr(p1);
+					result[2] = jas.exprPoly2Expr(p2);
+				} else {
+					result[0] = F.C1;
+					result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
+					result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));
+					// java.math.BigInteger commonNumerator, commonDenominator;
+					// Object[] objects = jas.factorTerms(p1.divide(gcd));
+					// commonNumerator = (java.math.BigInteger) objects[0];
+					// result[1] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
+					// objects = jas.factorTerms(p2.divide(gcd));
+					// commonDenominator = (java.math.BigInteger) objects[0];
+					// result[2] = jas.integerPoly2Expr((GenPolynomial<BigInteger>) objects[2]);
+					// result[0] = F.fraction(commonNumerator, commonDenominator);
+				}
+				return result;
 			}
-			return result;
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
