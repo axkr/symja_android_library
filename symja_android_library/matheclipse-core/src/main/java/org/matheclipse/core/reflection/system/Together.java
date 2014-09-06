@@ -11,61 +11,66 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * 
+ * Determine a common denominator for the expressions of a sum.
  */
 public class Together extends AbstractFunctionEvaluator {
 
-	private static IExpr togetherAST(final IAST ast) {
-		if (ast.isPlus()) {
-			IAST result = togetherPlus(ast);
+	public static IExpr together(IAST ast) {
+		IExpr temp = ExpandAll.expandAll(ast, null);
+		if (temp == null) {
+			temp = ast;
+		}
+		if (temp.isAST()) {
+			IExpr result = togetherPlusTimesPower((IAST) temp);
 			if (result != null) {
-				return together(result);
-			}
-			return null;
-		} else if (ast.isTimes() || ast.isPower()) {
-			try {
-				IAST result = null;
-				if (ast.isTimes()) {
-					for (int i = 1; i < ast.size(); i++) {
-						if (ast.get(i).isAST()) {
-							IExpr temp = togetherAST((IAST) ast.get(i));
-							if (temp != null) {
-								if (result == null) {
-									result = ast.clone();
-								}
-								result.set(i, temp);
-							}
-						}
-					}
-				} else {
-					if (ast.arg1().isAST()) {
-						IExpr temp = togetherAST((IAST) ast.arg1());
-						if (temp != null) {
-							if (result == null) {
-								result = ast.clone();
-							}
-							result.set(1, temp);
-						}
-					}
+				result = F.eval(result);
+				if (result.isPlus() || result.isTimes() || result.isPower()) {
+					temp = result;
 				}
-				if (result != null) {
-					IExpr temp = F.eval(result);
-					if (temp.isTimes() || temp.isPower()) {
-						IExpr temp2 = Cancel.cancelPowerTimes((IAST) temp);
-						if (temp2 != null) {
-							return temp2;
-						}
-					}
-					return temp;
-				}
-				return Cancel.cancelPowerTimes(ast);
-			} catch (JASConversionException jce) {
-				// if (Config.DEBUG) {
-				jce.printStackTrace();
-				// }
+				return result;
 			}
 		}
+		return temp;
+	}
 
+	private static IAST togetherForEach(final IAST ast, IAST result) {
+		for (int i = 1; i < ast.size(); i++) {
+			if (ast.get(i).isAST()) {
+				IExpr temp = togetherNull((IAST) ast.get(i));
+				if (temp != null) {
+					if (result == null) {
+						result = ast.clone();
+					}
+					result.set(i, temp);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
+	 * 
+	 * @param ast
+	 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
+	 */
+	private static IExpr togetherNull(IAST ast) {
+		boolean evaled = false;
+		IExpr temp = ExpandAll.expandAll(ast, null);// F.evalExpandAll(arg1);
+		if (temp == null) {
+			temp = ast;
+		} else {
+			evaled = true;
+		}
+		if (temp.isAST()) {
+			IExpr result = togetherPlusTimesPower((IAST) temp);
+			if (result != null) {
+				return F.eval(result);
+			}
+		}
+		if (evaled) {
+			return temp;
+		}
 		return null;
 	}
 
@@ -118,7 +123,6 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 			i++;
 		}
-		// System.out.println(numer.toString());
 		IExpr exprNumerator = F.evalExpandAll(numer);
 		if (denom.size() == 1) {
 			return null;
@@ -143,6 +147,52 @@ public class Together extends AbstractFunctionEvaluator {
 		return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
 	}
 
+	private static IExpr togetherPlusTimesPower(final IAST ast) {
+		if (ast.isPlus()) {
+			IAST result = null;
+			result = togetherForEach(ast, result);
+			if (result != null) {
+				return togetherPlus(result);
+			}
+			return togetherPlus(ast);
+		} else if (ast.isTimes() || ast.isPower()) {
+			try {
+				IAST result = null;
+				if (ast.isTimes()) {
+					result = togetherForEach(ast, result);
+				} else {
+					// Power
+					if (ast.arg1().isAST()) {
+						IExpr temp = togetherNull((IAST) ast.arg1());
+						if (temp != null) {
+							if (result == null) {
+								result = ast.clone();
+							}
+							result.set(1, temp);
+						}
+					}
+				}
+				if (result != null) {
+					IExpr temp = F.eval(result);
+					if (temp.isTimes() || temp.isPower()) {
+						IExpr temp2 = Cancel.cancelPowerTimes((IAST) temp);
+						if (temp2 != null) {
+							return temp2;
+						}
+					}
+					return temp;
+				}
+				return Cancel.cancelPowerTimes(ast);
+			} catch (JASConversionException jce) {
+				// if (Config.DEBUG) {
+				jce.printStackTrace();
+				// }
+			}
+		}
+
+		return null;
+	}
+
 	public Together() {
 	}
 
@@ -155,59 +205,12 @@ public class Together extends AbstractFunctionEvaluator {
 			return arg1;
 		}
 		if (arg1.isAST()) {
-			IExpr temp = ExpandAll.expandAll(arg1, null);// F.evalExpandAll(arg1);
-			if (temp == null) {
-				temp = arg1;
-			}
-			if (temp.isAST()) {
-				// IExpr expr = together((IAST) arg1);
-				// IExpr temp = arg1;
-				IExpr result = null;
-				// boolean evaled = false;
-				// while (true) {
-				result = togetherAST((IAST) temp);
-				if (result != null) {
-					result = F.eval(result);
-					if (result.isPlus() || result.isTimes() || result.isPower()) {
-						// evaled = true;
-						temp = result;
-						// continue;
-					}
-					return result;
-				} else {
-					// if (evaled) {
-					return temp;
-					// }
-					// return arg1;
-				}
-				// }
+			IExpr temp = togetherNull((IAST) arg1);
+			if (temp != null) {
+				return temp;
 			}
 		}
 		return arg1;
-	}
-
-	public static IExpr together(IAST ast) {
-		IExpr temp = ExpandAll.expandAll(ast, null);// F.evalExpandAll(arg1);
-		if (temp == null) {
-			temp = ast;
-		}
-		if (temp.isAST()) {
-			IExpr result = null;
-			result = togetherAST((IAST) temp);
-			if (result != null) {
-				result = F.eval(result);
-				if (result.isPlus() || result.isTimes() || result.isPower()) {
-					temp = result;
-				}
-				return result;
-			}
-		}
-		return temp;
-		// IExpr result = togetherAST(ast);
-		// if (result != null) {
-		// return F.eval(result);
-		// }
-		// return ast;
 	}
 
 	@Override
