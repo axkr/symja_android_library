@@ -98,10 +98,15 @@ public class Expand extends AbstractFunctionEvaluator {
 			return null;
 		}
 
+		/**
+		 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the range Integer.MIN_VALUE to Integer.MAX_VALUE.
+		 * 
+		 * @param powerAST
+		 * @return
+		 */
 		public IExpr expandPowerNull(final IAST powerAST) {
 			try {
 				int exp = Validate.checkPowerExponent(powerAST);
-				// (a+b)^exp
 				if ((powerAST.arg1().isPlus())) {
 					if (exp < 0) {
 						exp *= (-1);
@@ -185,18 +190,9 @@ public class Expand extends AbstractFunctionEvaluator {
 			final IAST plusAST = Plus();
 			for (int i = 1; i < plusAST0.size(); i++) {
 				for (int j = 1; j < plusAST1.size(); j++) {
+					IExpr temp = F.Times(plusAST0.get(i), plusAST1.get(j));
 					// evaluate to flatten out Times() exprs
-					IExpr temp = F.eval(F.Times(plusAST0.get(i), plusAST1.get(j)));
-					if (temp.isAST()) {
-						IExpr res = expandAST((IAST) temp);
-						if (res == null) {
-							plusAST.add(temp);
-						} else {
-							plusAST.add(res);
-						}
-					} else {
-						plusAST.add(temp);
-					}
+					evalAndExpandAST(plusAST, temp);
 				}
 			}
 			return plusAST;
@@ -210,17 +206,31 @@ public class Expand extends AbstractFunctionEvaluator {
 		 * @return
 		 */
 		private IAST expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-			final IAST pList = Plus();
+			final IAST result = Plus();
 			for (int i = 1; i < plusAST.size(); i++) {
 				IAST temp = F.Times(expr1, plusAST.get(i));
-				IExpr res = expandAST(temp);
-				if (res == null) {
-					pList.add(temp);
-				} else {
-					pList.add(res);
+				// evaluate to flatten out Times() exprs
+				evalAndExpandAST(result, temp);
+			}
+			return result;
+		}
+
+		/**
+		 * Evaluate <code>expr</code> and expand the resulting expression, if it's an <code>IAST</code>
+		 * 
+		 * @param result
+		 * @param expr
+		 */
+		public void evalAndExpandAST(final IAST result, IExpr expr) {
+			expr = F.eval(expr);
+			if (expr.isAST()) {
+				IExpr res = expandAST((IAST) expr);
+				if (res != null) {
+					result.add(res);
+					return;
 				}
 			}
-			return pList;
+			result.add(expr);
 		}
 
 		/**
