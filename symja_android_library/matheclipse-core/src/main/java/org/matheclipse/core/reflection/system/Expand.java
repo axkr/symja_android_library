@@ -8,7 +8,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.combinatoric.KPermutationsIterable;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -158,46 +157,83 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 				result = expandTimesBinary(result, temp);
 			}
-			return result;
+			return F.eval(result);
 		}
 
 		private IExpr expandTimesBinary(final IExpr expr0, final IExpr expr1) {
 			if (expr0.isPlus()) {
 				if (!expr1.isPlus()) {
-					return F.eval(expandTimesPlus(expr1, (IAST) expr0));
+					return expandExprTimesPlus(expr1, (IAST) expr0);
 				}
 				final IAST ast1 = assurePlus(expr1);
-				return F.eval(expandPlusTimesPlus((IAST) expr0, ast1));
+				return expandPlusTimesPlus((IAST) expr0, ast1);
 			}
 			if (expr1.isPlus()) {
-				return F.eval(expandTimesPlus(expr0, (IAST) expr1));
+				return expandExprTimesPlus(expr0, (IAST) expr1);
 			}
-			return F.eval(F.Times(expr0, expr1));
+			return F.Times(expr0, expr1);
 		}
 
+		/**
+		 * <code>(a+b)*(c+d) -> a*c+a*d+b*c+b*d</code>
+		 * 
+		 * @param plusAST0
+		 * @param plusAST1
+		 * @return
+		 */
 		private IAST expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
-			// (a+b)*(c+d) -> a*c+a*d+b*c+b*d
 			final IAST plusAST = Plus();
 			for (int i = 1; i < plusAST0.size(); i++) {
-				plusAST1.mapAt(plusAST, Times(plusAST0.get(i), F.Null), 2);
+				for (int j = 1; j < plusAST1.size(); j++) {
+					// evaluate to flatten out Times() exprs
+					IExpr temp = F.eval(F.Times(plusAST0.get(i), plusAST1.get(j)));
+					if (temp.isAST()) {
+						IExpr res = expandAST((IAST) temp);
+						if (res == null) {
+							plusAST.add(temp);
+						} else {
+							plusAST.add(res);
+						}
+					} else {
+						plusAST.add(temp);
+					}
+				}
 			}
 			return plusAST;
 		}
 
-		private IAST expandTimesPlus(final IExpr expr1, final IAST plusAST) {
-			// expr*(a+b+c) -> expr*a+expr*b+expr*c
+		/**
+		 * <code>expr*(a+b+c) -> expr*a+expr*b+expr*c</code>
+		 * 
+		 * @param expr1
+		 * @param plusAST
+		 * @return
+		 */
+		private IAST expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
 			final IAST pList = Plus();
 			for (int i = 1; i < plusAST.size(); i++) {
-				pList.add(F.Times(expr1, plusAST.get(i)));
+				IAST temp = F.Times(expr1, plusAST.get(i));
+				IExpr res = expandAST(temp);
+				if (res == null) {
+					pList.add(temp);
+				} else {
+					pList.add(res);
+				}
 			}
 			return pList;
 		}
 
+		/**
+		 * If <code>expr</code> is not of the form <code>Plus(...)</code>, return <code>Plus(expr)</code>, else return
+		 * <code>expr</code>.
+		 * 
+		 * @param expr
+		 * @return
+		 */
 		private IAST assurePlus(final IExpr expr) {
 			if (expr.isPlus()) {
 				return (IAST) expr;
 			}
-			// if expr is not of the form Plus[...], generate Plus[expr]
 			return F.Plus(expr);
 		}
 
