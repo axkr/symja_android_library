@@ -167,19 +167,15 @@ public class Expand extends AbstractFunctionEvaluator {
 					return F.eval(expandTimesPlus(expr1, (IAST) expr0));
 				}
 				final IAST ast1 = assurePlus(expr1);
-				return F.eval(expandTimesPlus((IAST) expr0, ast1));
+				return F.eval(expandPlusTimesPlus((IAST) expr0, ast1));
 			}
 			if (expr1.isPlus()) {
-				if (!expr0.isPlus()) {
-					return F.eval(expandTimesPlus(expr0, (IAST) expr1));
-				}
-				final IAST ast0 = assurePlus(expr0);
-				return F.eval(expandTimesPlus(ast0, (IAST) expr1));
+				return F.eval(expandTimesPlus(expr0, (IAST) expr1));
 			}
 			return F.eval(F.Times(expr0, expr1));
 		}
 
-		private IAST expandTimesPlus(final IAST plusAST0, final IAST plusAST1) {
+		private IAST expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
 			// (a+b)*(c+d) -> a*c+a*d+b*c+b*d
 			final IAST plusAST = Plus();
 			for (int i = 1; i < plusAST0.size(); i++) {
@@ -278,6 +274,13 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 	}
 
+	/**
+	 * Expand the given <code>ast</code> expression.
+	 * 
+	 * @param ast
+	 * @param patt
+	 * @return <code>null</code> if the expression couldn't be expanded.
+	 */
 	public static IExpr expand(final IAST ast, IExpr patt) {
 		Expander expander = new Expander(patt);
 		return expander.expandAST(ast);
