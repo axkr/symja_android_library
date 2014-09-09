@@ -35,11 +35,10 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		
+
 		ExprVariables eVar = new ExprVariables(ast.arg1());
-		if (!eVar.isSize(1)) {
-			// gcd only possible for univariate polynomials
-			return null;
+		for (int i = 2; i < ast.size(); i++) {
+			eVar.addVarList(ast.get(i));
 		}
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3 && ast.last().isRuleAST()) {
@@ -52,14 +51,9 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 			GenPolynomial<BigRational> temp;
 			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
-				eVar = new ExprVariables(ast.get(i));
-				if (!eVar.isSize(1)) {
-					// gcd only possible for univariate polynomials
-					return null;
-				}
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr, false);
-				poly = factory.gcd(poly, temp); 
+				poly = factory.gcd(poly, temp);
 			}
 			return jas.rationalPoly2Expr(poly.monic());
 		} catch (JASConversionException e) {
@@ -90,7 +84,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 			GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 			GenPolynomial<ModLong> temp;
 			GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
-			
+
 			for (int i = 2; i < ast.size() - 1; i++) {
 				eVar = new ExprVariables(ast.get(i));
 				if (!eVar.isSize(1)) {

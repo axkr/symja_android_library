@@ -45,12 +45,16 @@ public class Resultant extends AbstractFunctionEvaluator {
 			return F.Power(b, aExp);
 		}
 		IExpr abExp = aExp.times(bExp);
-		if (F.evalTrue(F.Less(aExp, F.Exponent(b, x)))) {
-			return F.Times(F.Power(F.CN1, abExp), F.Resultant(b, a, x));
+		if (F.evalTrue(F.Less(aExp, bExp))) {
+			return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x));
 		}
 
 		IExpr r = F.eval(F.PolynomialRemainder(a, b, x));
-		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, F.Exponent(r, x))),
+		IExpr rExp = r;
+		if (!r.isZero()) {
+			rExp = F.eval(F.Exponent(r, x));
+		}
+		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
 				resultant(b, r, x));
 	}
 
