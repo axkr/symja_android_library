@@ -36,9 +36,8 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 		ExprVariables eVar = new ExprVariables(ast.arg1());
-		if (!eVar.isSize(1)) {
-			// gcd only possible for univariate polynomials
-			return null;
+		for (int i = 2; i < ast.size(); i++) {
+			eVar.addVarList(ast.get(i));
 		}
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
 		IExpr expr = F.evalExpandAll(ast.arg1());
@@ -53,19 +52,14 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 					GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 					GenPolynomial<ModLong> temp;
 					GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
-					for (int i = 2; i < ast.size() - 1; i++) { 
-						eVar = new ExprVariables(ast.get(i));
-						if (!eVar.isSize(1)) {
-							// gcd only possible for univariate polynomials
-							return null;
-						}
+					for (int i = 2; i < ast.size() - 1; i++) {
 						expr = F.evalExpandAll(ast.get(i));
 						temp = jas.expr2JAS(expr);
 						poly = factory.lcm(poly, temp);
 					}
 
 					return Factor.factorModulus(jas, modIntegerRing, poly.monic(), false);
-//					return jas.modLongPoly2Expr(poly.monic());
+					// return jas.modLongPoly2Expr(poly.monic());
 				} catch (JASConversionException e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();
@@ -81,13 +75,9 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
 				eVar = new ExprVariables(ast.get(i));
-				if (!eVar.isSize(1)) {
-					// gcd only possible for univariate polynomials
-					return null;
-				}
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr, false);
-				poly = factory.lcm(poly, temp); 
+				poly = factory.lcm(poly, temp);
 			}
 			return jas.rationalPoly2Expr(poly.monic());
 		} catch (JASConversionException e) {
