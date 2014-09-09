@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -57,7 +58,11 @@ public class Coefficient extends AbstractFunctionEvaluator {
 				n = Validate.checkLongType(ast.arg3());
 			}
 			Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
-			return poly.coefficient(n);
+			if (poly.isPolynomial()) {
+				return poly.coefficient(n);
+			}
+			throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
+			
 //			return coefficient(expr, (ISymbol) arg2, n);
 		} catch (ArithmeticException ae) {
 

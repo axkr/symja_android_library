@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -75,7 +76,10 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				}
 			}
 			Polynomial poly = new Polynomial(expr, vars, comparator);
-			return poly.monomialList();
+			if (poly.isPolynomial()) {
+				return poly.monomialList();
+			}
+			throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 			// return monomialList(expr, eVar.getArrayList(), termOrder);
 		} catch (JASConversionException jce) {
 			// toInt() conversion failed

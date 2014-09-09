@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -26,11 +27,15 @@ public class Resultant extends AbstractFunctionEvaluator {
 		IExpr a = F.evalExpandAll(ast.arg1());
 		IExpr b = F.evalExpandAll(ast.arg2());
 		Polynomial aPolynomial = new Polynomial(a, x, false);
-		Polynomial bPolynomial = new Polynomial(b, x, false);
-		if (aPolynomial.createPolynomial(a, true, false) && bPolynomial.createPolynomial(b, true, false)) {
-			return F.Together(resultant(a, b, x));
+		if (!aPolynomial.createPolynomial(a, true, false)) {
+			throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
 		}
-		return null;
+		Polynomial bPolynomial = new Polynomial(b, x, false);
+		if (!bPolynomial.createPolynomial(b, true, false)) {
+			throw new WrongArgumentType(ast, b, 2, "Polynomial expected!");
+
+		}
+		return F.Together(resultant(a, b, x));
 	}
 
 	public IExpr resultant(IExpr a, IExpr b, ISymbol x) {

@@ -36,6 +36,14 @@ public class Polynomial {
 		this(polynomialExpr, variables, comparator, true);
 	}
 
+	/**
+	 * Create a Polynomial.
+	 * 
+	 * @param polynomialExpr
+	 * @param variables
+	 * @param comparator
+	 * @param convertPolynomial convert to polynomial form
+	 */
 	public Polynomial(final IExpr polynomialExpr, final IAST variables, Comparator<ExponentArray> comparator,
 			boolean convertPolynomial) {
 		this.fVariables = variables;

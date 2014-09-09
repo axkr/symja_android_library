@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,24 +28,13 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
 		// try {
 		Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
-		if (poly.isZero()) {
-			return F.List();
+		if (poly.isPolynomial()) {
+			if (poly.isZero()) {
+				return F.List();
+			}
+			return poly.coefficientList();
 		}
-		return poly.coefficientList();
-		// IAST result = F.List();
-		// long degree = univariateCoefficientList(expr, (ISymbol) arg2, result);
-		// if (degree >= Short.MAX_VALUE) {
-		// throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + " - "
-		// + Short.MAX_VALUE);
-		// }
-		// return result;
-		// } catch (JASConversionException jce) {
-		// // toInt() conversion failed
-		// if (Config.DEBUG) {
-		// jce.printStackTrace();
-		// }
-		// }
-		// return null;
+		throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 	}
 
 	/**
@@ -56,6 +46,10 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	 */
 	public static double[] coefficientList(IExpr polynomial, final ISymbol variable) throws JASConversionException {
 		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		if (!poly.isPolynomial()) {
+			throw new WrongArgumentType(polynomial, "Polynomial expected!");
+		}
+
 		IAST list = poly.coefficientList();
 		int degree = list.size() - 2;
 		double[] result = new double[degree + 1];
@@ -80,6 +74,9 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	public static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
 			throws JASConversionException {
 		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		if (!poly.isPolynomial()) {
+			throw new WrongArgumentType(polynomial, "Polynomial expected!");
+		}
 		IAST list = poly.coefficientList();
 		int degree = list.size() - 2;
 		if (degree >= Short.MAX_VALUE) {
@@ -105,6 +102,9 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	public static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
 			List<IExpr> resultListDiff) throws JASConversionException {
 		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
+		if (!poly.isPolynomial()) {
+			throw new WrongArgumentType(polynomial, "Polynomial expected!");
+		}
 		IAST polyExpr = poly.coefficientList();
 
 		int degree = polyExpr.size() - 2;

@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.integer;
 
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -171,82 +172,31 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		}
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
-		if (poly.isPolynomial()){
-			long n = poly.maximumDegree();
-			if (n >= 2L && n <= 5L) {
-			    IAST result = poly.coefficientList();
-				IAST rules = F.List();
-				for (int i = 1; i < result.size(); i++) {
-					rules.add(F.Rule(vars[i - 1], result.get(i)));
-				}
-				switch ((int) n) {
-				case 2:
-					return QUADRATIC.replaceAll(rules);
-				case 3:
-					return CUBIC.replaceAll(rules);
-				case 4:
-					return QUARTIC.replaceAll(rules);
-				case 5:
-					return QUINTIC.replaceAll(rules);
-				}
-
-			}
-			IExpr fN = poly.coefficient(n);
-		    Polynomial polyDiff = poly.derivative();
-			// see: http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
-		    return F.Divide(F.Times(F.Power(F.CN1, (n*(n-1)/2)),F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
+		if (!poly.isPolynomial()){
+		    throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 		}
-		return null;
-		/* 
-		try {
-			long degree = org.matheclipse.core.reflection.system.CoefficientList.univariateCoefficientList(expr, (ISymbol) arg2, result, resultListDiff);
-			if (degree >= Short.MAX_VALUE) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Polynomial degree" + degree + " is larger than: " + Short.MAX_VALUE);
+		long n = poly.maximumDegree();
+		if (n >= 2L && n <= 5L) {
+		    IAST result = poly.coefficientList();
+			IAST rules = F.List();
+			for (int i = 1; i < result.size(); i++) {
+				rules.add(F.Rule(vars[i - 1], result.get(i)));
 			}
-			if (degree >= 2L && degree <= 5L) {
-				IAST rules = F.List();
-				for (int i = 1; i < result.size(); i++) {
-					rules.add(F.Rule(vars[i - 1], result.get(i)));
-				}
-				switch ((int) degree) {
-				case 2:
-					return QUADRATIC.replaceAll(rules);
-				case 3:
-					return CUBIC.replaceAll(rules);
-				case 4:
-					return QUARTIC.replaceAll(rules);
-				case 5:
-					return QUINTIC.replaceAll(rules);
-				}
-
-			}
-			IExpr resultant = org.matheclipse.core.reflection.system.Resultant.resultant(result, resultListDiff);
-			if (resultant==null) {
-			    return null;
-			}
-			IExpr disc;
-			degree *= (degree - 1);
-			degree /= 2;
-			IExpr factor = F.Power(result.last(), F.CN1);
-			if (degree % 2L != 0L) {
-				factor = F.Times(F.CN1, factor);
-			}
-			if (resultant.isPlus()) {
-				IAST res = (IAST) resultant;
-				// distribute the factor over the sum
-				res = res.mapAt(F.Times(null, factor),1);
-				disc = F.eval(res);
-			} else {
-				disc = F.eval(F.Times(resultant, factor));
-			}
-			return disc;
-		} catch (JASConversionException jce) {
-			if (Config.DEBUG) {
-				jce.printStackTrace();
+			switch ((int) n) {
+			case 2:
+				return QUADRATIC.replaceAll(rules);
+			case 3:
+				return CUBIC.replaceAll(rules);
+			case 4:
+				return QUARTIC.replaceAll(rules);
+			case 5:
+				return QUINTIC.replaceAll(rules);
 			}
 		}
-		return null;
-		*/
+		IExpr fN = poly.coefficient(n);
+	    Polynomial polyDiff = poly.derivative();
+		// see: http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
+	    return F.Divide(F.Times(F.Power(F.CN1, (n*(n-1)/2)),F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
 	}
 
 	@Override
