@@ -781,11 +781,11 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public IExpr gcd(IExpr that) {
-		if (equals(that)) {
-			return that;
-		}
-		return F.C1;
-		// throw new UnsupportedOperationException(toString());
+		throw new UnsupportedOperationException(toString());
+//		if (equals(that)) {
+//			return that;
+//		}
+//		return F.C1;
 	}
 
 	@Override
@@ -864,11 +864,11 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public IExpr remainder(IExpr that) {
-		if (equals(that)) {
-			return F.C0;
-		}
-		return this;
-		// throw new UnsupportedOperationException(toString());
+		throw new UnsupportedOperationException(toString());
+//		if (equals(that)) {
+//			return F.C0;
+//		}
+//		return this;
 	}
 
 	@Override
