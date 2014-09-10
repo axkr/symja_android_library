@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -46,16 +47,16 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		}
 		try {
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
-			GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-			GenPolynomial<BigRational> temp;
-			GreatestCommonDivisorAbstract<BigRational> factory = GCDFactory.getImplementation(BigRational.ZERO);
+			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r.toList(), BigInteger.ZERO);
+			GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
+			GenPolynomial<BigInteger> temp;
+			GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr, false);
 				poly = factory.gcd(poly, temp);
 			}
-			return jas.rationalPoly2Expr(poly.monic());
+			return jas.integerPoly2Expr(poly.monic());
 		} catch (JASConversionException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
