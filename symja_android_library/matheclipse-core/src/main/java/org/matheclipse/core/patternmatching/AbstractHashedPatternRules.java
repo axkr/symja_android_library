@@ -114,7 +114,7 @@ public abstract class AbstractHashedPatternRules {
 	}
 
 	/**
-	 * Test if the seconad left-hand-side is a pattern object
+	 * Test if the second left-hand-side is a pattern object
 	 * 
 	 */
 	public boolean isPattern2() {

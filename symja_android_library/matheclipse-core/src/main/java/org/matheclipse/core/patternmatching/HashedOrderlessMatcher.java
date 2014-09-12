@@ -155,7 +155,7 @@ public class HashedOrderlessMatcher {
 			ArrayListMultimap<Integer, AbstractHashedPatternRules> hashRuleMap, int[] hashValues) {
 		boolean evaled = false;
 		IAST result = orderlessAST.copyHead();
-		for (int i = 0; i < hashValues.length; i++) {
+		for (int i = 0; i < hashValues.length-1; i++) {
 			if (hashValues[i] == 0) {
 				// already used entry
 				continue;

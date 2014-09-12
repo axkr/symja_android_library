@@ -2,8 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.$p;
 import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.EvalEngine;

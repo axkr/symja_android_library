@@ -20,14 +20,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() > 2) {
-			IAST temp = evaluateHashs(ast);
+		if (ast.size() == 3) {
+			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
 			if (temp != null) {
 				return temp;
 			}
-		}
-		if (ast.size() == 3) {
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return evaluateHashs(ast);
 		}
 
 		if (ast.size() > 3) {
@@ -89,6 +87,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			}
 		}
 
+		if (ast.size() > 2) {
+			IAST temp = evaluateHashs(ast);
+			if (temp != null) {
+				return temp;
+			}
+		}
 		return null;
 	}
 
