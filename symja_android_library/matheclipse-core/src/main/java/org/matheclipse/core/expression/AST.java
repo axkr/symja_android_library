@@ -2013,7 +2013,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	@Override
 	public IExpr gcd(IExpr that) {
-		if (equals(that)){
+		if (equals(that)) {
 			return that;
 		}
 		return F.C1;
@@ -2078,6 +2078,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr divide(IExpr that) {
+		if (that.isNumber()) {
+			return F.eval(F.Times(this, that.inverse()));
+		}
 		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
 
