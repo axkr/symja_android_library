@@ -9,15 +9,14 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Returns the gcd of two positive numbers plus the bezout relations
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended
- * Euclidean algorithm</a> and See <a
- * href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
- * identity</a>
+ * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended Euclidean algorithm</a> and See <a
+ * href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
  * 
  * @author jeremy watts
  * @version 05/03/07
@@ -30,12 +29,13 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		 
+		IExpr arg;
 		for (int i = 1; i < ast.size(); i++) {
-			if (!ast.get(i).isInteger()) {
+			arg = ast.get(i);
+			if (!arg.isInteger()) {
 				return null;
 			}
-			if (!((IInteger) ast.get(i)).isPositive()) {
+			if (!((IInteger) arg).isPositive()) {
 				return null;
 			}
 		}
@@ -151,4 +151,9 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 		return results;
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(symbol);
+	}
 }
