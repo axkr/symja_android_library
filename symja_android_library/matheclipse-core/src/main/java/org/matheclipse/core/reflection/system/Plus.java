@@ -95,7 +95,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 			if (f0.arg1().isNumber()) {
 				// Times(number, o1) + o1 => Times(Plus(1, number), o1)
 				if ((f0.size() == 3) && f0.equalsAt(2, o1)) {
-					return Times(Plus(F.C1, f0.arg1()), o1);
+					return f0.arg1().plus(F.C1).times(o1);
 				}
 
 				if (o1.isTimes()) {
@@ -111,7 +111,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 						if (f0.equalsFromPosition(1, f1, 0)) {
 							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
 
-							return Times(Plus(F.C1, f0.arg1()), result);
+							return Times(f0.arg1().plus(F.C1), result);
 						}
 					}
 				}
@@ -123,7 +123,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 						if (f0.equalsFromPosition(0, f1, 1)) {
 							final IAST result = F.ast(f1, F.Times, true, 2, f1.size());
 
-							return Times(Plus(F.C1, f1.arg1()), result);
+							return Times(f1.arg1().plus(F.C1), result);
 						}
 					}
 				}
@@ -134,7 +134,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 			final IAST f1 = (IAST) o1;
 			// o0 + Times(o0, number) => Times(Plus(1, number), o0)
 			if ((f1.size() == 3) && f1.equalsAt(2, o0)) {
-				return Times(Plus(F.C1, f1.arg1()), o0);
+				return f1.arg1().plus(F.C1).times(o0);
 			}
 		}
 
