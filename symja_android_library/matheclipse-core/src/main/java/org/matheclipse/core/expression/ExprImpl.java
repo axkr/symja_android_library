@@ -34,84 +34,27 @@ import edu.jas.structure.ElemFactory;
 @SuppressWarnings("serial")
 public abstract class ExprImpl implements IExpr {
 
-	public IExpr opposite() {
-		return F.eval(F.Times(F.CN1, this));
-	}
-
-	/**
-	 * Additional negative method, which works like opposite to fulfill groovy's method signature
-	 * 
-	 * @return
-	 */
-	@Override
-	public final IExpr negative() {
-		return opposite();
-	}
-
-	@Override
-	public IExpr minus(final IExpr that) {
-		if (this.isNumber() && that.isNumber()) {
-			return F.eval(F.Plus(this, ((INumber) that).opposite()));
+	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
+		IExpr result = expr;
+		IExpr temp = expr.accept(visitor);
+		final int iterationLimit = EvalEngine.get().getIterationLimit();
+		int iterationCounter = 1;
+		while (temp != null) {
+			result = temp;
+			temp = result.accept(visitor);
+			if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+				IterationLimitExceeded.throwIt(iterationCounter, result);
+			}
 		}
-		if (that.isNumber()) {
-			return F.eval(F.Plus(this, ((INumber) that).opposite()));
+		return result;
+	}
+
+	@Override
+	public IExpr abs() {
+		if (this instanceof INumber) {
+			return ((INumber) this).eabs();
 		}
-		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
-	}
-
-	@Override
-	public IExpr plus(final IExpr that) {
-		return F.eval(F.Plus(this, that));
-	}
-
-	@Override
-	public IExpr inverse() {
-		return F.eval(F.Power(this, F.CN1));
-	}
-
-	@Override
-	public IExpr times(final IExpr that) {
-		return F.eval(F.Times(this, that));
-	}
-
-	/**
-	 * Additional multiply method which works like times to fulfill groovy's method signature
-	 * 
-	 * @param that
-	 * @return
-	 */
-	@Override
-	public final IExpr multiply(final IExpr that) {
-		return times(that);
-	}
-
-	@Override
-	public final IExpr power(final int n) {
-		if (this.isNumber()) {
-			return F.eval(F.Power(this, F.integer(n)));
-		}
-		return F.Power(this, F.integer(n));
-	}
-
-	@Override
-	public final IExpr power(final IExpr that) {
-		if (this.isNumber() && that.isNumber()) {
-			return F.eval(F.Power(this, that));
-		}
-		return F.Power(this, that);
-	}
-
-	// @Override
-	// public IExpr div(final IExpr that) {
-	// if (that.isNumber()) {
-	// return F.eval(F.Times(this, that.inverse()));
-	// }
-	// return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	// }
-
-	@Override
-	public IExpr mod(final IExpr that) {
-		return F.Mod(this, that);
+		throw new UnsupportedOperationException(toString());
 	}
 
 	@Override
@@ -119,14 +62,28 @@ public abstract class ExprImpl implements IExpr {
 		return F.And(this, that);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public IExpr or(final IExpr that) {
-		return F.Or(this, that);
+	public IExpr apply(IExpr... leaves) {
+		final IAST ast = F.ast(head());
+		for (int i = 0; i < leaves.length; i++) {
+			ast.add(leaves[i]);
+		}
+		return ast;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public IExpr getAt(final int index) {
-		return F.Part(this, F.integer(index));
+	public IExpr apply(List<? extends IExpr> leaves) {
+		final IAST ast = F.ast(head());
+		for (int i = 0; i < leaves.size(); i++) {
+			ast.add(leaves.get(i));
+		}
+		return ast;
 	}
 
 	@Override
@@ -156,135 +113,128 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public abstract ISymbol head();
-
-	@Override
-	public ISymbol topHead() {
-		return head();
+	public int compareTo(IExpr expr) {
+		if (hierarchy() > expr.hierarchy()) {
+			return 1;
+		}
+		if (hierarchy() < expr.hierarchy()) {
+			return -1;
+		}
+		return 0;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public boolean isConstant() {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isComplexInfinity() {
-		return false;
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isDirectedInfinity() {
-		return false;
+	public IExpr divide(IExpr that) {
+		if (that.isNumber()) {
+			return F.eval(F.Times(this, that.inverse()));
+		}
+		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public boolean isE() {
-		return false;
-	}
+	// @Override
+	// public IExpr div(final IExpr that) {
+	// if (that.isNumber()) {
+	// return F.eval(F.Times(this, that.inverse()));
+	// }
+	// return F.eval(F.Times(this, F.Power(that, F.CN1)));
+	// }
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public boolean isInfinity() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNegative() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNegativeInfinity() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isList() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isSequence() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isListOfLists() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isTrue() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFalse() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isSame(IExpr expression) {
-		return isSame(expression, Config.DOUBLE_EPSILON);
+	public IExpr[] egcd(IExpr b) {
+		throw new UnsupportedOperationException(toString());
 	}
 
 	@Override
-	public boolean isSame(IExpr expression, double epsilon) {
-		return equals(expression);
-	}
-
-	@Override
-	public final int[] isMatrix() {
-		// default: no matrix
+	public IExpr evaluate(EvalEngine engine) {
 		return null;
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public boolean isValue() {
+	public ElemFactory<IExpr> factory() {
+		throw new UnsupportedOperationException(toString());
+	}
+
+	@Override
+	public String fullFormString() {
+		return toString();
+	}
+
+	@Override
+	public IExpr gcd(IExpr that) {
+		throw new UnsupportedOperationException(toString());
+		// if (equals(that)) {
+		// return that;
+		// }
+		// return F.C1;
+	}
+
+	@Override
+	public IExpr getAt(final int index) {
+		return F.Part(this, F.integer(index));
+	}
+
+	@Override
+	public abstract ISymbol head();
+
+	@Override
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return toString();
+	}
+
+	@Override
+	public IExpr inverse() {
+		return F.eval(F.Power(this, F.CN1));
+	}
+
+	@Override
+	public final boolean isAnd() {
 		return false;
 	}
 
 	@Override
-	public final int isVector() {
-		// default: no vector
-		return -1;
+	public final boolean isArcCos() {
+		return false;
+	}
+
+	@Override
+	public final boolean isArcCosh() {
+		return false;
+	}
+
+	@Override
+	public final boolean isArcSin() {
+		return false;
+	}
+
+	@Override
+	public final boolean isArcSinh() {
+		return false;
+	}
+
+	@Override
+	public final boolean isArcTan() {
+		return false;
+	}
+
+	@Override
+	public final boolean isArcTanh() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isAST() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isOrderlessAST() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isFlatAST() {
 		return false;
 	}
 
@@ -302,7 +252,7 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isASTSizeGE(final IExpr header, final int length) {
+	public boolean isAST(IExpr header, int length, IExpr... args) {
 		return false;
 	}
 
@@ -320,33 +270,48 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAST(IExpr header, int length, IExpr... args) {
+	public final boolean isASTSizeGE(final IExpr header, final int length) {
 		return false;
 	}
 
 	@Override
-	public final boolean isPlus() {
-		return false;
+	public boolean isAtom() {
+		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public final boolean isPower() {
+	public boolean isComplex() {
+		return this instanceof IComplex;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isComplexInfinity() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isRuleAST() {
+	public boolean isComplexNumeric() {
+		return this instanceof IComplexNum;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isCondition() {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public final boolean isTimes() {
-		return false;
-	}
-
-	@Override
-	public final boolean isSin() {
+	public boolean isConstant() {
 		return false;
 	}
 
@@ -356,94 +321,38 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public final boolean isTan() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcSin() {
-		return false;
-	}
-
-	@Override
-	public final boolean isAnd() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcCos() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcTan() {
-		return false;
-	}
-
-	@Override
-	public final boolean isSinh() {
-		return false;
-	}
-
-	@Override
 	public final boolean isCosh() {
-		return false;
-	}
-
-	@Override
-	public final boolean isTanh() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcSinh() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcCosh() {
-		return false;
-	}
-
-	@Override
-	public final boolean isArcTanh() {
-		return false;
-	}
-
-	@Override
-	public final boolean isLog() {
-		return false;
-	}
-
-	@Override
-	public boolean isOne() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isOr() {
+	public boolean isDirectedInfinity() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isMinusOne() {
+	public boolean isE() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isZero() {
+	public boolean isFalse() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isSlot() {
+	public final boolean isFlatAST() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public boolean isSlotSequence() {
-		return false;
+	public boolean isFraction() {
+		return this instanceof IFraction;
 	}
 
 	/** {@inheritDoc} */
@@ -465,6 +374,75 @@ public abstract class ExprImpl implements IExpr {
 		return !predicate.apply(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isFunction() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isGEOrdered(final IExpr obj) {
+		return compareTo(obj) >= 0;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isGTOrdered(final IExpr obj) {
+		return compareTo(obj) > 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isInfinity() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isInteger() {
+		return this instanceof IInteger;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isLEOrdered(final IExpr obj) {
+		return compareTo(obj) <= 0;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isList() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isListOfLists() {
+		return false;
+	}
+
+	@Override
+	public final boolean isLog() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isLTOrdered(final IExpr obj) {
+		return compareTo(obj) < 0;
+	}
+
+	@Override
+	public final int[] isMatrix() {
+		// default: no matrix
+		return null;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isMember(final IExpr pattern, boolean heads) {
@@ -478,11 +456,92 @@ public abstract class ExprImpl implements IExpr {
 		return predicate.apply(this);
 	}
 
+	@Override
+	public boolean isMinusOne() {
+		return false;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean isFunction() {
+	public boolean isModule() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegative() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegativeInfinity() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNot() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumber() {
+		return this instanceof INumber;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumeric() {
+		return this instanceof INum || this instanceof IComplexNum;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericFunction() {
+		return isNumber() || isConstant();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumericMode() {
+		return isNumeric();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumIntValue() {
+		return false;
+	}
+
+	@Override
+	public boolean isOne() {
+		return false;
+	}
+
+	@Override
+	public boolean isONE() {
+		return isOne();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isOr() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isOrderlessAST() {
 		return false;
 	}
 
@@ -516,66 +575,19 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	@Override
+	public final boolean isPlus() {
+		return false;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public boolean isCondition() {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isModule() {
-		return false;
-	}
-
-	@Override
-	public boolean isSymbol() {
-		return this instanceof ISymbol;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isComplex() {
-		return this instanceof IComplex;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isComplexNumeric() {
-		return this instanceof IComplexNum;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFraction() {
-		return this instanceof IFraction;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isInteger() {
-		return this instanceof IInteger;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumIntValue() {
+	public final boolean isPower() {
 		return false;
 	}
 
@@ -587,88 +599,110 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSignedNumber() {
-		return this instanceof ISignedNumber;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNot() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumeric() {
-		return this instanceof INum || this instanceof IComplexNum;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumericMode() {
-		return isNumeric();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumericFunction() {
-		return isNumber() || isConstant();
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isRealFunction() {
 		return isSignedNumber() || isConstant();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumber() {
-		return this instanceof INumber;
+	public final boolean isRuleAST() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isLTOrdered(final IExpr obj) {
-		return compareTo(obj) < 0;
+	public boolean isSame(IExpr expression) {
+		return isSame(expression, Config.DOUBLE_EPSILON);
+	}
+
+	@Override
+	public boolean isSame(IExpr expression, double epsilon) {
+		return equals(expression);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isLEOrdered(final IExpr obj) {
-		return compareTo(obj) <= 0;
+	public final boolean isSequence() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isGTOrdered(final IExpr obj) {
-		return compareTo(obj) > 0;
+	public boolean isSignedNumber() {
+		return this instanceof ISignedNumber;
+	}
+
+	@Override
+	public final boolean isSin() {
+		return false;
+	}
+
+	@Override
+	public final boolean isSinh() {
+		return false;
+	}
+
+	@Override
+	public boolean isSlot() {
+		return false;
+	}
+
+	@Override
+	public boolean isSlotSequence() {
+		return false;
+	}
+
+	@Override
+	public boolean isSymbol() {
+		return this instanceof ISymbol;
+	}
+
+	@Override
+	public final boolean isTan() {
+		return false;
+	}
+
+	@Override
+	public final boolean isTanh() {
+		return false;
+	}
+
+	@Override
+	public final boolean isTimes() {
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isGEOrdered(final IExpr obj) {
-		return compareTo(obj) >= 0;
+	public boolean isTrue() {
+		return false;
 	}
 
 	@Override
-	public boolean isAtom() {
+	public boolean isUnit() {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return this;
+	public boolean isValue() {
+		return false;
 	}
 
 	@Override
-	public String fullFormString() {
-		return toString();
+	public final int isVector() {
+		// default: no vector
+		return -1;
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return toString();
+	public boolean isZero() {
+		return false;
+	}
+
+	@Override
+	public boolean isZERO() {
+		return isZero();
 	}
 
 	/** {@inheritDoc} */
@@ -682,36 +716,80 @@ public abstract class ExprImpl implements IExpr {
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
-	public IExpr apply(List<? extends IExpr> leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.size(); i++) {
-			ast.add(leaves.get(i));
+	public IExpr minus(final IExpr that) {
+		if (this.isNumber() && that.isNumber()) {
+			return F.eval(F.Plus(this, ((INumber) that).opposite()));
 		}
-		return ast;
+		if (that.isNumber()) {
+			return F.eval(F.Plus(this, ((INumber) that).opposite()));
+		}
+		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public IExpr apply(IExpr... leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.length; i++) {
-			ast.add(leaves[i]);
-		}
-		return ast;
+	public IExpr mod(final IExpr that) {
+		return F.Mod(this, that);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
-	public IExpr replaceAll(final IAST astRules) {
-		return this.accept(new VisitorReplaceAll(astRules));
+	public final IExpr multiply(final IExpr that) {
+		return times(that);
+	}
+
+	@Override
+	public IExpr negate() {
+		throw new UnsupportedOperationException(toString());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr negative() {
+		return opposite();
+	}
+
+	/** {@inheritDoc} */
+	public IExpr opposite() {
+		return F.eval(F.Times(F.CN1, this));
+	}
+
+	@Override
+	public IExpr or(final IExpr that) {
+		return F.Or(this, that);
+	}
+
+	@Override
+	public IExpr plus(final IExpr that) {
+		return F.eval(F.Plus(this, that));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr power(final IExpr that) {
+		if (this.isNumber() && that.isNumber()) {
+			return F.eval(F.Power(this, that));
+		}
+		return F.Power(this, that);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr power(final int n) {
+		if (this.isNumber()) {
+			return F.eval(F.Power(this, F.integer(n)));
+		}
+		return F.Power(this, F.integer(n));
+	}
+
+	@Override
+	public IExpr remainder(IExpr that) {
+		throw new UnsupportedOperationException(toString());
+		// if (equals(that)) {
+		// return F.C0;
+		// }
+		// return this;
 	}
 
 	/**
@@ -726,8 +804,24 @@ public abstract class ExprImpl implements IExpr {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public IExpr replaceAll(final IAST astRules) {
+		return this.accept(new VisitorReplaceAll(astRules));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public IExpr replacePart(final IAST astRules) {
 		return this.accept(new VisitorReplacePart(astRules));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
+		return replaceRepeated(this, new VisitorReplaceAll(function));
 	}
 
 	/**
@@ -744,61 +838,6 @@ public abstract class ExprImpl implements IExpr {
 	@Override
 	public IExpr replaceSlots(final IAST astSlots) {
 		return this.accept(new VisitorReplaceSlots(astSlots));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
-		return replaceRepeated(this, new VisitorReplaceAll(function));
-	}
-
-	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
-		IExpr result = expr;
-		IExpr temp = expr.accept(visitor);
-		final int iterationLimit = EvalEngine.get().getIterationLimit();
-		int iterationCounter = 1;
-		while (temp != null) {
-			result = temp;
-			temp = result.accept(visitor);
-			if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-				IterationLimitExceeded.throwIt(iterationCounter, result);
-			}
-		}
-		return result;
-	}
-
-	@Override
-	public IExpr[] egcd(IExpr b) {
-		throw new UnsupportedOperationException(toString());
-	}
-
-	@Override
-	public IExpr evaluate(EvalEngine engine) {
-		return null;
-	}
-
-	@Override
-	public IExpr gcd(IExpr that) {
-		throw new UnsupportedOperationException(toString());
-//		if (equals(that)) {
-//			return that;
-//		}
-//		return F.C1;
-	}
-
-	@Override
-	public IExpr abs() {
-		if (this instanceof INumber) {
-			return ((INumber) this).eabs();
-		}
-		throw new UnsupportedOperationException(toString());
-	}
-
-	@Override
-	public boolean isZERO() {
-		return isZero();
 	}
 
 	/**
@@ -828,9 +867,15 @@ public abstract class ExprImpl implements IExpr {
 		return this.plus(that);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public ElemFactory<IExpr> factory() {
-		throw new UnsupportedOperationException(toString());
+	public IExpr times(final IExpr that) {
+		return F.eval(F.Times(this, that));
+	}
+
+	@Override
+	public ISymbol topHead() {
+		return head();
 	}
 
 	@Override
@@ -844,57 +889,8 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public IExpr divide(IExpr that) {
-		// return this.div(that);
-		if (that.isNumber()) {
-			return F.eval(F.Times(this, that.inverse()));
-		}
-		return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	}
-
-	@Override
-	public boolean isONE() {
-		return isOne();
-	}
-
-	@Override
-	public boolean isUnit() {
-		return true;
-	}
-
-	@Override
-	public IExpr remainder(IExpr that) {
-		throw new UnsupportedOperationException(toString());
-//		if (equals(that)) {
-//			return F.C0;
-//		}
-//		return this;
-	}
-
-	@Override
-	public IExpr negate() {
-		throw new UnsupportedOperationException(toString());
-	}
-
-	@Override
-	public int compareTo(IExpr expr) {
-		if (hierarchy() > expr.hierarchy()) {
-			return 1;
-		}
-		if (hierarchy() < expr.hierarchy()) {
-			return -1;
-		}
-		return 0;
-	}
-
-	@Override
-	public IExpr copy() {
-		try {
-			return (IExpr) clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
+		return this;
 	}
 
 }
