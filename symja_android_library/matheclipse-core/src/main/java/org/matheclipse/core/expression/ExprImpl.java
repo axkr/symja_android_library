@@ -136,19 +136,12 @@ public abstract class ExprImpl implements IExpr {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr divide(IExpr that) {
+		// don't use times(that.inverse()) directly!
 		if (that.isNumber()) {
 			return F.eval(F.Times(this, that.inverse()));
 		}
 		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
-
-	// @Override
-	// public IExpr div(final IExpr that) {
-	// if (that.isNumber()) {
-	// return F.eval(F.Times(this, that.inverse()));
-	// }
-	// return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	// }
 
 	@Override
 	public IExpr[] egcd(IExpr b) {
@@ -192,41 +185,49 @@ public abstract class ExprImpl implements IExpr {
 		return toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr inverse() {
-		return F.eval(F.Power(this, F.CN1));
+		return power(F.CN1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isAnd() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcCos() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcCosh() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcSin() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcSinh() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcTan() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isArcTanh() {
 		return false;
@@ -274,6 +275,7 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isAtom() {
 		return true;
@@ -285,9 +287,7 @@ public abstract class ExprImpl implements IExpr {
 		return this instanceof IComplex;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isComplexInfinity() {
 		return false;
@@ -299,27 +299,25 @@ public abstract class ExprImpl implements IExpr {
 		return this instanceof IComplexNum;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCondition() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isConstant() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isCos() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isCosh() {
 		return false;
@@ -374,9 +372,7 @@ public abstract class ExprImpl implements IExpr {
 		return !predicate.apply(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isFunction() {
 		return false;
@@ -394,9 +390,7 @@ public abstract class ExprImpl implements IExpr {
 		return compareTo(obj) > 0;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isInfinity() {
 		return false;
@@ -426,6 +420,7 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isLog() {
 		return false;
@@ -437,6 +432,7 @@ public abstract class ExprImpl implements IExpr {
 		return compareTo(obj) < 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int[] isMatrix() {
 		// default: no matrix
@@ -456,14 +452,13 @@ public abstract class ExprImpl implements IExpr {
 		return predicate.apply(this);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isMinusOne() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isModule() {
 		return false;
@@ -523,11 +518,13 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isONE() {
 		return isOne();
@@ -575,6 +572,7 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isPlus() {
 		return false;
@@ -586,6 +584,7 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isPower() {
 		return false;
@@ -615,6 +614,7 @@ public abstract class ExprImpl implements IExpr {
 		return isSame(expression, Config.DOUBLE_EPSILON);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		return equals(expression);
@@ -632,41 +632,49 @@ public abstract class ExprImpl implements IExpr {
 		return this instanceof ISignedNumber;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSin() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isSinh() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSlot() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSlotSequence() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTan() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTanh() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isTimes() {
 		return false;
@@ -678,6 +686,7 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isUnit() {
 		return true;
@@ -689,17 +698,20 @@ public abstract class ExprImpl implements IExpr {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int isVector() {
 		// default: no vector
 		return -1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isZERO() {
 		return isZero();
@@ -739,9 +751,10 @@ public abstract class ExprImpl implements IExpr {
 		return times(that);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr negate() {
-		throw new UnsupportedOperationException(toString());
+		return opposite();
 	}
 
 	/** {@inheritDoc} */
@@ -752,7 +765,7 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	public IExpr opposite() {
-		return F.eval(F.Times(F.CN1, this));
+		return times(F.CN1);
 	}
 
 	@Override
@@ -859,7 +872,7 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public IExpr subtract(IExpr that) {
-		return this.plus(that.negate());
+		return plus(that.negate());
 	}
 
 	@Override
