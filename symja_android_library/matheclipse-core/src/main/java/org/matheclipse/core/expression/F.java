@@ -1322,7 +1322,6 @@ public class F {
 	}
 
 	public static IAST Append(final IExpr a0, final IExpr a1) {
-
 		return binary(Append, a0, a1);
 	}
 
@@ -1331,12 +1330,10 @@ public class F {
 	}
 
 	public static IAST ArcCos(final IExpr a0) {
-
 		return unary(ArcCos, a0);
 	}
 
 	public static IAST ArcCosh(final IExpr a0) {
-
 		return unary(ArcCosh, a0);
 	}
 
@@ -1370,17 +1367,14 @@ public class F {
 	}
 
 	public static IAST ArcSinh(final IExpr a0) {
-
 		return unary(ArcSinh, a0);
 	}
 
 	public static IAST ArcTan(final IExpr a0) {
-
 		return unary(ArcTan, a0);
 	}
 
 	public static IAST ArcTan(final IExpr a0, final IExpr a1) {
-
 		return binary(ArcTan, a0, a1);
 	}
 

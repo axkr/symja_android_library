@@ -190,6 +190,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void popLocalVariable();
 
 	/**
+	 * Is a (local or global) value assigned for this symbol?
+	 * 
+	 * @return <code>true</code> if this symbol has an assigned value.
+	 */
+	public boolean hasAssignedSymbolValue();
+
+	/**
 	 * Is a local variable stack created for this symbol ?
 	 * 
 	 * @return <code>true</code> if this symbol has a local variable stack
@@ -365,7 +372,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @param function
 	 *            the function which should be applied
-	 * @param functionSymbol TODO
+	 * @param functionSymbol
+	 *            TODO
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
 	 *         <code>null</code> if the reassignment isn't possible.
 	 */

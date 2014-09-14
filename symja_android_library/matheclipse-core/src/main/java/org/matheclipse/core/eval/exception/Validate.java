@@ -239,6 +239,7 @@ public final class Validate {
 	 * 
 	 * @param position
 	 *            the position which has to be a symbol or list.
+	 * @return a list of symbols defined at <code>ast.get(position)</code>.
 	 * @throws WrongArgumentType
 	 *             if it's not a symbol.
 	 */
@@ -263,31 +264,32 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 *             if it's not a symbol.
 	 */
-	public static IAST checkSymbolList(IAST ast, int position) {
-		IAST vars = null;
-		if (ast.get(position).isList()) {
-			vars = (IAST) ast.get(position);
-			for (int i = 1; i < vars.size(); i++) {
-				Validate.checkSymbolType(vars, i);
-			}
-			return vars;
-		}
-		throw new WrongArgumentType(ast, ast.get(position), position, "List of symbols expected!");
-	}
+	// public static IAST checkSymbolList(IAST ast, int position) {
+	// IAST vars = null;
+	// if (ast.get(position).isList()) {
+	// vars = (IAST) ast.get(position);
+	// for (int i = 1; i < vars.size(); i++) {
+	// Validate.checkSymbolType(vars, i);
+	// }
+	// return vars;
+	// }
+	// throw new WrongArgumentType(ast, ast.get(position), position, "List of symbols expected!");
+	// }
 
 	/**
 	 * Check if the argument is a symbol and has an assigned value.
 	 * 
 	 * @param expr
 	 *            the expr which has to be a symbol.
+	 * @return <code>expr</code> if it's a Symbol
 	 * @throws WrongArgumentType
 	 *             if it's not a symbol.
 	 */
 	public static ISymbol checkAssignedVariable(IExpr expr) {
-		if (expr.isSymbol()) {
+		if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
 			return (ISymbol) expr;
 		}
-		throw new WrongArgumentType(expr, "Failed to convert expression: " + expr.toString() + " into a variable!");
+		throw new WrongArgumentType(expr, "Expecting assigned value for variable expression: " + expr.toString() + " !");
 	}
 
 	/**

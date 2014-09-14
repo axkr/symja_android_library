@@ -57,7 +57,7 @@ public class AST2Expr {
 			"First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FresnelC", "FresnelS",
 			"FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD",
 			"GeometricMean", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "HarmonicNumber",
-			"Head", "HermiteH", "HilbertMatrix", "Hold", "Horner", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
+			"Head", "HermiteH", "HilbertMatrix", "Hold", "Horner", "HornerForm", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
 			"IdentityMatrix", "If", "Im", "Increment", "Inner", "Insert", "IntegerPart", "IntegerPartitions", "IntegerQ",
 			"Integrate", "InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf",
 			"InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last",

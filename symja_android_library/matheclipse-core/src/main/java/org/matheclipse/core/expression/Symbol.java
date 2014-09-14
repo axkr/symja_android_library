@@ -114,6 +114,24 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public boolean hasAssignedSymbolValue() {
+		if (hasLocalVariableStack()) {
+			return get() != null;
+		} else {
+			if (fDownRulesData != null) {
+				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					return pme.getRHS() != null;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public IExpr getAssignedValue() {
 		if (hasLocalVariableStack()) {
 			return get();
@@ -470,7 +488,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public boolean isE() {
 		return equals(F.E);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {
@@ -506,7 +524,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public boolean isPi() {
 		return equals(F.Pi);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
