@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -15,6 +16,11 @@ public class GCD extends AbstractArgMultiple {
 	 * Constructor for the GCD object
 	 */
 	public GCD() {
+	}
+
+	@Override
+	public IExpr e2FraArg(IFraction f0, IFraction f1) {
+		return f0.gcd(f1);
 	}
 
 	/**

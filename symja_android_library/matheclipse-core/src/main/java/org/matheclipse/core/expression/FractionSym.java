@@ -482,6 +482,15 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return buf.toString();
 	}
 
+	@Override
+	public IExpr gcd(IExpr that) {
+		if (that instanceof FractionSym) {
+			BigFraction arg2 = ((FractionSym)that).getRational();
+			return valueOf(fRational.getNumerator().gcd(arg2.getNumerator()), IntegerSym.lcm(fRational.getDenominator(),arg2.getDenominator()));
+		}
+		return super.gcd(that);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

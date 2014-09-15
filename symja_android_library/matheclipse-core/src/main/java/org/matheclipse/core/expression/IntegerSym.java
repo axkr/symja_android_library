@@ -303,11 +303,19 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (this.isZero() && that.isZero()) {
 			return (IntegerSym) F.C0;
 		}
-		BigInteger a = fInteger.abs();
-		BigInteger b = that.fInteger.abs();
-		BigInteger gcd = fInteger.gcd(b);
-		BigInteger lcm = (a.multiply(b)).divide(gcd);
+		BigInteger lcm = lcm(fInteger, that.fInteger);
 		return newInstance(lcm);
+	}
+
+	public static BigInteger lcm(final BigInteger i0, final BigInteger i1) {
+		if (i0.equals(BigInteger.ZERO) && i1.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		BigInteger a = i0.abs();
+		BigInteger b = i1.abs();
+		BigInteger gcd = i0.gcd(b);
+		BigInteger lcm = (a.multiply(b)).divide(gcd);
+		return lcm;
 	}
 
 	/**

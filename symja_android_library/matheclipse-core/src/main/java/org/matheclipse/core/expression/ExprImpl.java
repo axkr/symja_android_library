@@ -165,7 +165,7 @@ public abstract class ExprImpl implements IExpr {
 
 	@Override
 	public IExpr gcd(IExpr that) {
-		throw new UnsupportedOperationException(toString());
+		throw new UnsupportedOperationException("gcd(" + toString() + ", " + that.toString() + ")");
 		// if (equals(that)) {
 		// return that;
 		// }
