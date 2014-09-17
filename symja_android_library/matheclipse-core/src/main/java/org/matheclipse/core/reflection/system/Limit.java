@@ -114,37 +114,45 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			} else if (arg1.isTimes()) {
 				return timesLimit(arg1, symbol, limit, direction, rule);
 			} else if (arg1.isPower()) {
-				if (arg1.arg2().isInteger()) {
-					// Limit[a_^n_,sym->lim] -> Limit[a,sym->lim]^n
-					IInteger n = (IInteger) arg1.arg2();
+				if (arg1.arg2().isNumericFunction()) {
+					// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
+					IExpr exp = arg1.arg2();
 					IExpr temp = F.eval(F.Limit(arg1.arg1(), rule));
-					if (temp.isInfinity()) {
-						if (n.isPositive()) {
-							return temp;
-						} else if (n.isNegative()) {
-							return F.C0;
+					if (temp.isNumericFunction()) {
+						if (temp.isZero() && exp.isNegative()) {
+							return null;
 						}
-						return null;
-					} else if (temp.isNegativeInfinity()) {
-						if (n.isPositive()) {
-							if (n.isEven()) {
-								return F.CInfinity;
-							} else {
-								return F.CNInfinity;
+						return F.Power(temp, exp);
+					}
+					if (exp.isInteger()) {
+						IInteger n = (IInteger) exp;
+						if (temp.isInfinity()) {
+							if (n.isPositive()) {
+								return temp;
+							} else if (n.isNegative()) {
+								return F.C0;
 							}
-						} else if (n.isNegative()) {
-							return F.C0;
+							return null;
+						} else if (temp.isNegativeInfinity()) {
+							if (n.isPositive()) {
+								if (n.isEven()) {
+									return F.CInfinity;
+								} else {
+									return F.CNInfinity;
+								}
+							} else if (n.isNegative()) {
+								return F.C0;
+							}
+							return null;
+						} else if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
+							return null;
 						}
-						return null;
-					} else if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
-						return null;
+						if (n.isPositive()) {
+							return F.Power(temp, n);
+						} else if (n.isNegative() && n.isEven()) {
+							return F.Power(temp, n);
+						}
 					}
-					if (n.isPositive()) {
-						return F.Power(temp, n);
-					} else if (n.isNegative() && n.isEven()) {
-						return F.Power(temp, n);
-					}
-
 				}
 			}
 
