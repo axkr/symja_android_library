@@ -120,6 +120,11 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
 
 	/**
+	 * This expression is an already evaled expression
+	 */
+	public final int IS_EVALED = 0x0800;
+	
+	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
 	 * @param ast

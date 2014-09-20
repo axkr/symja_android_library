@@ -28,7 +28,6 @@ import static org.matheclipse.core.expression.F.y;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.matheclipse.core.builtin.function.NumberQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -72,87 +71,91 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		int size = ast.size();
-		if (size > 2) {
-			boolean evaled = false;
+		if (ast.isEvalFlagOff(IAST.IS_EVALED)) {
+			if (size > 2) {
+				boolean evaled = false;
 
-			Map<IExpr, IExpr> plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
-			IExpr numberValue = null;
-			IExpr temp;
-			for (int i = 1; i < size; i++) {
-				if (ast.get(i).isIndeterminate()) {
-					return F.Indeterminate;
-				} else if (ast.get(i).isInfinity()) {
-					if (numberValue == null) {
-						numberValue = ast.get(i);
-						continue;
-					}
-					numberValue = infinityPlus(numberValue);
-					if (numberValue.isIndeterminate()) {
+				Map<IExpr, IExpr> plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
+				IExpr numberValue = null;
+				IExpr temp;
+				for (int i = 1; i < size; i++) {
+					if (ast.get(i).isIndeterminate()) {
 						return F.Indeterminate;
-					}
-					continue;
-				} else if (ast.get(i).isNegativeInfinity()) {
-					if (numberValue == null) {
-						numberValue = ast.get(i);
+					} else if (ast.get(i).isInfinity()) {
+						if (numberValue == null) {
+							numberValue = ast.get(i);
+							continue;
+						}
+						numberValue = infinityPlus(numberValue);
+						if (numberValue.isIndeterminate()) {
+							return F.Indeterminate;
+						}
 						continue;
-					}
-					numberValue = negativeInfinityPlus(numberValue);
-					if (numberValue.isIndeterminate()) {
-						return F.Indeterminate;
-					}
-					continue;
-				} else if (ast.get(i).isNumber()) {
-					if (ast.get(i).isZero()) {
-						evaled = true;
+					} else if (ast.get(i).isNegativeInfinity()) {
+						if (numberValue == null) {
+							numberValue = ast.get(i);
+							continue;
+						}
+						numberValue = negativeInfinityPlus(numberValue);
+						if (numberValue.isIndeterminate()) {
+							return F.Indeterminate;
+						}
 						continue;
-					}
-					if (numberValue == null) {
-						numberValue = ast.get(i);
+					} else if (ast.get(i).isNumber()) {
+						if (ast.get(i).isZero()) {
+							evaled = true;
+							continue;
+						}
+						if (numberValue == null) {
+							numberValue = ast.get(i);
+							continue;
+						}
+						if (numberValue.isNumber()) {
+							numberValue = numberValue.plus(ast.get(i));
+							evaled = true;
+							continue;
+						}
 						continue;
-					}
-					if (numberValue.isNumber()) {
-						numberValue = numberValue.plus(ast.get(i));
-						evaled = true;
-						continue;
-					}
-					continue;
-				} else if (ast.get(i).isTimes()) {
-					// split times?
-					IAST timesAST = (IAST) ast.get(i);
-					if (timesAST.arg1().isNumber()) {
-						if (addMerge(plusMap, timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
+					} else if (ast.get(i).isTimes()) {
+						// split times?
+						IAST timesAST = (IAST) ast.get(i);
+						if (timesAST.arg1().isNumber()) {
+							if (addMerge(plusMap, timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
+								evaled = true;
+							}
+							continue;
+						}
+						if (addMerge(plusMap, timesAST, F.C1)) {
 							evaled = true;
 						}
 						continue;
 					}
-					if (addMerge(plusMap, timesAST, F.C1)) {
+					if (addMerge(plusMap, ast.get(i), F.C1)) {
 						evaled = true;
 					}
-					continue;
 				}
-				if (addMerge(plusMap, ast.get(i), F.C1)) {
-					evaled = true;
-				}
-			}
-			if (evaled) {
-				IAST result = F.Plus();
-				if (numberValue != null) {
-					result.add(numberValue);
-				}
-				for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
-					if (element.getValue().isOne()) {
-						temp = element.getKey();
-						if (temp.isPlus()) {
-							result.addAll((IAST) temp);
-						} else {
-							result.add(temp);
-						}
-						continue;
+				if (evaled) {
+					IAST result = F.Plus();
+					if (numberValue != null) {
+						result.add(numberValue);
 					}
-					result.add(F.Times(element.getValue(), element.getKey()));
+					for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
+						if (element.getValue().isOne()) {
+							temp = element.getKey();
+							if (temp.isPlus()) {
+								result.addAll((IAST) temp);
+							} else {
+								result.add(temp);
+							}
+							continue;
+						}
+						result.add(F.Times(element.getValue(), element.getKey()));
+					}
+					result.addEvalFlags(IAST.IS_EVALED);
+					return result.getOneIdentity(F.C0);
 				}
-				return result.getOneIdentity(F.C0);
 			}
+			ast.addEvalFlags(IAST.IS_EVALED);
 		}
 
 		if (size > 2) {
