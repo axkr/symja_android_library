@@ -115,9 +115,24 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 							evaled = true;
 							continue;
 						}
+						if (numberValue.isInfinity()) {
+							numberValue = infinityPlus(ast.get(i));
+							if (numberValue.isIndeterminate()) {
+								return F.Indeterminate;
+							}
+							evaled = true;
+							continue;
+						}
+						if (numberValue.isNegativeInfinity()) {
+							numberValue = negativeInfinityPlus(ast.get(i));
+							if (numberValue.isIndeterminate()) {
+								return F.Indeterminate;
+							}
+							evaled = true;
+							continue;
+						}
 						continue;
 					} else if (ast.get(i).isTimes()) {
-						// split times?
 						IAST timesAST = (IAST) ast.get(i);
 						if (timesAST.arg1().isNumber()) {
 							if (addMerge(plusMap, timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
