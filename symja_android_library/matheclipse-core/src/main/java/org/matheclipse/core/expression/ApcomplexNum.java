@@ -119,7 +119,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public boolean isZero() {
-		return fApcomplex.intValue() == 0;
+		return fApcomplex.equals(Apcomplex.ZERO);
 	}
 
 	@Override
