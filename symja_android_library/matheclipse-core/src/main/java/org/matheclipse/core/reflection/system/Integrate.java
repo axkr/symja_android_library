@@ -73,6 +73,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		boolean calledRubi = false;
+		IExpr result;
+
 		if (ast.size() < 3) {
 			return null;
 		}
@@ -180,7 +182,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 				if (INT_FUNCTIONS.contains(arg1.head())) {
-					IExpr result = integrateByRubiRules(ast);
+					result = integrateByRubiRules(ast);
 					if (result != null) {
 						return result;
 					}
@@ -191,7 +193,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
 						if (polyQ.isTrue()) {
 							if (arg1.isTimes()) {
-								IExpr result = integrateByRubiRules(ast);
+								result = integrateByRubiRules(ast);
 								if (result != null) {
 									return result;
 								}
@@ -267,11 +269,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 									// try Rubi rules first
 									// System.out.println(parts[0]);
 									// System.out.println(parts[1]);
-									IExpr result = integrateByRubiRules(ast);
-									if (result != null) {
-										return result;
+									if (parts[0].isPolynomialOfMaxDegree(x, 3L)) {// || parts[0].equals(x)) {
+										result = integrateByRubiRules(ast);
+										if (result != null) {
+											return result;
+										}
+										calledRubi = true;
 									}
-									calledRubi = true;
 
 									IAST apartPlus = Apart.partialFractionDecompositionRational(
 											new PartialFractionIntegrateGenerator(x), parts, x);
@@ -808,7 +812,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			} else if (temp.equals(symbol)) {
 				polyTimes.add(temp);
 				continue;
-			} else if (PolynomialQ.polynomialQ(temp, List(symbol))) {
+			} else if (temp.isPolynomial(List(symbol))) {
 				polyTimes.add(temp);
 				continue;
 			}
