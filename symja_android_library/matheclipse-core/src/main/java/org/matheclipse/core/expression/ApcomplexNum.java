@@ -32,11 +32,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		return new ApcomplexNum(real, imag);
 	}
 
-	public static ApcomplexNum valueOf(final double real, int precision) {
+	public static ApcomplexNum valueOf(final double real, long precision) {
 		return valueOf(new Apcomplex(new Apfloat(real, precision), Apfloat.ZERO));
 	}
 
-	public static ApcomplexNum valueOf(final double real, final double imaginary, int precision) {
+	public static ApcomplexNum valueOf(final double real, final double imaginary, long precision) {
 		return valueOf(new Apcomplex(new Apfloat(real, precision), new Apfloat(imaginary, precision)));
 	}
 
@@ -313,6 +313,16 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof ApcomplexNum) {
 			return valueOf(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
 		}
+		if (that instanceof ApfloatNum) {
+			return add(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apfloat.ZERO));
+		}
+		if (that instanceof Num) {
+			return add(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
+		}
+		if (that instanceof ComplexNum) {
+			ComplexNum cn = (ComplexNum) that;
+			return add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
+		}
 		return super.plus(that);
 	}
 
@@ -341,6 +351,16 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApcomplexNum) {
 			return valueOf(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
+		}
+		if (that instanceof ApfloatNum) {
+			return multiply(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apfloat.ZERO));
+		}
+		if (that instanceof Num) {
+			return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
+		}
+		if (that instanceof ComplexNum) {
+			ComplexNum cn = (ComplexNum) that;
+			return multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
 		}
 		return super.times(that);
 	}

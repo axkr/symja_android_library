@@ -439,6 +439,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isIndeterminate() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isInfinity() {
 		return this.equals(F.CInfinity);
 	}

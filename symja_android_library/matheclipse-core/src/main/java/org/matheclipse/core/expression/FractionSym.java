@@ -314,6 +314,9 @@ public class FractionSym extends ExprImpl implements IFraction {
 		if (that instanceof IntegerSym) {
 			return this.add(valueOf(((IntegerSym) that).fInteger));
 		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
+		}
 		return super.plus(that);
 	}
 
@@ -391,6 +394,9 @@ public class FractionSym extends ExprImpl implements IFraction {
 		}
 		if (that instanceof IntegerSym) {
 			return this.multiply(valueOf(((IntegerSym) that).fInteger));
+		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
 		}
 		return super.times(that);
 	}
@@ -485,12 +491,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public IExpr gcd(IExpr that) {
 		if (that instanceof FractionSym) {
-			BigFraction arg2 = ((FractionSym)that).getRational();
-			return valueOf(fRational.getNumerator().gcd(arg2.getNumerator()), IntegerSym.lcm(fRational.getDenominator(),arg2.getDenominator()));
+			BigFraction arg2 = ((FractionSym) that).getRational();
+			return valueOf(fRational.getNumerator().gcd(arg2.getNumerator()),
+					IntegerSym.lcm(fRational.getDenominator(), arg2.getDenominator()));
 		}
 		return super.gcd(that);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -605,7 +612,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber getIm() {

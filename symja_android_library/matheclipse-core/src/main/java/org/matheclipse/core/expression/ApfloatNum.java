@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -34,7 +35,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * @param numerator
 	 * @return
 	 */
-	public static ApfloatNum valueOf(final double value, int precision) {
+	public static ApfloatNum valueOf(final double value, long precision) {
 		return new ApfloatNum(value, precision);
 	}
 
@@ -56,11 +57,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return new ApfloatNum(value, precision);
 	}
 
-	private ApfloatNum(final double value, int precision) {
+	private ApfloatNum(final double value, long precision) {
 		fApfloat = new Apfloat(value, precision);
 	}
 
-	private ApfloatNum(final String value, int precision) {
+	private ApfloatNum(final String value, long precision) {
 		fApfloat = new Apfloat(value, precision);
 	}
 
@@ -147,6 +148,17 @@ public class ApfloatNum extends ExprImpl implements INum {
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ApfloatNum) {
 			return add((ApfloatNum) that);
+		}
+		if (that instanceof Num) {
+			return add(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
+		}
+		if (that instanceof ApcomplexNum) {
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).add((ApcomplexNum) that);
+		}
+		if (that instanceof ComplexNum) {
+			ComplexNum cn = (ComplexNum) that;
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).add(
+					ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.plus(that);
 	}
@@ -251,7 +263,18 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof ApfloatNum) {
-			return valueOf(fApfloat.multiply(((ApfloatNum) that).fApfloat));
+			return multiply((ApfloatNum) that);
+		}
+		if (that instanceof Num) {
+			return multiply(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
+		}
+		if (that instanceof ApcomplexNum) {
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).multiply((ApcomplexNum) that);
+		}
+		if (that instanceof ComplexNum) {
+			ComplexNum cn = (ComplexNum) that;
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).multiply(
+					ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.times(that);
 	}

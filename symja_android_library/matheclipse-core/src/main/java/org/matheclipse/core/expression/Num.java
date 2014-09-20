@@ -165,8 +165,17 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public IExpr plus(final IExpr that) {
+		if (that instanceof ApfloatNum) {
+			return add(ApfloatNum.valueOf(fDouble, ((ApfloatNum) that).fApfloat.precision()));
+		}
 		if (that instanceof Num) {
-			return add((Num) that);
+			return newInstance(fDouble + ((Num) that).fDouble);
+		}
+		if (that instanceof ApcomplexNum) {
+			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision()).add((ApcomplexNum) that);
+		}
+		if (that instanceof ComplexNum) {
+			return ComplexNum.valueOf(fDouble).add((ComplexNum) that);
 		}
 		return super.plus(that);
 	}
@@ -336,8 +345,17 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public IExpr times(final IExpr that) {
+		if (that instanceof ApfloatNum) {
+			return multiply(ApfloatNum.valueOf(fDouble, ((ApfloatNum) that).fApfloat.precision()));
+		}
 		if (that instanceof Num) {
 			return newInstance(fDouble * ((Num) that).fDouble);
+		}
+		if (that instanceof ApcomplexNum) {
+			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision()).multiply((ApcomplexNum) that);
+		}
+		if (that instanceof ComplexNum) {
+			return ComplexNum.valueOf(fDouble).multiply((ComplexNum) that);
 		}
 		return super.times(that);
 	}
@@ -413,8 +431,7 @@ public class Num extends ExprImpl implements INum {
 	// public Text toText() {
 	// return fDouble.toText();
 	// }
-	
-	
+
 	@Override
 	public double getRealPart() {
 		double temp = fDouble;
@@ -429,7 +446,7 @@ public class Num extends ExprImpl implements INum {
 	public boolean isE() {
 		return F.isZero(fDouble - Math.E);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
@@ -447,13 +464,13 @@ public class Num extends ExprImpl implements INum {
 	public boolean isPi() {
 		return F.isZero(fDouble - Math.PI);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
 		return F.isZero(fDouble);
 	}
-	
+
 	@Override
 	public IInteger round() {
 		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));

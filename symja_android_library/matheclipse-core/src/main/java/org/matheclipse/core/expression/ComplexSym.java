@@ -139,11 +139,6 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return ComplexSym.valueOf(_real.add(parm1._real), _imaginary.add(parm1._imaginary));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.matheclipse.parser.interfaces.IComplex#add(org.matheclipse.parser. interfaces.IComplex)
-	 */
 	public IComplex add(final IComplex parm1) {
 		return ComplexSym.valueOf(_real.add(parm1.getRealPart()), _imaginary.add(parm1.getImaginaryPart()));
 	}
@@ -266,6 +261,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof ComplexSym) {
 			return this.add((ComplexSym) that);
 		}
+		if (that instanceof IntegerSym) {
+			return this.add(valueOf((IntegerSym) that));
+		}
+		if (that instanceof FractionSym) {
+			return this.add(valueOf((FractionSym) that));
+		}
 		return super.plus(that);
 	}
 
@@ -283,6 +284,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	public IExpr times(final IExpr that) {
 		if (that instanceof ComplexSym) {
 			return multiply((ComplexSym) that);
+		}
+		if (that instanceof IntegerSym) {
+			return this.multiply(valueOf((IntegerSym) that));
+		}
+		if (that instanceof FractionSym) {
+			return this.multiply(valueOf((FractionSym) that));
 		}
 		return super.times(that);
 	}

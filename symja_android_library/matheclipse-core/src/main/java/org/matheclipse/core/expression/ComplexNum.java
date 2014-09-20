@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -400,6 +401,18 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof ComplexNum) {
 			return newInstance(fComplex.add(((ComplexNum) that).fComplex));
 		}
+		if (that instanceof ApcomplexNum) {
+			ApcomplexNum acn = (ApcomplexNum) that;
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), acn.fApcomplex.precision()).add(acn);
+		}
+		if (that instanceof ApfloatNum) {
+			ApfloatNum afn = (ApfloatNum) that;
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).add(
+					ApcomplexNum.valueOf(afn.fApfloat, Apfloat.ZERO));
+		}
+		if (that instanceof Num) {
+			return add(ComplexNum.valueOf(((Num) that).getRealPart()));
+		}
 		return super.plus(that);
 	}
 
@@ -470,6 +483,18 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	public IExpr times(final IExpr that) {
 		if (that instanceof ComplexNum) {
 			return newInstance(fComplex.multiply(((ComplexNum) that).fComplex));
+		}
+		if (that instanceof ApcomplexNum) {
+			ApcomplexNum acn = (ApcomplexNum) that;
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), acn.fApcomplex.precision()).multiply(acn);
+		}
+		if (that instanceof ApfloatNum) {
+			ApfloatNum afn = (ApfloatNum) that;
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).multiply(
+					ApcomplexNum.valueOf(afn.fApfloat, Apfloat.ZERO));
+		}
+		if (that instanceof Num) {
+			return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
 		}
 		return super.times(that);
 	}
@@ -582,7 +607,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
-	
+
 	@Override
 	public boolean equalsInt(int i) {
 		return false;

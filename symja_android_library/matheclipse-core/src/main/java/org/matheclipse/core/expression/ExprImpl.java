@@ -389,6 +389,12 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isIndeterminate(){
+		return false;
+	}
 
 	/** {@inheritDoc} */
 	@Override

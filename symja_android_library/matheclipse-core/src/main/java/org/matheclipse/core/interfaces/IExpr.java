@@ -432,6 +432,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isGTOrdered(IExpr expr);
 
 	/**
+	 * Test if this expression is representing <code>Indeterminate</code>
+	 * 
+	 */
+	public boolean isIndeterminate();
+
+	/**
 	 * Test if this expression is representing <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity[1]</code>)
 	 * 
 	 */

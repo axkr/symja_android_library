@@ -509,6 +509,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isIndeterminate() {
+		return equals(F.Indeterminate);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);

@@ -1,9 +1,34 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.ArcCos;
+import static org.matheclipse.core.expression.F.ArcCot;
+import static org.matheclipse.core.expression.F.ArcSin;
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.Cosh;
+import static org.matheclipse.core.expression.F.Equal;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Positive;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sinh;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.expression.F.y;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.matheclipse.core.builtin.function.NumberQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -34,6 +59,140 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	public Plus() {
 
+	}
+
+	/**
+	 * 
+	 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic Simplification</a>
+	 * 
+	 * @param ast
+	 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
+	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
+	 */
+	@Override
+	public IExpr evaluate(final IAST ast) {
+		int size = ast.size();
+		if (size > 2) {
+			boolean evaled = false;
+
+			Map<IExpr, IExpr> plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
+			IExpr numberValue = null;
+			IExpr temp;
+			for (int i = 1; i < size; i++) {
+				if (ast.get(i).isIndeterminate()) {
+					return F.Indeterminate;
+				} else if (ast.get(i).isInfinity()) {
+					if (numberValue == null) {
+						numberValue = ast.get(i);
+						continue;
+					}
+					numberValue = infinityPlus(numberValue);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					continue;
+				} else if (ast.get(i).isNegativeInfinity()) {
+					if (numberValue == null) {
+						numberValue = ast.get(i);
+						continue;
+					}
+					numberValue = negativeInfinityPlus(numberValue);
+					if (numberValue.isIndeterminate()) {
+						return F.Indeterminate;
+					}
+					continue;
+				} else if (ast.get(i).isNumber()) {
+					if (ast.get(i).isZero()) {
+						evaled = true;
+						continue;
+					}
+					if (numberValue == null) {
+						numberValue = ast.get(i);
+						continue;
+					}
+					if (numberValue.isNumber()) {
+						numberValue = numberValue.plus(ast.get(i));
+						evaled = true;
+						continue;
+					}
+					continue;
+				} else if (ast.get(i).isTimes()) {
+					// split times?
+					IAST timesAST = (IAST) ast.get(i);
+					if (timesAST.arg1().isNumber()) {
+						if (addMerge(plusMap, timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
+							evaled = true;
+						}
+						continue;
+					}
+					if (addMerge(plusMap, timesAST, F.C1)) {
+						evaled = true;
+					}
+					continue;
+				}
+				if (addMerge(plusMap, ast.get(i), F.C1)) {
+					evaled = true;
+				}
+			}
+			if (evaled) {
+				IAST result = F.Plus();
+				if (numberValue != null) {
+					result.add(numberValue);
+				}
+				for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
+					if (element.getValue().isOne()) {
+						temp = element.getKey();
+						if (temp.isPlus()) {
+							result.addAll((IAST) temp);
+						} else {
+							result.add(temp);
+						}
+						continue;
+					}
+					result.add(F.Times(element.getValue(), element.getKey()));
+				}
+				return result.getOneIdentity(F.C0);
+			}
+		}
+
+		if (size > 2) {
+			IAST temp = evaluateHashs(ast);
+			if (temp != null) {
+				return temp;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Add or merge the <code>key, value</code> pair into the given <code>plusMap</code>.
+	 * 
+	 * @param plusMap
+	 *            the map where the <code>key, value</code> pair should be addd to
+	 * @param key
+	 *            the key expression
+	 * @param value
+	 *            the value expression
+	 */
+	public boolean addMerge(Map<IExpr, IExpr> plusMap, IExpr key, IExpr value) {
+		IExpr temp = plusMap.get(key);
+		if (temp == null) {
+			plusMap.put(key, value);
+			return false;
+		}
+		// merge both values
+		if (temp.isNumber() && value.isNumber()) {
+			temp = temp.plus(value);
+			if (temp.isZero()) {
+				plusMap.remove(key);
+			}
+		} else if (temp.head().equals(F.Plus)) {
+			((IAST) temp).add(value);
+		} else {
+			temp = F.Plus(temp, value);
+		}
+		plusMap.put(key, temp);
+		return true;
 	}
 
 	@Override
@@ -141,6 +300,32 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return null;
 	}
 
+	private IExpr infinityPlus(IExpr o1) {
+		if (o1.isInfinity()) {
+			return F.CInfinity;
+		} else if (o1.isNegativeInfinity()) {
+			EvalEngine engine = EvalEngine.get();
+			if (!engine.isQuietMode()) {
+				engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+			}
+			return F.Indeterminate;
+		}
+		return F.CInfinity;
+	}
+
+	private IExpr negativeInfinityPlus(IExpr o1) {
+		if (o1.isInfinity()) {
+			EvalEngine engine = EvalEngine.get();
+			if (!engine.isQuietMode()) {
+				engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
+			}
+			return F.Indeterminate;
+		} else if (o1.isNegativeInfinity()) {
+			return F.CNInfinity;
+		}
+		return F.CNInfinity;
+	}
+
 	private IExpr eInfinity(IExpr inf, IExpr o1) {
 		EvalEngine engine = EvalEngine.get();
 		if (inf.isInfinity()) {
@@ -151,9 +336,8 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 					engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
 				}
 				return F.Indeterminate;
-			} else if (o1.isSignedNumber()) {
-				return F.CInfinity;
 			}
+			return F.CInfinity;
 		} else if (inf.isNegativeInfinity()) {
 			if (o1.isInfinity()) {
 				if (!engine.isQuietMode()) {
@@ -162,9 +346,8 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 				return F.Indeterminate;
 			} else if (o1.isNegativeInfinity()) {
 				return F.CNInfinity;
-			} else if (o1.isSignedNumber()) {
-				return F.CNInfinity;
 			}
+			return F.CNInfinity;
 		}
 		return null;
 	}

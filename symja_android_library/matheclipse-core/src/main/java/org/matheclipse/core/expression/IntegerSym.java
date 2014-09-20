@@ -438,6 +438,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (that instanceof FractionSym) {
 			return FractionSym.valueOf(fInteger).add((FractionSym) that);
 		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
+		}
 		return super.plus(that);
 	}
 
@@ -529,6 +532,9 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		}
 		if (that instanceof FractionSym) {
 			return FractionSym.valueOf(fInteger).multiply((FractionSym) that);
+		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
 		}
 		return super.times(that);
 	}
