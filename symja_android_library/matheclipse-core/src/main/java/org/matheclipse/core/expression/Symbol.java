@@ -526,6 +526,32 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	public boolean isPolynomial(ISymbol variable) {
+		return true;// this.equals(variable);
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomial(IAST variables) {
+		return true;
+		// for (int i = 1; i < variables.size(); i++) {
+		// if (this.equals(variables.get(i))) {
+		// return true;
+		// }
+		// }
+		// return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+		if (maxDegree == 0L) {
+			if (this.equals(variable)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
 		if (isNumericFunction()) {

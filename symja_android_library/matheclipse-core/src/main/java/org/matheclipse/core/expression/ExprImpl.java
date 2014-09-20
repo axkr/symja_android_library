@@ -579,6 +579,21 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	/** {@inheritDoc} */
+	public boolean isPolynomial(ISymbol variable) {
+		return isNumber();
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomial(IAST variables) {
+		return isNumber();
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+		return isPolynomial(variable);
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
 		return false;

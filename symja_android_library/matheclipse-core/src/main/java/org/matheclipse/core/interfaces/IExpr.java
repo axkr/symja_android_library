@@ -669,6 +669,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isPlus();
 
 	/**
+	 * Test if this expression is a polynomial for the given <code>variable</code>.
+	 * 
+	 */
+	public boolean isPolynomial(ISymbol variable);
+
+	/**
+	 * Test if this expression is a polynomial for the given list of <code>variables</code>.
+	 * 
+	 */
+	public boolean isPolynomial(IAST variables);
+
+	/**
+	 * Test if this expression is a polynomial of <code>maxDegree</code> (i.e. the maximum exponent <= maxDegree) for the given
+	 * <code>variable</code>.
+	 * 
+	 * @param maxDegree
+	 *            the maximum degree of the polynomial; maxDegree must be greater 0
+	 * 
+	 */
+	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree);
+
+	/**
 	 * Test if this object is a positive signed number.
 	 * 
 	 * @return <code>true</code>, if <code>this > 0</code>; <code>false</code> in all other case.

@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.polynomials.Polynomial;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -722,6 +723,37 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPi() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomial(ISymbol variable) {
+		return isPolynomial(F.List(variable));
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomial(IAST variables) {
+		if (isPlus() || isTimes() || isPower()) {
+			IExpr expr = F.evalExpandAll(this);
+			Polynomial poly = new Polynomial(expr, variables, null, false);
+			return poly.isPolynomial(expr);
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+		return isPolynomialOfMaxDegree(F.List(variable), maxDegree);
+	}
+
+	public boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
+		if (isPlus() || isTimes() || isPower()) {
+			IExpr expr = F.evalExpandAll(this);
+			Polynomial poly = new Polynomial(expr, variables, null, true);
+			if (poly.isPolynomial()) {
+				return poly.maximumDegree() <= maxDegree;
+			}
+		}
 		return false;
 	}
 

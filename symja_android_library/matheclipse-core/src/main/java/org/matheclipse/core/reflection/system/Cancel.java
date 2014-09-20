@@ -35,34 +35,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	private final static class PolynomialPredicate implements Predicate<IExpr> {
 
 		public boolean apply(IExpr expr) {
-			return PolynomialQ.polynomialQ(expr, F.List());
-			// if (expr.isRational()) {
-			// return true;
-			// }
-			// if (expr.isSymbol()) {
-			// return true;
-			// }
-			// if (expr.isTimes() || expr.isPlus()) {
-			// IAST ast = (IAST) expr;
-			// for (int i = 1; i < ast.size(); i++) {
-			// if (!apply(ast.get(i))) {
-			// return false;
-			// }
-			// }
-			// return true;
-			// }
-			// if (expr.isPower() && ((IAST) expr).arg1().isSymbol() && ((IAST) expr).arg2().isInteger()) {
-			// try {
-			// int in = ((IInteger) ((IAST) expr).arg2()).toInt();
-			// if (in > 0) {
-			// return true;
-			// }
-			// } catch (ArithmeticException ae) {
-			//
-			// }
-			// return false;
-			// }
-			// return false;
+			return expr.isPolynomial( F.List());
 		}
 	}
 
