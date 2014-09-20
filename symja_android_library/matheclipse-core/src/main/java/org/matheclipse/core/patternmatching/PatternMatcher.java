@@ -561,6 +561,27 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	private boolean matchFlatAndFlatOrderlessAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST,
 			StackMatcher stackMatcher) {
 		if ((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
+			// System.out.println(lhsPatternAST.toString() + "  <<  >>  " + lhsEvalAST.toString());
+
+			if (lhsPatternAST.size() == 2) {
+				// TODO check for OneIdentity?
+				return matchExpr(lhsPatternAST.get(1), lhsEvalAST, stackMatcher);
+			}
+			for (int i = 1; i < lhsPatternAST.size(); i++) {
+				if (!(lhsPatternAST.get(i) instanceof IPatternObject)) {
+					// try to find a matchin sub-expression
+					for (int j = 1; j < lhsEvalAST.size(); j++) {
+						if (matchExpr(lhsPatternAST.get(i), lhsEvalAST.get(j))) {
+							if (matchFlatAndFlatOrderlessAST(sym, lhsPatternAST.removeAtClone(i), lhsEvalAST.removeAtClone(j),
+									stackMatcher)) {
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+			}
+
 			FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher,
 					fPatternMap);
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
@@ -643,7 +664,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		}
 		if (lhsPatternAST.isAST(F.Rational, 3) && lhsEvalExpr.isRational()) {
 			IRational numer = ((IRational) lhsEvalExpr).getNumerator();
-			IRational denom = ((IRational) lhsEvalExpr).getDenominator();  
+			IRational denom = ((IRational) lhsEvalExpr).getDenominator();
 			if (matchExpr(lhsPatternAST.arg1(), numer) && matchExpr(lhsPatternAST.arg2(), denom)) {
 				return true;
 			}
