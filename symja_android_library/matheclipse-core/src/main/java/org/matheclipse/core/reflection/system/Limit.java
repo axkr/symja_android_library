@@ -42,7 +42,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		EvalEngine engine = EvalEngine.get();
 		int recursionLimit = engine.getRecursionLimit();
 		if (recursionLimit > 0) {
-			IExpr expr = F.eval(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+			IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
 			return evalLimit(expr, x, limit, rule, direction, false);
 		}
 		try {
@@ -50,7 +50,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				// set recursion limit for using l'Hospitales rule
 				engine.setRecursionLimit(128);
 			}
-			IExpr expr = F.eval(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+			IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
 			return evalLimit(expr, x, limit, rule, direction, false);
 		} catch (RecursionLimitExceeded rle) {
 			engine.setRecursionLimit(recursionLimit);
@@ -79,7 +79,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	public static IExpr evalLimit(final IExpr expr, ISymbol symbol, IExpr limit, IAST rule, int direction, boolean evalExpr) {
 		IExpr expression = expr;
 		if (evalExpr) {
-			IExpr result = F.eval(expression);
+			IExpr result = F.evalQuiet(expression);
 			if (result.isNumericFunction()) {
 				return result;
 			}
@@ -90,7 +90,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			if (limit.isNumericFunction()) {
 				result = expression.replaceAll(rule);
 				if (result != null) {
-					result = F.eval(result);
+					result = F.evalQuiet(result);
 					if (result.isNumericFunction()) {
 						return result;
 					}
@@ -117,7 +117,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				if (arg1.arg2().isNumericFunction()) {
 					// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
 					IExpr exp = arg1.arg2();
-					IExpr temp = F.eval(F.Limit(arg1.arg1(), rule));
+					IExpr temp = F.evalQuiet(F.Limit(arg1.arg1(), rule));
 					if (temp.isNumericFunction()) {
 						if (temp.isZero() && exp.isNegative()) {
 							return null;
@@ -238,7 +238,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 */
 	private static IExpr substituteInfinity(final IAST arg1, ISymbol x, IExpr limit, int direction) {
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
-		IExpr temp = F.eval(F.subst(arg1, x, y));
+		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
 			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false);
 			if (parts != null) {

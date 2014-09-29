@@ -2039,6 +2039,19 @@ public class F {
 	}
 
 	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was possible this method returns the given argument. In
+	 * &quot;quiet mode&quot; all warnings would be suppressed.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#eval(IExpr)
+	 */
+	public static IExpr evalQuiet(IExpr a) {
+		return EvalEngine.evalQuiet(a);
+	}
+
+	/**
 	 * Create a function with 1 argument and evaluate it.
 	 * 
 	 * @param head
@@ -3097,10 +3110,10 @@ public class F {
 		return unary(Plus, a0);
 	}
 
-	public static IAST Plus(final IExpr... a) { 
+	public static IAST Plus(final IExpr... a) {
 		return ast(a, Plus);
 	}
-	
+
 	public static IAST Plus(final long num, final IExpr... a) {
 		return ast(a, Plus).prependClone(ZZ(num));
 	}
@@ -3303,7 +3316,7 @@ public class F {
 	public static IAST Resultant(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternary(Resultant, a0, a1, a2);
 	}
-	
+
 	public static IAST Return(final IExpr a) {
 		return unary(Return, a);
 	}
@@ -3616,7 +3629,7 @@ public class F {
 	public static IAST Times(final IExpr... a) {
 		return ast(a, Times);
 	}
-	
+
 	public static IAST Times(final long num, final IExpr... a) {
 		return ast(a, Times).prependClone(ZZ(num));
 	}

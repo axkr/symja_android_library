@@ -135,7 +135,7 @@ public class Sum extends Table {
 			}
 		}
 		if (from.isPositive()) {
-			IExpr temp = F.eval(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
+			IExpr temp = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
 			if (!temp.isComplexInfinity()) {
 				return F.Subtract(F.Sum(arg1, F.List(var, C0, to)), temp);
 			}
