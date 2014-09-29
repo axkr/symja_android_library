@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
 import static org.matheclipse.core.expression.F.And;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcCot;
@@ -22,8 +21,11 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.a;
+import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
+import static org.matheclipse.core.expression.F.y_;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -380,20 +382,20 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
-		ORDERLESS_MATCHER.definePatternHashRule(Power(Sin($p(x)), C2), Power(Cos($p(x)), C2), C1);
+		ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
 		// ORDERLESS_MATCHER.setUpHashRule("a_*Sin[x_]^2", "a_*Cos[x_]^2", "a");
-		ORDERLESS_MATCHER.defineHashRule(Times($p(a), Power(Sin($p(x)), C2)), Times($p(a), Power(Cos($p(x)), C2)), a);
+		ORDERLESS_MATCHER.defineHashRule(Times(a_, Power(Sin(x_), C2)), Times(a_, Power(Cos(x_), C2)), a);
 		// ORDERLESS_MATCHER.setUpHashRule("ArcSin[x_]", "ArcCos[x_]", "Pi/2");
-		ORDERLESS_MATCHER.defineHashRule(ArcSin($p(x)), ArcCos($p(x)), Times(C1D2, Pi));
+		ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), Times(C1D2, Pi));
 		// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]", "Pi/2");
-		ORDERLESS_MATCHER.defineHashRule(ArcTan($p(x)), ArcCot($p(x)), Times(C1D2, Pi));
+		ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), Times(C1D2, Pi));
 		// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2", "Positive[x]&&(y==1/x)");
-		ORDERLESS_MATCHER.defineHashRule(ArcTan($p(x)), ArcTan($p(y)), Times(C1D2, Pi), And(Positive(x), Equal(y, Power(x, CN1))));
+		ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), Times(C1D2, Pi), And(Positive(x), Equal(y, Power(x, CN1))));
 		// ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]", "-Pi/2", "Positive[x]&&(y==1/x)");
-		ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan($p(x))), Times(CN1, ArcTan($p(y))), Times(CN1D2, Pi),
+		ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1, ArcTan(y_)), Times(CN1D2, Pi),
 				And(Positive(x), Equal(y, Power(x, CN1))));
 		// ORDERLESS_MATCHER.setUpHashRule("Cosh[x_]^2", "-Sinh[x_]^2", "1");
-		ORDERLESS_MATCHER.definePatternHashRule(Power(Cosh($p(x)), C2), Times(CN1, Power(Sinh($p(x)), C2)), C1);
+		ORDERLESS_MATCHER.definePatternHashRule(Power(Cosh(x_), C2), Times(CN1, Power(Sinh(x_), C2)), C1);
 		super.setUp(symbol);
 	}
 
