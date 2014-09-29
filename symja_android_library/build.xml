@@ -113,16 +113,46 @@
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" /> 
 	            
+	           <keep access="public" extends="com.google.common.base.Predicate" /> 
+	           <keep access="public" extends="com.google.common.base.Function" /> 
 	           <keep access="public" extends="org.matheclipse.core.interfaces.IExpr" /> 
 	           <keep access="public" extends="org.matheclipse.core.interfaces.IEvaluator" />
 	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
 	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
 	           <keep access="public" extends="org.matheclipse.core.form.mathml.IConverter" />
 	           <keep access="public" extends="org.matheclipse.core.form.tex.IConverter" />
+	           <keep access="public" extends="org.matheclipse.core.visit.IVisitor" />
+	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorBoolean" />
+	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorInt" />
+	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorLong" />
 	           <keep access="public" extends="org.apache.log4j.Appender" />
 	           <keep access="public" extends="org.apache.log4j.spi.OptionHandler" />
 	           <keep access="public" extends="org.apfloat.spi.BuilderFactory" />
 	
+	           <keep access="public" name="com.google.common.base.Predicate">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="com.google.common.base.Function">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.apache.commons.math3.complex.Complex">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.apache.commons.math3.fraction.BigFraction">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.apfloat.Apfloat">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.apfloat.Apcomplex">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
                <keep access="public" name="org.matheclipse.core.integrate.rubi.UtilityFunctions">
 	                     <method access    ="public static"
 	                             name      ="*" />
@@ -131,6 +161,10 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.eval.EvalEngine">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
 	           <keep access="public" name="org.matheclipse.core.eval.EvalUtilities">
 	                     <method access    ="public"
 	                             name      ="*" />
