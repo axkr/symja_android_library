@@ -4,6 +4,7 @@ import java.io.Writer;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -23,8 +24,7 @@ public class TeXUtilities {
 	 * 
 	 * @param evalEngine
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use '(...)' instead of '[...]' to
-	 *            parenthesize the arguments of a function.
+	 *            if <code>true</code> use '(...)' instead of '[...]' to parenthesize the arguments of a function.
 	 */
 	public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
@@ -35,8 +35,7 @@ public class TeXUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a TeX expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a TeX expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -56,17 +55,20 @@ public class TeXUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
 	 */
-	synchronized public void toTeX(final Object objectExpression, final Writer out) {
+	synchronized public void toTeX(final IExpr objectExpression, final Writer out) {
 		final StringBuffer buf = new StringBuffer();
 
 		if (objectExpression != null) {
-			fTeXFactory.convert(buf, objectExpression, 0);
+			IExpr result = objectExpression;
+			if (objectExpression.isAST()) {
+				result = fEvalEngine.evalSetAttributes((IAST) objectExpression);
+			}
+			fTeXFactory.convert(buf, result, 0);
 			try {
 				out.write(buf.toString());
 			} catch (final Throwable e) {

@@ -1,15 +1,10 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
-
-import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.form.tex.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.reflection.system.Apart;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 public class Times extends AbstractOperator {
@@ -18,7 +13,7 @@ public class Times extends AbstractOperator {
 	public final static int PLUS_CALL = 1;
 
 	public static Times CONST = new Times();
-	
+
 	public Times() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "\\,");
 	}
@@ -27,9 +22,9 @@ public class Times extends AbstractOperator {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *          StringBuffer for MathML output
+	 *            StringBuffer for MathML output
 	 * @param f
-	 *          The math function which should be converted to MathML
+	 *            The math function which should be converted to MathML
 	 */
 	@Override
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
@@ -40,61 +35,42 @@ public class Times extends AbstractOperator {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *          StringBuffer for MathML output
+	 *            StringBuffer for MathML output
 	 * @param f
-	 *          The math function which should be converted to MathML
+	 *            The math function which should be converted to MathML
 	 */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		final IAST numerator = Times();
-		final IAST denominator = Times( );
-		for (int i = 1; i < f.size(); i++) {
-			if ((f.get(i).isAST()) && f.get(i).isPower()) {
-				// filter negative Powers:
-				final IAST p = (IAST) f.get(i);
-				if ((p.size() == 3) && (p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
-					if (NumberUtil.isMinusOne(p.get(2))) {
-						// x_^(-1) ?
-						denominator.add(p.get(1));
-						continue;
-					}
-					denominator.add(Power(p.get(1), Times(CN1, p.get(2))));
-					continue;
-				}
-			}
-			if (!NumberUtil.isOne(f.get(i))) {
-				numerator.add(f.get(i));
-			}
+		IExpr[] parts = Apart.getFractionalPartsTimes(f, true);
+		if (parts == null) {
+			convertMultiply(buf, f, precedence, caller);
+			return true;
 		}
-		// do the output:
-		if (denominator.size() > 1) {
+		final IExpr numerator = parts[0];
+		final IExpr denominator = parts[1];
+		if (!denominator.isOne()) {
 			if (caller == PLUS_CALL) {
 				buf.append('+');
 			}
-			// fFactory.tagStart(buf, "mfrac");
 			buf.append("\\frac{");
 			// insert numerator in buffer:
-			if (numerator.size() != 1) {
-				if (numerator.size() == 2) {
-					fFactory.convert(buf, numerator.get(1), 0);
-				} else {
-					fFactory.convert(buf, numerator, fPrecedence);
-				}
-
+			if (numerator.isTimes()) {
+				convertMultiply(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
-				buf.append('1');
+				fFactory.convert(buf, numerator, precedence);
 			}
 			buf.append("}{");
-			if (denominator.size() == 2) {
-				fFactory.convert(buf, denominator.get(1), 0);
+			// insert denominator in buffer:
+			if (denominator.isTimes()) {
+				convertMultiply(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
-				fFactory.convert(buf, denominator, fPrecedence);
+				fFactory.convert(buf, denominator, precedence);
 			}
 			buf.append('}');
 		} else {
-			if (numerator.size() <= 2) {
-				convertMultiply(buf, f, precedence, caller);
+			if (numerator.isTimes()) {
+				convertMultiply(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
-				convertMultiply(buf, numerator, precedence, caller);
+				fFactory.convert(buf, numerator, precedence);
 			}
 		}
 
@@ -106,7 +82,7 @@ public class Times extends AbstractOperator {
 
 		if (f.size() > 1) {
 			expr = f.get(1);
-			if (NumberUtil.isMinusOne(expr)) {
+			if (expr.isMinusOne()) {
 				if (f.size() == 2) {
 					precedenceOpen(buf, precedence);
 					fFactory.convert(buf, expr, fPrecedence);
