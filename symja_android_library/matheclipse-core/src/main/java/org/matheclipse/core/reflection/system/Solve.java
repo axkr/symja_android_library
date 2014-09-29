@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.matheclipse.core.builtin.function.LeafCount;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -35,9 +33,9 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IExpr fDenom;
 		private long fLeafCount;
 
-		IAST row;
-		HashSet<ISymbol> symbolSet;
-		IAST value;
+		private HashSet<ISymbol> fSymbolSet;
+		private IAST fMatrixRow;
+		private IAST fPlusAST;
 
 		final IAST vars;
 
@@ -58,7 +56,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 			}
 			this.vars = vars;
-			this.symbolSet = new HashSet<ISymbol>();
+			this.fSymbolSet = new HashSet<ISymbol>();
 			this.fLeafCount = 0;
 			reset();
 		}
@@ -74,7 +72,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private void analyze(IExpr eqExpr) {
 			if (eqExpr.isFree(Predicates.in(vars), true)) {
 				fLeafCount++;
-				value.add(eqExpr);
+				fPlusAST.add(eqExpr);
 			} else if (eqExpr.isPlus()) {
 				fLeafCount++;
 				IAST arg = (IAST) eqExpr;
@@ -83,7 +81,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					expr = arg.get(i);
 					if (expr.isFree(Predicates.in(vars), true)) {
 						fLeafCount++;
-						value.add(expr);
+						fPlusAST.add(expr);
 					} else {
 						getPlusEquationType(expr);
 					}
@@ -95,8 +93,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		@Override
 		public int compareTo(ExprAnalyzer o) {
-			if (symbolSet.size() != o.symbolSet.size()) {
-				if (symbolSet.size() < o.symbolSet.size()) {
+			if (fSymbolSet.size() != o.fSymbolSet.size()) {
+				if (fSymbolSet.size() < o.fSymbolSet.size()) {
 					return -1;
 				}
 				return 1;
@@ -133,7 +131,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public int getNumberOfVars() {
-			return symbolSet.size();
+			return fSymbolSet.size();
 		}
 
 		private void getPlusEquationType(IExpr eqExpr) {
@@ -150,7 +148,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						fLeafCount++;
 						for (int j = 1; j < vars.size(); j++) {
 							if (vars.get(j).equals(expr)) {
-								symbolSet.add((ISymbol) expr);
+								fSymbolSet.add((ISymbol) expr);
 								if (sym != null) {
 									if (fEquationType == LINEAR) {
 										fEquationType = POLYNOMIAL;
@@ -158,8 +156,8 @@ public class Solve extends AbstractFunctionEvaluator {
 								} else {
 									sym = (ISymbol) expr;
 									if (fEquationType == LINEAR) {
-										IAST cloned = arg.removeAtClone(i);;
-										row.set(j, F.Plus(row.get(j), cloned));
+										IAST cloned = arg.removeAtClone(i);
+										fMatrixRow.set(j, F.Plus(fMatrixRow.get(j), cloned));
 									}
 								}
 							}
@@ -192,14 +190,14 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * @return the row
 		 */
 		public IAST getRow() {
-			return row;
+			return fMatrixRow;
 		}
 
 		/**
 		 * @return the symbolSet
 		 */
 		public HashSet<ISymbol> getSymbolSet() {
-			return symbolSet;
+			return fSymbolSet;
 		}
 
 		private void getTimesEquationType(IExpr expr) {
@@ -207,9 +205,9 @@ public class Solve extends AbstractFunctionEvaluator {
 				fLeafCount++;
 				for (int i = 1; i < vars.size(); i++) {
 					if (vars.equalsAt(i, expr)) {
-						symbolSet.add((ISymbol) expr);
+						fSymbolSet.add((ISymbol) expr);
 						if (fEquationType == LINEAR) {
-							row.set(i, F.Plus(row.get(i), F.C1));
+							fMatrixRow.set(i, F.Plus(fMatrixRow.get(i), F.C1));
 						}
 					}
 				}
@@ -217,7 +215,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			if (expr.isFree(Predicates.in(vars), true)) {
 				fLeafCount++;
-				value.add(expr);
+				fPlusAST.add(expr);
 				return;
 			}
 			if (expr.isPower()) {
@@ -246,8 +244,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		/**
 		 * @return the value
 		 */
-		public IAST getValue() {
-			return value;
+		public IExpr getValue() {
+			return fPlusAST.getOneIdentity(F.C0);
 		}
 
 		/**
@@ -264,11 +262,11 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public void reset() {
-			this.row = F.List();
+			this.fMatrixRow = F.List();
 			for (int i = 1; i < vars.size(); i++) {
-				row.add(F.C0);
+				fMatrixRow.add(F.C0);
 			}
-			this.value = F.Plus();
+			this.fPlusAST = F.Plus();
 			this.fEquationType = LINEAR;
 		}
 
@@ -402,7 +400,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym),expr.isNumericMode());
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode());
 			if (temp != null) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
