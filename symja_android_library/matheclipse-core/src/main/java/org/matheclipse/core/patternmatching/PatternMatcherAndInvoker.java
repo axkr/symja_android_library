@@ -33,8 +33,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	}
 
 	/**
-	 * Create a pattern-matching rule which invokes the method name in the given
-	 * instance, if leftHandSide is matching.
+	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
 	 * 
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
@@ -50,8 +49,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	}
 
 	/**
-	 * Create a pattern-matching rule which invokes the method name in the given
-	 * instance, if leftHandSide is matching.
+	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
 	 * 
 	 * @param leftHandSide
 	 * @param instance
@@ -116,7 +114,9 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			List<IExpr> args = fPatternMap.getValuesAsList();
 			result = null;
 			try {
-				result = (IExpr) fMethod.invoke(fInstance, args.toArray());
+				if (args != null) {
+					result = (IExpr) fMethod.invoke(fInstance, args.toArray());
+				}
 			} catch (IllegalArgumentException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();

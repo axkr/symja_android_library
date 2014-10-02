@@ -18,6 +18,7 @@ package org.matheclipse.parser.server.util;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
@@ -37,24 +38,20 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
 import org.matheclipse.parser.client.operator.SubtractOperator;
 
 /**
- * Utility for generating source codes for the
- * <code>ASTNodeFactory's HEADER_STRINGS, OPERATOR_STRINGS, OPERATORS</code>
- * arrays from the operators.txt textfile description
+ * Utility for generating source codes for the <code>ASTNodeFactory's HEADER_STRINGS, OPERATOR_STRINGS, OPERATORS</code> arrays from
+ * the operators.txt textfile description
  * 
  */
 public class GenerateOperatorArrays {
 
 	/**
-	 * Utility for generating source codes for the
-	 * <code>ASTNodeFactory's HEADER_STRINGS, OPERATOR_STRINGS, OPERATORS</code>
-	 * arrays from an operator's text file description
+	 * Utility for generating source codes for the <code>ASTNodeFactory's HEADER_STRINGS, OPERATOR_STRINGS, OPERATORS</code> arrays
+	 * from an operator's text file description
 	 * 
 	 * @param args
-	 *          if <code>args.length==0</code> take the default
-	 *          <code>/opertors.txt</code> file for generating the arrays; if
-	 *          <code>args.length>=1</code> the <code>arg[0]</code> parameters
-	 *          should contain the complete filename of the operator's description
-	 *          file
+	 *            if <code>args.length==0</code> take the default <code>/opertors.txt</code> file for generating the arrays; if
+	 *            <code>args.length>=1</code> the <code>arg[0]</code> parameters should contain the complete filename of the
+	 *            operator's description file
 	 */
 	public static void main(final String[] args) {
 		InputStream operatorDefinitions = null;
@@ -104,8 +101,8 @@ public class GenerateOperatorArrays {
 					} else if (iOper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE) {
 						grouping = "InfixOperator.RIGHT_ASSOCIATIVE";
 					}
-					System.out.println("    new DivideOperator(\"" + iOper.getOperatorString() + "\", \"" + iOper.getFunctionName() + "\", "
-							+ iOper.getPrecedence() + ", " + grouping + "),");
+					System.out.println("    new DivideOperator(\"" + iOper.getOperatorString() + "\", \"" + iOper.getFunctionName()
+							+ "\", " + iOper.getPrecedence() + ", " + grouping + "),");
 				} else if (oper instanceof SubtractOperator) {
 					final InfixOperator iOper = (SubtractOperator) oper;
 					String grouping = null;
@@ -116,8 +113,8 @@ public class GenerateOperatorArrays {
 					} else if (iOper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE) {
 						grouping = "InfixOperator.RIGHT_ASSOCIATIVE";
 					}
-					System.out.println("    new SubtractOperator(\"" + iOper.getOperatorString() + "\", \"" + iOper.getFunctionName()
-							+ "\", " + iOper.getPrecedence() + ", " + grouping + "),");
+					System.out.println("    new SubtractOperator(\"" + iOper.getOperatorString() + "\", \""
+							+ iOper.getFunctionName() + "\", " + iOper.getPrecedence() + ", " + grouping + "),");
 				} else if (oper instanceof InfixOperator) {
 					final InfixOperator iOper = (InfixOperator) oper;
 					String grouping = null;
@@ -128,26 +125,33 @@ public class GenerateOperatorArrays {
 					} else if (iOper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE) {
 						grouping = "InfixOperator.RIGHT_ASSOCIATIVE";
 					}
-					System.out.println("    new InfixOperator(\"" + iOper.getOperatorString() + "\", \"" + iOper.getFunctionName() + "\", "
-							+ iOper.getPrecedence() + ", " + grouping + "),");
+					System.out.println("    new InfixOperator(\"" + iOper.getOperatorString() + "\", \"" + iOper.getFunctionName()
+							+ "\", " + iOper.getPrecedence() + ", " + grouping + "),");
 				} else if (oper instanceof PostfixOperator) {
-					System.out.println("    new PostfixOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName() + "\", "
-							+ oper.getPrecedence() + "),");
+					System.out.println("    new PostfixOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName()
+							+ "\", " + oper.getPrecedence() + "),");
 				} else if (oper instanceof PreMinusOperator) {
-					System.out.println("    new PreMinusOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName() + "\", "
-							+ oper.getPrecedence() + "),");
+					System.out.println("    new PreMinusOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName()
+							+ "\", " + oper.getPrecedence() + "),");
 				} else if (oper instanceof PrePlusOperator) {
-					System.out.println("    new PrePlusOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName() + "\", "
-							+ oper.getPrecedence() + "),");
+					System.out.println("    new PrePlusOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName()
+							+ "\", " + oper.getPrecedence() + "),");
 				} else if (oper instanceof PrefixOperator) {
-					System.out.println("    new PrefixOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName() + "\", "
-							+ oper.getPrecedence() + "),");
+					System.out.println("    new PrefixOperator(\"" + oper.getOperatorString() + "\", \"" + oper.getFunctionName()
+							+ "\", " + oper.getPrecedence() + "),");
 				}
 
 			}
 			System.out.println("};");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+		} finally {
+			if (operatorDefinitions != null) {
+				try {
+					operatorDefinitions.close();
+				} catch (IOException e) {
+				}
+			}
 		}
 	}
 

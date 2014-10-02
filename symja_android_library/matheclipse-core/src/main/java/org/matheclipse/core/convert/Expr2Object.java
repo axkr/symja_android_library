@@ -31,6 +31,9 @@ public class Expr2Object {
 
 	public static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
 		int[] dim = ast.isMatrix();
+		if (dim==null){
+			return new double[0][0];
+		}
 		double[][] result = new double[dim[0]][dim[1]];
 		for (int i = 1; i <= dim[0]; i++) {
 			IAST row = (IAST) ast.get(i);

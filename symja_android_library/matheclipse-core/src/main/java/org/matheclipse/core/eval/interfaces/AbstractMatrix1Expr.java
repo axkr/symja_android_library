@@ -26,7 +26,9 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			if (dim != null) {
 				final IAST list = (IAST) ast.arg1();
 				matrix = Convert.list2Matrix(list);
-				return matrixEval(matrix).getExpr();
+				if (matrix != null) {
+					return matrixEval(matrix).getExpr();
+				}
 			}
 
 		} catch (final ClassCastException e) {
@@ -52,7 +54,10 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			EvalEngine engine = EvalEngine.get();
 			if (engine.isApfloat()) {
 				FieldMatrix<ExprFieldElement> fieldMatrix = Convert.list2Matrix(list);
-				return matrixEval(fieldMatrix).getExpr();
+				if (fieldMatrix != null) {
+					return matrixEval(fieldMatrix).getExpr();
+				}
+				return null;
 			}
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);
