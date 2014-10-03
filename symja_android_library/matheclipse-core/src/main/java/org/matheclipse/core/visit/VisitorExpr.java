@@ -84,8 +84,7 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and no arguments (i.e.
-	 * <code>head[]</code>).
+	 * Visit an <code>IAST</code> with the given head and no arguments (i.e. <code>head[]</code>).
 	 * 
 	 * @return <code>null</code>, if no evaluation is possible
 	 */
@@ -94,8 +93,7 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and one argument (i.e.
-	 * <code>head[arg1]</code>).
+	 * Visit an <code>IAST</code> with the given head and one argument (i.e. <code>head[arg1]</code>).
 	 * 
 	 * @return <code>null</code>, if no evaluation is possible
 	 */
@@ -104,8 +102,7 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and two arguments (i.e.
-	 * <code>head[arg1, arg2]</code>).
+	 * Visit an <code>IAST</code> with the given head and two arguments (i.e. <code>head[arg1, arg2]</code>).
 	 * 
 	 * @return <code>null</code>, if no evaluation is possible
 	 */
@@ -138,8 +135,8 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 
 	/**
 	 * 
-	 * @return the cloned <code>IAST</code> with changed evaluated subexpressions,
-	 *         or <code>null</code>, if no evaluation is possible
+	 * @return the cloned <code>IAST</code> with changed evaluated subexpressions, or <code>null</code>, if no evaluation is
+	 *         possible
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
@@ -158,14 +155,16 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 			}
 			i++;
 		}
-		while (i < ast.size()) {
-			temp = ast.get(i).accept(this);
-			if (temp != null) {
-				result.set(i, temp);
-			} else {
-				result.set(i, ast.get(i));
+		if (result != null) {
+			while (i < ast.size()) {
+				temp = ast.get(i).accept(this);
+				if (temp != null) {
+					result.set(i, temp);
+				} else {
+					result.set(i, ast.get(i));
+				}
+				i++;
 			}
-			i++;
 		}
 		return result;
 	}

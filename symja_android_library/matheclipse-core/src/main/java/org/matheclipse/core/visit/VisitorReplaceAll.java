@@ -15,20 +15,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Function;
 
 /**
- * Replace all occurrences of expressions where the given
- * <code>function.apply()</code> method returns a non <code>null</code> value.
- * The visitors <code>visit()</code> methods return <code>null</code> if no
- * substitution occurred.
+ * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non <code>null</code>
+ * value. The visitors <code>visit()</code> methods return <code>null</code> if no substitution occurred.
  */
 public class VisitorReplaceAll extends VisitorExpr {
-	final Function<IExpr,IExpr> fFunction;
+	final Function<IExpr, IExpr> fFunction;
 	final int fOffset;
 
-	public VisitorReplaceAll(Function<IExpr,IExpr>  function) {
+	public VisitorReplaceAll(Function<IExpr, IExpr> function) {
 		this(function, 0);
 	}
 
-	public VisitorReplaceAll(Function<IExpr,IExpr> function, int offset) {
+	public VisitorReplaceAll(Function<IExpr, IExpr> function, int offset) {
 		super();
 		this.fFunction = function;
 		this.fOffset = offset;
@@ -127,12 +125,14 @@ public class VisitorReplaceAll extends VisitorExpr {
 			}
 			i++;
 		}
-		while (i < ast.size()) {
-			temp = ast.get(i).accept(this);
-			if (temp != null) {
-				result.set(i, temp);
+		if (result != null) {
+			while (i < ast.size()) {
+				temp = ast.get(i).accept(this);
+				if (temp != null) {
+					result.set(i, temp);
+				}
+				i++;
 			}
-			i++;
 		}
 		return result;
 	}
