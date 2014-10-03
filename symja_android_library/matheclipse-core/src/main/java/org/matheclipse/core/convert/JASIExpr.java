@@ -49,13 +49,6 @@ public class JASIExpr {
 	private final List<? extends IExpr> fVariables;
 
 	/**
-	 * "no complex number" flag to disallow complex numbers on input in method <code>expr2IExprJAS(IExpr)</code>
-	 * 
-	 * @see {@link #expr2IExprJAS(IExpr)}
-	 */
-	private boolean fNoComplexNumber = true;
-
-	/**
 	 * "numeric function" flag to allow numeric functions on input in method <code>expr2IExprJAS(IExpr)</code>
 	 * 
 	 * @see {@link #expr2IExprJAS(IExpr)}
@@ -233,9 +226,6 @@ public class JASIExpr {
 				}
 			}
 		} else if (exprPoly instanceof ISymbol) {
-			if (fNoComplexNumber && exprPoly.equals(F.CI)) {
-				throw new ClassCastException(exprPoly.toString());
-			}
 			for (int i = 0; i < fVariables.size(); i++) {
 				if (fVariables.get(i).equals(exprPoly)) {
 					ExpVector e = ExpVector.create(fVariables.size(), i, 1L);
@@ -398,28 +388,6 @@ public class JASIExpr {
 		} else {
 			return result;
 		}
-	}
-
-	/**
-	 * Check if no complex number is allowed on input in method <code>expr2IExprJAS(IExpr)</code>
-	 * 
-	 * @return <code>true</code> if no complex number is allowed in the input expression
-	 * 
-	 * @see {@link #expr2IExprJAS(IExpr)}
-	 */
-	private boolean isNoComplexNumber() {
-		return fNoComplexNumber;
-	}
-
-	/**
-	 * Set the "no complex number" flag to disallow complex numbers on input in method <code>expr2IExprJAS(IExpr)</code>
-	 * 
-	 * @param noComplexNumber
-	 * 
-	 * @see {@link #expr2IExprJAS(IExpr)}
-	 */
-	private void setNoComplexNumber(boolean noComplexNumber) {
-		this.fNoComplexNumber = fNoComplexNumber;
 	}
 
 }
