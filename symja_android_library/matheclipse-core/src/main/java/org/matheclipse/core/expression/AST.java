@@ -1042,9 +1042,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return this.accept(new VisitorReplaceSlots(astSlots));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IAST[] filter(Predicate<IExpr> predicate) {
 		IAST[] result = new IAST[2];
@@ -1054,9 +1052,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IAST[] filter(final Function<IExpr, IExpr> function) {
 		IAST[] result = new IAST[2];
@@ -1065,10 +1061,8 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		filter(result[0], result[1], function);
 		return result;
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
+	/** {@inheritDoc} */
 	@Override
 	public final IAST filter(IAST filterAST, Predicate<IExpr> predicate) {
 		int size = size();
@@ -1079,10 +1073,8 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		return filterAST;
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
+	/** {@inheritDoc} */
 	@Override
 	public final IAST filter(IAST filterAST, Predicate<IExpr> predicate, int maxMatches) {
 		int count = 0;
@@ -1102,9 +1094,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return filterAST;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		int size = size();
 		for (int i = 1; i < size; i++) {
@@ -1117,18 +1107,14 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		return filterAST;
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
+	/** {@inheritDoc} */
 	@Override
 	public final IAST filter(IAST filterAST, IExpr expr) {
 		return filter(filterAST, Predicates.isTrue(expr));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate) {
 		int size = size();
@@ -1142,9 +1128,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return filterAST;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final boolean isAST() {
 		return true;
@@ -1469,11 +1453,13 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final IAST copyHead() {
 		return newInstance(get(0));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final IAST copyUntil(int index) {
 		return newInstance(this, index);

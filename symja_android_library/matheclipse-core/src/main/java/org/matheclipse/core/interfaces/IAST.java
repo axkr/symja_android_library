@@ -266,14 +266,16 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST clone();
 
 	/**
-	 * Create a copy of this <code>IAST</code>, which only contains the head element of the list (i.e. the element with index 0).
+	 * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e. the element with index 0).
 	 */
 	public IAST copyHead();
 
 	/**
-	 * Create a copy of this <code>IAST</code>, which contains alls elements up to <code>index</code> (exclusive).
+	 * Create a copy of this <code>AST</code>, which contains alls elements up to the given <code>position</code> (exclusive).
+	 * 
+	 * @param position
 	 */
-	public IAST copyUntil(int index);
+	public IAST copyUntil(int position);
 
 	/**
 	 * Calls <code>get(position).equals(expr)</code>.
