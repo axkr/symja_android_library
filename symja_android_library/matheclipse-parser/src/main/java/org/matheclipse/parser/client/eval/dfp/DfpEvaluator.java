@@ -369,6 +369,8 @@ public class DfpEvaluator {
 
 	private final DfpField fDfpField;
 
+	private final DfpNode fZERO;
+	
 	private ASTNode fNode;
 
 	private final boolean fRelaxedSyntax;
@@ -390,6 +392,7 @@ public class DfpEvaluator {
 		fNode = node;
 		fRelaxedSyntax = relaxedSyntax;
 		fDfpField = new DfpField(decimalDigits);
+		fZERO  = new DfpNode(fDfpField.getZero());
 		init();
 		if (fRelaxedSyntax) {
 			if (SYMBOL_DFP_MAP.get("pi") == null) {
@@ -676,7 +679,7 @@ public class DfpEvaluator {
 						FunctionNode result = new FunctionNode(f.getNode(0));
 						for (int i = 1; i < f.size(); i++) {
 							ASTNode deriv = derivative(f.getNode(i), var);
-							if (!deriv.equals(fDfpField.getZero())) {
+							if (!deriv.equals(fZERO)) {
 								result.add(deriv);
 							}
 						}
@@ -690,7 +693,7 @@ public class DfpEvaluator {
 							for (int j = 1; j < f.size(); j++) {
 								if (j == i) {
 									ASTNode deriv = derivative(f.getNode(j), var);
-									if (deriv.equals(fDfpField.getZero())) {
+									if (deriv.equals(fZERO)) {
 										valid = false;
 									} else {
 										timesResult.add(deriv);
