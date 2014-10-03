@@ -945,7 +945,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public final boolean evalTrue(final IExpr expr) {
 		try {
-			return evaluate(expr).equals(F.True);
+			if (expr.isTrue()) {
+				return true;
+			}
+			if (expr.isFalse()) {
+				return false;
+			}
+			return evaluate(expr).isTrue();
 		} catch (MathException fce) {
 			if (Config.DEBUG) {
 				fce.printStackTrace();

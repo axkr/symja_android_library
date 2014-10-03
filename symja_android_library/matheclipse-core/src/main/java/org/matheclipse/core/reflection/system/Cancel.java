@@ -87,8 +87,8 @@ public class Cancel extends AbstractFunctionEvaluator {
 		IExpr[] parts = Apart.getFractionalParts(powerTimesAST);
 		if (parts != null) {
 			if (parts[0].isPlus() && parts[1].isPlus()) {
-				IAST[] numParts = ((IAST) parts[0]).split(new PolynomialPredicate());
-				IAST[] denParts = ((IAST) parts[1]).split(new PolynomialPredicate());
+				IAST[] numParts = ((IAST) parts[0]).filter(new PolynomialPredicate());
+				IAST[] denParts = ((IAST) parts[1]).filter(new PolynomialPredicate());
 				IExpr denParts0 = F.eval(denParts[0]);
 				if (!denParts0.equals(F.C1)) {
 					IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);

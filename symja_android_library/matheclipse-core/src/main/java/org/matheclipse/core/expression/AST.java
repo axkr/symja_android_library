@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -1045,8 +1046,84 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public IAST[] filter(Predicate<IExpr> predicate) {
+		IAST[] result = new IAST[2];
+		result[0] = copyHead();
+		result[1] = copyHead();
+		filter(result[0], result[1], predicate);
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IAST[] filter(final Function<IExpr, IExpr> function) {
+		IAST[] result = new IAST[2];
+		result[0] = copyHead();
+		result[1] = copyHead();
+		filter(result[0], result[1], function);
+		return result;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public final IAST filter(IAST filterAST, Predicate<IExpr> predicate) {
-		return (new ASTRange(this, 1, size())).filter(filterAST, predicate);
+		int size = size();
+		for (int i = 1; i < size; i++) {
+			if (predicate.apply(get(i))) {
+				filterAST.add(get(i));
+			}
+		}
+		return filterAST;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final IAST filter(IAST filterAST, Predicate<IExpr> predicate, int maxMatches) {
+		int count = 0;
+		if (count >= maxMatches) {
+			return filterAST;
+		}
+		int size = size();
+		for (int i = 1; i < size; i++) {
+			if (predicate.apply(get(i))) {
+				if (++count == maxMatches) {
+					filterAST.add(get(i));
+					break;
+				}
+				filterAST.add(get(i));
+			}
+		}
+		return filterAST;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+		int size = size();
+		for (int i = 1; i < size; i++) {
+			IExpr expr = function.apply(get(i));
+			if (expr != null) {
+				filterAST.add(expr);
+			} else {
+				restAST.add(get(i));
+			}
+		}
+		return filterAST;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final IAST filter(IAST filterAST, IExpr expr) {
+		return filter(filterAST, Predicates.isTrue(expr));
 	}
 
 	/**
@@ -1054,31 +1131,15 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 */
 	@Override
 	public final IAST filter(IAST filterAST, IAST restAST, Predicate<IExpr> predicate) {
-		return (new ASTRange(this, 1, size())).filter(filterAST, restAST, predicate);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IAST[] split(Predicate<IExpr> predicate) {
-		IAST[] result = new IAST[2];
-		result[0] = copyHead();
-		result[1] = copyHead();
-		new ASTRange(this, 1, size()).filter(result[0], result[1], predicate);
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IAST[] split(final Function<IExpr, IExpr> function) {
-		IAST[] result = new IAST[2];
-		result[0] = copyHead();
-		result[1] = copyHead();
-		new ASTRange(this, 1, size()).filter(result[0], result[1], function);
-		return result;
+		int size = size();
+		for (int i = 1; i < size; i++) {
+			if (predicate.apply(get(i))) {
+				filterAST.add(get(i));
+			} else {
+				restAST.add(get(i));
+			}
+		}
+		return filterAST;
 	}
 
 	/**

@@ -15,23 +15,18 @@ public class Select implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		
+		int size = ast.size();
 		if (ast.arg1().isAST()) {
-			if (ast.size() == 3) {
-				return select((IAST) ast.arg1(), ast.arg2());
-			} else if ((ast.size() == 4) && ast.arg3().isInteger()) {
+			IAST arg1 = (IAST) ast.arg1();
+			IExpr arg2 = ast.arg2();
+			if (size == 3) {
+				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2));
+			} else if ((size == 4) && ast.arg3().isInteger()) {
 				final int resultLimit = Validate.checkIntType(ast, 3);
-				return select((IAST) ast.arg1(), ast.arg2(), resultLimit);
+				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2), resultLimit);
 			}
 		}
 		return null;
-	}
-
-	public static IAST select(final IAST ast, final IExpr head) {
-		return ast.filter(ast.copyHead(), Predicates.isTrue(head));
-	}
-
-	public static IAST select(final IAST ast, final IExpr head, final int resultLimit) {
-		return ast.args().filter(ast.copyHead(), Predicates.isTrue(head), resultLimit);
 	}
 
 	public IExpr numericEval(final IAST functionList) {

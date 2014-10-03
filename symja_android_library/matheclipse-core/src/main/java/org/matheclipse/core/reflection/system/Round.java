@@ -52,7 +52,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 				return signedNumber.round();
 			}
 			if (arg1.isPlus()) {
-				IAST[] result = ((IAST) arg1).split(new RoundPlusFunction());
+				IAST[] result = ((IAST) arg1).filter(new RoundPlusFunction());
 				if (result[0].size() > 1) {
 					if (result[1].size() > 1) {
 						result[0].add(F.Round(result[1]));

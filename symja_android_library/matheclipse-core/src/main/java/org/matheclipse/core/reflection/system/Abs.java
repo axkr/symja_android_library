@@ -81,7 +81,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 			return sym.mapConstantDouble(new AbsNumericFunction(sym));
 		}
 		if (arg1.isTimes()) {
-			IAST[] result = ((IAST) arg1).split(new AbsTimesFunction());
+			IAST[] result = ((IAST) arg1).filter(new AbsTimesFunction());
 			if (result[0].size() > 1) {
 				if (result[1].size() > 1) {
 					result[0].add(F.Abs(result[1]));

@@ -35,7 +35,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 		public IExpr apply(final IExpr arg) {
 			if (arg.isAST()) {
 				IAST ast = (IAST) arg;
-				IAST[] results = ast.split(matcher);
+				IAST[] results = ast.filter(matcher);
 				resultCollection.addAll(results[1]);
 				// ast.filter(resultCollection, matcher);
 			}
@@ -57,7 +57,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 		public IExpr apply(final IExpr arg) {
 			if (arg.isAST()) {
 				IAST ast = (IAST) arg;
-				IAST[] results = ast.split(function);
+				IAST[] results = ast.filter(function);
 				resultCollection.addAll(results[1]);
 			}
 			return null;
@@ -86,11 +86,11 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 	public static IAST deleteCases(final IAST ast, final IExpr pattern) {
 		if (pattern.isRuleAST()) {
 			Function<IExpr, IExpr> function = Functors.rules((IAST) pattern);
-			IAST[] results = ast.split(function);
+			IAST[] results = ast.filter(function);
 			return results[1];
 		}
 		final PatternMatcher matcher = new PatternMatcher(pattern);
-		IAST[] results = ast.split(matcher);
+		IAST[] results = ast.filter(matcher);
 		return results[1];
 
 	}

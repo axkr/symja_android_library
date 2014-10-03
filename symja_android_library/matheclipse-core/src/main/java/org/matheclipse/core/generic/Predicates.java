@@ -72,18 +72,8 @@ public class Predicates {
 		protected final IAST fAST;
 
 		/**
-		 * Define an unary AST with the header <code>head</code>. The <code>apply()</code> method evaluates the cretaed AST with the
+		 * Define an unary AST with the header <code>head</code>. The <code>apply()</code> method evaluates the created AST with the
 		 * given expression and checks if the result equals <code>True</code>.
-		 * 
-		 * @param head
-		 *            the AST's head expresion
-		 */
-		public IsUnaryTrue(final IExpr head) {
-			this(EvalEngine.get(), head);
-		}
-
-		/**
-		 * Define an unary AST with the header <code>head</code>.
 		 * 
 		 * @param engine
 		 *            the evaluation engine
@@ -91,7 +81,7 @@ public class Predicates {
 		 *            the AST's head expresion
 		 */
 		public IsUnaryTrue(final EvalEngine engine, final IExpr head) {
-			fEngine = EvalEngine.get();
+			fEngine = engine;
 			fAST = F.ast(head, 1, false);
 		}
 
@@ -109,27 +99,27 @@ public class Predicates {
 	}
 
 	/**
-	 * Check if the evaluation of an unary AST object gives <code>True</code>.
+	 * Check if the evaluation of the <code>expr</code> object gives <code>True</code>. If <code>expr</code> is a symbol, which has
+	 * an assigned <code>Predicate</code> evaluator object, the predicate will be returned. Otherwise a <code>IsUnaryTrue</code>
+	 * predicate will be returned.
 	 * 
-	 * @param head
+	 * @param expr
 	 * @return
+	 * @see IsUnaryTrue
 	 */
-	public static Predicate<IExpr> isTrue(IExpr head) {
-		if (head.isSymbol()) {
-			IEvaluator eval = ((ISymbol) head).getEvaluator();
-			if (eval != null && (eval instanceof Predicate<?>)) {
-				return (Predicate<IExpr>) eval;
-			}
-		}
-		return new IsUnaryTrue<IExpr>(head);
+	public static Predicate<IExpr> isTrue(IExpr expr) {
+		return new IsUnaryTrue<IExpr>(EvalEngine.get(), expr);
 	}
 
 	/**
-	 * Check if the evaluation of an unary AST object gives <code>True</code>.
+	 * Check if the evaluation of the <code>expr</code> object gives <code>True</code>. If <code>expr</code> is a symbol, which has
+	 * an assigned <code>Predicate</code> evaluator object, the predicate will be returned. Otherwise a <code>IsUnaryTrue</code>
+	 * predicate will be returned.
 	 * 
 	 * @param engine
 	 * @param head
 	 * @return
+	 * @see IsUnaryTrue
 	 */
 	public static Predicate<IExpr> isTrue(final EvalEngine engine, final IExpr head) {
 		if (head.isSymbol()) {

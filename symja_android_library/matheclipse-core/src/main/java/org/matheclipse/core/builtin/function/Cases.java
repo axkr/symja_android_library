@@ -47,7 +47,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 		public IExpr apply(final IExpr arg) {
 			if (arg.isAST()) {
 				IAST ast = (IAST) arg;
-				IAST[] results = ast.split(function);
+				IAST[] results = ast.filter(function);
 				resultCollection.addAll(results[0]);
 			}
 			return null;
@@ -90,7 +90,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 	public static IAST cases(final IAST ast, final IExpr pattern) {
 		if (pattern.isRuleAST()) {
 			Function<IExpr, IExpr> function = Functors.rules((IAST) pattern);
-			IAST[] results = ast.split(function);
+			IAST[] results = ast.filter(function);
 			return results[0];
 		}
 		final PatternMatcher matcher = new PatternMatcher(pattern);
