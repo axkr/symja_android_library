@@ -58,7 +58,6 @@ public class D extends AbstractFunctionEvaluator {
 		}
 
 		IExpr x = ast.arg2();
-		int n = 1;
 		if (x.isList()) {
 			// D[fx_, {...}]
 			IAST xList = (IAST) x;
@@ -66,7 +65,7 @@ public class D extends AbstractFunctionEvaluator {
 				IAST subList = (IAST) xList.arg1();
 				return subList.args().mapLeft(F.List(), new BinaryEval(F.D), fx);
 			} else if (xList.size() == 3 && xList.arg2().isInteger()) {
-				n = Validate.checkIntType(xList, 2, 1);
+				int n = Validate.checkIntType(xList, 2, 1);
 
 				if (xList.arg1().isList()) {
 					x = F.List(xList.arg1());
@@ -92,11 +91,8 @@ public class D extends AbstractFunctionEvaluator {
 			return F.C0;
 		}
 		if (fx.equals(x)) {
-			if (n == 1) {
-				// D[x_,x_] -> 1
-				return F.C1;
-			}
-			return F.C0;
+			// D[x_,x_] -> 1
+			return F.C1;
 		}
 
 		if (fx.isAST()) {
