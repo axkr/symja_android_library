@@ -54,7 +54,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 		if (result.isNumIntValue()) {
 			// return F.True;
 			try {
-				long l = result.toLong();
+				result.toLong();
 				return F.True;
 			} catch (ArithmeticException ae) {
 				return null;

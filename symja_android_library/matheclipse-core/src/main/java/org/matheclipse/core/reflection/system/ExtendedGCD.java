@@ -83,7 +83,6 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 	 */
 	public static Object[] extendedGCD(BigInteger numberOne, BigInteger numberTwo) throws ArithmeticException {
 		Object[] results = new Object[2];
-		BigInteger[] divisionResult = new BigInteger[2];
 		BigInteger dividend;
 		BigInteger divisor;
 		BigInteger quotient;
@@ -115,6 +114,7 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 				divisor = numberOne;
 			}
 
+			BigInteger[] divisionResult = null;
 			while (remainder.compareTo(BigInteger.ZERO) != 0) {
 				divisionResult = dividend.divideAndRemainder(divisor);
 				quotient = divisionResult[0];

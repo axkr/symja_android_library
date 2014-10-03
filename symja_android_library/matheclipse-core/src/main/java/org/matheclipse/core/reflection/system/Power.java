@@ -360,7 +360,6 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	 */
 	private IInteger[] calculateRoot(IInteger a, IInteger root) {
 		try {
-			IInteger[] result = new IInteger[2];
 			int n = root.toInt();
 			if (n > 0) {
 				if (a.equals(F.C1)) {
@@ -369,7 +368,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				if (a.equals(F.CN1)) {
 					return null;
 				}
-				result = a.nthRootSplit(n);
+				IInteger[] result = a.nthRootSplit(n);
 				if (result[1].equals(a)) {
 					// no roots found
 					return null;

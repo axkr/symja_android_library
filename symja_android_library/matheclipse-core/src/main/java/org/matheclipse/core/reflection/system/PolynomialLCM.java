@@ -74,7 +74,6 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			GenPolynomial<BigInteger> temp;
 			GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
 			for (int i = 2; i < ast.size(); i++) {
-				eVar = new ExprVariables(ast.get(i));
 				expr = F.evalExpandAll(ast.get(i));
 				temp = jas.expr2JAS(expr, false);
 				poly = factory.lcm(poly, temp);

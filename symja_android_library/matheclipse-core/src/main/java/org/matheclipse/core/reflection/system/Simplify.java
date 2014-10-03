@@ -76,14 +76,14 @@ public class Simplify extends AbstractFunctionEvaluator {
 		}
 	}
 
-	class SimplifyVisitor extends VisitorExpr {
+	static class SimplifyVisitor extends VisitorExpr {
 		final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
 
 		public SimplifyVisitor() {
 			super();
 		}
 
-		private IExpr tryTransformations(IAST plusAST, IExpr test) {
+		private IExpr tryExpandAllTransformation(IAST plusAST, IExpr test) {
 			IExpr result = null;
 			long minCounter = plusAST.leafCount();
 			IExpr temp;
@@ -93,7 +93,6 @@ public class Simplify extends AbstractFunctionEvaluator {
 				temp = F.evalExpandAll(test);
 				count = temp.leafCount();
 				if (count < minCounter) {
-					minCounter = count;
 					result = temp;
 				}
 			} catch (WrongArgumentType wat) {
@@ -203,13 +202,13 @@ public class Simplify extends AbstractFunctionEvaluator {
 						if (i != 1 && number != null) {
 							if (temp.isPlus()) {
 								// <number> * Plus[.....]
-								reduced = tryToReduceNumericFactor(ast, temp, number, i);
+								reduced = tryExpandAll(ast, temp, number, i);
 								if (reduced != null) {
 									return reduced;
 								}
 							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus() && ((IAST) temp).get(2).isMinusOne()) {
 								// <number> * Power[Plus[...], -1 ]
-								reduced = tryToReduceNumericFactor(ast, ((IAST) temp).arg1(), number.inverse(), i);
+								reduced = tryExpandAll(ast, ((IAST) temp).arg1(), number.inverse(), i);
 								if (reduced != null) {
 									return F.Power(reduced, F.CN1);
 								}
@@ -241,8 +240,8 @@ public class Simplify extends AbstractFunctionEvaluator {
 			return null;
 		}
 
-		private IExpr tryToReduceNumericFactor(IAST ast, IExpr temp, IExpr arg1, int i) {
-			IExpr expandedAst = tryTransformations((IAST) temp, F.Times(arg1, temp));
+		private IExpr tryExpandAll(IAST ast, IExpr temp, IExpr arg1, int i) {
+			IExpr expandedAst = tryExpandAllTransformation((IAST) temp, F.Times(arg1, temp));
 			if (expandedAst != null) {
 				IAST result = F.Times();
 				ast.range(2, ast.size()).toList(result);

@@ -23,11 +23,12 @@ public class Together extends AbstractFunctionEvaluator {
 		if (temp.isAST()) {
 			IExpr result = togetherPlusTimesPower((IAST) temp);
 			if (result != null) {
-				result = F.eval(result);
-				if (result.isPlus() || result.isTimes() || result.isPower()) {
-					temp = result;
-				}
-				return result;
+				return F.eval(result);
+				// result = F.eval(result);
+				// if (result.isPlus() || result.isTimes() || result.isPower()) {
+				// temp = result;
+				// }
+				// return result;
 			}
 		}
 		return temp;
