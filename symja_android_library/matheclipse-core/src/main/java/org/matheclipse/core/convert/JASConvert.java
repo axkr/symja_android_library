@@ -559,8 +559,6 @@ public class JASConvert<C extends RingElem<C>> {
 					long lExp = e.getVal(0);
 					if (lExp != 0) {
 						times.add(F.Power(sym, F.integer(lExp)));
-					} else {
-						times.add(F.Power(sym, F.integer(lExp)));
 					}
 				}
 				if (times.size() > 1) {
