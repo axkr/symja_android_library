@@ -15,7 +15,7 @@ public class Times extends AbstractOperator {
 	public final static int NO_SPECIAL_CALL = 0;
 
 	public final static int PLUS_CALL = 1;
-	
+
 	public Times() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#x2062;");
 	}
@@ -24,9 +24,9 @@ public class Times extends AbstractOperator {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *          StringBuffer for MathML output
+	 *            StringBuffer for MathML output
 	 * @param f
-	 *          The math function which should be converted to MathML
+	 *            The math function which should be converted to MathML
 	 */
 	@Override
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
@@ -37,9 +37,9 @@ public class Times extends AbstractOperator {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *          StringBuffer for MathML output
+	 *            StringBuffer for MathML output
 	 * @param f
-	 *          The math function which should be converted to MathML
+	 *            The math function which should be converted to MathML
 	 */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
 		final IAST numerator = F.Times();
@@ -64,14 +64,14 @@ public class Times extends AbstractOperator {
 				// filter negative Powers:
 				final IAST p = (IAST) f.get(i);
 				if ((p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
-					if (NumberUtil.isMinusOne(p.get(2))) {
+					if (NumberUtil.isMinusOne(p.arg2())) {
 						// x_^(-1) ?
 						denominator.add(p.get(1));
 						flag = true;
 						continue;
 					}
 
-					denominator.add(F.Power( p.get(1), F.Times( F.integer(-1), p.get(2))));
+					denominator.add(F.Power(p.arg1(), F.Times(F.integer(-1), p.get(2))));
 					flag = true;
 					continue;
 				}
@@ -115,23 +115,21 @@ public class Times extends AbstractOperator {
 	}
 
 	private boolean convertMultiply(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr expr;
-
-		if (f.size() > 1) {
-			expr = f.get(1);
-			if (NumberUtil.isMinusOne(expr)) {
-				if (f.size() == 2) {
+		int size = f.size();
+		if (size > 1) {
+			IExpr arg1 = f.arg1();
+			if (arg1.isMinusOne()) {
+				if (size == 2) {
 					fFactory.tagStart(buf, fFirstTag);
 					precedenceOpen(buf, precedence);
-					fFactory.convert(buf, expr, fPrecedence);
+					fFactory.convert(buf, arg1, fPrecedence);
 				} else {
 					if (caller == PLUS_CALL) {
 						fFactory.tag(buf, "mo", "-");
-						if (f.size() == 3) {
-							fFactory.convert(buf, f.get(2), fPrecedence);
+						if (size == 3) {
+							fFactory.convert(buf, f.arg2(), fPrecedence);
 							return true;
 						}
-
 						fFactory.tagStart(buf, fFirstTag);
 					} else {
 						fFactory.tagStart(buf, fFirstTag);
@@ -139,12 +137,29 @@ public class Times extends AbstractOperator {
 						fFactory.tag(buf, "mo", "-");
 					}
 				}
+			} else if (arg1.isOne()) {
+				if (size == 2) {
+					fFactory.tagStart(buf, fFirstTag);
+					precedenceOpen(buf, precedence);
+					fFactory.convert(buf, arg1, fPrecedence);
+				} else {
+					if (caller == PLUS_CALL) {
+						if (size == 3) {
+							fFactory.convert(buf, f.arg2(), fPrecedence);
+							return true;
+						}
+						fFactory.tagStart(buf, fFirstTag);
+					} else {
+						fFactory.tagStart(buf, fFirstTag);
+						precedenceOpen(buf, precedence);
+					}
+				}
 			} else {
 				if (caller == PLUS_CALL) {
-					if ((expr instanceof ISignedNumber) && (((ISignedNumber) expr).isNegative())) {
+					if ((arg1 instanceof ISignedNumber) && (((ISignedNumber) arg1).isNegative())) {
 						fFactory.tag(buf, "mo", "-");
 						fFactory.tagStart(buf, fFirstTag);
-						expr = ((ISignedNumber) expr).negate();
+						arg1 = ((ISignedNumber) arg1).negate();
 					} else {
 						fFactory.tag(buf, "mo", "+");
 						fFactory.tagStart(buf, fFirstTag);
@@ -153,14 +168,14 @@ public class Times extends AbstractOperator {
 					fFactory.tagStart(buf, fFirstTag);
 					precedenceOpen(buf, precedence);
 				}
-				fFactory.convert(buf, expr, fPrecedence);
+				fFactory.convert(buf, arg1, fPrecedence);
 				if (fOperator.compareTo("") != 0) {
 					fFactory.tag(buf, "mo", fOperator);
 				}
 			}
 		}
 
-		for (int i = 2; i < f.size(); i++) {
+		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, f.get(i), fPrecedence);
 			if ((i < f.size() - 1) && (fOperator.compareTo("") != 0)) {
 				fFactory.tag(buf, "mo", fOperator);

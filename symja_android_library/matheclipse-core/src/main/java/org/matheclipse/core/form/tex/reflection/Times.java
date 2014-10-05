@@ -78,19 +78,18 @@ public class Times extends AbstractOperator {
 	}
 
 	private boolean convertMultiply(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr expr;
-
-		if (f.size() > 1) {
-			expr = f.get(1);
-			if (expr.isMinusOne()) {
-				if (f.size() == 2) {
+		int size = f.size();
+		if (size > 1) {
+			IExpr arg1 = f.arg1();
+			if (arg1.isMinusOne()) {
+				if (size == 2) {
 					precedenceOpen(buf, precedence);
-					fFactory.convert(buf, expr, fPrecedence);
+					fFactory.convert(buf, arg1, fPrecedence);
 				} else {
 					if (caller == PLUS_CALL) {
 						buf.append(" - ");
-						if (f.size() == 3) {
-							fFactory.convert(buf, f.get(2), fPrecedence);
+						if (size == 3) {
+							fFactory.convert(buf, f.arg2(), fPrecedence);
 							return true;
 						}
 					} else {
@@ -98,25 +97,39 @@ public class Times extends AbstractOperator {
 						buf.append(" - ");
 					}
 				}
+			} else if (arg1.isOne()) {
+				if (size == 2) {
+					precedenceOpen(buf, precedence);
+					fFactory.convert(buf, arg1, fPrecedence);
+				} else {
+					if (caller == PLUS_CALL) {
+						if (size == 3) {
+							fFactory.convert(buf, f.arg2(), fPrecedence);
+							return true;
+						}
+					} else {
+						precedenceOpen(buf, precedence);
+					}
+				}
 			} else {
 				if (caller == PLUS_CALL) {
-					if ((expr.isSignedNumber()) && (((ISignedNumber) expr).isNegative())) {
+					if ((arg1.isSignedNumber()) && (((ISignedNumber) arg1).isNegative())) {
 						buf.append(" - ");
-						expr = ((ISignedNumber) expr).negate();
+						arg1 = ((ISignedNumber) arg1).negate();
 					} else {
 						buf.append(" + ");
 					}
 				} else {
 					precedenceOpen(buf, precedence);
 				}
-				fFactory.convert(buf, expr, fPrecedence);
+				fFactory.convert(buf, arg1, fPrecedence);
 				if (fOperator.compareTo("") != 0) {
 					buf.append("\\,");
 				}
 			}
 		}
 
-		for (int i = 2; i < f.size(); i++) {
+		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, f.get(i), fPrecedence);
 			if ((i < f.size() - 1) && (fOperator.compareTo("") != 0)) {
 				buf.append("\\,");
