@@ -90,7 +90,7 @@ public class Expr2Object {
 									if (exp != (-1)) {
 										return null;
 									}
-									IExpr res = F.evaln(power.get(2));
+									IExpr res = F.evaln(power.arg2());
 									if (!(res instanceof INum)) {
 										return null;
 									}
@@ -127,7 +127,7 @@ public class Expr2Object {
 					} else if (plus.get(i).isPower()) {
 						IAST power = (IAST) plus.get(i);
 						if (power.get(1).equals(sym)) {
-							IExpr res = F.evaln(power.get(2));
+							IExpr res = F.evaln(power.arg2());
 							if (!(res instanceof INum)) {
 								return null;
 							}

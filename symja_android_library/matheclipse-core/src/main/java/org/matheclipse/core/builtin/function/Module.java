@@ -26,7 +26,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 
 		if (ast.arg1().isList()) {
 			IAST lst = (IAST) ast.arg1();
-			IExpr arg2 = ast.get(2);
+			IExpr arg2 = ast.arg2();
 			final EvalEngine engine = EvalEngine.get();
 			return evalModule(lst, arg2, engine);
 		}

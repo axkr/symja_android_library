@@ -351,7 +351,7 @@ public class Convert {
 	// checkCanceled();
 	// if (variables.get(i).equals(expr)) {
 	// return Polynomial.valueOf(F.C1, (ISymbol) expr).pow(
-	// ((IInteger) ast.get(2)).toInt());
+	// ((IInteger) ast.arg2()).toInt());
 	// }
 	// }
 	// return Constant.valueOf((IExpr) ast);

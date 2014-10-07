@@ -34,20 +34,18 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static int checkPowerExponent(final IAST ast) {
-		int exponent = 0;
 		try {
+			IExpr arg2 = ast.arg2();
 			// the following may throw ArithmeticException
-			if (ast.get(2) instanceof IInteger) {
-				exponent = ((IInteger) ast.get(2)).toInt();
-				return exponent;
-			} else if (ast.get(2) instanceof INum) {
-				exponent = ((INum) ast.get(2)).toInt();
-				return exponent;
+			if (arg2 instanceof IInteger) {
+				return ((IInteger) arg2).toInt();
+			} else if (arg2 instanceof INum) {
+				return ((INum) arg2).toInt();
 			}
 		} catch (ArithmeticException ae) {
 			//
 		}
-		throw new WrongArgumentType(ast, ast.get(2), 2, "Trying to convert the argument into an integer exponent: " + ast.get(2));
+		throw new WrongArgumentType(ast, ast.arg2(), 2, "Trying to convert the argument into an integer exponent: " + ast.arg2());
 	}
 
 	/**

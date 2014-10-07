@@ -175,7 +175,7 @@ public class JASModInteger {
 						} catch (WrongArgumentType e) {
 						}
 						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.get(2).toString());
+							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.valueOf(e);
@@ -257,7 +257,7 @@ public class JASModInteger {
 							//
 						}
 						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.get(2).toString());
+							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.getONE().multiply(e);

@@ -2059,6 +2059,36 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		throw new WrongArgumentType(this, get(index), index);
 	}
 
+	public IExpr getPart(final int... positions) {
+		IExpr expr = this;
+		int size = positions.length;
+		for (int i = 0; i < size; i++) {
+			if (!expr.isAST()) {
+				break;
+			}
+			expr = ((IAST) expr).get(positions[i]);
+			if (i == (size - 1)) {
+				return expr;
+			}
+		}
+		return null;
+	}
+	
+	public IExpr getPart(final List<Integer> positions) {
+		IExpr expr = this;
+		int size = positions.size();
+		for (int i = 0; i < size; i++) {
+			if (!expr.isAST()) {
+				break;
+			}
+			expr = ((IAST) expr).get(positions.get(i));
+			if (i == (size - 1)) {
+				return expr;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST</code>.
 	 * 

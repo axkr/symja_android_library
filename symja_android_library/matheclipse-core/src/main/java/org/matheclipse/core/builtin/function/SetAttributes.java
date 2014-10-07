@@ -92,8 +92,8 @@ public class SetAttributes extends AbstractCoreFunctionEvaluator {
 				}
 
 			} else {
-				if (ast.get(2).isList()) {
-					final IAST lst = (IAST) ast.get(2);
+				if (ast.arg2().isList()) {
+					final IAST lst = (IAST) ast.arg2();
 					int symbolAttributes = ISymbol.NOATTRIBUTE;
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);

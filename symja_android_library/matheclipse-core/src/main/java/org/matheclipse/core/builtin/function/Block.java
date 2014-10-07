@@ -51,7 +51,7 @@ public class Block extends AbstractCoreFunctionEvaluator {
 					}
 				}
 
-				result = engine.evaluate(ast.get(2));
+				result = engine.evaluate(ast.arg2());
 			} finally {
 				// pop all local variables from local variable stack
 				for (int i = 0; i < variables.size(); i++) {

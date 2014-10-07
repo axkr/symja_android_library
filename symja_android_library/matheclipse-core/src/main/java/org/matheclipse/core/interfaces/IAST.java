@@ -432,6 +432,28 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr getOneIdentity(IExpr defaultValue);
 
 	/**
+	 * Returns the element at the specified positions in the nested ASTs.
+	 * 
+	 * @param positions
+	 *            index of the element to return
+	 * @return the element at the specified positions in this nested AST
+	 * @throws IndexOutOfBoundsException
+	 *             if one of the positions are out of range
+	 */
+	public IExpr getPart(final int... positions);
+
+	/**
+	 * Returns the element at the specified positions in the nested ASTs.
+	 * 
+	 * @param positions
+	 *            index of the element to return
+	 * @return the element at the specified positions in this nested AST
+	 * @throws IndexOutOfBoundsException
+	 *             if one of the positions are out of range
+	 */
+	public IExpr getPart(final List<Integer> positions);
+
+	/**
 	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping for the
 	 * property.
 	 * 
