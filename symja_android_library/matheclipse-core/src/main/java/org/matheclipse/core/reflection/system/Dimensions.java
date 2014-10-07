@@ -29,10 +29,8 @@ public class Dimensions extends AbstractFunctionEvaluator {
 			IAST res = F.List();
 			if (n > 0) {
 				IAST list = (IAST) ast.arg1();
-				int m = list.size();
 				IExpr header = list.head();
 				ArrayList<Integer> dims = getDimensions(list, header, n - 1);
-				// checkLevel(list, header, 1, dims);
 				for (int i = 0; i < dims.size(); i++) {
 					res.add(F.integer(dims.get(i).intValue()));
 				}
@@ -71,26 +69,6 @@ public class Dimensions extends AbstractFunctionEvaluator {
 		}
 		return dims;
 	}
-
-	// private void checkLevel(final IAST ast, IExpr header, int index, ArrayList<Integer> dims) {
-	// if (ast.size() > 1) {
-	// if (index < dims.size()) {
-	// int dim = dims.get(index);
-	// for (int i = 1; i < ast.size(); i++) {
-	// if (ast.get(i).isAST()) {
-	// IAST list = (IAST) ast.get(i);
-	// if (!header.equals(list.head()) || dim != list.size() - 1) {
-	// while (index < dims.size()) {
-	// dims.remove(index);
-	// }
-	// return;
-	// }
-	// checkLevel(list, header, index + 1, dims);
-	// }
-	// }
-	// }
-	// }
-	// }
 
 	@Override
 	public void setUp(final ISymbol symbol) {
