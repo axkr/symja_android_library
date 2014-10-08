@@ -19,24 +19,16 @@ public class ArrayDepth extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 2, 3);
+		Validate.checkSize(ast, 2);
 
-		int n = Integer.MAX_VALUE;
-		if (ast.size() == 3 && ast.arg2().isInteger()) {
-			n = Validate.checkIntType(ast, 2);
-		}
 		if (ast.arg1().isAST()) {
-			IAST res = F.List();
-			if (n > 0) {
-				IAST list = (IAST) ast.arg1();
-				IExpr header = list.head();
-				ArrayList<Integer> dims = Dimensions.getDimensions(list, header, n - 1);
-				return F.integer(dims.size());
-			}
-			return res;
+			IAST list = (IAST) ast.arg1();
+			IExpr header = list.head();
+			ArrayList<Integer> dims = Dimensions.getDimensions(list, header, Integer.MAX_VALUE);
+			return F.integer(dims.size());
 		}
 
-		return F.List();
+		return F.C0;
 
 	}
 
