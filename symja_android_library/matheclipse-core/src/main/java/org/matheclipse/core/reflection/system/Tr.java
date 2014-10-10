@@ -9,9 +9,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Trace of a matrix. See <a
- * href="http://en.wikipedia.org/wiki/Trace_(linear_algebra)">Trace (linear
- * algebra)</a>
+ * Trace of a matrix.<br>
+ * 
+ * See <a href="http://en.wikipedia.org/wiki/Trace_(linear_algebra)">Trace (linear algebra)</a>
  */
 public class Tr implements IFunctionEvaluator {
 
@@ -20,13 +20,15 @@ public class Tr implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
+
+		// TODO generalize for tensors
 		final int[] dim = ast.arg1().isMatrix();
 		if (dim != null) {
 			final IAST mat = (IAST) ast.arg1();
 			IAST tr;
 			int len = dim[0] < dim[1] ? dim[0] : dim[1];
 			if (ast.size() > 2) {
-				tr = F.ast(ast.get(2), len, true);
+				tr = F.ast(ast.arg2(), len, true);
 			} else {
 				tr = F.ast(F.Plus, len, true);
 			}
