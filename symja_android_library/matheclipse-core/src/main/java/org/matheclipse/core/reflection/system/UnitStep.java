@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,15 +16,30 @@ public class UnitStep implements IFunctionEvaluator {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 2);
-
-		IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
-			ISignedNumber isn = (ISignedNumber) arg1;
-			return F.integer(isn.complexSign() < 0 ? 0 : 1);
+		int size = ast.size();
+		if (size > 1) {
+			for (int i = 1; i < size; i++) {
+				if (ast.get(i).isSignedNumber()) {
+					if (((ISignedNumber) ast.get(i)).complexSign() < 0) {
+						return F.C0;
+					} else {
+						continue;
+					}
+				}
+				if (ast.get(i).isNumericFunction()) {
+					IExpr num = F.evaln(ast.get(i));
+					if (num.isSignedNumber()) {
+						if (((ISignedNumber) num).complexSign() < 0) {
+							return F.C0;
+						} else {
+							continue;
+						}
+					}
+				}
+				return null;
+			}
 		}
-
-		return null;
+		return F.C1;
 	}
 
 	public IExpr numericEval(final IAST ast) {
@@ -33,7 +47,7 @@ public class UnitStep implements IFunctionEvaluator {
 	}
 
 	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ORDERLESS);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE);
 	}
 
 }
