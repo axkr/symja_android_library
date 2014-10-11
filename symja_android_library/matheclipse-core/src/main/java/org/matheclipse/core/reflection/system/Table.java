@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.TableGenerator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,7 +27,7 @@ public class Table extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		return evaluateTable(ast, List(), null);
+		return evaluateTable(ast, List(), List());
 	}
 
 	/**

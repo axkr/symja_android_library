@@ -48,7 +48,12 @@ public class TableGenerator {
 					final IAST result = fPrototypeList.clone();
 					while (iter.hasNext()) {
 						fCurrentIndex[index] = iter.next();
-						result.add(table());
+						IExpr temp = table();
+						if (temp == null) {
+							result.add(fDefaultValue);
+						} else {
+							result.add(temp);
+						}
 					}
 					return result;
 				} finally {

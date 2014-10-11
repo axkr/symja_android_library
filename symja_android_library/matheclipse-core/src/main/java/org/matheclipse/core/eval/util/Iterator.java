@@ -27,11 +27,17 @@ public class Iterator implements IIterator<IExpr> {
 
 	EvalEngine evalEngine;
 
-	final IExpr maxCount;
-
 	IExpr start;
 
-	final IExpr step;
+	IExpr maxCount;
+
+	IExpr step;
+
+	final IExpr originalStart;
+
+	final IExpr originalMaxCount;
+
+	final IExpr originalStep;
 
 	final Symbol variable;
 
@@ -91,7 +97,7 @@ public class Iterator implements IIterator<IExpr> {
 			// illegalIterator = true;
 			// }
 			// }
-			if (lst.arg1()  instanceof Symbol) {
+			if (lst.arg1() instanceof Symbol) {
 				variable = (Symbol) lst.arg1();
 			} else {
 				variable = null;
@@ -99,6 +105,7 @@ public class Iterator implements IIterator<IExpr> {
 
 			break;
 		default:
+			start = null;
 			maxCount = null;
 			step = null;
 			variable = null;
@@ -106,6 +113,9 @@ public class Iterator implements IIterator<IExpr> {
 			// throw new NoIteratorException();
 
 		}
+		originalStart = start;
+		originalMaxCount = maxCount;
+		originalStep = step;
 	}
 
 	public Iterator(final IAST lst, final Symbol symbol, final EvalEngine sess) {
@@ -149,20 +159,22 @@ public class Iterator implements IIterator<IExpr> {
 
 			break;
 		default:
+			start = null;
 			maxCount = null;
 			step = null;
 			variable = null;
 
 			// throw new NoIteratorException();
-
 		}
+		originalStart = start;
+		originalMaxCount = maxCount;
+		originalStep = step;
 	}
 
 	/**
 	 * Tests if this enumeration contains more elements.
 	 * 
-	 * @return <code>true</code> if this enumeration contains more elements;
-	 *         <code>false</code> otherwise.
+	 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 	 */
 	public boolean hasNext() {
 		if ((maxCount == null)) {// || (illegalIterator)) {
@@ -202,10 +214,22 @@ public class Iterator implements IIterator<IExpr> {
 
 	public boolean setUp() {
 
+		start = originalStart;
+		if (!(originalStart.isSignedNumber())) {
+			start = evalEngine.evalWithoutNumericReset(originalStart);
+		}
+		maxCount = originalMaxCount;
+		if (!(originalMaxCount.isSignedNumber())) {
+			maxCount = evalEngine.evalWithoutNumericReset(originalMaxCount);
+		}
+		step = originalStep;
+		if (!(originalStep.isSignedNumber())) {
+			step = evalEngine.evalWithoutNumericReset(originalStep);
+		}
 		if (!(step instanceof ISignedNumber)) {
 			return false;
 		}
-		if (((ISignedNumber) step).isNegative()) {
+		if (step.isNegative()) {
 			if (evalEngine.evaluate(Less(start, maxCount)) == F.True) {
 				return false;
 			}
@@ -238,11 +262,11 @@ public class Iterator implements IIterator<IExpr> {
 	 * Helper method for functions like Product, Sum
 	 * 
 	 * @param ast
-	 *          ast with Iterator specifications
+	 *            ast with Iterator specifications
 	 * @param index
-	 *          start index for iterstor specifications
+	 *            start index for iterstor specifications
 	 * @param baseList
-	 *          basic ast where the iterator elements are appended
+	 *            basic ast where the iterator elements are appended
 	 * @return
 	 */
 	// public static IExpr iteratorLoop(IAST ast, int index, IAST baseList) {
