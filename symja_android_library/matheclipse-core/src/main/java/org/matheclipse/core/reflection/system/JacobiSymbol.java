@@ -4,10 +4,10 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi
- * symbol</a>
+ * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
  */
 public class JacobiSymbol extends AbstractArg2 {
 
@@ -17,6 +17,10 @@ public class JacobiSymbol extends AbstractArg2 {
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 		try {
+			if (i0.isNegative() || i1.isNegative()) {
+				// not defined for negative arguments
+				return null;
+			}
 			IntegerSym jacobi = ((IntegerSym) i0).jacobiSymbol((IntegerSym) i1);
 			return jacobi;
 		} catch (ArithmeticException e) {
@@ -25,4 +29,8 @@ public class JacobiSymbol extends AbstractArg2 {
 		return null;
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE);
+	}
 }

@@ -744,57 +744,57 @@ public class F {
 	/**
 	 * * Constant integer &quot;0&quot;
 	 */
-	public final static IInteger C0 = IntegerSym.valueOf(0);
+	public final static IntegerSym C0 = IntegerSym.valueOf(0);
 
 	/**
 	 * Constant integer &quot;1&quot;
 	 */
-	public final static IInteger C1 = IntegerSym.valueOf(1);
+	public final static IntegerSym C1 = IntegerSym.valueOf(1);
 
 	/**
 	 * Constant integer &quot;2&quot;
 	 */
-	public final static IInteger C2 = IntegerSym.valueOf(2);
+	public final static IntegerSym C2 = IntegerSym.valueOf(2);
 
 	/**
 	 * Constant integer &quot;3&quot;
 	 */
-	public final static IInteger C3 = IntegerSym.valueOf(3);
+	public final static IntegerSym C3 = IntegerSym.valueOf(3);
 
 	/**
 	 * Constant integer &quot;4&quot;
 	 */
-	public final static IInteger C4 = IntegerSym.valueOf(4);
+	public final static IntegerSym C4 = IntegerSym.valueOf(4);
 
 	/**
 	 * Constant integer &quot;5&quot;
 	 */
-	public final static IInteger C5 = IntegerSym.valueOf(5);
+	public final static IntegerSym C5 = IntegerSym.valueOf(5);
 
 	/**
 	 * Constant integer &quot;6&quot;
 	 */
-	public final static IInteger C6 = IntegerSym.valueOf(6);
+	public final static IntegerSym C6 = IntegerSym.valueOf(6);
 
 	/**
 	 * Constant integer &quot;7&quot;
 	 */
-	public final static IInteger C7 = IntegerSym.valueOf(7);
+	public final static IntegerSym C7 = IntegerSym.valueOf(7);
 
 	/**
 	 * Constant integer &quot;8&quot;
 	 */
-	public final static IInteger C8 = IntegerSym.valueOf(8);
+	public final static IntegerSym C8 = IntegerSym.valueOf(8);
 
 	/**
 	 * Constant integer &quot;9&quot;
 	 */
-	public final static IInteger C9 = IntegerSym.valueOf(9);
+	public final static IntegerSym C9 = IntegerSym.valueOf(9);
 
 	/**
 	 * Constant integer &quot;10&quot;
 	 */
-	public final static IInteger C10 = IntegerSym.valueOf(10);
+	public final static IntegerSym C10 = IntegerSym.valueOf(10);
 
 	/**
 	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
@@ -934,52 +934,52 @@ public class F {
 	/**
 	 * Constant integer &quot;-1&quot;
 	 */
-	public final static IInteger CN1 = IntegerSym.valueOf(-1);
+	public final static IntegerSym CN1 = IntegerSym.valueOf(-1);
 
 	/**
 	 * Constant integer &quot;-2&quot;
 	 */
-	public final static IInteger CN2 = IntegerSym.valueOf(-2);
+	public final static IntegerSym CN2 = IntegerSym.valueOf(-2);
 
 	/**
 	 * Constant integer &quot;-3&quot;
 	 */
-	public final static IInteger CN3 = IntegerSym.valueOf(-3);
+	public final static IntegerSym CN3 = IntegerSym.valueOf(-3);
 
 	/**
 	 * Constant integer &quot;-4&quot;
 	 */
-	public final static IInteger CN4 = IntegerSym.valueOf(-4);
+	public final static IntegerSym CN4 = IntegerSym.valueOf(-4);
 
 	/**
 	 * Constant integer &quot;-5&quot;
 	 */
-	public final static IInteger CN5 = IntegerSym.valueOf(-5);
+	public final static IntegerSym CN5 = IntegerSym.valueOf(-5);
 
 	/**
 	 * Constant integer &quot;-6&quot;
 	 */
-	public final static IInteger CN6 = IntegerSym.valueOf(-6);
+	public final static IntegerSym CN6 = IntegerSym.valueOf(-6);
 
 	/**
 	 * Constant integer &quot;-7&quot;
 	 */
-	public final static IInteger CN7 = IntegerSym.valueOf(-7);
+	public final static IntegerSym CN7 = IntegerSym.valueOf(-7);
 
 	/**
 	 * Constant integer &quot;-8&quot;
 	 */
-	public final static IInteger CN8 = IntegerSym.valueOf(-8);
+	public final static IntegerSym CN8 = IntegerSym.valueOf(-8);
 
 	/**
 	 * Constant integer &quot;-9&quot;
 	 */
-	public final static IInteger CN9 = IntegerSym.valueOf(-9);
+	public final static IntegerSym CN9 = IntegerSym.valueOf(-9);
 
 	/**
 	 * Constant integer &quot;-10&quot;
 	 */
-	public final static IInteger CN10 = IntegerSym.valueOf(-10);
+	public final static IntegerSym CN10 = IntegerSym.valueOf(-10);
 
 	static {
 

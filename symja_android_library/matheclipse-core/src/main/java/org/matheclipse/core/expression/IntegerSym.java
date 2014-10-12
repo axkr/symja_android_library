@@ -639,7 +639,6 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		IInteger factor;
 		IInteger last = IntegerSym.valueOf(-2);
 		int count = 0;
-		// final List<IInteger> iFactors = factorize();
 		final IAST iFactors = factorize(F.List());
 		final IAST list = List();
 		IAST subList = null;
@@ -741,39 +740,50 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	private IntegerSym jacobiSymbolF() {
-		IntegerSym a = mod(IntegerSym.valueOf(8));
-		if (a.compareTo(IntegerSym.valueOf(1)) == 0) {
-			return IntegerSym.valueOf(1);
+		IntegerSym a = mod(F.C8);
+		if (a.isOne()) {
+			return F.C1;
 		}
-		if (a.compareTo(IntegerSym.valueOf(7)) == 0) {
-			return IntegerSym.valueOf(1);
+		if (a.equals(F.C7)) {
+			return F.C1;
 		}
-		return IntegerSym.valueOf(-1);
+		return F.CN1;
 	}
 
-	private IntegerSym jacobiSymbolG(IntegerSym i2) {
-		IntegerSym a = mod(IntegerSym.valueOf(4));
-		if (a.compareTo(IntegerSym.valueOf(1)) == 0) {
-			return IntegerSym.valueOf(1);
+	private IntegerSym jacobiSymbolG(IntegerSym b) {
+		IntegerSym i1 = mod(F.C4);
+		if (i1.isOne()) {
+			return F.C1;
 		}
-		IntegerSym b = mod(IntegerSym.valueOf(4));
-		if (b.compareTo(IntegerSym.valueOf(1)) == 0) {
-			return IntegerSym.valueOf(1);
+		IntegerSym i2 = b.mod(F.C4);
+		if (i2.isOne()) {
+			return F.C1;
 		}
-		return IntegerSym.valueOf(-1);
+		return F.CN1;
 	}
 
+	/**
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a><br/>
+	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
+	 * 
+	 * @param b
+	 * @return
+	 */
 	public IntegerSym jacobiSymbol(IntegerSym b) {
-		if (this.isOne()) {
-			return IntegerSym.valueOf(1);
+		if (isOne()) {
+			return F.C1;
 		}
-		if (this.compareTo(IntegerSym.valueOf(2)) == 0) {
+		if (isZero()) {  
+			return F.C0;
+		}
+		if (equals(F.C2)) {
 			return b.jacobiSymbolF();
 		}
 		if (!isOdd()) {
-			return this.quotient(IntegerSym.valueOf(2)).jacobiSymbol(b).multiply(IntegerSym.valueOf(2).jacobiSymbol(b));
+			IntegerSym aDIV2 = valueOf(shiftRight(1));
+			return aDIV2.jacobiSymbol(b).multiply(F.C2.jacobiSymbol(b));
 		}
-		return b.quotient(this).jacobiSymbol(this).multiply(jacobiSymbolG(b));
+		return b.mod(this).jacobiSymbol(this).multiply(jacobiSymbolG(b));
 	}
 
 	/**
