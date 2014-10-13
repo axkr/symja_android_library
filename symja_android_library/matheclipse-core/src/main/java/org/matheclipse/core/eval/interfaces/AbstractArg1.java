@@ -32,7 +32,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 		// argument dispatching
 		if (arg1 instanceof IAST) {
-			e1FunArg((IAST) arg1);
+			return e1FunArg((IAST) arg1);
 		}
 		final int hier = ast.arg1().hierarchy();
 		if (hier <= IExpr.INTEGERID) {
@@ -61,8 +61,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 					return e1SymArg((ISymbol) ast.arg1());
 				}
 			}
-		}
-		// }
+		} 
 
 		return null;
 	}
