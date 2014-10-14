@@ -1,14 +1,17 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -18,7 +21,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 
 	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
 		IExpr result = null;
-		if (o0 instanceof INum) {
+		if (o0 instanceof Num) {
 			// use specialized methods for numeric mode
 			if (o1 instanceof INum) {
 				result = e2DblArg((INum) o0, (INum) o1);
@@ -33,14 +36,50 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 				return result;
 			}
 			return e2ObjArg(o0, o1);
-		} else if (o1 instanceof INum) {
+		} else if (o0 instanceof ApfloatNum) {
+			// use specialized methods for numeric mode
+			if (o1 instanceof ApfloatNum) {
+				result = e2ApfloatArg((ApfloatNum) o0, (ApfloatNum) o1);
+			} else if (o1 instanceof Num) {
+				ApfloatNum apf = ApfloatNum.valueOf(((Num) o1).doubleValue(), ((ApfloatNum) o0).precision());
+				result = e2ApfloatArg((ApfloatNum) o0, apf);
+			} else if (o1.isInteger()) {
+				result = e2ApfloatArg((ApfloatNum) o0,
+						ApfloatNum.valueOf(((IInteger) o1).getBigNumerator(), ((ApfloatNum) o0).precision()));
+			} else if (o1.isFraction()) {
+				result = e2ApfloatArg((ApfloatNum) o0, ApfloatNum.valueOf(((IFraction) o1).getBigNumerator(),
+						((IFraction) o1).getBigDenominator(), ((ApfloatNum) o0).precision()));
+			}
+			// TODO implement missing classes
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof ApfloatNum) {
+			// use specialized methods for numeric mode
+			if (o0 instanceof Num) {
+				ApfloatNum apf = ApfloatNum.valueOf(((Num) o0).doubleValue(), ((ApfloatNum) o1).precision());
+				result = e2ApfloatArg(apf, (ApfloatNum) o1);
+			} else if (o0.isInteger()) {
+				result = e2ApfloatArg(ApfloatNum.valueOf(((IInteger) o0).getBigNumerator(), ((ApfloatNum) o1).precision()),
+						(ApfloatNum) o1);
+			} else if (o1.isFraction()) {
+				result = e2ApfloatArg(ApfloatNum.valueOf(((IFraction) o0).getBigNumerator(), ((IFraction) o0).getBigDenominator(),
+						((ApfloatNum) o1).precision()), (ApfloatNum) o1);
+			}
+			// TODO implement missing classes
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof Num) {
 			// use specialized methods for numeric mode
 			if (o0.isInteger()) {
-				result = e2DblArg(F.num((IInteger) o0), (INum) o1);
+				result = e2DblArg(F.num((IInteger) o0), (Num) o1);
 			} else if (o0.isFraction()) {
-				result = e2DblArg(F.num((IFraction) o0), (INum) o1);
+				result = e2DblArg(F.num((IFraction) o0), (Num) o1);
 			} else if (o0 instanceof IComplexNum) {
-				result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
+				result = e2DblComArg((IComplexNum) o0, F.complexNum(((Num) o1).getRealPart()));
 			}
 			if (result != null) {
 				return result;
@@ -145,7 +184,15 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
 		return null;
 	}
 
+	public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
+		return null;
+	}
+
 	public IExpr e2DblArg(final INum d0, final INum d1) {
+		return null;
+	}
+
+	public IExpr e2ApcomplexArg(final ApcomplexNum ac0, final ApcomplexNum ac1) {
 		return null;
 	}
 

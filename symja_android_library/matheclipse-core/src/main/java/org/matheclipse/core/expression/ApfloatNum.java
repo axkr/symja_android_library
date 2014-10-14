@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -44,11 +45,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return new ApfloatNum(value);
 	}
 
-	public static ApfloatNum valueOf(final BigInteger numerator, int precision) {
+	public static ApfloatNum valueOf(final BigInteger numerator, long precision) {
 		return new ApfloatNum(numerator, precision);
 	}
 
-	public static ApfloatNum valueOf(final BigInteger numerator, final BigInteger denominator, int precision) {
+	public static ApfloatNum valueOf(final BigInteger numerator, final BigInteger denominator, long precision) {
 		Apfloat n = new Apfloat(numerator, precision);
 		Apfloat d = new Apfloat(denominator, precision);
 		return new ApfloatNum(n.divide(d));
@@ -66,10 +67,10 @@ public class ApfloatNum extends ExprImpl implements INum {
 		fApfloat = new Apfloat(value, precision);
 	}
 
-	private ApfloatNum(final BigInteger value, int precision) {
+	private ApfloatNum(final BigInteger value, long precision) {
 		fApfloat = new Apfloat(value, precision);
 	}
-
+ 
 	private ApfloatNum(final Apfloat value) {
 		fApfloat = value;
 	}
@@ -131,6 +132,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return valueOf(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
 	}
 
+
+	public long precision() throws ApfloatRuntimeException {
+		return fApfloat.precision();
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public ApfloatNum eabs() {

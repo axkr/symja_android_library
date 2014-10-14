@@ -11,9 +11,10 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -45,6 +46,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	// AbstractExpressionFactory factory) {
 	// return d0.pow(d1);
 	// }
+	
+	@Override
+	public IExpr e2ApcomplexArg(final ApcomplexNum ac0, final ApcomplexNum ac1) {
+		return ac0.pow(ac1);
+	}
 
 	@Override
 	public IExpr e2DblComArg(final IComplexNum c0, final IComplexNum c1) {
@@ -54,6 +60,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	@Override
 	public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
 		return null;
+	}
+
+	@Override
+	public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
+		return af0.pow(af1);
 	}
 
 	@Override
