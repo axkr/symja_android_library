@@ -358,6 +358,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumIntValue() {
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPositive() {
 		return fInteger.compareTo(BigInteger.ZERO) > 0;
 	}
