@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -81,15 +82,13 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		// return F.isNumEqualInteger(fDouble, ii);
-		return false;
-	}
+		return fApfloat.frac().equals(new Apint(ii.getBigNumerator()));
+	} 
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {
-		// return F.isNumIntValue(fDouble);
-		return false;
+		return fApfloat.frac().equals(Apfloat.ZERO);
 	}
 
 	/** {@inheritDoc} */
