@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -35,13 +34,13 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 			}
 			return e1DblArg(((Num) arg1).doubleValue());
 		}
-		if (ast.arg1() instanceof IComplexNum) {
+		if (arg1 instanceof IComplexNum) {
 			if (arg1 instanceof ApcomplexNum) {
 				return e1ApcomplexArg(((ApcomplexNum) arg1).apcomplexValue());
 			}
 			return e1ComplexArg(((ComplexNum) arg1).complexValue());
 		}
-		return evaluateArg1(ast.arg1());
+		return evaluateArg1(arg1);
 	}
 
 	public IExpr e1DblArg(final double d) {

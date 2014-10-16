@@ -5,7 +5,9 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -13,6 +15,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -103,30 +107,78 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
-		final IExpr result = e2ObjArg(o0, o1);
+		IExpr result = null;
+		if (o0 instanceof ApcomplexNum) {
+			if (o1.isNumber()) {
+				result = e2ApcomplexArg((ApcomplexNum) o0, ((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof ApcomplexNum) {
+			if (o0.isNumber()) {
+				result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()), (ApcomplexNum) o1);
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o0 instanceof ComplexNum) {
+			if (o1.isNumber()) {
+				result = e2DblComArg((ComplexNum) o0, ((INumber) o1).complexNumValue());
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof ComplexNum) {
+			if (o0.isNumber()) {
+				result = e2DblComArg(((INumber) o0).complexNumValue(), (ComplexNum) o1);
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		}
+
+		if (o0 instanceof ApfloatNum) {
+			if (o1.isSignedNumber()) {
+				result = e2ApfloatArg((ApfloatNum) o0, ((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof ApfloatNum) {
+			if (o0.isSignedNumber()) {
+				result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()), (ApfloatNum) o1);
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o0 instanceof Num) {
+			if (o1.isSignedNumber()) {
+				result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		} else if (o1 instanceof Num) {
+			if (o0.isSignedNumber()) {
+				result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+			}
+			if (result != null) {
+				return result;
+			}
+			return e2ObjArg(o0, o1);
+		}
+
+		result = e2ObjArg(o0, o1);
 		if (result != null) {
 			return result;
-		}
-		if (o0 instanceof INum) {
-			if (o1 instanceof INum) {
-				return e2DblArg((INum) o0, (INum) o1);
-			}
-			if (o1 instanceof IComplexNum) {
-				return e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
-			}
-
-			return null;
-		}
-
-		if (o0 instanceof IComplexNum) {
-			if (o1 instanceof INum) {
-				return e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
-			}
-			if (o1 instanceof IComplexNum) {
-				return e2DblComArg((IComplexNum) o0, (IComplexNum) o1);
-			}
-
-			return null;
 		}
 
 		if (o0 instanceof IInteger) {
@@ -160,6 +212,9 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		if (o0 instanceof IComplex) {
 			if (o1 instanceof IInteger) {
 				return eComIntArg((IComplex) o0, (IInteger) o1);
+			}
+			if (o1 instanceof IFraction) {
+				return eComFraArg((IComplex) o0, (IFraction) o1);
 			}
 			if (o1 instanceof IComplex) {
 				return e2ComArg((IComplex) o0, (IComplex) o1);
@@ -221,6 +276,10 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+		return null;
+	}
+
+	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
 		return null;
 	}
 
