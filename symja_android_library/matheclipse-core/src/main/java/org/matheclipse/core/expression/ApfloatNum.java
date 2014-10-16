@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -70,7 +71,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	private ApfloatNum(final BigInteger value, long precision) {
 		fApfloat = new Apfloat(value, precision);
 	}
- 
+
 	private ApfloatNum(final Apfloat value) {
 		fApfloat = value;
 	}
@@ -84,7 +85,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return fApfloat.frac().equals(new Apint(ii.getBigNumerator()));
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -132,11 +133,10 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return valueOf(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
 	}
 
-
 	public long precision() throws ApfloatRuntimeException {
 		return fApfloat.precision();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public ApfloatNum eabs() {
@@ -453,5 +453,29 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public ISignedNumber getRe() {
 		return this;
+	}
+
+	@Override
+	public ApfloatNum apfloatNumValue(long precision) {
+		return this;
+	}
+
+	@Override
+	public Num numValue() {
+		return Num.valueOf(doubleValue());
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		return new Apcomplex(fApfloat);
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO);
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		return ComplexNum.valueOf(fApfloat.doubleValue());
 	}
 }

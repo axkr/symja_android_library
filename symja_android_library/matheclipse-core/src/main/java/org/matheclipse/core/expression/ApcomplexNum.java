@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -103,6 +104,16 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	public Apcomplex apcomplexValue() {
 		return fApcomplex;
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return this;
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 	}
 
 	/**
@@ -472,6 +483,10 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public INumber floor() throws ArithmeticException {
 		return F.complex(F.integer(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
 				F.integer(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
+	}
+
+	public long precision() throws ApfloatRuntimeException {
+		return fApcomplex.precision();
 	}
 
 }

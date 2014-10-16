@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -119,6 +120,21 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	public ComplexNum add(final ComplexNum that) {
 		return newInstance(fComplex.add(that.fComplex));
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		return new Apcomplex(new Apfloat(fComplex.getReal(), precision), new Apfloat(fComplex.getImaginary(), precision));
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
+
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		return this;
 	}
 
 	@Override

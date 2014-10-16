@@ -10,12 +10,16 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.fraction.BigFraction;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.combinatoric.KSubsetsList;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -361,7 +365,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public boolean isNumIntValue() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
@@ -385,7 +389,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	@Override
 	public int intValue() {
-		return (int) fInteger.longValue();
+		return (int) fInteger.intValue();
 	}
 
 	/**
@@ -779,7 +783,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (isOne()) {
 			return F.C1;
 		}
-		if (isZero()) {  
+		if (isZero()) {
 			return F.C0;
 		}
 		if (equals(F.C2)) {
@@ -1168,5 +1172,30 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	@Override
 	public ISignedNumber getRe() {
 		return this;
+	}
+
+	@Override
+	public ApfloatNum apfloatNumValue(long precision) {
+		return ApfloatNum.valueOf(fInteger, precision);
+	}
+
+	@Override
+	public Num numValue() {
+		return Num.valueOf(doubleValue());
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		return new Apcomplex(new Apfloat(fInteger, precision));
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		// double precision complex number
+		return ComplexNum.valueOf(doubleValue());
 	}
 }

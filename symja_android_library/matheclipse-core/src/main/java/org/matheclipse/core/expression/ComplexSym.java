@@ -3,10 +3,13 @@ package org.matheclipse.core.expression;
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -141,6 +144,28 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	public IComplex add(final IComplex parm1) {
 		return ComplexSym.valueOf(_real.add(parm1.getRealPart()), _imaginary.add(parm1.getImaginaryPart()));
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		Apfloat real = new Apfloat(_real.getNumerator(), precision).divide(new Apfloat(_real.getDenominator(), precision));
+		Apfloat imag = new Apfloat(_imaginary.getNumerator(), precision)
+				.divide(new Apfloat(_imaginary.getDenominator(), precision));
+		return new Apcomplex(real, imag);
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		// double precision complex number
+		double nr = _real.getNumerator().doubleValue();
+		double dr = _real.getDenominator().doubleValue();
+		double ni = _imaginary.getNumerator().doubleValue();
+		double di = _imaginary.getDenominator().doubleValue();
+		return ComplexNum.valueOf(nr / dr, ni / di);
 	}
 
 	@Override

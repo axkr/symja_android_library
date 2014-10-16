@@ -1,7 +1,10 @@
 package org.matheclipse.core.expression;
 
 import org.apache.commons.math3.util.MathUtils;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -577,5 +580,30 @@ public class Num extends ExprImpl implements INum {
 	@Override
 	public ISignedNumber getRe() {
 		return this;
+	}
+
+	@Override
+	public ApfloatNum apfloatNumValue(long precision) {
+		return ApfloatNum.valueOf(fDouble, precision);
+	}
+
+	@Override
+	public Num numValue() {
+		return this;
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		return new Apcomplex(new Apfloat(fDouble, precision));
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		// double precision complex number
+		return ComplexNum.valueOf(doubleValue(), 0.0);
 	}
 }

@@ -1,11 +1,31 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ComplexNum;
+
 /**
  * 
  * Implemented by all number interfaces
  * 
  */
 public interface INumber extends IExpr {
+
+	/**
+	 * Get a <code>Apcomplex</code> number wrapped into an <code>ApcomplexNum</code> object.
+	 * 
+	 * @param precision
+	 *            set the precision of the resulting ApcomplexNum
+	 * @return this signed number represented as an ApcomplexNum
+	 */
+	public ApcomplexNum apcomplexNumValue(long precision);
+
+	/**
+	 * Get a <code>ComplexNum</code> number wrapped into an <code>ApcomplexNum</code> object.
+	 * 
+	 * @return
+	 */
+	public ComplexNum complexNumValue();
+
 	/**
 	 * Gets the signum value of a complex number
 	 * 
@@ -57,7 +77,6 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public ISignedNumber getRe();
-	
 
 	/**
 	 * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than <code>this</code> and

@@ -1,10 +1,29 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.Num;
+
 /**
  * interface for "ractional" numbers (i.e. IInteger or IFraction)
  * 
  */
 public interface ISignedNumber extends INumber {
+
+	/**
+	 * Get a <code>Apfloat</code> number wrapped into an <code>ApfloatNum</code> object.
+	 * 
+	 * @param precision
+	 *            set the precision of the resulting ApfloatNum
+	 * @return this signed number represented as an ApfloatNum
+	 */
+	public ApfloatNum apfloatNumValue(long precision);
+
+	/**
+	 * Get a Java double number wrapped into a <code>Num</code> object.
+	 * 
+	 * @return
+	 */
+	public Num numValue();
 
 	/**
 	 * Test if this number is negative.
@@ -28,7 +47,7 @@ public interface ISignedNumber extends INumber {
 	public boolean isGreaterThan(ISignedNumber that);
 
 	/**
-	 * Returns  (-1) * this
+	 * Returns (-1) * this
 	 * 
 	 * @return
 	 */
@@ -42,7 +61,7 @@ public interface ISignedNumber extends INumber {
 	 * @return
 	 */
 	public ISignedNumber divideBy(ISignedNumber that);
-	
+
 	/**
 	 * Subtract <code>that</code> signed number from <code>this</code> signed number
 	 * 
@@ -95,7 +114,7 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber opposite();
 
 	public double doubleValue();
-	
+
 	/** {@inheritDoc} */
 	public IInteger ceil() throws ArithmeticException;
 

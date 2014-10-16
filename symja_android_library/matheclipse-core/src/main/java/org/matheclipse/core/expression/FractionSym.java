@@ -5,9 +5,12 @@ import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.apache.commons.math3.fraction.FractionConversionException;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -623,5 +626,33 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public ISignedNumber getRe() {
 		return this;
+	}
+
+	@Override
+	public ApfloatNum apfloatNumValue(long precision) {
+		return ApfloatNum.valueOf(fRational.getNumerator(), fRational.getDenominator(), precision);
+	}
+
+	@Override
+	public Num numValue() {
+		return Num.valueOf(fRational.doubleValue());
+	}
+
+	public Apcomplex apcomplexValue(long precision) {
+		Apfloat real = new Apfloat(fRational.getNumerator(), precision).divide(new Apfloat(fRational.getDenominator(), precision));
+		return new Apcomplex(real);
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		// double precision complex number
+		double nr = fRational.getNumerator().doubleValue();
+		double dr = fRational.getDenominator().doubleValue();
+		return ComplexNum.valueOf(nr / dr);
 	}
 }
