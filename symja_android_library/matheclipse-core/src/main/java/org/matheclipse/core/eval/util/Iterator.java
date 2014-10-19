@@ -29,7 +29,12 @@ public class Iterator implements IIterator<IExpr> {
 
 	IExpr start;
 
-	IExpr maxCount;
+	IExpr maxCounterOrList;
+
+	/**
+	 * If <code>maxCounterOrList</code> is a list the <code>maxCounterOrListIndex</code> attribute points to the current element.
+	 */
+	int maxCounterOrListIndex;
 
 	IExpr step;
 
@@ -49,14 +54,14 @@ public class Iterator implements IIterator<IExpr> {
 
 		case 2:
 			start = F.C1;
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg1());
 			step = F.C1;
 			variable = null;
 
 			break;
 		case 3:
 			start = F.C1;
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
 			step = F.C1;
 
 			if (lst.arg1() instanceof Symbol) {
@@ -68,7 +73,7 @@ public class Iterator implements IIterator<IExpr> {
 			break;
 		case 4:
 			start = evalEngine.evalWithoutNumericReset(lst.arg2());
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg3());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg3());
 			step = F.C1;
 
 			// if (evalEngine.evaluate(LessEqual(start, maxCount)) != F.True) {
@@ -83,7 +88,7 @@ public class Iterator implements IIterator<IExpr> {
 			break;
 		case 5:
 			start = evalEngine.evalWithoutNumericReset(lst.arg2());
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg3());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg3());
 			step = evalEngine.evalWithoutNumericReset(lst.arg4());
 			// if (!(step instanceof ISignedNumber)) {
 			// illegalIterator = true;
@@ -106,7 +111,7 @@ public class Iterator implements IIterator<IExpr> {
 			break;
 		default:
 			start = null;
-			maxCount = null;
+			maxCounterOrList = null;
 			step = null;
 			variable = null;
 
@@ -114,7 +119,7 @@ public class Iterator implements IIterator<IExpr> {
 
 		}
 		originalStart = start;
-		originalMaxCount = maxCount;
+		originalMaxCount = maxCounterOrList;
 		originalStep = step;
 	}
 
@@ -126,13 +131,13 @@ public class Iterator implements IIterator<IExpr> {
 
 		case 2:
 			start = F.C1;
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg1());
 			step = F.C1;
 			variable = symbol;
 			break;
 		case 3:
 			start = evalEngine.evalWithoutNumericReset(lst.arg1());
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
 			step = F.C1;
 			variable = symbol;
 			// if (evalEngine.evaluate(LessEqual(start, maxCount)) != F.True) {
@@ -141,7 +146,7 @@ public class Iterator implements IIterator<IExpr> {
 			break;
 		case 4:
 			start = evalEngine.evalWithoutNumericReset(lst.arg1());
-			maxCount = evalEngine.evalWithoutNumericReset(lst.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
 			step = evalEngine.evalWithoutNumericReset(lst.arg3());
 			variable = symbol;
 			// if (!(step instanceof ISignedNumber)) {
@@ -160,14 +165,14 @@ public class Iterator implements IIterator<IExpr> {
 			break;
 		default:
 			start = null;
-			maxCount = null;
+			maxCounterOrList = null;
 			step = null;
 			variable = null;
 
 			// throw new NoIteratorException();
 		}
 		originalStart = start;
-		originalMaxCount = maxCount;
+		originalMaxCount = maxCounterOrList;
 		originalStep = step;
 	}
 
@@ -177,22 +182,28 @@ public class Iterator implements IIterator<IExpr> {
 	 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 	 */
 	public boolean hasNext() {
-		if ((maxCount == null)) {// || (illegalIterator)) {
+		if ((maxCounterOrList == null)) {// || (illegalIterator)) {
 			return false;
 		}
 		if (!(step instanceof ISignedNumber)) {
 			return false;
 		}
-		if (((ISignedNumber) step).isNegative()) {
-			if (evalEngine.evaluate(LessEqual(maxCount, count)) == F.True) {
+		if (maxCounterOrList.isList()) {
+			if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
 				return true;
 			}
+			return false;
 		} else {
-			if (evalEngine.evaluate(LessEqual(count, maxCount)) == F.True) {
-				return true;
+			if (((ISignedNumber) step).isNegative()) {
+				if (evalEngine.evaluate(LessEqual(maxCounterOrList, count)) == F.True) {
+					return true;
+				}
+			} else {
+				if (evalEngine.evaluate(LessEqual(count, maxCounterOrList)) == F.True) {
+					return true;
+				}
 			}
 		}
-
 		return false;
 	}
 
@@ -207,8 +218,15 @@ public class Iterator implements IIterator<IExpr> {
 			// variable.putDownRule(session, HRule.SET, variable, count);
 		}
 		final IExpr temp = count;
-		count = evalEngine.evaluate(Plus(count, step));
-
+		if (maxCounterOrList.isList()) {
+			if (maxCounterOrListIndex == ((IAST) maxCounterOrList).size()) {
+				maxCounterOrListIndex++;
+				return temp;
+			}
+			count = ((IAST) maxCounterOrList).get(maxCounterOrListIndex++);
+		} else {
+			count = evalEngine.evaluate(Plus(count, step));
+		}
 		return temp;
 	}
 
@@ -218,10 +236,13 @@ public class Iterator implements IIterator<IExpr> {
 		if (!(originalStart.isSignedNumber())) {
 			start = evalEngine.evalWithoutNumericReset(originalStart);
 		}
-		maxCount = originalMaxCount;
+		maxCounterOrList = originalMaxCount;
 		if (!(originalMaxCount.isSignedNumber())) {
-			maxCount = evalEngine.evalWithoutNumericReset(originalMaxCount);
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(originalMaxCount);
 		}
+		// points to first element in maxCounterOrList if it's a list
+		maxCounterOrListIndex = 1;
+
 		step = originalStep;
 		if (!(originalStep.isSignedNumber())) {
 			step = evalEngine.evalWithoutNumericReset(originalStep);
@@ -230,15 +251,19 @@ public class Iterator implements IIterator<IExpr> {
 			return false;
 		}
 		if (step.isNegative()) {
-			if (evalEngine.evaluate(Less(start, maxCount)) == F.True) {
+			if (evalEngine.evaluate(Less(start, maxCounterOrList)) == F.True) {
 				return false;
 			}
 		} else {
-			if (evalEngine.evaluate(Less(maxCount, start)) == F.True) {
+			if (evalEngine.evaluate(Less(maxCounterOrList, start)) == F.True) {
 				return false;
 			}
 		}
-		count = start;
+		if (maxCounterOrList.isList()) {
+			count = maxCounterOrList.getAt(maxCounterOrListIndex++);
+		} else {
+			count = start;
+		}
 		if (variable != null) {
 			variable.pushLocalVariable(count);
 		}
