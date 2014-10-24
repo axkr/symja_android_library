@@ -1,10 +1,9 @@
 package org.matheclipse.core.eval.util;
 
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.LessEqual;
-import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.Predicates;
@@ -183,25 +182,36 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public boolean hasNext() {
 		if ((maxCounterOrList == null)) {// || (illegalIterator)) {
-			return false;
+			throw new NoEvalException();
 		}
-		if (!(step instanceof ISignedNumber)) {
-			return false;
-		}
+		// if (!(step instanceof ISignedNumber)) {
+		// throw new NoEvalException();
+		// }
 		if (maxCounterOrList.isList()) {
 			if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
 				return true;
 			}
 			return false;
 		} else {
-			if (((ISignedNumber) step).isNegative()) {
-				if (evalEngine.evaluate(LessEqual(maxCounterOrList, count)) == F.True) {
-					return true;
+			if (step.isZero()) {
+				throw new NoEvalException();
+			}
+			if (step.isSignedNumber()) {
+				if (((ISignedNumber) step).isNegative()) {
+					if (evalEngine.evalTrue(LessEqual(maxCounterOrList, count))) {
+						return true;
+					}
+				} else {
+					if (evalEngine.evalTrue(LessEqual(count, maxCounterOrList))) {
+						return true;
+					}
 				}
 			} else {
-				if (evalEngine.evaluate(LessEqual(count, maxCounterOrList)) == F.True) {
-					return true;
+				IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
+				if (sub.isSignedNumber()) {
+					return !((ISignedNumber) sub).isNegative();
 				}
+				return false;
 			}
 		}
 		return false;
@@ -231,7 +241,6 @@ public class Iterator implements IIterator<IExpr> {
 	}
 
 	public boolean setUp() {
-
 		start = originalStart;
 		if (!(originalStart.isSignedNumber())) {
 			start = evalEngine.evalWithoutNumericReset(originalStart);
@@ -247,16 +256,15 @@ public class Iterator implements IIterator<IExpr> {
 		if (!(originalStep.isSignedNumber())) {
 			step = evalEngine.evalWithoutNumericReset(originalStep);
 		}
-		if (!(step instanceof ISignedNumber)) {
-			return false;
-		}
-		if (step.isNegative()) {
-			if (evalEngine.evaluate(Less(start, maxCounterOrList)) == F.True) {
-				return false;
-			}
-		} else {
-			if (evalEngine.evaluate(Less(maxCounterOrList, start)) == F.True) {
-				return false;
+		if (step.isSignedNumber()) {
+			if (step.isNegative()) {
+				if (evalEngine.evaluate(Less(start, maxCounterOrList)) == F.True) {
+					return false;
+				}
+			} else {
+				if (evalEngine.evaluate(Less(maxCounterOrList, start)) == F.True) {
+					return false;
+				}
 			}
 		}
 		if (maxCounterOrList.isList()) {

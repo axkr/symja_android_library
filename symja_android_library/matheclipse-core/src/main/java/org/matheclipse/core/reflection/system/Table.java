@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
@@ -52,6 +53,7 @@ public class Table extends AbstractFunctionEvaluator {
 
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
+		} catch (final NoEvalException e) {
 		}
 		return null;
 	}

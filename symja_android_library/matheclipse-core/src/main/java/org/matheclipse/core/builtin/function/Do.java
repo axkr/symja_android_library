@@ -6,6 +6,7 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -77,6 +78,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 			return generator.doIt(ast.arg1());
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
+		} catch (final NoEvalException e) {
 		}
 		return null;
 	}
