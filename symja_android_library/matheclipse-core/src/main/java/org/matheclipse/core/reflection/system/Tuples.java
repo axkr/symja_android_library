@@ -20,17 +20,21 @@ public class Tuples extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
-		if (ast.size() == 2 && arg1.isListOfLists()) {
+		if (ast.size() == 2 && arg1.isList()) {
 			try {
 				IAST list = (IAST) arg1;
-				// int k = list.size()-1;
+				for (int i = 1; i < list.size(); i++) {
+					if (!list.get(i).isAST()){
+						return null;
+					}
+				}
 				IAST result = F.List();
 				IAST temp = F.List();
 				tuplesOfLists(list, 1, result, temp);
 				return result;
 			} catch (ArithmeticException ae) {
 
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
 		} else if (ast.size() == 3 && arg1.isAST() && ast.get(2).isInteger()) {
@@ -38,7 +42,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 			try {
 				int k = ((IInteger) arg2).toInt();
 				IAST result = F.List();
-				IAST temp = F.List();
+				IAST temp = F.ast(arg1.head());
 				tuples((IAST) arg1, k, result, temp);
 				return result;
 			} catch (ArithmeticException ae) {
