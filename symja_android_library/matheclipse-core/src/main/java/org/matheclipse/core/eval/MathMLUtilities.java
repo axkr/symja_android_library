@@ -97,9 +97,6 @@ public class MathMLUtilities {
 					out.write(buf.toString());
 					out.write("</m:math>");
 				} else {
-					// out.write("<math xmlns=\"&mathml;\">");
-
-					// out.write("<math xmlns=\"http://www.w3.org/1998/Math/MathML\">");
 					if (fMathMLHeader) {
 						out.write("<?xml version=\"1.0\"?>\n"
 								+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"

@@ -283,25 +283,51 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Public constructor for serialization.
+	 * 
 	 * 
 	 */
 	public EvalEngine() {
 		this("", 0, System.out, false, true);
 	}
 
+	/**
+	 * Constructor for an evaluation engine
+	 * 
+	 * @param relaxedSyntax
+	 *            if <code>true</code>, the parser doesn't distinguish between upper and lower case identifiers
+	 */
 	public EvalEngine(boolean relaxedSyntax) {
 		this("", 0, System.out, relaxedSyntax, true);
 	}
 
+	/**
+	 * Constructor for an evaluation engine
+	 * 
+	 * @param relaxedSyntax
+	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
+	 * @param outListDisabled
+	 *            if <code>true</code>, no output history for the <code>Out()</code> function is stored in the evaluation engine.
+	 */
 	public EvalEngine(boolean relaxedSyntax, boolean outListDisabled) {
 		this("", 0, System.out, relaxedSyntax, outListDisabled);
 	}
 
-	public EvalEngine(final F f, final PrintStream out) {
-		this("", -1, -1, out, false, true);
-	}
-
+	/**
+	 * Constructor for an evaluation engine
+	 * 
+	 * @param sessionID
+	 *            an ID which uniquely identifies this session
+	 * @param iterationLimit
+	 *            the maximum allowed iteration limit (if set to zero, no limit will be checked)
+	 * @param recursionLimit
+	 *            the maximum allowed recursion limit (if set to zero, no limit will be checked)
+	 * @param out
+	 *            the output print stream
+	 * @param relaxedSyntax
+	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
+	 * @param outListDisabled
+	 *            if <code>true</code>, no output history for the <code>Out()</code> function is stored in the evaluation engine.
+	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit, final PrintStream out,
 			boolean relaxedSyntax, boolean outListDisabled) {
 		fSessionID = sessionID;
@@ -320,15 +346,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Constructor for an EvaluationEngine
+	 * Constructor for an evaluation engine
 	 * 
 	 * @param sessionID
 	 *            an ID which uniquely identifies this session
 	 * @param recursionLimit
-	 *            the maximum allowed recursion limit (if set to zero, no limit will be proofed)
+	 *            the maximum allowed recursion limit (if set to zero, no limit will be checked)
 	 * @param out
+	 *            the output print stream
 	 * @param relaxedSyntax
-	 * @see javax.servlet.http.HttpSession#getID()
+	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
+	 * @param outListDisabled
+	 *            if <code>true</code>, no output history for the <code>Out()</code> function is stored in the evaluation engine.
 	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax,
 			boolean outListDisabled) {
