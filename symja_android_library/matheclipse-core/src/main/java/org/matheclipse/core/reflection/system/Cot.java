@@ -1,8 +1,20 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CNI;
+import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cot;
+import static org.matheclipse.core.expression.F.Coth;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+
+import java.math.BigInteger;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -13,8 +25,10 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.CotRules;
 import org.matheclipse.parser.client.SyntaxError;
@@ -42,13 +56,28 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
-			return F.Times(F.CNI, F.Coth(imPart));
+			return Times(CNI, Coth(imPart));
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 		if (parts != null) {
 			if (parts[1].isInteger()) {
 				// period Pi
-				return F.Cot(parts[0]);
+				return Cot(parts[0]);
+			}
+			if (parts[1].isFraction()) {
+				// period (n/m)*Pi
+				IFraction f = (IFraction) parts[1];
+				BigInteger[] divRem = f.divideAndRemainder();
+				IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
+				if (!NumberUtil.isZero(divRem[0])) {
+					return Cot(Plus(parts[0], Times(rest, Pi)));
+				}
+
+				if (rest.equals(C1D2)) {
+					// Cot(z) == Tan(Pi/2 - z)
+					return Tan(Subtract(Divide(Pi,C2),arg1));
+				}
+				
 			}
 		}
 		return null;

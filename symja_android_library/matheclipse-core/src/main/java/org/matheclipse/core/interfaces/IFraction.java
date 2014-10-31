@@ -10,7 +10,17 @@ import org.apache.commons.math3.fraction.BigFraction;
  */
 public interface IFraction extends IRational {
 
+	/** {@inheritDoc} */
+    public IFraction abs();
+    
 	public IFraction add(IFraction parm1);
+
+	/**
+	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
+	 * 
+	 * @return
+	 */
+	public BigInteger[] divideAndRemainder();
 
 	//
 	// public IFraction divide(IFraction parm1);

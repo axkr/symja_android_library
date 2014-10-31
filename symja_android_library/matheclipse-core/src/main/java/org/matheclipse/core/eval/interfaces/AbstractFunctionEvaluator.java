@@ -113,19 +113,19 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 					}
 				} else if (arg1.isNegativeInfinity()) {
 					return timesAST.setAtClone(1, F.CInfinity);
-//				} else {
-//					IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
-//					if (arg1Negated != null) {
-//						for (int i = 2; i < timesAST.size(); i++) {
-//							IExpr temp = timesAST.get(i);
-//							if (temp.isPlus()||temp.isTimes()) {
-//								return null;
-//							}
-//						}
-//						result = timesAST.clone();
-//						result.set(1, arg1Negated);
-//						return result;
-//					}
+					// } else {
+					// IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
+					// if (arg1Negated != null) {
+					// for (int i = 2; i < timesAST.size(); i++) {
+					// IExpr temp = timesAST.get(i);
+					// if (temp.isPlus()||temp.isTimes()) {
+					// return null;
+					// }
+					// }
+					// result = timesAST.clone();
+					// result.set(1, arg1Negated);
+					// return result;
+					// }
 				}
 			} else if (expr.isPlus()) {
 				IAST plusAST = ((IAST) expr);
@@ -163,7 +163,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 									result.set(i, arg1Negated);
 								} else {
 									positiveElementsCounter++;
-									if (positiveElementsCounter * 2 >= plusAST.size()-1) {
+									if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
 										// number of positive elements is greater than number of negative elements
 										return null;
 									}
@@ -176,6 +176,48 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				}
 			} else if (expr.isNegativeInfinity()) {
 				return F.CInfinity;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Try to split a periodic part from the expression: <code>expr == part[0]+ part[1] * period</code>
+	 * 
+	 * @param expr
+	 * @param period
+	 * @return <code>null</code> if no periodicity was found or the rest at index 0 and the factor of the period at index 1
+	 */
+	public static IExpr[] getPeriodicParts(final IExpr expr, final IExpr period) {
+		IExpr[] result = new IExpr[2];
+		result[0] = F.C0;
+		result[1] = F.C1;
+		if (expr.equals(period)) {
+			return result;
+		}
+		if (expr.isAST()) {
+			IAST ast = (IAST) expr;
+			if (ast.isTimes()) {
+				for (int i = 1; i < ast.size(); i++) {
+					if (ast.get(i).equals(period)) {
+						result[1] = ast.removeAtClone(i).getOneIdentity(F.C1);
+						if (result[1].isNumber()) {
+							return result;
+						}
+					}
+				}
+				return null;
+			}
+			if (ast.isPlus()) {
+				for (int i = 1; i < ast.size(); i++) {
+					IExpr[] temp = getPeriodicParts(ast.get(i), period);
+					if (temp != null && temp[0].isZero()) {
+						result[0] = ast.removeAtClone(i).getOneIdentity(F.C0);
+						result[1] = temp[1];
+						return result;
+					}
+				}
+				return null;
 			}
 		}
 		return null;
@@ -198,27 +240,6 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 			if (arg1.isComplex() && ((IComplex) arg1).getRe().isZero()) {
 				return times.setAtClone(1, ((IComplex) arg1).getIm());
 			}
-		}
-		return null;
-	}
-
-	public static IExpr[] getPeriodicParts(final IExpr expr) {
-		if (expr.isPlus()) {
-			IAST plus = (IAST) expr;
-			for (int i = 0; i < plus.size(); i++) {
-				if (plus.get(i).isTimes()) {
-					IAST times = (IAST) plus.get(i);
-					if (times.size() == 3 && times.arg2().isPi()) {
-						if (times.arg1().isRational()) {
-							IExpr[] result = new IExpr[2];
-							result[0] = plus.removeAtClone(i);
-							result[1] = times.arg1();
-							return result;
-						}
-					}
-				}
-			}
-
 		}
 		return null;
 	}

@@ -7,6 +7,10 @@ import org.apache.commons.math3.fraction.BigFraction;
  * 
  */
 public interface IRational extends ISignedNumber, IBigNumber {
+
+	/** {@inheritDoc} */
+	public IRational abs();
+	
 	/**
 	 * Returns the denominator of this fraction.
 	 * 

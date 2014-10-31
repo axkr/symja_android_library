@@ -207,6 +207,15 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/**
+	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
+	 * 
+	 * @return
+	 */
+	public BigInteger[] divideAndRemainder() {
+		return fRational.getNumerator().divideAndRemainder(fRational.getDenominator());
+	}
+
+	/**
 	 * @return
 	 */
 	@Override
@@ -592,6 +601,12 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return F.Rational;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IFraction abs() {
+		return eabs();
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {

@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Sec;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
+
+import java.math.BigInteger;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -13,8 +13,10 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SecRules;
@@ -45,15 +47,32 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 		if (imPart != null) {
 			return F.Sech(imPart);
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 		if (parts != null) {
 			if (parts[1].isInteger()) {
 				// period 2*Pi
 				IInteger i = (IInteger) parts[1];
 				if (i.isEven()) {
-					return F.Sec(parts[0]);
+					return Sec(parts[0]);
 				} else {
-					return F.Times(F.CN1, F.Sec(parts[0]));
+					return Times(CN1, Sec(parts[0]));
+				}
+			}
+			if (parts[1].isFraction()) {
+				// period (n/m)*Pi
+				IFraction f = (IFraction) parts[1];
+				BigInteger[] divRem = f.divideAndRemainder();
+				if (!NumberUtil.isZero(divRem[0])) {
+					IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
+					if (NumberUtil.isEven(divRem[0])) {
+						return Sec(Plus(parts[0], Times(rest, Pi)));
+					} else {
+						return Times(CN1, Sec(Plus(parts[0], Times(rest, Pi))));
+					}
+				}
+				
+				if (f.equals(C1D2)) { 
+					return Times(CN1, Csc(parts[0]));
 				}
 			}
 		}

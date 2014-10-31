@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
+
+import java.math.BigInteger;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -43,28 +44,44 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 		if (negExpr != null) {
 			return Cos(negExpr);
 		}
+
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
 			return F.Cosh(imPart);
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 		if (parts != null) {
 			if (parts[1].isInteger()) {
-				// period 2*Pi
+				// period n*Pi
 				IInteger i = (IInteger) parts[1];
 				if (i.isEven()) {
-					return F.Cos(parts[0]);
+					return Cos(parts[0]);
 				} else {
-					return F.Times(F.CN1, F.Cos(parts[0]));
+					return Times(CN1, F.Cos(parts[0]));
 				}
-			} else if (parts[1].isFraction()) {
-				// period 2*Pi
+			}
+			if (parts[1].isFraction()) {
+				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
-				if (f.equals(F.C1D2)) {// TODO refine this
-					return F.Times(F.CN1, F.Sin(parts[0]));
+				BigInteger[] divRem = f.divideAndRemainder();
+				IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
+				if (!NumberUtil.isZero(divRem[0])) {
+
+					if (NumberUtil.isEven(divRem[0])) {
+						return Cos(Plus(parts[0], Times(rest, Pi)));
+					} else {
+						return Times(CN1, Cos(Plus(parts[0], Times(rest, Pi))));
+					}
+				}
+
+				if (rest.equals(C1D2)) {
+					// Cos(z) == Sin(Pi/2 - z)
+					return Sin(Subtract(Divide(Pi, C2), arg1));
 				}
 			}
 		}
+
 		return null;
 	}
 
@@ -87,7 +104,7 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.cos(arg1));
 	}
-	
+
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

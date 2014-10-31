@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Csc;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
+
+import java.math.BigInteger;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -13,8 +13,10 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.CscRules;
@@ -45,7 +47,7 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 		if (imPart != null) {
 			return F.Times(F.CNI, F.Csch(imPart));
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1);
+		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
 		if (parts != null) {
 			if (parts[1].isInteger()) {
 				// period 2*Pi
@@ -54,6 +56,24 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 					return F.Csc(parts[0]);
 				} else {
 					return F.Times(F.CN1, F.Csc(parts[0]));
+				}
+			}
+			if (parts[1].isFraction()) {
+				// period (n/m)*Pi
+				IFraction f = (IFraction) parts[1];
+				BigInteger[] divRem = f.divideAndRemainder();
+				if (!NumberUtil.isZero(divRem[0])) {
+					IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
+					if (NumberUtil.isEven(divRem[0])) {
+						return Csc(Plus(parts[0], Times(rest, Pi)));
+					} else {
+						return Times(CN1, Csc(Plus(parts[0], Times(rest, Pi))));
+					}
+				}
+
+				if (f.equals(C1D2)) {
+					// Csc(z) == Sec(Pi/2 - z)
+					return Sec(Subtract(Divide(Pi, C2), arg1));
 				}
 			}
 		}

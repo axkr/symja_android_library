@@ -16,11 +16,10 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.combinatoric.KSubsetsList;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -1134,6 +1133,11 @@ public class IntegerSym extends ExprImpl implements IInteger {
 			return "C10";
 		}
 		return "ZZ(" + value + "L)";
+	}
+
+	@Override
+	public IRational abs() {
+		return eabs();
 	}
 
 	/** {@inheritDoc} */
