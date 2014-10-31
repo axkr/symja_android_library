@@ -75,13 +75,11 @@
 		</jar>
 	</target>
 
-    <target name="clean-build" depends="clean,jar"/>
+<target name="clean-build" depends="clean,jar"/>
 
-     
-	<target name="proguard" depends="jar">
+<target name="proguard" depends="jar">
 	         <taskdef resource="proguard/ant/task.properties"
 	                  classpath="toolslib/proguard.jar" />
-
 	         <proguard printmapping="proguard.map"
 	                   overloadaggressively="on"
 	                   defaultpackage=""
@@ -103,6 +101,7 @@
 	         	
 	           <libraryjar file="${java.home}/lib/rt.jar" /> 
 	                     
+	           <keepclasseswithmembers name="org.matheclipse.core.basic.Config" />
 	           <keepclasseswithmembers name="org.matheclipse.core.eval.MathUtils" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.ast.ASTNode" />
 	           <keepclasseswithmembers extends="org.matheclipse.parser.client.ast.ASTNode" />
@@ -169,6 +168,14 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
+	           <keep access="public" name="org.matheclipse.core.eval.MathMLUtilities">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.eval.TeXUtilities">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
 	           <keep access="public" name="org.matheclipse.core.eval.EvalDouble">
 	                     <method access    ="public"
 	                             name      ="*" />
@@ -177,9 +184,21 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep> 
+	           <keep access="public" name="org.matheclipse.parser.client.ast.ASTNode">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.basic.Config">
+	                     <method access    ="public"
+	                             name      ="*" />
+	                     <field access    ="public"
+	                            name      ="*" />
+	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.expression.F">
 	                     <method access    ="public"
 	                             name      ="*" />
+	                     <field access    ="public"
+	                            name      ="*" />
 	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.interfaces.IExpr">
 	                     <method access    ="public"
@@ -250,8 +269,50 @@
 	           </keep>
     	          	
 	         </proguard>
-	</target>
-	       
-    <target name="main" depends="clean,jar"/>
+	          
+</target>
+	
+<target name="proguard-library" depends="jar">
+	         <taskdef resource="proguard/ant/task.properties"
+	                  classpath="toolslib/proguard.jar" />
+<proguard printmapping="proguard.map"
+	      overloadaggressively="on"
+	      defaultpackage=""
+	      allowaccessmodification="on">
+-libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar
+-injars      ${jar.dir}/symja-${date}.jar
+-outjars     ${jar.dir}/symja-lib-${date}.jar
+
+-keep public class * {
+    public protected *;
+}
+
+-keepclassmembernames class * {
+  java.lang.Class class$(java.lang.String);
+  java.lang.Class class$(java.lang.String, boolean);
+}
+
+-keepclasseswithmembernames class * {
+  native &lt;methods&gt;;
+}
+
+-keepclassmembers enum * {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
+
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+</proguard>
+</target>
+
+<target name="main" depends="clean,jar"/>
+
 </project>
 
