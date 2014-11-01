@@ -38,7 +38,7 @@ public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "ComplexInfinity", "Catalan", "Degree", "EulerGamma", "False", "Flat",
-			"Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldForm", "HoldRest", "I", "Indeterminate", "Infinity", "Integer",
+			"Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldForm", "HoldRest", "Indeterminate", "Infinity", "Integer",
 			"Khinchin", "Listable", "Modulus", "Null", "NumericFunction", "OneIdentity", "Orderless", "Pi", "Real", "Slot",
 			"SlotSequence", "String", "Symbol", "True" };
 
