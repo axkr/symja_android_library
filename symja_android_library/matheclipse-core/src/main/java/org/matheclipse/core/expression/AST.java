@@ -1190,7 +1190,11 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public final boolean isAST(final String symbol) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			return get(0).toString().equals(symbol.toLowerCase());
+			String name = symbol;
+			if (name.length() > 0) {
+				name = symbol.toLowerCase();
+			}
+			return get(0).toString().equals(name);
 		}
 		return get(0).toString().equals(symbol);
 	}
@@ -1201,7 +1205,11 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public final boolean isAST(final String symbol, final int length) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			return (size() == length) && get(0).toString().equals(symbol.toLowerCase());
+			String name = symbol;
+			if (name.length() > 0) {
+				name = symbol.toLowerCase();
+			}
+			return (size() == length) && get(0).toString().equals(name);
 		}
 		return (size() == length) && get(0).toString().equals(symbol);
 	}
@@ -1611,7 +1619,11 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			ISymbol sym = (ISymbol) temp;
 			String name = null;
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(sym.toString().toLowerCase());
+				name = sym.toString();
+				if (name.length() > 0) {
+					name = name.toLowerCase();
+				}
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
 			}
 			if (name == null) {
 				if (!Character.isUpperCase(sym.toString().charAt(0))) {
@@ -2073,7 +2085,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		return null;
 	}
-	
+
 	public IExpr getPart(final List<Integer> positions) {
 		IExpr expr = this;
 		int size = positions.size();

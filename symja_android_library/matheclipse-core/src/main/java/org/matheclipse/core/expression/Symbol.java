@@ -233,6 +233,9 @@ public class Symbol extends ExprImpl implements ISymbol {
 	@Override
 	public boolean isSymbolName(String name) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (fSymbolName.length() == 1) {
+				return fSymbolName.equals(name);
+			}
 			return fSymbolName.equalsIgnoreCase(name);
 		}
 		return fSymbolName.equals(name);
@@ -621,7 +624,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 			return "$s(\"" + fSymbolName + "\")";
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase());
+			String name;
+			if (fSymbolName.length() == 1) {
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString());
+			} else { 
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase());
+			}
 			if (name != null) {
 				return name;
 			}

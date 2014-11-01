@@ -88,7 +88,7 @@ public class F {
 			: "ComplexInfinity", new org.matheclipse.core.builtin.constant.ComplexInfinity());
 	public final static ISymbol Degree = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree",
 			new org.matheclipse.core.builtin.constant.Degree());
-	public final static ISymbol E = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "e" : "E",
+	public final static ISymbol E = F.initFinalSymbol("E",
 			new org.matheclipse.core.builtin.constant.E());
 	public final static ISymbol EulerGamma = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma",
 			new org.matheclipse.core.builtin.constant.EulerGamma());
@@ -97,7 +97,7 @@ public class F {
 	public final static ISymbol GoldenRatio = F.initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "goldenratio" : "GoldenRatio",
 			new org.matheclipse.core.builtin.constant.GoldenRatio());
-	public final static ISymbol I = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "i" : "I",
+	public final static ISymbol I = F.initFinalSymbol("I",
 			new org.matheclipse.core.builtin.constant.I());
 	public final static ISymbol Infinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity",
 			new org.matheclipse.core.builtin.constant.Infinity());
@@ -259,8 +259,7 @@ public class F {
 			new org.matheclipse.core.builtin.function.MemberQ());
 	public final static ISymbol Module = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
 			new org.matheclipse.core.builtin.function.Module());
-	public final static ISymbol N = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "n" : "N",
-			new org.matheclipse.core.builtin.function.N());
+	public final static ISymbol N = F.initFinalSymbol("N", new org.matheclipse.core.builtin.function.N());
 	public final static ISymbol Nest = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nest" : "Nest",
 			new org.matheclipse.core.builtin.function.Nest());
 	public final static ISymbol NestList = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestlist" : "NestList",
@@ -378,7 +377,7 @@ public class F {
 	public final static ISymbol Csc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
 	public final static ISymbol Csch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
 	public final static ISymbol Curl = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "curl" : "Curl");
-	public final static ISymbol D = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "d" : "D");
+	public final static ISymbol D = F.initFinalSymbol("D");
 	public final static ISymbol Decrement = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "decrement" : "Decrement");
 	public final static ISymbol Default = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "default" : "Default");
 	public final static ISymbol Denominator = F
@@ -1237,7 +1236,11 @@ public class F {
 	public static ISymbol $s(final String symbolName, boolean setEval) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			name = symbolName.toLowerCase(Locale.ENGLISH);
+			if (symbolName.length() == 1) {
+				name = symbolName;
+			} else {
+				name = symbolName.toLowerCase(Locale.ENGLISH);
+			}
 		}
 		ISymbol symbol = PREDEFINED_SYMBOLS_MAP.get(name);
 		if (symbol != null) {

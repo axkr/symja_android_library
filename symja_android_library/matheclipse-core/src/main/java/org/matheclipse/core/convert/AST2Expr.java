@@ -35,7 +35,9 @@ import org.matheclipse.parser.client.ast.SymbolNode;
  * 
  */
 public class AST2Expr {
-	public final static String[] SYMBOL_STRINGS = { "ComplexInfinity", "Catalan", "Degree", "E", "EulerGamma", "False", "Flat",
+	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
+
+	public final static String[] SYMBOL_STRINGS = { "ComplexInfinity", "Catalan", "Degree", "EulerGamma", "False", "Flat",
 			"Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldForm", "HoldRest", "I", "Indeterminate", "Infinity", "Integer",
 			"Khinchin", "Listable", "Modulus", "Null", "NumericFunction", "OneIdentity", "Orderless", "Pi", "Real", "Slot",
 			"SlotSequence", "String", "Symbol", "True" };
@@ -48,7 +50,7 @@ public class AST2Expr {
 			"ClearAll", "Coefficient", "CoefficientList", "Collect", "Complement", "Complex", "ComplexExpand", "ComplexInfinity",
 			"ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray", "Continue",
 			"ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc",
-			"Csch", "Curl", "D", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates",
+			"Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates",
 			"Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ", "Dimensions", "Discriminant", "Distribute",
 			"Divergence", "DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop", "Eliminate", "EllipticE", "EllipticF",
 			"EllipticPi", "Eigenvalues", "Eigenvectors", "Equal", "Erf", "Erfc", "Erfi", "EuclidianDistance", "EulerE", "EulerPhi",
@@ -65,7 +67,7 @@ public class AST2Expr {
 			"LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve", "List", "ListQ", "Log",
 			"LogGamma", "LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread",
 			"MatchQ", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "Min", "Mod",
-			"Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "N", "Negative", "Nest", "NestList", "NestWhile",
+			"Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Negative", "Nest", "NestList", "NestWhile",
 			"NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm",
 			"Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order",
 			"OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern",
@@ -90,10 +92,10 @@ public class AST2Expr {
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
-			"I", "Infinity", "Int", "Trunc" };
+			"EvalF", "Infinity", "Int", "Trunc" };
 
 	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh,
-			F.CComplexInfinity, F.D, F.CI, F.CInfinity, F.Integrate, F.IntegerPart };
+			F.CComplexInfinity, F.D, F.N, F.CInfinity, F.Integrate, F.IntegerPart };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
@@ -117,6 +119,10 @@ public class AST2Expr {
 	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
 	// : "DirectedInfinity";
 	static {
+		for (String str : UPPERCASE_SYMBOL_STRINGS) {
+			// these constants must be written in upper case characters
+			PREDEFINED_SYMBOLS_MAP.put(str, str);
+		}
 		for (String str : SYMBOL_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
 		}
@@ -270,11 +276,15 @@ public class AST2Expr {
 		if (node instanceof SymbolNode) {
 			String nodeStr = node.getString();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				if (nodeStr.length() == 1) {
+					if (nodeStr.equals("I")) {
+						// special - convert on input
+						return F.CI;
+					}
+					return F.$s(nodeStr);
+				}
 				nodeStr = nodeStr.toLowerCase();
-				if (nodeStr.equals("i")) {
-					// special - convert on input
-					return F.CI;
-				} else if (nodeStr.equals("infinity")) {
+				if (nodeStr.equals("infinity")) {
 					// special - convert on input
 					return F.CInfinity;
 				} else if (nodeStr.equals("complexinfinity")) {
