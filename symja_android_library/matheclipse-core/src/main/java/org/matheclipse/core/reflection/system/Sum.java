@@ -1,19 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.BernoulliB;
-import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.ExpandAll;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Slot;
-import static org.matheclipse.core.expression.F.Sum;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.k;
+import static org.matheclipse.core.expression.F.*; 
 
 import java.util.HashMap;
 
@@ -195,7 +182,7 @@ public class Sum extends Table {
 	 * Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param powAST
-	 *            an AST of the form <code>Power[var^i]</code>
+	 *            an AST of the form <code>Power[var, i_Integer]</code>
 	 * @param var
 	 * @param to
 	 * @return
@@ -210,10 +197,21 @@ public class Sum extends Table {
 		return null;
 	}
 
+	/**
+	 * See <a href="http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
+	 * Summation#Some_summations_of_polynomial_expressions</a>.
+	 * 
+	 * @param to
+	 * @param p
+	 * @return
+	 */
 	public IExpr sumPowerFormula(final IExpr to, IInteger p) {
 		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
 		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
+		if (p.isOne()){
+			return Times(C1D2, to, Plus(C1, to));
+		}
 		return F.eval(ExpandAll(Plus(
 				Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
 				Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
