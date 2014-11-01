@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialTokenizer.java 4690 2013-11-03 22:55:59Z kredel $
+ * $Id: GenPolynomialTokenizer.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -91,6 +91,7 @@ public class GenPolynomialTokenizer {
     };
 
 
+    @SuppressWarnings("unused")
     private polyType parsedPoly = polyType.PolBigRat;
 
 
@@ -101,7 +102,7 @@ public class GenPolynomialTokenizer {
      * noargs constructor reads from System.in.
      */
     public GenPolynomialTokenizer() {
-        this(new BufferedReader(new InputStreamReader(System.in,Charset.forName("UTF8"))));
+        this(new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF8"))));
     }
 
 
@@ -291,8 +292,8 @@ public class GenPolynomialTokenizer {
         ExpVector e;
         int ix;
         long ie;
-        boolean done = false;
-        while (!done) {
+        //boolean done = false;
+        while (true) { //!done
             // next input. determine next action
             tt = tok.nextToken();
             //System.out.println("while tt = " + tok);
@@ -493,8 +494,8 @@ public class GenPolynomialTokenizer {
 
             default: //skip 
             }
-            if (done)
-                break; // unknown variable
+            //if (done)
+            //    break; // unknown variable
             if (tt == StreamTokenizer.TT_EOF)
                 break;
             // complete polynomial
@@ -660,7 +661,7 @@ public class GenPolynomialTokenizer {
      * @return the next coefficient factory.
      * @throws IOException
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public RingFactory nextCoefficientRing() throws IOException {
         RingFactory coeff = null;
         coeffType ct = null;
@@ -1022,7 +1023,7 @@ public class GenPolynomialTokenizer {
         if (s <= 0) {
             return new TermOrder(evord);
         }
-        return new TermOrder(evord, evord, vars.length, s);
+        return new TermOrder(evord, evord, nvars, s);
     }
 
 
@@ -1439,6 +1440,7 @@ public class GenPolynomialTokenizer {
             String sn = sc.next();
             sl.add(sn);
         }
+        sc.close();
         vl = new String[sl.size()];
         int i = 0;
         for (String si : sl) {
@@ -1503,6 +1505,7 @@ public class GenPolynomialTokenizer {
             //System.out.println("sn = " + sn);
             sl.add(sn);
         }
+        sc.close();
         vl = new String[sl.size()];
         int i = 0;
         for (String si : sl) {

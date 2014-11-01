@@ -1,5 +1,5 @@
 /*
- * $Id: Local.java 4672 2013-10-21 22:24:42Z kredel $
+ * $Id: Local.java 4957 2014-10-16 23:03:23Z kredel $
  */
 
 package edu.jas.poly;
@@ -8,8 +8,8 @@ package edu.jas.poly;
 import org.apache.log4j.Logger;
 
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.RingElem;
 import edu.jas.structure.QuotPair;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -17,8 +17,7 @@ import edu.jas.structure.QuotPair;
  * immutable.
  * @author Heinz Kredel
  */
-public class Local<C extends RingElem<C>> 
-    implements RingElem<Local<C>>, QuotPair<C> {
+public class Local<C extends RingElem<C>> implements RingElem<Local<C>>, QuotPair<C> {
 
 
     private static final Logger logger = Logger.getLogger(Local.class);
@@ -165,8 +164,7 @@ public class Local<C extends RingElem<C>>
 
 
     /**
-     * Is Local a constant.
-     * Not implemented.
+     * Is Local a constant. Not implemented.
      * @throws UnsupportedOperationException.
      */
     public boolean isConstant() {
@@ -290,17 +288,13 @@ public class Local<C extends RingElem<C>>
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof Local)) {
             return false;
         }
-        Local<C> a = null;
-        try {
-            a = (Local<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        Local<C> a = (Local<C>) b;
         return (0 == compareTo(a));
     }
 

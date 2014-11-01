@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexAlgebraicRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: ComplexAlgebraicRing.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import edu.jas.arith.Rational;
 import edu.jas.arith.BigRational;
-import edu.jas.arith.BigDecimal;
+import edu.jas.arith.Rational;
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.Complex;
@@ -24,9 +23,9 @@ import edu.jas.structure.RingFactory;
 
 
 /**
- * Complex algebraic number factory class based on AlgebraicNumberRing with RingElem
- * interface. Objects of this class are immutable with the exception of the
- * isolating intervals.
+ * Complex algebraic number factory class based on AlgebraicNumberRing with
+ * RingFactory interface. Objects of this class are immutable with the exception
+ * of the isolating intervals.
  * @author Heinz Kredel
  */
 
@@ -135,7 +134,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
 
 
     /**
-     * Get epsilon. 
+     * Get epsilon.
      * @return epsilon.
      */
     public synchronized C getEps() {
@@ -144,7 +143,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
 
 
     /**
-     * Set a new epsilon. 
+     * Set a new epsilon.
      * @param e epsilon.
      */
     public synchronized void setEps(C e) {
@@ -153,7 +152,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
 
 
     /**
-     * Set a new epsilon. 
+     * Set a new epsilon.
      * @param e epsilon.
      */
     public synchronized void setEps(BigRational e) {
@@ -205,7 +204,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      */
     public ComplexAlgebraicNumber<C> getIMAG() {
         ComplexRing<C> cr = (ComplexRing<C>) algebraic.ring.coFac;
-        Complex<C> I = cr.getIMAG(); 
+        Complex<C> I = cr.getIMAG();
         return new ComplexAlgebraicNumber<C>(this, algebraic.getZERO().sum(I));
     }
 
@@ -297,7 +296,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
     @Override
     public String toString() {
         return "ComplexAlgebraicRing[ " + algebraic.modul.toString() + " in " + root + " | isField="
-                + algebraic.isField() + " :: " + algebraic.ring.toString() + " ]";
+                        + algebraic.isField() + " :: " + algebraic.ring.toString() + " ]";
     }
 
 
@@ -311,8 +310,8 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
         // Python case
         return "ComplexN( " + algebraic.modul.toScript() + ", " + root.toScript()
         //+ ", " + algebraic.isField() 
-                //+ ", " + algebraic.ring.toScript() 
-                + " )";
+        //+ ", " + algebraic.ring.toScript() 
+                        + " )";
     }
 
 
@@ -323,17 +322,13 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof ComplexAlgebraicRing)) {
             return false;
         }
-        ComplexAlgebraicRing<C> a = null;
-        try {
-            a = (ComplexAlgebraicRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        ComplexAlgebraicRing<C> a = (ComplexAlgebraicRing<C>) b;
         return algebraic.equals(a.algebraic) && root.equals(a.root);
     }
 

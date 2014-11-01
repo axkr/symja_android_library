@@ -1,27 +1,24 @@
 /*
- * $Id: ComplexRootsSturm.java 4025 2012-07-23 16:41:43Z kredel $
+ * $Id: ComplexRootsSturm.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
 
 
 import java.util.ArrayList;
-//import java.util.Arrays;
+// import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.arith.Rational;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.Rational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.structure.RingElem;
-import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
-import edu.jas.util.ArrayUtil;
 
 
 /**
@@ -151,18 +148,18 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
      */
     @Override
     public long complexRootCount(Rectangle<C> rect, GenPolynomial<Complex<C>> a)
-            throws InvalidBoundaryException {
+                    throws InvalidBoundaryException {
         C rl = rect.lengthReal();
         C il = rect.lengthImag();
         // only linear polynomials have zero length intervals
-        if ( rl.isZERO() && il.isZERO() ) {
+        if (rl.isZERO() && il.isZERO()) {
             Complex<C> e = PolyUtil.<Complex<C>> evaluateMain(a.ring.coFac, a, rect.getSW());
-            if ( e.isZERO() ) {
+            if (e.isZERO()) {
                 return 1;
             }
             return 0;
         }
-        if ( rl.isZERO() || il.isZERO() ) {
+        if (rl.isZERO() || il.isZERO()) {
             //RingFactory<C> cf = (RingFactory<C>) rl.factory();
             //GenPolynomialRing<C> rfac = new GenPolynomialRing<C>(cf,a.ring);
             //cf = (RingFactory<C>) il.factory();
@@ -170,7 +167,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             //GenPolynomial<C> rp = PolyUtil.<C> realPartFromComplex(rfac, a);
             //GenPolynomial<C> ip = PolyUtil.<C> imaginaryPartFromComplex(ifac, a);
             //RealRoots<C> rr = new RealRootsSturm<C>();
-            if ( rl.isZERO() ) {
+            if (rl.isZERO()) {
                 //logger.info("lengthReal == 0: " + rect);
                 //Complex<C> r = rect.getSW();
                 //r = new Complex<C>(r.ring,r.getRe()/*,0*/);
@@ -189,14 +186,14 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 Complex<C> sw = rect.getSW();
                 Complex<C> ne = rect.getNE();
                 C delta = sw.ring.ring.parse("1"); // works since linear polynomial
-                Complex<C> cd = new Complex<C>(sw.ring,delta/*, 0*/);
+                Complex<C> cd = new Complex<C>(sw.ring, delta/*, 0*/);
                 sw = sw.subtract(cd);
                 ne = ne.sum(cd);
                 rect = rect.exchangeSW(sw);
                 rect = rect.exchangeNE(ne);
                 logger.info("new rectangle: " + rect.toScript());
             }
-            if ( il.isZERO() ) {
+            if (il.isZERO()) {
                 //logger.info("lengthImag == 0: " + rect);
                 //Interval<C> rv = new Interval<C>(rect.getSW().getRe(),rect.getNE().getRe());
                 //logger.info("rv: " + rv);
@@ -206,7 +203,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 Complex<C> sw = rect.getSW();
                 Complex<C> ne = rect.getNE();
                 C delta = sw.ring.ring.parse("1"); // works since linear polynomial
-                Complex<C> cd = new Complex<C>(sw.ring,sw.ring.ring.getZERO(),delta);
+                Complex<C> cd = new Complex<C>(sw.ring, sw.ring.ring.getZERO(), delta);
                 sw = sw.subtract(cd);
                 ne = ne.sum(cd);
                 rect = rect.exchangeSW(sw);
@@ -249,12 +246,13 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
      * @param a univariate squarefree complex polynomial.
      * @return list of complex roots.
      */
+    @SuppressWarnings("cast")
     @Override
     public List<Rectangle<C>> complexRoots(Rectangle<C> rect, GenPolynomial<Complex<C>> a)
-            throws InvalidBoundaryException {
+                    throws InvalidBoundaryException {
         ComplexRing<C> cr = (ComplexRing<C>) a.ring.coFac;
         List<Rectangle<C>> roots = new ArrayList<Rectangle<C>>();
-        if ( a.isConstant() || a.isZERO() ) {
+        if (a.isConstant() || a.isZERO()) {
             return roots;
         }
         //System.out.println("rect = " + rect); 
@@ -288,7 +286,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             }
             try {
                 Complex<C>[] cp = (Complex<C>[]) copyOfComplex(rect.corners, 4);
-                    // (Complex<C>[]) new Complex[4];  cp[0] = rect.corners[0];
+                // (Complex<C>[]) new Complex[4];  cp[0] = rect.corners[0];
                 // cp[0] fix
                 cp[1] = new Complex<C>(cr, cp[1].getRe(), center.getIm());
                 cp[2] = center;
@@ -298,7 +296,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 List<Rectangle<C>> nwr = complexRoots(nw, a);
                 //System.out.println("#nwr = " + nwr.size()); 
                 roots.addAll(nwr);
-                if ( roots.size() == a.degree(0) ) {
+                if (roots.size() == a.degree(0)) {
                     work = false;
                     break;
                 }
@@ -313,7 +311,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 List<Rectangle<C>> swr = complexRoots(sw, a);
                 //System.out.println("#swr = " + swr.size()); 
                 roots.addAll(swr);
-                if ( roots.size() == a.degree(0) ) {
+                if (roots.size() == a.degree(0)) {
                     work = false;
                     break;
                 }
@@ -328,7 +326,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 List<Rectangle<C>> ser = complexRoots(se, a);
                 //System.out.println("#ser = " + ser.size()); 
                 roots.addAll(ser);
-                if ( roots.size() == a.degree(0) ) {
+                if (roots.size() == a.degree(0)) {
                     work = false;
                     break;
                 }
@@ -357,16 +355,16 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
 
     /**
      * Invariant rectangle for algebraic number.
-     * @param rect root isolating rectangle for f which contains exactly one root.
+     * @param rect root isolating rectangle for f which contains exactly one
+     *            root.
      * @param f univariate polynomial, non-zero.
      * @param g univariate polynomial, gcd(f,g) == 1.
-     * @return v a new rectangle contained in rect such that g(w) != 0 for w in v.
+     * @return v a new rectangle contained in rect such that g(w) != 0 for w in
+     *         v.
      */
     @Override
-    public Rectangle<C> invariantRectangle(Rectangle<C> rect, 
-                                           GenPolynomial<Complex<C>> f, 
-                                           GenPolynomial<Complex<C>> g) 
-                        throws InvalidBoundaryException {
+    public Rectangle<C> invariantRectangle(Rectangle<C> rect, GenPolynomial<Complex<C>> f,
+                    GenPolynomial<Complex<C>> g) throws InvalidBoundaryException {
         Rectangle<C> v = rect;
         if (g == null || g.isZERO()) {
             return v;
@@ -378,7 +376,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             return v;
         }
         BigRational len = v.rationalLength();
-        BigRational half = new BigRational(1,2);
+        BigRational half = new BigRational(1, 2);
         while (true) {
             long n = windingNumber(v, g);
             //System.out.println("n = " + n);
@@ -390,10 +388,10 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             }
             len = len.multiply(half);
             Rectangle<C> v1 = v;
-            v = complexRootRefinement(v,f,len);
-            if ( v.equals(v1) ) {
+            v = complexRootRefinement(v, f, len);
+            if (v.equals(v1)) {
                 //System.out.println("len = " + len);
-                if ( !f.gcd(g).isONE() ) {
+                if (!f.gcd(g).isONE()) {
                     System.out.println("f.gcd(g) = " + f.gcd(g));
                     throw new RuntimeException("no convergence " + v);
                 }

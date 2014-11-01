@@ -1,5 +1,5 @@
 /*
- * $Id: Quotient.java 4745 2014-02-02 17:32:41Z axelclk $
+ * $Id: Quotient.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ufd;
@@ -18,8 +18,8 @@ import edu.jas.structure.QuotPair;
  * interface. Objects of this class are immutable.
  * @author Heinz Kredel
  */
-public class Quotient<C extends GcdRingElem<C>> 
-    implements GcdRingElem<Quotient<C>>, QuotPair<GenPolynomial<C>> {
+public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<C>>,
+                QuotPair<GenPolynomial<C>> {
 
 
     private static final Logger logger = Logger.getLogger(Quotient.class);
@@ -282,17 +282,13 @@ public class Quotient<C extends GcdRingElem<C>>
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof Quotient)) {
             return false;
         }
-        Quotient<C> a = null;
-        try {
-            a = (Quotient<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        Quotient<C> a = (Quotient<C>) b;
         return compareTo(a) == 0;
         //return num.equals(a.num) && den.equals(a.den);
     }
@@ -613,7 +609,7 @@ public class Quotient<C extends GcdRingElem<C>>
      * @param b other element.
      * @return [ gcd(this,b), c1, c2 ] with c1*this + c2*b = gcd(this,b).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public Quotient<C>[] egcd(Quotient<C> b) {
         Quotient<C>[] ret = (Quotient<C>[]) new Quotient[3];
         ret[0] = null;

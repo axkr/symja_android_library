@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: ComplexRing.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -14,7 +14,6 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.StringUtil;
-import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
@@ -69,12 +68,11 @@ public class ComplexRing<C extends RingElem<C>> implements RingFactory<Complex<C
 
     /**
      * Corresponding algebraic number ring.
-     * @return algebraic number ring.
-     * not jet possible.
+     * @return algebraic number ring. not jet possible.
      */
     public AlgebraicNumberRing<C> algebraicRing() {
-        GenPolynomialRing<C> pfac 
-           = new GenPolynomialRing<C>(ring, 1, new TermOrder(TermOrder.INVLEX), new String[] { "I" });
+        GenPolynomialRing<C> pfac = new GenPolynomialRing<C>(ring, 1, new TermOrder(TermOrder.INVLEX),
+                        new String[] { "I" });
         GenPolynomial<C> I = pfac.univariate(0, 2L).sum(pfac.getONE());
         AlgebraicNumberRing<C> afac = new AlgebraicNumberRing<C>(I, ring.isField()); // must indicate field
         return afac;
@@ -230,17 +228,13 @@ public class ComplexRing<C extends RingElem<C>> implements RingFactory<Complex<C
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof ComplexRing)) {
             return false;
         }
-        ComplexRing<C> a = null;
-        try {
-            a = (ComplexRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        ComplexRing<C> a = (ComplexRing<C>) b;
         if (!ring.equals(a.ring)) {
             return false;
         }

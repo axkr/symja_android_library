@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4792 2014-04-09 09:48:16Z kredel $
+ * $Id: SolvableQuotient.java 4963 2014-10-17 19:19:18Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -326,17 +326,13 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof SolvableQuotient)) {
             return false;
         }
-        SolvableQuotient<C> a = null;
-        try {
-            a = (SolvableQuotient<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        SolvableQuotient<C> a = (SolvableQuotient<C>) b;
         return compareTo(a) == 0;
         //return num.equals(a.num) && den.equals(a.den);
     }
@@ -684,7 +680,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
      * @param b other element.
      * @return [ gcd(this,b), c1, c2 ] with c1*this + c2*b = gcd(this,b).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public SolvableQuotient<C>[] egcd(SolvableQuotient<C> b) {
         SolvableQuotient<C>[] ret = (SolvableQuotient<C>[]) new SolvableQuotient[3];
         ret[0] = null;

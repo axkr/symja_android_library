@@ -1,5 +1,5 @@
 /*
- * $Id: ThreadPool.java 4571 2013-08-18 19:00:31Z kredel $
+ * $Id: ThreadPool.java 4962 2014-10-17 19:05:55Z kredel $
  */
 
 // package edu.unima.ky.parallel;
@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import org.apache.log4j.Logger;
 
 import edu.jas.kern.PreemptingException;
+
 
 /**
  * Thread pool using stack / list workpile.
@@ -195,7 +196,7 @@ public class ThreadPool {
                 notifyAll(); // for getJob
             }
         }
-        int re = 0;
+        //int re = 0;
         for (int i = 0; i < workers.length; i++) {
             if (workers[i] == null) {
                 continue;
@@ -207,7 +208,7 @@ public class ThreadPool {
                         notifyAll(); // for getJob
                         workers[i].interrupt();
                     }
-                    re++;
+                    //re++;
                     //if ( re > 3 * workers.length ) {
                     //    logger.info("give up on: " + workers[i]);
                     //    break; // give up

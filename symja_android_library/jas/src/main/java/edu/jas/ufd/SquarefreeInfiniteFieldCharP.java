@@ -1,5 +1,5 @@
 /*
- * $Id: SquarefreeInfiniteFieldCharP.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: SquarefreeInfiniteFieldCharP.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ufd;
@@ -36,7 +36,8 @@ public class SquarefreeInfiniteFieldCharP<C extends GcdRingElem<C>> extends Squa
 
 
     /**
-     * Squarefree engine for infinite ring of characteristic p base coefficients.
+     * Squarefree engine for infinite ring of characteristic p base
+     * coefficients.
      */
     protected final SquarefreeAbstract<C> qengine;
 
@@ -44,6 +45,7 @@ public class SquarefreeInfiniteFieldCharP<C extends GcdRingElem<C>> extends Squa
     /**
      * Constructor.
      */
+    @SuppressWarnings("cast")
     public SquarefreeInfiniteFieldCharP(RingFactory<Quotient<C>> fac) {
         super(fac);
         // isFinite() predicate now present

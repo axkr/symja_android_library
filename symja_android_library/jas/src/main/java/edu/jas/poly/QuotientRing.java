@@ -1,43 +1,46 @@
 /*
- * $Id: QuotientRing.java 4679 2013-10-27 13:19:41Z kredel $
+ * $Id: QuotientRing.java 4958 2014-10-16 23:05:31Z kredel $
  */
 
 package edu.jas.poly;
 
-import java.util.Random;
-import java.util.List;
-import java.util.ArrayList;
+
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.structure.ElemFactory;
+// import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.QuotPairFactory;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
-//import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.QuotPairFactory;
 
 
 /**
- * Quotient ring factory using RingElem and RingFactory.
- * Objects of this class are immutable.
+ * Quotient ring factory using RingElem and RingFactory. Objects of this class
+ * are immutable.
  * @author Heinz Kredel
  */
-public class QuotientRing<C extends RingElem<C> > 
-             implements RingFactory<Quotient<C>>, QuotPairFactory<C,Quotient<C>> {
-
-     private static final Logger logger = Logger.getLogger(QuotientRing.class);
-
-     private boolean debug = logger.isDebugEnabled();
+public class QuotientRing<C extends RingElem<C>> implements RingFactory<Quotient<C>>,
+                QuotPairFactory<C, Quotient<C>> {
 
 
-    /** Ring factory of this factory. 
+    private static final Logger logger = Logger.getLogger(QuotientRing.class);
+
+
+    private final boolean debug = logger.isDebugEnabled();
+
+
+    /**
+     * Ring factory of this factory.
      */
-    public final RingFactory< C > ring;
+    public final RingFactory<C> ring;
 
 
-    /** The constructor creates a QuotientRing object 
-     * from a RingFactory. 
+    /**
+     * The constructor creates a QuotientRing object from a RingFactory.
      * @param r ring factory.
      */
     public QuotientRing(RingFactory<C> r) {
@@ -79,40 +82,44 @@ public class QuotientRing<C extends RingElem<C> >
     }
 
 
-    /** Copy Quotient element c.
+    /**
+     * Copy Quotient element c.
      * @param c
      * @return a copy of c.
      */
     public Quotient<C> copy(Quotient<C> c) {
-        return new Quotient<C>( c.ring, c.num, c.den, true );
+        return new Quotient<C>(c.ring, c.num, c.den, true);
     }
 
 
-    /** Get the zero element.
+    /**
+     * Get the zero element.
      * @return 0 as Quotient.
      */
     public Quotient<C> getZERO() {
-        return new Quotient<C>( this, ring.getZERO() );
+        return new Quotient<C>(this, ring.getZERO());
     }
 
 
-    /**  Get the one element.
+    /**
+     * Get the one element.
      * @return 1 as Quotient.
      */
     public Quotient<C> getONE() {
-        return new Quotient<C>( this, ring.getONE() );
+        return new Quotient<C>(this, ring.getONE());
     }
 
-    
-    /**  Get a list of the generating elements.
+
+    /**
+     * Get a list of the generating elements.
      * @return list of generators for the algebraic structure.
      * @see edu.jas.structure.ElemFactory#generators()
      */
     public List<Quotient<C>> generators() {
         List<? extends C> rgens = ring.generators();
-        List<Quotient<C>> gens = new ArrayList<Quotient<C>>( rgens.size() );
-        for ( C c: rgens ) {
-             gens.add( new Quotient<C>(this,c) );
+        List<Quotient<C>> gens = new ArrayList<Quotient<C>>(rgens.size());
+        for (C c : rgens) {
+            gens.add(new Quotient<C>(this, c));
         }
         return gens;
     }
@@ -154,35 +161,38 @@ public class QuotientRing<C extends RingElem<C> >
     }
 
 
-    /** Get a Quotient element from a BigInteger value.
+    /**
+     * Get a Quotient element from a BigInteger value.
      * @param a BigInteger.
      * @return a Quotient.
      */
     public Quotient<C> fromInteger(java.math.BigInteger a) {
-        return new Quotient<C>( this, ring.fromInteger(a) );
+        return new Quotient<C>(this, ring.fromInteger(a));
     }
 
 
-    /** Get a Quotient element from a long value.
+    /**
+     * Get a Quotient element from a long value.
      * @param a long.
      * @return a Quotient.
      */
     public Quotient<C> fromInteger(long a) {
-        return new Quotient<C>( this, ring.fromInteger(a) );
+        return new Quotient<C>(this, ring.fromInteger(a));
     }
-    
 
-    /** Get the String representation as RingFactory.
+
+    /**
+     * Get the String representation as RingFactory.
      * @see java.lang.Object#toString()
      */
     @Override
-     public String toString() {
-        return "Quotient[ " 
-                + ring.toString() + " ]";
+    public String toString() {
+        return "Quotient[ " + ring.toString() + " ]";
     }
 
 
-    /** Get a scripting compatible string representation.
+    /**
+     * Get a scripting compatible string representation.
      * @return script compatible representation for this ElemFactory.
      * @see edu.jas.structure.ElemFactory#toScript()
      */
@@ -193,87 +203,89 @@ public class QuotientRing<C extends RingElem<C> >
     }
 
 
-    /** Comparison with any other object.
+    /**
+     * Comparison with any other object.
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
-        if ( ! ( b instanceof QuotientRing ) ) {
-           return false;
-        }
-        QuotientRing<C> a = null;
-        try {
-            a = (QuotientRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if ( a == null ) {
+        if (b == null) {
             return false;
         }
-        return ring.equals( a.ring );
+        if (!(b instanceof QuotientRing)) {
+            return false;
+        }
+        QuotientRing<C> a = (QuotientRing<C>) b;
+        return ring.equals(a.ring);
     }
 
 
-    /** Hash code for this quotient ring.
+    /**
+     * Hash code for this quotient ring.
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode() { 
-       int h;
-       h = ring.hashCode();
-       return h;
+    public int hashCode() {
+        int h;
+        h = ring.hashCode();
+        return h;
     }
 
 
-    /** Quotient random.
+    /**
+     * Quotient random.
      * @param n such that 0 &le; v &le; (2<sup>n</sup>-1).
      * @return a random residue element.
      */
     public Quotient<C> random(int n) {
-        C r = ring.random( n );
-        C s = ring.random( n );
-        while ( s.isZERO() ) {
-            s = ring.random( n );
+        C r = ring.random(n);
+        C s = ring.random(n);
+        while (s.isZERO()) {
+            s = ring.random(n);
         }
-        return new Quotient<C>( this, r, s, false );
+        return new Quotient<C>(this, r, s, false);
     }
 
 
-    /** Quotient random.
+    /**
+     * Quotient random.
      * @param n such that 0 &le; v &le; (2<sup>n</sup>-1).
      * @param rnd is a source for random bits.
      * @return a random residue element.
      */
     public Quotient<C> random(int n, Random rnd) {
-        C r = ring.random( n, rnd );
-        C s = ring.random( n, rnd );
-        while ( s.isZERO() ) {
-            s = ring.random( n, rnd );
+        C r = ring.random(n, rnd);
+        C s = ring.random(n, rnd);
+        while (s.isZERO()) {
+            s = ring.random(n, rnd);
         }
-        return new Quotient<C>( this, r, s, false);
+        return new Quotient<C>(this, r, s, false);
     }
 
 
-    /** Parse Quotient from String.
+    /**
+     * Parse Quotient from String.
      * @param s String.
      * @return Quotient from s.
      */
     public Quotient<C> parse(String s) {
-        C x = ring.parse( s );
-        return new Quotient<C>( this, x );
+        C x = ring.parse(s);
+        return new Quotient<C>(this, x);
     }
 
 
-    /** Parse Quotient from Reader.
+    /**
+     * Parse Quotient from Reader.
      * @param r Reader.
      * @return next Quotient from r.
      */
     public Quotient<C> parse(Reader r) {
-        C x = ring.parse( r );
-        if ( debug ) {
-           logger.debug("x = " + x);
+        C x = ring.parse(r);
+        if (debug) {
+            logger.debug("x = " + x);
         }
-        return new Quotient<C>( this, x );
+        return new Quotient<C>(this, x);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: Condition.java 4058 2012-07-26 21:03:53Z kredel $
+ * $Id: Condition.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.application;
@@ -21,8 +21,8 @@ import edu.jas.structure.GcdRingElem;
 
 
 /**
- * Condition. An ideal of polynomials considered to be zero and a multiplicative
- * set of polynomials considered to be non-zero.
+ * Condition. Container for an ideal of polynomials considered to be zero and a
+ * multiplicative set of polynomials considered to be non-zero.
  * @param <C> coefficient type
  * @author Heinz Kredel.
  */
@@ -63,9 +63,9 @@ public class Condition<C extends GcdRingElem<C>> implements Serializable {
     public Condition(GenPolynomialRing<C> ring) {
         this(new Ideal<C>(ring), new MultiplicativeSetSquarefree<C>(ring));
         //this(new Ideal<C>(ring),new MultiplicativeSetFactors<C>(ring));
-        if (ring == null) {
-            throw new IllegalArgumentException("only for non null rings");
-        }
+        //if (ring == null) { // too late to test
+        //    throw new IllegalArgumentException("only for non null rings");
+        //}
     }
 
 

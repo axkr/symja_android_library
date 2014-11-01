@@ -1,5 +1,5 @@
 /*
- * $Id: MultiplicativeSet.java 4061 2012-07-27 12:03:20Z kredel $
+ * $Id: MultiplicativeSet.java 4945 2014-10-05 21:45:31Z axelclk $
  */
 
 package edu.jas.gbufd;
@@ -262,10 +262,10 @@ public class MultiplicativeSet<C extends GcdRingElem<C>> implements Serializable
                 GenPolynomial<C>[] qr = c.quotientRemainder(n);
                 q = qr[0];
                 r = qr[1];
-                if (r != null && !r.isZERO()) {
+                if (!r.isZERO()) {
                     continue;
                 }
-                if (q != null && q.isConstant()) {
+                if (q.isConstant()) {
                     return q;
                 }
                 c = q;

@@ -1,5 +1,5 @@
 /*
- * $Id: EReductionSeq.java 4501 2013-07-24 15:04:19Z kredel $
+ * $Id: EReductionSeq.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -136,7 +136,7 @@ public class EReductionSeq<C extends RingElem<C>> extends DReductionSeq<C> imple
      * @param Pp polynomial list.
      * @return e-nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     @Override
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {

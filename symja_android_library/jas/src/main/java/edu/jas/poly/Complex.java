@@ -1,5 +1,5 @@
 /*
- * $Id: Complex.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: Complex.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -11,8 +11,8 @@ import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
-import edu.jas.structure.RingElem;
 import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.RingElem;
 import edu.jas.structure.StarRingElem;
 
 
@@ -155,8 +155,8 @@ public class Complex<C extends RingElem<C>> implements StarRingElem<Complex<C>>,
 
 
     /**
-     * Clone this.
-     * @see java.lang.Object#clone()
+     * Copy this.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
     public Complex<C> copy() {
@@ -277,17 +277,13 @@ public class Complex<C extends RingElem<C>> implements StarRingElem<Complex<C>>,
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof Complex)) {
             return false;
         }
-        Complex<C> bc = null;
-        try {
-            bc = (Complex<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (bc == null) {
-            return false;
-        }
+        Complex<C> bc = (Complex<C>) b;
         if (!ring.equals(bc.ring)) {
             return false;
         }
@@ -465,7 +461,7 @@ public class Complex<C extends RingElem<C>> implements StarRingElem<Complex<C>>,
      * @param S Complex.
      * @return Complex[] { q, r } with q = this/S and r = rem(this,S).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public Complex<C>[] quotientRemainder(Complex<C> S) {
         Complex<C>[] ret = new Complex[2];
         C n = S.norm().re;

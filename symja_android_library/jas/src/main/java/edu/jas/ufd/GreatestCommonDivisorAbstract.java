@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorAbstract.java 4765 2014-03-03 11:48:04Z kredel $
+ * $Id: GreatestCommonDivisorAbstract.java 4966 2014-10-19 10:56:48Z kredel $
  */
 
 package edu.jas.ufd;
@@ -100,6 +100,24 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
 
 
     /**
+     * List of GenPolynomial base coefficient primitive part.
+     * @param F list of GenPolynomials.
+     * @return pp(F).
+     */
+    public List<GenPolynomial<C>> basePrimitivePart(List<GenPolynomial<C>> F) {
+        if (F == null||F.isEmpty()) {
+            return F;
+        }
+        List<GenPolynomial<C>> Pp = new ArrayList<GenPolynomial<C>>(F.size());
+        for (GenPolynomial<C> f : F ) {
+	    GenPolynomial<C> p = basePrimitivePart(f);
+            Pp.add(p);
+        }
+        return Pp;
+    }
+
+
+    /**
      * Univariate GenPolynomial greatest common divisor. Uses sparse
      * pseudoRemainder for remainder.
      * @param P univariate GenPolynomial.
@@ -154,6 +172,24 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
         }
         GenPolynomial<GenPolynomial<C>> pp = PolyUtil.<C> recursiveDivide(P, d);
         return pp;
+    }
+
+
+    /**
+     * List of recursive GenPolynomial base coefficient primitive part.
+     * @param F list of recursive GenPolynomials.
+     * @return pp(F).
+     */
+    public List<GenPolynomial<GenPolynomial<C>>> recursivePrimitivePart(List<GenPolynomial<GenPolynomial<C>>> F) {
+        if (F == null||F.isEmpty()) {
+            return F;
+        }
+        List<GenPolynomial<GenPolynomial<C>>> Pp = new ArrayList<GenPolynomial<GenPolynomial<C>>>(F.size());
+        for (GenPolynomial<GenPolynomial<C>> f : F ) {
+	    GenPolynomial<GenPolynomial<C>> p = recursivePrimitivePart(f);
+            Pp.add(p);
+        }
+        return Pp;
     }
 
 
@@ -419,7 +455,6 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @throws UnsupportedOperationException if there is no implementation in
      *             the sub-class.
      */
-    @SuppressWarnings("unused")
     public GenPolynomial<C> baseResultant(GenPolynomial<C> P, GenPolynomial<C> S) {
         // can not be abstract
         throw new UnsupportedOperationException("not implmented");
@@ -434,7 +469,6 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @throws UnsupportedOperationException if there is no implementation in
      *             the sub-class.
      */
-    @SuppressWarnings("unused")
     public GenPolynomial<GenPolynomial<C>> recursiveUnivariateResultant(GenPolynomial<GenPolynomial<C>> P,
                     GenPolynomial<GenPolynomial<C>> S) {
         // can not be abstract
@@ -705,7 +739,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @param S univariate GenPolynomial.
      * @return [ gcd(P,S), a, b ] with a*P + b*S = gcd(P,S).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C>[] baseExtendedGcd(GenPolynomial<C> P, GenPolynomial<C> S) {
         //return P.egcd(S);
         GenPolynomial<C>[] hegcd = baseHalfExtendedGcd(P, S);
@@ -726,7 +760,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @param S GenPolynomial.
      * @return [ gcd(P,S), a ] with a*P + b*S = gcd(P,S).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C>[] baseHalfExtendedGcd(GenPolynomial<C> P, GenPolynomial<C> S) {
         //if ( P == null ) {
         //    throw new IllegalArgumentException("null P not allowed");
@@ -783,7 +817,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @param c univariate GenPolynomial.
      * @return [ a, b ] with a*P + b*S = c and deg(a) < deg(S).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C>[] baseGcdDiophant(GenPolynomial<C> P, GenPolynomial<C> S, GenPolynomial<C> c) {
         GenPolynomial<C>[] egcd = baseExtendedGcd(P, S);
         GenPolynomial<C> g = egcd[0];
@@ -827,7 +861,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
      * @return [ A0, Ap, As ] with A/(P*S) = A0 + Ap/P + As/S with deg(Ap) <
      *         deg(P) and deg(As) < deg(S).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C>[] basePartialFraction(GenPolynomial<C> A, GenPolynomial<C> P, GenPolynomial<C> S) {
         GenPolynomial<C>[] ret = (GenPolynomial<C>[]) new GenPolynomial[3];
         ret[0] = null;

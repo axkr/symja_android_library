@@ -1,5 +1,5 @@
 /*
- * $Id: RingFactoryTokenizer.java 4690 2013-11-03 22:55:59Z kredel $
+ * $Id: RingFactoryTokenizer.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -94,6 +94,7 @@ public class RingFactoryTokenizer {
     };
 
 
+    @SuppressWarnings("unused")
     private polyType parsedPoly = polyType.PolBigRat;
 
 
@@ -104,7 +105,7 @@ public class RingFactoryTokenizer {
      * No-args constructor reads from System.in.
      */
     public RingFactoryTokenizer() {
-        this(new BufferedReader(new InputStreamReader(System.in,Charset.forName("UTF8"))));
+        this(new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF8"))));
     }
 
 
@@ -374,7 +375,7 @@ public class RingFactoryTokenizer {
      * @return the next coefficient factory.
      * @throws IOException
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public RingFactory nextCoefficientRing() throws IOException {
         RingFactory coeff = null;
         coeffType ct = null;
@@ -753,7 +754,7 @@ public class RingFactoryTokenizer {
         if (s <= 0) {
             return new TermOrder(evord);
         }
-        return new TermOrder(evord, evord, vars.length, s);
+        return new TermOrder(evord, evord, nvars, s);
     }
 
 
@@ -928,6 +929,7 @@ public class RingFactoryTokenizer {
             String sn = sc.next();
             sl.add(sn);
         }
+        sc.close();
         vl = new String[sl.size()];
         int i = 0;
         for (String si : sl) {

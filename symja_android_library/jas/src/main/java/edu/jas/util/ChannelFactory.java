@@ -1,5 +1,5 @@
 /*
- * $Id: ChannelFactory.java 4568 2013-08-18 15:55:39Z kredel $
+ * $Id: ChannelFactory.java 4944 2014-10-05 18:35:23Z axelclk $
  */
 
 //package edu.unima.ky.parallel;
@@ -215,6 +215,9 @@ public class ChannelFactory extends Thread {
                 if (this.isInterrupted()) {
                     //System.out.println("ChannelFactory interrupted");
                     srvrun = false;
+                    if (s != null) { // by code-spotter
+                        s.close();
+                    }
                     return;
                 }
                 //logger.debug("Socket = " +s);

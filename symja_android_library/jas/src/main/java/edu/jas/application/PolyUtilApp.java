@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtilApp.java 4535 2013-07-28 15:45:50Z kredel $
+ * $Id: PolyUtilApp.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -150,7 +150,7 @@ public class PolyUtilApp<C extends RingElem<C>> {
                     List<ColoredSystem<C>> CS) {
 
         List<GenPolynomial<Product<Residue<C>>>> list = new ArrayList<GenPolynomial<Product<Residue<C>>>>();
-        if (CS == null || CS.size() == 0) {
+        if (CS == null || CS.isEmpty()) {
             return list;
         }
         GenPolynomialRing<GenPolynomial<C>> pr = null;
@@ -166,6 +166,9 @@ public class PolyUtilApp<C extends RingElem<C>> {
                     pr = cs.list.get(0).green.ring;
                 }
             }
+        }
+        if (pr == null) {
+            throw new IllegalArgumentException("no polynomial ring found");
         }
         ProductRing<Residue<C>> pfac;
         pfac = new ProductRing<Residue<C>>(rrl);
@@ -598,13 +601,13 @@ public class PolyUtilApp<C extends RingElem<C>> {
         }
         // polynomials with decimal coefficients
         BigDecimal dc = BigDecimal.ONE;
-        GenPolynomialRing<BigDecimal> dfac = L.get(0).ring;
+        //GenPolynomialRing<BigDecimal> dfac = L.get(0).ring;
         //System.out.println("dfac = " + dfac);
         for (GenPolynomial<BigDecimal> dp : L) {
             //System.out.println("dp = " + dp);
             for (List<BigDecimal> r : roots) {
                 //System.out.println("r = " + r);
-                BigDecimal ev = PolyUtil.<BigDecimal> evaluateAll(dc, dfac, dp, r);
+                BigDecimal ev = PolyUtil.<BigDecimal> evaluateAll(dc, dp, r);
                 if (ev.abs().compareTo(eps) > 0) {
                     System.out.println("ev = " + ev);
                     return false;
@@ -631,13 +634,13 @@ public class PolyUtilApp<C extends RingElem<C>> {
         // polynomials with decimal coefficients
         BigDecimal dc = BigDecimal.ONE;
         ComplexRing<BigDecimal> dcc = new ComplexRing<BigDecimal>(dc);
-        GenPolynomialRing<Complex<BigDecimal>> dfac = L.get(0).ring;
+        //GenPolynomialRing<Complex<BigDecimal>> dfac = L.get(0).ring;
         //System.out.println("dfac = " + dfac);
         for (GenPolynomial<Complex<BigDecimal>> dp : L) {
             //System.out.println("dp = " + dp);
             for (List<Complex<BigDecimal>> r : roots) {
                 //System.out.println("r = " + r);
-                Complex<BigDecimal> ev = PolyUtil.<Complex<BigDecimal>> evaluateAll(dcc, dfac, dp, r);
+                Complex<BigDecimal> ev = PolyUtil.<Complex<BigDecimal>> evaluateAll(dcc, dp, r);
                 if (ev.norm().getRe().compareTo(eps) > 0) {
                     System.out.println("ev = " + ev);
                     return false;
@@ -1707,7 +1710,7 @@ class ReAlgFromRealCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
-    @SuppressWarnings("unchecked") 
+    @SuppressWarnings("cast")
     public edu.jas.root.RealAlgebraicNumber<C> eval(edu.jas.application.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return afac.getZERO();
@@ -1735,7 +1738,7 @@ class RealFromReAlgCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
-    @SuppressWarnings("unchecked") 
+    @SuppressWarnings("cast")
     public edu.jas.application.RealAlgebraicNumber<C> eval(edu.jas.root.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return rfac.getZERO();

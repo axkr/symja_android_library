@@ -1,5 +1,5 @@
 /*
- * $Id: UnivPowerSeries.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: UnivPowerSeries.java 4974 2014-10-23 20:57:56Z kredel $
  */
 
 package edu.jas.ps;
@@ -445,6 +445,31 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      */
     public UnivPowerSeries<C> multiply(C c) {
         return map(new Multiply<C>(c));
+    }
+
+
+    /**
+     * Monic.
+     * @return 1/orderCoeff() * this.
+     */
+    public UnivPowerSeries<C> monic() {
+        int i = order();
+        C a = coefficient(i);
+        if (a.isONE()) {
+            return this;
+        }
+        if (a.isZERO()) { // sic
+            return this;
+        }
+        final C b = a.inverse();
+        return map(new UnaryFunctor<C, C>() {
+
+
+            @Override
+            public C eval(C c) {
+                return b.multiply(c);
+            }
+        });
     }
 
 

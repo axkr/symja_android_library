@@ -1,5 +1,5 @@
 /*
- * $Id: PseudoReduction.java 3423 2010-12-24 10:56:50Z kredel $
+ * $Id: PseudoReduction.java 4966 2014-10-19 10:56:48Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -29,5 +29,13 @@ public interface PseudoReduction<C extends RingElem<C>> extends Reduction<C> {
      *         for Ap.
      */
     public PseudoReductionEntry<C> normalformFactor(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap);
+
+    /**
+     * Normalform recursive.
+     * @param Ap recursive polynomial.
+     * @param Pp recursive polynomial list.
+     * @return nf(Ap) with respect to Pp.
+     */
+    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp, GenPolynomial<GenPolynomial<C>> Ap);
 
 }

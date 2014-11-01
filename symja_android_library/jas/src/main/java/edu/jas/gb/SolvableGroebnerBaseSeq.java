@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseSeq.java 4781 2014-04-06 21:50:57Z kredel $
+ * $Id: SolvableGroebnerBaseSeq.java 4946 2014-10-05 22:03:04Z axelclk $
  */
 
 package edu.jas.gb;
@@ -62,6 +62,9 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
     @SuppressWarnings("unchecked")
     public List<GenSolvablePolynomial<C>> leftGB(int modv, List<GenSolvablePolynomial<C>> F) {
         List<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>();
+        if (F == null) {
+            return G;
+        }
         PairList<C> pairlist = null;
         int l = F.size();
         //  ListIterator it = F.listIterator();
@@ -151,7 +154,9 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
      */
     @SuppressWarnings("unchecked")
     public SolvableExtendedGB<C> extLeftGB(int modv, List<GenSolvablePolynomial<C>> F) {
-
+        if (F == null || F.isEmpty()) {
+            throw new IllegalArgumentException("null or empty F not allowed");
+        }
         List<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>();
         List<List<GenSolvablePolynomial<C>>> F2G = new ArrayList<List<GenSolvablePolynomial<C>>>();
         List<List<GenSolvablePolynomial<C>>> G2F = new ArrayList<List<GenSolvablePolynomial<C>>>();

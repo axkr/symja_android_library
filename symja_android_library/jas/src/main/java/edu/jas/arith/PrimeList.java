@@ -1,5 +1,5 @@
 /*
- * $Id: PrimeList.java 4830 2014-06-01 21:15:45Z axelclk $
+ * $Id: PrimeList.java 4940 2014-10-05 13:34:52Z axelclk $
  */
 
 package edu.jas.arith;
@@ -363,7 +363,12 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
         java.math.BigInteger p;
         if (i < size()) {
             p = val.get(i);
+        } else if (i == size()) {
+            p = last.nextProbablePrime();
+            val.add(p);
+            last = p;
         } else {
+            p = get(i-1);
             p = last.nextProbablePrime();
             val.add(p);
             last = p;

@@ -1,5 +1,5 @@
 /*
- * $Id: FactorInteger.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id: FactorInteger.java 4976 2014-10-23 21:22:28Z kredel $
  */
 
 package edu.jas.ufd;
@@ -76,7 +76,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
      * Constructor.
      * @param cfac coefficient ring factory.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public FactorInteger(RingFactory<BigInteger> cfac) {
         super(cfac);
         ModularRingFactory<MOD> mcofac = (ModularRingFactory<MOD>) (Object) new ModLongRing(13, true); // hack
@@ -254,7 +254,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             return factors;
         }
 
-        boolean allLists = false; //true; //false;
+        final boolean allLists = false; //true; //false;
         if (allLists) {
             // try each factor list
             for (int k = 0; k < TT; k++) {
@@ -618,7 +618,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             factors.add(u);
         }
         if (factors.size() == 0) {
-            logger.info("irred u = " + u);
+            logger.info("irred u = " + PP);
             //System.out.println("irred u = " + u);
             factors.add(PP);
         }

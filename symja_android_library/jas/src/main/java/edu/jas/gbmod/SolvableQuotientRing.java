@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotientRing.java 4792 2014-04-09 09:48:16Z kredel $
+ * $Id: SolvableQuotientRing.java 4945 2014-10-05 21:45:31Z axelclk $
  */
 
 package edu.jas.gbmod;
@@ -72,6 +72,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     /**
      * Create from numerator.
      */
+    @SuppressWarnings("unchecked")
     public SolvableQuotient<C> create(GenPolynomial<C> n) {
         return new SolvableQuotient<C>(this, (GenSolvablePolynomial<C>) n);
     }
@@ -80,6 +81,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     /**
      * Create from numerator, denominator pair.
      */
+    @SuppressWarnings("unchecked")
     public SolvableQuotient<C> create(GenPolynomial<C> n, GenPolynomial<C> d) {
         return new SolvableQuotient<C>(this, (GenSolvablePolynomial<C>) n, (GenSolvablePolynomial<C>) d);
     }
@@ -255,17 +257,13 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof SolvableQuotientRing)) {
             return false;
         }
-        SolvableQuotientRing<C> a = null;
-        try {
-            a = (SolvableQuotientRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        SolvableQuotientRing<C> a = (SolvableQuotientRing<C>) b;
         return ring.equals(a.ring);
     }
 

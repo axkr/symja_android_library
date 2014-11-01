@@ -1,5 +1,5 @@
 /*
- * $Id: LogIntegral.java 3295 2010-08-26 17:01:10Z kredel $
+ * $Id: LogIntegral.java 4940 2014-10-05 13:34:52Z axelclk $
  */
 
 package edu.jas.integrate;
@@ -278,17 +278,13 @@ public class LogIntegral<C extends GcdRingElem<C>> implements Serializable {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object B) {
+        if (B == null) {
+            return false;
+        }
         if (!(B instanceof LogIntegral)) {
             return false;
         }
-        LogIntegral<C> a = null;
-        try {
-            a = (LogIntegral<C>) B;
-        } catch (ClassCastException ignored) {
-        }
-        if (a == null) {
-            return false;
-        }
+        LogIntegral<C> a = (LogIntegral<C>) B;
         boolean t = num.equals(a.num) && den.equals(a.den);
         if (!t) {
             return t;

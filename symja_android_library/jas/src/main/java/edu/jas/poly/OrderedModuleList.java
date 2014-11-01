@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedModuleList.java 4057 2012-07-26 20:35:44Z kredel $
+ * $Id: OrderedModuleList.java 4959 2014-10-16 23:15:53Z kredel $
  */
 
 package edu.jas.poly;
@@ -76,7 +76,7 @@ public class OrderedModuleList<C extends RingElem<C>> extends ModuleList<C> {
      * @param l list of polynomial lists.
      * @return sorted list of polynomial lists from l.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public static <C extends RingElem<C>> List<List<GenPolynomial<C>>> sort(GenPolynomialRing<C> r,
                     List<List<GenPolynomial<C>>> l) {
         if (l == null) {

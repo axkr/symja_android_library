@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPolynomialList.java 4057 2012-07-26 20:35:44Z kredel $
+ * $Id: OrderedPolynomialList.java 4972 2014-10-22 21:49:51Z kredel $
  */
 
 package edu.jas.poly;
@@ -70,11 +70,29 @@ public class OrderedPolynomialList<C extends RingElem<C>> extends PolynomialList
     /**
      * Sort a list of polynomials with respect to the ascending order of the
      * leading Exponent vectors. The term order is taken from the ring.
+     * @param L polynomial list.
+     * @return sorted polynomial list from L.
+     */
+    public static <C extends RingElem<C>> List<GenPolynomial<C>> sort(List<GenPolynomial<C>> L) {
+        if (L == null) {
+            return L;
+        }
+        if (L.size() <= 1) { // nothing to sort
+            return L;
+        }
+        GenPolynomialRing<C> r = L.get(0).ring;
+        return sort(r,L);
+    }
+
+
+    /**
+     * Sort a list of polynomials with respect to the ascending order of the
+     * leading Exponent vectors. The term order is taken from the ring.
      * @param r polynomial ring factory.
      * @param L polynomial list.
      * @return sorted polynomial list from L.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public static <C extends RingElem<C>> List<GenPolynomial<C>> sort(GenPolynomialRing<C> r,
                     List<GenPolynomial<C>> L) {
         if (L == null) {

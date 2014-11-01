@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomialRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GenWordPolynomialRing.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -29,7 +29,7 @@ import edu.jas.structure.RingFactory;
  */
 
 public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingFactory<GenWordPolynomial<C>>
-       /*, Iterable<GenWordPolynomial<C>>*/{
+/*, Iterable<GenWordPolynomial<C>>*/{
 
 
     /**
@@ -103,7 +103,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * The constructor creates a polynomial factory object. 
+     * The constructor creates a polynomial factory object.
      * @param cf factory for coefficients of type C.
      * @param o other polynomial ring.
      */
@@ -185,17 +185,13 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (!(other instanceof GenWordPolynomialRing)) {
             return false;
         }
-        GenWordPolynomialRing<C> oring = null;
-        try {
-            oring = (GenWordPolynomialRing<C>) other;
-        } catch (ClassCastException ignored) {
-        }
-        if (oring == null) {
-            return false;
-        }
+        GenWordPolynomialRing<C> oring = (GenWordPolynomialRing<C>) other;
         if (!coFac.equals(oring.coFac)) {
             return false;
         }
@@ -359,10 +355,10 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
      * @return a GenWordPolynomial&lt;C&gt;.
      */
     public GenWordPolynomial<C> valueOf(GenPolynomial<C> a) {
-        if ( a.isZERO() ) {
+        if (a.isZERO()) {
             return getZERO();
         }
-        if ( a.isONE() ) {
+        if (a.isONE()) {
             return getONE();
         }
         GenWordPolynomial<C> p = this.getZERO().copy();
@@ -370,20 +366,21 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
             C c = m.getValue();
             ExpVector e = m.getKey();
             Word w = alphabet.valueOf(e);
-            p.doPutToMap(w,c);
+            p.doPutToMap(w, c);
         }
         return p;
     }
 
 
     /**
-     * Get a list of GenWordPolynomial&lt;C&gt; element from a list of GenPolynomial&lt;C&gt;.
+     * Get a list of GenWordPolynomial&lt;C&gt; element from a list of
+     * GenPolynomial&lt;C&gt;.
      * @param A GenPolynomial list.
      * @return a GenWordPolynomial&lt;C&gt; list.
      */
     public List<GenWordPolynomial<C>> valueOf(List<GenPolynomial<C>> A) {
         List<GenWordPolynomial<C>> B = new ArrayList<GenWordPolynomial<C>>(A.size());
-        if ( A.isEmpty() ) {
+        if (A.isEmpty()) {
             return B;
         }
         for (GenPolynomial<C> a : A) {
@@ -426,7 +423,8 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * Random polynomial. Generates a random polynomial with k = 5, l = n, d = 3.
+     * Random polynomial. Generates a random polynomial with k = 5, l = n, d =
+     * 3.
      * @param n number of terms.
      * @param rnd is a source for random bits.
      * @return a random polynomial.
@@ -548,8 +546,8 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
 
 
     /**
-     * Get the generating elements <b>excluding</b> the generators for the coefficient
-     * ring.
+     * Get the generating elements <b>excluding</b> the generators for the
+     * coefficient ring.
      * @return a list of generating elements for this ring.
      */
     public List<GenWordPolynomial<C>> getGenerators() {

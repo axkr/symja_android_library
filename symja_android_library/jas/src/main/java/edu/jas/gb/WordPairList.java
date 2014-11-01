@@ -1,5 +1,5 @@
 /*
- * $Id: WordPairList.java 4782 2014-04-06 21:56:08Z kredel $
+ * $Id: WordPairList.java 4955 2014-10-13 21:34:09Z kredel $
  */
 
 package edu.jas.gb;
@@ -40,6 +40,14 @@ public interface WordPairList<C extends RingElem<C>> {
      * @return the index of the added word polynomial.
      */
     public int put(GenWordPolynomial<C> p);
+
+
+    /**
+     * Put all word polynomials in F to the pairlist and reduction matrix.
+     * @param F word polynomial list.
+     * @return the index of the last added word polynomial.
+     */
+    public int put(List<GenWordPolynomial<C>> F);
 
 
     /**

@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4831 2014-06-21 21:26:23Z axelclk $
+ * $Id: PolyUtil.java 4959 2014-10-16 23:15:53Z kredel $
  */
 
 package edu.jas.poly;
@@ -639,12 +639,34 @@ public class PolyUtil {
 
 
     /**
+     * Word polynomial list monic.
+     * @param <C> coefficient type.
+     * @param L list of word polynomials with field coefficients.
+     * @return list of word polynomials with leading coefficient 1.
+     */
+    public static <C extends RingElem<C>> List<GenWordPolynomial<C>> wordMonic(List<GenWordPolynomial<C>> L) {
+        return ListUtil.<GenWordPolynomial<C>, GenWordPolynomial<C>> map(L,
+                        new UnaryFunctor<GenWordPolynomial<C>, GenWordPolynomial<C>>() {
+
+
+                            public GenWordPolynomial<C> eval(GenWordPolynomial<C> c) {
+                                if (c == null) {
+                                    return null;
+                                }
+                                return c.monic();
+                            }
+                        });
+    }
+
+
+    /**
      * Recursive polynomial list monic.
      * @param <C> coefficient type.
      * @param L list of recursive polynomials with field coefficients.
      * @return list of polynomials with leading base coefficient 1.
      */
-    public static <C extends RingElem<C>> List<GenPolynomial<GenPolynomial<C>>> monicRec(List<GenPolynomial<GenPolynomial<C>>> L) {
+    public static <C extends RingElem<C>> List<GenPolynomial<GenPolynomial<C>>> monicRec(
+                    List<GenPolynomial<GenPolynomial<C>>> L) {
         return ListUtil.<GenPolynomial<GenPolynomial<C>>, GenPolynomial<GenPolynomial<C>>> map(L,
                         new UnaryFunctor<GenPolynomial<GenPolynomial<C>>, GenPolynomial<GenPolynomial<C>>>() {
 
@@ -717,9 +739,9 @@ public class PolyUtil {
      * @param k exponent for x_j.
      * @return extended polynomial.
      */
-    public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> 
-           extendCoefficients(GenSolvablePolynomialRing<GenPolynomial<C>> pfac, 
-                              GenSolvablePolynomial<GenPolynomial<C>> A, int j, long k) {
+    public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> extendCoefficients(
+                    GenSolvablePolynomialRing<GenPolynomial<C>> pfac,
+                    GenSolvablePolynomial<GenPolynomial<C>> A, int j, long k) {
         GenSolvablePolynomial<GenPolynomial<C>> Cp = pfac.getZERO().copy();
         if (A.isZERO()) {
             return Cp;
@@ -768,15 +790,16 @@ public class PolyUtil {
 
 
     /**
-     * To recursive representation. Represent as solvable polynomial in i+r variables
-     * with coefficients in i variables. Works for arbitrary term orders.
+     * To recursive representation. Represent as solvable polynomial in i+r
+     * variables with coefficients in i variables. Works for arbitrary term
+     * orders.
      * @param <C> coefficient type.
      * @param rfac recursive solvable polynomial ring factory.
      * @param A solvable polynomial to be converted.
      * @return Recursive represenations of A in the ring rfac.
      */
     public static <C extends RingElem<C>> GenSolvablePolynomial<GenPolynomial<C>> toRecursive(
-                  GenSolvablePolynomialRing<GenPolynomial<C>> rfac, GenSolvablePolynomial<C> A) {
+                    GenSolvablePolynomialRing<GenPolynomial<C>> rfac, GenSolvablePolynomial<C> A) {
 
         GenSolvablePolynomial<GenPolynomial<C>> B = rfac.getZERO().copy();
         if (A.isZERO()) {
@@ -997,9 +1020,9 @@ public class PolyUtil {
             throw new ArithmeticException(P.toString() + " division by zero " + S);
         }
         //if (S.ring.nvar != 1) {
-            // ok if exact division
-            // throw new RuntimeException(this.getClass().getName()
-            //                            + " univariate polynomials only");
+        // ok if exact division
+        // throw new RuntimeException(this.getClass().getName()
+        //                            + " univariate polynomials only");
         //}
         if (P.isZERO() || S.isONE()) {
             return P;
@@ -1052,9 +1075,9 @@ public class PolyUtil {
             throw new ArithmeticException(P.toString() + " division by zero " + S);
         }
         //if (S.ring.nvar != 1) {
-            // ok if exact division
-            // throw new RuntimeException(this.getClass().getName()
-            //                            + " univariate polynomials only");
+        // ok if exact division
+        // throw new RuntimeException(this.getClass().getName()
+        //                            + " univariate polynomials only");
         //}
         GenPolynomial<C>[] ret = new GenPolynomial[2];
         ret[0] = null;
@@ -1083,7 +1106,7 @@ public class PolyUtil {
                 } else {
                     q = q.multiply(c);
                     q = q.sum(a, f);
-                    r = r.multiply(c);    // coeff a c
+                    r = r.multiply(c); // coeff a c
                     h = S.multiply(a, f); // coeff c a
                 }
                 r = r.subtract(h);
@@ -1145,7 +1168,7 @@ public class PolyUtil {
         C lcm = p.divide(gcd);
         C ap = lcm.divide(a);
         C bp = lcm.divide(b);
-        if (P.multiply(ap).equals( rhs.multiply(bp) )) {
+        if (P.multiply(ap).equals(rhs.multiply(bp))) {
             return true;
         }
         return false;
@@ -1280,7 +1303,7 @@ public class PolyUtil {
                     GenPolynomial<C> y = PolyUtil.<C> basePseudoDivide(a, c);
                     h = S.multiply(y, f); // coeff a
                 } else {
-                    r = r.multiply(c);    // coeff a c
+                    r = r.multiply(c); // coeff a c
                     h = S.multiply(a, f); // coeff c a
                 }
                 r = r.subtract(h);
@@ -1351,9 +1374,9 @@ public class PolyUtil {
             throw new ArithmeticException(P + " division by zero " + S);
         }
         //if (S.ring.nvar != 1) {
-            // ok if exact division
-            // throw new RuntimeException(this.getClass().getName()
-            //                            + " univariate polynomials only");
+        // ok if exact division
+        // throw new RuntimeException(this.getClass().getName()
+        //                            + " univariate polynomials only");
         //}
         if (P == null || P.isZERO()) {
             return P;
@@ -1433,7 +1456,7 @@ public class PolyUtil {
         GenPolynomial<C> a = P.leadingBaseCoefficient();
         rhs = q.multiply(S).sum(r);
         GenPolynomial<C> b = rhs.leadingBaseCoefficient();
-        if (P.multiply(b).equals( rhs.multiply(a) )) {
+        if (P.multiply(b).equals(rhs.multiply(a))) {
             return true;
         }
         return false;
@@ -1949,7 +1972,7 @@ public class PolyUtil {
     @Deprecated
     public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac, GenPolynomialRing<C> dfac,
                     GenPolynomial<C> A, List<C> a) {
-        return evaluateAll(cfac,A,a);
+        return evaluateAll(cfac, A, a);
     }
 
 
@@ -1961,8 +1984,7 @@ public class PolyUtil {
      * @param a = (a_1, a_2, ..., a_n) a tuple of values to evaluate at.
      * @return A(a_1, a_2, ..., a_n).
      */
-    public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac,
-                    GenPolynomial<C> A, List<C> a) {
+    public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac, GenPolynomial<C> A, List<C> a) {
         if (A == null || A.isZERO()) {
             return cfac.getZERO();
         }
@@ -2471,17 +2493,17 @@ public class PolyUtil {
 
 
     /**
-     * Intersection. Intersection of a list of polynomials with a
-     * polynomial ring. The polynomial ring must be a contraction of
-     * the polynomial ring of the list of polynomials and the
-     * TermOrder must be an elimination order.
+     * Intersection. Intersection of a list of polynomials with a polynomial
+     * ring. The polynomial ring must be a contraction of the polynomial ring of
+     * the list of polynomials and the TermOrder must be an elimination order.
      * @param R polynomial ring
      * @param F list of polynomials
      * @return R \cap F
      */
-    public static <C extends RingElem<C>> List<GenPolynomial<C>> intersect(GenPolynomialRing<C> R, List<GenPolynomial<C>> F) {
-        if (F == null || F.isEmpty() ) {
-            return F; 
+    public static <C extends RingElem<C>> List<GenPolynomial<C>> intersect(GenPolynomialRing<C> R,
+                    List<GenPolynomial<C>> F) {
+        if (F == null || F.isEmpty()) {
+            return F;
         }
         GenPolynomialRing<C> pfac = F.get(0).ring;
         int d = pfac.nvar - R.nvar;
@@ -2515,20 +2537,21 @@ public class PolyUtil {
 
 
     /**
-     * Intersection. Intersection of a list of solvable polynomials
-     * with a solvable polynomial ring. The solvable polynomial ring
-     * must be a contraction of the solvable polynomial ring of the
-     * list of polynomials and the TermOrder must be an elimination
-     * order.
+     * Intersection. Intersection of a list of solvable polynomials with a
+     * solvable polynomial ring. The solvable polynomial ring must be a
+     * contraction of the solvable polynomial ring of the list of polynomials
+     * and the TermOrder must be an elimination order.
      * @param R solvable polynomial ring
      * @param F list of solvable polynomials
      * @return R \cap F
      */
-    public static <C extends RingElem<C>> List<GenSolvablePolynomial<C>> intersect(GenSolvablePolynomialRing<C> R, List<GenSolvablePolynomial<C>> F) {
+    @SuppressWarnings("cast")
+    public static <C extends RingElem<C>> List<GenSolvablePolynomial<C>> intersect(
+                    GenSolvablePolynomialRing<C> R, List<GenSolvablePolynomial<C>> F) {
         List<GenPolynomial<C>> Fp = PolynomialList.<C> castToList(F);
         GenPolynomialRing<C> Rp = (GenPolynomialRing<C>) R;
-        List<GenPolynomial<C>> H = intersect(Rp,Fp);
-        return PolynomialList.<C> castToSolvableList(H); 
+        List<GenPolynomial<C>> H = intersect(Rp, Fp);
+        return PolynomialList.<C> castToSolvableList(H);
     }
 
 
@@ -3285,7 +3308,7 @@ class CoeffToRecAlg<C extends GcdRingElem<C>> implements UnaryFunctor<C, Algebra
     final int depth;
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public CoeffToRecAlg(int depth, AlgebraicNumberRing<C> fac) {
         if (fac == null) {
             throw new IllegalArgumentException("fac must not be null");
@@ -3305,7 +3328,7 @@ class CoeffToRecAlg<C extends GcdRingElem<C>> implements UnaryFunctor<C, Algebra
     }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public AlgebraicNumber<C> eval(C c) {
         if (c == null) {
             return lfac.get(0).getZERO();

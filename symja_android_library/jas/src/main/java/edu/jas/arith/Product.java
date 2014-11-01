@@ -1,5 +1,5 @@
 /*
- * $Id: Product.java 4640 2013-09-14 11:32:01Z kredel $
+ * $Id: Product.java 4940 2014-10-05 13:34:52Z axelclk $
  */
 
 package edu.jas.arith;
@@ -296,17 +296,13 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof Product)) {
             return false;
         }
-        Product<C> a = null;
-        try {
-            a = (Product<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        Product<C> a = (Product<C>) b;
         return (0 == compareTo(a));
     }
 
@@ -763,7 +759,6 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
      * @param S other element.
      * @return [ gcd(this,S), c1, c2 ] with c1*this + c2*b = gcd(this,S).
      */
-    @SuppressWarnings("unchecked")
     public Product<C>[] egcd(Product<C> S) {
         Product<C>[] ret = (Product<C>[]) new Product[3];
         ret[0] = null;

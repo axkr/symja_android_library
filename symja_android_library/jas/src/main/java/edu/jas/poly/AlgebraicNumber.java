@@ -1,5 +1,5 @@
 /*
- * $Id: AlgebraicNumber.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: AlgebraicNumber.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -12,7 +12,7 @@ import edu.jas.structure.RingElem;
 
 
 /**
- * Algebraic number class based on GenPolynomial with RingElem interface.
+ * Algebraic number class. Based on GenPolynomial with RingElem interface.
  * Objects of this class are immutable.
  * @author Heinz Kredel
  */
@@ -87,8 +87,8 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
 
 
     /**
-     * Clone this.
-     * @see java.lang.Object#clone()
+     * Copy this.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
     public AlgebraicNumber<C> copy() {
@@ -209,17 +209,13 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof AlgebraicNumber)) {
             return false;
         }
-        AlgebraicNumber<C> a = null;
-        try {
-            a = (AlgebraicNumber<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        AlgebraicNumber<C> a = (AlgebraicNumber<C>) b;
         if (!ring.equals(a.ring)) {
             return false;
         }

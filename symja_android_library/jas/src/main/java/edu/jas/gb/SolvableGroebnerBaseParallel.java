@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseParallel.java 4781 2014-04-06 21:50:57Z kredel $
+ * $Id: SolvableGroebnerBaseParallel.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -158,8 +158,11 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
      * @return GB(F) a Groebner base of F.
      */
     public List<GenSolvablePolynomial<C>> leftGB(int modv, List<GenSolvablePolynomial<C>> F) {
-        GenSolvablePolynomial<C> p;
         List<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>();
+        if (F == null) {
+            return G;
+        }
+        GenSolvablePolynomial<C> p;
         PairList<C> pairlist = null;
         int l = F.size();
         ListIterator<GenSolvablePolynomial<C>> it = F.listIterator();
@@ -261,6 +264,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
             return G;
         }
 
+        @SuppressWarnings("cast")
         SolvableMiReducer<C>[] mirs = (SolvableMiReducer<C>[]) new SolvableMiReducer[G.size()];
         int i = 0;
         F = new ArrayList<GenSolvablePolynomial<C>>(G.size());

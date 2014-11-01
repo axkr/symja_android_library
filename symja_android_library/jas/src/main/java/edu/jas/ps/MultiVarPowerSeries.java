@@ -1,5 +1,5 @@
 /*
- * $Id: MultiVarPowerSeries.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: MultiVarPowerSeries.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ps;
@@ -398,6 +398,9 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      */
     public MultiVarPowerSeries<C> reductum() {
         Map.Entry<ExpVector, C> m = orderMonomial();
+        if (m == null) {
+            return ring.getZERO();
+        }
         ExpVector e = m.getKey();
         long d = e.totalDeg();
         MultiVarCoefficients<C> mc = lazyCoeffs;
@@ -680,7 +683,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
                 if (i.signum() > 0) {
                     int[] deps = i.dependencyOnVariables();
                     ExpVector x = i.subst(deps[0], i.getVal(deps[0]) - 1L);
-                    c = get(x);
+                    c = get(x); // ensure all coefficients are generated
                 }
                 do {
                     c = null;
@@ -909,7 +912,6 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * Order ExpVector.
      * @return ExpVector of first non zero coefficient.
      */
-    @SuppressWarnings("unused")
     public ExpVector orderExpVector() {
         //int x = 
         order(); // ensure evorder is set
@@ -1062,17 +1064,13 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object B) {
+        if (B == null) {
+            return false;
+        }
         if (!(B instanceof MultiVarPowerSeries)) {
             return false;
         }
-        MultiVarPowerSeries<C> a = null;
-        try {
-            a = (MultiVarPowerSeries<C>) B;
-        } catch (ClassCastException ignored) {
-        }
-        if (a == null) {
-            return false;
-        }
+        MultiVarPowerSeries<C> a = (MultiVarPowerSeries<C>) B;
         return compareTo(a) == 0;
     }
 

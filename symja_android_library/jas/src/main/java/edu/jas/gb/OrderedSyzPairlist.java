@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedSyzPairlist.java 4334 2012-12-28 11:49:57Z kredel $
+ * $Id: OrderedSyzPairlist.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -184,6 +184,7 @@ public class OrderedSyzPairlist<C extends RingElem<C>> extends OrderedPairlist<C
         }
         //System.out.println("npl.skip div = " + es);
         for (ExpVector ei : es) {
+            @SuppressWarnings("unused")
             LinkedList<Pair<C>> ignored = npl.remove(ei);
         }
         // skip by criterion 4:
@@ -212,6 +213,7 @@ public class OrderedSyzPairlist<C extends RingElem<C>> extends OrderedPairlist<C
             }
             //System.out.println("npl.skip c4  = " + es);
             for (ExpVector ei : es) {
+                @SuppressWarnings("unused")
                 LinkedList<Pair<C>> ignored = npl.remove(ei);
             }
         }
@@ -278,10 +280,10 @@ public class OrderedSyzPairlist<C extends RingElem<C>> extends OrderedPairlist<C
                 break;
             }
         }
-        if ( pair != null ) {
-            pair.maxIndex(P.size()-1);
+        if (pair != null) {
+            pair.maxIndex(P.size() - 1);
             remCount++; // count only real pairs
-            if ( logger.isDebugEnabled() ) {
+            if (logger.isDebugEnabled()) {
                 logger.info("pair(" + pair.j + "," + pair.i + ")");
             }
         }

@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPairlist.java 4095 2012-08-12 11:37:17Z kredel $
+ * $Id: OrderedPairlist.java 4975 2014-10-23 21:03:46Z kredel $
  */
 
 package edu.jas.ps;
@@ -153,6 +153,20 @@ public class OrderedPairlist<C extends RingElem<C>> {
 
 
     /**
+     * Put all power series in F to the pairlist and reduction matrix.
+     * @param F power series list.
+     * @return the index of the last added power series.
+     */
+    public int put(List<MultiVarPowerSeries<C>> F) {
+        int i = 0;
+        for (MultiVarPowerSeries<C> p : F) {
+            i = put(p);
+        }
+        return i;
+    }
+
+
+    /**
      * Remove the next required pair from the pairlist and reduction matrix.
      * Apply the criterions 3 and 4 to see if the S-power-series is required.
      * @return the next pair if one exists, otherwise null.
@@ -261,7 +275,7 @@ public class OrderedPairlist<C extends RingElem<C>> {
      * Put the ONE-power-series to the pairlist.
      * @return the index of the last power-series.
      */
-    public synchronized int putOne() { 
+    public synchronized int putOne() {
         oneInGB = true;
         pairlist.clear();
         P.clear();

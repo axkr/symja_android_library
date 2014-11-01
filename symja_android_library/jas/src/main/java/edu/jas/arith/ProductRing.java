@@ -1,5 +1,5 @@
 /*
- * $Id: ProductRing.java 4640 2013-09-14 11:32:01Z kredel $
+ * $Id: ProductRing.java 4940 2014-10-05 13:34:52Z axelclk $
  */
 
 package edu.jas.arith;
@@ -439,17 +439,13 @@ public class ProductRing<C extends RingElem<C>> implements RingFactory<Product<C
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof ProductRing)) {
             return false;
         }
-        ProductRing<C> a = null;
-        try {
-            a = (ProductRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        ProductRing<C> a = (ProductRing<C>) b;
         if (nCopies != 0) {
             if (nCopies != a.nCopies || !ring.equals(a.ring)) {
                 return false;

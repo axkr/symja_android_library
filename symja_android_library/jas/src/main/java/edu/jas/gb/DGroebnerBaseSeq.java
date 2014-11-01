@@ -1,5 +1,5 @@
 /*
- * $Id: DGroebnerBaseSeq.java 4099 2012-08-12 18:49:36Z kredel $
+ * $Id: DGroebnerBaseSeq.java 4948 2014-10-09 22:10:04Z axelclk $
  */
 
 package edu.jas.gb;
@@ -12,6 +12,7 @@ import java.util.ListIterator;
 import org.apache.log4j.Logger;
 
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.structure.RingElem;
 
 
@@ -106,42 +107,44 @@ public class DGroebnerBaseSeq<C extends RingElem<C>> extends GroebnerBaseAbstrac
      * @return GB(F) a D-Groebner base of F.
      */
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
-        GenPolynomial<C> p;
-        List<GenPolynomial<C>> G = new ArrayList<GenPolynomial<C>>();
-        OrderedDPairlist<C> pairlist = null;
-        int l = F.size();
-        ListIterator<GenPolynomial<C>> it = F.listIterator();
-        while (it.hasNext()) {
-            p = it.next();
-            if (!p.isZERO()) {
-                p = p.abs(); // not monic
-                if (p.isONE()) {
-                    G.clear();
-                    G.add(p);
-                    return G; // since no threads are activated
-                }
-                G.add(p); //G.add( 0, p ); //reverse list
-                if (pairlist == null) {
-                    pairlist = new OrderedDPairlist<C>(modv, p.ring);
-                }
-                // putOne not required
-                pairlist.put(p);
-            } else {
-                l--;
-            }
+        List<GenPolynomial<C>> G = normalizeZerosOnes(F);
+        if ( G.size() <= 1 ) {
+            return G;
         }
-        if (l <= 1) {
-            return G; // since no threads are activated
-        }
+        GenPolynomialRing<C> ring = G.get(0).ring;
+        OrderedDPairlist<C> pairlist = new OrderedDPairlist<C>(modv, ring);
+        pairlist.put(G);
+        /*
+          int l = G.size();
+          GenPolynomial<C> p;
+          //new ArrayList<GenPolynomial<C>>();
+          ListIterator<GenPolynomial<C>> it = F.listIterator();
+          while (it.hasNext()) {
+          p = it.next();
+          if (!p.isZERO()) {
+          p = p.abs(); // not monic
+          if (p.isONE()) {
+          G.clear();
+          G.add(p);
+          return G; // since no threads are activated
+          }
+          G.add(p); //G.add( 0, p ); //reverse list
+          if (pairlist == null) {
+          pairlist = new OrderedDPairlist<C>(modv, p.ring);
+          }
+          // putOne not required
+          pairlist.put(p);
+          } else {
+          l--;
+          }
+          }
+          if (l <= 1) {
+          return G; // since no threads are activated
+          }
+        */
 
         Pair<C> pair;
-        GenPolynomial<C> pi;
-        GenPolynomial<C> pj;
-        GenPolynomial<C> S;
-        GenPolynomial<C> D;
-        GenPolynomial<C> H;
-        //int len = G.size();
-        //System.out.println("len = " + len);
+        GenPolynomial<C> pi, pj, S, D, H;
         while (pairlist.hasNext()) {
             pair = pairlist.removeNext();
             //System.out.println("pair = " + pair);
@@ -167,7 +170,7 @@ public class DGroebnerBaseSeq<C extends RingElem<C>> extends GroebnerBaseAbstrac
                 }
                 if (!H.isZERO()) {
                     logger.info("Dred = " + H);
-                    l++;
+                    //l++;
                     G.add(H);
                     pairlist.put(H);
                 }
@@ -205,7 +208,7 @@ public class DGroebnerBaseSeq<C extends RingElem<C>> extends GroebnerBaseAbstrac
                 if (!H.isZERO()) {
                     logger.info("Sred = " + H);
                     //len = G.size();
-                    l++;
+                    //l++;
                     G.add(H);
                     pairlist.put(H);
                 }

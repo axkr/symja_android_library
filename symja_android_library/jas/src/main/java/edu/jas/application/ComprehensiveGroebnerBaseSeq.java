@@ -1,5 +1,5 @@
 /*
- * $Id: ComprehensiveGroebnerBaseSeq.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: ComprehensiveGroebnerBaseSeq.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -152,11 +152,12 @@ public class ComprehensiveGroebnerBaseSeq<C extends GcdRingElem<C>>
 
     /**
      * Comprehensive-Groebner system test.
-     * @param modv module variable number.
+     * @param modv module variable number, unused.
      * @param CS list of colored systems.
      * @return true, if CS is a Comprehensive-Groebner system, else false.
      */
     // @Override
+    @SuppressWarnings("unused")
     public boolean isGBsys(int modv, List<ColoredSystem<C>> CS) {
         if (CS == null || CS.size() == 0) {
             return true;
@@ -222,7 +223,7 @@ public class ComprehensiveGroebnerBaseSeq<C extends GcdRingElem<C>>
 
     /**
      * Comprehensive-Groebner base test using substitution.
-     * @param modv module variable number.
+     * @param modv module variable number, unused.
      * @param F polynomial list.
      * @return true, if F is a Comprehensive-Groebner base, else false.
      */

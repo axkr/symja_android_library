@@ -1,5 +1,5 @@
 /*
- * $Id: HenselApprox.java 3355 2010-10-23 16:01:52Z kredel $
+ * $Id: HenselApprox.java 4943 2014-10-05 18:14:38Z axelclk $
  */
 
 package edu.jas.ufd;
@@ -121,17 +121,13 @@ public class HenselApprox<MOD extends GcdRingElem<MOD> & Modular> implements Ser
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object B) {
+        if (B == null) {
+            return false;
+        }
         if (!(B instanceof HenselApprox)) {
             return false;
         }
-        HenselApprox<MOD> a = null;
-        try {
-            a = (HenselApprox<MOD>) B;
-        } catch (ClassCastException ignored) {
-        }
-        if (a == null) {
-            return false;
-        }
+        HenselApprox<MOD> a = (HenselApprox<MOD>) B;
         return A.equals(a.A) && B.equals(a.B) && Am.equals(a.Am) && Bm.equals(a.Bm);
     }
 

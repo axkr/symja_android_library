@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedWordPairlist.java 4782 2014-04-06 21:56:08Z kredel $
+ * $Id: OrderedWordPairlist.java 4955 2014-10-13 21:34:09Z kredel $
  */
 
 package edu.jas.gb;
@@ -154,6 +154,20 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
         //System.out.println("pairlist.set = " + red); //.get( pair.j )); //pair);
         //System.out.println("pairlist.key = " + pairlist.keySet() );  
         return P.size() - 1;
+    }
+
+
+    /**
+     * Put all word polynomials in F to the pairlist and reduction matrix.
+     * @param F word polynomial list.
+     * @return the index of the last added word polynomial.
+     */
+    public int put(List<GenWordPolynomial<C>> F) { 
+        int i = 0;
+        for (GenWordPolynomial<C> p : F) {
+            i = put(p);
+        }
+        return i;
     }
 
 

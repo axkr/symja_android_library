@@ -1,5 +1,5 @@
 /*
- * $Id: GBFactory.java 4794 2014-04-09 11:21:53Z kredel $
+ * $Id: GBFactory.java 4963 2014-10-17 19:19:18Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -462,7 +462,7 @@ public class GBFactory {
      * @param pl pair selection strategy
      * @return GB algorithm implementation.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public static <C extends GcdRingElem<C>> // interface RingElem not sufficient 
     GroebnerBaseAbstract<C> getImplementation(RingFactory<C> fac, PairList<C> pl) {
         logger.debug("fac = " + fac.getClass().getName());

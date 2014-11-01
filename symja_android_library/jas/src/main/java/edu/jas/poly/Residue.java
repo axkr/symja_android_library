@@ -1,5 +1,5 @@
 /*
- * $Id: Residue.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: Residue.java 4958 2014-10-16 23:05:31Z kredel $
  */
 
 package edu.jas.poly;
@@ -107,8 +107,8 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
 
 
     /**
-     * Clone this.
-     * @see java.lang.Object#clone()
+     * Copy this.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
     public Residue<C> copy() {
@@ -230,17 +230,13 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof Residue)) {
             return false;
         }
-        Residue<C> a = null;
-        try {
-            a = (Residue<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        Residue<C> a = (Residue<C>) b;
         return (0 == compareTo(a));
     }
 

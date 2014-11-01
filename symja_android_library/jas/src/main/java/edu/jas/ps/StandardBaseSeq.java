@@ -1,5 +1,5 @@
 /*
- * $Id: StandardBaseSeq.java 3349 2010-10-15 20:54:27Z kredel $
+ * $Id: StandardBaseSeq.java 4975 2014-10-23 21:03:46Z kredel $
  */
 
 package edu.jas.ps;
@@ -7,12 +7,11 @@ package edu.jas.ps;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.structure.RingElem;
 import edu.jas.poly.ExpVector;
+import edu.jas.structure.RingElem;
 
 
 /**
@@ -24,7 +23,7 @@ import edu.jas.poly.ExpVector;
  */
 
 public class StandardBaseSeq<C extends RingElem<C>>
-    /*todo: extends StandardBaseAbstract<C>*/{
+/*todo: extends StandardBaseAbstract<C>*/{
 
 
     private static final Logger logger = Logger.getLogger(StandardBaseSeq.class);
@@ -58,6 +57,32 @@ public class StandardBaseSeq<C extends RingElem<C>>
 
 
     /**
+     * Normalize power series list.
+     * @param A list of power series.
+     * @return list of power series with zeros removed and ones/units reduced.
+     */
+    public List<MultiVarPowerSeries<C>> normalizeZerosOnes(List<MultiVarPowerSeries<C>> A) {
+        List<MultiVarPowerSeries<C>> N = new ArrayList<MultiVarPowerSeries<C>>(A.size());
+        if (A == null || A.isEmpty()) {
+            return N;
+        }
+        for (MultiVarPowerSeries<C> p : A) {
+            if (p == null || p.isZERO()) {
+                continue;
+            }
+            if (p.isUnit()) {
+                N.clear();
+                N.add(p.ring.getONE());
+                return N;
+            }
+            N.add(p.abs());
+        }
+        //N.trimToSize();
+        return N;
+    }
+
+
+    /**
      * Standard base test.
      * @param F power series list.
      * @return true, if F is a Standard base, else false.
@@ -85,9 +110,9 @@ public class StandardBaseSeq<C extends RingElem<C>>
                 if (!red.moduleCriterion(modv, pi, pj)) {
                     continue;
                 }
-                //                 if ( ! red.criterion4( pi, pj ) ) { 
-                //                    continue;
-                //                 }
+                // if ( ! red.criterion4( pi, pj ) ) { 
+                //       continue;
+                // }
                 s = red.SPolynomial(pi, pj);
                 if (s.isZERO()) {
                     continue;
@@ -109,9 +134,9 @@ public class StandardBaseSeq<C extends RingElem<C>>
      * @param F power series list.
      * @return STD(F) a Standard base of F.
      */
-    public List<MultiVarPowerSeries<C>> STD(List<MultiVarPowerSeries<C>> F) {
-        return STD(0, F);
-    }
+//    public List<MultiVarPowerSeries<C>> STD(List<MultiVarPowerSeries<C>> F) {
+//        return STD(0, F);
+//    }
 
 
     /**
@@ -120,100 +145,112 @@ public class StandardBaseSeq<C extends RingElem<C>>
      * @param F power series list.
      * @return STD(F) a Standard base of F.
      */
-    public List<MultiVarPowerSeries<C>> STD(int modv, List<MultiVarPowerSeries<C>> F) {
-        MultiVarPowerSeries<C> p = null;
-        List<MultiVarPowerSeries<C>> G = new ArrayList<MultiVarPowerSeries<C>>();
-        OrderedPairlist<C> pairlist = null;
-        int l = F.size();
-        ListIterator<MultiVarPowerSeries<C>> it = F.listIterator();
-        while (it.hasNext()) {
-            p = it.next();
-            if (!p.isZERO()) {
-                //p = p.monic();
-                if (p.isUnit()) {
-                    G.clear();
-                    G.add(p);
-                    return G; // since no threads are activated
-                }
-                G.add(p);
-                if (pairlist == null) {
-                    pairlist = new OrderedPairlist<C>(modv, p.ring);
-                    if (!p.ring.coFac.isField()) {
-                        throw new IllegalArgumentException("coefficients not from a field");
-                    }
-                }
-                // putOne not required
-                pairlist.put(p);
-            } else {
-                l--;
-            }
-        }
-        if (l <= 1) {
-            return G; // since no threads are activated
-        }
-
-        Pair<C> pair;
-        MultiVarPowerSeries<C> pi;
-        MultiVarPowerSeries<C> pj;
-        MultiVarPowerSeries<C> S;
-        MultiVarPowerSeries<C> H;
-        while (pairlist.hasNext()) {
-            pair = pairlist.removeNext();
-            //logger.debug("pair = " + pair);
-            if (pair == null) {
-                continue;
-            }
-            pi = pair.pi;
-            pj = pair.pj;
-            if ( /*false &&*/debug) {
-                logger.debug("pi    = " + pi);
-                logger.debug("pj    = " + pj);
-            }
-
-            S = red.SPolynomial(pi, pj);
-            //S.setTruncate(p.ring.truncate()); // ??
-            if (S.isZERO()) {
-                pair.setZero();
-                continue;
-            }
-            if (logger.isInfoEnabled()) {
-                ExpVector es = S.orderExpVector();
-                logger.info("ht(S) = " + es.toString(S.ring.vars) + ", " + es); // + ", S = " + S);
-            }
-
-            //long t = System.currentTimeMillis();
-            H = red.normalform(G, S);
-            if (H.isZERO()) {
-                pair.setZero();
-                continue;
-            }
-            //t = System.currentTimeMillis() - t;
-            //System.out.println("time = " + t);
-            if (logger.isInfoEnabled()) {
-                ExpVector eh = H.orderExpVector();
-                logger.info("ht(H) = " + eh.toString(S.ring.vars) + ", " + eh); // + ", coeff(HT(H)) = " + H.coefficient(eh));
-            }
-
-            //H = H.monic();
-            if (H.isUnit()) {
-                G.clear();
-                G.add(H);
-                return G; // since no threads are activated
-            }
-            if (logger.isDebugEnabled()) {
-                logger.info("H = " + H);
-            }
-            //if (!H.isZERO()) {
-                l++;
-                G.add(H);
-                pairlist.put(H);
-            //}
-        }
-        logger.debug("#sequential list = " + G.size());
-        G = minimalSTD(G);
-        logger.info("" + pairlist);
-        return G;
-    }
+//    public List<MultiVarPowerSeries<C>> STD(int modv, List<MultiVarPowerSeries<C>> F) {
+//        List<MultiVarPowerSeries<C>> G = normalizeZerosOnes(F);
+//        G = PSUtil.<C> monic(G);
+//        if (G.size() <= 1) {
+//            return G;
+//        }
+//        MultiVarPowerSeriesRing<C> ring = G.get(0).ring;
+//        if (!ring.coFac.isField()) {
+//            throw new IllegalArgumentException("coefficients not from a field");
+//        }
+//        OrderedPairlist<C> pairlist = new OrderedPairlist<C>(modv, ring); //strategy.create( modv, ring ); 
+//        pairlist.put(G);
+//
+//        /*
+//        MultiVarPowerSeries<C> p = null;
+//        List<MultiVarPowerSeries<C>> G = new ArrayList<MultiVarPowerSeries<C>>();
+//        OrderedPairlist<C> pairlist = null;
+//        int l = F.size();
+//        ListIterator<MultiVarPowerSeries<C>> it = F.listIterator();
+//        while (it.hasNext()) {
+//            p = it.next();
+//            if (!p.isZERO()) {
+//                //p = p.monic();
+//                if (p.isUnit()) {
+//                    G.clear();
+//                    G.add(p);
+//                    return G; // since no threads are activated
+//                }
+//                G.add(p);
+//                if (pairlist == null) {
+//                    pairlist = new OrderedPairlist<C>(modv, p.ring);
+//                    if (!p.ring.coFac.isField()) {
+//                        throw new IllegalArgumentException("coefficients not from a field");
+//                    }
+//                }
+//                // putOne not required
+//                pairlist.put(p);
+//            } else {
+//                l--;
+//            }
+//        }
+//        if (l <= 1) {
+//            return G; // since no threads are activated
+//        }
+//        */
+//        logger.info("start " + pairlist);
+//
+//        Pair<C> pair;
+//        MultiVarPowerSeries<C> pi, pj, S, H;
+//        while (pairlist.hasNext()) {
+//            pair = pairlist.removeNext();
+//            //logger.debug("pair = " + pair);
+//            if (pair == null) {
+//                continue;
+//            }
+//            pi = pair.pi;
+//            pj = pair.pj;
+//            if ( /*false &&*/debug) {
+//                logger.debug("pi    = " + pi);
+//                logger.debug("pj    = " + pj);
+//            }
+//
+//            S = red.SPolynomial(pi, pj);
+//            //S.setTruncate(p.ring.truncate()); // ??
+//            if (S.isZERO()) {
+//                pair.setZero();
+//                continue;
+//            }
+//            if (logger.isInfoEnabled()) {
+//                ExpVector es = S.orderExpVector();
+//                logger.info("ht(S) = " + es.toString(S.ring.vars) + ", " + es); // + ", S = " + S);
+//            }
+//
+//            //long t = System.currentTimeMillis();
+//            H = red.normalform(G, S);
+//            if (H.isZERO()) {
+//                pair.setZero();
+//                continue;
+//            }
+//            //t = System.currentTimeMillis() - t;
+//            //System.out.println("time = " + t);
+//            if (logger.isInfoEnabled()) {
+//                ExpVector eh = H.orderExpVector();
+//                logger.info("ht(H) = " + eh.toString(S.ring.vars) + ", " + eh); // + ", coeff(HT(H)) = " + H.coefficient(eh));
+//            }
+//
+//            //H = H.monic();
+//            if (H.isUnit()) {
+//                G.clear();
+//                G.add(H);
+//                return G; // since no threads are activated
+//            }
+//            if (logger.isDebugEnabled()) {
+//                logger.info("H = " + H);
+//            }
+//            //if (!H.isZERO()) {
+//            //l++;
+//            G.add(H);
+//            pairlist.put(H);
+//            //}
+//        }
+//        logger.debug("#sequential list = " + G.size());
+//        G = minimalSTD(G);
+//        logger.info("" + pairlist);
+//        return G;
+//    }
 
 
     /**

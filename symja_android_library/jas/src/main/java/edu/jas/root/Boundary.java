@@ -1,5 +1,5 @@
 /*
- * $Id: Boundary.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: Boundary.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -20,16 +20,15 @@ import edu.jas.ufd.GreatestCommonDivisor;
 
 
 /**
- * Boundary determined by a rectangle and a polynomial.  
- *
- * For a given complex polynomial A a closed path throught the corners
- * of the given rectangle is constructed. The path is represented by
- * four polynomials, one for each side of the rectangle. For a real t
- * in [0,1] the i-th polynomial describes the path of A from corner[i]
- * to corner[i+1]. In particular polys[i](0) = A(corner[i]) and
- * polys[i](1) = A(corner[i+1]), with corner[4] = corner[0]. If A
- * would be zero on a point of the path, an InvalidBoundaryException 
- * is thrown.
+ * Boundary determined by a rectangle and a polynomial.
+ * 
+ * For a given complex polynomial A a closed path throught the corners of the
+ * given rectangle is constructed. The path is represented by four polynomials,
+ * one for each side of the rectangle. For a real t in [0,1] the i-th polynomial
+ * describes the path of A from corner[i] to corner[i+1]. In particular
+ * polys[i](0) = A(corner[i]) and polys[i](1) = A(corner[i+1]), with corner[4] =
+ * corner[0]. If A would be zero on a point of the path, an
+ * InvalidBoundaryException is thrown.
  * @param <C> coefficient type.
  * @author Heinz Kredel
  */
@@ -65,9 +64,9 @@ public class Boundary<C extends RingElem<C> & Rational> implements Serializable 
      * @param r rectangle of of corners.
      * @param p non constant polynomial.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public Boundary(Rectangle<C> r, GenPolynomial<Complex<C>> p) throws InvalidBoundaryException {
-        if ( p.isConstant() || p.isZERO() ) {
+        if (p.isConstant() || p.isZERO()) {
             throw new InvalidBoundaryException("p is constant or 0 " + p);
         }
         rect = r;

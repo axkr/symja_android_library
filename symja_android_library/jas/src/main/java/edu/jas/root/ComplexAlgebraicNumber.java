@@ -1,11 +1,10 @@
 /*
- * $Id: ComplexAlgebraicNumber.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: ComplexAlgebraicNumber.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
 
 
-// import edu.jas.structure.RingElem;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
@@ -86,8 +85,8 @@ implements GcdRingElem<ComplexAlgebraicNumber<C>> {
 
 
     /**
-     * Clone this.
-     * @see java.lang.Object#clone()
+     * Copy this.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
     public ComplexAlgebraicNumber<C> copy() {
@@ -202,17 +201,13 @@ implements GcdRingElem<ComplexAlgebraicNumber<C>> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof ComplexAlgebraicNumber)) {
             return false;
         }
-        ComplexAlgebraicNumber<C> a = null;
-        try {
-            a = (ComplexAlgebraicNumber<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        ComplexAlgebraicNumber<C> a = (ComplexAlgebraicNumber<C>) b;
         if (!ring.equals(a.ring)) {
             return false;
         }

@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoRecParallel.java 4786 2014-04-08 10:30:00Z kredel $
+ * $Id: GroebnerBasePseudoRecParallel.java 4971 2014-10-20 22:01:31Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -17,6 +17,7 @@ import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.OrderedPairlist;
 import edu.jas.gb.Pair;
 import edu.jas.gb.PairList;
+import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.structure.GcdRingElem;
@@ -64,6 +65,12 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
      * parts.
      */
     protected final GreatestCommonDivisorAbstract<C> engine;
+
+
+    /**
+     * Pseudo reduction engine.
+     */
+    protected final PseudoReduction<C> redRec;
 
 
     /**
@@ -152,6 +159,7 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
             logger.warn("parallel GB should use parallel aware reduction");
         }
         this.red = red;
+        this.redRec = (PseudoReduction<C>) (PseudoReduction) red;
         cofac = rf;
         if (threads < 1) {
             threads = 1;
@@ -198,6 +206,19 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
      * @return GB(F) a Groebner base of F.
      */
     public List<GenPolynomial<GenPolynomial<C>>> GB(int modv, List<GenPolynomial<GenPolynomial<C>>> F) {
+        List<GenPolynomial<GenPolynomial<C>>> G = normalizeZerosOnes(F);
+        G = engine.recursivePrimitivePart(G);
+        if ( G.size() <= 1 ) {
+            return G;
+        }
+        GenPolynomialRing<GenPolynomial<C>> ring = G.get(0).ring;
+        if ( ring.coFac.isField() ) { // TODO remove
+            throw new IllegalArgumentException("coefficients from a field");
+        }
+        PairList<GenPolynomial<C>> pairlist = strategy.create( modv, ring ); 
+        pairlist.put(G);
+
+        /*
         GenPolynomial<GenPolynomial<C>> p;
         List<GenPolynomial<GenPolynomial<C>>> G = new ArrayList<GenPolynomial<GenPolynomial<C>>>();
         PairList<GenPolynomial<C>> pairlist = null;
@@ -227,6 +248,7 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
         if (l <= 1) {
             return G; // since no threads are activated
         }
+        */
         logger.info("start " + pairlist);
 
         Terminator fin = new Terminator(threads);
@@ -253,6 +275,8 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
      */
     @Override
     public List<GenPolynomial<GenPolynomial<C>>> minimalGB(List<GenPolynomial<GenPolynomial<C>>> Gp) {
+        List<GenPolynomial<GenPolynomial<C>>> G = normalizeZerosOnes(Gp);
+        /*
         if (Gp == null || Gp.size() <= 1) {
             return Gp;
         }
@@ -264,6 +288,7 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
                 G.add(a);
             }
         }
+        */
         if (G.size() <= 1) {
             return G;
         }
@@ -280,7 +305,8 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
                     List<GenPolynomial<GenPolynomial<C>>> ff;
                     ff = new ArrayList<GenPolynomial<GenPolynomial<C>>>(G);
                     ff.addAll(F);
-                    a = red.normalform(ff, a);
+                    //a = red.normalform(ff, a);
+                    a = redRec.normalformRecursive(ff, a);
                     if (!a.isZERO()) {
                         System.out.println("error, nf(a) " + a);
                     }
@@ -320,6 +346,51 @@ public class GroebnerBasePseudoRecParallel<C extends GcdRingElem<C>> extends
         return F;
     }
 
+
+    /**
+     * Groebner base simple test.
+     * @param modv module variable number.
+     * @param F recursive polynomial list.
+     * @return true, if F is a Groebner base, else false.
+     */
+    public boolean isGBsimple(int modv, List<GenPolynomial<GenPolynomial<C>>> F) {
+        if (F == null || F.isEmpty()) {
+            return true;
+        }
+        GenPolynomial<GenPolynomial<C>> pi, pj, s, h;
+        ExpVector ei, ej, eij;
+        for (int i = 0; i < F.size(); i++) {
+            pi = F.get(i);
+            ei = pi.leadingExpVector();
+            for (int j = i + 1; j < F.size(); j++) {
+                pj = F.get(j);
+                ej = pj.leadingExpVector();
+                if (!red.moduleCriterion(modv, ei, ej)) {
+                    continue;
+                }
+                eij = ei.lcm(ej);
+                if (!red.criterion4(ei, ej, eij)) {
+                    continue;
+                }
+                //if (!criterion3(i, j, eij, F)) {
+                //    continue;
+                //}
+                s = red.SPolynomial(pi, pj);
+                if (s.isZERO()) {
+                    continue;
+                }
+                //System.out.println("i, j = " + i + ", " + j); 
+                h = redRec.normalformRecursive(F, s);
+                if (!h.isZERO()) {
+                    logger.info("no GB: pi = " + pi + ", pj = " + pj);
+                    logger.info("s  = " + s + ", h = " + h);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
 
 
@@ -340,6 +411,7 @@ class PseudoReducerRec<C extends GcdRingElem<C>> implements Runnable {
 
     private final PseudoReductionPar<GenPolynomial<C>> red;
 
+    private final PseudoReductionPar<C> redRec;
 
     private final GreatestCommonDivisorAbstract<C> engine;
 
@@ -353,6 +425,7 @@ class PseudoReducerRec<C extends GcdRingElem<C>> implements Runnable {
         this.G = G;
         pairlist = L;
         red = new PseudoReductionPar<GenPolynomial<C>>();
+        redRec = new PseudoReductionPar<C>();
         this.engine = engine;
         fin.initIdle(1);
     }
@@ -424,7 +497,8 @@ class PseudoReducerRec<C extends GcdRingElem<C>> implements Runnable {
                 logger.debug("ht(S) = " + S.leadingExpVector());
             }
 
-            H = red.normalform(G, S); //mod
+            //H = red.normalform(G, S); //mod
+            H = redRec.normalformRecursive(G, S);
             reduction++;
             if (H.isZERO()) {
                 pair.setZero();
@@ -478,6 +552,9 @@ class PseudoMiReducerRec<C extends GcdRingElem<C>> implements Runnable {
     private final PseudoReductionPar<GenPolynomial<C>> red;
 
 
+    private final PseudoReductionPar<C> redRec;
+
+
     private final Semaphore done = new Semaphore(0);
 
 
@@ -493,6 +570,7 @@ class PseudoMiReducerRec<C extends GcdRingElem<C>> implements Runnable {
         this.engine = engine;
         H = p;
         red = new PseudoReductionPar<GenPolynomial<C>>();
+        redRec = new PseudoReductionPar<C>();
     }
 
 
@@ -524,7 +602,8 @@ class PseudoMiReducerRec<C extends GcdRingElem<C>> implements Runnable {
             logger.debug("ht(H) = " + H.leadingExpVector());
         }
         try {
-            H = red.normalform(G, H); //mod
+            //H = red.normalform(G, H); //mod
+            H = redRec.normalformRecursive(G, H);
             H = engine.recursivePrimitivePart(H); //H.monic();
             H = H.abs();
             done.release(); //done.V();

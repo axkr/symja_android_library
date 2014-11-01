@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseSeqPairSeq.java 3414 2010-12-19 12:47:23Z kredel $
+ * $Id: GroebnerBaseSeqPairSeq.java 4946 2014-10-05 22:03:04Z axelclk $
  */
 
 package edu.jas.gb;
@@ -56,8 +56,11 @@ public class GroebnerBaseSeqPairSeq<C extends RingElem<C>> extends GroebnerBaseA
      * @return GB(F) a Groebner base of F.
      */
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
-        GenPolynomial<C> p;
         List<GenPolynomial<C>> G = new ArrayList<GenPolynomial<C>>();
+        if (F == null) {
+            return G;
+        }
+        GenPolynomial<C> p;
         CriticalPairList<C> pairlist = null;
         int len = F.size();
         ListIterator<GenPolynomial<C>> it = F.listIterator();
@@ -149,6 +152,9 @@ public class GroebnerBaseSeqPairSeq<C extends RingElem<C>> extends GroebnerBaseA
      */
     @Override
     public ExtendedGB<C> extGB(int modv, List<GenPolynomial<C>> F) {
+        if ( F == null || F.isEmpty() ) {
+            throw new IllegalArgumentException("null or empty F not allowed");
+        }
         List<GenPolynomial<C>> G = new ArrayList<GenPolynomial<C>>();
         List<List<GenPolynomial<C>>> F2G = new ArrayList<List<GenPolynomial<C>>>();
         List<List<GenPolynomial<C>>> G2F = new ArrayList<List<GenPolynomial<C>>>();

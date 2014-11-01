@@ -1,5 +1,5 @@
 /*
- * $Id: MonoidFactory.java 4056 2012-07-26 17:44:13Z kredel $
+ * $Id: MonoidFactory.java 4866 2014-07-18 10:32:14Z kredel $
  */
 
 package edu.jas.structure;
@@ -29,7 +29,7 @@ public interface MonoidFactory<C extends MonoidElem<C>> extends ElemFactory<C> {
 
 
     /**
-     * Query if this ring is associative.
+     * Query if this monoid is associative.
      * @return true if this monoid is associative, else false.
      */
     public boolean isAssociative();

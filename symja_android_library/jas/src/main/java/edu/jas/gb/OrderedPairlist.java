@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPairlist.java 4336 2012-12-29 11:54:51Z kredel $
+ * $Id: OrderedPairlist.java 4947 2014-10-08 22:05:22Z axelclk $
  */
 
 package edu.jas.gb;
@@ -167,6 +167,20 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         //System.out.println("pairlist.set = " + red); //.get( pair.j )); //pair);
         //System.out.println("pairlist.key = " + pairlist.keySet() );  
         return P.size()-1;
+    }
+
+
+    /**
+     * Put all polynomials in F to the pairlist and reduction matrix.
+     * @param F polynomial list.
+     * @return the index of the last added polynomial.
+     */
+    public int put(List<GenPolynomial<C>> F) { 
+        int i = 0;
+        for (GenPolynomial<C> p : F) {
+            i = put(p);
+        }
+        return i;
     }
 
 

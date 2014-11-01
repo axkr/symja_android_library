@@ -1,5 +1,5 @@
 /*
- * $Id: FactorFactory.java 4124 2012-08-19 18:48:15Z kredel $
+ * $Id: FactorFactory.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -142,7 +142,7 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
      * @param <C> coefficient type, e.g. BigRational.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public static <C extends GcdRingElem<C> & Rational> FactorAbstract<edu.jas.application.RealAlgebraicNumber<C>> getImplementation(
                     edu.jas.application.RealAlgebraicRing<C> fac) {
         edu.jas.root.RealAlgebraicRing<C> rar = (edu.jas.root.RealAlgebraicRing<C>) (Object) fac.realRing;
@@ -158,7 +158,7 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
      * @param fac RingFactory&lt;C&gt;.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public static <C extends GcdRingElem<C>> FactorAbstract<C> getImplementation(RingFactory<C> fac) {
         logger.info("app factor factory = " + fac.getClass().getName());
         //System.out.println("fac_o = " + fac.getClass().getName());

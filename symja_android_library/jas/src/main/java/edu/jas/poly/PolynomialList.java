@@ -1,5 +1,5 @@
 /*
- * $Id: PolynomialList.java 4553 2013-08-03 19:13:48Z kredel $
+ * $Id: PolynomialList.java 4957 2014-10-16 23:03:23Z kredel $
  */
 
 package edu.jas.poly;
@@ -77,18 +77,14 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object p) {
+        if (p == null) {
+            return false;
+        }
         if (!(p instanceof PolynomialList)) {
             System.out.println("no PolynomialList");
             return false;
         }
-        PolynomialList<C> pl = null;
-        try {
-            pl = (PolynomialList<C>) p;
-        } catch (ClassCastException ignored) {
-        }
-        if (pl == null) {
-            return false;
-        }
+        PolynomialList<C> pl = (PolynomialList<C>) p;
         if (!ring.equals(pl.ring)) {
             System.out.println("not same Ring " + ring.toScript() + ", " + pl.ring.toScript());
             return false;
@@ -291,7 +287,7 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
 
 
     /**
-     * Get list. 
+     * Get list.
      * @return list from this.
      */
     public List<GenPolynomial<C>> getList() {

@@ -1,5 +1,5 @@
 /*
- * $Id: Word.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: Word.java 4959 2014-10-16 23:15:53Z kredel $
  */
 
 package edu.jas.poly;
@@ -144,7 +144,6 @@ public final class Word implements MonoidElem<Word> {
             return "";
         }
         StringBuffer s = new StringBuffer("\"");
-        String vv;
         if (mono.translation == null) {
             for (int i = 0; i < length(); i++) {
                 if (i != 0) {

@@ -1,5 +1,5 @@
 /*
- * $Id: SquarefreeFieldCharP.java 4100 2012-08-12 19:42:07Z kredel $
+ * $Id: SquarefreeFieldCharP.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ufd;
@@ -475,6 +475,10 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
         if (P.isZERO()) {
             return sfactors;
         }
+        if (P.isONE()) {
+            sfactors.put(P, 1L);
+            return sfactors;
+        }
         GenPolynomialRing<C> cfac = pfac.contract(1);
         GenPolynomialRing<GenPolynomial<C>> rfac = new GenPolynomialRing<GenPolynomial<C>>(cfac, 1);
 
@@ -497,6 +501,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
      * @return [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P = prod_{i=1,...,k}
      *         p_i^{e_i} and p_i squarefree.
      */
+    @SuppressWarnings("cast")
     @Override
     public SortedMap<C, Long> squarefreeFactors(C coeff) {
         if (coeff == null) {

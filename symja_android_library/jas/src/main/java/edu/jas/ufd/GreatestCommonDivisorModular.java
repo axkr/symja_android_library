@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorModular.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id: GreatestCommonDivisorModular.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ufd;
@@ -343,28 +343,29 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
 
 
     /**
-     * Univariate GenPolynomial resultant. 
+     * Univariate GenPolynomial resultant.
      * @param P univariate GenPolynomial.
      * @param S univariate GenPolynomial.
      * @return res(P,S).
      */
     @Override
-    public GenPolynomial<BigInteger> baseResultant(GenPolynomial<BigInteger> P, GenPolynomial<BigInteger> S) { 
+    public GenPolynomial<BigInteger> baseResultant(GenPolynomial<BigInteger> P, GenPolynomial<BigInteger> S) {
         // not a special case here
-        return resultant(P,S);
+        return resultant(P, S);
     }
 
 
     /**
-     * Univariate GenPolynomial recursive resultant. 
+     * Univariate GenPolynomial recursive resultant.
      * @param P univariate recursive GenPolynomial.
      * @param S univariate recursive GenPolynomial.
      * @return res(P,S).
      */
-    public GenPolynomial<GenPolynomial<BigInteger>> recursiveUnivariateResultant(GenPolynomial<GenPolynomial<BigInteger>> P,
-            GenPolynomial<GenPolynomial<BigInteger>> S) { 
+    @Override
+    public GenPolynomial<GenPolynomial<BigInteger>> recursiveUnivariateResultant(
+                    GenPolynomial<GenPolynomial<BigInteger>> P, GenPolynomial<GenPolynomial<BigInteger>> S) {
         // only in this class
-        return recursiveResultant(P,S);
+        return recursiveResultant(P, S);
     }
 
 
@@ -428,11 +429,11 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
         BigInteger M = null;
         GenPolynomial<MOD> cp = null;
         GenPolynomial<MOD> cm = null;
-        GenPolynomial<BigInteger> cpi = null;
+        //GenPolynomial<BigInteger> cpi = null;
         if (debug) {
             logger.debug("an  = " + an);
             logger.debug("bn  = " + bn);
-            logger.debug("e+f = " + (e+f));
+            logger.debug("e+f = " + (e + f));
             logger.debug("cn  = " + cn);
             logger.info("n     = " + n);
             //logger.info("q     = " + q);
@@ -462,7 +463,8 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
             if (qm.isZERO() || !qm.leadingExpVector().equals(qdegv)) { //degreeVector()
                 //logger.info("qm = " + qm);
                 if (debug) {
-                   logger.info("unlucky prime = " + cofac.getIntegerModul() + ", degv = " + qm.leadingExpVector());
+                    logger.info("unlucky prime = " + cofac.getIntegerModul() + ", degv = "
+                                    + qm.leadingExpVector());
                 }
                 continue;
             }
@@ -470,7 +472,8 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
             if (rm.isZERO() || !rm.leadingExpVector().equals(rdegv)) { //degreeVector()
                 //logger.info("rm = " + rm);
                 if (debug) {
-                    logger.info("unlucky prime = " + cofac.getIntegerModul() + ", degv = " + rm.leadingExpVector());
+                    logger.info("unlucky prime = " + cofac.getIntegerModul() + ", degv = "
+                                    + rm.leadingExpVector());
                 }
                 continue;
             }

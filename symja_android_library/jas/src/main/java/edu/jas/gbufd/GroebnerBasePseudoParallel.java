@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoParallel.java 4290 2012-11-04 14:47:45Z kredel $
+ * $Id: GroebnerBasePseudoParallel.java 4966 2014-10-19 10:56:48Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -18,6 +18,7 @@ import edu.jas.gb.OrderedPairlist;
 import edu.jas.gb.Pair;
 import edu.jas.gb.PairList;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.ufd.GCDFactory;
@@ -182,6 +183,19 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
      * @return GB(F) a Groebner base of F.
      */
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
+        List<GenPolynomial<C>> G = normalizeZerosOnes(F);
+        G = engine.basePrimitivePart(G);
+        if ( G.size() <= 1 ) {
+            return G;
+        }
+        GenPolynomialRing<C> ring = G.get(0).ring;
+        if ( ring.coFac.isField() ) { // TODO remove
+            throw new IllegalArgumentException("coefficients from a field");
+        }
+        PairList<C> pairlist = strategy.create( modv, ring ); 
+        pairlist.put(G);
+
+        /*
         GenPolynomial<C> p;
         List<GenPolynomial<C>> G = new ArrayList<GenPolynomial<C>>();
         PairList<C> pairlist = null;
@@ -211,6 +225,7 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
         if (l <= 1) {
             return G; // since no threads are activated
         }
+        */
         logger.info("start " + pairlist);
 
         Terminator fin = new Terminator(threads);
@@ -237,6 +252,8 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
      */
     @Override
     public List<GenPolynomial<C>> minimalGB(List<GenPolynomial<C>> Gp) {
+        List<GenPolynomial<C>> G = normalizeZerosOnes(Gp);
+        /*
         if (Gp == null || Gp.size() <= 1) {
             return Gp;
         }
@@ -248,6 +265,7 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
                 G.add(a);
             }
         }
+        */
         if (G.size() <= 1) {
             return G;
         }

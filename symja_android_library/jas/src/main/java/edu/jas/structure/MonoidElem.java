@@ -1,5 +1,5 @@
 /*
- * $Id: MonoidElem.java 4615 2013-09-08 13:04:36Z kredel $
+ * $Id: MonoidElem.java 4868 2014-07-21 11:34:36Z kredel $
  */
 
 package edu.jas.structure;
@@ -67,5 +67,17 @@ public interface MonoidElem<C extends MonoidElem<C>> extends Element<C> {
      * @return x with this * x = 1, if it exists.
      */
     public C inverse(); /*throws NotInvertibleException*/
+
+
+    /*
+     * Power of this to the n-th.
+     * @param n integer exponent.
+     * @return a**n, with 0**0 = 0, a**0 = 1 and a**{-n} = {1/a}**n.
+     * Java 8 only
+     */ 
+    //default public C power(long n) {
+    //  //System.out.println("this = " + this + ", n = " + n);
+    //  return Power.<C>power((MonoidFactory<C>)factory(),(C)this,n);
+    //}
 
 }

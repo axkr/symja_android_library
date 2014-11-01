@@ -1,5 +1,5 @@
 /*
- * $Id: PolyGBUtil.java 4665 2013-10-18 19:10:23Z kredel $
+ * $Id: PolyGBUtil.java 4963 2014-10-17 19:19:18Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -470,7 +470,7 @@ public class PolyGBUtil {
             return d;
         }
         if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
-        //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
+            //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
             // && n.length() < 10 && d.length() < 10
             logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", " + d.totalDegree());
             return r.getONE();
@@ -481,7 +481,7 @@ public class PolyGBUtil {
         SolvableGroebnerBaseAbstract<C> sbb = new SolvableGroebnerBaseSeq<C>();
         logger.warn("syzGcd computing GB: " + A);
         List<GenSolvablePolynomial<C>> G = sbb.rightGB(A); //leftGB, not: sbb.twosidedGB(A);
-        if ( logger.isInfoEnabled() ) { 
+        if (logger.isInfoEnabled()) {
             logger.info("G = " + G);
         }
         if (G.size() == 1) {
@@ -498,6 +498,7 @@ public class PolyGBUtil {
      * @param d second solvable polynomial.
      * @return [ n/d, n - (n/d)*d ]
      */
+    @SuppressWarnings("cast")
     public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C>[] quotientRemainder(
                     GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         GenSolvablePolynomial<C>[] res = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
@@ -535,25 +536,26 @@ public class PolyGBUtil {
      * @param d second solvable polynomial.
      * @return [ g=gcd(n,d), n/g, d/g ]
      */
+    @SuppressWarnings("cast")
     public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C>[] syzGcdCofactors(
                     GenSolvablePolynomialRing<C> r, GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         GenSolvablePolynomial<C>[] res = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[3];
         res[0] = PolyGBUtil.<C> syzGcd(r, n, d);
         res[1] = n;
         res[2] = d;
-        if ( res[0].isONE() ) {
+        if (res[0].isONE()) {
             return res;
         }
         GenSolvablePolynomial<C>[] nqr = PolyGBUtil.<C> quotientRemainder(n, res[0]);
-        if ( !nqr[1].isZERO() ) {
+        if (!nqr[1].isZERO()) {
             res[0] = r.getONE();
             return res;
-	}
+        }
         GenSolvablePolynomial<C>[] dqr = PolyGBUtil.<C> quotientRemainder(d, res[0]);
-        if ( !dqr[1].isZERO() ) {
+        if (!dqr[1].isZERO()) {
             res[0] = r.getONE();
             return res;
-	}
+        }
         res[1] = nqr[0];
         res[2] = dqr[0];
         return res;

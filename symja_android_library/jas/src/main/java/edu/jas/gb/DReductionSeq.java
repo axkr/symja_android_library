@@ -1,5 +1,5 @@
 /*
- * $Id: DReductionSeq.java 4059 2012-07-27 11:16:42Z kredel $
+ * $Id: DReductionSeq.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -140,7 +140,7 @@ public class DReductionSeq<C extends RingElem<C>> extends ReductionAbstract<C> i
      * @param Pp polynomial list.
      * @return d-nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;

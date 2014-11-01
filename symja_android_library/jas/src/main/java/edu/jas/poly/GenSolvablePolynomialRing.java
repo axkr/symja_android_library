@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenSolvablePolynomialRing.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -182,8 +182,8 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
 
     /**
-     * Generate the relation table of the solvable polynomial ring 
-     * from a relation generator.
+     * Generate the relation table of the solvable polynomial ring from a
+     * relation generator.
      * @param rg relation generator.
      */
     public void addRelations(RelationGenerator<C> rg) {
@@ -192,9 +192,10 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
 
     /**
-     * Generate the relation table of the solvable polynomial ring 
-     * from a polynomial list of relations.
-     * @param rel polynomial list of relations [..., ei, fj, pij, ... ] with ei * fj = pij.
+     * Generate the relation table of the solvable polynomial ring from a
+     * polynomial list of relations.
+     * @param rel polynomial list of relations [..., ei, fj, pij, ... ] with ei
+     *            * fj = pij.
      */
     public void addRelations(List<GenPolynomial<C>> rel) {
         table.addRelations(rel);
@@ -202,9 +203,10 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
 
     /**
-     * Generate the relation table of the solvable polynomial ring 
-     * from a solvable polynomial list of relations.
-     * @param rel solvable polynomial list of relations [..., ei, fj, pij, ... ] with ei * fj = pij.
+     * Generate the relation table of the solvable polynomial ring from a
+     * solvable polynomial list of relations.
+     * @param rel solvable polynomial list of relations [..., ei, fj, pij, ... ]
+     *            with ei * fj = pij.
      */
     public void addSolvRelations(List<GenSolvablePolynomial<C>> rel) {
         table.addSolvRelations(rel);
@@ -274,23 +276,19 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (!(other instanceof GenSolvablePolynomialRing)) {
             return false;
         }
-        GenSolvablePolynomialRing<C> oring = null;
-        try {
-            oring = (GenSolvablePolynomialRing<C>) other;
-        } catch (ClassCastException ignored) {
-        }
-        if (oring == null) {
-            return false;
-        }
+        GenSolvablePolynomialRing<C> oring = (GenSolvablePolynomialRing<C>) other;
         // do a super.equals( )
         if (!super.equals(other)) {
             return false;
         }
         // check same base relations
-        if (! table.equals(oring.table)) {
+        if (!table.equals(oring.table)) {
             return false;
         }
         return true;
@@ -348,6 +346,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * associative solvable ring.
      * @return true, if this ring is associative, else false.
      */
+    @SuppressWarnings("unused")
     @Override
     public boolean isAssociative() {
         GenSolvablePolynomial<C> Xi, Xj, Xk, p, q;
@@ -360,7 +359,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
                     p = Xk.multiply(Xj).multiply(Xi);
                     q = Xk.multiply(Xj.multiply(Xi));
                     if (!p.equals(q)) {
-                        if (true||debug) { 
+                        if (true || debug) {
                             logger.info("Xi = " + Xi + ", Xj = " + Xj + ", Xk = " + Xk);
                             logger.info("p = ( Xk * Xj ) * Xi = " + p);
                             logger.info("q = Xk * ( Xj * Xi ) = " + q);
@@ -495,7 +494,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * @return next GenSolvablePolynomial from r.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public GenSolvablePolynomial<C> parse(Reader r) {
         GenPolynomialTokenizer pt = new GenPolynomialTokenizer(this, r);
         GenSolvablePolynomial<C> p = null;
@@ -606,7 +605,8 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
 
     /**
      * Extend variables. Used e.g. in module embedding. Extend number of
-     * variables by length(vn). New variables commute with the exiting variables.
+     * variables by length(vn). New variables commute with the exiting
+     * variables.
      * @param vn names for extended variables.
      * @return extended polynomial ring factory.
      */
@@ -698,9 +698,10 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * Distributive representation as polynomial with all main variables.
      * @return distributive polynomial ring factory.
      */
+    @SuppressWarnings("cast")
     @Override
     public GenSolvablePolynomialRing<C> distribute() {
-        if ( !(coFac instanceof GenPolynomialRing) ) {
+        if (!(coFac instanceof GenPolynomialRing)) {
             return this;
         }
         RingFactory cf = coFac;
@@ -708,26 +709,26 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         GenPolynomialRing cr = (GenPolynomialRing) cfp;
         //System.out.println("cr = " + cr.toScript());
         GenPolynomialRing<C> fac;
-        if ( cr.vars != null ) {
+        if (cr.vars != null) {
             fac = cr.extend(vars);
         } else {
             fac = cr.extend(nvar);
         }
         //System.out.println("fac = " + fac.toScript());
         // fac could be a commutative polynomial ring, coefficient relations
-        GenSolvablePolynomialRing<C> pfac 
-            = new GenSolvablePolynomialRing<C>(fac.coFac, fac.nvar, this.tord, fac.vars);
+        GenSolvablePolynomialRing<C> pfac = new GenSolvablePolynomialRing<C>(fac.coFac, fac.nvar, this.tord,
+                        fac.vars);
         //System.out.println("pfac = " + pfac.toScript());
         if (fac instanceof GenSolvablePolynomialRing) {
             GenSolvablePolynomialRing<C> sfac = (GenSolvablePolynomialRing<C>) fac;
-            List<GenSolvablePolynomial<C>> rlc = sfac.table.relationList(); 
+            List<GenSolvablePolynomial<C>> rlc = sfac.table.relationList();
             pfac.table.addSolvRelations(rlc);
             //System.out.println("pfac = " + pfac.toScript());
         }
         // main relations
-        List<GenPolynomial<GenPolynomial<C>>> rl = (List<GenPolynomial<GenPolynomial<C>>>) (List) 
-	    PolynomialList.castToList( table.relationList() ); 
-        List<GenPolynomial<C>> rld = PolyUtil.<C> distribute(pfac,rl); 
+        List<GenPolynomial<GenPolynomial<C>>> rl = (List<GenPolynomial<GenPolynomial<C>>>) (List) PolynomialList
+                        .castToList(table.relationList());
+        List<GenPolynomial<C>> rld = PolyUtil.<C> distribute(pfac, rl);
         pfac.table.addRelations(rld);
         //System.out.println("pfac = " + pfac.toScript());
         // coeffTable not avaliable here

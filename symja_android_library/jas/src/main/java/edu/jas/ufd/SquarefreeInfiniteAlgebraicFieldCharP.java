@@ -47,7 +47,8 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>> ext
 
 
     /**
-     * Squarefree engine for infinite ring of characteristic p base coefficients.
+     * Squarefree engine for infinite ring of characteristic p base
+     * coefficients.
      */
     protected final SquarefreeAbstract<C> aengine;
 
@@ -117,6 +118,7 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>> ext
      * @return [p -&gt; k] if exists k with e=charactristic(P)*k and P = p**e,
      *         else null.
      */
+    @SuppressWarnings("cast")
     public SortedMap<AlgebraicNumber<C>, Long> rootCharacteristic(AlgebraicNumber<C> P) {
         if (P == null) {
             throw new IllegalArgumentException(this.getClass().getName() + " P == null");

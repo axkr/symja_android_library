@@ -1,5 +1,5 @@
 /*
- * $Id: AlgebraicNumberRing.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: AlgebraicNumberRing.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -21,7 +21,7 @@ import edu.jas.util.CartesianProductInfinite;
 
 
 /**
- * Algebraic number factory class based on GenPolynomial with RingElem
+ * Algebraic number factory. Based on GenPolynomial factory with RingElem
  * interface. Objects of this class are immutable.
  * @author Heinz Kredel
  */
@@ -340,17 +340,13 @@ public class AlgebraicNumberRing<C extends RingElem<C>> implements RingFactory<A
     @SuppressWarnings("unchecked")
     // not jet working
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof AlgebraicNumberRing)) {
             return false;
         }
-        AlgebraicNumberRing<C> a = null;
-        try {
-            a = (AlgebraicNumberRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        AlgebraicNumberRing<C> a = (AlgebraicNumberRing<C>) b;
         return modul.equals(a.modul);
     }
 
@@ -472,7 +468,7 @@ public class AlgebraicNumberRing<C extends RingElem<C>> implements RingFactory<A
      * Depth of extension field tower.
      * @return number of nested algebraic extension fields
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public int depth() {
         AlgebraicNumberRing<C> arr = this;
         int depth = 1;
@@ -499,7 +495,7 @@ public class AlgebraicNumberRing<C extends RingElem<C>> implements RingFactory<A
      * Total degree of nested extension fields.
      * @return degree of tower of algebraic extension fields
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public long totalExtensionDegree() {
         long degree = modul.degree(0);
         AlgebraicNumberRing<C> arr = this;

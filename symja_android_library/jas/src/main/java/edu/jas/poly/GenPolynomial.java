@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4809 2014-04-18 17:27:00Z kredel $
+ * $Id: GenPolynomial.java 4972 2014-10-22 21:49:51Z kredel $
  */
 
 package edu.jas.poly;
@@ -199,10 +199,10 @@ Iterable<Monomial<C>> {
     public void doRemoveFromMap(ExpVector e, C c) {
         C b = val.remove(e);
         if (debug) {
-            if ( c == null ) { // ignore b
+            if (c == null) { // ignore b
                 return;
             }
-            if ( ! c.equals(b) ) {
+            if (!c.equals(b)) {
                 logger.error("map entry wrong " + e + " to " + c + " old " + b);
             }
         }
@@ -499,17 +499,13 @@ Iterable<Monomial<C>> {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object B) {
+        if (B == null) {
+            return false;
+        }
         if (!(B instanceof GenPolynomial)) {
             return false;
         }
-        GenPolynomial<C> a = null;
-        try {
-            a = (GenPolynomial<C>) B;
-        } catch (ClassCastException ignored) {
-        }
-        if (a == null) {
-            return false;
-        }
+        GenPolynomial<C> a = (GenPolynomial<C>) B;
         return this.compareTo(a) == 0;
     }
 
@@ -548,8 +544,8 @@ Iterable<Monomial<C>> {
             ExpVector ae = aie.getKey();
             ExpVector be = bie.getKey();
             s = ae.compareTo(be);
-            //System.out.println("s = " + s + ", " + ae + ", " +be);
             if (s != 0) {
+                //System.out.println("s = " + s + ", " + ring.toScript(ae) + ", " + ring.toScript(be));
                 return s;
             }
             if (c == 0) {
@@ -559,11 +555,16 @@ Iterable<Monomial<C>> {
             }
         }
         if (ai.hasNext()) {
+            //System.out.println("ai = " + ai);
             return 1;
         }
         if (bi.hasNext()) {
+            //System.out.println("bi = " + bi);
             return -1;
         }
+        //if (c != 0) {
+            //System.out.println("c = " + c);
+        //}
         // now all keys are equal
         return c;
     }
@@ -928,7 +929,7 @@ Iterable<Monomial<C>> {
         if (a.isZERO()) {
             return this;
         }
-        GenPolynomial<C> n = this.copy(); 
+        GenPolynomial<C> n = this.copy();
         SortedMap<ExpVector, C> nv = n.val;
         C x = nv.get(e);
         if (x != null) {
@@ -979,7 +980,7 @@ Iterable<Monomial<C>> {
             return S.multiply(a.negate());
         }
         assert (ring.nvar == S.ring.nvar);
-        GenPolynomial<C> n = this.copy(); 
+        GenPolynomial<C> n = this.copy();
         SortedMap<ExpVector, C> nv = n.val;
         SortedMap<ExpVector, C> sv = S.val;
         for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
@@ -994,7 +995,7 @@ Iterable<Monomial<C>> {
                 } else {
                     nv.remove(f);
                 }
-            } else if ( !y.isZERO() ) {
+            } else if (!y.isZERO()) {
                 nv.put(f, y.negate());
             }
         }
@@ -1023,10 +1024,10 @@ Iterable<Monomial<C>> {
             return this;
         }
         if (this.isZERO()) {
-            return S.multiply(a.negate(),e);
+            return S.multiply(a.negate(), e);
         }
         assert (ring.nvar == S.ring.nvar);
-        GenPolynomial<C> n = this.copy(); 
+        GenPolynomial<C> n = this.copy();
         SortedMap<ExpVector, C> nv = n.val;
         SortedMap<ExpVector, C> sv = S.val;
         for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
@@ -1042,7 +1043,7 @@ Iterable<Monomial<C>> {
                 } else {
                     nv.remove(f);
                 }
-            } else if ( !y.isZERO() ) {
+            } else if (!y.isZERO()) {
                 nv.put(f, y.negate());
             }
         }
@@ -1066,10 +1067,10 @@ Iterable<Monomial<C>> {
             return this.multiply(b);
         }
         if (this.isZERO() || b == null || b.isZERO()) {
-            return S.multiply(a.negate(),e);
+            return S.multiply(a.negate(), e);
         }
         if (b.isONE()) {
-            return subtractMultiple(a,e,S);
+            return subtractMultiple(a, e, S);
         }
         assert (ring.nvar == S.ring.nvar);
         GenPolynomial<C> n = this.multiply(b);
@@ -1088,7 +1089,7 @@ Iterable<Monomial<C>> {
                 } else {
                     nv.remove(f);
                 }
-            } else if ( !y.isZERO() ) {
+            } else if (!y.isZERO()) {
                 nv.put(f, y.negate());
             }
         }
@@ -1107,19 +1108,19 @@ Iterable<Monomial<C>> {
      */
     public GenPolynomial<C> scaleSubtractMultiple(C b, ExpVector g, C a, ExpVector e, GenPolynomial<C> S) {
         if (a == null || S == null) {
-            return this.multiply(b,g);
+            return this.multiply(b, g);
         }
         if (a.isZERO() || S.isZERO()) {
-            return this.multiply(b,g);
+            return this.multiply(b, g);
         }
         if (this.isZERO() || b == null || b.isZERO()) {
-            return S.multiply(a.negate(),e);
+            return S.multiply(a.negate(), e);
         }
         if (b.isONE() && g.isZERO()) {
-            return subtractMultiple(a,e,S);
+            return subtractMultiple(a, e, S);
         }
         assert (ring.nvar == S.ring.nvar);
-        GenPolynomial<C> n = this.multiply(b,g);
+        GenPolynomial<C> n = this.multiply(b, g);
         SortedMap<ExpVector, C> nv = n.val;
         SortedMap<ExpVector, C> sv = S.val;
         for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
@@ -1135,7 +1136,7 @@ Iterable<Monomial<C>> {
                 } else {
                     nv.remove(f);
                 }
-            } else if ( !y.isZERO() ) {
+            } else if (!y.isZERO()) {
                 nv.put(f, y.negate());
             }
         }

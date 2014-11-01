@@ -1,5 +1,5 @@
 /*
- * $Id: Rectangle.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: Rectangle.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -14,7 +14,6 @@ import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.RingElem;
-import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
 
@@ -36,8 +35,8 @@ public class Rectangle<C extends RingElem<C> & Rational> implements Serializable
      * Constructor.
      * @param c array of corners.
      */
-    @SuppressWarnings("unchecked")
-    /*package*/ Rectangle(Complex<C>[] c) {
+    @SuppressWarnings("cast")
+    /*package*/Rectangle(Complex<C>[] c) {
         if (c.length < 5) {
             corners = (Complex<C>[]) new Complex[5];
             for (int i = 0; i < 4; i++) {
@@ -76,6 +75,7 @@ public class Rectangle<C extends RingElem<C> & Rational> implements Serializable
 
     /**
      * Constructor.
+     * 
      * <pre>
      *  nw|0 ne|3
      *  sw|1 se|2
@@ -85,7 +85,7 @@ public class Rectangle<C extends RingElem<C> & Rational> implements Serializable
      * @param se corner.
      * @param ne corner.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public Rectangle(Complex<C> nw, Complex<C> sw, Complex<C> se, Complex<C> ne) {
         this((Complex<C>[]) new Complex[] { nw, sw, se, ne });
     }
@@ -212,8 +212,8 @@ public class Rectangle<C extends RingElem<C> & Rational> implements Serializable
         Complex<C> ur = getNE(); // ?? Fix ?? getSW();
         C cre = c.getRe();
         C cim = c.getIm();
-        return    cre.compareTo(ll.getRe()) >= 0 && cim.compareTo(ll.getIm()) >= 0
-               && cre.compareTo(ur.getRe()) <= 0 && cim.compareTo(ur.getIm()) <= 0;
+        return cre.compareTo(ll.getRe()) >= 0 && cim.compareTo(ll.getIm()) >= 0
+                        && cre.compareTo(ur.getRe()) <= 0 && cim.compareTo(ur.getIm()) <= 0;
     }
 
 

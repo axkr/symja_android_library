@@ -1,5 +1,5 @@
 /*
- * $Id: ElementaryIntegration.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: ElementaryIntegration.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.integrate;
@@ -166,6 +166,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
      * @return [ [ gn_i, gd_i ], [ h0, hn_j, hd_j ] ] such that integrate(a/d) =
      *         sum_i(gn_i/gd_i) + integrate(h0) + sum_j( integrate(hn_j/hd_j) )
      */
+    @SuppressWarnings("cast")
     public List<GenPolynomial<C>>[] integrateHermite(GenPolynomial<C> a, GenPolynomial<C> d) {
         if (d == null || d.isZERO()) {
             throw new IllegalArgumentException("d == null or d == 0");
@@ -378,6 +379,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
             //vars = new String[] { "z_" + Math.abs(r.hashCode() % 1000) };
             vars = pfac.newVars("z_");
             pfac = pfac.copy();
+            @SuppressWarnings("unused")
             String[] unused = pfac.setVars(vars);
             r = pfac.copy(r); // hack to exchange the variables
             //System.out.println("r(z_) = " + r);
@@ -389,7 +391,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
 
             // K(alpha)[x]
             GenPolynomialRing<AlgebraicNumber<C>> pafac = new GenPolynomialRing<AlgebraicNumber<C>>(afac,
-                    Pc.ring);
+                            Pc.ring);
             //System.out.println("pafac = " + pafac.toScript());
 
             // convert to K(alpha)[x]
@@ -418,7 +420,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
             // special quadratic case
             if (P.degree(0) == 2 && Ga.degree(0) == 1) {
                 GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil
-                        .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
+                                .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
                 GenPolynomial<AlgebraicNumber<C>> Qa = qra[0];
                 if (!qra[1].isZERO()) {
                     throw new ArithmeticException("remainder not zero");

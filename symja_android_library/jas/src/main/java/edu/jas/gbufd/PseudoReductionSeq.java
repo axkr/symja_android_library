@@ -1,5 +1,5 @@
 /*
- * $Id: PseudoReductionSeq.java 4290 2012-11-04 14:47:45Z kredel $
+ * $Id: PseudoReductionSeq.java 4967 2014-10-19 20:33:00Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import edu.jas.gb.ReductionAbstract;
+import edu.jas.poly.PolyUtil;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingElem;
@@ -29,6 +30,9 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
 
 
     private static final Logger logger = Logger.getLogger(PseudoReductionSeq.class);
+
+
+    private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -118,6 +122,110 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
         }
         return R;
     }
+
+
+
+
+    /**
+     * Normalform recursive.
+     * @param Ap recursive polynomial.
+     * @param Pp recursive polynomial list.
+     * @return nf(Ap) with respect to Pp.
+     */
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp, GenPolynomial<GenPolynomial<C>> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
+        }
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
+        }
+        Map.Entry<ExpVector, GenPolynomial<C>> m;
+        GenPolynomial<GenPolynomial<C>>[] P = new GenPolynomial[0];
+        synchronized (Pp) {
+            P = Pp.toArray(P);
+        }
+        int l = P.length;
+        ExpVector[] htl = new ExpVector[l];
+        GenPolynomial<C>[] lbc = (GenPolynomial<C>[]) new GenPolynomial[l];
+        GenPolynomial<GenPolynomial<C>>[] p = new GenPolynomial[l];
+        int i;
+        int j = 0;
+        for (i = 0; i < l; i++) {
+            if (P[i] == null) {
+                continue;
+            }
+            p[i] = P[i];
+            m = p[i].leadingMonomial();
+            if (m != null) {
+                p[j] = p[i];
+                htl[j] = m.getKey();
+                lbc[j] = m.getValue();
+                j++;
+            }
+        }
+        l = j;
+        ExpVector e, f;
+        GenPolynomial<C> a, b;
+        boolean mt = false;
+        GenPolynomial<GenPolynomial<C>> R = Ap.ring.getZERO().copy();
+
+        GenPolynomial<GenPolynomial<C>> S = Ap.copy();
+        while (S.length() > 0) {
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                //R = R.sum(a, e);
+                //S = S.subtract(a, e);
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
+                //System.out.println(" S = " + S);
+            } else {
+                f = e.subtract(htl[i]);
+                if (debug) {
+                    logger.info("red div = " + f);
+                    //logger.info("red a = " + a);
+                }
+                @SuppressWarnings("cast")
+                GenPolynomial<C> c = (GenPolynomial<C>) lbc[i];
+                //if (a.remainder(c).isZERO()) { //c.isUnit() ) {
+                if (PolyUtil.<C> baseSparsePseudoRemainder(a,c).isZERO()) { //c.isUnit() ) {
+                    if (debug) {
+                        logger.info("red c = " + c);
+                    }
+                    //a = a.divide(c);
+                    b = PolyUtil.<C> basePseudoDivide(a,c);
+                    GenPolynomial<GenPolynomial<C>> Sp = S.subtractMultiple(b, f, p[i]);
+                    if (e.equals(Sp.leadingExpVector())) { // TODO: avoid
+                        //throw new RuntimeException("degree not descending");
+                        logger.info("degree not descending: S = " + S + ", Sp = " + Sp);
+                        R = R.multiply(c);
+                        //S = S.multiply(c);
+                        Sp = S.scaleSubtractMultiple(c, a, f, p[i]);
+                    }
+                    S = Sp;
+                } else {
+                    R = R.multiply(c);
+                    //S = S.multiply(c);
+                    S = S.scaleSubtractMultiple(c, a, f, p[i]);
+                }
+                //Q = p[i].multiply(a, e);
+                //S = S.subtract(Q);
+            }
+        }
+        return R;
+    }
+
+
+
+
 
 
     /**

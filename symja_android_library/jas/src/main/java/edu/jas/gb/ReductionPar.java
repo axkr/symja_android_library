@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionPar.java 4783 2014-04-06 21:58:40Z kredel $
+ * $Id: ReductionPar.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -38,6 +38,7 @@ public class ReductionPar<C extends RingElem<C>> extends ReductionAbstract<C> {
      * @param Pp polynomial list, concurrent modification allowed.
      * @return nf(Ap) with respect to Pp.
      */
+    @SuppressWarnings("cast")
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
@@ -138,7 +139,7 @@ public class ReductionPar<C extends RingElem<C>> extends ReductionAbstract<C> {
      *            table, concurrent modification allowed.
      * @return nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C> normalform(Map<Integer, GenPolynomial<C>> mp, GenPolynomial<C> Ap) {
         if (mp == null || mp.isEmpty()) {
             return Ap;

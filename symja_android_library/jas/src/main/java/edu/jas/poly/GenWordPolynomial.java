@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomial.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GenWordPolynomial.java 4956 2014-10-16 22:45:10Z kredel $
  */
 
 package edu.jas.poly;
@@ -23,15 +23,15 @@ import edu.jas.structure.UnaryFunctor;
  * GenWordPolynomial generic polynomials implementing RingElem. Non-commutative
  * string polynomials over C. Objects of this class are intended to be
  * immutable. The implementation is based on TreeMap respectively SortedMap from
- * words to coefficients. Only the coefficients are modeled with generic
- * types, the "exponents" are fixed to Word. C can also be a non integral domain,
- * e.g. a ModInteger, i.e. it may contain zero divisors, since multiply() does
- * check for zeros.
+ * words to coefficients. Only the coefficients are modeled with generic types,
+ * the "exponents" are fixed to Word. C can also be a non integral domain, e.g.
+ * a ModInteger, i.e. it may contain zero divisors, since multiply() does check
+ * for zeros.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
-public final class GenWordPolynomial<C extends RingElem<C>> 
-             implements RingElem<GenWordPolynomial<C>>, Iterable<WordMonomial<C>> {
+public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<GenWordPolynomial<C>>,
+                Iterable<WordMonomial<C>> {
 
 
     /**
@@ -278,7 +278,7 @@ public final class GenWordPolynomial<C extends RingElem<C>>
         if (val.size() > 1) {
             s.append("( ");
         }
-        boolean parenthesis = false;
+        final boolean parenthesis = false;
         boolean first = true;
         for (Map.Entry<Word, C> m : val.entrySet()) {
             C c = m.getValue();
@@ -414,17 +414,13 @@ public final class GenWordPolynomial<C extends RingElem<C>>
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object B) {
+        if (B == null) {
+            return false;
+        }
         if (!(B instanceof GenWordPolynomial)) {
             return false;
         }
-        GenWordPolynomial<C> a = null;
-        try {
-            a = (GenWordPolynomial<C>) B;
-        } catch (ClassCastException ignored) {
-        }
-        if (a == null) {
-            return false;
-        }
+        GenWordPolynomial<C> a = (GenWordPolynomial<C>) B;
         return this.compareTo(a) == 0;
     }
 
@@ -880,20 +876,20 @@ public final class GenWordPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenWordPolynomial left and right multiplication. Product with
-     * two polynomials.
+     * GenWordPolynomial left and right multiplication. Product with two
+     * polynomials.
      * @param S GenWordPolynomial.
      * @param T GenWordPolynomial.
      * @return S*this*T.
      */
     public GenWordPolynomial<C> multiply(GenWordPolynomial<C> S, GenWordPolynomial<C> T) {
-        if ( S.isZERO() || T.isZERO() ) {
+        if (S.isZERO() || T.isZERO()) {
             return ring.getZERO();
         }
-        if ( S.isONE() ) {
+        if (S.isONE()) {
             return multiply(T);
         }
-        if ( T.isONE() ) {
+        if (T.isONE()) {
             return S.multiply(this);
         }
         return S.multiply(this).multiply(T);
@@ -939,7 +935,7 @@ public final class GenWordPolynomial<C extends RingElem<C>>
         if (s == null || t == null) {
             return ring.getZERO();
         }
-        if (s.isZERO()||t.isZERO()) {
+        if (s.isZERO() || t.isZERO()) {
             return ring.getZERO();
         }
         if (this.isZERO()) {
@@ -1010,8 +1006,8 @@ public final class GenWordPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenWordPolynomial left and right multiplication. Product with
-     * ring element and two words.
+     * GenWordPolynomial left and right multiplication. Product with ring
+     * element and two words.
      * @param e left word.
      * @param f right word.
      * @return e * this * f.
@@ -1036,8 +1032,8 @@ public final class GenWordPolynomial<C extends RingElem<C>>
 
 
     /**
-     * GenWordPolynomial left and right multiplication. Product with
-     * ring element and two words.
+     * GenWordPolynomial left and right multiplication. Product with ring
+     * element and two words.
      * @param s coefficient.
      * @param e left word.
      * @param f right word.
@@ -1057,13 +1053,13 @@ public final class GenWordPolynomial<C extends RingElem<C>>
             return multiply(s, f);
         }
         C c = ring.coFac.getONE();
-        return multiply(c,e,s,f); // sic, history
+        return multiply(c, e, s, f); // sic, history
     }
 
 
     /**
-     * GenWordPolynomial left and right multiplication. Product with
-     * ring element and two words.
+     * GenWordPolynomial left and right multiplication. Product with ring
+     * element and two words.
      * @param s coefficient.
      * @param e left word.
      * @param t coefficient.
@@ -1175,7 +1171,8 @@ public final class GenWordPolynomial<C extends RingElem<C>>
      * @param S nonzero GenWordPolynomial with invertible leading coefficient.
      * @return [ quotient , remainder ] with this = quotient * S + remainder and
      *         deg(remainder) &lt; deg(S) or remiander = 0.
-     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial).
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     *      .
      */
     @SuppressWarnings("unchecked")
     public GenWordPolynomial<C>[] quotientRemainder(GenWordPolynomial<C> S) {
@@ -1225,7 +1222,8 @@ public final class GenWordPolynomial<C extends RingElem<C>>
      * over fields, but works in any case.
      * @param S nonzero GenWordPolynomial with invertible leading coefficient.
      * @return quotient with this = quotient * S + remainder.
-     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial).
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     *      .
      */
     public GenWordPolynomial<C> divide(GenWordPolynomial<C> S) {
         return quotientRemainder(S)[0];
@@ -1238,7 +1236,8 @@ public final class GenWordPolynomial<C extends RingElem<C>>
      * over fields, but works in any case.
      * @param S nonzero GenWordPolynomial with invertible leading coefficient.
      * @return remainder with this = quotient * S + remainder.
-     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial).
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     *      .
      */
     public GenWordPolynomial<C> remainder(GenWordPolynomial<C> S) {
         if (S == null || S.isZERO()) {

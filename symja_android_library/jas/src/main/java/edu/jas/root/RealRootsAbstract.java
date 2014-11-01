@@ -1,5 +1,5 @@
 /*
- * $Id: RealRootsAbstract.java 4523 2013-07-27 10:54:39Z kredel $
+ * $Id: RealRootsAbstract.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -99,7 +99,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @param f univariate polynomial.
      * @return B such that |f(c)| &lt; B for c in iv.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public C magnitudeBound(Interval<C> iv, GenPolynomial<C> f) {
         if (f == null) {
             return null;

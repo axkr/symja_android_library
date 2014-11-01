@@ -1,5 +1,5 @@
 /*
- * $Id: FactorRealReal.java 4523 2013-07-27 10:54:39Z kredel $
+ * $Id: FactorRealReal.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -64,12 +64,12 @@ public class FactorRealReal<C extends GcdRingElem<C> & Rational> extends
      * Constructor.
      * @param fac algebraic number factory.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public FactorRealReal(RealAlgebraicRing<C> fac) {
         // ignore recursion, as it is handled in FactorRealAlgebraic:
-        this(fac,
-             FactorFactory.<edu.jas.root.RealAlgebraicNumber<C>> getImplementation((edu.jas.root.RealAlgebraicRing<C>) (Object) fac.realRing)
-        );
+        this(
+                        fac,
+                        FactorFactory.<edu.jas.root.RealAlgebraicNumber<C>> getImplementation((edu.jas.root.RealAlgebraicRing<C>) (Object) fac.realRing));
     }
 
 
@@ -92,7 +92,7 @@ public class FactorRealReal<C extends GcdRingElem<C> & Rational> extends
      * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public List<GenPolynomial<RealAlgebraicNumber<C>>> baseFactorsSquarefree(
                     GenPolynomial<RealAlgebraicNumber<C>> P) {
         if (P == null) {

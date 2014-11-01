@@ -1,5 +1,5 @@
 /*
- * $Id: PairList.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: PairList.java 4948 2014-10-09 22:10:04Z axelclk $
  */
 
 package edu.jas.gb;
@@ -50,6 +50,14 @@ public interface PairList<C extends RingElem<C> > extends Serializable {
      * @return the index of the added polynomial.
      */
     public int put(GenPolynomial<C> p);
+
+
+    /**
+     * Put all polynomials in F to the pairlist and reduction matrix.
+     * @param F polynomial list.
+     * @return the index of the last added polynomial.
+     */
+    public int put(List<GenPolynomial<C>> F);
 
 
     /**

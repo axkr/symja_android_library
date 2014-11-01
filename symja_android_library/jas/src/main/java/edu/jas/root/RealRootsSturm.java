@@ -1,5 +1,5 @@
 /*
- * $Id: RealRootsSturm.java 4111 2012-08-19 12:30:30Z kredel $
+ * $Id: RealRootsSturm.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -74,6 +74,7 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
      * @param f univariate polynomial.
      * @return a list of isolating intervals for the real roots of f.
      */
+    @SuppressWarnings("cast")
     @Override
     public List<Interval<C>> realRoots(GenPolynomial<C> f) {
         List<Interval<C>> R = new ArrayList<Interval<C>>();

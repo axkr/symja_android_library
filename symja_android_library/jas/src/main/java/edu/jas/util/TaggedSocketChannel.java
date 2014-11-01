@@ -1,5 +1,5 @@
 /*
- * $Id: TaggedSocketChannel.java 4572 2013-08-18 21:43:12Z kredel $
+ * $Id: TaggedSocketChannel.java 4944 2014-10-05 18:35:23Z axelclk $
  */
 
 package edu.jas.util;
@@ -190,7 +190,7 @@ public class TaggedSocketChannel extends Thread {
      * @return size of key set.
      */
     public int tagSize() {
-        return queues.keySet().size();
+        return queues.size();
     }
 
 

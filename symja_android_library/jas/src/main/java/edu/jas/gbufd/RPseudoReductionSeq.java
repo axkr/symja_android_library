@@ -1,5 +1,5 @@
 /*
- * $Id: RPseudoReductionSeq.java 4061 2012-07-27 12:03:20Z kredel $
+ * $Id: RPseudoReductionSeq.java 4968 2014-10-19 20:38:55Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -46,7 +46,7 @@ public class RPseudoReductionSeq<C extends RegularRingElem<C>> extends RReductio
      * @return r-nf(Ap) with respect to Pp.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
@@ -145,7 +145,7 @@ public class RPseudoReductionSeq<C extends RegularRingElem<C>> extends RReductio
      * @return ( nf(Ap), mf ) with respect to Pp and mf as multiplication factor
      *         for Ap.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public PseudoReductionEntry<C> normalformFactor(List<GenPolynomial<C>> Pp, GenPolynomial<C> Ap) {
         if (Ap == null) {
             return null;
@@ -255,7 +255,7 @@ public class RPseudoReductionSeq<C extends RegularRingElem<C>> extends RReductio
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
                     GenPolynomial<C> Ap) {
         if (Pp == null || Pp.isEmpty()) {
@@ -356,6 +356,18 @@ public class RPseudoReductionSeq<C extends RegularRingElem<C>> extends RReductio
             }
         }
         return R; //.abs(); // not monic if not boolean closed
+    }
+
+
+    /**
+     * Normalform recursive.
+     * @param Ap recursive polynomial.
+     * @param Pp recursive polynomial list.
+     * @return nf(Ap) with respect to Pp.
+     */
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp, GenPolynomial<GenPolynomial<C>> Ap) {
+	throw new UnsupportedOperationException("not implemented"); 
     }
 
 

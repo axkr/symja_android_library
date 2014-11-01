@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseAbstract.java 4385 2013-04-27 13:34:38Z kredel $
+ * $Id: GroebnerBaseAbstract.java 4964 2014-10-17 19:43:31Z kredel $
  */
 
 package edu.jas.gb;
@@ -115,6 +115,32 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
     @Override
     public String toString() {
         return this.getClass().getSimpleName();
+    }
+
+
+    /**
+     * Normalize polynomial list.
+     * @param A list of polynomials.
+     * @return list of polynomials with zeros removed and ones/units reduced.
+     */
+    public List<GenPolynomial<C>> normalizeZerosOnes(List<GenPolynomial<C>> A) {
+        List<GenPolynomial<C>> N = new ArrayList<GenPolynomial<C>>(A.size());
+        if (A == null || A.isEmpty()) {
+            return N;
+        }
+        for (GenPolynomial<C> p : A) {
+            if (p == null || p.isZERO()) {
+                continue;
+            }
+            if (p.isUnit()) {
+                N.clear();
+                N.add(p.ring.getONE());
+                return N;
+            }
+            N.add(p.abs());
+        }
+        //N.trimToSize();
+        return N;
     }
 
 
@@ -419,9 +445,8 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
                     logger.debug("top reducible polynomial " + a);
                 }
                 return false;
-            } else {
-                F.add(a);
             }
+            F.add(a);
         }
         G = F;
         if (G.size() <= 1) {
@@ -821,8 +846,12 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
                 continue;
             }
             int vi = v[0];
+            C lc = pc.leadingBaseCoefficient();
             C tc = pc.trailingBaseCoefficient();
             tc = tc.negate();
+            if (!lc.isONE()) {
+                tc = tc.divide(lc);
+            }
             GenPolynomial<C> pi = ufac.univariate(0, ll - 1 - vi);
             pi = pi.multiply(tc);
             pol = pol.sum(pi);

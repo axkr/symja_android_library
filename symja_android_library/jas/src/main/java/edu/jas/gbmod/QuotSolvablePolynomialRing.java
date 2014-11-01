@@ -1,5 +1,5 @@
 /*
- * $Id: QuotSolvablePolynomialRing.java 4680 2013-10-27 14:08:51Z kredel $
+ * $Id: QuotSolvablePolynomialRing.java 4945 2014-10-05 21:45:31Z axelclk $
  */
 
 package edu.jas.gbmod;
@@ -291,17 +291,13 @@ public class QuotSolvablePolynomialRing<C extends GcdRingElem<C>> extends
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (!(other instanceof QuotSolvablePolynomialRing)) {
             return false;
         }
-        QuotSolvablePolynomialRing<C> oring = null;
-        try {
-            oring = (QuotSolvablePolynomialRing<C>) other;
-        } catch (ClassCastException ignored) {
-        }
-        if (oring == null) {
-            return false;
-        }
+        QuotSolvablePolynomialRing<C> oring = (QuotSolvablePolynomialRing<C>) other;
         // do a super.equals( )
         if (!super.equals(other)) {
             return false;

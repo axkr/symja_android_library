@@ -1,11 +1,10 @@
 /*
- * $Id: RealAlgebraicNumber.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: RealAlgebraicNumber.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
 
 
-// import edu.jas.structure.RingElem;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
@@ -84,8 +83,8 @@ implements GcdRingElem<RealAlgebraicNumber<C>>, Rational {
 
 
     /**
-     * Clone this.
-     * @see java.lang.Object#clone()
+     * Copy this.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
     public RealAlgebraicNumber<C> copy() {
@@ -210,17 +209,13 @@ implements GcdRingElem<RealAlgebraicNumber<C>>, Rational {
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof RealAlgebraicNumber)) {
             return false;
         }
-        RealAlgebraicNumber<C> a = null;
-        try {
-            a = (RealAlgebraicNumber<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        RealAlgebraicNumber<C> a = (RealAlgebraicNumber<C>) b;
         if (!ring.equals(a.ring)) {
             return false;
         }

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RecSolvablePolynomialRing.java 4957 2014-10-16 23:03:23Z kredel $
  */
 
 package edu.jas.poly;
@@ -251,6 +251,9 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
     @Override
     @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
         if (!(other instanceof RecSolvablePolynomialRing)) {
             return false;
         }
@@ -258,14 +261,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
         if (!super.equals(other)) {
             return false;
         }
-        RecSolvablePolynomialRing<C> oring = null;
-        try {
-            oring = (RecSolvablePolynomialRing<C>) other;
-        } catch (ClassCastException ignored) {
-        }
-        if (oring == null) {
-            return false;
-        }
+        RecSolvablePolynomialRing<C> oring = (RecSolvablePolynomialRing<C>) other;
         // check same base relations
         //if ( ! table.equals(oring.table) ) { // done in super
         //    return false;
@@ -330,6 +326,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
      * ring.
      * @return true, if this ring is associative, else false.
      */
+    @SuppressWarnings("unused")
     @Override
     public boolean isAssociative() {
         RecSolvablePolynomial<C> Xi, Xj, Xk, p, q;
@@ -679,6 +676,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
      * Distributive representation as polynomial with all main variables.
      * @return distributive polynomial ring factory.
      */
+    @SuppressWarnings("cast")
     public static <C extends RingElem<C>> // must be static because of types
     GenSolvablePolynomialRing<C> distribute(RecSolvablePolynomialRing<C> rf) {
         // setup solvable polynomial ring

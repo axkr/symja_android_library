@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtilRoot.java 4063 2012-07-27 13:05:07Z kredel $
+ * $Id: PolyUtilRoot.java 4961 2014-10-17 18:59:39Z kredel $
  */
 
 package edu.jas.root;
@@ -232,7 +232,7 @@ class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunct
     final int depth;
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public CoeffToRecReAlg(int depth, RealAlgebraicRing<C> fac) {
         if (fac == null) {
             throw new IllegalArgumentException("fac must not be null");
@@ -252,7 +252,7 @@ class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunct
     }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("cast")
     public RealAlgebraicNumber<C> eval(C c) {
         if (c == null) {
             return lfac.get(0).getZERO();

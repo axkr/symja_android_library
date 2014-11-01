@@ -1,5 +1,5 @@
 /*
- * $Id: SquarefreeFieldChar0.java 4112 2012-08-19 12:35:48Z kredel $
+ * $Id: SquarefreeFieldChar0.java 4935 2014-09-28 21:51:34Z kredel $
  */
 
 package edu.jas.ufd;
@@ -471,6 +471,10 @@ public class SquarefreeFieldChar0<C extends GcdRingElem<C>> extends SquarefreeAb
         }
         SortedMap<GenPolynomial<C>, Long> sfactors = new TreeMap<GenPolynomial<C>, Long>();
         if (P.isZERO()) {
+            return normalizeFactorization(sfactors);
+        }
+        if (P.isONE()) {
+            sfactors.put(P, 1L);
             return normalizeFactorization(sfactors);
         }
         GenPolynomialRing<C> cfac = pfac.contract(1);

@@ -1,5 +1,5 @@
 /*
- * $Id: Ideal.java 4622 2013-09-09 11:48:17Z kredel $
+ * $Id: Ideal.java 4960 2014-10-17 18:46:22Z kredel $
  */
 
 package edu.jas.application;
@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -20,10 +19,10 @@ import org.apache.log4j.Logger;
 import edu.jas.gb.ExtendedGB;
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.Reduction;
-import edu.jas.gbufd.GBFactory;
-import edu.jas.gbufd.PolyGBUtil;
-import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.gbmod.SyzygyAbstract;
+import edu.jas.gbufd.GBFactory;
+import edu.jas.gbufd.GroebnerBasePartial;
+import edu.jas.gbufd.PolyGBUtil;
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.ExpVector;
@@ -635,9 +634,8 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
 
 
     /**
-     * Product. Generators for the product this ideal by a polynomial. 
-     * Note: if this ideal is a
-     * Groebner base, a Groebner base is returned.
+     * Product. Generators for the product this ideal by a polynomial. Note: if
+     * this ideal is a Groebner base, a Groebner base is returned.
      * @param b polynomial
      * @return ideal(this*b)
      */
@@ -651,8 +649,8 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
         List<GenPolynomial<C>> c;
         c = new ArrayList<GenPolynomial<C>>(getList().size());
         for (GenPolynomial<C> p : getList()) {
-             GenPolynomial<C> q = p.multiply(b);
-             c.add(q);
+            GenPolynomial<C> q = p.multiply(b);
+            c.add(q);
         }
         Ideal<C> I = new Ideal<C>(getRing(), c, false);
         if (isGB) {
@@ -699,7 +697,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
         if (this.isZERO()) {
             return this;
         }
-        List<GenPolynomial<C>> c = PolyGBUtil.<C> intersect(getRing(),getList(),B.getList());
+        List<GenPolynomial<C>> c = PolyGBUtil.<C> intersect(getRing(), getList(), B.getList());
         Ideal<C> I = new Ideal<C>(getRing(), c, true);
         return I;
     }
@@ -707,9 +705,8 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
 
     /**
      * Intersection. Generators for the intersection of a ideal with a
-     * polynomial ring. The polynomial ring of this ideal must be a
-     * contraction of R and the TermOrder must be an elimination
-     * order.
+     * polynomial ring. The polynomial ring of this ideal must be a contraction
+     * of R and the TermOrder must be an elimination order.
      * @param R polynomial ring
      * @return ideal(this \cap R)
      */
@@ -717,7 +714,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
         if (R == null) {
             throw new IllegalArgumentException("R may not be null");
         }
-        List<GenPolynomial<C>> H = PolyUtil.<C> intersect(R,getList());
+        List<GenPolynomial<C>> H = PolyUtil.<C> intersect(R, getList());
         return new Ideal<C>(R, H, isGB, isTopt);
     }
 
@@ -1167,7 +1164,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
             }
             gen.add(p);
         }
-        Ideal<C> ann = new Ideal<C>(getRing(),gen);
+        Ideal<C> ann = new Ideal<C>(getRing(), gen);
         //System.out.println("ann = " + ann);
         return ann;
     }
@@ -1894,7 +1891,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
      * @param og other generators for the ideal
      * @return this + (z - x_j - t x_i) in the ring C[z, x_1, ..., x_r]
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     IdealWithUniv<C> normalPositionForCharP(int i, int j, List<GenPolynomial<C>> og) {
         // extend variables by one
         GenPolynomialRing<C> ofac = list.ring;

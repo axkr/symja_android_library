@@ -1,5 +1,5 @@
 /*
- * $Id: FactorAbsolute.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: FactorAbsolute.java 4965 2014-10-17 20:07:51Z kredel $
  */
 
 package edu.jas.ufd;
@@ -28,9 +28,9 @@ import edu.jas.structure.RingFactory;
  * of methods for factorization over algebraically closed fields. The required
  * field extension is computed along with the factors. The methods have been
  * tested for prime fields of characteristic zero, that is for
- * <code>BigRational</code>. It might eventually also be used for prime
- * fields of non-zero characteristic, that is with <code>ModInteger</code>.
- * The field extension may yet not be minimal.
+ * <code>BigRational</code>. It might eventually also be used for prime fields
+ * of non-zero characteristic, that is with <code>ModInteger</code>. The field
+ * extension may yet not be minimal.
  * @author Heinz Kredel
  * @param <C> coefficient type
  */
@@ -110,8 +110,8 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
     /**
      * GenPolynomial absolute base factorization of a polynomial.
      * @param P univariate GenPolynomial.
-     * @return factors map container: [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P =
-     *         prod_{i=1,...,k} p_i**e_i. <b>Note:</b> K(alpha) not yet
+     * @return factors map container: [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P
+     *         = prod_{i=1,...,k} p_i**e_i. <b>Note:</b> K(alpha) not yet
      *         minimal.
      */
     // @Override
@@ -149,7 +149,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         }
         // factor over some K(alpha)
         SortedMap<Factors<C>, Long> afactors = new TreeMap<Factors<C>, Long>();
-        for ( Map.Entry<GenPolynomial<C>,Long> me : facs.entrySet()) {
+        for (Map.Entry<GenPolynomial<C>, Long> me : facs.entrySet()) {
             GenPolynomial<C> p = me.getKey();
             Long e = me.getValue(); //facs.get(p);
             if (p.degree(0) <= 1) {
@@ -254,7 +254,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         }
         // setup field extension K(alpha) where alpha = z_xx
         //String[] vars = new String[] { "z_" + Math.abs(P.hashCode() % 1000) };
-        String[] vars = pfac.newVars( "z_" );
+        String[] vars = pfac.newVars("z_");
         pfac = pfac.copy();
         vars = pfac.setVars(vars);
         GenPolynomial<C> aP = pfac.copy(P); // hack to exchange the variables
@@ -265,7 +265,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             //System.out.println("K(alpha) = " + afac);
         }
         GenPolynomialRing<AlgebraicNumber<C>> pafac = new GenPolynomialRing<AlgebraicNumber<C>>(afac,
-                aP.ring.nvar, aP.ring.tord, /*old*/vars);
+                        aP.ring.nvar, aP.ring.tord, /*old*/vars);
         // convert to K(alpha)
         GenPolynomial<AlgebraicNumber<C>> Pa = PolyUtil.<C> convertToAlgebraicCoefficients(pafac, P);
         if (logger.isInfoEnabled()) {
@@ -283,7 +283,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             //System.out.println("factors over K(alpha) = " + factors);
         }
         List<GenPolynomial<AlgebraicNumber<C>>> faca = new ArrayList<GenPolynomial<AlgebraicNumber<C>>>(
-                factors.size());
+                        factors.size());
         List<Factors<AlgebraicNumber<C>>> facar = new ArrayList<Factors<AlgebraicNumber<C>>>();
         for (GenPolynomial<AlgebraicNumber<C>> fi : factors) {
             if (fi.degree(0) <= 1) {
@@ -291,7 +291,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             } else {
                 //System.out.println("fi.deg > 1 = " + fi);
                 FactorAbsolute<AlgebraicNumber<C>> aengine = (FactorAbsolute<AlgebraicNumber<C>>) FactorFactory
-                        .<C> getImplementation(afac);
+                                .<C> getImplementation(afac);
                 Factors<AlgebraicNumber<C>> fif = aengine.baseFactorsAbsoluteIrreducible(fi);
                 //System.out.println("fif = " + fif);
                 facar.add(fif);
@@ -306,17 +306,17 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
 
 
     /**
-     * Univariate GenPolynomial algebraic partial fraction decomposition, 
+     * Univariate GenPolynomial algebraic partial fraction decomposition,
      * Absolute factorization or Rothstein-Trager algorithm.
      * @param A univariate GenPolynomial, deg(A) < deg(P).
      * @param P univariate squarefree GenPolynomial, gcd(A,P) == 1.
      * @return partial fraction container.
      */
     public PartialFraction<C> baseAlgebraicPartialFraction(GenPolynomial<C> A, GenPolynomial<C> P) {
-        if (P == null || P.isZERO() ) {
+        if (P == null || P.isZERO()) {
             throw new IllegalArgumentException(" P == null or P == 0");
         }
-        if (A == null || A.isZERO() ) {
+        if (A == null || A.isZERO()) {
             throw new IllegalArgumentException(" A == null or A == 0");
             // PartialFraction(A,P,al,pl,empty,empty)
         }
@@ -338,41 +338,41 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         // P linear
         if (P.degree(0) <= 1) {
             cfactors.add(A.leadingBaseCoefficient());
-            cdenom.add(P); 
-            return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+            cdenom.add(P);
+            return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
         }
         List<GenPolynomial<C>> Pfac = baseFactorsSquarefree(P);
         //System.out.println("\nPfac = " + Pfac);
 
-        List<GenPolynomial<C>> Afac = engine.basePartialFraction(A,Pfac);
+        List<GenPolynomial<C>> Afac = engine.basePartialFraction(A, Pfac);
 
         GenPolynomial<C> A0 = Afac.remove(0);
-        if ( !A0.isZERO() ) {
+        if (!A0.isZERO()) {
             throw new ArithmeticException(" A0 != 0: deg(A)>= deg(P)");
         }
 
         // algebraic and linear factors
         int i = 0;
-        for ( GenPolynomial<C> pi : Pfac ) {
+        for (GenPolynomial<C> pi : Pfac) {
             GenPolynomial<C> ai = Afac.get(i++);
-            if ( pi.degree(0) <= 1 ) {
-                cfactors.add( ai.leadingBaseCoefficient() ); 
-                cdenom.add(pi); 
+            if (pi.degree(0) <= 1) {
+                cfactors.add(ai.leadingBaseCoefficient());
+                cdenom.add(pi);
                 continue;
             }
-            PartialFraction<C> pf = baseAlgebraicPartialFractionIrreducibleAbsolute(ai,pi);
+            PartialFraction<C> pf = baseAlgebraicPartialFractionIrreducibleAbsolute(ai, pi);
             //PartialFraction<C> pf = baseAlgebraicPartialFractionIrreducible(ai,pi);
-            cfactors.addAll( pf.cfactors ); 
-            cdenom.addAll( pf.cdenom ); 
-            afactors.addAll( pf.afactors ); 
-            adenom.addAll( pf.adenom );
+            cfactors.addAll(pf.cfactors);
+            cdenom.addAll(pf.cdenom);
+            afactors.addAll(pf.afactors);
+            adenom.addAll(pf.adenom);
         }
-        return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+        return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
     }
 
 
     /**
-     * Univariate GenPolynomial algebraic partial fraction decomposition, 
+     * Univariate GenPolynomial algebraic partial fraction decomposition,
      * Rothstein-Trager algorithm.
      * @param A univariate GenPolynomial, deg(A) < deg(P).
      * @param P univariate squarefree GenPolynomial, gcd(A,P) == 1.
@@ -380,7 +380,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
      */
     @Deprecated
     public PartialFraction<C> baseAlgebraicPartialFractionIrreducible(GenPolynomial<C> A, GenPolynomial<C> P) {
-        if (P == null || P.isZERO() ) {
+        if (P == null || P.isZERO()) {
             throw new IllegalArgumentException(" P == null or P == 0");
         }
         //System.out.println("\nP_base_algeb_part = " + P);
@@ -401,8 +401,8 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         // P linear
         if (P.degree(0) <= 1) {
             cfactors.add(A.leadingBaseCoefficient());
-            cdenom.add(P); 
-            return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+            cdenom.add(P);
+            return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
         }
 
         // deriviative
@@ -436,7 +436,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         // A - t P'
         GenPolynomial<GenPolynomial<C>> tc = rfac1.getONE().multiply(t);
         //System.out.println("tc = " + tc);
-        GenPolynomial<GenPolynomial<C>> At = Ac.subtract( tc.multiply(Pcp) ); 
+        GenPolynomial<GenPolynomial<C>> At = Ac.subtract(tc.multiply(Pcp));
         //System.out.println("At = " + At);
 
         GreatestCommonDivisorSubres<C> engine = new GreatestCommonDivisorSubres<C>();
@@ -449,21 +449,21 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         //no: res = res.monic();
         //System.out.println("\nres = " + res);
 
-        SortedMap<GenPolynomial<C>,Long> resfac = baseFactors(res);
+        SortedMap<GenPolynomial<C>, Long> resfac = baseFactors(res);
         //System.out.println("resfac = " + resfac + "\n");
 
-        for ( GenPolynomial<C> r : resfac.keySet() ) {
+        for (GenPolynomial<C> r : resfac.keySet()) {
             //System.out.println("\nr(t) = " + r);
-            if ( r.isConstant() ) {
+            if (r.isConstant()) {
                 continue;
             }
-//             if ( r.degree(0) <= 1L ) {
-//                 System.out.println("warning linear factor in resultant ignored");
-//                 continue;
-//                 //throw new ArithmeticException("input not irreducible");
-//             }
+            //             if ( r.degree(0) <= 1L ) {
+            //                 System.out.println("warning linear factor in resultant ignored");
+            //                 continue;
+            //                 //throw new ArithmeticException("input not irreducible");
+            //             }
             //vars = new String[] { "z_" + Math.abs(r.hashCode() % 1000) };
-            vars = pfac.newVars( "z_" );
+            vars = pfac.newVars("z_");
             pfac = pfac.copy();
             //String[] ovars = 
             pfac.setVars(vars);
@@ -476,8 +476,8 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             //System.out.println("a = " + a);
 
             // K(alpha)[x]
-            GenPolynomialRing<AlgebraicNumber<C>> pafac 
-                = new GenPolynomialRing<AlgebraicNumber<C>>(afac, Pc.ring);
+            GenPolynomialRing<AlgebraicNumber<C>> pafac = new GenPolynomialRing<AlgebraicNumber<C>>(afac,
+                            Pc.ring);
             //System.out.println("pafac = " + pafac.toScript());
 
             // convert to K(alpha)[x]
@@ -489,36 +489,38 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             //System.out.println("Aa = " + Aa);
 
             // A - a P'
-            GenPolynomial<AlgebraicNumber<C>> Ap = Aa.subtract( Pap.multiply(a) ); 
+            GenPolynomial<AlgebraicNumber<C>> Ap = Aa.subtract(Pap.multiply(a));
             //System.out.println("Ap = " + Ap);
 
-            if ( aengine == null ) {
-                aengine = GCDFactory.<AlgebraicNumber<C>>getImplementation( afac );
+            if (aengine == null) {
+                aengine = GCDFactory.<AlgebraicNumber<C>> getImplementation(afac);
                 //System.out.println("aengine = " + aengine);
             }
-            GenPolynomial<AlgebraicNumber<C>> Ga = aengine.baseGcd(Pa,Ap);
+            GenPolynomial<AlgebraicNumber<C>> Ga = aengine.baseGcd(Pa, Ap);
             //System.out.println("Ga = " + Ga);
-            if ( Ga.isConstant() ) {
+            if (Ga.isConstant()) {
                 //System.out.println("warning constant gcd ignored");
                 continue;
             }
-            afactors.add( a );
-            adenom.add( Ga );
+            afactors.add(a);
+            adenom.add(Ga);
             // quadratic case
-            if ( P.degree(0) == 2 && Ga.degree(0) == 1 ) {
-                GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil.<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa,Ga);
+            if (P.degree(0) == 2 && Ga.degree(0) == 1) {
+                GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil
+                                .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
                 GenPolynomial<AlgebraicNumber<C>> Qa = qra[0];
-                if ( !qra[1].isZERO() ) {
+                if (!qra[1].isZERO()) {
                     throw new ArithmeticException("remainder not zero");
                 }
                 //System.out.println("Qa = " + Qa);
-                afactors.add( a.negate() );
-                adenom.add( Qa );
+                afactors.add(a.negate());
+                adenom.add(Qa);
             }
-            if ( false && P.degree(0) == 3 && Ga.degree(0) == 1 ) {
-                GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil.<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa,Ga);
+            if (false && P.degree(0) == 3 && Ga.degree(0) == 1) {
+                GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil
+                                .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
                 GenPolynomial<AlgebraicNumber<C>> Qa = qra[0];
-                if ( !qra[1].isZERO() ) {
+                if (!qra[1].isZERO()) {
                     throw new ArithmeticException("remainder not zero");
                 }
                 System.out.println("Qa3 = " + Qa);
@@ -526,20 +528,21 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
                 //adenom.add( Qa );
             }
         }
-        return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+        return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
     }
 
 
     /**
-     * Univariate GenPolynomial algebraic partial fraction decomposition, 
-     * via absolute factorization to linear factors.
+     * Univariate GenPolynomial algebraic partial fraction decomposition, via
+     * absolute factorization to linear factors.
      * @param A univariate GenPolynomial, deg(A) < deg(P).
      * @param P univariate squarefree GenPolynomial, gcd(A,P) == 1.
      * @return partial fraction container.
      */
-    @SuppressWarnings("unchecked")
-    public PartialFraction<C> baseAlgebraicPartialFractionIrreducibleAbsolute(GenPolynomial<C> A, GenPolynomial<C> P) {
-        if (P == null || P.isZERO() ) {
+    @SuppressWarnings("cast")
+    public PartialFraction<C> baseAlgebraicPartialFractionIrreducibleAbsolute(GenPolynomial<C> A,
+                    GenPolynomial<C> P) {
+        if (P == null || P.isZERO()) {
             throw new IllegalArgumentException(" P == null or P == 0");
         }
         //System.out.println("\nP_base_algeb_part = " + P);
@@ -560,8 +563,8 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         // P linear
         if (P.degree(0) <= 1) {
             cfactors.add(A.leadingBaseCoefficient());
-            cdenom.add(P); 
-            return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+            cdenom.add(P);
+            return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
         }
 
         // non linear case
@@ -577,8 +580,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         //System.out.println("factors       = " + fact);
         GenPolynomial<AlgebraicNumber<C>> Pa = afacs.apoly;
 
-        GenPolynomial<AlgebraicNumber<C>> Aa = PolyUtil
-                .<C> convertToRecAlgebraicCoefficients(1, Pa.ring, A);
+        GenPolynomial<AlgebraicNumber<C>> Aa = PolyUtil.<C> convertToRecAlgebraicCoefficients(1, Pa.ring, A);
 
 
         GreatestCommonDivisorAbstract<AlgebraicNumber<C>> aengine = GCDFactory.getProxy(afacs.afac);
@@ -586,18 +588,18 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         //System.out.println("denom         = " + Pa);
         //System.out.println("numer         = " + Aa);
 
-        List<GenPolynomial<AlgebraicNumber<C>>> numers = aengine.basePartialFraction(Aa,fact);
+        List<GenPolynomial<AlgebraicNumber<C>>> numers = aengine.basePartialFraction(Aa, fact);
         //System.out.println("part frac     = " + numers);
         GenPolynomial<AlgebraicNumber<C>> A0 = numers.remove(0);
-        if ( ! A0.isZERO() ) {
+        if (!A0.isZERO()) {
             throw new ArithmeticException(" A0 != 0: deg(A)>= deg(P)");
         }
         int i = 0;
-        for ( GenPolynomial<AlgebraicNumber<C>> fa : fact ) {
+        for (GenPolynomial<AlgebraicNumber<C>> fa : fact) {
             GenPolynomial<AlgebraicNumber<C>> an = numers.get(i++);
-            if ( fa.degree(0) <= 1 ) {
+            if (fa.degree(0) <= 1) {
                 afactors.add(an.leadingBaseCoefficient());
-                adenom.add( fa );
+                adenom.add(fa);
                 continue;
             }
             System.out.println("fa = " + fa);
@@ -605,41 +607,43 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             System.out.println("faf = " + faf);
             List<GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>>> fafact = faf.getFactors();
             GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>> Aaa = PolyUtil
-                .<AlgebraicNumber<C>> convertToRecAlgebraicCoefficients(1, faf.apoly.ring, an);
+                            .<AlgebraicNumber<C>> convertToRecAlgebraicCoefficients(1, faf.apoly.ring, an);
 
-            GreatestCommonDivisorAbstract<AlgebraicNumber<AlgebraicNumber<C>>> aaengine = GCDFactory.getImplementation(faf.afac);
+            GreatestCommonDivisorAbstract<AlgebraicNumber<AlgebraicNumber<C>>> aaengine = GCDFactory
+                            .getImplementation(faf.afac);
 
-            List<GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>>> anumers = aaengine.basePartialFraction(Aaa,fafact);
+            List<GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>>> anumers = aaengine.basePartialFraction(
+                            Aaa, fafact);
             System.out.println("algeb part frac = " + anumers);
             GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>> A0a = anumers.remove(0);
-            if ( ! A0a.isZERO() ) {
+            if (!A0a.isZERO()) {
                 throw new ArithmeticException(" A0 != 0: deg(A)>= deg(P)");
             }
             int k = 0;
-            for ( GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>> faa : fafact ) {
+            for (GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>> faa : fafact) {
                 GenPolynomial<AlgebraicNumber<AlgebraicNumber<C>>> ana = anumers.get(k++);
                 System.out.println("faa = " + faa);
                 System.out.println("ana = " + ana);
-                if ( faa.degree(0) > 1 ) {
+                if (faa.degree(0) > 1) {
                     throw new ArithmeticException(" faa not linear");
                 }
-                GenPolynomial<AlgebraicNumber<C>> ana1 = (GenPolynomial<AlgebraicNumber<C>>)(GenPolynomial)ana;
-                GenPolynomial<AlgebraicNumber<C>> faa1 = (GenPolynomial<AlgebraicNumber<C>>)(GenPolynomial)faa;
+                GenPolynomial<AlgebraicNumber<C>> ana1 = (GenPolynomial<AlgebraicNumber<C>>) (GenPolynomial) ana;
+                GenPolynomial<AlgebraicNumber<C>> faa1 = (GenPolynomial<AlgebraicNumber<C>>) (GenPolynomial) faa;
 
 
                 afactors.add(ana1.leadingBaseCoefficient());
-                adenom.add( faa1 );
+                adenom.add(faa1);
             }
         }
-        return new PartialFraction<C>(A,P,cfactors,cdenom,afactors,adenom);
+        return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
     }
 
 
     /**
      * GenPolynomial absolute factorization of a polynomial.
      * @param P GenPolynomial.
-     * @return factors map container: [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P =
-     *         prod_{i=1,...,k} p_i**e_i. <b>Note:</b> K(alpha) not yet
+     * @return factors map container: [p_1 -&gt; e_1, ..., p_k -&gt; e_k] with P
+     *         = prod_{i=1,...,k} p_i**e_i. <b>Note:</b> K(alpha) not yet
      *         minimal.
      */
     public FactorsMap<C> factorsAbsolute(GenPolynomial<C> P) {
@@ -673,7 +677,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         }
         SortedMap<Factors<C>, Long> afactors = new TreeMap<Factors<C>, Long>();
         // factor over K(alpha)
-        for ( Map.Entry<GenPolynomial<C>, Long> me : facs.entrySet()) {
+        for (Map.Entry<GenPolynomial<C>, Long> me : facs.entrySet()) {
             GenPolynomial<C> p = me.getKey();
             Long e = me.getValue(); //facs.get(p);
             if (p.degree() <= 1) {
@@ -789,7 +793,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
             GenPolynomialRing<C> nfac = pfac.contract(1);
             String[] vn = new String[] { pfac.getVars()[pfac.nvar - 1] };
             GenPolynomialRing<GenPolynomial<C>> rfac = new GenPolynomialRing<GenPolynomial<C>>(nfac, 1,
-                    pfac.tord, vn);
+                            pfac.tord, vn);
             GenPolynomial<GenPolynomial<C>> upr = PolyUtil.<C> recursive(rfac, up);
             //System.out.println("upr = " + upr);
             GenPolynomial<C> ep;
@@ -846,7 +850,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
 
         // setup field extension K(alpha)
         //String[] vars = new String[] { "z_" + Math.abs(up.hashCode() % 1000) };
-        String[] vars = pfac.newVars( "z_" );
+        String[] vars = pfac.newVars("z_");
         pfac = pfac.copy();
         //String[] ovars = 
         pfac.setVars(vars); // side effects! 
@@ -856,11 +860,11 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         int depth = afac.depth();
         //System.out.println("afac = " + afac);
         GenPolynomialRing<AlgebraicNumber<C>> pafac = new GenPolynomialRing<AlgebraicNumber<C>>(afac,
-                P.ring.nvar, P.ring.tord, P.ring.getVars());
+                        P.ring.nvar, P.ring.tord, P.ring.getVars());
         //System.out.println("pafac = " + pafac);
         // convert to K(alpha)
         GenPolynomial<AlgebraicNumber<C>> Pa = PolyUtil
-                .<C> convertToRecAlgebraicCoefficients(depth, pafac, P);
+                        .<C> convertToRecAlgebraicCoefficients(depth, pafac, P);
         //System.out.println("Pa = " + Pa);
         // factor over K(alpha)
         FactorAbstract<AlgebraicNumber<C>> engine = FactorFactory.<C> getImplementation(afac);
@@ -910,10 +914,10 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         }
         //return fa.equals(t) || fa.equals(t.negate());
         boolean b = fa.equals(t) || fa.equals(t.negate());
-        if ( b ) {
+        if (b) {
             return b;
         }
-        if ( facs.arfactors == null ) {
+        if (facs.arfactors == null) {
             return false;
         }
         for (Factors<AlgebraicNumber<C>> arp : facs.arfactors) {
@@ -977,7 +981,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         }
         GenPolynomial<C> P = facs.poly;
         GenPolynomial<C> t = P.ring.getONE();
-        for ( Map.Entry<GenPolynomial<C>,Long> me : facs.factors.entrySet()) {
+        for (Map.Entry<GenPolynomial<C>, Long> me : facs.factors.entrySet()) {
             GenPolynomial<C> f = me.getKey();
             long e = me.getValue(); //facs.factors.get(f);
             GenPolynomial<C> g = Power.<GenPolynomial<C>> positivePower(f, e);
@@ -989,7 +993,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         if (facs.afactors == null) {
             return false;
         }
-        for ( Map.Entry<Factors<C>,Long> me : facs.afactors.entrySet()) {
+        for (Map.Entry<Factors<C>, Long> me : facs.afactors.entrySet()) {
             Factors<C> fs = me.getKey();
             if (!isAbsoluteFactorization(fs)) {
                 return false;

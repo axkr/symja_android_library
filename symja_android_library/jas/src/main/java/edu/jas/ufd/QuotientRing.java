@@ -1,5 +1,5 @@
 /*
- * $Id: QuotientRing.java 4679 2013-10-27 13:19:41Z kredel $
+ * $Id: QuotientRing.java 4976 2014-10-23 21:22:28Z kredel $
  */
 
 package edu.jas.ufd;
@@ -274,20 +274,15 @@ public class QuotientRing<C extends GcdRingElem<C>>
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    @SuppressWarnings("unchecked")
-    // not jet working
+    @SuppressWarnings("cast")
     public boolean equals(Object b) {
+        if (b == null) {
+            return false;
+        }
         if (!(b instanceof QuotientRing)) {
             return false;
         }
-        QuotientRing<C> a = null;
-        try {
-            a = (QuotientRing<C>) b;
-        } catch (ClassCastException e) {
-        }
-        if (a == null) {
-            return false;
-        }
+        QuotientRing<C> a = (QuotientRing<C>) b;
         return ring.equals(a.ring);
     }
 
