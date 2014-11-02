@@ -1,33 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Product;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.m;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.s_;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.x_Symbol;
+import static org.matheclipse.core.expression.F.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.UnaryArrayFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -38,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
  */
-public class Product extends AbstractFunctionEvaluator {
+public class Product extends Table {
 	// TODO solve initialization problem in using 'implements ProductRules {'
 	// RULES must be defined in this class at the moment!
 
@@ -83,56 +59,50 @@ public class Product extends AbstractFunctionEvaluator {
 				return F.Power(prod, powArg2);
 			}
 		}
-		if (ast.size() == 3 && ast.arg2().isList() && ((IAST) ast.arg2()).size() == 4) {
-			IAST list = (IAST) ast.arg2();
+		IExpr argN = ast.get(ast.size() - 1);
+		if (ast.size() >= 3 && argN.isList() && ((IAST) argN).size() == 4) {
+			IAST list = (IAST) argN;
 			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
 				final ISymbol var = (ISymbol) list.arg1();
 				final IInteger from = (IInteger) list.arg2();
 				final ISymbol to = (ISymbol) list.arg3();
-				if (ast.isFreeAt(1, var) && ast.isFreeAt(1, to)) {
-					if (from.equals(F.C1)) {
-						return F.Power(ast.arg1(), to);
-					}
-					if (from.equals(F.C0)) {
-						return F.Power(ast.arg1(), Plus(to, C1));
+				if (ast.isFreeAt(1, var)) {
+					if (ast.size() == 3) {
+						if (from.isOne()) {
+							return F.Power(ast.arg1(), to);
+						}
+						if (from.isZero()) {
+							return F.Power(ast.arg1(), Plus(to, C1));
+						}
+					} else {
+						IAST result = ast.clone();
+						result.remove(ast.size() - 1);
+						if (from.isOne()) {
+							result.set(1, F.Power(ast.arg1(), to));
+							return result;
+						}
+						if (from.isZero()) {
+							result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
+							return result;
+						}
+
 					}
 				}
 			}
 		}
 		IAST resultList = Times();
-		IExpr temp = evaluateTable(ast, resultList, C0);
+		IExpr temp = evaluateLast(ast, resultList, C0);
 		if (temp == null || temp.equals(resultList)) {
 			return null;
 		}
-		return temp;
-	}
-
-	/**
-	 * Generate a table.
-	 * 
-	 * @param ast
-	 *            an AST with at least 3 arguments
-	 * @param resultList
-	 * @param defaultValue
-	 * @return
-	 */
-	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue) {
-		try {
-			final EvalEngine engine = EvalEngine.get();
-			final List<Iterator> iterList = new ArrayList<Iterator>();
-			for (int i = 2; i < ast.size(); i++) {
-				iterList.add(new Iterator((IAST) ast.get(i), engine));
-			}
-
-			final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryArrayFunction(engine, ast.arg1()),
-					defaultValue);
-			return generator.table();
-
-		} catch (final ClassCastException e) {
-			// the iterators are generated only from IASTs
-		} catch (final NoEvalException e) {
+		if (ast.size() == 3) {
+			return temp;
+		} else {
+			IAST result = ast.clone();
+			result.remove(ast.size() - 1);
+			result.set(1, temp);
+			return result;
 		}
-		return null;
 	}
 
 	public IExpr numericEval(final IAST functionList) {

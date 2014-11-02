@@ -184,6 +184,9 @@ public class Iterator implements IIterator<IExpr> {
 		if ((maxCounterOrList == null)) {// || (illegalIterator)) {
 			throw new NoEvalException();
 		}
+		if ((maxCounterOrList.isDirectedInfinity())||(count.isDirectedInfinity())) { 
+			throw new NoEvalException();
+		}
 		// if (!(step instanceof ISignedNumber)) {
 		// throw new NoEvalException();
 		// }

@@ -31,26 +31,59 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Generate a table.
+	 * Generate a table from standard iterator notation.
 	 * 
 	 * @param ast
-	 *            an AST with at least 3 arguments
 	 * @param resultList
+	 *            the result list to which the generated expressions should be appended.
 	 * @param defaultValue
-	 * @return
+	 *            the default value used in the iterator
+	 * @return <code>null</code> if no evaluation is possible
 	 */
 	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue) {
 		try {
-			final EvalEngine engine = EvalEngine.get();
-			final List<Iterator> iterList = new ArrayList<Iterator>();
-			for (int i = 2; i < ast.size(); i++) {
-				iterList.add(new Iterator((IAST) ast.get(i), engine));
+			if (ast.size() > 2) {
+				final EvalEngine engine = EvalEngine.get();
+				final List<Iterator> iterList = new ArrayList<Iterator>();
+				for (int i = 2; i < ast.size(); i++) {
+					iterList.add(new Iterator((IAST) ast.get(i), engine));
+				}
+
+				final TableGenerator generator = new TableGenerator(iterList, resultList,
+						new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+				return generator.table();
 			}
+		} catch (final ClassCastException e) {
+			// the iterators are generated only from IASTs
+		} catch (final NoEvalException e) {
+		}
+		return null;
+	}
 
-			final TableGenerator generator = new TableGenerator(iterList, resultList,
-					new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
-			return generator.table();
+	/**
+	 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
+	 * <code>Product()</code> function calls.
+	 * 
+	 * @param ast
+	 * @param resultList
+	 *            the result list to which the generated expressions should be appended.
+	 * @param defaultValue
+	 *            the default value used in the iterator
+	 * @return <code>null</code> if no evaluation is possible
+	 * @see Product
+	 * @see Sum
+	 */
+	protected static IExpr evaluateLast(final IAST ast, final IAST resultList, IExpr defaultValue) {
+		try {
+			if (ast.size() > 2) {
+				final EvalEngine engine = EvalEngine.get();
+				final List<Iterator> iterList = new ArrayList<Iterator>();
+				iterList.add(new Iterator((IAST) ast.get(ast.size() - 1), engine));
 
+				final TableGenerator generator = new TableGenerator(iterList, resultList,
+						new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+				return generator.table();
+			}
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {

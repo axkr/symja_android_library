@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*; 
+import static org.matheclipse.core.expression.F.*;
 
 import java.util.HashMap;
 
@@ -41,9 +41,10 @@ public class Sum extends Table {
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
 		IExpr arg2 = ast.arg2();
+		IExpr argN = ast.get(ast.size() - 1);
 		IExpr temp;
-		if (ast.size() >= 3 && arg2.isList() && ((IAST) arg2).size() == 4) {
-			IAST list = (IAST) arg2;
+		if (ast.size() >= 3 && argN.isList() && ((IAST) argN).size() == 4) {
+			IAST list = (IAST) argN;
 			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
 				temp = definiteSum(arg1, list);
 				if (temp != null) {
@@ -51,7 +52,7 @@ public class Sum extends Table {
 						return temp;
 					} else {
 						IAST result = ast.clone();
-						result.remove(2);
+						result.remove(ast.size() - 1);
 						result.set(1, temp);
 						return result;
 					}
@@ -64,11 +65,18 @@ public class Sum extends Table {
 			}
 		}
 		IAST resultList = Plus();
-		temp = evaluateTable(ast, resultList, C0);
+		temp = evaluateLast(ast, resultList, C0);
 		if (temp == null || temp.equals(resultList)) {
 			return null;
 		}
-		return temp;
+		if (ast.size() == 3) {
+			return temp;
+		} else {
+			IAST result = ast.clone();
+			result.remove(ast.size() - 1);
+			result.set(1, temp);
+			return result;
+		}
 	}
 
 	/**
@@ -85,10 +93,10 @@ public class Sum extends Table {
 		final IInteger from = (IInteger) list.arg2();
 		final ISymbol to = (ISymbol) list.arg3();
 		if (arg1.isFree(var, true)) {
-			if (from.equals(F.C1)) {
+			if (from.isOne()) {
 				return F.Times(to, arg1);
 			}
-			if (from.equals(F.C0)) {
+			if (from.isZero()) {
 				return F.Times(Plus(to, C1), arg1);
 			}
 		} else {
@@ -112,7 +120,7 @@ public class Sum extends Table {
 				}
 			}
 
-			if (from.equals(F.C0)) {
+			if (from.isZero()) {
 				if (arg1.isPower()) {
 					return sumPower((IAST) arg1, var, to);
 				} else if (arg1.equals(var)) {
@@ -209,7 +217,7 @@ public class Sum extends Table {
 		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
 		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
-		if (p.isOne()){
+		if (p.isOne()) {
 			return Times(C1D2, to, Plus(C1, to));
 		}
 		return F.eval(ExpandAll(Plus(
