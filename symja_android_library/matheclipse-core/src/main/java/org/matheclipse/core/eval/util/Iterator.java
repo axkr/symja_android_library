@@ -17,15 +17,15 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * Iterator for functions like Product[] or Sum[]
+ * Iterator for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
  * 
  * @see org.matheclipse.core.reflection.system.Product
  * @see org.matheclipse.core.reflection.system.Sum
+ * @see org.matheclipse.core.reflection.system.Table
  */
 public class Iterator implements IIterator<IExpr> {
 	IExpr count;
 
-	// boolean illegalIterator;
 	final boolean fNumericMode;
 
 	EvalEngine evalEngine;
@@ -49,64 +49,59 @@ public class Iterator implements IIterator<IExpr> {
 
 	final Symbol variable;
 
-	public Iterator(final IAST lst, final EvalEngine sess) {
-		// illegalIterator = false;
-		evalEngine = sess;
-		fNumericMode = evalEngine.isNumericMode() || lst.isMember(Predicates.isNumeric(), false);
-		switch (lst.size()) {
+	/**
+	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
+	 * 
+	 * @param list
+	 *            a list representing an iterator specification
+	 * @param engine
+	 *            the evaluation engine
+	 * @see org.matheclipse.core.reflection.system.Product
+	 * @see org.matheclipse.core.reflection.system.Sum
+	 * @see org.matheclipse.core.reflection.system.Table
+	 */
+	public Iterator(final IAST list, final EvalEngine engine) {
+		evalEngine = engine;
+		fNumericMode = evalEngine.isNumericMode() || list.isMember(Predicates.isNumeric(), false);
+		switch (list.size()) {
 
 		case 2:
 			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
 			step = F.C1;
 			variable = null;
 
 			break;
 		case 3:
 			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 			step = F.C1;
 
-			if (lst.arg1() instanceof Symbol) {
-				variable = (Symbol) lst.arg1();
+			if (list.arg1() instanceof Symbol) {
+				variable = (Symbol) list.arg1();
 			} else {
 				variable = null;
 			}
 
 			break;
 		case 4:
-			start = evalEngine.evalWithoutNumericReset(lst.arg2());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg3());
+			start = evalEngine.evalWithoutNumericReset(list.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
 			step = F.C1;
-
-			// if (evalEngine.evaluate(LessEqual(start, maxCount)) != F.True) {
-			// illegalIterator = true;
-			// }
-			if (lst.arg1().isSymbol()) {
-				variable = (Symbol) lst.arg1();
+ 
+			if (list.arg1().isSymbol()) {
+				variable = (Symbol) list.arg1();
 			} else {
 				variable = null;
 			}
 
 			break;
 		case 5:
-			start = evalEngine.evalWithoutNumericReset(lst.arg2());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg3());
-			step = evalEngine.evalWithoutNumericReset(lst.arg4());
-			// if (!(step instanceof ISignedNumber)) {
-			// illegalIterator = true;
-			// }
-			// if (((ISignedNumber) step).isNegative()) {
-			// if ((evalEngine.evaluate(Less(maxCount, start)) != F.True)) {
-			// illegalIterator = true;
-			// }
-			// } else {
-			// if ((evalEngine.evaluate(LessEqual(start, maxCount)) != F.True)) {
-			// illegalIterator = true;
-			// }
-			// }
-			if (lst.arg1() instanceof Symbol) {
-				variable = (Symbol) lst.arg1();
+			start = evalEngine.evalWithoutNumericReset(list.arg2());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
+			step = evalEngine.evalWithoutNumericReset(list.arg4()); 
+			if (list.arg1() instanceof Symbol) {
+				variable = (Symbol) list.arg1();
 			} else {
 				variable = null;
 			}
@@ -117,70 +112,73 @@ public class Iterator implements IIterator<IExpr> {
 			maxCounterOrList = null;
 			step = null;
 			variable = null;
-
-			// throw new NoIteratorException();
-
 		}
 		originalStart = start;
 		originalMaxCount = maxCounterOrList;
 		originalStep = step;
 	}
 
-	public Iterator(final IAST lst, final Symbol symbol, final EvalEngine sess) {
-		// illegalIterator = false;
-		evalEngine = sess;
+	/**
+	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
+	 * 
+	 * @param list
+	 *            a list representing an iterator specification
+	 * @param symbol
+	 *            the variable symbol
+	 * @param engine
+	 *            the evaluation engine
+	 * @see org.matheclipse.core.reflection.system.Product
+	 * @see org.matheclipse.core.reflection.system.Sum
+	 * @see org.matheclipse.core.reflection.system.Table
+	 */
+	public Iterator(final IAST list, final Symbol symbol, final EvalEngine engine) {
+		evalEngine = engine;
 		fNumericMode = evalEngine.isNumericMode();
-		switch (lst.size()) {
+		switch (list.size()) {
 
 		case 2:
 			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
 			step = F.C1;
 			variable = symbol;
 			break;
 		case 3:
-			start = evalEngine.evalWithoutNumericReset(lst.arg1());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
+			start = evalEngine.evalWithoutNumericReset(list.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 			step = F.C1;
-			variable = symbol;
-			// if (evalEngine.evaluate(LessEqual(start, maxCount)) != F.True) {
-			// illegalIterator = true;
-			// }
+			variable = symbol; 
 			break;
 		case 4:
-			start = evalEngine.evalWithoutNumericReset(lst.arg1());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(lst.arg2());
-			step = evalEngine.evalWithoutNumericReset(lst.arg3());
-			variable = symbol;
-			// if (!(step instanceof ISignedNumber)) {
-			// illegalIterator = true;
-			// }
-			// if (((ISignedNumber) step).isNegative()) {
-			// if ((evalEngine.evaluate(Less(maxCount, start)) != F.True)) {
-			// illegalIterator = true;
-			// }
-			// } else {
-			// if ((evalEngine.evaluate(LessEqual(start, maxCount)) != F.True)) {
-			// illegalIterator = true;
-			// }
-			// }
-
+			start = evalEngine.evalWithoutNumericReset(list.arg1());
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+			step = evalEngine.evalWithoutNumericReset(list.arg3());
+			variable = symbol; 
 			break;
 		default:
 			start = null;
 			maxCounterOrList = null;
 			step = null;
-			variable = null;
-
-			// throw new NoIteratorException();
+			variable = null; 
 		}
 		originalStart = start;
 		originalMaxCount = maxCounterOrList;
 		originalStep = step;
 	}
 
-	public boolean isValidVariable() {
-		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null;
+	public IExpr getMaxCount() {
+		return originalMaxCount;
+	}
+
+	public IExpr getStart() {
+		return originalStart;
+	}
+
+	public IExpr getStep() {
+		return originalStep;
+	}
+
+	public Symbol getVariable() {
+		return variable;
 	}
 
 	/**
@@ -194,10 +192,7 @@ public class Iterator implements IIterator<IExpr> {
 		}
 		if ((maxCounterOrList.isDirectedInfinity()) || (count.isDirectedInfinity())) {
 			throw new NoEvalException();
-		}
-		// if (!(step instanceof ISignedNumber)) {
-		// throw new NoEvalException();
-		// }
+		} 
 		if (maxCounterOrList.isList()) {
 			if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
 				return true;
@@ -228,6 +223,10 @@ public class Iterator implements IIterator<IExpr> {
 		return false;
 	}
 
+	public boolean isValidVariable() {
+		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null;
+	}
+
 	/**
 	 * Returns the next element of this enumeration.
 	 * 
@@ -235,8 +234,7 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public IExpr next() {
 		if (variable != null) {
-			variable.set(count);
-			// variable.putDownRule(session, HRule.SET, variable, count);
+			variable.set(count); 
 		}
 		final IExpr temp = count;
 		if (maxCounterOrList.isList()) {
@@ -249,6 +247,14 @@ public class Iterator implements IIterator<IExpr> {
 			count = evalEngine.evaluate(Plus(count, step));
 		}
 		return temp;
+	}
+
+	/**
+	 * Not implemented; throws UnsupportedOperationException
+	 * 
+	 */
+	public void remove() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
 	}
 
 	public boolean setUp() {
@@ -296,78 +302,8 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public void tearDown() {
 		if (variable != null) {
-			variable.popLocalVariable();
-			// variable.clearSymbolRule(session, variable);
+			variable.popLocalVariable(); 
 		}
 		EvalEngine.get().setNumericMode(fNumericMode);
-	}
-
-	/**
-	 * Helper method for functions like Product, Sum
-	 * 
-	 * @param ast
-	 *            ast with Iterator specifications
-	 * @param index
-	 *            start index for iterstor specifications
-	 * @param baseList
-	 *            basic ast where the iterator elements are appended
-	 * @return
-	 */
-	// public static IExpr iteratorLoop(IAST ast, int index, IAST baseList) {
-	// EvalEngine evalEngine = EvalEngine.get();
-	// if (index < ast.argsSize()) {
-	// if (((IExpr) ast.getArg(index)).isList()) {
-	// Iterator iter = null;
-	// try {
-	// iter = new Iterator((AST) ast.getArg(index), evalEngine);
-	//
-	// index++;
-	// IAST lst = (IAST) baseList.clone();
-	// IExpr temp;
-	//
-	// while (iter.hasNext()) {
-	// temp = iteratorLoop(ast, index, baseList);
-	//
-	// if (temp != null) {
-	// lst.add(temp);
-	// }
-	//
-	// iter.next();
-	// }
-	// return lst;
-	// } finally {
-	// if (iter != null) {
-	// iter.tearDown();
-	// }
-	// }
-	// }
-	// } else {
-	// return evalEngine.evaluate(ast.arg1() );
-	// }
-	//
-	// return null;
-	// }
-	/**
-	 * Not implemented; throws UnsupportedOperationException
-	 * 
-	 */
-	public void remove() throws UnsupportedOperationException {
-		throw new UnsupportedOperationException();
-	}
-
-	public IExpr getStart() {
-		return originalStart;
-	}
-
-	public IExpr getMaxCount() {
-		return originalMaxCount;
-	}
-
-	public IExpr getStep() {
-		return originalStep;
-	}
-
-	public Symbol getVariable() {
-		return variable;
 	}
 }
