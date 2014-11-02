@@ -59,7 +59,7 @@ public class Table extends AbstractFunctionEvaluator {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
 	 * <code>Product()</code> function calls.
@@ -73,17 +73,14 @@ public class Table extends AbstractFunctionEvaluator {
 	 * @see Product
 	 * @see Sum
 	 */
-	protected static IExpr evaluateLast(final IAST ast, final IAST resultList, IExpr defaultValue) {
+	protected static IExpr evaluateLast(final IExpr arg1, final Iterator iter, final IAST resultList, IExpr defaultValue) {
 		try {
-			if (ast.size() > 2) {
-				final EvalEngine engine = EvalEngine.get();
-				final List<Iterator> iterList = new ArrayList<Iterator>();
-				iterList.add(new Iterator((IAST) ast.get(ast.size() - 1), engine));
+			final List<Iterator> iterList = new ArrayList<Iterator>();
+			iterList.add(iter);
 
-				final TableGenerator generator = new TableGenerator(iterList, resultList,
-						new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
-				return generator.table();
-			}
+			final TableGenerator generator = new TableGenerator(iterList, resultList,
+					new UnaryArrayFunction(EvalEngine.get(), arg1), defaultValue);
+			return generator.table();
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {

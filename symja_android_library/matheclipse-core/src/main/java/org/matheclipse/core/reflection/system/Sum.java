@@ -1,10 +1,26 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.BernoulliB;
+import static org.matheclipse.core.expression.F.Binomial;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.ExpandAll;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Slot;
+import static org.matheclipse.core.expression.F.Sum;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.k;
 
 import java.util.HashMap;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -40,13 +56,42 @@ public class Sum extends Table {
 			IAST sum = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
-		IExpr arg2 = ast.arg2();
 		IExpr argN = ast.get(ast.size() - 1);
 		IExpr temp;
-		if (ast.size() >= 3 && argN.isList() && ((IAST) argN).size() == 4) {
-			IAST list = (IAST) argN;
-			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
-				temp = definiteSum(arg1, list);
+		if (ast.size() >= 3) {
+			if (argN.isList()) {
+				Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
+				if (iterator.isValidVariable()) {
+					if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol() && iterator.getStep().isOne()) {
+						temp = definiteSum(arg1, iterator, (IAST) argN);
+						if (temp != null) {
+							if (ast.size() == 3) {
+								return temp;
+							} else {
+								IAST result = ast.clone();
+								result.remove(ast.size() - 1);
+								result.set(1, temp);
+								return result;
+							}
+						}
+					}
+				}
+
+				IAST resultList = Plus();
+				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+				if (temp == null || temp.equals(resultList)) {
+					return null;
+				}
+				if (ast.size() == 3) {
+					return temp;
+				} else {
+					IAST result = ast.clone();
+					result.remove(ast.size() - 1);
+					result.set(1, temp);
+					return result;
+				}
+			} else if (argN.isSymbol()) {
+				temp = indefiniteSum(arg1, (ISymbol) argN);
 				if (temp != null) {
 					if (ast.size() == 3) {
 						return temp;
@@ -58,25 +103,8 @@ public class Sum extends Table {
 					}
 				}
 			}
-		} else if (ast.size() == 3 && arg2.isSymbol()) {
-			temp = indefiniteSum(arg1, (ISymbol) arg2);
-			if (temp != null) {
-				return temp;
-			}
 		}
-		IAST resultList = Plus();
-		temp = evaluateLast(ast, resultList, C0);
-		if (temp == null || temp.equals(resultList)) {
-			return null;
-		}
-		if (ast.size() == 3) {
-			return temp;
-		} else {
-			IAST result = ast.clone();
-			result.remove(ast.size() - 1);
-			result.set(1, temp);
-			return result;
-		}
+		return null;
 	}
 
 	/**
@@ -88,10 +116,10 @@ public class Sum extends Table {
 	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	public IExpr definiteSum(IExpr arg1, final IAST list) {
-		final ISymbol var = (ISymbol) list.arg1();
-		final IInteger from = (IInteger) list.arg2();
-		final ISymbol to = (ISymbol) list.arg3();
+	public IExpr definiteSum(IExpr arg1, final Iterator iterator, IAST list) {
+		final ISymbol var = (ISymbol) iterator.getVariable();
+		final IInteger from = (IInteger) iterator.getStart();
+		final ISymbol to = (ISymbol) iterator.getMaxCount();
 		if (arg1.isFree(var, true)) {
 			if (from.isOne()) {
 				return F.Times(to, arg1);

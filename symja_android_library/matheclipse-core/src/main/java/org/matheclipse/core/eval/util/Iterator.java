@@ -1,6 +1,10 @@
 package org.matheclipse.core.eval.util;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Less;
+import static org.matheclipse.core.expression.F.LessEqual;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Subtract;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
@@ -175,6 +179,10 @@ public class Iterator implements IIterator<IExpr> {
 		originalStep = step;
 	}
 
+	public boolean isValidVariable() {
+		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null;
+	}
+
 	/**
 	 * Tests if this enumeration contains more elements.
 	 * 
@@ -184,7 +192,7 @@ public class Iterator implements IIterator<IExpr> {
 		if ((maxCounterOrList == null)) {// || (illegalIterator)) {
 			throw new NoEvalException();
 		}
-		if ((maxCounterOrList.isDirectedInfinity())||(count.isDirectedInfinity())) { 
+		if ((maxCounterOrList.isDirectedInfinity()) || (count.isDirectedInfinity())) {
 			throw new NoEvalException();
 		}
 		// if (!(step instanceof ISignedNumber)) {
@@ -345,5 +353,21 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public void remove() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
+	}
+
+	public IExpr getStart() {
+		return originalStart;
+	}
+
+	public IExpr getMaxCount() {
+		return originalMaxCount;
+	}
+
+	public IExpr getStep() {
+		return originalStep;
+	}
+
+	public Symbol getVariable() {
+		return variable;
 	}
 }

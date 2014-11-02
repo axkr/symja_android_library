@@ -1,8 +1,25 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Factorial;
+import static org.matheclipse.core.expression.F.FreeQ;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Product;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.m;
+import static org.matheclipse.core.expression.F.m_;
+import static org.matheclipse.core.expression.F.s_;
+import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.x_Symbol;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -60,49 +77,54 @@ public class Product extends Table {
 			}
 		}
 		IExpr argN = ast.get(ast.size() - 1);
-		if (ast.size() >= 3 && argN.isList() && ((IAST) argN).size() == 4) {
-			IAST list = (IAST) argN;
-			if (list.arg1().isSymbol() && list.arg2().isInteger() && list.arg3().isSymbol()) {
-				final ISymbol var = (ISymbol) list.arg1();
-				final IInteger from = (IInteger) list.arg2();
-				final ISymbol to = (ISymbol) list.arg3();
-				if (ast.isFreeAt(1, var)) {
-					if (ast.size() == 3) {
-						if (from.isOne()) {
-							return F.Power(ast.arg1(), to);
-						}
-						if (from.isZero()) {
-							return F.Power(ast.arg1(), Plus(to, C1));
-						}
-					} else {
-						IAST result = ast.clone();
-						result.remove(ast.size() - 1);
-						if (from.isOne()) {
-							result.set(1, F.Power(ast.arg1(), to));
-							return result;
-						}
-						if (from.isZero()) {
-							result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
-							return result;
-						}
+		if (ast.size() >= 3 && argN.isList()) {
+			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
+			if (iterator.isValidVariable()) {
+				if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol() && iterator.getStep().isOne()) {
+					final ISymbol var = iterator.getVariable();
+					final IInteger from = (IInteger) iterator.getStart();
+					final ISymbol to = (ISymbol) iterator.getMaxCount();
+					if (ast.isFreeAt(1, var)) {
+						if (ast.size() == 3) {
+							if (from.isOne()) {
+								return F.Power(ast.arg1(), to);
+							}
+							if (from.isZero()) {
+								return F.Power(ast.arg1(), Plus(to, C1));
+							}
+						} else {
+							IAST result = ast.clone();
+							result.remove(ast.size() - 1);
+							if (from.isOne()) {
+								result.set(1, F.Power(ast.arg1(), to));
+								return result;
+							}
+							if (from.isZero()) {
+								result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
+								return result;
+							}
 
+						}
 					}
+
 				}
 			}
+			IAST resultList = Times();
+			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+			if (temp == null || temp.equals(resultList)) {
+				return null;
+			}
+			if (ast.size() == 3) {
+				return temp;
+			} else {
+				IAST result = ast.clone();
+				result.remove(ast.size() - 1);
+				result.set(1, temp);
+				return result;
+			}
+
 		}
-		IAST resultList = Times();
-		IExpr temp = evaluateLast(ast, resultList, C0);
-		if (temp == null || temp.equals(resultList)) {
-			return null;
-		}
-		if (ast.size() == 3) {
-			return temp;
-		} else {
-			IAST result = ast.clone();
-			result.remove(ast.size() - 1);
-			result.set(1, temp);
-			return result;
-		}
+		return null;
 	}
 
 	public IExpr numericEval(final IAST functionList) {
