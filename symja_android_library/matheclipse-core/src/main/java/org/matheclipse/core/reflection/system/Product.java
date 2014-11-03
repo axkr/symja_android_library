@@ -1,21 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Product;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.m;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.s_;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.x_Symbol;
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -51,28 +36,26 @@ public class Product extends Table {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		if (ast.arg1().isTimes()) {
+		IExpr arg1 = ast.arg1();
+		if (arg1.isTimes()) {
 			IAST prod = ast.setAtClone(1, null);
-			return ((IAST) ast.arg1()).mapAt(prod, 1);
+			return ((IAST) arg1).mapAt(prod, 1);
 		}
-		if (ast.arg1().isPower()) {
-			IExpr powArg1 = ast.arg1().getAt(1);
-			IExpr powArg2 = ast.arg1().getAt(2);
+		if (arg1.isPower()) {
+			IExpr powArg2 = arg1.getAt(2);
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				if (ast.get(i).isList() && (((IAST) ast.get(i)).size() == 4 || ((IAST) ast.get(i)).size() == 5)) {
-					IAST list = (IAST) ast.get(i);
-					if (powArg2.isFree(list.arg1(), true)) {
-						continue;
-					}
+				Iterator iterator = new Iterator((IAST) ast.get(i), EvalEngine.get());
+				if (iterator.isValidVariable() && powArg2.isFree(iterator.getVariable())) {
+					continue;
 				}
 				flag = false;
 				break;
 			}
 			if (flag) {
 				IAST prod = ast.clone();
-				prod.set(1, powArg1);
+				prod.set(1, arg1.getAt(1));
 				return F.Power(prod, powArg2);
 			}
 		}
@@ -84,7 +67,25 @@ public class Product extends Table {
 					final ISymbol var = iterator.getVariable();
 					final IInteger from = (IInteger) iterator.getStart();
 					final ISymbol to = (ISymbol) iterator.getMaxCount();
-					if (ast.isFreeAt(1, var)) {
+					if (arg1.isPower()) {
+						IExpr powArg1 = arg1.getAt(1);
+						IExpr powArg2 = arg1.getAt(2);
+						if (powArg1.isFree(var)) {
+							if (iterator.getStart().isOne()) {
+								if (powArg2.equals(var)) {
+									// Prod( a^i, ..., {i,from,to} )
+									if (ast.size() == 3) {
+										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
+									} 
+									IAST result = ast.clone();
+									result.remove(ast.size() - 1);
+									result.set(1, F.Power(powArg1, Times(C1D2, to, Plus(C1, to))));
+									return result;
+								}
+							}
+						}
+					}
+					if (arg1.isFree(var)) {
 						if (ast.size() == 3) {
 							if (from.isOne()) {
 								return F.Power(ast.arg1(), to);
