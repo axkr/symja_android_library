@@ -33,7 +33,7 @@ public class Sum extends AbstractConverter {
 				fFactory.tag(buf, "mo", mathSymbol);
 
 				fFactory.tagStart(buf, "mrow");
-				fFactory.convert(buf, iterator.getVariable(), 0);
+				fFactory.convertSymbol(buf, iterator.getVariable());
 				fFactory.tag(buf, "mo", "=");
 				fFactory.convert(buf, iterator.getStart(), 0);
 				fFactory.tagEnd(buf, "mrow");
@@ -50,7 +50,7 @@ public class Sum extends AbstractConverter {
 			fFactory.tagStart(buf, "munderover");
 			fFactory.tag(buf, "mo", mathSymbol);
 			fFactory.tagStart(buf, "mrow");
-			fFactory.convert(buf, symbol, 0);
+			fFactory.convertSymbol(buf, symbol);
 			fFactory.tagEnd(buf, "mrow");
 			// empty <mi> </mi>
 			fFactory.tagStart(buf, "mi");
