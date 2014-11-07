@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class Sum extends AbstractConverter {
 
@@ -13,13 +14,25 @@ public class Sum extends AbstractConverter {
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() >= 3) {
-			return iteratorStep("\\sum_{", buf, f, 2);
+			return iteratorStep(buf, "\\sum", f, 2);
 		}
 		return false;
 	}
 
-	public boolean iteratorStep(final String mathSymbol, final StringBuffer buf, final IAST f, int i) {
+	/**
+	 * See <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics">Wikibooks - LaTeX/Mathematics</a>
+	 * 
+	 * @param buf
+	 * @param mathSymbol
+	 *            the symbol for Sum or Product expressions
+	 * @param f
+	 * @param i
+	 * 
+	 * @return <code>true</code> if the expression could be transformed to LaTeX
+	 */
+	public boolean iteratorStep(final StringBuffer buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
+			buf.append(" ");
 			fFactory.convert(buf, f.arg1(), 0);
 			return true;
 		}
@@ -27,17 +40,28 @@ public class Sum extends AbstractConverter {
 			Iterator iterator = new Iterator((IAST) f.get(i), EvalEngine.get());
 			if (iterator.isValidVariable() && iterator.getStep().isOne()) {
 				buf.append(mathSymbol);
+				buf.append("_{");
 				fFactory.convert(buf, iterator.getVariable(), 0);
 				buf.append(" = ");
 				fFactory.convert(buf, iterator.getStart(), 0);
 				buf.append("}^{");
 				fFactory.convert(buf, iterator.getMaxCount(), 0);
 				buf.append('}');
-				if (!iteratorStep(mathSymbol, buf, f, i + 1)) {
+				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 					return false;
 				}
 				return true;
 			}
+		} else if (f.get(i).isSymbol()) {
+			ISymbol symbol = (ISymbol) f.get(i);
+			buf.append(mathSymbol);
+			buf.append("_{");
+			fFactory.convert(buf, symbol, 0);
+			buf.append("}");
+			if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+				return false;
+			}
+			return true;
 		}
 		return false;
 	}

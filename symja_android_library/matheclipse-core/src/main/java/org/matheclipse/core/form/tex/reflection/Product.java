@@ -11,7 +11,7 @@ public class Product extends Sum {
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() >= 3) {
-			return iteratorStep("\\prod_{", buf, f, 2);
+			return iteratorStep(buf, "\\prod", f, 2);
 		}
 		return false;
 	}

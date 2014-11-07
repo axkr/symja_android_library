@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.form.mathml.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class Sum extends AbstractConverter {
 
@@ -14,12 +15,12 @@ public class Sum extends AbstractConverter {
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() >= 3) {
 			// &sum; &#x2211
-			return iteratorStep("&#x2211;", buf, f, 2);
+			return iteratorStep(buf, "&#x2211;", f, 2);
 		}
 		return false;
 	}
 
-	public boolean iteratorStep(final String mathSymbol, final StringBuffer buf, final IAST f, int i) {
+	public boolean iteratorStep(final StringBuffer buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
 			fFactory.convert(buf, f.arg1(), 0);
 			return true;
@@ -38,12 +39,29 @@ public class Sum extends AbstractConverter {
 				fFactory.tagEnd(buf, "mrow");
 				fFactory.convert(buf, iterator.getMaxCount(), 0);
 				fFactory.tagEnd(buf, "munderover");
-				if (!iteratorStep(mathSymbol, buf, f, i + 1)) {
+				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 					return false;
 				}
 				fFactory.tagEnd(buf, "mrow");
 				return true;
 			}
+		} else if (f.get(i).isSymbol()) {
+			ISymbol symbol = (ISymbol) f.get(i);
+			fFactory.tagStart(buf, "munderover");
+			fFactory.tag(buf, "mo", mathSymbol);
+			fFactory.tagStart(buf, "mrow");
+			fFactory.convert(buf, symbol, 0);
+			fFactory.tagEnd(buf, "mrow");
+			// empty <mi> </mi>
+			fFactory.tagStart(buf, "mi");
+			fFactory.tagEnd(buf, "mi");
+
+			fFactory.tagEnd(buf, "munderover");
+			if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+				return false;
+			}
+			fFactory.tagEnd(buf, "mrow");
+			return true;
 		}
 		return false;
 	}
