@@ -101,7 +101,7 @@ abstract public class AbstractTeXFormFactory {
 	abstract public void convertSymbol(StringBuffer buf, ISymbol sym);
 
 	/**
-	 * convert the heade of a function
+	 * convert the head of a function
 	 * 
 	 * @param buf
 	 * @param d

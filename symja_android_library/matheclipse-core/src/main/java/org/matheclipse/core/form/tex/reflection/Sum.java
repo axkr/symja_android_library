@@ -56,7 +56,7 @@ public class Sum extends AbstractConverter {
 			ISymbol symbol = (ISymbol) f.get(i);
 			buf.append(mathSymbol);
 			buf.append("_{");
-			fFactory.convert(buf, symbol, 0);
+			fFactory.convertSymbol(buf, symbol);
 			buf.append("}");
 			if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 				return false;

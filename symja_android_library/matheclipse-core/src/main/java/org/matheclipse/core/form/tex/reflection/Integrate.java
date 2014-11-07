@@ -2,41 +2,55 @@ package org.matheclipse.core.form.tex.reflection;
 
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class Integrate extends AbstractConverter {
 
-  public Integrate() {
-  }
+	public Integrate() {
+	}
 
-  /** {@inheritDoc} */
-  public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-    if (f.size() == 3) {
-      final IExpr arg2 = f.arg2();
-      IAST list = null;
-      if (arg2.isAST()) {
-        list = (IAST) arg2;
-      }
-      if ((list != null) && (list.size() == 4) && list.isList()) {
-      	buf.append("\\int_{");
-        fFactory.convert(buf, list.arg2(), 0);
-        buf.append("}^{");
-        fFactory.convert(buf, list.arg3(), 0);
-        buf.append('}');
-      } else {
-        list = null;
-        buf.append("\\int ");
-      }
+	/** {@inheritDoc} */
+	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+		if (f.size() >= 3) {
+			return iteratorStep(buf, "\\int", f, 2);
+		}
+		return false;
+	}
 
-      fFactory.convert(buf, f.arg1(), 0);
-      buf.append("\\,d");
-      if (list != null) {
-        fFactory.convert(buf, list.arg1(), 0);
-      } else {
-        fFactory.convert(buf, f.arg2(), 0);
-      }
-      return true;
-    }
-    return false;
-  }
+	public boolean iteratorStep(final StringBuffer buf, final String mathSymbol, final IAST f, int i) {
+		if (i >= f.size()) {
+			buf.append(" ");
+			fFactory.convert(buf, f.arg1(), 0);
+			return true;
+		}
+		if (f.get(i).isList()) {
+			IAST list = (IAST) f.get(i);
+			if (list.size()==4 && list.arg1().isSymbol()) {
+				ISymbol symbol = (ISymbol) list.arg1();
+				buf.append(mathSymbol);
+				buf.append("_{");
+				fFactory.convert(buf, list.arg2(), 0);
+				buf.append("}^{");
+				fFactory.convert(buf, list.arg3(), 0);
+				buf.append('}');
+				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+					return false;
+				}
+				buf.append("\\,\\mathrm{d}");
+				fFactory.convertSymbol(buf, symbol);
+				return true;
+			}
+		} else if (f.get(i).isSymbol()) {
+			ISymbol symbol = (ISymbol) f.get(i);
+			buf.append(mathSymbol);
+			buf.append(" ");
+			if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+				return false;
+			}
+			buf.append("\\,\\mathrm{d}");
+			fFactory.convertSymbol(buf, symbol);
+			return true;
+		}
+		return false;
+	}
 }
