@@ -1,7 +1,5 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -18,12 +16,13 @@ public class MatrixForm extends AbstractConverter {
 		if (f.size() != 2) {
 			return false;
 		}
-		final IAST matrix = matrixQ(f.get(1));
-		if (matrix == null) {
-			final IAST vector = vectorQ(f.get(1));
-			if (vector == null) {
+		int[] dims = f.arg1().isMatrix();
+		if (dims == null) {
+			int dim = f.arg1().isVector();
+			if (dim < 0) {
 				return false;
 			} else {
+				final IAST vector = (IAST) f.arg1();
 				buf.append("\\begin{pmatrix}");
 				IExpr element;
 				for (int i = 1; i < vector.size(); i++) {
@@ -38,6 +37,7 @@ public class MatrixForm extends AbstractConverter {
 				buf.append("\\end{pmatrix}");
 			}
 		} else {
+			final IAST matrix = (IAST) f.arg1();
 			buf.append("\\begin{pmatrix}");
 			IAST row;
 			for (int i = 1; i < matrix.size(); i++) {
@@ -58,51 +58,4 @@ public class MatrixForm extends AbstractConverter {
 		return true;
 	}
 
-	public IAST matrixQ(final IExpr expr) {
-		if (!(expr instanceof IAST)) {
-			return null;
-		}
-		final IAST list = (IAST) expr;
-		if (!expr.isList()) {
-			return null;
-		}
-		final int size = list.size();
-		int subSize = -1;
-		IExpr temp;
-		for (int i = 1; i < size; i++) {
-			temp = list.get(i);
-			if (!(temp instanceof IAST)) {
-				return null;
-			}
-			final IAST subList = (IAST) temp;
-			if (!subList.isList()) {
-				return null;
-			}
-			if (subSize < 0) {
-				subSize = subList.size();
-			} else if (subSize != subList.size()) {
-				return null;
-			}
-		}
-		return list;
-	}
-
-	public IAST vectorQ(final IExpr expr) {
-		if (!(expr instanceof IAST)) {
-			return null;
-		}
-		final IAST list = (IAST) expr;
-		if (!list.isList()) {
-			return null;
-		}
-		final int size = list.size();
-		IExpr temp;
-		for (int i = 1; i < size; i++) {
-			temp = list.get(i);
-			if ((temp instanceof IAST) && (((IAST) temp).isList())) {
-				return null;
-			}
-		}
-		return list;
-	}
 }

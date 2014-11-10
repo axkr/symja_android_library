@@ -823,7 +823,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Test if this expression is a vector and return the dimension of the vector. This expression is only a vector, if the
 	 * expression is a <code>List(...)</code> and no element is itself a <code>List(...)</code>.
 	 * 
-	 * @return <code>-1</code> if the expression is no vector or <code>size()-1</code> of the corresponding IAST.
+	 * @return <code>-1</code> if the expression is no vector or <code>size()-1</code> of this vector AST.
 	 */
 	public int isVector();
 
