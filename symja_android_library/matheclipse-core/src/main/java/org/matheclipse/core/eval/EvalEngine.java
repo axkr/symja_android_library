@@ -145,7 +145,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		if ((listLength != 0) && ((result = EvaluationSupport.threadList(ast, listLength, 1)) != null)) {
+		if ((listLength != 0) && ((result = EvaluationSupport.threadList(ast, F.List, ast.head(), listLength, 1)) != null)) {
 			result.setEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
@@ -709,7 +709,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			final IExpr arg1 = ast.arg1();
 			if (arg1.isList()) {
 				// thread over the list
-				if ((result = EvaluationSupport.threadList(ast, ((IAST) arg1).size() - 1, 1)) != null) {
+				if ((result = EvaluationSupport.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1, 1)) != null) {
 					return result;
 				}
 			}

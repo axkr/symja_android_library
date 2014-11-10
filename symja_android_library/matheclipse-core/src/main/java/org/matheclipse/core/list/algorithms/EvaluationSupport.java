@@ -165,25 +165,25 @@ public class EvaluationSupport {
 	 * 
 	 * @return Description of the Returned Value
 	 */
-	public static IAST threadList(final IAST list, final int listLength, final int headOffset) {
+	public static IAST threadList(final IAST list, final IExpr head, final IExpr mapHead, final int listLength, final int headOffset) {
 
-		final IAST res0 = F.ast(F.List, listLength, true);
+		final IAST result = F.ast(head, listLength, true);
 		final int listSize = list.size();
 		for (int j = headOffset; j < listLength + headOffset; j++) {
-			final IAST res1 = F.ast(list.head(), listSize - headOffset, true);
+			final IAST subResult = F.ast(mapHead, listSize - headOffset, true);
 
 			for (int i = headOffset; i < listSize; i++) {
-				if (list.get(i).isList()) {
+				if (list.get(i).isAST(head)) {
 					final IAST arg = (IAST) list.get(i);
-					res1.set(i, arg.get(j));
+					subResult.set(i, arg.get(j));
 				} else {
-					res1.set(i, list.get(i));
+					subResult.set(i, list.get(i));
 				}
 			}
 
-			res0.set(j, res1);
+			result.set(j, subResult);
 		}
 
-		return res0;
+		return result;
 	}
 }
