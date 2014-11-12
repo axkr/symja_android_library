@@ -432,7 +432,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST termsEqualZeroList = F.List();
 		IAST eqns = null;
 		IAST eq;
-		if (ast.get(position).isList()) {
+		if (ast.get(position).isList()||ast.get(position).isAnd()) {
 			eqns = (IAST) ast.get(position);
 			for (int i = 1; i < eqns.size(); i++) {
 				if (eqns.get(i).isAST(F.Equal, 3)) {
