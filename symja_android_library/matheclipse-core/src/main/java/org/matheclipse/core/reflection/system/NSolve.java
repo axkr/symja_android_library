@@ -428,38 +428,38 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 * @param position
 	 * @return
 	 */
-	private IAST checkEquations(final IAST ast, int position) {
-		IAST termsEqualZeroList = F.List();
-		IAST eqns = null;
-		IAST eq;
-		if (ast.get(position).isList()) {
-			eqns = (IAST) ast.get(position);
-			for (int i = 1; i < eqns.size(); i++) {
-				if (eqns.get(i).isAST(F.Equal, 3)) {
-					eq = (IAST) eqns.get(i);
-					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
-				} else {
-					// not an equation
-					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
-				}
-			}
-		} else {
-			if (ast.get(position).isAST(F.Equal, 3)) {
-				eq = (IAST) ast.get(position);
-				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
-			} else {
-				// not an equation
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
-			}
-		}
-		return termsEqualZeroList;
-	}
+//	private IAST checkEquations(final IAST ast, int position) {
+//		IAST termsEqualZeroList = F.List();
+//		IAST eqns = null;
+//		IAST eq;
+//		if (ast.get(position).isList()) {
+//			eqns = (IAST) ast.get(position);
+//			for (int i = 1; i < eqns.size(); i++) {
+//				if (eqns.get(i).isAST(F.Equal, 3)) {
+//					eq = (IAST) eqns.get(i);
+//					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
+//				} else {
+//					// not an equation
+//					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
+//				}
+//			}
+//		} else {
+//			if (ast.get(position).isAST(F.Equal, 3)) {
+//				eq = (IAST) ast.get(position);
+//				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
+//			} else {
+//				// not an equation
+//				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
+//			}
+//		}
+//		return termsEqualZeroList;
+//	}
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
-		IAST termsEqualZeroList = checkEquations(ast, 1);
+		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
 		ExprAnalyzer exprAnalyzer;
 		ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();

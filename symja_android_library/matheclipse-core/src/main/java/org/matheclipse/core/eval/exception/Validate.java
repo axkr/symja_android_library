@@ -358,4 +358,42 @@ public final class Validate {
 	private Validate() {
 	}
 
+	/**
+	 * Check if the argument at the given <code>ast</code> position is an equation (i.e. <code>Equal(a,b)</code>) or a list of
+	 * equations or a boolean <code>And()</code> expression of equations and return a list of expanded expressions, which should be
+	 * equal to <code>0</code>.
+	 * 
+	 * @param ast
+	 * @param position
+	 *            the position of the equations argument in the <code>ast</code> expression.
+	 * @return
+	 */
+	public static IAST checkEquations(final IAST ast, int position) {
+		IAST termsEqualZeroList = F.List();
+		IAST eqns = null;
+		IAST eq;
+		if (ast.get(position).isList() || ast.get(position).isAnd()) {
+			// a list of equations or a boolean AND expression of equations
+			eqns = (IAST) ast.get(position);
+			for (int i = 1; i < eqns.size(); i++) {
+				if (eqns.get(i).isAST(F.Equal, 3)) {
+					eq = (IAST) eqns.get(i);
+					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
+				} else {
+					// not an equation
+					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
+				}
+			}
+		} else {
+			if (ast.get(position).isAST(F.Equal, 3)) {
+				eq = (IAST) ast.get(position);
+				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
+			} else {
+				// not an equation
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
+			}
+		}
+		return termsEqualZeroList;
+	}
+
 }

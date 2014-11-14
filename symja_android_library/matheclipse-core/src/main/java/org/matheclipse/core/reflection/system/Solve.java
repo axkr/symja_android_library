@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
@@ -420,46 +419,11 @@ public class Solve extends AbstractFunctionEvaluator {
 	public Solve() {
 	}
 
-	/**
-	 * Check if the argument at the given position is an equation (i.e. Equal[a,b]) or a list of equations and return a list of
-	 * expressions, which should be equal to <code>0</code>.
-	 * 
-	 * @param ast
-	 * @param position
-	 * @return
-	 */
-	private IAST checkEquations(final IAST ast, int position) {
-		IAST termsEqualZeroList = F.List();
-		IAST eqns = null;
-		IAST eq;
-		if (ast.get(position).isList()||ast.get(position).isAnd()) {
-			eqns = (IAST) ast.get(position);
-			for (int i = 1; i < eqns.size(); i++) {
-				if (eqns.get(i).isAST(F.Equal, 3)) {
-					eq = (IAST) eqns.get(i);
-					termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
-				} else {
-					// not an equation
-					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
-				}
-			}
-		} else {
-			if (ast.get(position).isAST(F.Equal, 3)) {
-				eq = (IAST) ast.get(position);
-				termsEqualZeroList.add(F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2())));
-			} else {
-				// not an equation
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
-			}
-		}
-		return termsEqualZeroList;
-	}
-
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
-		IAST termsEqualZeroList = checkEquations(ast, 1);
+		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
 		ExprAnalyzer exprAnalyzer;
 		ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
