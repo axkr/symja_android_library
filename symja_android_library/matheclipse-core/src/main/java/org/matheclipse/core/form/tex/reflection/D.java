@@ -13,9 +13,9 @@ public class D extends AbstractConverter {
 		if (f.size() == 3) {
 
 			buf.append("\\frac{d}{{d");
-			fFactory.convert(buf, f.get(2), 0);
+			fFactory.convert(buf, f.arg2(), 0);
 			buf.append("}}");
-			fFactory.convert(buf, f.get(1), 0);
+			fFactory.convert(buf, f.arg1(), 0);
 
 			return true;
 		}

@@ -33,7 +33,7 @@ public class Sum extends AbstractConverter {
 	public boolean iteratorStep(final StringBuffer buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
 			buf.append(" ");
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convertSubExpr(buf, f.arg1(), 0);
 			return true;
 		}
 		if (f.get(i).isList()) {
@@ -41,9 +41,9 @@ public class Sum extends AbstractConverter {
 			if (iterator.isValidVariable() && iterator.getStep().isOne()) {
 				buf.append(mathSymbol);
 				buf.append("_{");
-				fFactory.convert(buf, iterator.getVariable(), 0);
+				fFactory.convertSubExpr(buf, iterator.getVariable(), 0);
 				buf.append(" = ");
-				fFactory.convert(buf, iterator.getStart(), 0);
+				fFactory.convertSubExpr(buf, iterator.getStart(), 0);
 				buf.append("}^{");
 				fFactory.convert(buf, iterator.getMaxCount(), 0);
 				buf.append('}');

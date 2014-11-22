@@ -402,4 +402,15 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	}
 
+	@Override
+	public void convertSubExpr(StringBuffer buf, IExpr o, int precedence) {
+		if (o.isAST()){
+			buf.append("{");
+		}
+		convert(buf, o, precedence);
+		if (o.isAST()){
+			buf.append("}");
+		}
+	}
+
 }

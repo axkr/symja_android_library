@@ -37,10 +37,10 @@ public class Plus extends AbstractOperator {
 			} else {
 				if (i > 1) {
 					if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
-						buf.append(" - ");
+						buf.append("-");
 						expr = ((INumber) expr).negate();
 					} else {
-						buf.append(" + ");
+						buf.append("+");
 					}
 				}
 				fFactory.convert(buf, expr, fPrecedence);

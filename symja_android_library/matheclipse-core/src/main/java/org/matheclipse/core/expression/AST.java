@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.Polynomial;
@@ -837,6 +838,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isRationalValue(IRational value) {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isSignedNumber() {
 		return false;
 	}
@@ -1243,6 +1250,27 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	@Override
 	public final boolean isFree(Predicate<IExpr> predicate, boolean heads) {
 		return !isMember(predicate, heads);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeAST(final IExpr pattern) {
+		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		return isFreeAST(matcher);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeAST(Predicate<IExpr> predicate) {
+		if (predicate.apply(get(0))) {
+			return false;
+		} 
+		for (int i = 1; i < size(); i++) {
+			if (get(i).isAST() && !get(i).isFreeAST(predicate)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** {@inheritDoc} */

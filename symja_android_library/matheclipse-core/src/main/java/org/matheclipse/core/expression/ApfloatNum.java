@@ -9,10 +9,10 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -343,6 +343,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public boolean isPi() {
 		return fApfloat.equals(ApfloatMath.pi(fApfloat.precision()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalValue(IRational value) {
+		return fApfloat.equals(value.apfloatNumValue(fApfloat.precision()));
 	}
 
 	/** {@inheritDoc} */

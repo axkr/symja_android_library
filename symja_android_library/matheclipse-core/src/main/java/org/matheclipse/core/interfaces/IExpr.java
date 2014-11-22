@@ -267,9 +267,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isAST(String symbol, int length);
 
 	/**
-	 * Test if this expression is an AST (i.e. no atomic expression) with the given head expression and size of elements greater
-	 * equal than the AST#size()
-	 * 
 	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position <code>0</code> and
 	 * optional <b>argument elements</b> at the index positions <code>1..n</code>. <code>n</code> must be greater equal than the
 	 * given <code>length</code>. Therefore this expression is no <b>atomic expression</b>.
@@ -406,7 +403,27 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isFree(Predicate<IExpr> predicate, boolean heads);
 
 	/**
-	 * Test if this expression is a <code>Funtion[ arg1 ]</code> expression with at least 1 argument.
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, aren't ASTs with a
+	 * head which match the given pattern.
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * 
+	 */
+	public boolean isFreeAST(IExpr pattern);
+
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, aren't ASTs with a
+	 * head which match the given predicate.
+	 * 
+	 * @param pattern
+	 *            a unary predicate
+	 * 
+	 */
+	public boolean isFreeAST(Predicate<IExpr> predicate);
+	
+	/**
+	 * Test if this expression is a <code>Function( arg1 )</code> expression with at least 1 argument.
 	 * 
 	 */
 	public boolean isFunction();
@@ -714,6 +731,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	public boolean isRational();
+
+	/**
+	 * Test if this expression equals <code>value</code> in symbolic or numeric mode.
+	 * 
+	 */
+	public boolean isRationalValue(IRational value);
 
 	/**
 	 * Test if this expression is a real (non-complex) value (i.e. a real number or a real symbolic constant or a

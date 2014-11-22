@@ -10,11 +10,11 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -174,6 +174,12 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == 1);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalValue(IRational value){
+		return equals(value);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public FractionSym eabs() {

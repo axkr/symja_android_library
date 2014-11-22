@@ -371,6 +371,12 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return fInteger.compareTo(BigInteger.ZERO) > 0;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalValue(IRational value){
+		return equals(value);
+	}
+	
 	@Override
 	public boolean isZero() {
 		return fInteger.equals(BigInteger.ZERO);

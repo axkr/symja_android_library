@@ -87,7 +87,7 @@ public class Times extends AbstractOperator {
 					fFactory.convert(buf, arg1, fPrecedence);
 				} else {
 					if (caller == PLUS_CALL) {
-						buf.append(" - ");
+						buf.append("-");
 						if (size == 3) {
 							fFactory.convert(buf, f.arg2(), fPrecedence);
 							return true;
@@ -117,7 +117,7 @@ public class Times extends AbstractOperator {
 						buf.append(" - ");
 						arg1 = ((ISignedNumber) arg1).negate();
 					} else {
-						buf.append(" + ");
+						buf.append("+");
 					}
 				} else {
 					precedenceOpen(buf, precedence);

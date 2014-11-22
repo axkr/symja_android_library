@@ -66,14 +66,34 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		boolean quiet = engine.isQuietMode();
 		try {
 			engine.setQuietMode(true);
-			return (engine).evaluate(expr);
+			return engine.evaluate(expr);
 		} finally {
 			engine.setQuietMode(quiet);
 		}
 	}
 
 	/**
-	 * Evaluate an expression. If evaluation is not possible return the input object.
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>null</code>. In &quot;quiet
+	 * mode&quot; all warnings would be suppressed.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return the evaluated object or <code>null</code> if no evaluation was possible
+	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
+	 */
+	public static final IExpr evalQuietNull(final IExpr expr) {
+		EvalEngine engine = instance.get();
+		boolean quiet = engine.isQuietMode();
+		try {
+			engine.setQuietMode(true);
+			return engine.evaluateNull(expr);
+		} finally {
+			engine.setQuietMode(quiet);
+		}
+	}
+
+	/**
+	 * Evaluate an expression. If evaluation is not possible return <code>null</code>.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated

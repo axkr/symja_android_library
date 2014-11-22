@@ -88,8 +88,7 @@ public class F {
 			: "ComplexInfinity", new org.matheclipse.core.builtin.constant.ComplexInfinity());
 	public final static ISymbol Degree = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree",
 			new org.matheclipse.core.builtin.constant.Degree());
-	public final static ISymbol E = F.initFinalSymbol("E",
-			new org.matheclipse.core.builtin.constant.E());
+	public final static ISymbol E = F.initFinalSymbol("E", new org.matheclipse.core.builtin.constant.E());
 	public final static ISymbol EulerGamma = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma",
 			new org.matheclipse.core.builtin.constant.EulerGamma());
 	public final static ISymbol Glaisher = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "glaisher" : "Glaisher",
@@ -97,8 +96,7 @@ public class F {
 	public final static ISymbol GoldenRatio = F.initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "goldenratio" : "GoldenRatio",
 			new org.matheclipse.core.builtin.constant.GoldenRatio());
-	public final static ISymbol I = F.initFinalSymbol("I",
-			new org.matheclipse.core.builtin.constant.I());
+	public final static ISymbol I = F.initFinalSymbol("I", new org.matheclipse.core.builtin.constant.I());
 	public final static ISymbol Infinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity",
 			new org.matheclipse.core.builtin.constant.Infinity());
 	public final static ISymbol Khinchin = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "khinchin" : "Khinchin",
@@ -255,6 +253,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Length());
 	public final static ISymbol ListQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ",
 			new org.matheclipse.core.builtin.function.ListQ());
+	public final static ISymbol MathMLForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm",
+			new org.matheclipse.core.builtin.function.MathMLForm());
 	public final static ISymbol MemberQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
 			new org.matheclipse.core.builtin.function.MemberQ());
 	public final static ISymbol Module = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
@@ -307,6 +307,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
 			new org.matheclipse.core.builtin.function.Switch());
+	public final static ISymbol TeXForm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm",
+			new org.matheclipse.core.builtin.function.TeXForm());
 	public final static ISymbol TimeConstrained = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained"
 			: "TimeConstrained", new org.matheclipse.core.builtin.function.TimeConstrained());
 	public final static ISymbol Throw = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw",
@@ -619,9 +621,15 @@ public class F {
 	public final static ISymbol StringLength = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringlength"
 			: "StringLength");
 	public final static ISymbol StringTake = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringtake" : "StringTake");
+	public final static ISymbol Subscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Subscript");
+	public final static ISymbol Subsuperscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsuperscript"
+			: "Subsuperscript");
+
 	public final static ISymbol Subsets = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsets" : "Subsets");
 	public final static ISymbol SubtractFrom = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subtractfrom"
 			: "SubtractFrom");
+	public final static ISymbol Superscript = F
+			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "superscript" : "Superscript");
 	public final static ISymbol Sum = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sum" : "Sum");
 	public final static ISymbol SyntaxLength = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxlength"
 			: "SyntaxLength");
@@ -658,6 +666,7 @@ public class F {
 			: "VandermondeMatrix");
 	public final static ISymbol Variables = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "variables" : "Variables");
 	public final static ISymbol VectorQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
+	public final static ISymbol Xor = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "xor" : "Xor");
 
 	public final static ISymbol a = initFinalSymbol("a");
 	public final static ISymbol b = initFinalSymbol("b");
@@ -2055,6 +2064,19 @@ public class F {
 	}
 
 	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>null</code>. In &quot;quiet
+	 * mode&quot; all warnings would be suppressed.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return the evaluated object or <code>null</code> if no evaluation was possible
+	 * @see EvalEngine#eval(IExpr)
+	 */
+	public static IExpr evalQuietNull(IExpr a) {
+		return EvalEngine.evalQuietNull(a);
+	}
+
+	/**
 	 * Create a function with 1 argument and evaluate it.
 	 * 
 	 * @param head
@@ -3068,6 +3090,10 @@ public class F {
 		return Or(integer(i), b);
 	}
 
+	public static IAST Or() {
+		return ast(Or);
+	}
+	
 	public static IAST Or(final IExpr a0, final IExpr a1) {
 		return binary(Or, a0, a1);
 	}

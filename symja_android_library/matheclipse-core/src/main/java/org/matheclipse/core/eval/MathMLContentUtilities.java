@@ -2,7 +2,6 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 
-import org.matheclipse.core.builtin.function.JavaForm;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.MathMLContentFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -76,21 +75,21 @@ public class MathMLContentUtilities {
 		}
 	}
 
-	synchronized public void toJava(final String inputExpression, final Writer out, boolean strictJava) {
-		IExpr parsedExpression = null;
-		ASTNode node;
-		if (inputExpression != null) {
-			try {
-				node = fParser.parse(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-				out.write(JavaForm.javaForm(parsedExpression, strictJava));
-				// out.write(parsedExpression.internalFormString(strictJava, 0));
-			} catch (final Throwable e) {
-				return;
-				// parsedExpression == null ==> fError occured
-			}
-		}
-	}
+//	synchronized public void toJava(final String inputExpression, final Writer out, boolean strictJava) {
+//		IExpr parsedExpression = null;
+//		ASTNode node;
+//		if (inputExpression != null) {
+//			try {
+//				node = fParser.parse(inputExpression);
+//				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+//				out.write(JavaForm.javaForm(parsedExpression, strictJava));
+//				// out.write(parsedExpression.internalFormString(strictJava, 0));
+//			} catch (final Throwable e) {
+//				return;
+//				// parsedExpression == null ==> fError occured
+//			}
+//		}
+//	}
 
 	/**
 	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects the

@@ -374,6 +374,18 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isFreeAST(final IExpr pattern) {
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeAST(Predicate<IExpr> predicate){
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isFunction() {
 		return false;
 	}
@@ -682,7 +694,13 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
-
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalValue(IRational value){
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isTan() {
