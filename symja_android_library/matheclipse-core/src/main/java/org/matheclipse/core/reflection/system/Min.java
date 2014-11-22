@@ -14,8 +14,11 @@ public class Min extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 2);
+		Validate.checkRange(ast, 1);
 
+		if (ast.size()==1){
+			return F.CInfinity;
+		}
 		IAST list = ast;
 		IAST resultList = list.copyHead();
 		if (EvaluationSupport.flatten(F.List, list, resultList)) {
