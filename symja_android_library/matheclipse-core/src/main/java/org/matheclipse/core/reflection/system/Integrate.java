@@ -91,27 +91,27 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// Integrate[f[x], {x,a,b}]
 				IAST clone = ast.setAtClone(2, xList.arg1());
 				IExpr temp = F.eval(clone);
-				if (temp.isFree(F.Integrate, true)) {
+				if (temp.isFreeAST(F.Integrate)) {
 					// F(b)-F(a)
 					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
 					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
 					EvalEngine engine = EvalEngine.get();
 					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-						PrintStream stream = engine.getOutPrintStream();
-						if (stream == null) {
-							stream = System.out;
-						}
 						if (!engine.isQuietMode()) {
+							PrintStream stream = engine.getOutPrintStream();
+							if (stream == null) {
+								stream = System.out;
+							}
 							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
 						}
 						return null;
 					}
 					if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-						PrintStream stream = engine.getOutPrintStream();
-						if (stream == null) {
-							stream = System.out;
-						}
 						if (!engine.isQuietMode()) {
+							PrintStream stream = engine.getOutPrintStream();
+							if (stream == null) {
+								stream = System.out;
+							}
 							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
 						}
 						return null;
@@ -774,12 +774,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 				engine.setRecursionLimit(128);
 			}
 			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
-			if (!firstIntegrate.isFree(Integrate, true)) {
+			if (!firstIntegrate.isFreeAST(Integrate)) {
 				return null;
 			}
 			IExpr gDerived = F.eval(F.D(g, x));
 			IExpr second2Integrate = F.eval(F.Integrate(F.Times(gDerived, firstIntegrate), x));
-			if (!second2Integrate.isFree(Integrate, true)) {
+			if (!second2Integrate.isFreeAST(Integrate)) {
 				return null;
 			}
 			return F.eval(F.Subtract(F.Times(g, firstIntegrate), second2Integrate));
