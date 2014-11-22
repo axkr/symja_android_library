@@ -26,7 +26,7 @@ public class Exponent extends AbstractFunctionEvaluator {
 
 		IExpr form = ast.arg2();
 		if (form.isList()) {
-			return ((IAST)form).mapAt(ast, 2);
+			return ((IAST) form).mapAt(ast, 2);
 		}
 		ISymbol sym = F.Max;
 		if (ast.size() == 4) {
@@ -87,6 +87,9 @@ public class Exponent extends AbstractFunctionEvaluator {
 			collector.add(F.C0);
 		}
 		IAST result = F.ast(sym);
+		if (collector.size() == 0) {
+			collector.add(F.C0);
+		}
 		for (IExpr exponent : collector) {
 			result.add(exponent);
 		}
