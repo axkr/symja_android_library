@@ -506,6 +506,12 @@ public class Symbol extends ExprImpl implements ISymbol {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isVariable() {
+		return (fAttributes & CONSTANT) != CONSTANT;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isFalse() {
 		return this.equals(F.False);
 	}

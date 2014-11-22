@@ -843,6 +843,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isValue();
 
 	/**
+	 * Test if this expression is a symbol which doesn't has attribute <code>Constant</code>.  
+	 * 
+	 * @see #isConstant()
+	 * @see #isSymbol()
+	 */
+	public boolean isVariable();
+	
+	/**
 	 * Test if this expression is a vector and return the dimension of the vector. This expression is only a vector, if the
 	 * expression is a <code>List(...)</code> and no element is itself a <code>List(...)</code>.
 	 * 

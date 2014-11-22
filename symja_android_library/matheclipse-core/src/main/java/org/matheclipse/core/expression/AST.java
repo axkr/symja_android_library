@@ -2279,6 +2279,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return engine.evalRules(symbol, this) != null;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isVariable() {
+		return false;
+	}
+	
 	@Override
 	public IExpr remainder(IExpr that) {
 		if (equals(that)) {

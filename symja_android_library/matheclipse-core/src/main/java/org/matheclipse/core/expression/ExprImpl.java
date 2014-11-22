@@ -736,6 +736,12 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isValue() {
 		return false;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isVariable() {
+		return false;
+	}
 
 	/** {@inheritDoc} */
 	@Override

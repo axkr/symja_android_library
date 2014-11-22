@@ -26,10 +26,7 @@ public class ExprVariables {
 		}
 
 		public boolean visit(ISymbol symbol) {
-			if (symbol.isConstant()) {
-				return false;
-			}
-			return true;
+			return symbol.isVariable();
 		}
 	}
 

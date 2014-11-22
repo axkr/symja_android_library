@@ -88,7 +88,7 @@ public class Iterator implements IIterator<IExpr> {
 			start = evalEngine.evalWithoutNumericReset(list.arg2());
 			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
 			step = F.C1;
- 
+
 			if (list.arg1().isSymbol()) {
 				variable = (Symbol) list.arg1();
 			} else {
@@ -99,7 +99,7 @@ public class Iterator implements IIterator<IExpr> {
 		case 5:
 			start = evalEngine.evalWithoutNumericReset(list.arg2());
 			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
-			step = evalEngine.evalWithoutNumericReset(list.arg4()); 
+			step = evalEngine.evalWithoutNumericReset(list.arg4());
 			if (list.arg1() instanceof Symbol) {
 				variable = (Symbol) list.arg1();
 			} else {
@@ -146,19 +146,19 @@ public class Iterator implements IIterator<IExpr> {
 			start = evalEngine.evalWithoutNumericReset(list.arg1());
 			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 			step = F.C1;
-			variable = symbol; 
+			variable = symbol;
 			break;
 		case 4:
 			start = evalEngine.evalWithoutNumericReset(list.arg1());
 			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 			step = evalEngine.evalWithoutNumericReset(list.arg3());
-			variable = symbol; 
+			variable = symbol;
 			break;
 		default:
 			start = null;
 			maxCounterOrList = null;
 			step = null;
-			variable = null; 
+			variable = null;
 		}
 		originalStart = start;
 		originalMaxCount = maxCounterOrList;
@@ -187,12 +187,15 @@ public class Iterator implements IIterator<IExpr> {
 	 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 	 */
 	public boolean hasNext() {
-		if ((maxCounterOrList == null)) {// || (illegalIterator)) {
+		if (maxCounterOrList == null) {// || (illegalIterator)) {
 			throw new NoEvalException();
 		}
 		if ((maxCounterOrList.isDirectedInfinity()) || (count.isDirectedInfinity())) {
 			throw new NoEvalException();
-		} 
+		}
+		// if (count == null || count.isDirectedInfinity()) {
+		// throw new NoEvalException();
+		// }
 		if (maxCounterOrList.isList()) {
 			if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
 				return true;
@@ -224,7 +227,12 @@ public class Iterator implements IIterator<IExpr> {
 	}
 
 	public boolean isValidVariable() {
-		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null;
+		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null
+				&& !originalMaxCount.isList();
+	}
+
+	public boolean isNumericFunction() {
+		return originalStart.isNumericFunction() && originalStep.isNumericFunction() && originalMaxCount.isNumericFunction();
 	}
 
 	/**
@@ -234,7 +242,7 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public IExpr next() {
 		if (variable != null) {
-			variable.set(count); 
+			variable.set(count);
 		}
 		final IExpr temp = count;
 		if (maxCounterOrList.isList()) {
@@ -302,7 +310,7 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public void tearDown() {
 		if (variable != null) {
-			variable.popLocalVariable(); 
+			variable.popLocalVariable();
 		}
 		EvalEngine.get().setNumericMode(fNumericMode);
 	}
