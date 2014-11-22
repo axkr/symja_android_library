@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Slot;
+import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
@@ -25,6 +26,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Predicate;
@@ -50,8 +52,9 @@ public class Sum extends Table {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		IExpr arg1 = ast.arg1();
 
+		// System.out.println(ast.toString());
+		IExpr arg1 = ast.arg1();
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
@@ -61,8 +64,8 @@ public class Sum extends Table {
 		if (ast.size() >= 3) {
 			if (argN.isList()) {
 				Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
-				if (iterator.isValidVariable()) {
-					if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol() && iterator.getStep().isOne()) {
+				if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+					if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
 						temp = definiteSum(arg1, iterator, (IAST) argN);
 						if (temp != null) {
 							if (ast.size() == 3) {
@@ -118,8 +121,9 @@ public class Sum extends Table {
 	 */
 	public IExpr definiteSum(IExpr arg1, final Iterator iterator, IAST list) {
 		final ISymbol var = (ISymbol) iterator.getVariable();
-		final IInteger from = (IInteger) iterator.getStart();
-		final ISymbol to = (ISymbol) iterator.getMaxCount();
+		final IExpr from = iterator.getStart();
+		final IExpr to = iterator.getMaxCount();
+
 		if (arg1.isFree(var, true)) {
 			if (from.isOne()) {
 				return F.Times(to, arg1);
@@ -139,15 +143,21 @@ public class Sum extends Table {
 					}
 				});
 				if (filterCollector.size() > 1) {
-					if (restCollector.size() == 2) {
-						filterCollector.add(F.Sum(restCollector.arg1(), list));
-					} else {
-						filterCollector.add(F.Sum(restCollector, list));
+					IExpr temp = F.evalQuiet(F.Sum(restCollector.getOneIdentity(F.C1), list));
+					if (temp.isFreeAST(F.Sum)) {
+						filterCollector.add(temp);
+						return filterCollector;
 					}
-					return filterCollector;
+
 				}
 			}
 
+			if (arg1.equals(var)) {
+				if ((from.isVariable() && !from.equals(var)) || (to.isVariable() && !to.equals(var))) {
+					// Sum(i, {i, from, to})
+					return Times(C1D2, Plus(Subtract(to, from), C1), Plus(from, to));
+				}
+			}
 			if (from.isZero()) {
 				if (arg1.isPower()) {
 					return sumPower((IAST) arg1, var, to);
@@ -162,11 +172,15 @@ public class Sum extends Table {
 					}
 				}
 			}
+
 		}
 		if (from.isPositive()) {
-			IExpr temp = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
-			if (!temp.isComplexInfinity()) {
-				return F.Subtract(F.Sum(arg1, F.List(var, C0, to)), temp);
+			IExpr temp1 = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
+			if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
+				IExpr temp2 = F.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
+				if (temp2 != null && !temp2.isComplexInfinity()) {
+					return F.Subtract(temp2, temp1);
+				}
 			}
 		}
 		return null;
