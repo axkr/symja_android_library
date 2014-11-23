@@ -77,6 +77,10 @@ public class ExponentArray implements Comparable<ExponentArray>, Cloneable {
 		fExponents[position] = value;
 	}
 
+	public ExponentArray(long[] exponents) {
+		fExponents = exponents;
+	}
+
 	@Override
 	protected ExponentArray clone() throws CloneNotSupportedException {
 		ExponentArray e = (ExponentArray) super.clone();

@@ -42,7 +42,8 @@ public class Polynomial {
 	 * @param polynomialExpr
 	 * @param variables
 	 * @param comparator
-	 * @param convertPolynomial convert to polynomial form
+	 * @param convertPolynomial
+	 *            convert to polynomial form
 	 */
 	public Polynomial(final IExpr polynomialExpr, final IAST variables, Comparator<ExponentArray> comparator,
 			boolean convertPolynomial) {
@@ -59,7 +60,7 @@ public class Polynomial {
 		}
 	}
 
-	public Polynomial(final IExpr polynomialExpr, final ISymbol variable) {
+	public Polynomial(final IExpr polynomialExpr, final IExpr variable) {
 		this(polynomialExpr, variable, true);
 	}
 
@@ -71,7 +72,7 @@ public class Polynomial {
 		this(polynomialExpr, variables.getVarList(), true);
 	}
 
-	public Polynomial(final IExpr polynomialExpr, final ISymbol variable, boolean convertPolynomial) {
+	public Polynomial(final IExpr polynomialExpr, final IExpr variable, boolean convertPolynomial) {
 		this(polynomialExpr, F.List(variable), convertPolynomial);
 	}
 
@@ -378,6 +379,9 @@ public class Polynomial {
 					return false;
 				}
 			}
+			// if (polynomialExpr.isIndeterminate() || polynomialExpr.equals(F.Null)) {
+			// return false;
+			// }
 			if (fPolynomialType.compareTo(polyType.Expr) < 0) {
 				fPolynomialType = polyType.Expr;
 			}
@@ -427,6 +431,20 @@ public class Polynomial {
 	 */
 	public IExpr coefficient(long exponent) {
 		ExponentArray expArray = new ExponentArray(1, 0, exponent);
+		Monomial monom = fMonomials.get(expArray);
+		if (monom != null) {
+			return monom.getCoefficient();
+		}
+		return F.C0;
+	}
+
+	/**
+	 * Get the coefficient of a univariate polynomial for the given <code>exponent</code>
+	 * 
+	 * @return the coefficient of a univariate polynomial for the given <code>exponent</code>
+	 */
+	public IExpr coefficient(long[] exponents) {
+		ExponentArray expArray = new ExponentArray(exponents);
 		Monomial monom = fMonomials.get(expArray);
 		if (monom != null) {
 			return monom.getCoefficient();

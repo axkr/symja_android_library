@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class VisitorCollectionBoolean extends AbstractVisitorBoolean {
 	protected int fHeadOffset;
 
-	private Collection<IExpr> fCollection;
+	protected Collection<IExpr> fCollection;
 
 	public VisitorCollectionBoolean(int hOffset, Collection<IExpr> collection) {
 		super();
@@ -18,9 +18,7 @@ public class VisitorCollectionBoolean extends AbstractVisitorBoolean {
 
 	public boolean visit(IAST list) {
 		for (int i = fHeadOffset; i < list.size(); i++) {
-			if (list.get(i).accept(this)) {
-				fCollection.add(list.get(i));
-			}
+			list.get(i).accept(this);
 		}
 		return false;
 	}

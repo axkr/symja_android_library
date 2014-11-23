@@ -26,7 +26,11 @@ public class ExprVariables {
 		}
 
 		public boolean visit(ISymbol symbol) {
-			return symbol.isVariable();
+			if (symbol.isVariable()) {
+				fCollection.add(symbol);
+				return true;
+			}
+			return false;
 		}
 	}
 
