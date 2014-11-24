@@ -15,6 +15,7 @@ import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Iterator for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
@@ -47,7 +48,7 @@ public class Iterator implements IIterator<IExpr> {
 
 	final IExpr originalStep;
 
-	final Symbol variable;
+	final ISymbol variable;
 
 	/**
 	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
@@ -177,7 +178,7 @@ public class Iterator implements IIterator<IExpr> {
 		return originalStep;
 	}
 
-	public Symbol getVariable() {
+	public ISymbol getVariable() {
 		return variable;
 	}
 

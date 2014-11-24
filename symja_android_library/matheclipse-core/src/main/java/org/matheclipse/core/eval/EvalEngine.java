@@ -2,9 +2,11 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -50,6 +52,59 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public static final IExpr eval(final IExpr expr) {
 		return (instance.get()).evaluate(expr);
+	}
+
+	/**
+	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the input object.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @param localVariablesList
+	 *            a list of symbols which should be used as local variables inside the block
+	 * @return the evaluated object
+	 */
+	public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
+		final List<ISymbol> variables = new ArrayList<ISymbol>();
+		IExpr result = null;
+
+		try {
+			// remember which local variables we use:
+			ISymbol blockVariableSymbol;
+
+			for (int i = 1; i < localVariablesList.size(); i++) {
+				if (localVariablesList.get(i).isSymbol()) {
+					blockVariableSymbol = (ISymbol) localVariablesList.get(i);
+					blockVariableSymbol.pushLocalVariable();
+					variables.add(blockVariableSymbol);
+				} else {
+					if (localVariablesList.get(i).isAST(F.Set, 3)) {
+						// lhs = rhs
+						final IAST setFun = (IAST) localVariablesList.get(i);
+						if (setFun.arg1().isSymbol()) {
+							blockVariableSymbol = (ISymbol) setFun.arg1();
+							blockVariableSymbol.pushLocalVariable();
+							// this evaluation step may throw an exception
+							IExpr temp = evaluate(setFun.arg2());
+							blockVariableSymbol.set(temp);
+							variables.add(blockVariableSymbol);
+						}
+					} else {
+						return expr;
+					}
+				}
+			}
+
+			result = evaluate(expr);
+			if (result != null) {
+				return result;
+			}
+			return expr;
+		} finally {
+			// pop all local variables from local variable stack
+			for (int i = 0; i < variables.size(); i++) {
+				variables.get(i).popLocalVariable();
+			}
+		}
 	}
 
 	/**
@@ -1485,4 +1540,5 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 		return buf.toString();
 	}
+
 }

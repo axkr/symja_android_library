@@ -61,30 +61,43 @@ public class Sum extends Table {
 		}
 		IExpr argN = ast.get(ast.size() - 1);
 		IExpr temp;
-		if (ast.size() >= 3) {
-			if (argN.isList()) {
-				Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
-				if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-					if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
-						temp = definiteSum(arg1, iterator, (IAST) argN);
-						if (temp != null) {
-							if (ast.size() == 3) {
-								return temp;
-							} else {
-								IAST result = ast.clone();
-								result.remove(ast.size() - 1);
-								result.set(1, temp);
-								return result;
-							}
+
+		arg1 = evalBlockWithoutReap(arg1, determineIteratorVariables(ast));
+
+		if (argN.isList()) {
+			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
+			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+				if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
+					temp = definiteSum(arg1, iterator, (IAST) argN);
+					if (temp != null) {
+						if (ast.size() == 3) {
+							return temp;
+						} else {
+							IAST result = ast.clone();
+							result.remove(ast.size() - 1);
+							result.set(1, temp);
+							return result;
 						}
 					}
 				}
+			}
 
-				IAST resultList = Plus();
-				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-				if (temp == null || temp.equals(resultList)) {
-					return null;
-				}
+			IAST resultList = Plus();
+			temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+			if (temp == null || temp.equals(resultList)) {
+				return null;
+			}
+			if (ast.size() == 3) {
+				return temp;
+			} else {
+				IAST result = ast.clone();
+				result.remove(ast.size() - 1);
+				result.set(1, temp);
+				return result;
+			}
+		} else if (argN.isSymbol()) {
+			temp = indefiniteSum(arg1, (ISymbol) argN);
+			if (temp != null) {
 				if (ast.size() == 3) {
 					return temp;
 				} else {
@@ -93,20 +106,9 @@ public class Sum extends Table {
 					result.set(1, temp);
 					return result;
 				}
-			} else if (argN.isSymbol()) {
-				temp = indefiniteSum(arg1, (ISymbol) argN);
-				if (temp != null) {
-					if (ast.size() == 3) {
-						return temp;
-					} else {
-						IAST result = ast.clone();
-						result.remove(ast.size() - 1);
-						result.set(1, temp);
-						return result;
-					}
-				}
 			}
 		}
+
 		return null;
 	}
 
@@ -119,8 +121,9 @@ public class Sum extends Table {
 	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	public IExpr definiteSum(IExpr arg1, final Iterator iterator, IAST list) {
+	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list) {
 		final ISymbol var = (ISymbol) iterator.getVariable();
+		IExpr arg1 = expr;
 		final IExpr from = iterator.getStart();
 		final IExpr to = iterator.getMaxCount();
 
