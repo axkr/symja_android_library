@@ -62,7 +62,7 @@ public class Sum extends Table {
 		IExpr argN = ast.get(ast.size() - 1);
 		IExpr temp;
 
-		arg1 = evalBlockWithoutReap(arg1, determineIteratorVariables(ast));
+		arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
 
 		if (argN.isList()) {
 			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());

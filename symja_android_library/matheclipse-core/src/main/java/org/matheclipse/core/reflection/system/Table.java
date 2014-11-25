@@ -132,12 +132,12 @@ public class Table extends AbstractFunctionEvaluator {
 	 *            a list of symbols which should be used as local variables inside the block
 	 * @return the evaluated object
 	 */
-	public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
+	public static IExpr evalBlockExpandWithoutReap(IExpr expr, IAST localVariablesList) {
 		EvalEngine engine = EvalEngine.get();
 		IAST reapList = engine.getReapList();
 		try {
 			engine.setReapList(null);
-			return engine.evalBlock(expr, localVariablesList);
+			return engine.evalBlock(F.Expand(expr), localVariablesList);
 		} catch (RuntimeException rex) {
 			//
 		} finally {

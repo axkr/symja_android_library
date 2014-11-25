@@ -42,7 +42,7 @@ public class Product extends Table {
 			return ((IAST) arg1).mapAt(prod, 1);
 		}
 		
-		arg1 = evalBlockWithoutReap(arg1, determineIteratorVariables(ast));
+		arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
 		
 		if (arg1.isPower()) {
 			IExpr powArg2 = arg1.getAt(2);
