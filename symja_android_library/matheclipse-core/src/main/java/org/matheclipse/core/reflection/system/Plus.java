@@ -324,10 +324,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		if (o1.isInfinity()) {
 			return F.CInfinity;
 		} else if (o1.isNegativeInfinity()) {
-			EvalEngine engine = EvalEngine.get();
-			if (!engine.isQuietMode()) {
-				engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
-			}
+			EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
 			return F.Indeterminate;
 		}
 		return F.CInfinity;
@@ -335,10 +332,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	private IExpr negativeInfinityPlus(IExpr o1) {
 		if (o1.isInfinity()) {
-			EvalEngine engine = EvalEngine.get();
-			if (!engine.isQuietMode()) {
-				engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
-			}
+			EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
 			return F.Indeterminate;
 		} else if (o1.isNegativeInfinity()) {
 			return F.CNInfinity;
@@ -352,17 +346,13 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 			if (o1.isInfinity()) {
 				return F.CInfinity;
 			} else if (o1.isNegativeInfinity()) {
-				if (!engine.isQuietMode()) {
-					engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
-				}
+				engine.printMessage("Indeterminate expression Infinity-Infinity");
 				return F.Indeterminate;
 			}
 			return F.CInfinity;
 		} else if (inf.isNegativeInfinity()) {
 			if (o1.isInfinity()) {
-				if (!engine.isQuietMode()) {
-					engine.getOutPrintStream().println("Indeterminate expression Infinity-Infinity");
-				}
+				engine.printMessage("Indeterminate expression Infinity-Infinity");
 				return F.Indeterminate;
 			} else if (o1.isNegativeInfinity()) {
 				return F.CNInfinity;

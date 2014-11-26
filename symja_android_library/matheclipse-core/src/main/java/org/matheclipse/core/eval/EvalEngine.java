@@ -1541,4 +1541,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return buf.toString();
 	}
 
+	public void printMessage(String str) {
+		if (!isQuietMode()) {
+			PrintStream stream = getOutPrintStream();
+			if (stream == null) {
+				stream = System.out;
+			}
+			stream.println(str);
+		}
+	}
+
 }

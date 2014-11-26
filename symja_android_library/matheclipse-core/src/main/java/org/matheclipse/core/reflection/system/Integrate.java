@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -97,23 +96,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
 					EvalEngine engine = EvalEngine.get();
 					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-						if (!engine.isQuietMode()) {
-							PrintStream stream = engine.getOutPrintStream();
-							if (stream == null) {
-								stream = System.out;
-							}
-							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
-						}
+						engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
 						return null;
 					}
 					if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-						if (!engine.isQuietMode()) {
-							PrintStream stream = engine.getOutPrintStream();
-							if (stream == null) {
-								stream = System.out;
-							}
-							stream.println("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
-						}
+						engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
 						return null;
 					}
 					return F.Subtract(Fb, Fa);

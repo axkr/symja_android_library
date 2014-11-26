@@ -155,16 +155,12 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				// 0^0
 				// TODO add a real log message
 				// throw new DivisionByZero("0^0");
-				if (!ee.isQuietMode()) {
-					ee.getOutPrintStream().println("Infinite expression 0^0");
-				}
+				ee.printMessage("Infinite expression 0^0");
 				return F.Indeterminate;
 			}
 
 			if ((arg2.isSignedNumber()) && ((ISignedNumber) arg2).isNegative()) {
-				if (!ee.isQuietMode()) {
-					ee.getOutPrintStream().println("Infinite expression 0^(negative number)");
-				}
+				ee.printMessage("Infinite expression 0^(negative number)");
 				return F.CComplexInfinity;
 			}
 

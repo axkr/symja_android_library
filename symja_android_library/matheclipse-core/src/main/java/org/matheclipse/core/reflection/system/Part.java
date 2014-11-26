@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -15,9 +16,9 @@ public class Part implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
-//			if (ast.arg1() == F.Null) {
-//				System.out.println("Part argument is null");
-//			}
+			// if (ast.arg1() == F.Null) {
+			// System.out.println("Part argument is null");
+			// }
 			if (ast.arg1().isAST()) {
 				return getPart(ast.getAST(1), ast, 2);
 			}
@@ -26,7 +27,7 @@ public class Part implements IFunctionEvaluator {
 	}
 
 	private IExpr getPart(final IExpr expr1, final IAST ast, int pos) {
-		
+
 		if (!expr1.isAST()) {
 			throw new WrongArgumentType(ast, expr1, pos, "Wrong argument for Part[] function. Function or list expected.");
 		}
@@ -67,7 +68,8 @@ public class Part implements IFunctionEvaluator {
 			}
 			return result;
 		}
-		throw new WrongArgumentType(ast, arg2, pos, "Wrong argument for Part[] function");
+		EvalEngine.get().printMessage("Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+		return null;
 	}
 
 	/**

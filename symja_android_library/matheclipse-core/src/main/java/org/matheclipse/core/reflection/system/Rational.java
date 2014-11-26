@@ -44,17 +44,10 @@ public class Rational extends AbstractFunctionEvaluator {
 				IInteger denominator = (IInteger) arg1;
 				if (denominator.isZero()) {
 					EvalEngine ee = EvalEngine.get();
+					ee.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					if (numerator.isZero()) {
 						// 0^0
-						if (!ee.isQuietMode()) {
-							ee.getOutPrintStream().println(
-									"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-						}
 						return F.Indeterminate;
-					}
-					if (!ee.isQuietMode()) {
-						ee.getOutPrintStream().println(
-								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					}
 					return F.CComplexInfinity;
 				}
@@ -68,17 +61,10 @@ public class Rational extends AbstractFunctionEvaluator {
 				INum denominator = (INum) arg1;
 				if (denominator.isZero()) {
 					EvalEngine ee = EvalEngine.get();
+					ee.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					if (numerator.isZero()) {
 						// 0^0
-						if (!ee.isQuietMode()) {
-							ee.getOutPrintStream().println(
-									"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-						}
 						return F.Indeterminate;
-					}
-					if (!ee.isQuietMode()) {
-						ee.getOutPrintStream().println(
-								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					}
 					return F.CComplexInfinity;
 				}

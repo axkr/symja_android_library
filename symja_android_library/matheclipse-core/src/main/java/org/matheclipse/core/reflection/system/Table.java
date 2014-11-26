@@ -135,13 +135,16 @@ public class Table extends AbstractFunctionEvaluator {
 	public static IExpr evalBlockExpandWithoutReap(IExpr expr, IAST localVariablesList) {
 		EvalEngine engine = EvalEngine.get();
 		IAST reapList = engine.getReapList();
+		boolean quietMode = engine.isQuietMode();
 		try {
+			engine.setQuietMode(true);
 			engine.setReapList(null);
 			return engine.evalBlock(F.Expand(expr), localVariablesList);
 		} catch (RuntimeException rex) {
-			//
+			// ignore
 		} finally {
 			engine.setReapList(reapList);
+			engine.setQuietMode(quietMode);
 		}
 		return expr;
 	}
