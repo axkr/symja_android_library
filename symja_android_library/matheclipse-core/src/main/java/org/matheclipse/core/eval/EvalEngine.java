@@ -1541,6 +1541,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return buf.toString();
 	}
 
+	/**
+	 * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
+	 * 
+	 * @param str
+	 *            the message which should be printed
+	 */
 	public void printMessage(String str) {
 		if (!isQuietMode()) {
 			PrintStream stream = getOutPrintStream();
