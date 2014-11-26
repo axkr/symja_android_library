@@ -291,8 +291,8 @@ public class Expand extends AbstractFunctionEvaluator {
 						}
 
 					}
-				}
-				expandedResult.add(timesAST);
+				} 
+				expandedResult.add(timesAST.getOneIdentity(F.C0));
 			}
 		}
 
