@@ -11,8 +11,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Chop extends AbstractFunctionEvaluator {
-	public final static double DEFAULT_CHOP_DELTA = 1.0e-5;
-
+	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
 	public Chop() {
 	}
 

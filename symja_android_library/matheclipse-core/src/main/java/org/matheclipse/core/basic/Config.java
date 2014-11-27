@@ -100,6 +100,11 @@ public class Config {
 	public final static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
 
 	/**
+	 * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.
+	 */
+	public final static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
+
+	/**
 	 * Maximum size of the BigInteger words in <i>server mode</i>.
 	 * 
 	 * @see apache.harmony.math.BigInteger
@@ -189,4 +194,5 @@ public class Config {
 	 * @see org.matheclipse.core.basic.Alloc
 	 */
 	public static int MAX_DOUBLE_MATRIX_SIZE = 65536;
+
 }

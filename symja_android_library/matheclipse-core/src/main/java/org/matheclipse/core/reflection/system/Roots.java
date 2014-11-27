@@ -101,7 +101,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			double[] imagValues = ed.getImagEigenvalues();
 
 			for (int i = 0; i < N; i++) {
-				roots.add(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Chop.DEFAULT_CHOP_DELTA));
+				roots.add(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
 			}
 			return roots;
 		} catch (Exception ime) {
@@ -125,7 +125,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				if (quarticResultList != null) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						if (numericSolutions) {
-							result.add(F.chopExpr(F.evaln(quarticResultList.get(j)), Chop.DEFAULT_CHOP_DELTA));
+							result.add(F.chopExpr(F.evaln(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
 						} else {
 							result.add(quarticResultList.get(j));
 						}
@@ -154,7 +154,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				result = rootsOfPolynomial(ePoly);
 				if (result != null && expr.isNumericMode()) {
 					for (int i = 1; i < result.size(); i++) {
-						result.set(i, F.chopExpr(result.get(i), Chop.DEFAULT_CHOP_DELTA));
+						result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
 					}
 				}
 			} catch (JASConversionException e2) {
