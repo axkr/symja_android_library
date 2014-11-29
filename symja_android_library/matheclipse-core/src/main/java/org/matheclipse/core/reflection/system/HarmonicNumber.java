@@ -1,12 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.*;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -22,9 +22,41 @@ public class HarmonicNumber implements IFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 2);
+		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
+		if (ast.size() == 3) {
+			IExpr arg2 = ast.arg2();
+			if (!arg2.isOne()) {
+				// generalized harmonic number
+				if (arg2.isInteger()) {
+					if (arg1.isInfinity()) {
+						if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
+							// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
+							IExpr v = Times(C1D2, arg2);
+							return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)), BernoulliB(Times(C2, v)),
+									Power(Times(C2, Factorial(Times(C2, v))), CN1));
+						}
+						return null;
+					}
+				}
+				if (arg1.isInteger()) {
+					int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+					if (n < 0) {
+						return null;
+					}
+					if (n == 0) {
+						return C0;
+					}
+					IAST result = Plus();
+					for (int i = 1; i <= n; i++) {
+						result.add(Power(integer(i), Negate(arg2)));
+					}
+					return result;
+				}
+				return null;
+			}
+		}
 		if (arg1.isInteger()) {
 
 			int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
@@ -32,13 +64,13 @@ public class HarmonicNumber implements IFunctionEvaluator {
 				return null;
 			}
 			if (n == 0) {
-				return F.C0;
+				return C0;
 			}
 			if (n == 1) {
-				return F.C1;
+				return C1;
 			}
 
-			return F.fraction(harmonicNumber(n));
+			return fraction(harmonicNumber(n));
 		}
 
 		return null;
@@ -58,7 +90,7 @@ public class HarmonicNumber implements IFunctionEvaluator {
 	 */
 	public BigFraction harmonicNumber(int n) {
 		if (n < 1)
-			return (new BigFraction(0, 1));
+			return BigFraction.ZERO;
 		else {
 			/*
 			 * start with 1 as the result
@@ -68,8 +100,9 @@ public class HarmonicNumber implements IFunctionEvaluator {
 			/*
 			 * add 1/i for i=2..n
 			 */
-			for (int i = 2; i <= n; i++)
+			for (int i = 2; i <= n; i++) {
 				a = a.add(new BigFraction(1, i));
+			}
 			return a;
 		}
 	}

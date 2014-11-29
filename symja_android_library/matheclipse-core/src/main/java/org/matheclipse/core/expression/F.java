@@ -2426,6 +2426,14 @@ public class F {
 		return binary(GreaterEqual, a0, a1);
 	}
 
+	public static IAST HarmonicNumber(final IExpr a) {
+		return unary(HarmonicNumber, a);
+	}
+
+	public static IAST HarmonicNumber(final IExpr a0, final IExpr a1) {
+		return binary(HarmonicNumber, a0, a1);
+	}
+
 	public static IAST Head(final IExpr a) {
 		return unary(Head, a);
 	}
@@ -3093,7 +3101,7 @@ public class F {
 	public static IAST Or() {
 		return ast(Or);
 	}
-	
+
 	public static IAST Or(final IExpr a0, final IExpr a1) {
 		return binary(Or, a0, a1);
 	}
