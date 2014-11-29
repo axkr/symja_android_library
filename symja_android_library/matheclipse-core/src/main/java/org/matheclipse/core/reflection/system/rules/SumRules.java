@@ -9,7 +9,9 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface SumRules {
   final public static IAST RULES = List(
-    ISetDelayed(Sum(Ceiling(Log(a_,$p(i))),List($p(i, SymbolHead),C1,n_)),
+    ISetDelayed(Sum(Ceiling(Log($p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+      Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Times(CN1,C1)),CN1)),Times(Plus(n,Times(CN1,Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
+    ISetDelayed(Sum(Ceiling(Log(a_,$p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(a,Times(CN1,C1)),CN1)),Times(Plus(n,Times(CN1,Power(a,Floor(Log(a,n))))),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
   );
 }
