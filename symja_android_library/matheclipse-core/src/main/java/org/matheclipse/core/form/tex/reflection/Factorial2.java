@@ -14,8 +14,8 @@ public class Factorial2 extends AbstractConverter {
 		if (f.size() != 2) {
 			return false;
 		}
-		fFactory.convert(buf, f.get(0), 0);
-		buf.append('!');
+		fFactory.convert(buf, f.arg1(), 0);
+		buf.append("!!");
 		return true;
 	}
 }

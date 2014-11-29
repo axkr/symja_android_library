@@ -15,7 +15,7 @@ public class Ceiling extends AbstractConverter {
 			return false;
 		}
 		buf.append(" \\left \\lceil ");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     buf.append(" \\right \\rceil ");
 		return true;
 	}

@@ -15,7 +15,7 @@ public class Floor extends AbstractConverter {
       return false;
     }
     buf.append(" \\left \\lfloor ");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     buf.append(" \\right \\rfloor ");
     return true;
   }

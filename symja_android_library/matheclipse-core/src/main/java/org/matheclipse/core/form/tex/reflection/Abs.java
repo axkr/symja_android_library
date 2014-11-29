@@ -16,7 +16,7 @@ public class Abs extends AbstractConverter {
 			return false;
 		}
 		buf.append('|');
-		fFactory.convert(buf, f.get(1), 0);
+		fFactory.convert(buf, f.arg1(), 0);
 		buf.append('|');
 		return true;
 	}
