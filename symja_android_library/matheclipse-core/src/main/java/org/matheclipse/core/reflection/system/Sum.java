@@ -26,8 +26,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.SumRules;
+import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Predicate;
 
@@ -36,7 +37,7 @@ import com.google.common.base.Predicate;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
  */
-public class Sum extends Table {
+public class Sum extends Table implements SumRules {
 	private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
 
 	static {
@@ -44,6 +45,11 @@ public class Sum extends Table {
 		MAP_0_N.put(Binomial(Slot(C2), Slot(C1)), Power(C2, Slot(C1)));
 		// #*Binomial[#2,#] -> #*2^(#-1)
 		MAP_0_N.put(Times(Slot(C1), Binomial(Slot(C2), Slot(C1))), Times(Slot(C1), Power(C2, Plus(Slot(C1), Times(CN1, C1)))));
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	public Sum() {
@@ -269,5 +275,19 @@ public class Sum extends Table {
 				Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
 				Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
 						Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+	}
+
+	/**
+	 * Evaluate built-in rules and define Attributes for a function.
+	 * 
+	 */
+	@Override
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.HOLDALL);
+		IAST ruleList;
+		if ((ruleList = getRuleAST()) != null) {
+			EvalEngine.get().addRules(ruleList);
+		}
+
 	}
 }
