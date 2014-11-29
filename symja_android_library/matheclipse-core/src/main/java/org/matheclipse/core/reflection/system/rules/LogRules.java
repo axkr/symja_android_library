@@ -19,7 +19,7 @@ public interface LogRules {
       x),
     ISet(Log(Power(E,CI)),
       CI),
-    ISet(Log(Exp(CNI)),
+    ISet(Log(Power(E,CNI)),
       CNI),
     ISet(Log(C0),
       CNInfinity),

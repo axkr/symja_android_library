@@ -114,7 +114,7 @@ public interface SinRules {
     ISetDelayed(Sin(ArcCos(x_)),
       Sqrt(Plus(C1,Times(CN1,Sqr(x))))),
     ISetDelayed(Sin(ArcTan(x_)),
-      Times(x,Power(Sqrt(Plus(C1,Sqr(x))),CN1))),
+      Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
     ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
       Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     ISet(Sin(Times(CI,CInfinity)),

@@ -33,7 +33,7 @@ public interface ArcCotRules {
       Times(CNI,CInfinity)),
     ISet(ArcCot(CInfinity),
       C0),
-    ISet(ArcCot(CNInfinity),
+    ISet(ArcCot(Times(CN1,CInfinity)),
       C0),
     ISet(ArcCot(Times(CI,CInfinity)),
       C0),

@@ -367,6 +367,38 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return c0.add(F.complex(i1, F.C0));
 	}
 
+	public static IExpr evalPlusNumbers(IAST ast) {
+		IAST result = F.Plus();
+		IExpr num;
+		if (!ast.arg1().isNumber()) {
+			return null;
+		}
+		if (!ast.arg2().isNumber()) {
+			return null;
+		}
+		num = ast.arg1().plus(ast.arg2());
+		result.add(num);
+		for (int i = 3; i < ast.size(); i++) {
+			if (num.isNumber() && ast.get(i).isNumber()) {
+				num = num.plus(ast.get(i));
+			} else {
+				result.addAll(ast, i, ast.size());
+				result.set(1, num);
+				return result;
+			}
+		}
+		return num;
+	}
+	
+	public double evalReal(final double[] stack, final int top, final int size) {
+		double result = 0;
+		for (int i = top - size + 1; i < top + 1; i++) {
+			result += stack[i];
+		}
+		return result;
+	}
+	
+
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -389,11 +421,4 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		super.setUp(symbol);
 	}
 
-	public double evalReal(final double[] stack, final int top, final int size) {
-		double result = 0;
-		for (int i = top - size + 1; i < top + 1; i++) {
-			result += stack[i];
-		}
-		return result;
-	}
 }

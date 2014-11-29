@@ -13,7 +13,7 @@ public interface ArcCschRules {
       CComplexInfinity),
     ISet(ArcCsch(CI),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    ISet(ArcCsch(Times(CC(0L,1L,2L,1L),C1DSqrt3)),
+    ISet(ArcCsch(Times(C2,CI,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
     ISet(ArcCsch(Times(CI,CSqrt2)),
       Times(CC(0L,1L,-1L,4L),Pi)),

@@ -15,7 +15,7 @@ public interface PowerRules {
       Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),
     ISet(Power(E,CInfinity),
       CInfinity),
-    ISet(Power(E,CNInfinity),
+    ISet(Power(E,Times(CN1,CInfinity)),
       C0),
     ISet(Power(E,Times(CI,CInfinity)),
       Indeterminate),

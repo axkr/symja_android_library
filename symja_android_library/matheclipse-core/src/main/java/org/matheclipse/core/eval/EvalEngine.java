@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.MethodSymbol;
@@ -27,6 +28,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
+import org.matheclipse.core.reflection.system.Plus;
+import org.matheclipse.core.reflection.system.Times;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
@@ -928,7 +931,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param ast
 	 * @return
 	 */
-	public IAST evalSetAttributes(IAST ast) {
+	public IExpr evalSetAttributes(IAST ast) {
 		boolean evalLHSMode = fEvalLHSMode;
 		try {
 			fEvalLHSMode = true;
@@ -937,7 +940,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return ast;
 			}
 
-			IAST result = evalSetAttributesRecursive(ast);
+			IExpr result = evalSetAttributesRecursive(ast);
 			if (result != null) {
 				return result;
 			}
@@ -947,12 +950,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	private IAST evalSetAttributesRecursive(IAST ast) {
+	private IExpr evalSetAttributesRecursive(IAST ast) {
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 		// final Predicate<IExpr> isPattern = Predicates.isPattern();
 		IAST resultList = null;
-		IAST result;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 			final int astSize = ast.size();
@@ -961,9 +963,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// the HoldFirst attribute isn't set here
 				if (astSize > 1 && ast.arg1().isAST()) {
 					IAST temp = (IAST) ast.arg1();
-					result = evalSetAttributesRecursive(temp);
-					if (result != null) {
-						resultList = ast.setAtClone(1, result);
+					IExpr expr = evalSetAttributesRecursive(temp);
+					if (expr != null) {
+						resultList = ast.setAtClone(1, expr);
 					}
 				}
 			}
@@ -972,12 +974,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				for (int i = 2; i < astSize; i++) {
 					if (ast.get(i).isAST()) {
 						IAST temp = (IAST) ast.get(i);
-						result = evalSetAttributesRecursive(temp);
-						if (result != null) {
+						IExpr expr = evalSetAttributesRecursive(temp);
+						if (expr != null) {
 							if (resultList == null) {
 								resultList = ast.clone();
 							}
-							resultList.set(i, result);
+							resultList.set(i, expr);
 						}
 					}
 				}
@@ -985,15 +987,22 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		}
 		if (resultList != null) {
-			if (ast.size() > 2) {
+			if (resultList.size() > 2) {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
+					IAST result;
 					if ((result = EvaluationSupport.flatten(resultList)) != null) {
 						resultList = result;
+						IExpr expr = evalSetOrderless(resultList, attr);
+						if (expr != null) {
+							return expr;
+						}
+						return resultList;
 					}
 				}
-				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvaluationSupport.sort(resultList);
+				IExpr expr = evalSetOrderless(resultList, attr);
+				if (expr != null) {
+					return expr;
 				}
 			}
 			return resultList;
@@ -1001,16 +1010,33 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
+			IAST result;
 			if ((result = EvaluationSupport.flatten(ast)) != null) {
 				resultList = result;
-				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvaluationSupport.sort(resultList);
+				IExpr expr = evalSetOrderless(ast, attr);
+				if (expr != null) {
+					return expr;
 				}
 				return resultList;
 			}
 		}
+		return evalSetOrderless(ast, attr);
+	}
+
+	private IExpr evalSetOrderless(IAST ast, final int attr) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvaluationSupport.sort(ast);
+			if (ast.isTimes() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
+				IExpr expr = Times.evalTimesNumbers(ast);
+				if (expr != null) {
+					return expr;
+				}
+			} else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
+				IExpr expr = Plus.evalPlusNumbers(ast);
+				if (expr != null) {
+					return expr;
+				}
+			}
 		}
 
 		return null;

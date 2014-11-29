@@ -19,6 +19,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
@@ -270,6 +271,29 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 
 		return null;
+	}
+
+	public static IExpr evalTimesNumbers(IAST ast) {
+		IAST result = F.Times();
+		IExpr num;
+		if (!ast.arg1().isNumber()) {
+			return null;
+		}
+		if (!ast.arg2().isNumber()) {
+			return null;
+		}
+		num = ast.arg1().times(ast.arg2());
+		result.add(num);
+		for (int i = 3; i < ast.size(); i++) {
+			if (num.isNumber() && ast.get(i).isNumber()) {
+				num = num.times(ast.get(i));
+			} else {
+				result.addAll(ast, i, ast.size());
+				result.set(1, num);
+				return result;
+			}
+		}
+		return num;
 	}
 
 	@Override
