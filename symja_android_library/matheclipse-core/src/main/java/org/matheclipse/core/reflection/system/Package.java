@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -44,7 +45,7 @@ public class Package implements IFunctionEvaluator {
 	}
 
 	public static void evalPackage(IAST publicSymbols, IAST list) {
-		HashMap<ISymbol, ISymbol> convertedSymbolMap = new HashMap<ISymbol, ISymbol>();
+		HashMap<String, ISymbol> convertedSymbolMap = new HashMap<String, ISymbol>();
 		HashSet<ISymbol> publicSymbolSet = new HashSet<ISymbol>();
 
 		ISymbol toSymbol;
@@ -53,7 +54,15 @@ public class Package implements IFunctionEvaluator {
 			if (expr.isSymbol()) {
 				publicSymbolSet.add((ISymbol) expr);
 				toSymbol = F.predefinedSymbol(((ISymbol) expr).toString());
-				convertedSymbolMap.put((ISymbol) expr, toSymbol);
+				convertedSymbolMap.put(expr.toString(), toSymbol);
+			} else if (expr instanceof IStringX) {
+				String symbolStr = ((IStringX) expr).toString();
+				toSymbol = F.predefinedSymbol(symbolStr);
+				publicSymbolSet.add(toSymbol);
+				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					symbolStr = symbolStr.toLowerCase(Locale.ENGLISH);
+				}
+				convertedSymbolMap.put(symbolStr, toSymbol);
 			}
 		}
 
@@ -89,7 +98,7 @@ public class Package implements IFunctionEvaluator {
 	 * @param convertedSymbolMap
 	 */
 	private static void determineRuleHead(IAST rule, HashSet<ISymbol> unprotectedSymbolSet,
-			HashMap<ISymbol, ISymbol> convertedSymbolMap) {
+			HashMap<String, ISymbol> convertedSymbolMap) {
 		ISymbol lhsHead;
 		if (rule.size() > 1
 				&& (rule.head().equals(F.Set) || rule.head().equals(F.SetDelayed) || rule.head().equals(F.UpSet) || rule.head()
@@ -103,11 +112,11 @@ public class Package implements IFunctionEvaluator {
 			}
 
 			if (lhsHead != null && !unprotectedSymbolSet.contains(lhsHead)) {
-				ISymbol toSymbol = convertedSymbolMap.get(lhsHead);
+				ISymbol toSymbol = convertedSymbolMap.get(lhsHead.toString());
 				if (toSymbol == null) {
 					// define a package private symbol
 					toSymbol = F.predefinedSymbol("@" + EvalEngine.getNextCounter() + lhsHead.toString());
-					convertedSymbolMap.put(lhsHead, toSymbol);
+					convertedSymbolMap.put(lhsHead.toString(), toSymbol);
 				}
 			}
 
@@ -122,7 +131,7 @@ public class Package implements IFunctionEvaluator {
 	 * @param convertedSymbols
 	 * @return
 	 */
-	private static IExpr convertSymbolsInExpr(IExpr expr, HashMap<ISymbol, ISymbol> convertedSymbols) {
+	private static IExpr convertSymbolsInExpr(IExpr expr, HashMap<String, ISymbol> convertedSymbols) {
 		IExpr result = expr;
 		if (expr.isAST()) {
 			result = convertSymbolsInList((IAST) expr, convertedSymbols);
@@ -144,14 +153,14 @@ public class Package implements IFunctionEvaluator {
 	 * @param convertedSymbols
 	 * @return
 	 */
-	private static IAST convertSymbolsInList(IAST ast, HashMap<ISymbol, ISymbol> convertedSymbols) {
+	private static IAST convertSymbolsInList(IAST ast, HashMap<String, ISymbol> convertedSymbols) {
 		IAST result = ast.clone();
 		for (int i = 0; i < result.size(); i++) {
 			IExpr expr = result.get(i);
 			if (expr.isAST()) {
 				result.set(i, convertSymbolsInList((IAST) expr, convertedSymbols));
 			} else if (expr.isSymbol()) {
-				ISymbol toSymbol = convertedSymbols.get((ISymbol) expr);
+				ISymbol toSymbol = convertedSymbols.get(expr.toString());
 				if (toSymbol != null) {
 					result.set(i, toSymbol);
 				}

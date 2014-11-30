@@ -2578,6 +2578,28 @@ public class F {
 		}
 	}
 
+	public synchronized static void initSymbols(Reader reader, ISymbolObserver symbolObserver) {
+		if (!isSystemStarted) {
+			try {
+				isSystemStarted = true;
+
+				if (Config.SHOW_PATTERN_EVAL_STEPS) {
+					// watch the rules which are used in pattern matching in system.out
+					Config.SHOW_PATTERN_SYMBOL_STEPS.add(F.Integrate);
+				}
+				if (symbolObserver != null) {
+					SYMBOL_OBSERVER = symbolObserver;
+				}
+
+				org.matheclipse.core.reflection.system.Package.loadPackage(EvalEngine.get(), reader);
+
+				isSystemInitialized = true;
+			} catch (Throwable th) {
+				th.printStackTrace();
+			}
+		}
+	}
+
 	/**
 	 * Create a large integer number.
 	 * 

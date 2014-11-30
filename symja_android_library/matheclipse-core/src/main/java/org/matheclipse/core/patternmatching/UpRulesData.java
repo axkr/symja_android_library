@@ -2,6 +2,7 @@ package org.matheclipse.core.patternmatching;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -244,6 +245,19 @@ public class UpRulesData implements Serializable {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringWriter buf = new StringWriter();
+		List<IAST> list = definition();
+		for (int i = 0; i < list.size(); i++) {
+			buf.append(list.get(i).toString());
+			if (i < list.size() - 1) {
+				buf.append(",\n ");
+			}
+		}
+		return buf.toString();
+	}
+	
 	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		Iterator<IExpr> iter;
 		IExpr key;
