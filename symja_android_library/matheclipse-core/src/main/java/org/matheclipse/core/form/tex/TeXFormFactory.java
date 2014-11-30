@@ -89,7 +89,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		buf.append(" + ");
 		convert(buf, dc.getImaginaryPart(), 0);
 		buf.append("\\,"); // InvisibleTimes
-		buf.append("\\imag");
+		buf.append("i ");
 		if (precedence > plusPrec) {
 			buf.append("\\right) ");
 		}
@@ -140,7 +140,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
 		if (c.equals(F.CI)) {
-			buf.append("\\imag");
+			buf.append("i ");
 			return;
 		}
 		if (precedence > plusPrec) {
@@ -159,7 +159,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		convert(buf, im, 0);
 		buf.append("\\,"); // InvisibleTimes
-		buf.append("\\imag");
+		buf.append("i ");
 		if (precedence > plusPrec) {
 			buf.append("\\right) ");
 		}
