@@ -3248,16 +3248,16 @@ public class F {
 		if (temp != null) {
 			return temp;
 		}
+		String lcSymbolName = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String lcSymbolName = symbolName.toLowerCase(Locale.ENGLISH);
-			// use the lower case string here to use it as associated class name
-			// in package org.matheclipse.core.reflection.system
-			temp = new Symbol(lcSymbolName);
-			PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
-			return temp;
+			if (symbolName.length() > 1) {
+				// use the lower case string here to use it as associated class name
+				// in package org.matheclipse.core.reflection.system
+				lcSymbolName = symbolName.toLowerCase(Locale.ENGLISH);
+			}
 		}
-		temp = new Symbol(symbolName);
-		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
+		temp = new Symbol(lcSymbolName);
+		PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
 		return temp;
 	}
 
