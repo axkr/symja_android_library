@@ -962,11 +962,21 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute isn't set here
 				if (astSize > 1 && ast.arg1().isAST()) {
-					IAST temp = (IAST) ast.arg1();
-					IExpr expr = evalSetAttributesRecursive(temp);
-					if (expr != null) {
-						resultList = ast.setAtClone(1, expr);
+					IExpr expr = ast.arg1();
+					if (ast.arg1().isAST()) {
+						IAST temp = (IAST) ast.arg1();
+						expr = evalSetAttributesRecursive(temp);
+						if (expr != null) {
+							resultList = ast.setAtClone(1, expr);
+						} else {
+							expr = ast.arg1();
+						}
 					}
+					if (ast.isAST(F.Sqrt, 2)) {
+						return F.Power(expr, F.C1D2);
+					} else if (ast.isAST(F.Exp, 2)) {
+						return F.Power(F.E, expr);
+					} 
 				}
 			}
 			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {

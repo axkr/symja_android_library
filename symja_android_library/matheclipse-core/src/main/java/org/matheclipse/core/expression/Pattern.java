@@ -256,7 +256,9 @@ public class Pattern extends ExprImpl implements IPattern {
 				buffer.append("\"" + symbolStr + "\"");
 			}
 			if (fCondition != null) {
-				if (fCondition == F.SymbolHead) {
+				if (fCondition == F.IntegerHead) {
+					buffer.append(", IntegerHead");
+				} else if (fCondition == F.SymbolHead) {
 					buffer.append(", SymbolHead");
 				} else {
 					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
