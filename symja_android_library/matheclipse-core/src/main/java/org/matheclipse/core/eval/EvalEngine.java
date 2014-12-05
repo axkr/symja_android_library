@@ -976,7 +976,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						return F.Power(expr, F.C1D2);
 					} else if (ast.isAST(F.Exp, 2)) {
 						return F.Power(F.E, expr);
-					} 
+					}
 				}
 			}
 			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
@@ -1036,10 +1036,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private IExpr evalSetOrderless(IAST ast, final int attr) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvaluationSupport.sort(ast);
-			if (ast.isTimes() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
-				IExpr expr = Times.evalTimesNumbers(ast);
-				if (expr != null) {
-					return expr;
+			if (ast.isTimes()) {
+				if (ast.arg2().isNumber() && ast.arg1().isNumber()) {
+					IExpr expr = Times.evalTimesNumbers(ast);
+					if (expr != null) {
+						return expr;
+					}
+				} else if (ast.size() == 3 && ast.arg2().isInfinity()) {
+					if (ast.arg1().isMinusOne()) {
+						return F.CNInfinity;
+					}  
 				}
 			} else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
 				IExpr expr = Plus.evalPlusNumbers(ast);

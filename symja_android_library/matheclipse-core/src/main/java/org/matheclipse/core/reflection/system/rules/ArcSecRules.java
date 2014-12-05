@@ -49,7 +49,7 @@ public interface ArcSecRules {
       Plus(Times(C1D2,Pi),Times(CI,Log(Plus(CN1,CSqrt2))))),
     ISet(ArcSec(CInfinity),
       Times(C1D2,Pi)),
-    ISet(ArcSec(Times(CN1,CInfinity)),
+    ISet(ArcSec(CNInfinity),
       Times(C1D2,Pi)),
     ISet(ArcSec(Times(CI,CInfinity)),
       Times(C1D2,Pi)),

@@ -27,7 +27,7 @@ public interface ArcCscRules {
       Times(CNI,Log(Plus(C1,CSqrt2)))),
     ISet(ArcCsc(CInfinity),
       C0),
-    ISet(ArcCsc(Times(CN1,CInfinity)),
+    ISet(ArcCsc(CNInfinity),
       C0),
     ISet(ArcCsc(Times(CI,CInfinity)),
       C0),

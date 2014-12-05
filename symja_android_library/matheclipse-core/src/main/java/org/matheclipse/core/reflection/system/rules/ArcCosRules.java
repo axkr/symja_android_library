@@ -41,7 +41,7 @@ public interface ArcCosRules {
       Plus(Times(C1D2,Pi),Times(CI,Log(Plus(C1,CSqrt2))))),
     ISet(ArcCos(CInfinity),
       Times(CI,CInfinity)),
-    ISet(ArcCos(Times(CN1,CInfinity)),
+    ISet(ArcCos(CNInfinity),
       Times(CNI,CInfinity)),
     ISet(ArcCos(Times(CI,CInfinity)),
       Times(CNI,CInfinity)),

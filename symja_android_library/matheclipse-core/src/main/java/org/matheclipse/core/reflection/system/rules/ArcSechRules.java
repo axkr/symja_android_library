@@ -41,7 +41,7 @@ public interface ArcSechRules {
       Plus(Log(Plus(C1,CSqrt2)),Times(CC(0L,1L,1L,2L),Pi))),
     ISet(ArcSech(CInfinity),
       Times(CC(0L,1L,1L,2L),Pi)),
-    ISet(ArcSech(Times(CN1,CInfinity)),
+    ISet(ArcSech(CNInfinity),
       Times(CC(0L,1L,1L,2L),Pi)),
     ISet(ArcSech(Times(CI,CInfinity)),
       Times(CC(0L,1L,-1L,2L),Pi)),

@@ -39,7 +39,7 @@ public interface ArcTanRules {
       C0),
     ISet(ArcTan(CInfinity),
       Times(C1D2,Pi)),
-    ISet(ArcTan(Times(CN1,CInfinity)),
+    ISet(ArcTan(CNInfinity),
       Times(CN1D2,Pi)),
     ISet(ArcTan(Times(CI,CInfinity)),
       Times(C1D2,Pi)),
