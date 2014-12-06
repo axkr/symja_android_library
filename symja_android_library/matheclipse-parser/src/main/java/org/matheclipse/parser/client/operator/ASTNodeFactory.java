@@ -283,6 +283,9 @@ public class ASTNodeFactory implements IParserFactory {
 
 	private String toRubiString(final String nodeStr) {
 		if (!Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (nodeStr.length() == 1) {
+				return nodeStr;
+			}
 			String lowercaseName = nodeStr.toLowerCase();
 			String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
 			if (temp != null) {
