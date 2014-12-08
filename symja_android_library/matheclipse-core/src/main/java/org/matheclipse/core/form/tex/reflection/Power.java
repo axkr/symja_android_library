@@ -7,6 +7,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
+/**
+ * See: <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices">Wikibooks - LaTeX/Mathematics - Powers and
+ * indices</a>
+ * 
+ */
 public class Power extends AbstractOperator {
 
 	public Power() {
@@ -41,7 +46,12 @@ public class Power extends AbstractOperator {
 		if (fOperator.compareTo("") != 0) {
 			buf.append(fOperator);
 		}
-		fFactory.convertSubExpr(buf, arg2, 0);
+
+		// http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
+		// For powers with more than one digit, surround the power with {}.
+		buf.append('{');
+		fFactory.convert(buf, arg2, 0);
+		buf.append('}');
 		precedenceClose(buf, precedence);
 		return true;
 	}
