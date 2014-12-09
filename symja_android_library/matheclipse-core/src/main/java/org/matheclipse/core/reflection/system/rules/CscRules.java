@@ -89,9 +89,9 @@ public interface CscRules {
       Times(CN2,Sqrt(Plus(C2,CSqrt3)))),
     ISet(Csc(Times(C2,Pi)),
       CComplexInfinity),
-    ISet(Csc(Times(CI,CInfinity)),
+    ISet(Csc(DirectedInfinity(CI)),
       C0),
-    ISet(Csc(Times(CNI,CInfinity)),
+    ISet(Csc(DirectedInfinity(CNI)),
       C0),
     ISet(Csc(CComplexInfinity),
       Indeterminate)

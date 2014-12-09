@@ -92,6 +92,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 						if (numberValue.isIndeterminate()) {
 							return F.Indeterminate;
 						}
+						evaled = true;
 						continue;
 					} else if (ast.get(i).isNegativeInfinity()) {
 						if (numberValue == null) {
@@ -102,6 +103,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 						if (numberValue.isIndeterminate()) {
 							return F.Indeterminate;
 						}
+						evaled = true;
 						continue;
 					} else if (ast.get(i).isNumber()) {
 						if (ast.get(i).isZero()) {
@@ -240,85 +242,85 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return i0.add(i1);
 	}
 
-	@Override
-	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		if (o0.isZero()) {
-			return o1;
-		}
-
-		if (o1.isZero()) {
-			return o0;
-		}
-
-		if (o0.equals(F.Indeterminate) || o1.equals(F.Indeterminate)) {
-			return F.Indeterminate;
-		}
-
-		IExpr temp = null;
-		if (o0.isInfinity() || o0.isNegativeInfinity()) {
-			temp = eInfinity(o0, o1);
-		} else if (o1.isInfinity() || o1.isNegativeInfinity()) {
-			temp = eInfinity(o1, o0);
-		}
-		if (temp != null) {
-			return temp;
-		}
-
-		if (o0.equals(o1)) {
-			return Times(F.C2, o0);
-		}
-
-		if (o0.isTimes()) {
-			final AST f0 = (AST) o0;
-
-			if (f0.arg1().isNumber()) {
-				// Times(number, o1) + o1 => Times(Plus(1, number), o1)
-				if ((f0.size() == 3) && f0.equalsAt(2, o1)) {
-					return f0.arg1().plus(F.C1).times(o1);
-				}
-
-				if (o1.isTimes()) {
-					final AST f1 = (AST) o1;
-
-					if (f1.arg1().isNumber()) {
-						if (f0.equalsFromPosition(1, f1, 1)) {
-							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
-
-							return Times(Plus(f0.arg1(), f1.arg1()), result);
-						}
-					} else {
-						if (f0.equalsFromPosition(1, f1, 0)) {
-							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
-
-							return Times(f0.arg1().plus(F.C1), result);
-						}
-					}
-				}
-			} else {
-				if (o1.isTimes()) {
-					final AST f1 = (AST) o1;
-
-					if (f1.arg1().isNumber()) {
-						if (f0.equalsFromPosition(0, f1, 1)) {
-							final IAST result = F.ast(f1, F.Times, true, 2, f1.size());
-
-							return Times(f1.arg1().plus(F.C1), result);
-						}
-					}
-				}
-			}
-		}
-
-		if (o1.isTimes() && (((IAST) o1).arg1().isNumber())) {
-			final IAST f1 = (IAST) o1;
-			// o0 + Times(o0, number) => Times(Plus(1, number), o0)
-			if ((f1.size() == 3) && f1.equalsAt(2, o0)) {
-				return f1.arg1().plus(F.C1).times(o0);
-			}
-		}
-
-		return null;
-	}
+//	@Override
+//	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+//		if (o0.isZero()) {
+//			return o1;
+//		}
+//
+//		if (o1.isZero()) {
+//			return o0;
+//		}
+//
+//		if (o0.equals(F.Indeterminate) || o1.equals(F.Indeterminate)) {
+//			return F.Indeterminate;
+//		}
+//
+//		IExpr temp = null;
+//		if (o0.isDirectedInfinity()) {
+//			temp = eInfinity((IAST) o0, o1);
+//		} else if (o1.isDirectedInfinity()) {
+//			temp = eInfinity((IAST) o1, o0);
+//		}
+//		if (temp != null) {
+//			return temp;
+//		}
+//
+//		if (o0.equals(o1)) {
+//			return Times(F.C2, o0);
+//		}
+//
+//		if (o0.isTimes()) {
+//			final AST f0 = (AST) o0;
+//
+//			if (f0.arg1().isNumber()) {
+//				// Times(number, o1) + o1 => Times(Plus(1, number), o1)
+//				if ((f0.size() == 3) && f0.equalsAt(2, o1)) {
+//					return f0.arg1().plus(F.C1).times(o1);
+//				}
+//
+//				if (o1.isTimes()) {
+//					final AST f1 = (AST) o1;
+//
+//					if (f1.arg1().isNumber()) {
+//						if (f0.equalsFromPosition(1, f1, 1)) {
+//							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
+//
+//							return Times(Plus(f0.arg1(), f1.arg1()), result);
+//						}
+//					} else {
+//						if (f0.equalsFromPosition(1, f1, 0)) {
+//							final IAST result = F.ast(f0, F.Times, true, 2, f0.size());
+//
+//							return Times(f0.arg1().plus(F.C1), result);
+//						}
+//					}
+//				}
+//			} else {
+//				if (o1.isTimes()) {
+//					final AST f1 = (AST) o1;
+//
+//					if (f1.arg1().isNumber()) {
+//						if (f0.equalsFromPosition(0, f1, 1)) {
+//							final IAST result = F.ast(f1, F.Times, true, 2, f1.size());
+//
+//							return Times(f1.arg1().plus(F.C1), result);
+//						}
+//					}
+//				}
+//			}
+//		}
+//
+//		if (o1.isTimes() && (((IAST) o1).arg1().isNumber())) {
+//			final IAST f1 = (IAST) o1;
+//			// o0 + Times(o0, number) => Times(Plus(1, number), o0)
+//			if ((f1.size() == 3) && f1.equalsAt(2, o0)) {
+//				return f1.arg1().plus(F.C1).times(o0);
+//			}
+//		}
+//
+//		return null;
+//	}
 
 	private IExpr infinityPlus(IExpr o1) {
 		if (o1.isInfinity()) {
@@ -340,27 +342,35 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return F.CNInfinity;
 	}
 
-	private IExpr eInfinity(IExpr inf, IExpr o1) {
-		EvalEngine engine = EvalEngine.get();
-		if (inf.isInfinity()) {
-			if (o1.isInfinity()) {
-				return F.CInfinity;
-			} else if (o1.isNegativeInfinity()) {
-				engine.printMessage("Indeterminate expression Infinity-Infinity");
-				return F.Indeterminate;
-			}
-			return F.CInfinity;
-		} else if (inf.isNegativeInfinity()) {
-			if (o1.isInfinity()) {
-				engine.printMessage("Indeterminate expression Infinity-Infinity");
-				return F.Indeterminate;
-			} else if (o1.isNegativeInfinity()) {
-				return F.CNInfinity;
-			}
-			return F.CNInfinity;
-		}
-		return null;
-	}
+//	private IExpr eInfinity(IAST inf, IExpr o1) {
+//		EvalEngine engine = EvalEngine.get();
+//		if (inf.size() == 2) {
+//			if (inf.isInfinity()) {
+//				if (o1.isSignedNumber()) {
+//					return F.CInfinity;
+//				}
+//				if (o1.isInfinity()) {
+//					return F.CInfinity;
+//				} else if (o1.isNegativeInfinity()) {
+//					engine.printMessage("Indeterminate expression Infinity-Infinity");
+//					return F.Indeterminate;
+//				}
+//				return F.CInfinity;
+//			} else if (inf.isNegativeInfinity()) {
+//				if (o1.isSignedNumber()) {
+//					return F.CNInfinity;
+//				}
+//				if (o1.isInfinity()) {
+//					engine.printMessage("Indeterminate expression Infinity-Infinity");
+//					return F.Indeterminate;
+//				} else if (o1.isNegativeInfinity()) {
+//					return F.CNInfinity;
+//				}
+//				return F.CNInfinity;
+//			}
+//		}
+//		return null;
+//	}
 
 	@Override
 	public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
@@ -389,7 +399,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 		return num;
 	}
-	
+
 	public double evalReal(final double[] stack, final int top, final int size) {
 		double result = 0;
 		for (int i = top - size + 1; i < top + 1; i++) {
@@ -397,7 +407,6 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 		return result;
 	}
-	
 
 	@Override
 	public void setUp(final ISymbol symbol) {

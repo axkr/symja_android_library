@@ -19,7 +19,7 @@ public interface ArcTanRules {
       Times(QQ(1L,8L),Pi)),
     ISet(ArcTan(C1DSqrt3),
       Times(QQ(1L,6L),Pi)),
-    ISet(ArcTan(Sqrt(Plus(C5,Times(CN1,C2,CSqrt5)))),
+    ISet(ArcTan(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
       Times(QQ(1L,5L),Pi)),
     ISet(ArcTan(C1),
       Times(C1D4,Pi)),
@@ -34,16 +34,16 @@ public interface ArcTanRules {
     ISet(ArcTan(Plus(C2,CSqrt3)),
       Times(QQ(5L,12L),Pi)),
     ISet(ArcTan(CI),
-      Times(CI,CInfinity)),
+      DirectedInfinity(CI)),
     ISet(ArcTan(CInfinity,y_),
       C0),
     ISet(ArcTan(CInfinity),
       Times(C1D2,Pi)),
     ISet(ArcTan(CNInfinity),
       Times(CN1D2,Pi)),
-    ISet(ArcTan(Times(CI,CInfinity)),
+    ISet(ArcTan(DirectedInfinity(CI)),
       Times(C1D2,Pi)),
-    ISet(ArcTan(Times(CNI,CInfinity)),
+    ISet(ArcTan(DirectedInfinity(CNI)),
       Times(CN1D2,Pi))
   );
 }

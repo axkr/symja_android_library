@@ -51,9 +51,9 @@ public interface ArcSecRules {
       Times(C1D2,Pi)),
     ISet(ArcSec(CNInfinity),
       Times(C1D2,Pi)),
-    ISet(ArcSec(Times(CI,CInfinity)),
+    ISet(ArcSec(DirectedInfinity(CI)),
       Times(C1D2,Pi)),
-    ISet(ArcSec(Times(CNI,CInfinity)),
+    ISet(ArcSec(DirectedInfinity(CNI)),
       Times(C1D2,Pi)),
     ISet(ArcSec(CComplexInfinity),
       Times(C1D2,Pi))

@@ -71,9 +71,9 @@ public interface TanRules {
       Times(Sqrt(Plus(C1,Times(CN1,Sqr(x)))),Power(x,CN1))),
     ISetDelayed(Tan(ArcCot(x_)),
       Power(x,CN1)),
-    ISet(Tan(Times(CI,CInfinity)),
+    ISet(Tan(DirectedInfinity(CI)),
       CI),
-    ISet(Tan(Times(CNI,CInfinity)),
+    ISet(Tan(DirectedInfinity(CNI)),
       CNI),
     ISet(Tan(CComplexInfinity),
       Indeterminate)

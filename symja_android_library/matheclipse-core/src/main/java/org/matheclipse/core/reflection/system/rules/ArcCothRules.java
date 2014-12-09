@@ -21,7 +21,7 @@ public interface ArcCothRules {
       CInfinity),
     ISet(ArcCoth(CInfinity),
       C0),
-    ISet(ArcCoth(Times(CI,CInfinity)),
+    ISet(ArcCoth(DirectedInfinity(CI)),
       C0),
     ISet(ArcCoth(CComplexInfinity),
       C0)

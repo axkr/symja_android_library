@@ -878,10 +878,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 */
 	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
 		return engine.evalSetAttributes((IAST) leftHandSide);
-		// if (temp != null) {
-		// return temp;
-		// }
-		// return leftHandSide;
 	}
 
 	public static IExpr evalLeftHandSide(IAST leftHandSide) {

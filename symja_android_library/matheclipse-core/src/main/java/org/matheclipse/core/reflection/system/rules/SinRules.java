@@ -117,10 +117,10 @@ public interface SinRules {
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
     ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
       Condition(If(Less(x,C1),Sin(Times(Plus(C1,Times(CN1,x)),Pi)),If(Less(x,C2),Times(CN1,Sin(Times(Plus(C2,Times(CN1,x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
-    ISet(Sin(Times(CI,CInfinity)),
-      Times(CI,CInfinity)),
-    ISet(Sin(Times(CNI,CInfinity)),
-      Times(CNI,CInfinity)),
+    ISet(Sin(DirectedInfinity(CI)),
+      DirectedInfinity(CI)),
+    ISet(Sin(DirectedInfinity(CNI)),
+      DirectedInfinity(CNI)),
     ISet(Sin(CComplexInfinity),
       Indeterminate)
   );

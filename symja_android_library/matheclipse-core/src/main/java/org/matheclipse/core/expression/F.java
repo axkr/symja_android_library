@@ -119,8 +119,6 @@ public class F {
 	public final static ISymbol Second = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");
 	public final static ISymbol Indeterminate = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "indeterminate"
 			: "Indeterminate");
-	public final static ISymbol DirectedInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
-			: "DirectedInfinity");
 	public final static ISymbol Listable = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listable" : "Listable");
 	public final static ISymbol Constant = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "constant" : "Constant");
 	public final static ISymbol NumericFunction = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericfunction"
@@ -211,6 +209,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.DeleteCases());
 	public final static ISymbol Depth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
 			new org.matheclipse.core.builtin.function.Depth());
+	public final static ISymbol DirectedInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity",
+			new org.matheclipse.core.builtin.function.DirectedInfinity());
 	public final static ISymbol Drop = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop",
 			new org.matheclipse.core.builtin.function.Drop());
 	public final static ISymbol Do = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do",
@@ -1907,8 +1907,11 @@ public class F {
 	}
 
 	public static IAST Det(final IExpr a0) {
-
 		return unary(Det, a0);
+	}
+	
+	public static IAST DirectedInfinity(final IExpr a0) {
+		return unary(DirectedInfinity, a0);
 	}
 
 	public static IAST Discriminant(final IExpr a0, final IExpr a1) {

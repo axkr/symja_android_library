@@ -21,7 +21,7 @@ public interface ArcTanhRules {
       CInfinity),
     ISet(ArcTanh(CInfinity),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    ISet(ArcTanh(Times(CI,CInfinity)),
+    ISet(ArcTanh(DirectedInfinity(CI)),
       Times(CC(0L,1L,1L,2L),Pi)),
     ISet(ArcTanh(CComplexInfinity),
       Times(C1D2,Pi))

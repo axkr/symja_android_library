@@ -29,9 +29,9 @@ public interface ArcCscRules {
       C0),
     ISet(ArcCsc(CNInfinity),
       C0),
-    ISet(ArcCsc(Times(CI,CInfinity)),
+    ISet(ArcCsc(DirectedInfinity(CI)),
       C0),
-    ISet(ArcCsc(Times(CNI,CInfinity)),
+    ISet(ArcCsc(DirectedInfinity(CNI)),
       C0),
     ISet(ArcCsc(CComplexInfinity),
       C0)

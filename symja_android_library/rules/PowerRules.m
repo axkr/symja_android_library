@@ -1,8 +1,6 @@
 {
  E^(3/2*I*Pi)=-I, 
  E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1) /; r==0 && IntegerQ(j)),
- E^Infinity=Infinity,
- E^(-Infinity)=0,
  E^(I*Infinity)=Indeterminate,
  E^(-I*Infinity)=Indeterminate,
  E^(ComplexInfinity)=Indeterminate,

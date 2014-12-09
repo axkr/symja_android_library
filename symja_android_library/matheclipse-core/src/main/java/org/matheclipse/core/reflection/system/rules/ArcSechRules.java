@@ -43,9 +43,9 @@ public interface ArcSechRules {
       Times(CC(0L,1L,1L,2L),Pi)),
     ISet(ArcSech(CNInfinity),
       Times(CC(0L,1L,1L,2L),Pi)),
-    ISet(ArcSech(Times(CI,CInfinity)),
+    ISet(ArcSech(DirectedInfinity(CI)),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    ISet(ArcSech(Times(CNI,CInfinity)),
+    ISet(ArcSech(DirectedInfinity(CNI)),
       Times(CC(0L,1L,1L,2L),Pi)),
     ISet(ArcSech(CComplexInfinity),
       Indeterminate)

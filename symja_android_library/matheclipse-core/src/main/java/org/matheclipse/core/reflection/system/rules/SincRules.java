@@ -41,7 +41,7 @@ public interface SincRules {
       Times(Sqrt(Plus(C1,Times(CN1,Sqr(x)))),Power(ArcCos(x),CN1))),
     ISetDelayed(Sinc(ArcTan(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2),Power(ArcTan(x),CN1))),
-    ISet(Sinc(Times(CI,CInfinity)),
+    ISet(Sinc(DirectedInfinity(CI)),
       CInfinity),
     ISet(Sinc(CComplexInfinity),
       Indeterminate)

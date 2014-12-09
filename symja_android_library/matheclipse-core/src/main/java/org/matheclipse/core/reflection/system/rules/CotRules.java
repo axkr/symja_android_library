@@ -59,9 +59,9 @@ public interface CotRules {
       Plus(CN2,Times(CN1,CSqrt3))),
     ISet(Cot(Pi),
       CComplexInfinity),
-    ISet(Cot(Times(CI,CInfinity)),
+    ISet(Cot(DirectedInfinity(CI)),
       CNI),
-    ISet(Cot(Times(CNI,CInfinity)),
+    ISet(Cot(DirectedInfinity(CNI)),
       CI),
     ISet(Cot(CComplexInfinity),
       Indeterminate)

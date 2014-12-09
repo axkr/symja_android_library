@@ -940,7 +940,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return ast;
 			}
 
-			IExpr result = evalSetAttributesRecursive(ast);
+			IExpr result = evalSetAttributesRecursive(ast, false);
 			if (result != null) {
 				return result;
 			}
@@ -950,7 +950,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	private IExpr evalSetAttributesRecursive(IAST ast) {
+	private IExpr evalSetAttributesRecursive(IAST ast, boolean evalNumericFunction) {
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 		// final Predicate<IExpr> isPattern = Predicates.isPattern();
@@ -965,7 +965,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					IExpr expr = ast.arg1();
 					if (ast.arg1().isAST()) {
 						IAST temp = (IAST) ast.arg1();
-						expr = evalSetAttributesRecursive(temp);
+						expr = evalSetAttributesRecursive(temp, true);
 						if (expr != null) {
 							resultList = ast.setAtClone(1, expr);
 						} else {
@@ -984,7 +984,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				for (int i = 2; i < astSize; i++) {
 					if (ast.get(i).isAST()) {
 						IAST temp = (IAST) ast.get(i);
-						IExpr expr = evalSetAttributesRecursive(temp);
+						IExpr expr = evalSetAttributesRecursive(temp, true);
 						if (expr != null) {
 							if (resultList == null) {
 								resultList = ast.clone();
@@ -994,7 +994,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-
+			if (evalNumericFunction && ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE)) {
+				IAST f = resultList != null ? resultList : ast;
+				if (f.isNumericFunction()) {
+					IExpr temp = evalLoop(f);
+					if (temp != null) {
+						return temp;
+					}
+				}
+			}
 		}
 		if (resultList != null) {
 			if (resultList.size() > 2) {
@@ -1042,10 +1050,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					if (expr != null) {
 						return expr;
 					}
-				} else if (ast.size() == 3 && ast.arg2().isInfinity()) {
-					if (ast.arg1().isMinusOne()) {
-						return F.CNInfinity;
-					}  
+				} else if (ast.size() == 3 && ast.arg2().isDirectedInfinity()) {
+					IExpr expr = Times.eInfinity((IAST) ast.arg2(), ast.arg1());
+					if (expr != null) {
+						return expr;
+					}
 				}
 			} else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
 				IExpr expr = Plus.evalPlusNumbers(ast);

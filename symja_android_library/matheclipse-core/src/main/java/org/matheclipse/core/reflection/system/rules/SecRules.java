@@ -89,9 +89,9 @@ public interface SecRules {
       Plus(Times(CN1,CSqrt2),CSqrt6)),
     ISet(Sec(Times(C2,Pi)),
       C1),
-    ISet(Sec(Times(CI,CInfinity)),
+    ISet(Sec(DirectedInfinity(CI)),
       C0),
-    ISet(Sec(Times(CNI,CInfinity)),
+    ISet(Sec(DirectedInfinity(CNI)),
       C0),
     ISet(Sec(CComplexInfinity),
       Indeterminate)

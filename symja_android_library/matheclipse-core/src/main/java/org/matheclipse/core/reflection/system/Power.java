@@ -46,7 +46,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	// AbstractExpressionFactory factory) {
 	// return d0.pow(d1);
 	// }
-	
+
 	@Override
 	public IExpr e2ApcomplexArg(final ApcomplexNum ac0, final ApcomplexNum ac1) {
 		return ac0.pow(ac1);
@@ -101,29 +101,100 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			return F.Indeterminate;
 		}
 
-		if (arg2.isInfinity() || arg2.isNegativeInfinity()) {
-			IExpr a1 = arg1;
-			if (arg1.isNegative()) {
-				a1 = ((ISignedNumber) a1).negate();
-			}
-			if (a1.isOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
+		if (arg2.isDirectedInfinity()) {
+			if (arg2.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
-			if (arg1.isNumber()) {
-				if (arg1.isSignedNumber()) {
+
+			if (arg1.isOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
+				return F.Indeterminate;
+			}
+			if (arg1.isZero()) {
+				if (arg2.isInfinity()) {
+					// 0 ^ Inf
+					return F.C0;
+				}
+				if (arg2.isNegativeInfinity()) {
+					// 0 ^ (-Inf)
+					return F.CComplexInfinity;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isInfinity()) {
+				if (arg2.isInfinity()) {
+					// Inf ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (arg2.isNegativeInfinity()) {
+					// Inf ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isNegativeInfinity()) {
+				if (arg2.isInfinity()) {
+					// (-Inf) ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (arg2.isNegativeInfinity()) {
+					// (-Inf) ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isComplexInfinity()) {
+				if (arg2.isInfinity()) {
+					// ComplexInfinity ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (arg2.isNegativeInfinity()) {
+					// ComplexInfinity ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isDirectedInfinity()) {
+				if (arg2.isInfinity()) {
+					return F.CComplexInfinity;
+				}
+				if (arg2.isNegativeInfinity()) {
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			// if (arg1.isPositive()) {
+			// if (arg2.isInfinity()) {
+			// return F.CInfinity;
+			// }
+			// if (arg2.isNegativeInfinity()) {
+			// return F.C0;
+			// }
+			// }
+
+			// ------------------------------
+			// IExpr a1 = arg1;
+			// if (arg1.isNegative()) {
+			// a1 = ((ISignedNumber) a1).negate();
+			// }
+			if (arg1.isPositive()) {
+				IExpr a1=arg1;
+				if (!a1.isSignedNumber()) {
+					a1=F.evaln(arg1);
+				}
+				if (a1.isSignedNumber()) {
 					if (arg2.isInfinity()) {
-						if (((ISignedNumber) arg1).isGreaterThan(F.C1)) {
+						if (((ISignedNumber) a1).isGreaterThan(F.C1)) {
 							// x^Infinity && x>1
 							return F.CInfinity;
 						}
 					} else {
-						if (((ISignedNumber) arg1).isLessThan(F.C1)) {
+						if (((ISignedNumber) a1).isLessThan(F.C1)) {
 							// x^(-Infinity) && x<1
 							return F.CInfinity;
 						}
 					}
 				}
-				int comp = ((INumber) arg1).compareAbsValueToOne();
+				int comp = ((INumber) a1).compareAbsValueToOne();
 				switch (comp) {
 				case -1:
 					// Abs(x) < 1
@@ -143,10 +214,13 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					return F.C0;
 				}
 			}
-			if (arg2.isInfinity()) {
-
-			} else if (arg2.isNegativeInfinity()) {
-
+		}
+		if (arg1.isDirectedInfinity()) {
+			if (arg2.isZero()) {
+				return F.Indeterminate;
+			}
+			if (arg2.isOne()) {
+				return arg1;
 			}
 		}
 		if (arg1.isZero()) {
@@ -166,14 +240,14 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 			return F.C0;
 		}
-		
+
 		if (arg2.isZero()) {
 			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
 				return F.Indeterminate;
 			}
 			return F.C1;
 		}
-		
+
 		if (arg2.isOne()) {
 			return arg1;
 		}
@@ -226,7 +300,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			if (arg0.isTimes()) {
 				if (arg2.isInteger()) {
 					// (a * b * c)^n => a^n * b^n * c^n
-					return arg0.mapAt(Power(null, arg2),1);
+					return arg0.mapAt(Power(null, arg2), 1);
 				}
 				if (arg2.isNumber()) {
 					final IAST f0 = arg0;

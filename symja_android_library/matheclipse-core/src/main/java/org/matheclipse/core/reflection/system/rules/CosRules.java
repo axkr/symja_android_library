@@ -117,9 +117,9 @@ public interface CosRules {
       x),
     ISetDelayed(Cos(ArcSin(x_)),
       Sqrt(Plus(C1,Times(CN1,Sqr(x))))),
-    ISet(Cos(Times(CI,CInfinity)),
+    ISet(Cos(DirectedInfinity(CI)),
       CInfinity),
-    ISet(Cos(Times(CNI,CInfinity)),
+    ISet(Cos(DirectedInfinity(CNI)),
       CInfinity),
     ISet(Cos(CComplexInfinity),
       Indeterminate)

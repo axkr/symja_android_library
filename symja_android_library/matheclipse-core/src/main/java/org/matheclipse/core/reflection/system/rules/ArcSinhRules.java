@@ -23,7 +23,7 @@ public interface ArcSinhRules {
       Log(Plus(C1,CSqrt2))),
     ISet(ArcSinh(CInfinity),
       CInfinity),
-    ISet(ArcSinh(Times(CI,CInfinity)),
+    ISet(ArcSinh(DirectedInfinity(CI)),
       CInfinity),
     ISet(ArcSinh(CComplexInfinity),
       CComplexInfinity)

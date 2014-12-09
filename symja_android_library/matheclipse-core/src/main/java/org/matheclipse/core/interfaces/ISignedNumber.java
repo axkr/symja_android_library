@@ -45,7 +45,7 @@ public interface ISignedNumber extends INumber {
 	public boolean isLessThan(ISignedNumber that);
 
 	public boolean isGreaterThan(ISignedNumber that);
-
+	
 	/**
 	 * Returns (-1) * this
 	 * 

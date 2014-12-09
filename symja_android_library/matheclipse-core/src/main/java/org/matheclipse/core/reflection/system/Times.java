@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.y;
 
+import org.matheclipse.core.builtin.function.DirectedInfinity;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -19,8 +20,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
 
@@ -98,10 +97,10 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return F.Power(o0, F.C2);
 		}
 
-		if (o0.isInfinity() || o0.isNegativeInfinity()) {
-			temp = eInfinity(o0, o1);
-		} else if (o1.isInfinity() || o1.isNegativeInfinity()) {
-			temp = eInfinity(o1, o0);
+		if (o0.isDirectedInfinity()) {
+			temp = eInfinity((IAST) o0, o1);
+		} else if (o1.isDirectedInfinity()) {
+			temp = eInfinity((IAST) o1, o0);
 		}
 		if (temp != null) {
 			return temp;
@@ -161,32 +160,74 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		return null;
 	}
 
-	private IExpr eInfinity(IExpr inf, IExpr o1) {
-		if (inf.equals(F.CInfinity)) {
-			if (o1.equals(F.CInfinity)) {
-				return F.CInfinity;
-			} else if (o1.equals(F.CNInfinity)) {
-				return F.CNInfinity;
-			} else if (o1.isSignedNumber()) {
-				if (((ISignedNumber) o1).isNegative()) {
-					return F.CNInfinity;
-				} else {
-					return F.CInfinity;
-				}
+	public static IExpr eInfinity(IAST inf, IExpr o1) {
+		if (inf.isComplexInfinity()) {
+			if (o1.isZero()) {
+				return F.Indeterminate;
 			}
-		} else if (inf.equals(F.CNInfinity)) {
-			if (o1.equals(F.CInfinity)) {
-				return F.CNInfinity;
-			} else if (o1.equals(F.CNInfinity)) {
+			return F.CComplexInfinity;
+		}
+		if (inf.isInfinity()) {
+			if (o1.isInfinity()) {
 				return F.CInfinity;
-			} else if (o1.isSignedNumber()) {
-				if (((ISignedNumber) o1).isNegative()) {
-					return F.CInfinity;
-				} else {
-					return F.CNInfinity;
-				}
+			}
+			if (o1.isNegativeInfinity()) {
+				return F.CNInfinity;
+			}
+			if (o1.isComplexInfinity()) {
+				return F.CComplexInfinity;
 			}
 		}
+		if (inf.isNegativeInfinity()) {
+			if (o1.isInfinity()) {
+				return F.CNInfinity;
+			}
+			if (o1.isNegativeInfinity()) {
+				return F.CInfinity;
+			}
+			if (o1.isComplexInfinity()) {
+				return F.CComplexInfinity;
+			}
+		}
+		if (inf.size() == 2) {
+			if (o1.isNumber()||o1.isSymbol()) {
+				if (inf.size() == 2) {
+					return DirectedInfinity.timesInf(inf, o1);
+					// return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), F.Divide(o1, o1.abs()))));
+				}
+
+			}
+			if (o1.isDirectedInfinity() && ((IAST) o1).size() == 2) {
+				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
+			}
+		}
+		// if (inf.equals(F.CInfinity)) {
+		// if (o1.equals(F.CInfinity)) {
+		// return F.CInfinity;
+		// } else if (o1.equals(F.CNInfinity)) {
+		// return F.CNInfinity;
+		// } else if (o1.isSignedNumber()) {
+		// if (((ISignedNumber) o1).isNegative()) {
+		// return F.CNInfinity;
+		// } else {
+		// return F.CInfinity;
+		// }
+		// } else if (o1.isComplex()) {
+		// return F.$(F.DirectedInfinity, o1);
+		// }
+		// } else if (inf.equals(F.CNInfinity)) {
+		// if (o1.equals(F.CInfinity)) {
+		// return F.CNInfinity;
+		// } else if (o1.equals(F.CNInfinity)) {
+		// return F.CInfinity;
+		// } else if (o1.isSignedNumber()) {
+		// if (((ISignedNumber) o1).isNegative()) {
+		// return F.CInfinity;
+		// } else {
+		// return F.CNInfinity;
+		// }
+		// }
+		// }
 		return null;
 	}
 

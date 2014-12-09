@@ -532,10 +532,10 @@ public class OutputFormFactory {
 					return;
 				}
 				if (list.size() == 2) {
-					if (list.get(1).equals(F.C1)) {
+					if (list.arg1().equals(F.C1)) {
 						append(buf, "Infinity");
 						return;
-					} else if (list.get(1).equals(F.CN1)) {
+					} else if (list.arg1().equals(F.CN1)) {
 						if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 							append(buf, "(");
 						}
@@ -543,6 +543,12 @@ public class OutputFormFactory {
 						if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 							append(buf, ")");
 						}
+						return;
+					} else if (list.arg1().equals(F.CI)) {
+						append(buf, "I*Infinity");
+						return;
+					} else if (list.arg1().equals(F.CNI)) {
+						append(buf, "-I*Infinity");
 						return;
 					}
 				}
