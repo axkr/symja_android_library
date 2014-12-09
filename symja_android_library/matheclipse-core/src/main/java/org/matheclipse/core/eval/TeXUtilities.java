@@ -55,7 +55,7 @@ public class TeXUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the objectExpression into a TeX expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
