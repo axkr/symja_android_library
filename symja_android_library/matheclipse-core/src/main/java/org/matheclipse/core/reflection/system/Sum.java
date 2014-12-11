@@ -140,6 +140,9 @@ public class Sum extends Table implements SumRules {
 			if (from.isZero()) {
 				return F.Times(Plus(to, C1), arg1);
 			}
+			if (!F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
+				return F.Times(Plus(C1, F.Negate(from), to), arg1);
+			}
 		} else {
 			if (arg1.isTimes()) {
 				// Sum[ Times[a,b,c,...], {var, from, to} ]
@@ -167,21 +170,30 @@ public class Sum extends Table implements SumRules {
 					return Times(C1D2, Plus(Subtract(to, from), C1), Plus(from, to));
 				}
 			}
-			if (from.isZero()) {
+			if (from.isZero() || from.isOne()) {
 				if (arg1.isPower()) {
-					return sumPower((IAST) arg1, var, to);
+					return sumPower((IAST) arg1, var, F.C0, to);
 				} else if (arg1.equals(var)) {
-					return sumPowerFormula(to, F.C1);
+					return sumPowerFormula(from, to, F.C1);
 				}
-				IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
-				if (repl != null) {
-					IExpr temp = MAP_0_N.get(repl);
-					if (temp != null) {
-						return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
+				if (from.isZero()) {
+					IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
+					if (repl != null) {
+						IExpr temp = MAP_0_N.get(repl);
+						if (temp != null) {
+							return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
+						}
 					}
 				}
 			}
-
+			if (arg1.isPower() && !F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
+				IAST powAST = (IAST) arg1;
+				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var)) {
+					// i^a,{i,n,m} ==> HurwitzZeta(-a, n)-HurwitzZeta(-a,1+m)
+					return F.Subtract(F.HurwitzZeta(F.Negate(powAST.arg2()), from),
+							F.HurwitzZeta(F.Negate(powAST.arg2()), F.Plus(1, to)));
+				}
+			}
 		}
 		if (from.isPositive()) {
 			IExpr temp1 = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
@@ -222,9 +234,9 @@ public class Sum extends Table implements SumRules {
 				return filterCollector;
 			}
 		} else if (arg1.isPower()) {
-			return sumPower((IAST) arg1, var, var);
+			return sumPower((IAST) arg1, var, F.C1, var);
 		} else if (arg1.equals(var)) {
-			return sumPowerFormula(var, F.C1);
+			return sumPowerFormula(F.C1, var, F.C1);
 		}
 		IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
 		if (repl != null) {
@@ -243,14 +255,16 @@ public class Sum extends Table implements SumRules {
 	 * @param powAST
 	 *            an AST of the form <code>Power[var, i_Integer]</code>
 	 * @param var
+	 * @param from
+	 *            TODO
 	 * @param to
 	 * @return
 	 */
-	public IExpr sumPower(final IAST powAST, final ISymbol var, final IExpr to) {
+	public IExpr sumPower(final IAST powAST, final ISymbol var, IExpr from, final IExpr to) {
 		if (powAST.equalsAt(1, var) && powAST.arg2().isInteger()) {
 			IInteger p = (IInteger) powAST.arg2();
 			if (p.isPositive()) {
-				return sumPowerFormula(to, p);
+				return sumPowerFormula(from, to, p);
 			}
 		}
 		return null;
@@ -260,11 +274,14 @@ public class Sum extends Table implements SumRules {
 	 * See <a href="http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
 	 * Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
+	 * @param from
+	 *            TODO
 	 * @param to
 	 * @param p
+	 * 
 	 * @return
 	 */
-	public IExpr sumPowerFormula(final IExpr to, IInteger p) {
+	public IExpr sumPowerFormula(IExpr from, final IExpr to, IInteger p) {
 		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
 		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]

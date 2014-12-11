@@ -456,6 +456,8 @@ public class F {
 			: "HilbertMatrix");
 	public final static ISymbol Hold = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold");
 	public final static ISymbol Horner = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "horner" : "Horner");
+	public final static ISymbol HurwitzZeta = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hurwitzzeta" : "HurwitzZeta");
+	
 	public final static ISymbol IdentityMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identitymatrix"
 			: "IdentityMatrix");
 	public final static ISymbol Im = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
@@ -621,6 +623,8 @@ public class F {
 	public final static ISymbol StringLength = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringlength"
 			: "StringLength");
 	public final static ISymbol StringTake = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringtake" : "StringTake");
+	public final static ISymbol Subfactorial = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subfactorial" : "Subfactorial");
+	
 	public final static ISymbol Subscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Subscript");
 	public final static ISymbol Subsuperscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsuperscript"
 			: "Subsuperscript");
@@ -2444,6 +2448,10 @@ public class F {
 	public static IAST Hold(final IExpr a0) {
 		return unary(Hold, a0);
 	}
+	
+	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
+		return binary(HurwitzZeta, a0, a1);
+	}
 
 	public static IAST Identity(final IExpr a0) {
 		return unary(Identity, a0);
@@ -3632,6 +3640,10 @@ public class F {
 		return (result == null) ? expr : result;
 	}
 
+	public static IAST Subfactorial(final IExpr a0) {
+		return unary(Subfactorial, a0);
+	}
+	
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		return binary(Plus, a0, binary(Times, CN1, a1));
 	}

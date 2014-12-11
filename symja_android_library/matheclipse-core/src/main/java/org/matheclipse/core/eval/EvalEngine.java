@@ -1096,7 +1096,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>False</code>.
 	 * 
 	 * @param expr
-	 * @return
+	 * @return <code>true</code> if the expression could be evaluated to symbol <code>True</code> and <code>false</code> in all
+	 *         other cases
 	 */
 	public final boolean evalTrue(final IExpr expr) {
 		try {

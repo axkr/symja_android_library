@@ -60,7 +60,7 @@ public class AST2Expr {
 			"Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
 			"FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Graphics",
 			"Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "HarmonicNumber", "Head", "HermiteH",
-			"HilbertMatrix", "Hold", "Horner", "HornerForm", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
+			"HilbertMatrix", "Hold", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
 			"IdentityMatrix", "If", "Im", "Increment", "Inner", "Insert", "IntegerPart", "IntegerPartitions", "IntegerQ",
 			"Integrate", "InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf",
 			"InverseFunction", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last",
@@ -82,12 +82,12 @@ public class AST2Expr {
 			"Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc",
 			"SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt",
 			"SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake",
-			"Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ",
-			"Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times",
-			"TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
-			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep",
-			"UnitVector", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorQ",
-			"Which", "While", "Xor", "Zeta" };
+			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "Switch",
+			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread", "Through", "Throw",
+			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr",
+			"Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union",
+			"Unique", "UnitStep", "UnitVector", "UnsameQ", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix",
+			"Variables", "VectorQ", "Which", "While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

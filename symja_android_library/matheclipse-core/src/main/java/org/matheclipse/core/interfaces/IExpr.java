@@ -421,7 +421,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	public boolean isFreeAST(Predicate<IExpr> predicate);
-	
+
 	/**
 	 * Test if this expression is a <code>Function( arg1 )</code> expression with at least 1 argument.
 	 * 
@@ -830,8 +830,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isTimes();
 
 	/**
-	 * Test if this expression equals the symbol "True"
+	 * Test if this expression equals the symbol <code>True</code>.
 	 * 
+	 * @return <code>true</code> if the expression equalss symbol <code>True</code> and <code>false</code> in all other cases
 	 */
 	public boolean isTrue();
 
@@ -843,13 +844,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isValue();
 
 	/**
-	 * Test if this expression is a symbol which doesn't has attribute <code>Constant</code>.  
+	 * Test if this expression is a symbol which doesn't has attribute <code>Constant</code>.
 	 * 
 	 * @see #isConstant()
 	 * @see #isSymbol()
 	 */
 	public boolean isVariable();
-	
+
 	/**
 	 * Test if this expression is a vector and return the dimension of the vector. This expression is only a vector, if the
 	 * expression is a <code>List(...)</code> and no element is itself a <code>List(...)</code>.
