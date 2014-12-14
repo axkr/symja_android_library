@@ -543,7 +543,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 			return resultList;
 		} catch (NoSolution e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}
