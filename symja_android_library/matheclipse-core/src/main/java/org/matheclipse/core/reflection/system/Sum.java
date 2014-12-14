@@ -60,7 +60,7 @@ public class Sum extends Table implements SumRules {
 		Validate.checkRange(ast, 3);
 
 		// System.out.println(ast.toString());
-		IExpr arg1 = ast.arg1();
+		IExpr arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
@@ -68,7 +68,7 @@ public class Sum extends Table implements SumRules {
 		IExpr argN = ast.get(ast.size() - 1);
 		IExpr temp;
 
-		arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
+//		arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
 
 		if (argN.isList()) {
 			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
