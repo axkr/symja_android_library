@@ -244,7 +244,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		if (exprWithVariable.isAST()) {
 			IAST ast = (IAST) exprWithVariable;
 			if (ast.size() == 2) {
-				IAST inverseFunction = InverseFunction.getInverseFunction(ast);
+				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction != null) {
 					// example: Sin(f(x)) == y -> f(x) == ArcSin(y)
 					inverseFunction.add(exprWithoutVariable);

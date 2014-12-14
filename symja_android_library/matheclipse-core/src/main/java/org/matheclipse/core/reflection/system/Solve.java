@@ -24,6 +24,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		final static public int LINEAR = 0;
 		final static public int OTHERS = 2;
+		// final static public int INVERSE_FUNCTION = 2;
 		final static public int POLYNOMIAL = 1;
 
 		private int fEquationType;
@@ -61,7 +62,88 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public void analyze() {
+			if (fDenom.isOne()) {
+				IExpr temp = null;
+				if (fNumer.isPlus()) {
+					temp = rewritePlusWithInverseFunctions((IAST) fNumer);
+				} else {
+					if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
+						temp = rewriteInverseFunction((IAST) fNumer, F.C0);
+					}
+				}
+				if (temp != null) {
+					fNumer = temp;
+				}
+			}
 			analyze(getNumerator());
+		}
+
+		/**
+		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which contains an invertable function argument
+		 * <code>f(x)</code>.
+		 */
+		private IExpr rewritePlusWithInverseFunctions(IAST plusAST) {
+			IExpr expr;
+			for (int i = 1; i < plusAST.size(); i++) {
+				expr = plusAST.get(i);
+				if (expr.isFree(Predicates.in(vars), true)) {
+					continue;
+				}
+
+				if (expr.isAST()) {
+					IAST inverseFunction = InverseFunction.getUnaryInverseFunction((IAST) expr);
+					if (inverseFunction != null) {
+						IExpr temp = rewriteInverseFunction(plusAST, i);
+						if (temp != null) {
+							return temp;
+						}
+					}
+				}
+
+			}
+			return null;
+		}
+
+		/**
+		 * Check for an applicable inverse function at the given <code>position</code> in the <code>Plus(..., ,...)</code>
+		 * expression.
+		 * 
+		 * @param plusAST
+		 *            the <code>Plus(..., ,...)</code> expression
+		 * @param position
+		 * @return <code>null</code> if no inverse function was found, otherwise return the rewritten expression
+		 */
+		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
+			IAST ast = (IAST) plusAST.get(position);
+			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
+			if (plus.isFree(Predicates.in(vars), true)) {
+				return rewriteInverseFunction(ast, F.Times(F.CN1, plus));
+			}
+			return null;
+		}
+
+		/**
+		 * Check for an applicable inverse function at the given <code>position</code> in the <code>Plus(..., ,...)</code>
+		 * expression.
+		 * 
+		 * @param ast
+		 * @param arg1
+		 * @return
+		 */
+		private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
+			if (ast.size() == 2 && ast.arg1().isSymbol()) {
+				int position = vars.findFirstEquals(ast.arg1());
+				if (position > 0) {
+					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+					if (inverseFunction != null) {
+						// rewrite fNumer
+						inverseFunction.add(arg1);
+						return F.Subtract(ast.arg1(), inverseFunction);
+					}
+				}
+
+			}
+			return null;
 		}
 
 		/**
@@ -74,19 +156,19 @@ public class Solve extends AbstractFunctionEvaluator {
 				fPlusAST.add(eqExpr);
 			} else if (eqExpr.isPlus()) {
 				fLeafCount++;
-				IAST arg = (IAST) eqExpr;
+				IAST plusAST = (IAST) eqExpr;
 				IExpr expr;
-				for (int i = 1; i < arg.size(); i++) {
-					expr = arg.get(i);
+				for (int i = 1; i < plusAST.size(); i++) {
+					expr = plusAST.get(i);
 					if (expr.isFree(Predicates.in(vars), true)) {
 						fLeafCount++;
 						fPlusAST.add(expr);
 					} else {
-						getPlusEquationType(expr);
+						getPlusArgumentEquationType(expr);
 					}
 				}
 			} else {
-				getPlusEquationType(eqExpr);
+				getPlusArgumentEquationType(eqExpr);
 			}
 		}
 
@@ -133,7 +215,12 @@ public class Solve extends AbstractFunctionEvaluator {
 			return fSymbolSet.size();
 		}
 
-		private void getPlusEquationType(IExpr eqExpr) {
+		/**
+		 * Get the argument type.
+		 * 
+		 * @param eqExpr
+		 */
+		private void getPlusArgumentEquationType(IExpr eqExpr) {
 			if (eqExpr.isTimes()) {
 				ISymbol sym = null;
 				fLeafCount++;
@@ -166,7 +253,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						if (fEquationType == LINEAR) {
 							fEquationType = POLYNOMIAL;
 						}
-						getTimesEquationType(((IAST) expr).arg1());
+						getTimesArgumentEquationType(((IAST) expr).arg1());
 					} else {
 						fLeafCount += eqExpr.leafCount();
 						if (fEquationType <= POLYNOMIAL) {
@@ -181,7 +268,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					}
 				}
 			} else {
-				getTimesEquationType(eqExpr);
+				getTimesArgumentEquationType(eqExpr);
 			}
 		}
 
@@ -199,15 +286,14 @@ public class Solve extends AbstractFunctionEvaluator {
 			return fSymbolSet;
 		}
 
-		private void getTimesEquationType(IExpr expr) {
+		private void getTimesArgumentEquationType(IExpr expr) {
 			if (expr.isSymbol()) {
 				fLeafCount++;
-				for (int i = 1; i < vars.size(); i++) {
-					if (vars.equalsAt(i, expr)) {
-						fSymbolSet.add((ISymbol) expr);
-						if (fEquationType == LINEAR) {
-							fMatrixRow.set(i, F.Plus(fMatrixRow.get(i), F.C1));
-						}
+				int position = vars.findFirstEquals(expr);
+				if (position > 0) {
+					fSymbolSet.add((ISymbol) expr);
+					if (fEquationType == LINEAR) {
+						fMatrixRow.set(position, F.Plus(fMatrixRow.get(position), F.C1));
 					}
 				}
 				return;
@@ -222,14 +308,14 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).arg1());
+					getTimesArgumentEquationType(((IAST) expr).arg1());
 					return;
 				}
 				if (((IAST) expr).arg2().isNumIntValue()) {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).arg1());
+					getTimesArgumentEquationType(((IAST) expr).arg1());
 					return;
 				}
 			}
@@ -457,6 +543,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 			return resultList;
 		} catch (NoSolution e) {
+			e.printStackTrace();
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}

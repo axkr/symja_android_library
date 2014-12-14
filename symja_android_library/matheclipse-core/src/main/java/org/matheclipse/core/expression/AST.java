@@ -252,6 +252,15 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return true;
 	}
 
+	public int findFirstEquals(final IExpr expr) {
+		for (int i = 1; i < size(); i++) {
+			if (equalsAt(i, expr)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	/**
 	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
 	 */
@@ -1264,7 +1273,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public boolean isFreeAST(Predicate<IExpr> predicate) {
 		if (predicate.apply(get(0))) {
 			return false;
-		} 
+		}
 		for (int i = 1; i < size(); i++) {
 			if (get(i).isAST() && !get(i).isFreeAST(predicate)) {
 				return false;
@@ -2284,7 +2293,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	public boolean isVariable() {
 		return false;
 	}
-	
+
 	@Override
 	public IExpr remainder(IExpr that) {
 		if (equals(that)) {
