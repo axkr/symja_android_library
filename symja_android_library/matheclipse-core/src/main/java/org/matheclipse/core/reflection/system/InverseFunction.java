@@ -14,36 +14,38 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class InverseFunction extends AbstractFunctionEvaluator {
-	private static Map<ISymbol, ISymbol> INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, ISymbol>();
+	private static Map<ISymbol, ISymbol> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, ISymbol>();
 
 	static {
-		INVERSE_FUNCTIONS.put(F.Cos, F.ArcCos);
-		INVERSE_FUNCTIONS.put(F.Cot, F.ArcCot);
-		INVERSE_FUNCTIONS.put(F.Csc, F.ArcCsc);
-		INVERSE_FUNCTIONS.put(F.Sec, F.ArcSec);
-		INVERSE_FUNCTIONS.put(F.Sin, F.ArcSin);
-		INVERSE_FUNCTIONS.put(F.Tan, F.ArcTan);
+		UNARY_INVERSE_FUNCTIONS.put(F.Cos, F.ArcCos);
+		UNARY_INVERSE_FUNCTIONS.put(F.Cot, F.ArcCot);
+		UNARY_INVERSE_FUNCTIONS.put(F.Csc, F.ArcCsc);
+		UNARY_INVERSE_FUNCTIONS.put(F.Sec, F.ArcSec);
+		UNARY_INVERSE_FUNCTIONS.put(F.Sin, F.ArcSin);
+		UNARY_INVERSE_FUNCTIONS.put(F.Tan, F.ArcTan);
 
-		INVERSE_FUNCTIONS.put(F.ArcCos, F.Cos);
-		INVERSE_FUNCTIONS.put(F.ArcCot, F.Cot);
-		INVERSE_FUNCTIONS.put(F.ArcCsc, F.Csc);
-		INVERSE_FUNCTIONS.put(F.ArcSec, F.Sec);
-		INVERSE_FUNCTIONS.put(F.ArcSin, F.Sin);
-		INVERSE_FUNCTIONS.put(F.ArcTan, F.Tan);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCos, F.Cos);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCot, F.Cot);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCsc, F.Csc);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcSec, F.Sec);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcSin, F.Sin);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcTan, F.Tan);
 
-		INVERSE_FUNCTIONS.put(F.Cosh, F.ArcCosh);
-		INVERSE_FUNCTIONS.put(F.Coth, F.ArcCoth);
-		INVERSE_FUNCTIONS.put(F.Csch, F.ArcCsch);
-		INVERSE_FUNCTIONS.put(F.Sech, F.ArcSech);
-		INVERSE_FUNCTIONS.put(F.Sinh, F.ArcSinh);
-		INVERSE_FUNCTIONS.put(F.Tanh, F.ArcTanh);
+		UNARY_INVERSE_FUNCTIONS.put(F.Cosh, F.ArcCosh);
+		UNARY_INVERSE_FUNCTIONS.put(F.Coth, F.ArcCoth);
+		UNARY_INVERSE_FUNCTIONS.put(F.Csch, F.ArcCsch);
+		UNARY_INVERSE_FUNCTIONS.put(F.Sech, F.ArcSech);
+		UNARY_INVERSE_FUNCTIONS.put(F.Sinh, F.ArcSinh);
+		UNARY_INVERSE_FUNCTIONS.put(F.Tanh, F.ArcTanh);
 
-		INVERSE_FUNCTIONS.put(F.ArcCosh, F.Cosh);
-		INVERSE_FUNCTIONS.put(F.ArcCoth, F.Coth);
-		INVERSE_FUNCTIONS.put(F.ArcCsch, F.Csch);
-		INVERSE_FUNCTIONS.put(F.ArcSech, F.Sech);
-		INVERSE_FUNCTIONS.put(F.ArcSinh, F.Sinh);
-		INVERSE_FUNCTIONS.put(F.ArcTanh, F.Tanh);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCosh, F.Cosh);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCoth, F.Coth);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcCsch, F.Csch);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcSech, F.Sech);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcSinh, F.Sinh);
+		UNARY_INVERSE_FUNCTIONS.put(F.ArcTanh, F.Tanh);
+		
+		UNARY_INVERSE_FUNCTIONS.put(F.Log, F.Exp);
 	}
 
 	public InverseFunction() {
@@ -54,7 +56,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		ISymbol arg1 = Validate.checkSymbolType(ast, 1);
-		return getInverseFunction(arg1);
+		return getUnaryInverseFunction(arg1);
 	}
 
 	/**
@@ -64,8 +66,8 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	 *            the symbol which represents a function name (i.e. <code>Cos, Sin, ArcSin,...</code>)
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
-	public static ISymbol getInverseFunction(ISymbol headSymbol) {
-		return INVERSE_FUNCTIONS.get(headSymbol);
+	public static ISymbol getUnaryInverseFunction(ISymbol headSymbol) {
+		return UNARY_INVERSE_FUNCTIONS.get(headSymbol);
 	}
 
 	/**
@@ -76,10 +78,10 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	 *            the AST which represents a function (i.e. <code>Cos(x), Sin(x), ArcSin(x),...</code>)
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
-	public static IAST getInverseFunction(IAST ast) {
+	public static IAST getUnaryInverseFunction(IAST ast) {
 		IExpr expr = ast.head();
 		if (expr.isSymbol()) {
-			ISymbol inverseSymbol = INVERSE_FUNCTIONS.get((ISymbol) expr);
+			ISymbol inverseSymbol = UNARY_INVERSE_FUNCTIONS.get((ISymbol) expr);
 			if (inverseSymbol != null) {
 				return F.ast(inverseSymbol);
 			}
