@@ -149,10 +149,26 @@ public class Predicates {
 	 * the predicate.
 	 * 
 	 * @param expr
-	 *            the expr which may macth the function input
+	 *            the expr which may match the function input
 	 */
 	public static Predicate<IExpr> in(IExpr expr) {
 		return new InASTPredicate(F.List(expr));
+	}
+
+	/**
+	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is free of the arguments of the given
+	 * <code>ast</code>. Calls <code>IExpr#isFree(expr, true)</code>.
+	 * 
+	 * @param expr
+	 *            the expr which may match the function input
+	 */
+	public static Predicate<IExpr> isFree(final IExpr expr) {
+		return new Predicate<IExpr>() {
+			@Override
+			public boolean apply(IExpr input) {
+				return input.isFree(expr, true);
+			}
+		};
 	}
 
 	/**
