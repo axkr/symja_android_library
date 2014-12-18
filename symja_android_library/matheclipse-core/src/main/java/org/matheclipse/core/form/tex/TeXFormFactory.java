@@ -200,7 +200,14 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
 			}
-			buf.append(((ISymbol) obj).getSymbolName());
+			String str = ((ISymbol) obj).getSymbolName();
+			if (str.length() == 1) {
+				buf.append(str);
+			} else {
+				buf.append("ext{");
+				buf.append(str);
+				buf.append('}');
+			}
 			return;
 		}
 		convert(buf, obj, 0);
@@ -250,16 +257,31 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		convertString(buf, o.toString());
 	}
 
-	private void convertAST(final StringBuffer buf, final IAST f) {
+	@Override
+	public void convertAST(StringBuffer buf, final IAST f) {
 		convertHead(buf, f.head());
-		buf.append("\\left( ");
+		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
 			convert(buf, f.get(i), 0);
 			if (i < f.size() - 1) {
 				buf.append(',');
 			}
 		}
-		buf.append(" \\right)");
+		buf.append(")");
+
+	}
+	
+	@Override
+	public void convertAST(StringBuffer buf, final IAST f, String headString) {
+		buf.append(headString);
+		buf.append("(");
+		for (int i = 1; i < f.size(); i++) {
+			convert(buf, f.get(i), 0);
+			if (i < f.size() - 1) {
+				buf.append(',');
+			}
+		}
+		buf.append(")");
 
 	}
 
@@ -404,11 +426,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	@Override
 	public void convertSubExpr(StringBuffer buf, IExpr o, int precedence) {
-		if (o.isAST()){
+		if (o.isAST()) {
 			buf.append("{");
 		}
 		convert(buf, o, precedence);
-		if (o.isAST()){
+		if (o.isAST()) {
 			buf.append("}");
 		}
 	}

@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.tex;
 
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -119,6 +120,10 @@ abstract public class AbstractTeXFormFactory {
 	 */
 	abstract public void convert(StringBuffer buf, Object o, int precedence);
 
+	abstract public void convertAST(StringBuffer buf, final IAST f);
+	
+	abstract public void convertAST(StringBuffer buf, final IAST f, final String headString);
+	
 	abstract public void convertSubExpr(StringBuffer buf, IExpr o, int precedence);
 
 }

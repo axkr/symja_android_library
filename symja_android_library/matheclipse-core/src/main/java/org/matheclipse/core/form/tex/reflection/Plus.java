@@ -18,12 +18,7 @@ public class Plus extends AbstractOperator {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "+");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.core.form.mathml.IConverter#convert(java.lang.StringBuffer , org.matheclipse.parser.interfaces.IAST,
-	 * int)
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		IExpr expr;
