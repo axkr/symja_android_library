@@ -78,6 +78,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public int hierarchy() {
+		// TODO check this ID
 		return DOUBLEID;
 	}
 
@@ -288,7 +289,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * @return
 	 */
 	@Override
-	public ISignedNumber negate() {
+	public ApfloatNum negate() {
 		return valueOf(fApfloat.negate());
 	}
 
@@ -296,12 +297,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 	 * @return
 	 */
 	@Override
-	public ISignedNumber opposite() {
+	public ApfloatNum opposite() {
 		return valueOf(fApfloat.negate());
 	}
 
 	@Override
-	public ISignedNumber inverse() {
+	public ApfloatNum inverse() {
 		return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
 
