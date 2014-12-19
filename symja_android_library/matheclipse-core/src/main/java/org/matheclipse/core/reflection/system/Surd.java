@@ -73,6 +73,18 @@ public class Surd extends AbstractArg2 implements INumeric {
 		if (size != 2) {
 			throw new UnsupportedOperationException();
 		}
-		return Math.pow(stack[top - 1], 1.0d / stack[top]);
+		return doubleSurd(stack[top - 1], stack[top]);
+	}
+
+	private double doubleSurd(double val, double r) {
+		if (r == 0.0d) {
+			EvalEngine ee = EvalEngine.get();
+			ee.printMessage("Surd(a,b) division by zero");
+			return Double.NaN;
+		}
+		if (val < 0.0d) {
+			return -Math.pow(-val, 1.0d / r);
+		}
+		return Math.pow(val, 1.0d / r);
 	}
 }
