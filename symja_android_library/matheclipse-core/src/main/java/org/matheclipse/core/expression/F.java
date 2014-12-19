@@ -635,6 +635,7 @@ public class F {
 	public final static ISymbol Superscript = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "superscript" : "Superscript");
 	public final static ISymbol Sum = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sum" : "Sum");
+	public final static ISymbol Surd = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surd" : "Surd");
 	public final static ISymbol SyntaxLength = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxlength"
 			: "SyntaxLength");
 	public final static ISymbol SyntaxQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
