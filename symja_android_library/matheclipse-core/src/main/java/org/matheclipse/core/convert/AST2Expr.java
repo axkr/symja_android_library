@@ -94,10 +94,10 @@ public class AST2Expr {
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
-			"EvalF", "Infinity", "Int", "Ln", "Trunc" };
+			"EvalF", "Infinity", "Int", "Ln", "Trunc", "nthroot", "root"};
 
 	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh,
-			F.CComplexInfinity, F.D, F.N, F.CInfinity, F.Integrate, F.Log, F.IntegerPart };
+			F.CComplexInfinity, F.D, F.N, F.CInfinity, F.Integrate, F.Log, F.IntegerPart, F.Surd, F.Surd };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
