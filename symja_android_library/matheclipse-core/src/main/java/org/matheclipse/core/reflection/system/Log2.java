@@ -11,7 +11,7 @@ public class Log2 extends AbstractArg1 implements INumeric {
 
 	@Override
 	public IExpr e1ObjArg(final IExpr o) {
-		return F.Divide(F.Log(o), F.Log(F.C2));
+		return F.Log(F.C2,o); 
 	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {
