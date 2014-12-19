@@ -402,6 +402,7 @@ public class F {
 	public final static ISymbol Eigenvectors = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvectors"
 			: "Eigenvectors");
 	public final static ISymbol Equal = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equal" : "Equal");
+	public final static ISymbol Equivalent = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equivalent" : "Equivalent");
 	public final static ISymbol Erf = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erf" : "Erf");
 	public final static ISymbol Erfc = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfc" : "Erfc");
 	public final static ISymbol Erfi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfi" : "Erfi");
@@ -461,6 +462,7 @@ public class F {
 	public final static ISymbol IdentityMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identitymatrix"
 			: "IdentityMatrix");
 	public final static ISymbol Im = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
+	public final static ISymbol Implies = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "implies" : "Implies");
 	public final static ISymbol Increment = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "increment" : "Increment");
 	public final static ISymbol Inner = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inner" : "Inner");
 	public final static ISymbol IntegerPart = F

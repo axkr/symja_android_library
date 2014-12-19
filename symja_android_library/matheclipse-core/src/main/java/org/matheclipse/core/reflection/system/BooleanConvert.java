@@ -39,24 +39,28 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 					}
 
 				}
-			} else if (ast.isASTSizeGE(Xor, 3)) {
-				return convertXor(ast);
+			} else if (ast.isASTSizeGE(Equivalent, 1)) {
+				return convertEquivalent(ast);
+			} else if (ast.isAST(Implies, 3)) {
+				return convertImplies(ast);
 			} else if (ast.isASTSizeGE(Nand, 1)) {
 				return convertNand(ast);
 			} else if (ast.isASTSizeGE(Nor, 1)) {
 				return convertNor(ast);
+			} else if (ast.isASTSizeGE(Xor, 3)) {
+				return convertXor(ast);
 			}
 			return super.visitAST(ast);
 		}
 
-		public IAST convertXor(IAST ast) {
-			IExpr temp = ast.arg2();
-			if (ast.size() > 3) {
-				IAST clone = ast.clone();
-				clone.remove(1);
-				temp = convertXor(clone);
-			}
-			return F.Or(F.And(ast.arg1(), F.Not(temp)), F.And(F.Not(ast.arg1()), temp));
+		public IAST convertEquivalent(IAST ast) {
+			IAST term1 = ast.apply(F.And);
+			IAST term2 = term1.mapAt(F.Not(null), 1);
+			return F.Or(term1, term2);
+		}
+
+		public IAST convertImplies(IAST ast) {
+			return F.Or(F.Not(ast.arg1()), ast.arg2());
 		}
 
 		public IAST convertNand(IAST ast) {
@@ -73,6 +77,16 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 				result.add(Not(ast.get(i)));
 			}
 			return result;
+		}
+
+		public IAST convertXor(IAST ast) {
+			IExpr temp = ast.arg2();
+			if (ast.size() > 3) {
+				IAST clone = ast.clone();
+				clone.remove(1);
+				temp = convertXor(clone);
+			}
+			return F.Or(F.And(ast.arg1(), F.Not(temp)), F.And(F.Not(ast.arg1()), temp));
 		}
 	}
 
