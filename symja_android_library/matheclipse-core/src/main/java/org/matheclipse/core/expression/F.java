@@ -515,6 +515,7 @@ public class F {
 	public final static ISymbol Most = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "most" : "Most");
 	public final static ISymbol Multinomial = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "multinomial" : "Multinomial");
+	public final static ISymbol Nand = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nand" : "Nand");
 	public final static ISymbol Negative = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "negative" : "Negative");
 	public final static ISymbol NextPrime = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nextprime" : "NextPrime");
 	public final static ISymbol NFourierTransform = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nfouriertransform"
@@ -524,6 +525,7 @@ public class F {
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "noncommutativemultiply" : "NonCommutativeMultiply");
 	public final static ISymbol NonNegative = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonnegative" : "NonNegative");
+	public final static ISymbol Nor = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor");
 	public final static ISymbol Norm = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "norm" : "Norm");
 	public final static ISymbol Not = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "not" : "Not");
 	public final static ISymbol NRoots = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nroots" : "NRoots");
@@ -1326,6 +1328,10 @@ public class F {
 		return And(integer(i), b);
 	}
 
+	public static IAST And() {
+		return ast(And);
+	}
+	
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
 	}

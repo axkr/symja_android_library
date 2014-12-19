@@ -68,9 +68,9 @@ public class AST2Expr {
 			"LinearProgramming", "LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand",
 			"LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ",
 			"MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "Min", "Mod",
-			"Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Negative", "Nest", "NestList", "NestWhile",
-			"NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Norm",
-			"Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order",
+			"Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Nand", "Negative", "Nest", "NestList", "NestWhile",
+			"NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NonCommutativeMultiply", "NonNegative", "Nor",
+			"Norm", "Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order",
 			"OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern",
 			"Permutations", "Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog", "PolynomialExtendedGCD",
 			"PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder",
@@ -78,9 +78,9 @@ public class AST2Expr {
 			"PreIncrement", "Prepend", "PrependTo", "Prime", "PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet",
 			"Quotient", "RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap",
 			"ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals",
-			"RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec",
-			"Sech", "Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin",
-			"Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt",
+			"RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan",
+			"Sec", "Sech", "Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify",
+			"Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt",
 			"SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake",
 			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "Switch",
 			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread", "Through", "Throw",
@@ -94,7 +94,7 @@ public class AST2Expr {
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
-			"EvalF", "Infinity", "Int", "Ln", "Trunc", "NthRoot", "Root"};
+			"EvalF", "Infinity", "Int", "Ln", "Trunc", "NthRoot", "Root" };
 
 	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh,
 			F.CComplexInfinity, F.D, F.N, F.CInfinity, F.Integrate, F.Log, F.IntegerPart, F.Surd, F.Surd };

@@ -20,7 +20,9 @@ public class Or extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 3);
+		if (ast.size() == 1) {
+			return F.False;
+		}
 
 		IExpr temp;
 		IExpr sym;
