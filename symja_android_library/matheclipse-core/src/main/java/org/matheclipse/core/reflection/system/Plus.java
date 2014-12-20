@@ -26,13 +26,9 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -52,182 +48,31 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
 
-	@Override
-	public HashedOrderlessMatcher getHashRuleMap() {
-		return ORDERLESS_MATCHER;
+	public static IExpr evalPlusNumbers(IAST ast) {
+		IAST result = F.Plus();
+		IExpr num;
+		if (!ast.arg1().isNumber()) {
+			return null;
+		}
+		if (!ast.arg2().isNumber()) {
+			return null;
+		}
+		num = ast.arg1().plus(ast.arg2());
+		result.add(num);
+		for (int i = 3; i < ast.size(); i++) {
+			if (num.isNumber() && ast.get(i).isNumber()) {
+				num = num.plus(ast.get(i));
+			} else {
+				result.addAll(ast, i, ast.size());
+				result.set(1, num);
+				return result;
+			}
+		}
+		return num;
 	}
 
 	public Plus() {
 
-	}
-
-	/**
-	 * 
-	 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic Simplification</a>
-	 * 
-	 * @param ast
-	 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
-	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
-	 */
-	@Override
-	public IExpr evaluate(final IAST ast) {
-		int size = ast.size();
-		if (ast.isEvalFlagOff(IAST.IS_EVALED)) {
-			if (size > 2) {
-				boolean evaled = false;
-
-				Map<IExpr, IExpr> plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
-				IExpr numberValue = null;
-				for (int i = 1; i < size; i++) {
-					final IExpr arg = ast.get(i);
-					if (arg.isIndeterminate()) {
-						return F.Indeterminate;
-					} else if (arg.isDirectedInfinity()) {
-						if (arg.isInfinity()) {
-							if (numberValue == null) {
-								numberValue = arg;
-								continue;
-							}
-							numberValue = infinityPlus(numberValue);
-							if (numberValue.isIndeterminate()) {
-								return F.Indeterminate;
-							}
-							evaled = true;
-							continue;
-						} else if (arg.isNegativeInfinity()) {
-							if (numberValue == null) {
-								numberValue = arg;
-								continue;
-							}
-							numberValue = negativeInfinityPlus(numberValue);
-							if (numberValue.isIndeterminate()) {
-								return F.Indeterminate;
-							}
-							evaled = true;
-							continue;
-						} else if (arg.isComplexInfinity()) {
-							if (numberValue == null) {
-								numberValue = arg;
-								continue;
-							}
-							if (numberValue.isNumber()) {
-								numberValue=F.CComplexInfinity;
-								evaled = true;
-								continue;
-							}
-							return F.Indeterminate;
-						}
-					} else if (arg.isNumber()) {
-						if (ast.get(i).isZero()) {
-							evaled = true;
-							continue;
-						}
-						if (numberValue == null) {
-							numberValue = ast.get(i);
-							continue;
-						}
-						if (numberValue.isNumber()) {
-							numberValue = numberValue.plus(ast.get(i));
-							evaled = true;
-							continue;
-						}
-						if (numberValue.isInfinity()) {
-							numberValue = infinityPlus(ast.get(i));
-							if (numberValue.isIndeterminate()) {
-								return F.Indeterminate;
-							}
-							evaled = true;
-							continue;
-						}
-						if (numberValue.isNegativeInfinity()) {
-							numberValue = negativeInfinityPlus(ast.get(i));
-							if (numberValue.isIndeterminate()) {
-								return F.Indeterminate;
-							}
-							evaled = true;
-							continue;
-						}
-						continue;
-					} else if (arg.isTimes()) {
-						IAST timesAST = (IAST) ast.get(i);
-						if (timesAST.arg1().isNumber()) {
-							if (addMerge(plusMap, timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
-								evaled = true;
-							}
-							continue;
-						}
-						if (addMerge(plusMap, timesAST, F.C1)) {
-							evaled = true;
-						}
-						continue;
-					}
-					if (addMerge(plusMap, arg, F.C1)) {
-						evaled = true;
-					}
-				}
-				if (evaled) {
-					IExpr temp;
-					IAST result = F.Plus();
-					if (numberValue != null) {
-						result.add(numberValue);
-					}
-					for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
-						if (element.getValue().isOne()) {
-							temp = element.getKey();
-							if (temp.isPlus()) {
-								result.addAll((IAST) temp);
-							} else {
-								result.add(temp);
-							}
-							continue;
-						}
-						result.add(F.Times(element.getValue(), element.getKey()));
-					}
-					result.addEvalFlags(IAST.IS_EVALED);
-					return result.getOneIdentity(F.C0);
-				}
-			}
-			ast.addEvalFlags(IAST.IS_EVALED);
-		}
-
-		if (size > 2) {
-			IAST temp = evaluateHashs(ast);
-			if (temp != null) {
-				return temp;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Add or merge the <code>key, value</code> pair into the given <code>plusMap</code>.
-	 * 
-	 * @param plusMap
-	 *            the map where the <code>key, value</code> pair should be addd to
-	 * @param key
-	 *            the key expression
-	 * @param value
-	 *            the value expression
-	 */
-	public boolean addMerge(Map<IExpr, IExpr> plusMap, IExpr key, IExpr value) {
-		IExpr temp = plusMap.get(key);
-		if (temp == null) {
-			plusMap.put(key, value);
-			return false;
-		}
-		// merge both values
-		if (temp.isNumber() && value.isNumber()) {
-			temp = temp.plus(value);
-			if (temp.isZero()) {
-				plusMap.remove(key);
-			}
-		} else if (temp.head().equals(F.Plus)) {
-			((IAST) temp).add(value);
-		} else {
-			temp = F.Plus(temp, value);
-		}
-		plusMap.put(key, temp);
-		return true;
 	}
 
 	@Override
@@ -255,52 +100,9 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return i0.add(i1);
 	}
 
-	private IExpr infinityPlus(IExpr o1) {
-		if (o1.isInfinity()) {
-			return F.CInfinity;
-		} else if (o1.isNegativeInfinity()) {
-			EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
-			return F.Indeterminate;
-		}
-		return F.CInfinity;
-	}
-
-	private IExpr negativeInfinityPlus(IExpr o1) {
-		if (o1.isInfinity()) {
-			EvalEngine.get().printMessage("Indeterminate expression Infinity-Infinity");
-			return F.Indeterminate;
-		} else if (o1.isNegativeInfinity()) {
-			return F.CNInfinity;
-		}
-		return F.CNInfinity;
-	}
-
 	@Override
 	public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
 		return c0.add(F.complex(i1, F.C0));
-	}
-
-	public static IExpr evalPlusNumbers(IAST ast) {
-		IAST result = F.Plus();
-		IExpr num;
-		if (!ast.arg1().isNumber()) {
-			return null;
-		}
-		if (!ast.arg2().isNumber()) {
-			return null;
-		}
-		num = ast.arg1().plus(ast.arg2());
-		result.add(num);
-		for (int i = 3; i < ast.size(); i++) {
-			if (num.isNumber() && ast.get(i).isNumber()) {
-				num = num.plus(ast.get(i));
-			} else {
-				result.addAll(ast, i, ast.size());
-				result.set(1, num);
-				return result;
-			}
-		}
-		return num;
 	}
 
 	public double evalReal(final double[] stack, final int top, final int size) {
@@ -309,6 +111,47 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 			result += stack[i];
 		}
 		return result;
+	}
+
+	/**
+	 * 
+	 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic Simplification</a>
+	 * 
+	 * @param ast
+	 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
+	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
+	 */
+	@Override
+	public IExpr evaluate(final IAST ast) {
+		int size = ast.size();
+		if (ast.isEvalFlagOff(IAST.IS_EVALED)) {
+			if (size > 2) {
+				PlusOp plusOp = new PlusOp(size);
+				for (int i = 1; i < size; i++) {
+					final IExpr temp = plusOp.plus(ast.get(i));
+					if (temp != null) {
+						return temp;
+					}
+				}
+				if (plusOp.isEvaled()) {
+					return plusOp.getSum();
+				}
+			}
+			ast.addEvalFlags(IAST.IS_EVALED);
+		}
+
+		if (size > 2) {
+			IAST temp = evaluateHashs(ast);
+			if (temp != null) {
+				return temp;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public HashedOrderlessMatcher getHashRuleMap() {
+		return ORDERLESS_MATCHER;
 	}
 
 	@Override
