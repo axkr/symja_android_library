@@ -258,12 +258,16 @@ public class Simplify extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		IExpr expr = ast.arg1();
-		long minCounter = expr.leafCount();
+		
+		IExpr arg1 = ast.arg1();
+		if (arg1.isAtom()){
+			return arg1;
+		}
+		long minCounter = arg1.leafCount();
 
-		IExpr result = expr;
+		IExpr result = arg1;
 		long count = 0L;
-		IExpr temp = expr.accept(new SimplifyVisitor());
+		IExpr temp = arg1.accept(new SimplifyVisitor());
 		while (temp != null) {
 			count = temp.leafCount();
 			if (count < minCounter) {
