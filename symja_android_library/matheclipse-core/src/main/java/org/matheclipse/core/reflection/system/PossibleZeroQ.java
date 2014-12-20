@@ -25,6 +25,9 @@ public class PossibleZeroQ extends AbstractFunctionEvaluator {
 	}
 
 	public static boolean possibleZeroQ(IExpr expr) {
+		if (expr.isNumber()){
+			return expr.isZero();
+		}
 		if (expr.isAST()) {
 			expr = F.evalExpandAll(expr);
 			if (expr.isZero()) {
