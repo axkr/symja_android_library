@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -39,13 +40,24 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
+		if (arg1.isDirectedInfinity()) {
+			IAST directedInfininty = (IAST) arg1;
+			if (directedInfininty.size() == 2) {
+				if (directedInfininty.isInfinity()) {
+					return F.C0;
+				}
+				return F.Arg(directedInfininty.arg1());
+			}
+		}
 		if (arg1.isSignedNumber()) {
 			final ISignedNumber in = (ISignedNumber) arg1;
 			if (in.isNegative()) {
 				return F.Pi;
-			} else if (!in.equals(F.C0)) {
-				return F.C0;
 			}
+			return F.C0;
 		} else if (arg1.isComplexNumeric()) {
 			final IComplexNum ic = (IComplexNum) arg1;
 			// ic == ( x + I * y )

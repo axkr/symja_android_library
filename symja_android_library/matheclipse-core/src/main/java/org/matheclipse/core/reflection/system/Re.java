@@ -38,18 +38,39 @@ public class Re implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
+		if (arg1.isDirectedInfinity()) {
+			IAST directedInfininty = (IAST) arg1;
+			if (directedInfininty.isComplexInfinity()) {
+				return F.Indeterminate;
+			}
+			if (directedInfininty.size() == 2) {
+				if (directedInfininty.isInfinity()) {
+					return F.CInfinity;
+				}
+				IExpr re = F.eval(F.Re(directedInfininty.arg1()));
+				if (re.isNumber()) {
+					if (re.isZero()) {
+						return F.C0;
+					}
+					return F.Times(F.Sign(re), F.CInfinity);
+				}
+			}
+		}
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).getRe();
 		}
-//		if (arg1.isSignedNumber()) {
-//			return arg1;
-//		}
-//		if (arg1.isComplex()) {
-//			return ((IComplex) arg1).getRe();
-//		}
-//		if (arg1 instanceof IComplexNum) {
-//			return F.num(((IComplexNum) arg1).getRealPart());
-//		}
+		// if (arg1.isSignedNumber()) {
+		// return arg1;
+		// }
+		// if (arg1.isComplex()) {
+		// return ((IComplex) arg1).getRe();
+		// }
+		// if (arg1 instanceof IComplexNum) {
+		// return F.num(((IComplexNum) arg1).getRealPart());
+		// }
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
 			return Times(CN1, Re(negExpr));

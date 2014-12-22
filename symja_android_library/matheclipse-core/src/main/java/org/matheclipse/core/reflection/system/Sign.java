@@ -13,9 +13,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Gets the sign value of a number. See <a
- * href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign
- * function</a>
+ * Gets the sign value of a number. See <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign function</a>
  * 
  */
 public class Sign implements IFunctionEvaluator {
@@ -27,6 +25,18 @@ public class Sign implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
+		if (arg1.isDirectedInfinity()) {
+			IAST directedInfininty = (IAST) arg1;
+			if (directedInfininty.isComplexInfinity()) {
+				return F.Indeterminate;
+			}
+			if (directedInfininty.size() == 2) {
+				return F.Sign(directedInfininty.arg1());
+			}
+		}
 		INumber number = NumericQ.getNumberNumericQ(arg1);
 		if (number != null) {
 			return numberSign(number);

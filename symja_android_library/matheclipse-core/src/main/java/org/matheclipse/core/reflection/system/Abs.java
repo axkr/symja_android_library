@@ -20,17 +20,15 @@ import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.base.Function;
 
 /**
- * Absolute value of a number. See <a
- * href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
- * value</a>
+ * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute value</a>
  */
 public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
-	}  
-	
+	}
+
 	private final class AbsTimesFunction implements Function<IExpr, IExpr> {
 		public IExpr apply(IExpr expr) {
 			if (expr.isNumber()) {
@@ -73,6 +71,12 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	}
 
 	public IExpr evaluateArg1(final IExpr arg1) {
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
+		if (arg1.isDirectedInfinity()) {
+			return F.CInfinity;
+		}
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).eabs();
 		}
@@ -95,7 +99,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(Math.abs(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.num(ComplexNum.dabs(arg1));
@@ -110,7 +114,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.num(ApcomplexMath.abs(arg1));
 	}
-	
+
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

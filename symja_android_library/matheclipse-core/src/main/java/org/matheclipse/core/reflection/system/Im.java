@@ -39,6 +39,27 @@ public class Im implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
+		if (arg1.isDirectedInfinity()) {
+			IAST directedInfininty = (IAST) arg1;
+			if (directedInfininty.isComplexInfinity()) {
+				return F.Indeterminate;
+			}
+			if (directedInfininty.size() == 2) {
+				if (directedInfininty.isInfinity()) {
+					return F.C0;
+				}
+				IExpr im = F.eval(F.Im(directedInfininty.arg1()));
+				if (im.isNumber()) {
+					if (im.isZero()) {
+						return F.C0;
+					}
+					return F.Times(F.Sign(im), F.CInfinity);
+				}
+			}
+		}
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).getIm();
 		}
