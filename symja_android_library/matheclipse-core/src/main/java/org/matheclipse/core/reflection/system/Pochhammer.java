@@ -43,18 +43,21 @@ public class Pochhammer extends AbstractArg2 {
 	 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
 	 */
 	public static BigFraction pochhammer(BigFraction th, final BigInteger n) {
-		if (n.compareTo(BigInteger.ZERO) < 0)
-			return null;
-		else if (n.compareTo(BigInteger.ZERO) == 0)
+		if (n.compareTo(BigInteger.ZERO) < 0) {
+			BigFraction res = BigFraction.ONE;
+			BigInteger i = BigInteger.valueOf(-1);
+			for (; i.compareTo(n) >= 0; i = i.subtract(BigInteger.ONE)) {
+				res = res.multiply(th.add(i));
+			}
+			return res.reciprocal();
+		} else if (n.equals(BigFraction.ZERO)) {
 			return BigFraction.ONE;
-		else {
-			/*
-			 * initialize results with the current value
-			 */
+		} else {
 			BigFraction res = new BigFraction(th.getNumerator(), th.getDenominator());
 			BigInteger i = BigInteger.ONE;
-			for (; i.compareTo(n) < 0; i = i.add(BigInteger.ONE))
+			for (; i.compareTo(n) < 0; i = i.add(BigInteger.ONE)) {
 				res = res.multiply(th.add(i));
+			}
 			return res;
 		}
 	}
