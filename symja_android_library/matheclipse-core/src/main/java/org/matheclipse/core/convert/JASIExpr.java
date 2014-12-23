@@ -242,10 +242,8 @@ public class JASIExpr {
 			}
 		} else if (exprPoly instanceof IInteger) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
-			// return fPolyFactory.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
 		} else if (exprPoly instanceof IFraction) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
-			// return fraction2Poly((IFraction) exprPoly);
 		}
 		if (exprPoly.isFree(Predicates.in(fVariables), true)) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
@@ -259,15 +257,6 @@ public class JASIExpr {
 		}
 		throw new ClassCastException(exprPoly.toString());
 	}
-
-	// private GenPolynomial<IExpr> fraction2Poly(final IFraction exprPoly) {
-	// BigInteger n = exprPoly.getBigNumerator();// .toJavaBigInteger();
-	// BigInteger d = exprPoly.getBigDenominator();// .toJavaBigInteger();
-	// BigRational nr = new BigRational(n);
-	// BigRational dr = new BigRational(d);
-	// BigRational r = nr.divide(dr);
-	// return new GenPolynomial(fPolyFactory, r);
-	// }
 
 	/**
 	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
@@ -294,7 +283,7 @@ public class JASIExpr {
 	 */
 	public IExpr exprPoly2Expr(final GenPolynomial<IExpr> poly, IExpr variable) {
 		if (poly.length() == 0) {
-			return F.Plus(F.C0);
+			return F.C0;
 		}
 
 		boolean getVar = variable == null;
@@ -302,9 +291,10 @@ public class JASIExpr {
 		for (Monomial<IExpr> monomial : poly) {
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			// IFraction coeffValue = F.fraction(coeff.numerator(),
-			// coeff.denominator());
-			IAST monomTimes = F.Times(coeff);
+			IAST monomTimes = F.Times();
+			if (!coeff.isOne()) {
+				monomTimes.add(coeff);
+			}
 			long lExp;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
@@ -312,7 +302,11 @@ public class JASIExpr {
 					if (getVar) {
 						variable = fVariables.get(i);
 					}
-					monomTimes.add(F.Power(variable, F.integer(lExp)));
+					if (lExp == 1L) {
+						monomTimes.add(variable);
+					} else {
+						monomTimes.add(F.Power(variable, F.integer(lExp)));
+					}
 				}
 			}
 			result.add(monomTimes.getOneIdentity(F.C1));
