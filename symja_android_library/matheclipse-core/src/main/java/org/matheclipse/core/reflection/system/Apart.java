@@ -236,8 +236,6 @@ public class Apart extends AbstractFunctionEvaluator {
 			IExpr denom = getFractionalPartsPower((IAST) arg);
 			if (denom == null) {
 				return null;
-				// parts[0] = arg;
-				// parts[1] = F.C1;
 			} else {
 				parts[0] = F.C1;
 				parts[1] = denom;
@@ -252,9 +250,6 @@ public class Apart extends AbstractFunctionEvaluator {
 					return parts;
 				}
 			}
-			// parts = new IExpr[2];
-			// parts[0] = arg;
-			// parts[1] = F.C1;
 		}
 		return parts;
 	}

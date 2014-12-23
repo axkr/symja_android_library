@@ -35,6 +35,7 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 import com.google.common.base.Function;
 
@@ -209,8 +210,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.DeleteCases());
 	public final static ISymbol Depth = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
 			new org.matheclipse.core.builtin.function.Depth());
-	public final static ISymbol DirectedInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity",
-			new org.matheclipse.core.builtin.function.DirectedInfinity());
+	public final static ISymbol DirectedInfinity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
+			: "DirectedInfinity", new org.matheclipse.core.builtin.function.DirectedInfinity());
 	public final static ISymbol Drop = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop",
 			new org.matheclipse.core.builtin.function.Drop());
 	public final static ISymbol Do = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do",
@@ -457,8 +458,9 @@ public class F {
 			: "HilbertMatrix");
 	public final static ISymbol Hold = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold");
 	public final static ISymbol Horner = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "horner" : "Horner");
-	public final static ISymbol HurwitzZeta = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hurwitzzeta" : "HurwitzZeta");
-	
+	public final static ISymbol HurwitzZeta = F
+			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hurwitzzeta" : "HurwitzZeta");
+
 	public final static ISymbol IdentityMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identitymatrix"
 			: "IdentityMatrix");
 	public final static ISymbol Im = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
@@ -627,8 +629,9 @@ public class F {
 	public final static ISymbol StringLength = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringlength"
 			: "StringLength");
 	public final static ISymbol StringTake = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringtake" : "StringTake");
-	public final static ISymbol Subfactorial = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subfactorial" : "Subfactorial");
-	
+	public final static ISymbol Subfactorial = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subfactorial"
+			: "Subfactorial");
+
 	public final static ISymbol Subscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Subscript");
 	public final static ISymbol Subsuperscript = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsuperscript"
 			: "Subsuperscript");
@@ -1333,7 +1336,7 @@ public class F {
 	public static IAST And() {
 		return ast(And);
 	}
-	
+
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
 	}
@@ -1922,7 +1925,7 @@ public class F {
 	public static IAST Det(final IExpr a0) {
 		return unary(Det, a0);
 	}
-	
+
 	public static IAST DirectedInfinity(final IExpr a0) {
 		return unary(DirectedInfinity, a0);
 	}
@@ -2158,8 +2161,8 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll[]</code> to the given expression and evaluate it. If no evaluation was possible this method returns the
-	 * given argument.
+	 * Evaluate <code>Expand()</code> for the given expression.  
+	 * returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -2171,8 +2174,29 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll[]</code> to the given expression and evaluate it. If no evaluation was possible this method returns the
-	 * given argument.
+	 * Apply <code>Expand()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @param expandNegativePowers TODO
+	 * @param distributePlus TODO
+	 * @return the evaluated expression
+	 * @see EvalEngine#eval(IExpr)
+	 */
+	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
+		if (a.isAST()) {
+			IExpr temp = org.matheclipse.core.reflection.system.Expand.expand((IAST) a, null, expandNegativePowers, false);
+			if (temp != null) {
+				return temp;
+			}
+		}  
+		return a;
+	}
+	
+	/**
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -2183,6 +2207,33 @@ public class F {
 		return EvalEngine.eval(ExpandAll(a));
 	}
 
+	/**
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
+	 * returns the given argument.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @param expandNegativePowers
+	 *            TODO
+	 * @param distributePlus
+	 *            TODO
+	 * @return the evaluated expression
+	 * @see EvalEngine#eval(IExpr)
+	 */
+	public static IExpr expandAll(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
+		if (a.isAST()) {
+			EvalEngine engine = EvalEngine.get();
+			IAST ast=engine.evalFlatOrderlessAttributesRecursive((IAST) a);
+			IExpr temp = org.matheclipse.core.reflection.system.ExpandAll.expandAll(ast, null, expandNegativePowers,
+					distributePlus);
+			if (temp != null) {
+				return temp;
+			}
+			return ast;
+		}
+		return a;
+	}
+	
 	/**
 	 * Evaluate the given expression in numeric mode
 	 * 
@@ -2457,7 +2508,7 @@ public class F {
 	public static IAST Hold(final IExpr a0) {
 		return unary(Hold, a0);
 	}
-	
+
 	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
 		return binary(HurwitzZeta, a0, a1);
 	}
@@ -3198,7 +3249,23 @@ public class F {
 	}
 
 	public static IAST Plus(final IExpr a0, final IExpr a1) {
-
+		if (a0 != null && a1 != null) {
+			if (a0.isPlus() || a1.isPlus()) {
+				IAST result = Plus();
+				if (a0.isPlus()) {
+					result.addAll((IAST) a0);
+				} else {
+					result.add(a0);
+				}
+				if (a1.isPlus()) {
+					result.addAll((IAST) a1);
+				} else {
+					result.add(a1);
+				}
+				EvaluationSupport.sort(result);
+				return result;
+			}
+		}
 		return binary(Plus, a0, a1);
 	}
 
@@ -3652,7 +3719,7 @@ public class F {
 	public static IAST Subfactorial(final IExpr a0) {
 		return unary(Subfactorial, a0);
 	}
-	
+
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		return binary(Plus, a0, binary(Times, CN1, a1));
 	}
@@ -3718,6 +3785,23 @@ public class F {
 	}
 
 	public static IAST Times(final IExpr a0, final IExpr a1) {
+		if (a0 != null && a1 != null) {
+			if (a0.isTimes() || a1.isTimes()) {
+				IAST result = Times();
+				if (a0.isTimes()) {
+					result.addAll((IAST) a0);
+				} else {
+					result.add(a0);
+				}
+				if (a1.isTimes()) {
+					result.addAll((IAST) a1);
+				} else {
+					result.add(a1);
+				}
+				EvaluationSupport.sort(result);
+				return result;
+			}
+		}
 		return binary(Times, a0, a1);
 	}
 

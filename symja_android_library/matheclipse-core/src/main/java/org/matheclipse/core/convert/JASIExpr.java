@@ -298,7 +298,7 @@ public class JASIExpr {
 			long lExp;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
-				if (lExp != 0) {
+				if (lExp != 0L) {
 					if (getVar) {
 						variable = fVariables.get(i);
 					}

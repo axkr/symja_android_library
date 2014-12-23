@@ -6,6 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.Plus;
 
 /**
  * <p>
@@ -52,6 +53,7 @@ public class PlusOp {
 			temp = temp.plus(value);
 			if (temp.isZero()) {
 				plusMap.remove(key);
+				return true;
 			}
 		} else if (temp.head().equals(F.Plus)) {
 			((IAST) temp).add(value);
@@ -71,7 +73,10 @@ public class PlusOp {
 	public IExpr getSum() {
 
 		IAST result = F.Plus();
-		if (numberValue != null) {
+		if (numberValue != null && !numberValue.isZero()) {
+			if (numberValue.isComplexInfinity()) {
+				return numberValue;
+			}
 			result.add(numberValue);
 		}
 		for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
@@ -86,7 +91,7 @@ public class PlusOp {
 			}
 			result.add(F.Times(element.getValue(), element.getKey()));
 		}
-		result.addEvalFlags(IAST.IS_EVALED);
+		// result.addEvalFlags(IAST.IS_EVALED);
 		return result.getOneIdentity(F.C0);
 	}
 
@@ -126,28 +131,37 @@ public class PlusOp {
 	 * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>null</code> otherwise.
 	 */
 	public IExpr plus(final IExpr arg) {
-
 		if (arg.isASTSizeGE(F.Plus, 2)) {
 			// flatten the Plus() argument
 			final IAST plusAST = (IAST) arg;
-			for (int i = 1; i < plusAST.size(); i++) {
-				// recursive call to plus()
-				final IExpr temp = plus(plusAST.get(i));
-				if (temp != null) {
-					return temp;
-				}
-			}
-			return null;
+			return plusUntilPosition(plusAST, plusAST.size());
 		}
-
 		if (arg.isIndeterminate()) {
 			return F.Indeterminate;
-		} else if (arg.isDirectedInfinity()) {
-			if (arg.isInfinity()) {
-				if (numberValue == null) {
-					numberValue = arg;
-					return null;
+		}
+
+		if (numberValue != null && numberValue.isDirectedInfinity()) {
+			if (numberValue.isComplexInfinity()) {
+				if (arg.isDirectedInfinity()) {
+					return F.Indeterminate;
 				}
+				numberValue = F.CComplexInfinity;
+				evaled = true;
+				return null;
+			}
+		}
+
+		if (arg.isDirectedInfinity()) {
+			if (numberValue == null) {
+				numberValue = arg;
+				if (arg.isComplexInfinity()) {
+					if (plusMap.size() > 0) {
+						evaled = true;
+					}
+				}
+				return null;
+			}
+			if (arg.isInfinity()) {
 				numberValue = infinityPlus(numberValue);
 				if (numberValue.isIndeterminate()) {
 					return F.Indeterminate;
@@ -155,10 +169,6 @@ public class PlusOp {
 				evaled = true;
 				return null;
 			} else if (arg.isNegativeInfinity()) {
-				if (numberValue == null) {
-					numberValue = arg;
-					return null;
-				}
 				numberValue = negativeInfinityPlus(numberValue);
 				if (numberValue.isIndeterminate()) {
 					return F.Indeterminate;
@@ -166,16 +176,12 @@ public class PlusOp {
 				evaled = true;
 				return null;
 			} else if (arg.isComplexInfinity()) {
-				if (numberValue == null) {
-					numberValue = arg;
-					return null;
+				if (numberValue.isDirectedInfinity()) {
+					return F.Indeterminate;
 				}
-				if (numberValue.isNumber()) {
-					numberValue = F.CComplexInfinity;
-					evaled = true;
-					return null;
-				}
-				return F.Indeterminate;
+				numberValue = F.CComplexInfinity;
+				evaled = true;
+				return null;
 			}
 		} else if (arg.isNumber()) {
 			if (arg.isZero()) {
@@ -225,5 +231,55 @@ public class PlusOp {
 			evaled = true;
 		}
 		return null;
+	}
+
+	/**
+	 * Add the elements of the given <code>ast</code> from position <code>1</code> up to position <code>pos</code> exclusive.
+	 * 
+	 * @param ast
+	 * @param position
+	 * @return
+	 */
+	public IExpr plusUntilPosition(final IAST ast, final int pos) {
+		for (int i = 1; i < pos; i++) {
+			// recursive call to plus()
+			final IExpr temp = plus(ast.get(i));
+			if (temp != null) {
+				return temp;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Evaluate <code>Plus(a1, a2,...)</code>.
+	 * 
+	 * @param a0
+	 * @param a1
+	 * @return
+	 */
+	public static IExpr plus(IAST plusAST) {
+		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(plusAST);
+		IExpr expr = Plus.CONST.evaluate(temp);
+		if (expr == null) {
+			return plusAST.getOneIdentity(F.C0);
+		}
+		return expr;
+	}
+
+	/**
+	 * Evaluate <code>a0 + a2</code>.
+	 * 
+	 * @param a1
+	 * @param a2
+	 * @return
+	 */
+	public static IExpr plus(IExpr a1, IExpr a2) {
+		IAST plus = F.Plus(a1, a2);
+		IExpr expr = Plus.CONST.evaluate(plus);
+		if (expr == null) {
+			return plus;
+		}
+		return expr;
 	}
 }

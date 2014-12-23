@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,7 +21,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			patt = ast.arg2();
 		}
 		if (arg1.isAST()) {
-			IExpr temp = expandAll((IAST) arg1, patt);
+			IExpr temp = expandAll((IAST) arg1, patt, true, false);
 			if (temp != null) {
 				return temp;
 			}
@@ -30,20 +31,27 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 
 	/**
 	 * Expand the given <code>ast</code> expression.
-	 * 
-	 * @param ast
 	 * @param patt
+	 * @param expandNegativePowers TODO
+	 * @param distributePlus TODO
+	 * @param ast
 	 * @return <code>null</code> if the expression couldn't be expanded.
 	 */
-	public static IExpr expandAll(final IAST ast, IExpr patt) {
-		if (patt != null && ast.isFree(patt, true)) {
+	public static IExpr expandAll(final IAST expr, IExpr patt, boolean expandNegativePowers, boolean distributePlus) {
+		if (patt != null && expr.isFree(patt, true)) {
 			return null;
+		}
+		IAST ast = expr;
+		if (ast.isAST()) {
+			if ((ast.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
+				ast = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
+			}
 		}
 		IAST result = null;
 		IExpr temp = null;
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isAST()) {
-				temp = expandAll((IAST) ast.get(i), patt);
+				temp = expandAll((IAST) ast.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp != null) {
 					if (result == null) {
 						result = ast.setAtClone(i, temp);
@@ -54,9 +62,9 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			}
 		}
 		if (result == null) {
-			return Expand.expand(ast, patt);
+			return Expand.expand(ast, patt, expandNegativePowers, distributePlus);
 		}
-		temp = Expand.expand(result, patt);
+		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);
 		if (temp != null) {
 			return temp;
 		}

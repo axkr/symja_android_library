@@ -16,7 +16,7 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Together extends AbstractFunctionEvaluator {
 
 	public static IExpr together(IAST ast) {
-		IExpr temp = ExpandAll.expandAll(ast, null);
+		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
 		if (temp == null) {
 			temp = ast;
 		}
@@ -24,11 +24,6 @@ public class Together extends AbstractFunctionEvaluator {
 			IExpr result = togetherPlusTimesPower((IAST) temp);
 			if (result != null) {
 				return F.eval(result);
-				// result = F.eval(result);
-				// if (result.isPlus() || result.isTimes() || result.isPower()) {
-				// temp = result;
-				// }
-				// return result;
 			}
 		}
 		return temp;
@@ -57,7 +52,7 @@ public class Together extends AbstractFunctionEvaluator {
 	 */
 	private static IExpr togetherNull(IAST ast) {
 		boolean evaled = false;
-		IExpr temp = ExpandAll.expandAll(ast, null);// F.evalExpandAll(arg1);
+		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
 		if (temp == null) {
 			temp = ast;
 		} else {
@@ -110,33 +105,48 @@ public class Together extends AbstractFunctionEvaluator {
 					continue;
 				}
 				temp = denom.get(j);
-				if (!temp.equals(F.C1)) {
+				if (!temp.isOne()) {
 					ni.add(temp);
 				}
 			}
-			numer.set(i, ni);
+			numer.set(i, ni.getOneIdentity(F.C1));
 		}
 		int i = 1;
 		while (denom.size() > i) {
-			if (denom.equalsAt(i, F.C1)) {
+			if (denom.get(i).isOne()) {
 				denom.remove(i);
 				continue;
 			}
 			i++;
 		}
-		IExpr exprNumerator = F.evalExpandAll(numer);
 		if (denom.size() == 1) {
 			return null;
 		}
-		IExpr exprDenominator = F.evalExpandAll(denom);
-		if (!exprDenominator.equals(F.C1)) {
+
+		temp = F.eval(numer.getOneIdentity(F.C0));
+		IExpr exprNumerator = F.evalExpandAll(temp);
+//		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exprNumerator);
+//		if (negExpr != null) {
+//			exprNumerator = negExpr;
+//			denom.add(F.CN1);
+//		}
+		temp = F.eval(denom.getOneIdentity(F.C1));
+		IExpr exprDenominator = F.evalExpandAll(temp);
+
+		if (!exprDenominator.isOne()) {
 			try {
 				IExpr[] result = Cancel.cancelGCD(exprNumerator, exprDenominator);
 				if (result != null) {
-					if (result[0].isOne()) {
-						return F.Times(result[1], F.Power(result[2], F.CN1));
+					IExpr pInv;
+					if (result[2].isNumber()) {
+						pInv = result[2].inverse();
+					} else {
+						pInv = F.Power(result[2], F.CN1);
 					}
-					return F.Times(result[0], result[1], F.Power(result[2], F.CN1));
+					if (result[0].isOne()) {
+						return F.Times(pInv, result[1]);
+					}
+					return F.Times(result[0], result[1], pInv);
 				}
 				return null;
 			} catch (JASConversionException jce) {

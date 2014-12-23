@@ -94,6 +94,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (o0.equals(o1)) {
+			if (o0.isNumber()) {
+				return o0.times(o0);
+			}
 			return F.Power(o0, F.C2);
 		}
 
@@ -152,10 +155,15 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 		}
 
-		if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
-			// Note: this doesn't work for Together() function, if we allow o0 to be a fractional number
+		if (o1.isPlus()) {
 			final IAST f1 = (IAST) o1;
-			return f1.mapAt(F.Times(o0, null), 2);
+//			if (o0.isMinusOne()) {
+//				return f1.mapAt(F.Times(o0, null), 2);
+//			}
+			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
+				// Note: this doesn't work for Together() function, if we allow o0 to be a fractional number
+				return f1.mapAt(F.Times(o0, null), 2);
+			}
 		}
 		return null;
 	}
@@ -190,7 +198,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 		}
 		if (inf.size() == 2) {
-			if (o1.isNumber()||o1.isSymbol()) {
+			if (o1.isNumber() || o1.isSymbol()) {
 				if (inf.size() == 2) {
 					return DirectedInfinity.timesInf(inf, o1);
 					// return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), F.Divide(o1, o1.abs()))));

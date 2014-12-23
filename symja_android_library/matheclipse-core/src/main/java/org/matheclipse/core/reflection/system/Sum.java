@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -59,16 +60,48 @@ public class Sum extends Table implements SumRules {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		// System.out.println(ast.toString());
-		IExpr arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
+		IExpr arg1 = ast.arg1();
+		if (arg1.isAST()) {
+			arg1 = F.expand((IAST) arg1, false, false);
+			if (arg1 == null) {
+				arg1 = ast.arg1();
+			}
+		}
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
+
 		IExpr argN = ast.get(ast.size() - 1);
+		// IExpr variable = null;
+		// if (argN.isVariable()) {
+		// variable = argN;
+		// } else if (argN.isList()) {
+		// IAST list = (IAST) argN;
+		// if (list.size() >= 2) {
+		// if (list.arg1().isVariable()) {
+		// variable = list.arg1();
+		// }
+		// }
+		// }
+		// if (variable != null && arg1.isTimes()) {
+		// IAST prod = (IAST) arg1;
+		// IAST filterAST = F.Times();
+		// IAST restAST = F.Times();
+		// prod.filter(filterAST, restAST, Predicates.isFree(variable));
+		// if (restAST.size() > 1) {
+		// if (ast.size() > 3) {
+		// IAST temp = ast.removeAtClone(ast.size() - 1);
+		// temp.set(1, restAST.getOneIdentity(filterAST));
+		// return F.Sum(temp, argN);
+		// }
+		// return F.Sum(ast.removeAtClone(ast.size() - 1), argN);
+		// }
+		// }
+
 		IExpr temp;
 
-//		arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
+		arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
 
 		if (argN.isList()) {
 			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());

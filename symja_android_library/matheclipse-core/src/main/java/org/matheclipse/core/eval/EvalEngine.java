@@ -884,10 +884,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
-				// if (expr.isAST(F.Integrate)) {
-				// System.out.println("(0):" + expr.toString());
-				// System.out.println("(1) --> " + temp.toString());
-				// }
+//				 if (expr.isAST(F.Integrate)) {
+//				 System.out.println("(0):" + expr.toString());
+//				 System.out.println("(1) --> " + temp.toString());
+//				 }
 				if (fTraceMode) {
 					fTraceStack.addIfEmpty(expr);
 					fTraceStack.add(temp);
@@ -900,10 +900,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 						// System.out.println(expr.toString());
 						// }
-						// if (result.isAST(F.Integrate)) {
-						// System.out.println(result.toString());
-						// System.out.println("("+iterationCounter+") --> " + temp.toString());
-						// }
+//						 if (result.isAST(F.Integrate)) {
+//						 System.out.println(result.toString());
+//						 System.out.println("("+iterationCounter+") --> " + temp.toString());
+//						 }
 						if (fTraceMode) {
 							fTraceStack.add(temp);
 						}
@@ -1065,6 +1065,83 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		return null;
+	}
+
+	public IAST evalFlatOrderlessAttributesRecursive(IAST ast) {
+		final ISymbol symbol = ast.topHead();
+		final int attr = symbol.getAttributes();
+		// final Predicate<IExpr> isPattern = Predicates.isPattern();
+		IAST resultList = null;
+
+		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
+			final int astSize = ast.size();
+
+			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
+				// the HoldFirst attribute isn't set here
+				if (astSize > 1 && ast.arg1().isAST()) {
+					IExpr expr = ast.arg1();
+					if (ast.arg1().isAST()) {
+						IAST temp = (IAST) ast.arg1();
+						expr = evalFlatOrderlessAttributesRecursive(temp);
+						if (expr != null) {
+							resultList = ast.setAtClone(1, expr);
+						} else {
+							expr = ast.arg1();
+						}
+					}
+				}
+			}
+			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+				// the HoldRest attribute isn't set here
+				for (int i = 2; i < astSize; i++) {
+					if (ast.get(i).isAST()) {
+						IAST temp = (IAST) ast.get(i);
+						IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
+						if (expr != null) {
+							if (resultList == null) {
+								resultList = ast.clone();
+							}
+							resultList.set(i, expr);
+						}
+					}
+				}
+			}
+		}
+		if (resultList != null) {
+			if (resultList.size() > 2) {
+				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
+					// associative
+					IAST result;
+					if ((result = EvaluationSupport.flatten(resultList)) != null) {
+						resultList = result;
+						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+							EvaluationSupport.sort(resultList);
+						}
+						return resultList;
+					}
+				}
+				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+					EvaluationSupport.sort(resultList);
+				}
+			}
+			return resultList;
+		}
+
+		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
+			// associative
+			IAST result;
+			if ((result = EvaluationSupport.flatten(ast)) != null) {
+				resultList = result;
+				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+					EvaluationSupport.sort(ast);
+				}
+				return resultList;
+			}
+		}
+		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+			EvaluationSupport.sort(ast);
+		}
+		return ast;
 	}
 
 	/**

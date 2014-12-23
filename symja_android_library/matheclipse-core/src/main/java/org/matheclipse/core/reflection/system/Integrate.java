@@ -174,7 +174,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						return result;
 					}
 				}
-				IExpr fxExpanded = F.evalExpand(fx);
+				IExpr fxExpanded = F.expand(fx, true, false);
 				if (fxExpanded.isAST()) {
 					if (fxExpanded.isPlus()) {
 						IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
@@ -508,200 +508,200 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param variableList
 	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
-	private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x) {
-		try {
-			IAST variableList = F.List(x);
-			IExpr exprNumerator = F.evalExpandAll(parts[0]);
-			IExpr exprDenominator = F.evalExpandAll(parts[1]);
-			ASTRange r = new ASTRange(variableList, 1);
-			List<IExpr> varList = r.toList();
-
-			String[] varListStr = new String[1];
-			varListStr[0] = variableList.arg1().toString();
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-
-			// get factors
-			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
-			SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
-
-			List<GenPolynomial<BigRational>> D = new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
-
-			SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
-			List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
-			// returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
-			// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-
-			if (Ai.size() > 0) {
-				IAST result = F.Plus();
-				IExpr temp;
-				if (!Ai.get(0).get(0).isZERO()) {
-					temp = F.eval(jas.poly2Expr(Ai.get(0).get(0)));
-					if (temp.isAST()) {
-						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-					}
-					result.add(F.Integrate(temp, x));
-				}
-				for (int i = 1; i < Ai.size(); i++) {
-					List<GenPolynomial<BigRational>> list = Ai.get(i);
-					long j = 0L;
-					for (GenPolynomial<BigRational> genPolynomial : list) {
-						if (!genPolynomial.isZERO()) {
-							BigRational[] numer = new BigRational[3];
-							BigRational[] denom = new BigRational[3];
-							boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
-							if (isDegreeLE2 && j == 1L) {
-								Object[] objects = jas.factorTerms(genPolynomial);
-								java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-								java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-								GenPolynomial<edu.jas.arith.BigInteger> genPolynomial2 = ((GenPolynomial<edu.jas.arith.BigInteger>) objects[2])
-										.multiply(edu.jas.arith.BigInteger.valueOf(gcd));
-								GenPolynomial<BigRational> Di_1 = D.get(i - 1).multiply(BigRational.valueOf(lcm));
-								if (genPolynomial2.isONE()) {
-									isQuadratic(Di_1, denom);
-									IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-									IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-									IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
-									if (a.isZero()) {
-										// JavaForm[Log[b*x+c]/b]
-										result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
-									} else {
-										// compute b^2-4*a*c from
-										// (a*x^2+b*x+c)
-										BigRational cmp = denom[1].multiply(denom[1]).subtract(
-												BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
-										int cmpTo = cmp.compareTo(BigRational.ZERO);
-										// (2*a*x+b)
-										IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
-										if (cmpTo == 0) {
-											// (-2) / (2*a*x+b)
-											result.add(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
-										} else if (cmpTo > 0) {
-											// (b^2-4ac)^(1/2)
-											temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
-											result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp),
-													Power(F.Plus(ax2Plusb, temp), F.CN1)))));
-										} else {
-											// (4ac-b^2)^(1/2)
-											temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
-											result.add(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
-										}
-									}
-								} else {
-									isQuadratic(genPolynomial, numer);
-									IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-									IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
-									isQuadratic(D.get(i - 1), denom);
-									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
-									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
-									if (A.isZero()) {
-										// JavaForm[B*Log[p*x+q]/p]
-										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
-									} else {
-										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-										temp = Plus(
-												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
-												Times(ArcTan(Times(Plus(p, Times(C2, x)),
-														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-														Plus(Times(C2, B), Times(CN1, A, p)),
-														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
-									}
-									result.add(F.eval(temp));
-
-									// edu.jas.arith.BigInteger[] numer2 = new
-									// edu.jas.arith.BigInteger[3];
-									// isQuadratic(genPolynomial2, numer2);
-									// IInteger A =
-									// F.integer(numer2[1].getVal());
-									// IInteger B =
-									// F.integer(numer2[0].getVal());
-									// isQuadratic(Di_1, denom);
-									// IFraction p =
-									// F.fraction(denom[1].numerator(),
-									// denom[1].denominator());
-									// IFraction q =
-									// F.fraction(denom[0].numerator(),
-									// denom[0].denominator());
-									// if (A.isZero()) {
-									// // JavaForm[B*Log[p*x+q]/p]
-									// temp = Times(B, Log(Plus(q, Times(p,
-									// x))), Power(p, CN1));
-									// } else {
-									// //
-									// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-									// temp = Plus(
-									// Times(C1D2, A, Log(Plus(q, Times(p, x),
-									// Power(x, C2)))),
-									// Times(ArcTan(Times(Plus(p, Times(C2, x)),
-									// Power(Plus(Times(CN1, Power(p, C2)),
-									// Times(C4, q)), CN1D2))),
-									// Plus(Times(C2, B), Times(CN1, A, p)),
-									// Power(Plus(Times(CN1, Power(p, C2)),
-									// Times(C4, q)), CN1D2)));
-									// }
-									// result.add(F.eval(temp));
-								}
-							} else if (isDegreeLE2 && j > 1L) {
-								isQuadratic(genPolynomial, numer);
-								IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-								IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
-								isQuadratic(D.get(i - 1), denom);
-								IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-								IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-								IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
-								IInteger k = F.integer(j);
-								if (A.isZero()) {
-									// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
-									// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
-									temp = Times(
-											B,
-											Plus(Times(
-													Integrate(
-															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-																	Plus(C1, Times(CN1, k))), x),
-													Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
-													Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-													Times(Plus(b, Times(C2, a, x)),
-															Power(Plus(CN1, k), CN1),
-															Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-																	Times(CN1, Plus(CN1, k))))));
-								} else {
-									// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
-									temp = Plus(
-											Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
-													Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
-											Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
-													Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
-								}
-								result.add(F.eval(temp));
-							} else {
-								temp = F.eval(F.Times(jas.poly2Expr(genPolynomial),
-										F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
-								if (!temp.equals(F.C0)) {
-									if (temp.isAST()) {
-										((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-									}
-									result.add(F.Integrate(temp, x));
-								}
-							}
-						}
-						j++;
-					}
-
-				}
-				return result;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} catch (JASConversionException e) {
-			if (Config.DEBUG) {
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
+//	private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x) {
+//		try {
+//			IAST variableList = F.List(x);
+//			IExpr exprNumerator = F.evalExpandAll(parts[0], true, false);
+//			IExpr exprDenominator = F.evalExpandAll(parts[1], true, false);
+//			ASTRange r = new ASTRange(variableList, 1);
+//			List<IExpr> varList = r.toList();
+//
+//			String[] varListStr = new String[1];
+//			varListStr[0] = variableList.arg1().toString();
+//			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+//			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+//			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+//
+//			// get factors
+//			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
+//			SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
+//
+//			List<GenPolynomial<BigRational>> D = new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
+//
+//			SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
+//			List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
+//			// returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
+//			// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
+//
+//			if (Ai.size() > 0) {
+//				IAST result = F.Plus();
+//				IExpr temp;
+//				if (!Ai.get(0).get(0).isZERO()) {
+//					temp = F.eval(jas.poly2Expr(Ai.get(0).get(0)));
+//					if (temp.isAST()) {
+//						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+//					}
+//					result.add(F.Integrate(temp, x));
+//				}
+//				for (int i = 1; i < Ai.size(); i++) {
+//					List<GenPolynomial<BigRational>> list = Ai.get(i);
+//					long j = 0L;
+//					for (GenPolynomial<BigRational> genPolynomial : list) {
+//						if (!genPolynomial.isZERO()) {
+//							BigRational[] numer = new BigRational[3];
+//							BigRational[] denom = new BigRational[3];
+//							boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
+//							if (isDegreeLE2 && j == 1L) {
+//								Object[] objects = jas.factorTerms(genPolynomial);
+//								java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+//								java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+//								GenPolynomial<edu.jas.arith.BigInteger> genPolynomial2 = ((GenPolynomial<edu.jas.arith.BigInteger>) objects[2])
+//										.multiply(edu.jas.arith.BigInteger.valueOf(gcd));
+//								GenPolynomial<BigRational> Di_1 = D.get(i - 1).multiply(BigRational.valueOf(lcm));
+//								if (genPolynomial2.isONE()) {
+//									isQuadratic(Di_1, denom);
+//									IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
+//									IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
+//									IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+//									if (a.isZero()) {
+//										// JavaForm[Log[b*x+c]/b]
+//										result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
+//									} else {
+//										// compute b^2-4*a*c from
+//										// (a*x^2+b*x+c)
+//										BigRational cmp = denom[1].multiply(denom[1]).subtract(
+//												BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
+//										int cmpTo = cmp.compareTo(BigRational.ZERO);
+//										// (2*a*x+b)
+//										IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
+//										if (cmpTo == 0) {
+//											// (-2) / (2*a*x+b)
+//											result.add(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
+//										} else if (cmpTo > 0) {
+//											// (b^2-4ac)^(1/2)
+//											temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
+//											result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp),
+//													Power(F.Plus(ax2Plusb, temp), F.CN1)))));
+//										} else {
+//											// (4ac-b^2)^(1/2)
+//											temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
+//											result.add(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
+//										}
+//									}
+//								} else {
+//									isQuadratic(genPolynomial, numer);
+//									IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
+//									IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+//									isQuadratic(D.get(i - 1), denom);
+//									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
+//									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
+//									if (A.isZero()) {
+//										// JavaForm[B*Log[p*x+q]/p]
+//										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
+//									} else {
+//										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+//										temp = Plus(
+//												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+//												Times(ArcTan(Times(Plus(p, Times(C2, x)),
+//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
+//														Plus(Times(C2, B), Times(CN1, A, p)),
+//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+//									}
+//									result.add(F.eval(temp));
+//
+//									// edu.jas.arith.BigInteger[] numer2 = new
+//									// edu.jas.arith.BigInteger[3];
+//									// isQuadratic(genPolynomial2, numer2);
+//									// IInteger A =
+//									// F.integer(numer2[1].getVal());
+//									// IInteger B =
+//									// F.integer(numer2[0].getVal());
+//									// isQuadratic(Di_1, denom);
+//									// IFraction p =
+//									// F.fraction(denom[1].numerator(),
+//									// denom[1].denominator());
+//									// IFraction q =
+//									// F.fraction(denom[0].numerator(),
+//									// denom[0].denominator());
+//									// if (A.isZero()) {
+//									// // JavaForm[B*Log[p*x+q]/p]
+//									// temp = Times(B, Log(Plus(q, Times(p,
+//									// x))), Power(p, CN1));
+//									// } else {
+//									// //
+//									// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+//									// temp = Plus(
+//									// Times(C1D2, A, Log(Plus(q, Times(p, x),
+//									// Power(x, C2)))),
+//									// Times(ArcTan(Times(Plus(p, Times(C2, x)),
+//									// Power(Plus(Times(CN1, Power(p, C2)),
+//									// Times(C4, q)), CN1D2))),
+//									// Plus(Times(C2, B), Times(CN1, A, p)),
+//									// Power(Plus(Times(CN1, Power(p, C2)),
+//									// Times(C4, q)), CN1D2)));
+//									// }
+//									// result.add(F.eval(temp));
+//								}
+//							} else if (isDegreeLE2 && j > 1L) {
+//								isQuadratic(genPolynomial, numer);
+//								IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
+//								IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+//								isQuadratic(D.get(i - 1), denom);
+//								IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
+//								IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
+//								IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+//								IInteger k = F.integer(j);
+//								if (A.isZero()) {
+//									// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
+//									// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
+//									temp = Times(
+//											B,
+//											Plus(Times(
+//													Integrate(
+//															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+//																	Plus(C1, Times(CN1, k))), x),
+//													Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
+//													Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
+//													Times(Plus(b, Times(C2, a, x)),
+//															Power(Plus(CN1, k), CN1),
+//															Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+//															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+//																	Times(CN1, Plus(CN1, k))))));
+//								} else {
+//									// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
+//									temp = Plus(
+//											Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
+//													Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
+//											Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
+//													Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
+//								}
+//								result.add(F.eval(temp));
+//							} else {
+//								temp = F.eval(F.Times(jas.poly2Expr(genPolynomial),
+//										F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
+//								if (!temp.equals(F.C0)) {
+//									if (temp.isAST()) {
+//										((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+//									}
+//									result.add(F.Integrate(temp, x));
+//								}
+//							}
+//						}
+//						j++;
+//					}
+//
+//				}
+//				return result;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} catch (JASConversionException e) {
+//			if (Config.DEBUG) {
+//				e.printStackTrace();
+//			}
+//		}
+//		return null;
+//	}
 
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>

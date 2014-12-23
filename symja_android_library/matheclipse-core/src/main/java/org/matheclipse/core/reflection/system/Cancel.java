@@ -42,14 +42,24 @@ public class Cancel extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 2, 3);
+		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (ast.size() == 2 && arg1.isAtom()) {
+			return arg1;
+		}
 		if (arg1.isPlus()) {
 			return ((IAST) arg1).mapAt(F.Cancel(null), 1);
 		}
-		IExpr expandedArg1 = F.evalExpandAll(arg1);
 		try {
+			if (arg1.isTimes() || arg1.isPower()) {
+				IExpr result = cancelPowerTimes(arg1);
+				if (result != null) {
+					return result;
+				}
+			}
+			IExpr expandedArg1 = F.evalExpandAll(arg1);
+
 			if (expandedArg1.isPlus()) {
 				return ((IAST) expandedArg1).mapAt(F.Cancel(null), 1);
 			} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {

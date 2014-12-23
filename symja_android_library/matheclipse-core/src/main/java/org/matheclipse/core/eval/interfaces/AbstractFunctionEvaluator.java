@@ -109,7 +109,11 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				IExpr arg1 = timesAST.arg1();
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
-						return timesAST.setAtClone(1, ((INumber) arg1).negate());
+						IExpr negNum = ((INumber) arg1).negate();
+						if (negNum.isOne()) {
+							return timesAST.removeAtClone(1).getOneIdentity(F.C1);
+						}
+						return timesAST.setAtClone(1, negNum);
 					}
 				} else if (arg1.isNegativeInfinity()) {
 					return timesAST.setAtClone(1, F.CInfinity);

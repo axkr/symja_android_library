@@ -42,11 +42,6 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	public Power() {
 	}
 
-	// public IExpr e2DblComArg(IDoubleComplex d0, IDoubleComplex d1,
-	// AbstractExpressionFactory factory) {
-	// return d0.pow(d1);
-	// }
-
 	@Override
 	public IExpr e2ApcomplexArg(final ApcomplexNum ac0, final ApcomplexNum ac1) {
 		return ac0.pow(ac1);
@@ -177,9 +172,9 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			// a1 = ((ISignedNumber) a1).negate();
 			// }
 			if (arg1.isPositive()) {
-				IExpr a1=arg1;
+				IExpr a1 = arg1;
 				if (!a1.isSignedNumber()) {
-					a1=F.evaln(arg1);
+					a1 = F.evaln(arg1);
 				}
 				if (a1.isSignedNumber()) {
 					if (arg2.isInfinity()) {
@@ -217,6 +212,15 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 		if (arg1.isDirectedInfinity()) {
 			if (arg2.isZero()) {
+				return F.Indeterminate;
+			}
+			if (arg1.isComplexInfinity()) {
+				if (arg2.isSignedNumber()) {
+					if (arg2.isNegative()) {
+						return F.C0;
+					}
+					return F.CComplexInfinity;
+				}
 				return F.Indeterminate;
 			}
 			if (arg2.isOne()) {
@@ -296,25 +300,26 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg1.isAST()) {
-			IAST arg0 = (IAST) arg1;
-			if (arg0.isTimes()) {
+			IAST astArg1 = (IAST) arg1;
+			if (astArg1.isTimes()) {
 				if (arg2.isInteger()) {
 					// (a * b * c)^n => a^n * b^n * c^n
-					return arg0.mapAt(Power(null, arg2), 1);
+					return astArg1.mapAt(Power(null, arg2), 1);
 				}
 				if (arg2.isNumber()) {
-					final IAST f0 = arg0;
+					final IAST f0 = astArg1;
 
 					if ((f0.size() > 1) && (f0.arg1().isNumber())) {
 						return Times(Power(f0.arg1(), arg2), Power(F.ast(f0, F.Times, true, 2, f0.size()), arg2));
 					}
 				}
-			}
-
-			if (arg0.isPower()) {
+			} else if (astArg1.isPower()) {
 				if (arg2.isInteger()) {
 					// (a ^ b )^n => a ^ (b * n)
-					return F.Power(arg0.arg1(), F.Times(arg2, arg0.arg2()));
+					if (astArg1.arg2().isNumber()) {
+						return F.Power(astArg1.arg1(), arg2.times(astArg1.arg2()));
+					}
+					return F.Power(astArg1.arg1(), F.Times(arg2, astArg1.arg2()));
 				}
 			}
 		}
@@ -338,7 +343,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 		if (f1.equals(F.CN1D2)) {
 			if (f0.isNegative()) {
-				return F.Times(F.CN1, F.CI, F.Power(f0.negate().inverse(), f1.negate()));
+				return F.Times(F.CNI, F.Power(f0.negate().inverse(), f1.negate()));
 			}
 		}
 
