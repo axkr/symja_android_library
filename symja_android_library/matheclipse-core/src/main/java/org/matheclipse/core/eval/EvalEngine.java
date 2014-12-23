@@ -29,6 +29,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.core.reflection.system.Plus;
+import org.matheclipse.core.reflection.system.Power;
 import org.matheclipse.core.reflection.system.Times;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -884,10 +885,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
-//				 if (expr.isAST(F.Integrate)) {
-//				 System.out.println("(0):" + expr.toString());
-//				 System.out.println("(1) --> " + temp.toString());
-//				 }
+				// if (expr.isAST(F.Integrate)) {
+				// System.out.println("(0):" + expr.toString());
+				// System.out.println("(1) --> " + temp.toString());
+				// }
 				if (fTraceMode) {
 					fTraceStack.addIfEmpty(expr);
 					fTraceStack.add(temp);
@@ -900,10 +901,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 						// System.out.println(expr.toString());
 						// }
-//						 if (result.isAST(F.Integrate)) {
-//						 System.out.println(result.toString());
-//						 System.out.println("("+iterationCounter+") --> " + temp.toString());
-//						 }
+						// if (result.isAST(F.Integrate)) {
+						// System.out.println(result.toString());
+						// System.out.println("("+iterationCounter+") --> " + temp.toString());
+						// }
 						if (fTraceMode) {
 							fTraceStack.add(temp);
 						}
@@ -963,34 +964,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// the HoldFirst attribute isn't set here
 				if (astSize > 1 && ast.arg1().isAST()) {
 					IExpr expr = ast.arg1();
-					if (ast.arg1().isAST()) {
-						IAST temp = (IAST) ast.arg1();
-						expr = evalSetAttributesRecursive(temp, true);
-						if (expr != null) {
-							resultList = ast.setAtClone(1, expr);
-						} else {
-							expr = ast.arg1();
-						}
-					}
-					if (ast.isAST(F.Sqrt, 2)) {
-						return F.Power(expr, F.C1D2);
-					} else if (ast.isAST(F.Exp, 2)) {
-						return F.Power(F.E, expr);
+					if (expr.isAST()) {
+						resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList);
 					}
 				}
 			}
 			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldRest attribute isn't set here
 				for (int i = 2; i < astSize; i++) {
-					if (ast.get(i).isAST()) {
-						IAST temp = (IAST) ast.get(i);
-						IExpr expr = evalSetAttributesRecursive(temp, true);
-						if (expr != null) {
-							if (resultList == null) {
-								resultList = ast.clone();
-							}
-							resultList.set(i, expr);
-						}
+					IExpr expr = ast.get(i);
+					if (expr.isAST()) {
+						resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList);
 					}
 				}
 			}
@@ -1041,26 +1025,59 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return evalSetOrderless(ast, attr);
 	}
 
+	private IAST evalSetAttributeArg(IAST ast, int i, IAST argI, IAST resultList) {
+		IExpr expr;
+		expr = evalSetAttributesRecursive(argI, true);
+		if (expr != null) {
+			if (resultList == null) {
+				resultList = ast.setAtClone(i, expr);
+			} else {
+				resultList.set(i, expr);
+			}
+		} else {
+			expr = argI;
+		}
+		if (expr.isAST()) {
+			if (expr.isAST(F.Sqrt, 2)) {
+				if (resultList == null) {
+					resultList = ast.setAtClone(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
+				} else {
+					resultList.set(i, PowerOp.power(expr, F.C1D2));
+				}
+			} else if (expr.isAST(F.Exp, 2)) {
+				if (resultList == null) {
+					resultList = ast.setAtClone(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
+				} else {
+					resultList.set(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
+				}
+			}
+		}
+		return resultList;
+	}
+
 	private IExpr evalSetOrderless(IAST ast, final int attr) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvaluationSupport.sort(ast);
 			if (ast.isTimes()) {
-				if (ast.arg2().isNumber() && ast.arg1().isNumber()) {
-					IExpr expr = Times.evalTimesNumbers(ast);
-					if (expr != null) {
-						return expr;
-					}
-				} else if (ast.size() == 3 && ast.arg2().isDirectedInfinity()) {
-					IExpr expr = Times.eInfinity((IAST) ast.arg2(), ast.arg1());
-					if (expr != null) {
-						return expr;
-					}
-				}
-			} else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
-				IExpr expr = Plus.evalPlusNumbers(ast);
-				if (expr != null) {
-					return expr;
-				}
+				return Times.CONST.evaluate(ast);
+				// if (ast.arg2().isNumber() && ast.arg1().isNumber()) {
+				// IExpr expr = Times.evalTimesNumbers(ast);
+				// if (expr != null) {
+				// return expr;
+				// }
+				// } else if (ast.size() == 3 && ast.arg2().isDirectedInfinity()) {
+				// IExpr expr = Times.eInfinity((IAST) ast.arg2(), ast.arg1());
+				// if (expr != null) {
+				// return expr;
+				// }
+				// }
+				// } else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
+			} else if (ast.isPlus()) {
+				return Plus.CONST.evaluate(ast);
+				// IExpr expr = Plus.evalPlusNumbers(ast);
+				// if (expr != null) {
+				// return expr;
+				// }
 			}
 		}
 

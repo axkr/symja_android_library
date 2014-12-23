@@ -157,9 +157,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		if (o1.isPlus()) {
 			final IAST f1 = (IAST) o1;
-//			if (o0.isMinusOne()) {
-//				return f1.mapAt(F.Times(o0, null), 2);
-//			}
+			// if (o0.isMinusOne()) {
+			// return f1.mapAt(F.Times(o0, null), 2);
+			// }
 			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
 				// Note: this doesn't work for Together() function, if we allow o0 to be a fractional number
 				return f1.mapAt(F.Times(o0, null), 2);
@@ -168,7 +168,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		return null;
 	}
 
-	public static IExpr eInfinity(IAST inf, IExpr o1) {
+	private static IExpr eInfinity(IAST inf, IExpr o1) {
 		if (inf.isComplexInfinity()) {
 			if (o1.isZero()) {
 				return F.Indeterminate;
@@ -322,28 +322,28 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		return null;
 	}
 
-	public static IExpr evalTimesNumbers(IAST ast) {
-		IAST result = F.Times();
-		IExpr num;
-		if (!ast.arg1().isNumber()) {
-			return null;
-		}
-		if (!ast.arg2().isNumber()) {
-			return null;
-		}
-		num = ast.arg1().times(ast.arg2());
-		result.add(num);
-		for (int i = 3; i < ast.size(); i++) {
-			if (num.isNumber() && ast.get(i).isNumber()) {
-				num = num.times(ast.get(i));
-			} else {
-				result.addAll(ast, i, ast.size());
-				result.set(1, num);
-				return result;
-			}
-		}
-		return num;
-	}
+	// public static IExpr evalTimesNumbers(IAST ast) {
+	// IAST result = F.Times();
+	// IExpr num;
+	// if (!ast.arg1().isNumber()) {
+	// return null;
+	// }
+	// if (!ast.arg2().isNumber()) {
+	// return null;
+	// }
+	// num = ast.arg1().times(ast.arg2());
+	// result.add(num);
+	// for (int i = 3; i < ast.size(); i++) {
+	// if (num.isNumber() && ast.get(i).isNumber()) {
+	// num = num.times(ast.get(i));
+	// } else {
+	// result.addAll(ast, i, ast.size());
+	// result.set(1, num);
+	// return result;
+	// }
+	// }
+	// return num;
+	// }
 
 	@Override
 	public void setUp(final ISymbol symbol) {
