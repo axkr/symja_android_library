@@ -2161,8 +2161,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate <code>Expand()</code> for the given expression.  
-	 * returns the given argument.
+	 * Evaluate <code>Expand()</code> for the given expression. returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -2179,8 +2178,10 @@ public class F {
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
-	 * @param expandNegativePowers TODO
-	 * @param distributePlus TODO
+	 * @param expandNegativePowers
+	 *            TODO
+	 * @param distributePlus
+	 *            TODO
 	 * @return the evaluated expression
 	 * @see EvalEngine#eval(IExpr)
 	 */
@@ -2190,10 +2191,10 @@ public class F {
 			if (temp != null) {
 				return temp;
 			}
-		}  
+		}
 		return a;
 	}
-	
+
 	/**
 	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible this method
 	 * returns the given argument.
@@ -2223,9 +2224,9 @@ public class F {
 	public static IExpr expandAll(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
-			IAST ast=engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			IExpr temp = org.matheclipse.core.reflection.system.ExpandAll.expandAll(ast, null, expandNegativePowers,
-					distributePlus);
+			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
+			IExpr temp = org.matheclipse.core.reflection.system.ExpandAll
+					.expandAll(ast, null, expandNegativePowers, distributePlus);
 			if (temp != null) {
 				return temp;
 			}
@@ -2233,7 +2234,7 @@ public class F {
 		}
 		return a;
 	}
-	
+
 	/**
 	 * Evaluate the given expression in numeric mode
 	 * 
@@ -3236,7 +3237,6 @@ public class F {
 	}
 
 	public static IAST Plus(final IExpr a0) {
-
 		return unary(Plus, a0);
 	}
 
@@ -3264,6 +3264,10 @@ public class F {
 				}
 				EvaluationSupport.sort(result);
 				return result;
+			}
+			if (a0.compareTo(a1) > 0) {
+				// swap arguments
+				return binary(Plus, a1, a0);
 			}
 		}
 		return binary(Plus, a0, a1);
@@ -3800,6 +3804,10 @@ public class F {
 				}
 				EvaluationSupport.sort(result);
 				return result;
+			}
+			if (a0.compareTo(a1) > 0) {
+				// swap arguments
+				return binary(Times, a1, a0);
 			}
 		}
 		return binary(Times, a0, a1);

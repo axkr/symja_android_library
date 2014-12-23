@@ -105,6 +105,20 @@ public class EvaluationSupport {
 	 * @param list
 	 * @return returns the sorted list
 	 */
+	public final static void sortTimesPlus(final IExpr expr) {
+		if (expr.isTimes() || expr.isPlus()) {
+			sort((IAST)expr);
+		}
+	}
+
+	/**
+	 * Sort the list [i.e. the list getHeader() has the attribute ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
+	 * ISymbol.ORDERLESS f[z,d,a,b] ==> f[a,b,d,z]
+	 * 
+	 * @param session
+	 * @param list
+	 * @return returns the sorted list
+	 */
 	public final static void sort(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
 			return;

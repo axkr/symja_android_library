@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.core.reflection.system.rules.SumRules;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -212,6 +213,7 @@ public class Sum extends Table implements SumRules {
 				if (from.isZero()) {
 					IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
 					if (repl != null) {
+						EvaluationSupport.sortTimesPlus(repl);
 						IExpr temp = MAP_0_N.get(repl);
 						if (temp != null) {
 							return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
@@ -273,6 +275,7 @@ public class Sum extends Table implements SumRules {
 		}
 		IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
 		if (repl != null) {
+			EvaluationSupport.sortTimesPlus(repl);
 			IExpr temp = MAP_0_N.get(repl);
 			if (temp != null) {
 				return temp.replaceAll(F.Rule(F.Slot(F.C1), var));
