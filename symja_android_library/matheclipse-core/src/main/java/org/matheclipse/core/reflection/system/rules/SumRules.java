@@ -15,6 +15,8 @@ public interface SumRules {
       Condition(HarmonicNumber(n,Times(CN1,k)),And(FreeQ(n,i),Negative(k)))),
     ISetDelayed(Sum(Power($p(i),k_),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
       Condition(HarmonicNumber(n,Times(CN1,k)),And(FreeQ(n,i),Equal(Head(k),Rational)))),
+    ISetDelayed(Sum(Power(c_,$p(i)),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+      Condition(Times(c,Plus(Power(c,n),Times(CN1,C1)),Power(Plus(c,Times(CN1,C1)),CN1)),And(FreeQ(c,i),FreeQ(n,i)))),
     ISetDelayed(Sum(Ceiling(Log($p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Times(CN1,C1)),CN1)),Times(Plus(n,Times(CN1,Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
     ISetDelayed(Sum(Ceiling(Log(a_,$p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
