@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -114,6 +115,31 @@ public class Table extends AbstractFunctionEvaluator {
 					if (list.size() >= 2) {
 						if (list.arg1().isVariable()) {
 							variableList.add(list.arg1());
+						}
+					}
+				}
+			}
+		}
+		return variableList;
+	}
+
+	/**
+	 * Determine all local variables of the iterators starting with index <code>2</code>.
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	public ExprVariables determineIteratorExprVariables(final IAST ast) {
+		ExprVariables variableList = new ExprVariables();
+		for (int i = 2; i < ast.size(); i++) {
+			if (ast.get(i).isVariable()) {
+				variableList.add((ISymbol) ast.get(i));
+			} else {
+				if (ast.get(i).isList()) {
+					IAST list = (IAST) ast.get(i);
+					if (list.size() >= 2) {
+						if (list.arg1().isVariable()) {
+							variableList.add((ISymbol) list.arg1());
 						}
 					}
 				}

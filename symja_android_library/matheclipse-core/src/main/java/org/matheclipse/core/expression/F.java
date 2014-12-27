@@ -2187,7 +2187,9 @@ public class F {
 	 */
 	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
 		if (a.isAST()) {
-			IExpr temp = org.matheclipse.core.reflection.system.Expand.expand((IAST) a, null, expandNegativePowers, false);
+			EvalEngine engine = EvalEngine.get();
+			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
+			IExpr temp = org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers, false);
 			if (temp != null) {
 				return temp;
 			}

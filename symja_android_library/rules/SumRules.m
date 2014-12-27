@@ -15,6 +15,16 @@ Sum(Ceiling(Log(i_)), {i_Symbol,1,n_Symbol}):=
   
 Sum(Ceiling(Log(a_,i_)), {i_Symbol,1,n_Symbol}):=
   ( Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1 ) * (a-1)^(-1) + (n-a^Floor(Log(a,n)))*Ceiling(Log(a,n))
-  /; FreeQ(a,i)&&FreeQ(n,i)
+  /; FreeQ(a,i)&&FreeQ(n,i),
+
+Sum(i_!, {i_Symbol,1,n_Symbol}):=
+  Gamma(n+2)*(-1)^(n+1)*Subfactorial(-n-2)-Subfactorial(-1)-1 
+  /; FreeQ(n,i),
+  
+Sum(Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := 2^n
+  /; FreeQ(n,i),
+  
+Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := n*2^(n-1)
+  /; FreeQ(n,i)
   
 }

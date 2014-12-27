@@ -10,6 +10,12 @@ public class VisitorCollectionBoolean extends AbstractVisitorBoolean {
 
 	protected Collection<IExpr> fCollection;
 
+	public VisitorCollectionBoolean(Collection<IExpr> collection) {
+		super();
+		fHeadOffset = 1;
+		fCollection = collection;
+	}
+
 	public VisitorCollectionBoolean(int hOffset, Collection<IExpr> collection) {
 		super();
 		fHeadOffset = hOffset;

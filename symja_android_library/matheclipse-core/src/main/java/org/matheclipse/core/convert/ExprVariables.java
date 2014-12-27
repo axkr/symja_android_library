@@ -12,7 +12,10 @@ import java.util.TreeSet;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorCollectionBoolean;
+
+import com.google.common.base.Predicate;
 
 /**
  * Determine the variable symbols from a Symja expression.
@@ -21,14 +24,36 @@ import org.matheclipse.core.visit.VisitorCollectionBoolean;
 public class ExprVariables {
 
 	public static class VariablesVisitor extends VisitorCollectionBoolean {
-		public VariablesVisitor(int hOffset, Collection<IExpr> collection) {
-			super(hOffset, collection);
+		public VariablesVisitor(Collection<IExpr> collection) {
+			super(collection);
 		}
 
 		public boolean visit(ISymbol symbol) {
 			if (symbol.isVariable()) {
 				fCollection.add(symbol);
 				return true;
+			}
+			return false;
+		}
+	}
+
+	public class IsMemberVisitor extends AbstractVisitorBoolean {
+		public IsMemberVisitor() {
+			super();
+		}
+
+		public boolean visit(IAST list) {
+			for (int i = 1; i < list.size(); i++) {
+				if (list.get(i).accept(this)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public boolean visit(ISymbol symbol) {
+			if (symbol.isVariable()) {
+				return set.contains(symbol);
 			}
 			return false;
 		}
@@ -48,7 +73,7 @@ public class ExprVariables {
 	 */
 	public ExprVariables(final IExpr expression) {
 		super();
-		expression.accept(new VariablesVisitor(1, set));
+		expression.accept(new VariablesVisitor(set));
 	}
 
 	/**
@@ -67,7 +92,7 @@ public class ExprVariables {
 	 * @param expression
 	 */
 	public void addVarList(final IExpr expression) {
-		expression.accept(new VariablesVisitor(1, set));
+		expression.accept(new VariablesVisitor(set));
 	}
 
 	/**
@@ -133,6 +158,17 @@ public class ExprVariables {
 	 */
 	public boolean isEmpty() {
 		return set.isEmpty();
+	}
+
+	public static Predicate<IExpr> isFree(final ExprVariables exprVar) {
+		return new Predicate<IExpr>() {
+			final IsMemberVisitor visitor = exprVar.new IsMemberVisitor();
+			
+			@Override
+			public boolean apply(IExpr input) {
+				return !input.accept(visitor);
+			}
+		};
 	}
 
 	/**

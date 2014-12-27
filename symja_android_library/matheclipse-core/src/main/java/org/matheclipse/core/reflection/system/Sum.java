@@ -17,18 +17,15 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
 
-import java.util.HashMap;
-
+import org.matheclipse.core.convert.ExprVariables;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.core.reflection.system.rules.SumRules;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -40,14 +37,6 @@ import com.google.common.base.Predicate;
  * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
  */
 public class Sum extends Table implements SumRules {
-	private static HashMap<IExpr, IExpr> MAP_0_N = new HashMap<IExpr, IExpr>();
-
-	static {
-		// Binomial[#2,#] -> 2^#
-		MAP_0_N.put(Binomial(Slot(C2), Slot(C1)), Power(C2, Slot(C1)));
-		// #*Binomial[#2,#] -> #*2^(#-1)
-		MAP_0_N.put(Times(Slot(C1), Binomial(Slot(C2), Slot(C1))), Times(Slot(C1), Power(C2, Plus(Slot(C1), Times(CN1, C1)))));
-	}
 
 	@Override
 	public IAST getRuleAST() {
@@ -74,67 +63,72 @@ public class Sum extends Table implements SumRules {
 		}
 
 		IExpr argN = ast.get(ast.size() - 1);
-		// IExpr variable = null;
-		// if (argN.isVariable()) {
-		// variable = argN;
-		// } else if (argN.isList()) {
-		// IAST list = (IAST) argN;
-		// if (list.size() >= 2) {
-		// if (list.arg1().isVariable()) {
-		// variable = list.arg1();
-		// }
-		// }
-		// }
-		// if (variable != null && arg1.isTimes()) {
-		// IAST prod = (IAST) arg1;
-		// IAST filterAST = F.Times();
-		// IAST restAST = F.Times();
-		// prod.filter(filterAST, restAST, Predicates.isFree(variable));
-		// if (restAST.size() > 1) {
-		// if (ast.size() > 3) {
-		// IAST temp = ast.removeAtClone(ast.size() - 1);
-		// temp.set(1, restAST.getOneIdentity(filterAST));
-		// return F.Sum(temp, argN);
-		// }
-		// return F.Sum(ast.removeAtClone(ast.size() - 1), argN);
-		// }
-		// }
-
+		Iterator iterator = null;
 		IExpr temp;
-
-		arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
-
 		if (argN.isList()) {
-			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
+			argN = F.eval(argN);
+			iterator = new Iterator((IAST) argN, EvalEngine.get());
+			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
+				IAST resultList = Plus();
+				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+				if (temp != null && !temp.equals(resultList)) {
+					if (ast.size() == 3) {
+						return temp;
+					} else {
+						IAST result = ast.clone();
+						result.remove(ast.size() - 1);
+						result.set(1, temp);
+						return result;
+					}
+				}
+			}
+		}
+
+		// arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
+		if (arg1.isTimes()) {
+			ExprVariables variablesSet = determineIteratorExprVariables(ast);
+			if (variablesSet.size() > 0) {
+				temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
+				if (temp != null) {
+					return temp;
+				}
+			}
+		}
+
+		if (iterator != null) {
+			if (iterator.isValidVariable() && iterator.isNumericFunction()) {
+				IAST resultList = Plus();
+				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+				if (temp == null || temp.equals(resultList)) {
+					return null;
+				}
+				if (ast.size() == 3) {
+					return temp;
+				} else {
+					IAST result = ast.clone();
+					result.remove(ast.size() - 1);
+					result.set(1, temp);
+					return result;
+				}
+			}
+
 			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
 				if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
+
 					temp = definiteSum(arg1, iterator, (IAST) argN);
 					if (temp != null) {
 						if (ast.size() == 3) {
 							return temp;
-						} else {
-							IAST result = ast.clone();
-							result.remove(ast.size() - 1);
-							result.set(1, temp);
-							return result;
 						}
+						IAST result = ast.clone();
+						result.remove(ast.size() - 1);
+						result.set(1, temp);
+						return result;
 					}
+
 				}
 			}
 
-			IAST resultList = Plus();
-			temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-			if (temp == null || temp.equals(resultList)) {
-				return null;
-			}
-			if (ast.size() == 3) {
-				return temp;
-			} else {
-				IAST result = ast.clone();
-				result.remove(ast.size() - 1);
-				result.set(1, temp);
-				return result;
-			}
 		} else if (argN.isSymbol()) {
 			temp = indefiniteSum(arg1, (ISymbol) argN);
 			if (temp != null) {
@@ -149,6 +143,18 @@ public class Sum extends Table implements SumRules {
 			}
 		}
 
+		return null;
+	}
+
+	private IExpr collectConstantFactors(final IAST ast, IAST prod, ExprVariables variablesSet) {
+		IAST filterAST = F.Times();
+		IAST restAST = F.Times();
+		prod.filter(filterAST, restAST, ExprVariables.isFree(variablesSet));
+		if (filterAST.size() > 1) {
+			IAST reducedSum = ast.clone();
+			reducedSum.set(1, restAST.getOneIdentity(F.C1));
+			return F.Times(filterAST.getOneIdentity(F.C0), reducedSum);
+		}
 		return null;
 	}
 
@@ -204,23 +210,19 @@ public class Sum extends Table implements SumRules {
 					return Times(C1D2, Plus(Subtract(to, from), C1), Plus(from, to));
 				}
 			}
-			if (from.isZero() || from.isOne()) {
+
+			if (!F.evalTrue(F.Greater(C0, from)) && !F.evalTrue(F.Greater(from, to))) {
+				IExpr temp = null;
 				if (arg1.isPower()) {
-					return sumPower((IAST) arg1, var, F.C0, to);
+					temp = sumPower((IAST) arg1, var, from, to);
 				} else if (arg1.equals(var)) {
-					return sumPowerFormula(from, to, F.C1);
+					temp = sumPowerFormula(from, to, F.C1);
 				}
-				if (from.isZero()) {
-					IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1)), F.Rule(to, F.Slot(F.C2))));
-					if (repl != null) {
-						EvaluationSupport.sortTimesPlus(repl);
-						IExpr temp = MAP_0_N.get(repl);
-						if (temp != null) {
-							return temp.replaceAll(F.Rule(F.Slot(F.C1), to));
-						}
-					}
-				}
+				if (temp != null) {
+					return temp;
+				} 
 			}
+
 			if (arg1.isPower() && !F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
 				IAST powAST = (IAST) arg1;
 				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var)) {
@@ -273,14 +275,6 @@ public class Sum extends Table implements SumRules {
 		} else if (arg1.equals(var)) {
 			return sumPowerFormula(F.C1, var, F.C1);
 		}
-		IExpr repl = arg1.replaceAll(F.List(F.Rule(var, F.Slot(F.C1))));
-		if (repl != null) {
-			EvaluationSupport.sortTimesPlus(repl);
-			IExpr temp = MAP_0_N.get(repl);
-			if (temp != null) {
-				return temp.replaceAll(F.Rule(F.Slot(F.C1), var));
-			}
-		}
 		return null;
 	}
 
@@ -321,13 +315,32 @@ public class Sum extends Table implements SumRules {
 		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
 		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
-		if (p.isOne()) {
-			return Times(C1D2, to, Plus(C1, to));
+		IExpr term1 = null;
+		if (!from.isOne()) {
+			IExpr fromMinusOne = F.Plus(F.CN1, from);
+			if (p.isOne()) {
+				term1 = Times(C1D2, fromMinusOne, Plus(C1, fromMinusOne));
+			} else {
+				term1 = F.eval(ExpandAll(Plus(
+						Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
+						Sum(Times(
+								Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)),
+										BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+			}
 		}
-		return F.eval(ExpandAll(Plus(
-				Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-				Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
-						Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+		IExpr term2 = null;
+		if (p.isOne()) {
+			term2 = Times(C1D2, to, Plus(C1, to));
+		} else {
+			term2 = F.eval(ExpandAll(Plus(
+					Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
+					Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
+							Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+		}
+		if (term1 == null) {
+			return term2;
+		}
+		return Subtract(term2, term1);
 	}
 
 	/**

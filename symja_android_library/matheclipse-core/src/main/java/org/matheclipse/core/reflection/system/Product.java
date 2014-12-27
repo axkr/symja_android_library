@@ -37,13 +37,19 @@ public class Product extends Table {
 		Validate.checkRange(ast, 3);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isAST()) {
+			arg1 = F.expand((IAST) arg1, false, false);
+			if (arg1 == null) {
+				arg1 = ast.arg1();
+			}
+		}
 		if (arg1.isTimes()) {
 			IAST prod = ast.setAtClone(1, null);
 			return ((IAST) arg1).mapAt(prod, 1);
 		}
-		
-		arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
-		
+
+		// arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
+
 		if (arg1.isPower()) {
 			IExpr powArg2 = arg1.getAt(2);
 			boolean flag = true;
@@ -79,7 +85,7 @@ public class Product extends Table {
 									// Prod( a^i, ..., {i,from,to} )
 									if (ast.size() == 3) {
 										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
-									} 
+									}
 									IAST result = ast.clone();
 									result.remove(ast.size() - 1);
 									result.set(1, F.Power(powArg1, Times(C1D2, to, Plus(C1, to))));

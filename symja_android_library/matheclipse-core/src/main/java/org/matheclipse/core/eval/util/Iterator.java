@@ -236,6 +236,10 @@ public class Iterator implements IIterator<IExpr> {
 		return originalStart.isNumericFunction() && originalStep.isNumericFunction() && originalMaxCount.isNumericFunction();
 	}
 
+	public boolean isSetIterator() {
+		return variable != null && originalMaxCount != null && originalMaxCount.isList();
+	}
+
 	/**
 	 * Returns the next element of this enumeration.
 	 * 
