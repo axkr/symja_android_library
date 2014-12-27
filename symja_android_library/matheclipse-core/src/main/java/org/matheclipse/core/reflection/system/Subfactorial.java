@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
@@ -26,7 +27,7 @@ public class Subfactorial extends AbstractTrigArg1 {
 			return n != 1L ? BigInteger.ONE : BigInteger.ZERO;
 		}
 		// subFactorial(n) = n*subFactorial(n-1) + (-1)^n.
-		long stub=1L;
+		long stub = 1L;
 		if ((n & 1L) == 1L) {
 			// odd n
 			stub = -1L;
@@ -43,6 +44,10 @@ public class Subfactorial extends AbstractTrigArg1 {
 				return F.integer(fac);
 			} catch (ArithmeticException ae) {
 				//
+				EvalEngine.get().printMessage("Subfactorial: argument n is to big.");
+			} catch (StackOverflowError soe) {
+				// recurrence resulted in StackOverflowError
+				EvalEngine.get().printMessage("Subfactorial: recurrence caused stack overflow.");
 			}
 
 		}
