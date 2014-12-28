@@ -26,7 +26,6 @@ import org.apache.commons.math3.util.FastMath;
  * Hyperbolic sine function.
  *
  * @since 3.0
- * @version $Id: Sinh.java 1424087 2012-12-19 20:32:50Z luc $
  */
 public class Sinh implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** {@inheritDoc} */

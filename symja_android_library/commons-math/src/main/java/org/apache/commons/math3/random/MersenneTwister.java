@@ -75,7 +75,6 @@ import org.apache.commons.math3.util.FastMath;
  * DAMAGE.</strong></td></tr>
  * </table>
 
- * @version $Id: MersenneTwister.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
 
  */

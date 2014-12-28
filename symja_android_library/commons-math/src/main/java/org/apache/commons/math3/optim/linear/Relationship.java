@@ -19,7 +19,6 @@ package org.apache.commons.math3.optim.linear;
 /**
  * Types of relationships between two cells in a Solver {@link LinearConstraint}.
  *
- * @version $Id: Relationship.java 1435539 2013-01-19 13:27:24Z tn $
  * @since 2.0
  */
 public enum Relationship {

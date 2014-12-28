@@ -37,7 +37,6 @@ import org.apache.commons.math3.optim.OptimizationData;
  * the x<sub>i</sub> are the coordinates of the current point.
  * </p>
  *
- * @version $Id: LinearObjectiveFunction.java 1435539 2013-01-19 13:27:24Z tn $
  * @since 2.0
  */
 public class LinearObjectiveFunction

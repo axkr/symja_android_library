@@ -26,15 +26,17 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math3.util.MathArrays;
 
 /**
  * Implements Chi-Square test statistics.
- * <p>This implementation handles both, known and unknown distributions.</p>
- * <p>Two samples tests are used when the distribution is unknown <i>a priori</i>
- * but provided by one sample. We compare the second sample against the first.</p>
  *
- * @version $Id: ChiSquareTest.java 1244107 2012-02-14 16:17:55Z erans $
+ * <p>This implementation handles both known and unknown distributions.</p>
+ *
+ * <p>Two samples tests can be used when the distribution is unknown <i>a priori</i>
+ * but provided by one sample, or when the hypothesis under test is that the two
+ * samples come from the same underlying distribution.</p>
+ *
  */
 public class ChiSquareTest {
 
@@ -70,9 +72,8 @@ public class ChiSquareTest {
      * @param observed array of observed frequency counts
      * @param expected array of expected frequency counts
      * @return chiSquare test statistic
-     * @throws NotPositiveException if one element of <code>expected</code> is not
-     * positive
-     * @throws NotStrictlyPositiveException if one element of <code>observed</code> is
+     * @throws NotPositiveException if <code>observed</code> has negative entries
+     * @throws NotStrictlyPositiveException if <code>expected</code> has entries that are
      * not strictly positive
      * @throws DimensionMismatchException if the arrays length is less than 2
      */
@@ -86,8 +87,8 @@ public class ChiSquareTest {
         if (expected.length != observed.length) {
             throw new DimensionMismatchException(expected.length, observed.length);
         }
-        checkPositive(expected);
-        checkNonNegative(observed);
+        MathArrays.checkPositive(expected);
+        MathArrays.checkNonNegative(observed);
 
         double sumExpected = 0d;
         double sumObserved = 0d;
@@ -144,9 +145,8 @@ public class ChiSquareTest {
      * @param observed array of observed frequency counts
      * @param expected array of expected frequency counts
      * @return p-value
-     * @throws NotPositiveException if one element of <code>expected</code> is not
-     * positive
-     * @throws NotStrictlyPositiveException if one element of <code>observed</code> is
+     * @throws NotPositiveException if <code>observed</code> has negative entries
+     * @throws NotStrictlyPositiveException if <code>expected</code> has entries that are
      * not strictly positive
      * @throws DimensionMismatchException if the arrays length is less than 2
      * @throws MaxCountExceededException if an error occurs computing the p-value
@@ -155,10 +155,10 @@ public class ChiSquareTest {
         throws NotPositiveException, NotStrictlyPositiveException,
         DimensionMismatchException, MaxCountExceededException {
 
-        ChiSquaredDistribution distribution =
-            new ChiSquaredDistribution(expected.length - 1.0);
+        // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
+        final ChiSquaredDistribution distribution =
+            new ChiSquaredDistribution(null, expected.length - 1.0);
         return 1.0 - distribution.cumulativeProbability(chiSquare(expected, observed));
-
     }
 
     /**
@@ -193,9 +193,8 @@ public class ChiSquareTest {
      * @param alpha significance level of the test
      * @return true iff null hypothesis can be rejected with confidence
      * 1 - alpha
-     * @throws NotPositiveException if one element of <code>expected</code> is not
-     * positive
-     * @throws NotStrictlyPositiveException if one element of <code>observed</code> is
+     * @throws NotPositiveException if <code>observed</code> has negative entries
+     * @throws NotStrictlyPositiveException if <code>expected</code> has entries that are
      * not strictly positive
      * @throws DimensionMismatchException if the arrays length is less than 2
      * @throws OutOfRangeException if <code>alpha</code> is not in the range (0, 0.5]
@@ -240,7 +239,7 @@ public class ChiSquareTest {
      * @return chiSquare test statistic
      * @throws NullArgumentException if the array is null
      * @throws DimensionMismatchException if the array is not rectangular
-     * @throws NotPositiveException if one entry is not positive
+     * @throws NotPositiveException if {@code counts} has negative entries
      */
     public double chiSquare(final long[][] counts)
         throws NullArgumentException, NotPositiveException,
@@ -304,7 +303,7 @@ public class ChiSquareTest {
      * @return p-value
      * @throws NullArgumentException if the array is null
      * @throws DimensionMismatchException if the array is not rectangular
-     * @throws NotPositiveException if one entry is not positive
+     * @throws NotPositiveException if {@code counts} has negative entries
      * @throws MaxCountExceededException if an error occurs computing the p-value
      */
     public double chiSquareTest(final long[][] counts)
@@ -313,8 +312,8 @@ public class ChiSquareTest {
 
         checkArray(counts);
         double df = ((double) counts.length -1) * ((double) counts[0].length - 1);
-        ChiSquaredDistribution distribution;
-        distribution = new ChiSquaredDistribution(df);
+        // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
+        final ChiSquaredDistribution distribution = new ChiSquaredDistribution(df);
         return 1 - distribution.cumulativeProbability(chiSquare(counts));
 
     }
@@ -353,7 +352,7 @@ public class ChiSquareTest {
      * 1 - alpha
      * @throws NullArgumentException if the array is null
      * @throws DimensionMismatchException if the array is not rectangular
-     * @throws NotPositiveException if one entry is not positive
+     * @throws NotPositiveException if {@code counts} has any negative entries
      * @throws OutOfRangeException if <code>alpha</code> is not in the range (0, 0.5]
      * @throws MaxCountExceededException if an error occurs computing the p-value
      */
@@ -401,10 +400,10 @@ public class ChiSquareTest {
      * @param observed2 array of observed frequency counts of the second data set
      * @return chiSquare test statistic
      * @throws DimensionMismatchException the the length of the arrays does not match
-     * @throws NotPositiveException if one entry in <code>observed1</code> or
-     * <code>observed2</code> is not positive
+     * @throws NotPositiveException if any entries in <code>observed1</code> or
+     * <code>observed2</code> are negative
      * @throws ZeroException if either all counts of <code>observed1</code> or
-     * <code>observed2</code> are zero, or if the count at the same index is zero
+     * <code>observed2</code> are zero, or if the count at some index is zero
      * for both arrays
      * @since 1.2
      */
@@ -420,8 +419,8 @@ public class ChiSquareTest {
         }
 
         // Ensure non-negative counts
-        checkNonNegative(observed1);
-        checkNonNegative(observed2);
+        MathArrays.checkNonNegative(observed1);
+        MathArrays.checkNonNegative(observed2);
 
         // Compute and compare count sums
         long countSum1 = 0;
@@ -497,8 +496,8 @@ public class ChiSquareTest {
      * @param observed2 array of observed frequency counts of the second data set
      * @return p-value
      * @throws DimensionMismatchException the the length of the arrays does not match
-     * @throws NotPositiveException if one entry in <code>observed1</code> or
-     * <code>observed2</code> is not positive
+     * @throws NotPositiveException if any entries in <code>observed1</code> or
+     * <code>observed2</code> are negative
      * @throws ZeroException if either all counts of <code>observed1</code> or
      * <code>observed2</code> are zero, or if the count at the same index is zero
      * for both arrays
@@ -509,8 +508,9 @@ public class ChiSquareTest {
         throws DimensionMismatchException, NotPositiveException, ZeroException,
         MaxCountExceededException {
 
-        ChiSquaredDistribution distribution;
-        distribution = new ChiSquaredDistribution((double) observed1.length - 1);
+        // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
+        final ChiSquaredDistribution distribution =
+                new ChiSquaredDistribution(null, (double) observed1.length - 1);
         return 1 - distribution.cumulativeProbability(
                 chiSquareDataSetsComparison(observed1, observed2));
 
@@ -549,8 +549,8 @@ public class ChiSquareTest {
      * @return true iff null hypothesis can be rejected with confidence
      * 1 - alpha
      * @throws DimensionMismatchException the the length of the arrays does not match
-     * @throws NotPositiveException if one entry in <code>observed1</code> or
-     * <code>observed2</code> is not positive
+     * @throws NotPositiveException if any entries in <code>observed1</code> or
+     * <code>observed2</code> are negative
      * @throws ZeroException if either all counts of <code>observed1</code> or
      * <code>observed2</code> are zero, or if the count at the same index is zero
      * for both arrays
@@ -580,7 +580,7 @@ public class ChiSquareTest {
      * @param in input 2-way table to check
      * @throws NullArgumentException if the array is null
      * @throws DimensionMismatchException if the array is not valid
-     * @throws NotPositiveException if one entry is not positive
+     * @throws NotPositiveException if the array contains any negative entries
      */
     private void checkArray(final long[][] in)
         throws NullArgumentException, DimensionMismatchException,
@@ -594,84 +594,8 @@ public class ChiSquareTest {
             throw new DimensionMismatchException(in[0].length, 2);
         }
 
-        checkRectangular(in);
-        checkNonNegative(in);
-
-    }
-
-    //---------------------  Private array methods -- should find a utility home for these
-
-    /**
-     * Throws DimensionMismatchException if the input array is not rectangular.
-     *
-     * @param in array to be tested
-     * @throws NullArgumentException if input array is null
-     * @throws DimensionMismatchException if input array is not rectangular
-     */
-    private void checkRectangular(final long[][] in)
-        throws NullArgumentException, DimensionMismatchException {
-
-        MathUtils.checkNotNull(in);
-        for (int i = 1; i < in.length; i++) {
-            if (in[i].length != in[0].length) {
-                throw new DimensionMismatchException(
-                        LocalizedFormats.DIFFERENT_ROWS_LENGTHS,
-                        in[i].length, in[0].length);
-            }
-        }
-
-    }
-
-    /**
-     * Check all entries of the input array are strictly positive.
-     *
-     * @param in Array to be tested.
-     * @throws NotStrictlyPositiveException if one entry is not strictly positive.
-     */
-    private void checkPositive(final double[] in)
-        throws NotStrictlyPositiveException {
-
-        for (int i = 0; i < in.length; i++) {
-            if (in[i] <= 0) {
-                throw new NotStrictlyPositiveException(in[i]);
-            }
-        }
-
-    }
-
-    /**
-     * Check all entries of the input array are >= 0.
-     *
-     * @param in Array to be tested.
-     * @throws NotPositiveException if one entry is negative.
-     */
-    private void checkNonNegative(final long[] in)
-        throws NotPositiveException {
-
-        for (int i = 0; i < in.length; i++) {
-            if (in[i] < 0) {
-                throw new NotPositiveException(in[i]);
-            }
-        }
-
-    }
-
-    /**
-     * Check all entries of the input array are >= 0.
-     *
-     * @param in Array to be tested.
-     * @throws NotPositiveException if one entry is negative.
-     */
-    private void checkNonNegative(final long[][] in)
-        throws NotPositiveException {
-
-        for (int i = 0; i < in.length; i ++) {
-            for (int j = 0; j < in[i].length; j++) {
-                if (in[i][j] < 0) {
-                    throw new NotPositiveException(in[i][j]);
-                }
-            }
-        }
+        MathArrays.checkRectangular(in);
+        MathArrays.checkNonNegative(in);
 
     }
 

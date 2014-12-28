@@ -25,7 +25,6 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * <br/>
  * Immutable class.
  *
- * @version $Id: SearchInterval.java 1435539 2013-01-19 13:27:24Z tn $
  * @since 3.1
  */
 public class SearchInterval implements OptimizationData {

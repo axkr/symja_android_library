@@ -30,7 +30,6 @@ import org.apache.commons.math3.exception.TooManyIterationsException;
  * @param <PAIR> Type of the point/value pair returned by the optimization
  * algorithm.
  *
- * @version $Id: BaseOptimizer.java 1542541 2013-11-16 17:48:36Z tn $
  * @since 3.1
  */
 public abstract class BaseOptimizer<PAIR> {

@@ -32,7 +32,6 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * @param <FUNC> Type of function to solve.
  *
  * @since 3.0
- * @version $Id: BaseUnivariateSolver.java 1455194 2013-03-11 15:45:54Z luc $
  * @see UnivariateSolver
  * @see PolynomialSolver
  * @see DifferentiableUnivariateSolver

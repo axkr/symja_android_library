@@ -34,7 +34,6 @@ import org.apache.commons.math3.util.CompositeFormat;
  * be replaced with 'j' (or anything else), and the number format for both real
  * and imaginary parts can be configured.
  *
- * @version $Id: ComplexFormat.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class ComplexFormat {
 

@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * The function should be continuous but not necessarily smooth.</p>
  *
  * @deprecated as of 3.1, replaced by {@link NewtonRaphsonSolver}
- * @version $Id: NewtonSolver.java 1395937 2012-10-09 10:04:36Z luc $
  */
 @Deprecated
 public class NewtonSolver extends AbstractDifferentiableUnivariateSolver {

@@ -27,11 +27,14 @@ import org.apache.commons.math3.util.MathArrays;
 /**
  * Function that implements the
  * <a href="http://en.wikipedia.org/wiki/Bicubic_interpolation">
- * bicubic spline interpolation</a>.
+ * bicubic spline interpolation</a>. Due to numerical accuracy issues this should not
+ * be used.
  *
  * @since 2.1
- * @version $Id: BicubicSplineInterpolatingFunction.java 1607434 2014-07-02 18:09:36Z erans $
+ * @deprecated as of 3.4 replaced by
+ * {@link org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction}
  */
+@Deprecated
 public class BicubicSplineInterpolatingFunction
     implements BivariateFunction {
     /** Number of coefficients. */
@@ -432,7 +435,6 @@ public class BicubicSplineInterpolatingFunction
 /**
  * 2D-spline function.
  *
- * @version $Id: BicubicSplineInterpolatingFunction.java 1607434 2014-07-02 18:09:36Z erans $
  */
 class BicubicSplineFunction implements BivariateFunction {
     /** Number of points. */

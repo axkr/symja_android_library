@@ -23,7 +23,6 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
  * The vectorial components of the function represent the derivatives
  * with respect to each function parameters.
  * </p>
- * @version $Id: GradientFunction.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 3.1
  */
 public class GradientFunction implements MultivariateVectorFunction {

@@ -24,7 +24,6 @@ package org.apache.commons.math3.random;
  * class.
  *
  * @since 3.1
- * @version $Id: SynchronizedRandomGenerator.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class SynchronizedRandomGenerator implements RandomGenerator {
     /** Object to which all calls will be delegated. */

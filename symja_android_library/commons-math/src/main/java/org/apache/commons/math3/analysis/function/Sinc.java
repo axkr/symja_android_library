@@ -34,7 +34,6 @@ import org.apache.commons.math3.util.FastMath;
  * </code></pre>
  *
  * @since 3.0
- * @version $Id: Sinc.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class Sinc implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /**

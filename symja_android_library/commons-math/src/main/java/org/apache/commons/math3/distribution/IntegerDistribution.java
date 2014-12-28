@@ -22,7 +22,6 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 /**
  * Interface for distributions on the integers.
  *
- * @version $Id: IntegerDistribution.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public interface IntegerDistribution {
     /**

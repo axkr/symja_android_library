@@ -27,7 +27,6 @@ import org.apache.commons.math3.util.Pair;
  * This allows to reduce numerical errors.
  *
  * @since 3.3
- * @version $Id: SymmetricGaussIntegrator.java 1509234 2013-08-01 13:48:57Z erans $
  */
 public class SymmetricGaussIntegrator extends GaussIntegrator {
     /**

@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.util.Localizable;
  * Exception to be thrown when some argument is out of range.
  *
  * @since 2.2
- * @version $Id: OutOfRangeException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class OutOfRangeException extends MathIllegalNumberException {
     /** Serializable version Id. */

@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.util.ExceptionContextProvider;
  * specific "problem".
  *
  * @since 3.1
- * @version $Id: MathRuntimeException.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class MathRuntimeException extends RuntimeException
     implements ExceptionContextProvider {

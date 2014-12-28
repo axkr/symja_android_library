@@ -19,7 +19,6 @@ package org.apache.commons.math3.dfp;
 
 /** Mathematical routines for use with {@link Dfp}.
  * The constants are defined in {@link DfpField}
- * @version $Id: DfpMath.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.2
  */
 public class DfpMath {

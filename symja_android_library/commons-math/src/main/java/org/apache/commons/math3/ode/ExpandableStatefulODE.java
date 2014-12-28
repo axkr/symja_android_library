@@ -43,7 +43,6 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
  * @see FirstOrderDifferentialEquations
  * @see JacobianMatrices
  *
- * @version $Id: ExpandableStatefulODE.java 1463680 2013-04-02 19:02:55Z luc $
  * @since 3.0
  */
 

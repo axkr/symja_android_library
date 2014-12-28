@@ -41,7 +41,6 @@ import org.apache.commons.math3.util.MathUtils;
  * </p>
  *
  * @since 2.1
- * @version $Id: SaddlePointExpansion.java 1538368 2013-11-03 13:57:37Z erans $
  */
 final class SaddlePointExpansion {
 

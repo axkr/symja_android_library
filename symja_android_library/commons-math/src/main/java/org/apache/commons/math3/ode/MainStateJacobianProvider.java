@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
  *  differential equations} in order to compute exactly the main state jacobian
  *  matrix for {@link JacobianMatrices partial derivatives equations}.
  *
- * @version $Id: MainStateJacobianProvider.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public interface MainStateJacobianProvider extends FirstOrderDifferentialEquations {

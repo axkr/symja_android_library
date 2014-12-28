@@ -22,11 +22,11 @@ import org.apache.commons.math3.exception.util.ExceptionContext;
 import org.apache.commons.math3.exception.util.ExceptionContextProvider;
 
 /**
- * Base class for all exceptions that signal a mismatch between the
- * current state and the user's expectations.
+ * Base class for all exceptions that signal that the process
+ * throwing the exception is in a state that does not comply with
+ * the set of states that it is designed to be in.
  *
  * @since 2.2
- * @version $Id: MathIllegalStateException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class MathIllegalStateException extends IllegalStateException
     implements ExceptionContextProvider {

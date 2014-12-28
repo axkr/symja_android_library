@@ -50,7 +50,6 @@ import org.apache.commons.math3.util.CompositeFormat;
  * but conflicts with the default column separator).</p>
  *
  * @since 3.1
- * @version $Id: RealMatrixFormat.java 1364793 2012-07-23 20:46:28Z tn $
  */
 public class RealMatrixFormat {
 

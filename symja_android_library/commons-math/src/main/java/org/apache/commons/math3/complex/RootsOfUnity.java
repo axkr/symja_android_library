@@ -29,7 +29,6 @@ import org.apache.commons.math3.util.FastMath;
  * A helper class for the computation and caching of the {@code n}-th roots of
  * unity.
  *
- * @version $Id: RootsOfUnity.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public class RootsOfUnity implements Serializable {

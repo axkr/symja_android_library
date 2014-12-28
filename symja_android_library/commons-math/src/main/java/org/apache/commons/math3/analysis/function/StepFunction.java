@@ -30,7 +30,6 @@ import org.apache.commons.math3.util.MathArrays;
  *  Step function</a>.
  *
  * @since 3.0
- * @version $Id: StepFunction.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class StepFunction implements UnivariateFunction {
     /** Abscissae. */

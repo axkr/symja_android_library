@@ -21,7 +21,6 @@ import org.apache.commons.math3.optim.OptimizationData;
 /**
  * Pivot selection rule to the use for a Simplex solver.
  *
- * @version $Id: PivotSelectionRule.java 1551058 2013-12-15 21:15:21Z tn $
  * @since 3.3
  */
 public enum PivotSelectionRule implements OptimizationData {

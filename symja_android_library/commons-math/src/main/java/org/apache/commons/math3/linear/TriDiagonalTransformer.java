@@ -34,7 +34,6 @@ import org.apache.commons.math3.util.FastMath;
  * EigenDecomposition eigen decomposition}. This class is therefore intended for internal
  * use by the library and is not public. As a consequence of this explicitly limited scope,
  * many methods directly returns references to internal arrays, not copies.</p>
- * @version $Id: TriDiagonalTransformer.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 class TriDiagonalTransformer {

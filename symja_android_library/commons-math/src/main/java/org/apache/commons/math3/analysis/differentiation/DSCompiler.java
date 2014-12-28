@@ -122,7 +122,6 @@ import org.apache.commons.math3.util.MathArrays;
  *   double dPdZdZ = product[compiler.getPartialDerivativeIndex(0, 0, 2)];
  * </p>
  * @see DerivativeStructure
- * @version $Id: DSCompiler.java 1517788 2013-08-27 11:15:18Z luc $
  * @since 3.1
  */
 public class DSCompiler {

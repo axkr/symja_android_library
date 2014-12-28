@@ -108,7 +108,6 @@ import org.apache.commons.math3.util.MathArrays;
  * </ul>
  * </p>
  * @since 3.1
- * @version $Id: RandomDataGenerator.java 1612042 2014-07-20 06:57:53Z ggregory $
  */
 public class RandomDataGenerator implements RandomData, Serializable {
 

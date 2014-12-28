@@ -23,7 +23,6 @@ import org.apache.commons.math3.util.FastMath;
 
 /** Base class for random number generators that generates bits streams.
  *
- * @version $Id: BitsStreamGenerator.java 1612042 2014-07-20 06:57:53Z ggregory $
  * @since 2.0
  */
 public abstract class BitsStreamGenerator

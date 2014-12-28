@@ -23,7 +23,6 @@ import org.apache.commons.math3.optim.PointValuePair;
  * A constraint for a linear optimization problem indicating whether all
  * variables must be restricted to non-negative values.
  *
- * @version $Id: SolutionCallback.java 1543169 2013-11-18 21:24:32Z tn $
  * @since 3.3
  */
 public class SolutionCallback implements OptimizationData {
@@ -51,5 +50,13 @@ public class SolutionCallback implements OptimizationData {
      */
     public PointValuePair getSolution() {
         return tableau != null ? tableau.getSolution() : null;
+    }
+
+    /**
+     * Returns if the found solution is optimal.
+     * @return {@code true} if the solution is optimal, {@code false} otherwise
+     */
+    public boolean isSolutionOptimal() {
+        return tableau != null ? tableau.isOptimal() : false;
     }
 }

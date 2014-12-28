@@ -25,7 +25,6 @@ import org.apache.commons.math3.exception.NoDataException;
  * become available, they can be added to the regression  model and an updated
  * estimate regression statistics can be calculated.
  *
- * @version $Id: UpdatingMultipleLinearRegression.java 1392342 2012-10-01 14:08:52Z psteitz $
  * @since 3.0
  */
 public interface UpdatingMultipleLinearRegression {

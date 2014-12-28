@@ -34,7 +34,6 @@ import org.apache.commons.math3.util.ArithmeticUtils;
  * As an example, the inverse transform of integer vector (0, 1, 0, 1) is rational
  * vector (1/2, -1/2, 0, 0).
  *
- * @version $Id: FastHadamardTransformer.java 1385310 2012-09-16 16:32:10Z tn $
  * @since 2.0
  */
 public class FastHadamardTransformer implements RealTransformer, Serializable {

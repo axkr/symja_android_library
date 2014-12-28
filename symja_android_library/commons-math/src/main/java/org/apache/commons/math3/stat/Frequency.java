@@ -60,7 +60,6 @@ import org.apache.commons.math3.util.MathUtils;
  * The values are ordered using the default (natural order), unless a
  * <code>Comparator</code> is supplied in the constructor.</p>
  *
- * @version $Id: Frequency.java 1519820 2013-09-03 19:58:03Z tn $
  */
 public class Frequency implements Serializable {
 

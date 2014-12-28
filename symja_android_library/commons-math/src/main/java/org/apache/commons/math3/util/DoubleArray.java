@@ -22,7 +22,6 @@ package org.apache.commons.math3.util;
  * array implementations to support various storage mechanisms
  * such as automatic expansion, contraction, and array "rolling".
  *
- * @version $Id: DoubleArray.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public interface DoubleArray {
 

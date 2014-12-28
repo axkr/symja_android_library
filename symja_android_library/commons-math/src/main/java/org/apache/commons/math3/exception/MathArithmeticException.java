@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.util.ExceptionContextProvider;
  * message.
  *
  * @since 3.0
- * @version $Id: MathArithmeticException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class MathArithmeticException extends ArithmeticException
     implements ExceptionContextProvider {

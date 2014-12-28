@@ -45,7 +45,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Arrays utilities.
  *
  * @since 3.0
- * @version $Id: MathArrays.java 1605775 2014-06-26 13:03:57Z erans $
  */
 public class MathArrays {
     /** Factor used for splitting double numbers: n = 2^27 + 1 (i.e. {@value}). */
@@ -1574,9 +1573,27 @@ public class MathArrays {
      * If {@code n == 0}, the returned array is empty.
      */
     public static int[] natural(int n) {
-        final int[] a = new int[n];
-        for (int i = 0; i < n; i++) {
-            a[i] = i;
+        return sequence(n, 0, 1);
+    }
+    /**
+     * Returns an array of {@code size} integers starting at {@code start},
+     * skipping {@code stride} numbers.
+     *
+     * @param size Natural number.
+     * @param start Natural number.
+     * @param stride Natural number.
+     * @return an array whose entries are the numbers
+     * {@code start, start + stride, ..., start + (size - 1) * stride}.
+     * If {@code size == 0}, the returned array is empty.
+     *
+     * @since 3.4
+     */
+    public static int[] sequence(int size,
+                                 int start,
+                                 int stride) {
+        final int[] a = new int[size];
+        for (int i = 0; i < size; i++) {
+            a[i] = start + i * stride;
         }
         return a;
     }

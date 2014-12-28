@@ -25,7 +25,6 @@ import org.apache.commons.math3.util.Precision;
 /**
  *  Value object representing the results of a univariate statistical summary.
  *
- * @version $Id: StatisticalSummaryValues.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class StatisticalSummaryValues implements Serializable,
     StatisticalSummary {

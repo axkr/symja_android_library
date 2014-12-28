@@ -35,7 +35,6 @@ import org.apache.commons.math3.util.MathArrays;
  * @see <a href="http://mathworld.wolfram.com/MultivariateNormalDistribution.html">
  * Multivariate normal distribution (MathWorld)</a>
  *
- * @version $Id: MultivariateNormalDistribution.java 1503290 2013-07-15 15:16:29Z sebb $
  * @since 3.1
  */
 public class MultivariateNormalDistribution
@@ -58,6 +57,13 @@ public class MultivariateNormalDistribution
      * The number of dimensions is equal to the length of the mean vector
      * and to the number of rows and columns of the covariance matrix.
      * It is frequently written as "p" in formulae.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param means Vector of means.
      * @param covariances Covariance matrix.

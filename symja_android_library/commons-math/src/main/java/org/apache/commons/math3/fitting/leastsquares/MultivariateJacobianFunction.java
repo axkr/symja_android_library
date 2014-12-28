@@ -24,7 +24,6 @@ import org.apache.commons.math3.util.Pair;
  * A interface for functions that compute a vector of values and can compute their
  * derivatives (Jacobian).
  *
- * @version $Id: MultivariateJacobianFunction.java 1569362 2014-02-18 14:33:49Z luc $
  * @since 3.3
  */
 public interface MultivariateJacobianFunction {

@@ -81,7 +81,6 @@ import org.apache.commons.math3.optimization.OptimizationData;
  * @see MultivariateFunctionPenaltyAdapter
  * @see CMAESOptimizer
  * @see BOBYQAOptimizer
- * @version $Id: SimplexOptimizer.java 1504724 2013-07-18 23:41:20Z sebb $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.0
  */

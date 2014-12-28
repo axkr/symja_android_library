@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * Interface representing a univariate real interpolating function.
  *
  * @since 2.1
- * @version $Id: MultivariateInterpolator.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public interface MultivariateInterpolator {
 

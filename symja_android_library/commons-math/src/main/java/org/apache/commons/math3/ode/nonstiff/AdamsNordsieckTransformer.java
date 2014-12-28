@@ -129,7 +129,6 @@ import org.apache.commons.math3.linear.RealMatrix;
  * vector and a P<sup>-1</sup> A P matrix are used that do not depend on the state,
  * they only depend on k. This class handles these transformations.</p>
  *
- * @version $Id: AdamsNordsieckTransformer.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public class AdamsNordsieckTransformer {

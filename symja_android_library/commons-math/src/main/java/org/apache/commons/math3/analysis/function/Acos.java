@@ -28,7 +28,6 @@ import org.apache.commons.math3.util.FastMath;
  * Arc-cosine function.
  *
  * @since 3.0
- * @version $Id: Acos.java 1383441 2012-09-11 14:56:39Z luc $
  */
 public class Acos implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** {@inheritDoc} */

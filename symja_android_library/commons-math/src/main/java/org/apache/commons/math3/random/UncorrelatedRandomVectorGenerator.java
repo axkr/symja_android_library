@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
  * components. Components of generated vectors follow (independent) Gaussian
  * distributions, with parameters supplied in the constructor.
  *
- * @version $Id: UncorrelatedRandomVectorGenerator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

@@ -21,7 +21,6 @@ import java.util.Collection;
 
 /** This abstract class provides boilerplate parameters list.
  *
- * @version $Id: AbstractParameterizable.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 

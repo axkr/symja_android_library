@@ -33,7 +33,6 @@ import org.apache.commons.math3.util.FastMath;
  * Default implementations are provided for some of the methods
  * that do not vary from distribution to distribution.
  *
- * @version $Id: AbstractRealDistribution.java 1533974 2013-10-20 20:42:41Z psteitz $
  * @since 3.0
  */
 public abstract class AbstractRealDistribution

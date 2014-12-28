@@ -23,7 +23,6 @@ import java.util.ArrayList;
  * Utility class for transforming the list of arguments passed to
  * constructors of exceptions.
  *
- * @version $Id: ArgUtils.java 1364388 2012-07-22 18:16:43Z tn $
  */
 public class ArgUtils {
     /**

@@ -42,7 +42,7 @@ package org.apache.commons.math3.ode.nonstiff;
  * @see ClassicalRungeKuttaIntegrator
  * @see GillIntegrator
  * @see ThreeEighthesIntegrator
- * @version $Id: EulerIntegrator.java 1416643 2012-12-03 19:37:14Z tn $
+ * @see LutherIntegrator
  * @since 1.2
  */
 

@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.util.Localizable;
  * Exception thrown when a regression model is not correctly specified.
  *
  * @since 3.0
- * @version $Id: ModelSpecificationException.java 1244107 2012-02-14 16:17:55Z erans $
  */
 public class ModelSpecificationException extends MathIllegalArgumentException {
     /** Serializable version Id. */

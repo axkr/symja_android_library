@@ -56,7 +56,6 @@ import org.apache.commons.math3.util.MathUtils;
  * differentiator}.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @see DSCompiler
- * @version $Id: DerivativeStructure.java 1517789 2013-08-27 11:15:50Z luc $
  * @since 3.1
  */
 public class DerivativeStructure implements RealFieldElement<DerivativeStructure>, Serializable {

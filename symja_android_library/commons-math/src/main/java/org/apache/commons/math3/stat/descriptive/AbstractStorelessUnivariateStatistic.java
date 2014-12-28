@@ -31,7 +31,6 @@ import org.apache.commons.math3.util.Precision;
  * <p>
  * <strong>Note that these implementations are not synchronized.</strong></p>
  *
- * @version $Id: AbstractStorelessUnivariateStatistic.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public abstract class AbstractStorelessUnivariateStatistic
     extends AbstractUnivariateStatistic

@@ -59,7 +59,6 @@ import org.apache.commons.math3.util.Precision;
  * constant term and {@link #getIntercept()} returns {@code 0}.</li>
  * </ul></p>
  *
- * @version $Id: SimpleRegression.java 1519851 2013-09-03 21:16:35Z tn $
  */
 public class SimpleRegression implements Serializable, UpdatingMultipleLinearRegression {
 

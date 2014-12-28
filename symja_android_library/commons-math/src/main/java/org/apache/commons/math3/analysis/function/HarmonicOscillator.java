@@ -32,7 +32,6 @@ import org.apache.commons.math3.util.FastMath;
  *  simple harmonic oscillator</a> function.
  *
  * @since 3.0
- * @version $Id: HarmonicOscillator.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class HarmonicOscillator implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Amplitude. */

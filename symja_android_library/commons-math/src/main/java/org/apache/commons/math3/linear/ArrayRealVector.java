@@ -33,7 +33,6 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * This class implements the {@link RealVector} interface with a double array.
- * @version $Id: ArrayRealVector.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0
  */
 public class ArrayRealVector extends RealVector implements Serializable {

@@ -19,7 +19,6 @@ package org.apache.commons.math3.stat.descriptive;
 /**
  *  Reporting interface for basic univariate statistics.
  *
-  * @version $Id: StatisticalSummary.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public interface StatisticalSummary {
 

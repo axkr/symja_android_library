@@ -90,7 +90,6 @@ import org.apache.commons.math3.util.FastMath;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</strong></td></tr>
  * </table>
  *
- * @version $Id: GraggBulirschStoerIntegrator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

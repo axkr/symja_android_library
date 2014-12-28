@@ -25,7 +25,6 @@ import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
  * value and the number of columns is equal to the number of free parameters of
  * the underlying function.
  * </p>
- * @version $Id: JacobianFunction.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 3.1
  */
 public class JacobianFunction implements MultivariateMatrixFunction {

@@ -29,7 +29,6 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * into a primitive double or to turn a String representation of a Number into
  * a double.
  *
- * @version $Id: DefaultTransformer.java 1517416 2013-08-26 03:04:38Z dbrosius $
  */
 public class DefaultTransformer implements NumberTransformer, Serializable {
 

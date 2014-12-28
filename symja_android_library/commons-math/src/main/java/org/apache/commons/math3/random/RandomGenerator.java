@@ -22,7 +22,6 @@ package org.apache.commons.math3.random;
  * implemented by {@link AbstractRandomGenerator}.
  *
  * @since 1.1
- * @version $Id: RandomGenerator.java 1612042 2014-07-20 06:57:53Z ggregory $
  */
 public interface RandomGenerator {
 

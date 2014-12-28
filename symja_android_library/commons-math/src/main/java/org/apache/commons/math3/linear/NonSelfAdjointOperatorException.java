@@ -32,7 +32,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * linear operator, {@code x} and {@code y} are the first and second
  * "offending" vectors, respectively.
  *
- * @version $Id: NonSelfAdjointOperatorException.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public class NonSelfAdjointOperatorException

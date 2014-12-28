@@ -24,7 +24,6 @@ package org.apache.commons.math3.linear;
  * methods. This class provides default implementations that do nothing.
  * </p>
  *
- * @version $Id: DefaultRealMatrixPreservingVisitor.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public class DefaultRealMatrixPreservingVisitor implements RealMatrixPreservingVisitor {

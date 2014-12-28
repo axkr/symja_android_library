@@ -37,7 +37,6 @@ import org.apache.commons.math3.linear.RealMatrix;
  * <p>Note: the underlying covariance matrix is symmetric, thus only the
  * upper triangular part of the matrix is stored and updated each increment.</p>
  *
- * @version $Id: StorelessCovariance.java 1519851 2013-09-03 21:16:35Z tn $
  * @since 3.0
  */
 public class StorelessCovariance extends Covariance {

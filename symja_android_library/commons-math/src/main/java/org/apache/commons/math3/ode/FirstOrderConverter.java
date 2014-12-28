@@ -50,7 +50,6 @@ package org.apache.commons.math3.ode;
  * @see FirstOrderIntegrator
  * @see FirstOrderDifferentialEquations
  * @see SecondOrderDifferentialEquations
- * @version $Id: FirstOrderConverter.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

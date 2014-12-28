@@ -29,9 +29,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 /**
  * Base class for a multivariate vector function optimizer.
  *
- * @version $Id: MultivariateVectorOptimizer.java 1503290 2013-07-15 15:16:29Z sebb $
  * @since 3.1
  */
+@Deprecated
 public abstract class MultivariateVectorOptimizer
     extends BaseMultivariateOptimizer<PointVectorValuePair> {
     /** Target values for the model function at optimum. */

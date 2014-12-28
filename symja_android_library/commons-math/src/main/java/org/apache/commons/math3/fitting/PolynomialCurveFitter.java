@@ -34,7 +34,6 @@ import org.apache.commons.math3.linear.DiagonalMatrix;
  * They must be sorted in increasing order of the polynomial's degree.
  * The optimal values of the coefficients will be returned in the same order.
  *
- * @version $Id: PolynomialCurveFitter.java 1571640 2014-02-25 10:27:21Z erans $
  * @since 3.3
  */
 public class PolynomialCurveFitter extends AbstractCurveFitter {

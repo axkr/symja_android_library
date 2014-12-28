@@ -32,7 +32,6 @@ import org.apache.commons.math3.util.FastMath;
  * implementations are provided for some of the methods that do not vary
  * from distribution to distribution.
  *
- * @version $Id: AbstractIntegerDistribution.java 1547633 2013-12-03 23:03:06Z tn $
  */
 public abstract class AbstractIntegerDistribution implements IntegerDistribution, Serializable {
 

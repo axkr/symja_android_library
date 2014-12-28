@@ -23,7 +23,6 @@ import org.apache.commons.math3.FieldElement;
  * Interface defining a visitor for matrix entries.
  *
  * @param <T> the type of the field elements
- * @version $Id: FieldMatrixPreservingVisitor.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public interface FieldMatrixPreservingVisitor<T extends FieldElement<?>> {

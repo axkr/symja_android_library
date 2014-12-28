@@ -32,7 +32,6 @@ import org.apache.commons.math3.exception.NonMonotonicSequenceException;
  * The actual code of Neville's algorithm is in PolynomialFunctionLagrangeForm,
  * this class provides an easy-to-use interface to it.</p>
  *
- * @version $Id: NevilleInterpolator.java 1379904 2012-09-01 23:54:52Z erans $
  * @since 1.2
  */
 public class NevilleInterpolator implements UnivariateInterpolator,

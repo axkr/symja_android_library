@@ -31,7 +31,6 @@ import java.util.NoSuchElementException;
  * {@link #iterator()} are fail-fast: they throw a
  * <code>ConcurrentModificationException</code> when they detect the map has been
  * modified during iteration.</p>
- * @version $Id: OpenIntToDoubleHashMap.java 1421448 2012-12-13 19:45:57Z tn $
  * @since 2.0
  */
 public class OpenIntToDoubleHashMap implements Serializable {

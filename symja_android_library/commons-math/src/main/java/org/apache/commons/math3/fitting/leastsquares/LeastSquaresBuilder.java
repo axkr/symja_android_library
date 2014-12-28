@@ -28,7 +28,6 @@ import org.apache.commons.math3.optim.PointVectorValuePair;
 /**
  * A mutable builder for {@link LeastSquaresProblem}s.
  *
- * @version $Id: LeastSquaresBuilder.java 1569362 2014-02-18 14:33:49Z luc $
  * @see LeastSquaresFactory
  * @since 3.3
  */
@@ -48,6 +47,17 @@ public class LeastSquaresBuilder {
     private RealVector start;
     /** weight matrix */
     private RealMatrix weight;
+    /**
+     * Lazy evaluation.
+     *
+     * @since 3.4
+     */
+    private boolean lazyEvaluation;
+    /** Validator.
+     *
+     * @since 3.4
+     */
+    private ParameterValidator paramValidator;
 
 
     /**
@@ -56,7 +66,15 @@ public class LeastSquaresBuilder {
      * @return a new {@link LeastSquaresProblem}.
      */
     public LeastSquaresProblem build() {
-        return LeastSquaresFactory.create(model, target, start, weight, checker, maxEvaluations, maxIterations);
+        return LeastSquaresFactory.create(model,
+                                          target,
+                                          start,
+                                          weight,
+                                          checker,
+                                          maxEvaluations,
+                                          maxIterations,
+                                          lazyEvaluation,
+                                          paramValidator);
     }
 
     /**
@@ -180,4 +198,29 @@ public class LeastSquaresBuilder {
         return this;
     }
 
+    /**
+     * Configure whether evaluation will be lazy or not.
+     *
+     * @param newValue Whether to perform lazy evaluation.
+     * @return this object.
+     *
+     * @since 3.4
+     */
+    public LeastSquaresBuilder lazyEvaluation(final boolean newValue) {
+        lazyEvaluation = newValue;
+        return this;
+    }
+
+    /**
+     * Configure the validator of the model parameters.
+     *
+     * @param newValidator Parameter validator.
+     * @return this object.
+     *
+     * @since 3.4
+     */
+    public LeastSquaresBuilder parameterValidator(final ParameterValidator newValidator) {
+        paramValidator = newValidator;
+        return this;
+    }
 }

@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * construed to be a bug.
  *
  * @since 2.2
- * @version $Id: NullArgumentException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class NullArgumentException extends MathIllegalArgumentException {
     /** Serializable version Id. */

@@ -32,7 +32,6 @@ import org.apache.commons.math3.util.FastMath;
  * <p>
  * The function should be integrable.</p>
  *
- * @version $Id: TrapezoidIntegrator.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 1.2
  */
 public class TrapezoidIntegrator extends BaseAbstractUnivariateIntegrator {

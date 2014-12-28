@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
 /**
  * Base class for a univariate scalar function optimizer.
  *
- * @version $Id: UnivariateOptimizer.java 1503290 2013-07-15 15:16:29Z sebb $
  * @since 3.1
  */
 public abstract class UnivariateOptimizer

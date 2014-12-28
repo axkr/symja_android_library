@@ -60,7 +60,6 @@ import org.apache.commons.math3.util.Precision;
  * for many problems, but may need to be adjusted in case of very small coefficients
  * used in either the {@link LinearConstraint} or {@link LinearObjectiveFunction}.
  *
- * @version $Id: SimplexSolver.java 1553855 2013-12-28 15:55:24Z erans $
  * @since 2.0
  */
 public class SimplexSolver extends LinearOptimizer {

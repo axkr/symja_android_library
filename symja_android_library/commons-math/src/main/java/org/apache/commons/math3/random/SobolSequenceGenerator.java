@@ -51,7 +51,6 @@ import org.apache.commons.math3.util.FastMath;
  * @see <a href="http://en.wikipedia.org/wiki/Sobol_sequence">Sobol sequence (Wikipedia)</a>
  * @see <a href="http://web.maths.unsw.edu.au/~fkuo/sobol/">Sobol sequence direction numbers</a>
  *
- * @version $Id: SobolSequenceGenerator.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 3.3
  */
 public class SobolSequenceGenerator implements RandomVectorGenerator {

@@ -24,7 +24,6 @@ import java.util.Locale;
 /**
  * Base class for formatters of composite objects (complex numbers, vectors ...).
  *
- * @version $Id: CompositeFormat.java 1462503 2013-03-29 15:48:27Z luc $
  */
 public class CompositeFormat {
 

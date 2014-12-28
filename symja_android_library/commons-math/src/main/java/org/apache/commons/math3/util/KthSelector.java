@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * A Simple K<sup>th</sup> selector implementation to pick up the
  * K<sup>th</sup> ordered element from a work array containing the input
  * numbers.
- * @version $Id: KthSelector.java 1610141 2014-07-13 08:52:29Z luc $
  * @since 3.4
  */
 public class KthSelector implements Serializable {
@@ -37,7 +36,7 @@ public class KthSelector implements Serializable {
     /** Minimum selection size for insertion sort rather than selection. */
     private static final int MIN_SELECT_SIZE = 15;
 
-    /** A {@link PivotingStrategy} used for pivoting  */
+    /** A {@link PivotingStrategyInterface} used for pivoting  */
     private final PivotingStrategyInterface pivotingStrategy;
 
     /**

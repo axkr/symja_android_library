@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Exception triggered when something that shouldn't happen does happen.
  *
  * @since 2.2
- * @version $Id: MathInternalError.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class MathInternalError extends MathIllegalStateException {
     /** Serializable version Id. */

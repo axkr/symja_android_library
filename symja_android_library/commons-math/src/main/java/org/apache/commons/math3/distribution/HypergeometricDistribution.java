@@ -21,16 +21,15 @@ import org.apache.commons.math3.exception.NotPositiveException;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Implementation of the hypergeometric distribution.
  *
  * @see <a href="http://en.wikipedia.org/wiki/Hypergeometric_distribution">Hypergeometric distribution (Wikipedia)</a>
  * @see <a href="http://mathworld.wolfram.com/HypergeometricDistribution.html">Hypergeometric distribution (MathWorld)</a>
- * @version $Id: HypergeometricDistribution.java 1534358 2013-10-21 20:13:52Z tn $
  */
 public class HypergeometricDistribution extends AbstractIntegerDistribution {
     /** Serializable version identifier. */
@@ -49,6 +48,13 @@ public class HypergeometricDistribution extends AbstractIntegerDistribution {
     /**
      * Construct a new hypergeometric distribution with the specified population
      * size, number of successes in the population, and sample size.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param populationSize Population size.
      * @param numberOfSuccesses Number of successes in the population.

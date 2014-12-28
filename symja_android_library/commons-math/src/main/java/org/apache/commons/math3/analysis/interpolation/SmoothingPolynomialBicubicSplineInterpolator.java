@@ -33,9 +33,10 @@ import org.apache.commons.math3.optim.SimpleVectorValueChecker;
  * Prior to generating the interpolating function, the input is smoothed using
  * polynomial fitting.
  *
- * @version $Id: SmoothingPolynomialBicubicSplineInterpolator.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 2.2
+ * @deprecated To be removed in 4.0 (see MATH-1166).
  */
+@Deprecated
 public class SmoothingPolynomialBicubicSplineInterpolator
     extends BicubicSplineInterpolator {
     /** Fitter for x. */

@@ -43,7 +43,6 @@ import org.apache.commons.math3.optimization.PointVectorValuePair;
  *
  * @param <T> Function to use for the fit.
  *
- * @version $Id: CurveFitter.java 1499808 2013-07-04 17:00:42Z sebb $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  */

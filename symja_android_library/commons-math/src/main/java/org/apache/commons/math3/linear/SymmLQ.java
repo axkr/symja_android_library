@@ -148,7 +148,6 @@ import org.apache.commons.math3.util.MathUtils;
  * Journal on Numerical Analysis 12(4): 617-629, 1975</dd>
  * </dl>
  *
- * @version $Id: SymmLQ.java 1505938 2013-07-23 08:50:10Z luc $
  * @since 3.0
  */
 public class SymmLQ

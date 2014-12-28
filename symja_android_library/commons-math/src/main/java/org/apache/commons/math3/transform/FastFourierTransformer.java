@@ -48,7 +48,6 @@ import org.apache.commons.math3.util.MathArrays;
  * Computation, 32 (1978), 175 - 199.
  *
  * @see DftNormalization
- * @version $Id: FastFourierTransformer.java 1385310 2012-09-16 16:32:10Z tn $
  * @since 1.2
  */
 public class FastFourierTransformer implements Serializable {

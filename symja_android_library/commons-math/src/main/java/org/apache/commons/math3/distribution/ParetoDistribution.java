@@ -20,9 +20,9 @@ package org.apache.commons.math3.distribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Implementation of the Pareto distribution.
@@ -44,7 +44,6 @@ import org.apache.commons.math3.random.Well19937c;
  * @see <a href="http://mathworld.wolfram.com/ParetoDistribution.html">
  * Pareto distribution (MathWorld)</a>
  *
- * @version $Id: ParetoDistribution.java 1533974 2013-10-20 20:42:41Z psteitz $
  * @since 3.3
  */
 public class ParetoDistribution extends AbstractRealDistribution {
@@ -73,6 +72,13 @@ public class ParetoDistribution extends AbstractRealDistribution {
 
     /**
      * Create a Pareto distribution using the specified scale and shape.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param scale the scale parameter of this distribution
      * @param shape the shape parameter of this distribution
@@ -86,6 +92,13 @@ public class ParetoDistribution extends AbstractRealDistribution {
     /**
      * Create a Pareto distribution using the specified scale, shape and
      * inverse cumulative distribution accuracy.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param scale the scale parameter of this distribution
      * @param shape the shape parameter of this distribution
@@ -98,7 +111,7 @@ public class ParetoDistribution extends AbstractRealDistribution {
     }
 
     /**
-     * Creates a log-normal distribution.
+     * Creates a Pareto distribution.
      *
      * @param rng Random number generator.
      * @param scale Scale parameter of this distribution.
@@ -111,7 +124,7 @@ public class ParetoDistribution extends AbstractRealDistribution {
     }
 
     /**
-     * Creates a log-normal distribution.
+     * Creates a Pareto distribution.
      *
      * @param rng Random number generator.
      * @param scale Scale parameter of this distribution.

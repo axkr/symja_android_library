@@ -28,7 +28,6 @@ package org.apache.commons.math3.random;
  * are in <a href="http://www.iro.umontreal.ca/~lecuyer/myftp/papers/wellrng-errata.txt">wellrng-errata.txt</a>.</p>
 
  * @see <a href="http://www.iro.umontreal.ca/~panneton/WELLRNG.html">WELL Random number generator</a>
- * @version $Id: Well19937a.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.2
 
  */

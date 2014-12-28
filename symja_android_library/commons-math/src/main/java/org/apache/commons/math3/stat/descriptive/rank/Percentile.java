@@ -18,14 +18,22 @@ package org.apache.commons.math3.stat.descriptive.rank;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.MathUnsupportedOperationException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
+import org.apache.commons.math3.stat.ranking.NaNStrategy;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.KthSelector;
+import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math3.util.MedianOf3PivotingStrategy;
+import org.apache.commons.math3.util.PivotingStrategyInterface;
+import org.apache.commons.math3.util.Precision;
 
 /**
  * Provides percentile computation.
@@ -64,6 +72,11 @@ import org.apache.commons.math3.util.MathUtils;
  * elements, arrays containing  <code>NaN</code> or infinite values will often
  * result in <code>NaN</code> or infinite values returned.</p>
  * <p>
+ * Further, to include different estimation types such as R1, R2 as mentioned in
+ * <a href="http://en.wikipedia.org/wiki/Quantile">Quantile page(wikipedia)</a>,
+ * a type specific NaN handling strategy is used to closely match with the
+ * typically observed results from popular tools like R(R1-R9), Excel(R7).</p>
+ * <p>
  * Since 2.2, Percentile uses only selection instead of complete sorting
  * and caches selection algorithm state between calls to the various
  * {@code evaluate} methods. This greatly improves efficiency, both for a single
@@ -79,29 +92,45 @@ import org.apache.commons.math3.util.MathUtils;
  * one of the threads invokes the <code>increment()</code> or
  * <code>clear()</code> method, it must be synchronized externally.</p>
  *
- * @version $Id: Percentile.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class Percentile extends AbstractUnivariateStatistic implements Serializable {
 
     /** Serializable version identifier */
     private static final long serialVersionUID = -8091216485095130416L;
 
-    /** Minimum size under which we use a simple insertion sort rather than Hoare's select. */
-    private static final int MIN_SELECT_SIZE = 15;
-
     /** Maximum number of partitioning pivots cached (each level double the number of pivots). */
     private static final int MAX_CACHED_LEVELS = 10;
 
+    /** Maximum number of cached pivots in the pivots cached array */
+    private static final int PIVOTS_HEAP_LENGTH = 0x1 << MAX_CACHED_LEVELS - 1;
+
+    /** Default KthSelector used with default pivoting strategy */
+    private final KthSelector kthSelector;
+
+    /** Any of the {@link EstimationType}s such as {@link EstimationType#LEGACY CM} can be used. */
+    private final EstimationType estimationType;
+
+    /** NaN Handling of the input as defined by {@link NaNStrategy} */
+    private final NaNStrategy nanStrategy;
+
     /** Determines what percentile is computed when evaluate() is activated
      * with no quantile argument */
-    private double quantile = 0.0;
+    private double quantile;
 
     /** Cached pivots. */
     private int[] cachedPivots;
 
     /**
-     * Constructs a Percentile with a default quantile
-     * value of 50.0.
+     * Constructs a Percentile with the following defaults.
+     * <ul>
+     *   <li>default quantile: 50.0, can be reset with {@link #setQuantile(double)}</li>
+     *   <li>default estimation type: {@link EstimationType#LEGACY},
+     *   can be reset with {@link #withEstimationType(EstimationType)}</li>
+     *   <li>default NaN strategy: {@link NaNStrategy#REMOVED},
+     *   can be reset with {@link #withNaNStrategy(NaNStrategy)}</li>
+     *   <li>a KthSelector that makes use of {@link MedianOf3PivotingStrategy},
+     *   can be reset with {@link #withKthSelector(KthSelector)}</li>
+     * </ul>
      */
     public Percentile() {
         // No try-catch or advertised exception here - arg is valid
@@ -109,14 +138,19 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
     }
 
     /**
-     * Constructs a Percentile with the specific quantile value.
-     * @param p the quantile
+     * Constructs a Percentile with the specific quantile value and the following
+     * <ul>
+     *   <li>default method type: {@link EstimationType#LEGACY}</li>
+     *   <li>default NaN strategy: {@link NaNStrategy#REMOVED}</li>
+     *   <li>a Kth Selector : {@link KthSelector}</li>
+     * </ul>
+     * @param quantile the quantile
      * @throws MathIllegalArgumentException  if p is not greater than 0 and less
      * than or equal to 100
      */
-    public Percentile(final double p) throws MathIllegalArgumentException {
-        setQuantile(p);
-        cachedPivots = null;
+    public Percentile(final double quantile) throws MathIllegalArgumentException {
+        this(quantile, EstimationType.LEGACY, NaNStrategy.REMOVED,
+             new KthSelector(new MedianOf3PivotingStrategy()));
     }
 
     /**
@@ -126,8 +160,45 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
      * @param original the {@code Percentile} instance to copy
      * @throws NullArgumentException if original is null
      */
-    public Percentile(Percentile original) throws NullArgumentException {
-        copy(original, this);
+    public Percentile(final Percentile original) throws NullArgumentException {
+
+        MathUtils.checkNotNull(original);
+        estimationType   = original.getEstimationType();
+        nanStrategy      = original.getNaNStrategy();
+        kthSelector      = original.getKthSelector();
+
+        setData(original.getDataRef());
+        if (original.cachedPivots != null) {
+            System.arraycopy(original.cachedPivots, 0, cachedPivots, 0, original.cachedPivots.length);
+        }
+        setQuantile(original.quantile);
+
+    }
+
+    /**
+     * Constructs a Percentile with the specific quantile value,
+     * {@link EstimationType}, {@link NaNStrategy} and {@link KthSelector}.
+     *
+     * @param quantile the quantile to be computed
+     * @param estimationType one of the percentile {@link EstimationType  estimation types}
+     * @param nanStrategy one of {@link NaNStrategy} to handle with NaNs
+     * @param kthSelector a {@link KthSelector} to use for pivoting during search
+     * @throws MathIllegalArgumentException if p is not within (0,100]
+     * @throws NullArgumentException if type or NaNStrategy passed is null
+     */
+    protected Percentile(final double quantile,
+                         final EstimationType estimationType,
+                         final NaNStrategy nanStrategy,
+                         final KthSelector kthSelector)
+        throws MathIllegalArgumentException {
+        setQuantile(quantile);
+        cachedPivots = null;
+        MathUtils.checkNotNull(estimationType);
+        MathUtils.checkNotNull(nanStrategy);
+        MathUtils.checkNotNull(kthSelector);
+        this.estimationType = estimationType;
+        this.nanStrategy = nanStrategy;
+        this.kthSelector = kthSelector;
     }
 
     /** {@inheritDoc} */
@@ -136,7 +207,7 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
         if (values == null) {
             cachedPivots = null;
         } else {
-            cachedPivots = new int[(0x1 << MAX_CACHED_LEVELS) - 1];
+            cachedPivots = new int[PIVOTS_HEAP_LENGTH];
             Arrays.fill(cachedPivots, -1);
         }
         super.setData(values);
@@ -149,7 +220,7 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
         if (values == null) {
             cachedPivots = null;
         } else {
-            cachedPivots = new int[(0x1 << MAX_CACHED_LEVELS) - 1];
+            cachedPivots = new int[PIVOTS_HEAP_LENGTH];
             Arrays.fill(cachedPivots, -1);
         }
         super.setData(values, begin, length);
@@ -262,11 +333,11 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
      * input array is null
      */
     public double evaluate(final double[] values, final int begin,
-            final int length, final double p) throws MathIllegalArgumentException {
+                           final int length, final double p)
+        throws MathIllegalArgumentException {
 
         test(values, begin, length);
-
-        if ((p > 100) || (p <= 0)) {
+        if (p > 100 || p <= 0) {
             throw new OutOfRangeException(
                     LocalizedFormats.OUT_OF_BOUNDS_QUANTILE_VALUE, p, 0, 100);
         }
@@ -276,186 +347,39 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
         if (length == 1) {
             return values[begin]; // always return single value for n = 1
         }
-        double n = length;
-        double pos = p * (n + 1) / 100;
-        double fpos = FastMath.floor(pos);
-        int intPos = (int) fpos;
-        double dif = pos - fpos;
-        double[] work;
-        int[] pivotsHeap;
-        if (values == getDataRef()) {
-            work = getDataRef();
-            pivotsHeap = cachedPivots;
-        } else {
-            work = new double[length];
-            System.arraycopy(values, begin, work, 0, length);
-            pivotsHeap = new int[(0x1 << MAX_CACHED_LEVELS) - 1];
-            Arrays.fill(pivotsHeap, -1);
-        }
 
-        if (pos < 1) {
-            return select(work, pivotsHeap, 0);
-        }
-        if (pos >= n) {
-            return select(work, pivotsHeap, length - 1);
-        }
-        double lower = select(work, pivotsHeap, intPos - 1);
-        double upper = select(work, pivotsHeap, intPos);
-        return lower + dif * (upper - lower);
-    }
-
-    /**
-     * Select the k<sup>th</sup> smallest element from work array
-     * @param work work array (will be reorganized during the call)
-     * @param pivotsHeap set of pivot index corresponding to elements that
-     * are already at their sorted location, stored as an implicit heap
-     * (i.e. a sorted binary tree stored in a flat array, where the
-     * children of a node at index n are at indices 2n+1 for the left
-     * child and 2n+2 for the right child, with 0-based indices)
-     * @param k index of the desired element
-     * @return k<sup>th</sup> smallest element
-     */
-    private double select(final double[] work, final int[] pivotsHeap, final int k) {
-
-        int begin = 0;
-        int end   = work.length;
-        int node  = 0;
-
-        while (end - begin > MIN_SELECT_SIZE) {
-
-            final int pivot;
-            if ((node < pivotsHeap.length) && (pivotsHeap[node] >= 0)) {
-                // the pivot has already been found in a previous call
-                // and the array has already been partitioned around it
-                pivot = pivotsHeap[node];
-            } else {
-                // select a pivot and partition work array around it
-                pivot = partition(work, begin, end, medianOf3(work, begin, end));
-                if (node < pivotsHeap.length) {
-                    pivotsHeap[node] =  pivot;
-                }
-            }
-
-            if (k == pivot) {
-                // the pivot was exactly the element we wanted
-                return work[k];
-            } else if (k < pivot) {
-                // the element is in the left partition
-                end  = pivot;
-                node = FastMath.min(2 * node + 1, pivotsHeap.length); // the min is here to avoid integer overflow
-            } else {
-                // the element is in the right partition
-                begin = pivot + 1;
-                node  = FastMath.min(2 * node + 2, pivotsHeap.length); // the min is here to avoid integer overflow
-            }
-
-        }
-
-        // the element is somewhere in the small sub-array
-        // sort the sub-array using insertion sort
-        insertionSort(work, begin, end);
-        return work[k];
-
+        final double[] work = getWorkArray(values, begin, length);
+        final int[] pivotsHeap = getPivots(values);
+        return work.length == 0 ? Double.NaN :
+                    estimationType.evaluate(work, pivotsHeap, p, kthSelector);
     }
 
     /** Select a pivot index as the median of three
+     * <p>
+     * <b>Note:</b> With the effect of allowing {@link KthSelector} to be set on
+     * {@link Percentile} instances(thus indirectly {@link PivotingStrategy})
+     * this method wont take effect any more and hence is unsupported.
      * @param work data array
      * @param begin index of the first element of the slice
      * @param end index after the last element of the slice
      * @return the index of the median element chosen between the
      * first, the middle and the last element of the array slice
+     * @deprecated Please refrain from using this method (as it wont take effect)
+     * and instead use {@link Percentile#withKthSelector(newKthSelector)} if
+     * required.
+     *
      */
+    @Deprecated
     int medianOf3(final double[] work, final int begin, final int end) {
-
-        final int inclusiveEnd = end - 1;
-        final int    middle    = begin + (inclusiveEnd - begin) / 2;
-        final double wBegin    = work[begin];
-        final double wMiddle   = work[middle];
-        final double wEnd      = work[inclusiveEnd];
-
-        if (wBegin < wMiddle) {
-            if (wMiddle < wEnd) {
-                return middle;
-            } else {
-                return (wBegin < wEnd) ? inclusiveEnd : begin;
-            }
-        } else {
-            if (wBegin < wEnd) {
-                return begin;
-            } else {
-                return (wMiddle < wEnd) ? inclusiveEnd : middle;
-            }
-        }
-
-    }
-
-    /**
-     * Partition an array slice around a pivot
-     * <p>
-     * Partitioning exchanges array elements such that all elements
-     * smaller than pivot are before it and all elements larger than
-     * pivot are after it
-     * </p>
-     * @param work data array
-     * @param begin index of the first element of the slice
-     * @param end index after the last element of the slice
-     * @param pivot initial index of the pivot
-     * @return index of the pivot after partition
-     */
-    private int partition(final double[] work, final int begin, final int end, final int pivot) {
-
-        final double value = work[pivot];
-        work[pivot] = work[begin];
-
-        int i = begin + 1;
-        int j = end - 1;
-        while (i < j) {
-            while ((i < j) && (work[j] > value)) {
-                --j;
-            }
-            while ((i < j) && (work[i] < value)) {
-                ++i;
-            }
-
-            if (i < j) {
-                final double tmp = work[i];
-                work[i++] = work[j];
-                work[j--] = tmp;
-            }
-        }
-
-        if ((i >= end) || (work[i] > value)) {
-            --i;
-        }
-        work[begin] = work[i];
-        work[i]     = value;
-        return i;
-
-    }
-
-    /**
-     * Sort in place a (small) array slice using insertion sort
-     * @param work array to sort
-     * @param begin index of the first element of the slice to sort
-     * @param end index after the last element of the slice to sort
-     */
-    private void insertionSort(final double[] work, final int begin, final int end) {
-        for (int j = begin + 1; j < end; j++) {
-            final double saved = work[j];
-            int i = j - 1;
-            while ((i >= begin) && (saved < work[i])) {
-                work[i + 1] = work[i];
-                i--;
-            }
-            work[i + 1] = saved;
-        }
+        return new MedianOf3PivotingStrategy().pivotIndex(work, begin, end);
+        //throw new MathUnsupportedOperationException();
     }
 
     /**
      * Returns the value of the quantile field (determines what percentile is
      * computed when evaluate() is called with no quantile argument).
      *
-     * @return quantile
+     * @return quantile set while construction or {@link #setQuantile(double)}
      */
     public double getQuantile() {
         return quantile;
@@ -482,29 +406,667 @@ public class Percentile extends AbstractUnivariateStatistic implements Serializa
      */
     @Override
     public Percentile copy() {
-        Percentile result = new Percentile();
-        //No try-catch or advertised exception because args are guaranteed non-null
-        copy(this, result);
-        return result;
+        return new Percentile(this);
     }
 
     /**
      * Copies source to dest.
-     * <p>Neither source nor dest can be null.</p>
-     *
      * @param source Percentile to copy
      * @param dest Percentile to copy to
-     * @throws NullArgumentException if either source or dest is null
-     */
-    public static void copy(Percentile source, Percentile dest)
-        throws NullArgumentException {
-        MathUtils.checkNotNull(source);
-        MathUtils.checkNotNull(dest);
-        dest.setData(source.getDataRef());
-        if (source.cachedPivots != null) {
-            System.arraycopy(source.cachedPivots, 0, dest.cachedPivots, 0, source.cachedPivots.length);
-        }
-        dest.quantile = source.quantile;
+     * @exception MathUnsupportedOperationException always thrown since 3.4
+     * @deprecated as of 3.4 this method does not work anymore, as it fails to
+     * copy internal states between instances configured with different
+     * {@link EstimationType estimation type}, {@link NaNStrategy NaN handling strategies}
+     * and {@link KthSelector kthSelector}, it therefore always
+     * throw {@link MathUnsupportedOperationException}
+      */
+    @Deprecated
+    public static void copy(final Percentile source, final Percentile dest)
+        throws MathUnsupportedOperationException {
+        throw new MathUnsupportedOperationException();
     }
 
+    /**
+     * Get the work array to operate. Makes use of prior {@code storedData} if
+     * it exists or else do a check on NaNs and copy a subset of the array
+     * defined by begin and length parameters. The set {@link #nanStrategy} will
+     * be used to either retain/remove/replace any NaNs present before returning
+     * the resultant array.
+     *
+     * @param values the array of numbers
+     * @param begin index to start reading the array
+     * @param length the length of array to be read from the begin index
+     * @return work array sliced from values in the range [begin,begin+length)
+     * @throws MathIllegalArgumentException if values or indices are invalid
+     */
+    protected double[] getWorkArray(final double[] values, final int begin, final int length) {
+            final double[] work;
+            if (values == getDataRef()) {
+                work = getDataRef();
+            } else {
+                switch (nanStrategy) {
+                case MAXIMAL:// Replace NaNs with +INFs
+                    work = replaceAndSlice(values, begin, length, Double.NaN, Double.POSITIVE_INFINITY);
+                    break;
+                case MINIMAL:// Replace NaNs with -INFs
+                    work = replaceAndSlice(values, begin, length, Double.NaN, Double.NEGATIVE_INFINITY);
+                    break;
+                case REMOVED:// Drop NaNs from data
+                    work = removeAndSlice(values, begin, length, Double.NaN);
+                    break;
+                case FAILED:// just throw exception as NaN is un-acceptable
+                    work = copyOf(values, begin, length);
+                    MathArrays.checkNotNaN(work);
+                    break;
+                default: //FIXED
+                    work = copyOf(values,begin,length);
+                    break;
+                }
+            }
+            return work;
+    }
+
+    /**
+     * Make a copy of the array for the slice defined by array part from
+     * [begin, begin+length)
+     * @param values the input array
+     * @param begin start index of the array to include
+     * @param length number of elements to include from begin
+     * @return copy of a slice of the original array
+     */
+    private static double[] copyOf(final double[] values, final int begin, final int length) {
+        MathArrays.verifyValues(values, begin, length);
+        return MathArrays.copyOfRange(values, begin, begin + length);
+    }
+
+    /**
+     * Replace every occurrence of a given value with a replacement value in a
+     * copied slice of array defined by array part from [begin, begin+length).
+     * @param values the input array
+     * @param begin start index of the array to include
+     * @param length number of elements to include from begin
+     * @param original the value to be replaced with
+     * @param replacement the value to be used for replacement
+     * @return the copy of sliced array with replaced values
+     */
+    private static double[] replaceAndSlice(final double[] values,
+                                            final int begin, final int length,
+                                            final double original,
+                                            final double replacement) {
+        final double[] temp = copyOf(values, begin, length);
+        for(int i = 0; i < length; i++) {
+            temp[i] = Precision.equalsIncludingNaN(original, temp[i]) ?
+                      replacement : temp[i];
+        }
+        return temp;
+    }
+
+    /**
+     * Remove the occurrence of a given value in a copied slice of array
+     * defined by the array part from [begin, begin+length).
+     * @param values the input array
+     * @param begin start index of the array to include
+     * @param length number of elements to include from begin
+     * @param removedValue the value to be removed from the sliced array
+     * @return the copy of the sliced array after removing the removedValue
+     */
+    private static double[] removeAndSlice(final double[] values,
+                                           final int begin, final int length,
+                                           final double removedValue) {
+        MathArrays.verifyValues(values, begin, length);
+        final double[] temp;
+        //BitSet(length) to indicate where the removedValue is located
+        final BitSet bits = new BitSet(length);
+        for (int i = begin; i < begin+length; i++) {
+            if (Precision.equalsIncludingNaN(removedValue, values[i])) {
+                bits.set(i - begin);
+            }
+        }
+        //Check if empty then create a new copy
+        if (bits.isEmpty()) {
+            temp = copyOf(values, begin, length); // Nothing removed, just copy
+        } else if(bits.cardinality() == length){
+            temp = new double[0];                 // All removed, just empty
+        }else {                                   // Some removable, so new
+            temp = new double[length - bits.cardinality()];
+            int start = begin;  //start index from source array (i.e values)
+            int dest = 0;       //dest index in destination array(i.e temp)
+            int nextOne = -1;   //nextOne is the index of bit set of next one
+            int bitSetPtr = 0;  //bitSetPtr is start index pointer of bitset
+            while ((nextOne = bits.nextSetBit(bitSetPtr)) != -1) {
+                final int lengthToCopy = nextOne - bitSetPtr;
+                System.arraycopy(values, start, temp, dest, lengthToCopy);
+                dest += lengthToCopy;
+                start = begin + (bitSetPtr = bits.nextClearBit(nextOne));
+            }
+            //Copy any residue past start index till begin+length
+            if (start < begin + length) {
+                System.arraycopy(values,start,temp,dest,begin + length - start);
+            }
+        }
+        return temp;
+    }
+
+    /**
+     * Get pivots which is either cached or a newly created one
+     *
+     * @param values array containing the input numbers
+     * @return cached pivots or a newly created one
+     */
+    private int[] getPivots(final double[] values) {
+        final int[] pivotsHeap;
+        if (values == getDataRef()) {
+            pivotsHeap = cachedPivots;
+        } else {
+            pivotsHeap = new int[PIVOTS_HEAP_LENGTH];
+            Arrays.fill(pivotsHeap, -1);
+        }
+        return pivotsHeap;
+    }
+
+    /**
+     * Get the estimation {@link EstimationType type} used for computation.
+     *
+     * @return the {@code estimationType} set
+     */
+    public EstimationType getEstimationType() {
+        return estimationType;
+    }
+
+    /**
+     * Build a new instance similar to the current one except for the
+     * {@link EstimationType estimation type}.
+     * <p>
+     * This method is intended to be used as part of a fluent-type builder
+     * pattern. Building finely tune instances should be done as follows:
+     * </p>
+     * <pre>
+     *   Percentile customized = new Percentile(quantile).
+     *                           withEstimationType(estimationType).
+     *                           withNaNStrategy(nanStrategy).
+     *                           withKthSelector(kthSelector);
+     * </pre>
+     * <p>
+     * If any of the {@code withXxx} method is omitted, the default value for
+     * the corresponding customization parameter will be used.
+     * </p>
+     * @param newEstimationType estimation type for the new instance
+     * @return a new instance, with changed estimation type
+     * @throws NullArgumentException when newEstimationType is null
+     */
+    public Percentile withEstimationType(final EstimationType newEstimationType) {
+        return new Percentile(quantile, newEstimationType, nanStrategy, kthSelector);
+    }
+
+    /**
+     * Get the {@link NaNStrategy NaN Handling} strategy used for computation.
+     * @return {@code NaN Handling} strategy set during construction
+     */
+    public NaNStrategy getNaNStrategy() {
+        return nanStrategy;
+    }
+
+    /**
+     * Build a new instance similar to the current one except for the
+     * {@link NaNStrategy NaN handling} strategy.
+     * <p>
+     * This method is intended to be used as part of a fluent-type builder
+     * pattern. Building finely tune instances should be done as follows:
+     * </p>
+     * <pre>
+     *   Percentile customized = new Percentile(quantile).
+     *                           withEstimationType(estimationType).
+     *                           withNaNStrategy(nanStrategy).
+     *                           withKthSelector(kthSelector);
+     * </pre>
+     * <p>
+     * If any of the {@code withXxx} method is omitted, the default value for
+     * the corresponding customization parameter will be used.
+     * </p>
+     * @param newNaNStrategy NaN strategy for the new instance
+     * @return a new instance, with changed NaN handling strategy
+     * @throws NullArgumentException when newNaNStrategy is null
+     */
+    public Percentile withNaNStrategy(final NaNStrategy newNaNStrategy) {
+        return new Percentile(quantile, estimationType, newNaNStrategy, kthSelector);
+    }
+
+    /**
+     * Get the {@link KthSelector kthSelector} used for computation.
+     * @return the {@code kthSelector} set
+     */
+    public KthSelector getKthSelector() {
+        return kthSelector;
+    }
+
+    /**
+     * Get the {@link PivotingStrategyInterface} used in KthSelector for computation.
+     * @return the pivoting strategy set
+     */
+    public PivotingStrategyInterface getPivotingStrategy() {
+        return kthSelector.getPivotingStrategy();
+    }
+
+    /**
+     * Build a new instance similar to the current one except for the
+     * {@link KthSelector kthSelector} instance specifically set.
+     * <p>
+     * This method is intended to be used as part of a fluent-type builder
+     * pattern. Building finely tune instances should be done as follows:
+     * </p>
+     * <pre>
+     *   Percentile customized = new Percentile(quantile).
+     *                           withEstimationType(estimationType).
+     *                           withNaNStrategy(nanStrategy).
+     *                           withKthSelector(newKthSelector);
+     * </pre>
+     * <p>
+     * If any of the {@code withXxx} method is omitted, the default value for
+     * the corresponding customization parameter will be used.
+     * </p>
+     * @param newKthSelector KthSelector for the new instance
+     * @return a new instance, with changed KthSelector
+     * @throws NullArgumentException when newKthSelector is null
+     */
+    public Percentile withKthSelector(final KthSelector newKthSelector) {
+        return new Percentile(quantile, estimationType, nanStrategy,
+                                newKthSelector);
+    }
+
+    /**
+     * An enum for various estimation strategies of a percentile referred in
+     * <a href="http://en.wikipedia.org/wiki/Quantile">wikipedia on quantile</a>
+     * with the names of enum matching those of types mentioned in
+     * wikipedia.
+     * <p>
+     * Each enum corresponding to the specific type of estimation in wikipedia
+     * implements  the respective formulae that specializes in the below aspects
+     * <ul>
+     * <li>An <b>index method</b> to calculate approximate index of the
+     * estimate</li>
+     * <li>An <b>estimate method</b> to estimate a value found at the earlier
+     * computed index</li>
+     * <li>A <b> minLimit</b> on the quantile for which first element of sorted
+     * input is returned as an estimate </li>
+     * <li>A <b> maxLimit</b> on the quantile for which last element of sorted
+     * input is returned as an estimate </li>
+     * </ul>
+     * <p>
+     * Users can now create {@link Percentile} by explicitly passing this enum;
+     * such as by invoking {@link Percentile#withEstimationType(EstimationType)}
+     * <p>
+     * References:
+     * <ol>
+     * <li>
+     * <a href="http://en.wikipedia.org/wiki/Quantile">Wikipedia on quantile</a>
+     * </li>
+     * <li>
+     * <a href="https://www.amherst.edu/media/view/129116/.../Sample+Quantiles.pdf">
+     * Hyndman, R. J. and Fan, Y. (1996) Sample quantiles in statistical
+     * packages, American Statistician 50, 361–365</a> </li>
+     * <li>
+     * <a href="http://stat.ethz.ch/R-manual/R-devel/library/stats/html/quantile.html">
+     * R-Manual </a></li>
+     * </ol>
+     *
+     */
+    public static enum EstimationType {
+        /**
+         * This is the default type used in the {@link Percentile}.This method
+         * has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index    = (N+1)p\ \\
+         * &amp;estimate = x_{\lceil h\,-\,1/2 \rceil} \\
+         * &amp;minLimit = 0 \\
+         * &amp;maxLimit = 1 \\
+         * \end{align}\)
+         */
+        LEGACY("Legacy Apache Commons Math") {
+            /**
+             * {@inheritDoc}.This method in particular makes use of existing
+             * Apache Commons Math style of picking up the index.
+             */
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 0d;
+                final double maxLimit = 1d;
+                return Double.compare(p, minLimit) == 0 ? 0 :
+                       Double.compare(p, maxLimit) == 0 ?
+                               length : p * (length + 1);
+            }
+        },
+        /**
+         * The method R_1 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= Np + 1/2\,  \\
+         * &amp;estimate= x_{\lceil h\,-\,1/2 \rceil} \\
+         * &amp;minLimit = 0 \\
+         * \end{align}\)
+         */
+        R_1("R-1") {
+
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 0d;
+                return Double.compare(p, minLimit) == 0 ? 0 : length * p + 0.5;
+            }
+
+            /**
+             * {@inheritDoc}This method in particular for R_1 uses ceil(pos-0.5)
+             */
+            @Override
+            protected double estimate(final double[] values,
+                                      final int[] pivotsHeap, final double pos,
+                                      final int length, final KthSelector kthSelector) {
+                return super.estimate(values, pivotsHeap, FastMath.ceil(pos - 0.5), length, kthSelector);
+            }
+
+        },
+        /**
+         * The method R_2 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= Np + 1/2\, \\
+         * &amp;estimate=\frac{x_{\lceil h\,-\,1/2 \rceil} +
+         * x_{\lfloor h\,+\,1/2 \rfloor}}{2} \\
+         * &amp;minLimit = 0 \\
+         * &amp;maxLimit = 1 \\
+         * \end{align}\)
+         */
+        R_2("R-2") {
+
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 0d;
+                final double maxLimit = 1d;
+                return Double.compare(p, maxLimit) == 0 ? length :
+                       Double.compare(p, minLimit) == 0 ? 0 : length * p + 0.5;
+            }
+
+            /**
+             * {@inheritDoc}This method in particular for R_2 averages the
+             * values at ceil(p+0.5) and floor(p-0.5).
+             */
+            @Override
+            protected double estimate(final double[] values,
+                                      final int[] pivotsHeap, final double pos,
+                                      final int length, final KthSelector kthSelector) {
+                final double low =
+                        super.estimate(values, pivotsHeap, FastMath.ceil(pos - 0.5), length, kthSelector);
+                final double high =
+                        super.estimate(values, pivotsHeap,FastMath.floor(pos + 0.5), length, kthSelector);
+                return (low + high) / 2;
+            }
+
+        },
+        /**
+         * The method R_3 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= Np \\
+         * &amp;estimate= x_{\lfloor h \rceil}\, \\
+         * &amp;minLimit = 0.5/N \\
+         * \end{align}\)
+         */
+        R_3("R-3") {
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 1d/2 / length;
+                return Double.compare(p, minLimit) <= 0 ?
+                        0 : FastMath.rint(length * p);
+            }
+
+        },
+        /**
+         * The method R_4 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= Np\, \\
+         * &amp;estimate= x_{\lfloor h \rfloor} + (h -
+         * \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = 1/N \\
+         * &amp;maxLimit = 1 \\
+         * \end{align}\)
+         */
+        R_4("R-4") {
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 1d / length;
+                final double maxLimit = 1d;
+                return Double.compare(p, minLimit) < 0 ? 0 :
+                       Double.compare(p, maxLimit) == 0 ? length : length * p;
+            }
+
+        },
+        /**
+         * The method R_5 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= Np + 1/2\\
+         * &amp;estimate= x_{\lfloor h \rfloor} + (h -
+         * \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = 0.5/N \\
+         * &amp;maxLimit = (N-0.5)/N
+         * \end{align}\)
+         */
+        R_5("R-5"){
+
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 1d/2 / length;
+                final double maxLimit = (length - 0.5) / length;
+                return Double.compare(p, minLimit) < 0 ? 0 :
+                       Double.compare(p, maxLimit) >= 0 ?
+                               length : length * p + 0.5;
+            }
+        },
+        /**
+         * The method R_6 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index= (N + 1)p \\
+         * &amp;estimate= x_{\lfloor h \rfloor} + (h -
+         * \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = 1/(N+1) \\
+         * &amp;maxLimit = N/(N+1) \\
+         * \end{align}\)
+         * <p>
+         * <b>Note:</b> This method computes the index in a manner very close to
+         * the default Commons Math Percentile existing implementation. However
+         * the difference to be noted is in picking up the limits with which
+         * first element (p&lt;1(N+1)) and last elements (p&gt;N/(N+1))are done.
+         * While in default case; these are done with p=0 and p=1 respectively.
+         */
+        R_6("R-6"){
+
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 1d / (length + 1);
+                final double maxLimit = 1d * length / (length + 1);
+                return Double.compare(p, minLimit) < 0 ? 0 :
+                       Double.compare(p, maxLimit) >= 0 ?
+                               length : (length + 1) * p;
+            }
+        },
+
+        /**
+         * The method R_7 implements Microsoft Excel style computation has the
+         * following formulae for index and estimates.<br>
+         * \( \begin{align}
+         * &amp;index = (N-1)p + 1 \\
+         * &amp;estimate = x_{\lfloor h \rfloor} + (h -
+         * \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = 0 \\
+         * &amp;maxLimit = 1 \\
+         * \end{align}\)
+         */
+        R_7("R-7") {
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 0d;
+                final double maxLimit = 1d;
+                return Double.compare(p, minLimit) == 0 ? 0 :
+                       Double.compare(p, maxLimit) == 0 ?
+                               length : 1 + (length - 1) * p;
+            }
+
+        },
+
+        /**
+         * The method R_8 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index = (N + 1/3)p + 1/3  \\
+         * &amp;estimate = x_{\lfloor h \rfloor} + (h -
+           \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = (2/3)/(N+1/3) \\
+         * &amp;maxLimit = (N-1/3)/(N+1/3) \\
+         * \end{align}\)
+         * <p>
+         * As per Ref [2,3] this approach is most recommended as it provides
+         * an approximate median-unbiased estimate regardless of distribution.
+         */
+        R_8("R-8") {
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 2 * (1d / 3) / (length + 1d / 3);
+                final double maxLimit =
+                        (length - 1d / 3) / (length + 1d / 3);
+                return Double.compare(p, minLimit) < 0 ? 0 :
+                       Double.compare(p, maxLimit) >= 0 ? length :
+                           (length + 1d / 3) * p + 1d / 3;
+            }
+        },
+
+        /**
+         * The method R_9 has the following formulae for index and estimates<br>
+         * \( \begin{align}
+         * &amp;index = (N + 1/4)p + 3/8\\
+         * &amp;estimate = x_{\lfloor h \rfloor} + (h -
+           \lfloor h \rfloor) (x_{\lfloor h \rfloor + 1} - x_{\lfloor h
+         * \rfloor}) \\
+         * &amp;minLimit = (5/8)/(N+1/4) \\
+         * &amp;maxLimit = (N-3/8)/(N+1/4) \\
+         * \end{align}\)
+         */
+        R_9("R-9") {
+            @Override
+            protected double index(final double p, final int length) {
+                final double minLimit = 5d/8 / (length + 0.25);
+                final double maxLimit = (length - 3d/8) / (length + 0.25);
+                return Double.compare(p, minLimit) < 0 ? 0 :
+                       Double.compare(p, maxLimit) >= 0 ? length :
+                               (length + 0.25) * p + 3d/8;
+            }
+
+        },
+        ;
+
+        /** Simple name such as R-1, R-2 corresponding to those in wikipedia. */
+        private final String name;
+
+        /**
+         * Constructor
+         *
+         * @param type name of estimation type as per wikipedia
+         */
+        private EstimationType(final String type) {
+            this.name = type;
+        }
+
+        /**
+         * Finds the index of array that can be used as starting index to
+         * {@link #estimate(double[], int[], double, int, KthSelector) estimate}
+         * percentile. The calculation of index calculation is specific to each
+         * {@link EstimationType}.
+         *
+         * @param p the p<sup>th</sup> quantile
+         * @param length the total number of array elements in the work array
+         * @return a computed real valued index as explained in the wikipedia
+         */
+        protected abstract double index(final double p, final int length);
+
+        /**
+         * Estimation based on K<sup>th</sup> selection. This may be overridden
+         * in specific enums to compute slightly different estimations.
+         *
+         * @param work array of numbers to be used for finding the percentile
+         * @param pos indicated positional index prior computed from calling
+         *            {@link #index(double, int)}
+         * @param pivotsHeap an earlier populated cache if exists; will be used
+         * @param length size of array considered
+         * @param kthSelector a {@link KthSelector} used for pivoting during search
+         * @return estimated percentile
+         */
+        protected double estimate(final double[] work, final int[] pivotsHeap,
+                                  final double pos, final int length,
+                                  final KthSelector kthSelector) {
+
+            final double fpos = FastMath.floor(pos);
+            final int intPos = (int) fpos;
+            final double dif = pos - fpos;
+
+            if (pos < 1) {
+                return kthSelector.select(work, pivotsHeap, 0);
+            }
+            if (pos >= length) {
+                return kthSelector.select(work, pivotsHeap, length - 1);
+            }
+
+            final double lower = kthSelector.select(work, pivotsHeap, intPos - 1);
+            final double upper = kthSelector.select(work, pivotsHeap, intPos);
+            return lower + dif * (upper - lower);
+        }
+
+        /**
+         * Evaluate method to compute the percentile for a given bounded array
+         * using earlier computed pivots heap.<br>
+         * This basically calls the {@link #index(double, int) index} and then
+         * {@link #estimate(double[], int[], double, int, KthSelector) estimate}
+         * functions to return the estimated percentile value.
+         *
+         * @param work array of numbers to be used for finding the percentile
+         * @param pivotsHeap a prior cached heap which can speed up estimation
+         * @param p the p<sup>th</sup> quantile to be computed
+         * @param kthSelector a {@link KthSelector} used for pivoting during search
+         * @return estimated percentile
+         * @throws OutOfRangeException if p is out of range
+         * @throws NullArgumentException if work array is null
+         */
+        protected double evaluate(final double[] work, final int[] pivotsHeap, final double p,
+                                  final KthSelector kthSelector) {
+            MathUtils.checkNotNull(work);
+            if (p > 100 || p <= 0) {
+                throw new OutOfRangeException(LocalizedFormats.OUT_OF_BOUNDS_QUANTILE_VALUE,
+                                              p, 0, 100);
+            }
+            return estimate(work, pivotsHeap, index(p/100d, work.length), work.length, kthSelector);
+        }
+
+        /**
+         * Evaluate method to compute the percentile for a given bounded array.
+         * This basically calls the {@link #index(double, int) index} and then
+         * {@link #estimate(double[], int[], double, int, KthSelector) estimate}
+         * functions to return the estimated percentile value. Please
+         * note that this method does not make use of cached pivots.
+         *
+         * @param work array of numbers to be used for finding the percentile
+         * @param p the p<sup>th</sup> quantile to be computed
+         * @return estimated percentile
+         * @param kthSelector a {@link KthSelector} used for pivoting during search
+         * @throws OutOfRangeException if length or p is out of range
+         * @throws NullArgumentException if work array is null
+         */
+        public double evaluate(final double[] work, final double p, final KthSelector kthSelector) {
+            return this.evaluate(work, null, p, kthSelector);
+        }
+
+        /**
+         * Gets the name of the enum
+         *
+         * @return the name
+         */
+        String getName() {
+            return name;
+        }
+    }
 }

@@ -25,7 +25,6 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
  * <p>
  * The function should be continuous but not necessarily smooth.</p>
  *
- * @version $Id: BisectionSolver.java 1391927 2012-09-30 00:03:30Z erans $
  */
 public class BisectionSolver extends AbstractUnivariateSolver {
     /** Default absolute accuracy. */

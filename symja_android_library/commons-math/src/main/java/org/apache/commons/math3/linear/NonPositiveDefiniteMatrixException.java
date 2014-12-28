@@ -24,7 +24,6 @@ import org.apache.commons.math3.exception.util.ExceptionContext;
  * Exception to be thrown when a positive definite matrix is expected.
  *
  * @since 3.0
- * @version $Id: NonPositiveDefiniteMatrixException.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class NonPositiveDefiniteMatrixException extends NumberIsTooSmallException {
     /** Serializable version Id. */

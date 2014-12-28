@@ -25,7 +25,6 @@ import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiabl
  * Minus function.
  *
  * @since 3.0
- * @version $Id: Minus.java 1424087 2012-12-19 20:32:50Z luc $
  */
 public class Minus implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** {@inheritDoc} */

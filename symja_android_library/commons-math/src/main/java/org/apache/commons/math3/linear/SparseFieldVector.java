@@ -41,7 +41,6 @@ import org.apache.commons.math3.util.OpenIntToFieldHashMap;
  *  thus give incorrect results.
  * </p>
  * @param <T> the type of the field elements
- * @version $Id: SparseFieldVector.java 1570536 2014-02-21 11:26:09Z luc $
  * @since 2.0
  */
 public class SparseFieldVector<T extends FieldElement<T>> implements FieldVector<T>, Serializable {

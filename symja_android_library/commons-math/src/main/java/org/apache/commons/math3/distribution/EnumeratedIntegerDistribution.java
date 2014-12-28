@@ -18,6 +18,7 @@ package org.apache.commons.math3.distribution;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NotANumberException;
@@ -35,7 +36,6 @@ import org.apache.commons.math3.util.Pair;
  * Duplicate values are allowed. Probabilities of duplicate values are combined
  * when computing cumulative probabilities and statistics.</p>
  *
- * @version $Id: EnumeratedIntegerDistribution.java 1456769 2013-03-15 04:51:34Z psteitz $
  * @since 3.2
  */
 public class EnumeratedIntegerDistribution extends AbstractIntegerDistribution {
@@ -52,6 +52,13 @@ public class EnumeratedIntegerDistribution extends AbstractIntegerDistribution {
     /**
      * Create a discrete distribution using the given probability mass function
      * definition.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param singletons array of random variable values.
      * @param probabilities array of probabilities.

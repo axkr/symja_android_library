@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
  * @see UnivariateDifferentiableFunction
  * @see UnivariateFunctionDifferentiator
  * @since 3.1
- * @version $Id: UnivariateDifferentiableFunction.java 1462496 2013-03-29 14:56:08Z psteitz $
  */
 public interface UnivariateDifferentiableFunction extends UnivariateFunction {
 

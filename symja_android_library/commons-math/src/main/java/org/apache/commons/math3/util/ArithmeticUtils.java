@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Some useful, arithmetics related, additions to the built-in functions in
  * {@link Math}.
  *
- * @version $Id: ArithmeticUtils.java 1591835 2014-05-02 09:04:01Z tn $
  */
 public final class ArithmeticUtils {
 

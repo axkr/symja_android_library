@@ -45,7 +45,6 @@ import org.apache.commons.math3.optim.PointVectorValuePair;
  * is faster but QR decomposition is more robust for difficult problems.
  * </p>
  *
- * @version $Id: GaussNewtonOptimizer.java 1515242 2013-08-18 23:27:29Z erans $
  * @since 2.0
  * @deprecated All classes and interfaces in this package are deprecated.
  * The optimizers that were provided here were moved to the

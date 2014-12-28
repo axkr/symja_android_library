@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Exception to be thrown when zero is provided where it is not allowed.
  *
  * @since 2.2
- * @version $Id: ZeroException.java 1504729 2013-07-18 23:54:52Z sebb $
  */
 public class ZeroException extends MathIllegalNumberException {
 

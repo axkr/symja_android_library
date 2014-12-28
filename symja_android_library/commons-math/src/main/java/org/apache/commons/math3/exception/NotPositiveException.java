@@ -22,7 +22,6 @@ import org.apache.commons.math3.exception.util.Localizable;
  * Exception to be thrown when the argument is negative.
  *
  * @since 2.2
- * @version $Id: NotPositiveException.java 1504729 2013-07-18 23:54:52Z sebb $
  */
 public class NotPositiveException extends NumberIsTooSmallException {
     /** Serializable version Id. */

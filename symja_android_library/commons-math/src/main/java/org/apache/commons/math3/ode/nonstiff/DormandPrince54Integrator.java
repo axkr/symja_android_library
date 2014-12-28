@@ -42,7 +42,6 @@ import org.apache.commons.math3.util.FastMath;
  *  volume 6, no 1, 1980, pp. 19-26
  * </pre></p>
  *
- * @version $Id: DormandPrince54Integrator.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 1.2
  */
 

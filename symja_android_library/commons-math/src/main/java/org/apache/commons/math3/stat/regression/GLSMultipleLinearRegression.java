@@ -37,7 +37,6 @@ import org.apache.commons.math3.linear.RealVector;
  * <pre>
  * Var(b)=(X' Omega^-1 X)^-1
  * </pre>
- * @version $Id: GLSMultipleLinearRegression.java 1553598 2013-12-26 22:18:02Z psteitz $
  * @since 2.0
  */
 public class GLSMultipleLinearRegression extends AbstractMultipleLinearRegression {

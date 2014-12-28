@@ -28,7 +28,6 @@ import org.apache.commons.math3.random.Well19937c;
  * @see <a href="http://en.wikipedia.org/wiki/Uniform_distribution_(discrete)"
  * >Uniform distribution (discrete), at Wikipedia</a>
  *
- * @version $Id: UniformIntegerDistribution.java 1510924 2013-08-06 12:22:47Z erans $
  * @since 3.0
  */
 public class UniformIntegerDistribution extends AbstractIntegerDistribution {
@@ -42,6 +41,13 @@ public class UniformIntegerDistribution extends AbstractIntegerDistribution {
     /**
      * Creates a new uniform integer distribution using the given lower and
      * upper bounds (both inclusive).
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
      *
      * @param lower Lower bound (inclusive) of this distribution.
      * @param upper Upper bound (inclusive) of this distribution.
@@ -59,7 +65,7 @@ public class UniformIntegerDistribution extends AbstractIntegerDistribution {
      * @param rng Random number generator.
      * @param lower Lower bound (inclusive) of this distribution.
      * @param upper Upper bound (inclusive) of this distribution.
-     * @throws NumberIsTooLargeException if {@code lower >= upper}.
+     * @throws NumberIsTooLargeException if {@code lower > upper}.
      * @since 3.1
      */
     public UniformIntegerDistribution(RandomGenerator rng,
@@ -68,10 +74,10 @@ public class UniformIntegerDistribution extends AbstractIntegerDistribution {
         throws NumberIsTooLargeException {
         super(rng);
 
-        if (lower >= upper) {
+        if (lower > upper) {
             throw new NumberIsTooLargeException(
                             LocalizedFormats.LOWER_BOUND_NOT_BELOW_UPPER_BOUND,
-                            lower, upper, false);
+                            lower, upper, true);
         }
         this.lower = lower;
         this.upper = upper;

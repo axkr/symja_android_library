@@ -28,7 +28,6 @@ import org.apache.commons.math3.util.Pair;
  * Abramowitz and Stegun, 1964</a>.
  *
  * @since 3.1
- * @version $Id: LegendreRuleFactory.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class LegendreRuleFactory extends BaseRuleFactory<Double> {
     /** {@inheritDoc} */

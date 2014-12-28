@@ -107,7 +107,6 @@ import org.apache.commons.math3.util.FastMath;
  * <ol></td></tr>
  * </table>
  *
- * @version $Id: LevenbergMarquardtOptimizer.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 2.0
  * @deprecated All classes and interfaces in this package are deprecated.
  * The optimizers that were provided here were moved to the

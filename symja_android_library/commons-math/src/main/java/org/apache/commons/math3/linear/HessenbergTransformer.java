@@ -36,7 +36,6 @@ import org.apache.commons.math3.util.Precision;
  *
  * @see <a href="http://mathworld.wolfram.com/HessenbergDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Householder_transformation">Householder Transformations</a>
- * @version $Id: HessenbergTransformer.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 3.1
  */
 class HessenbergTransformer {

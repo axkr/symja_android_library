@@ -29,7 +29,6 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
  * It provides a means to set NumberTransformers that will be selected
  * based on the Class of the object handed to the Maps
  * <code>double transform(Object o)</code> method.
- * @version $Id: TransformerMap.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class TransformerMap implements NumberTransformer, Serializable {
 

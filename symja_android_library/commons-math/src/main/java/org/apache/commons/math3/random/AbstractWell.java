@@ -32,7 +32,6 @@ import org.apache.commons.math3.util.FastMath;
  * are in <a href="http://www.iro.umontreal.ca/~lecuyer/myftp/papers/wellrng-errata.txt">wellrng-errata.txt</a>.</p>
 
  * @see <a href="http://www.iro.umontreal.ca/~panneton/WELLRNG.html">WELL Random number generator</a>
- * @version $Id: AbstractWell.java 1547633 2013-12-03 23:03:06Z tn $
  * @since 2.2
 
  */

@@ -32,7 +32,6 @@ import org.apache.commons.math3.util.FastMath;
  * <p>
  * The function should be integrable.</p>
  *
- * @version $Id: MidPointIntegrator.java 1499813 2013-07-04 17:24:47Z sebb $
  * @since 3.3
  */
 public class MidPointIntegrator extends BaseAbstractUnivariateIntegrator {

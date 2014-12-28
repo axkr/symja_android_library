@@ -27,7 +27,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
 /**
  * Combinatorial utilities.
  *
- * @version $Id$
  * @since 3.3
  */
 public final class CombinatoricsUtils {
@@ -45,10 +44,8 @@ public final class CombinatoricsUtils {
     /** Stirling numbers of the second kind. */
     static final AtomicReference<long[][]> STIRLING_S2 = new AtomicReference<long[][]> (null);
 
-    /** Private constructor. */
-    private CombinatoricsUtils() {
-        super();
-    }
+    /** Private constructor (class contains only static methods). */
+    private CombinatoricsUtils() {}
 
 
     /**

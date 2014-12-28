@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Exception to be thrown when the required data is missing.
  *
  * @since 2.2
- * @version $Id: NoDataException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class NoDataException extends MathIllegalArgumentException {
 

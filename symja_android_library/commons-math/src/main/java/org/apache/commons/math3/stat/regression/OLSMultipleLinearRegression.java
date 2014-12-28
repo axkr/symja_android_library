@@ -49,13 +49,33 @@ import org.apache.commons.math3.stat.descriptive.moment.SecondMoment;
  *
  * <p>Given <code>Q</code> and <code>R</code>, the last equation is solved by back-substitution.</p>
  *
- * @version $Id: OLSMultipleLinearRegression.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public class OLSMultipleLinearRegression extends AbstractMultipleLinearRegression {
 
     /** Cached QR decomposition of X matrix */
     private QRDecomposition qr = null;
+
+    /** Singularity threshold for QR decomposition */
+    private final double threshold;
+
+    /**
+     * Create an empty OLSMultipleLinearRegression instance.
+     */
+    public OLSMultipleLinearRegression() {
+        this(0d);
+    }
+
+    /**
+     * Create an empty OLSMultipleLinearRegression instance, using the given
+     * singularity threshold for the QR decomposition.
+     *
+     * @param threshold the singularity threshold
+     * @since 3.3
+     */
+    public OLSMultipleLinearRegression(final double threshold) {
+        this.threshold = threshold;
+    }
 
     /**
      * Loads model x and y sample data, overriding any previous sample.
@@ -79,7 +99,7 @@ public class OLSMultipleLinearRegression extends AbstractMultipleLinearRegressio
     @Override
     public void newSampleData(double[] data, int nobs, int nvars) {
         super.newSampleData(data, nobs, nvars);
-        qr = new QRDecomposition(getX());
+        qr = new QRDecomposition(getX(), threshold);
     }
 
     /**
@@ -100,6 +120,8 @@ public class OLSMultipleLinearRegression extends AbstractMultipleLinearRegressio
      * a {@code NullPointerException} will be thrown.</p>
      *
      * @return the hat matrix
+     * @throws NullPointerException unless method {@code newSampleData} has been
+     * called beforehand.
      */
     public RealMatrix calculateHat() {
         // Create augmented identity matrix
@@ -211,7 +233,7 @@ public class OLSMultipleLinearRegression extends AbstractMultipleLinearRegressio
     @Override
     protected void newXSampleData(double[][] x) {
         super.newXSampleData(x);
-        qr = new QRDecomposition(getX());
+        qr = new QRDecomposition(getX(), threshold);
     }
 
     /**

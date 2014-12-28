@@ -57,7 +57,6 @@ import org.apache.commons.math3.util.Precision;
  * a1: Artificial variable</br>
  * RHS: Right hand side</br>
  * </p>
- * @version $Id: SimplexTableau.java 1554035 2013-12-29 15:17:45Z luc $
  * @since 2.0
  */
 class SimplexTableau implements Serializable {
@@ -447,7 +446,7 @@ class SimplexTableau implements Serializable {
         Integer negativeVarBasicRow = negativeVarColumn > 0 ? getBasicRow(negativeVarColumn) : null;
         double mostNegative = negativeVarBasicRow == null ? 0 : getEntry(negativeVarBasicRow, getRhsOffset());
 
-        final Set<Integer> basicRows = new HashSet<Integer>();
+        final Set<Integer> usedBasicRows = new HashSet<Integer>();
         final double[] coefficients = new double[getOriginalNumDecisionVariables()];
         for (int i = 0; i < coefficients.length; i++) {
             int colIndex = columnLabels.indexOf("x" + i);
@@ -461,12 +460,12 @@ class SimplexTableau implements Serializable {
                 // set the coefficient to 0 -> this case handles unconstrained
                 // variables that are still part of the objective function
                 coefficients[i] = 0;
-            } else if (basicRows.contains(basicRow)) {
+            } else if (usedBasicRows.contains(basicRow)) {
                 // if multiple variables can take a given value
                 // then we choose the first and set the rest equal to 0
                 coefficients[i] = 0 - (restrictToNonNegative ? 0 : mostNegative);
             } else {
-                basicRows.add(basicRow);
+                usedBasicRows.add(basicRow);
                 coefficients[i] =
                     (basicRow == null ? 0 : getEntry(basicRow, getRhsOffset())) -
                     (restrictToNonNegative ? 0 : mostNegative);

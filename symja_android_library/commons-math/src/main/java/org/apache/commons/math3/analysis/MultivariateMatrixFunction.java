@@ -19,7 +19,6 @@ package org.apache.commons.math3.analysis;
 
 /**
  * An interface representing a multivariate matrix function.
- * @version $Id: MultivariateMatrixFunction.java 1462485 2013-03-29 14:36:19Z psteitz $
  * @since 2.0
  */
 public interface MultivariateMatrixFunction {

@@ -40,7 +40,6 @@ import org.apache.commons.math3.exception.NumberIsTooLargeException;
  *
  * @param <FUNC> Type of the objective function to be optimized.
  *
- * @version $Id: BaseAbstractMultivariateOptimizer.java 1422313 2012-12-15 18:53:41Z psteitz $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.2
  */

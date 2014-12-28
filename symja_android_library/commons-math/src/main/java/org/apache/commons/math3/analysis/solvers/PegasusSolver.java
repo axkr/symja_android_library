@@ -41,7 +41,6 @@ package org.apache.commons.math3.analysis.solvers;
  * 1972.</p>
  *
  * @since 3.0
- * @version $Id: PegasusSolver.java 1364387 2012-07-22 18:14:11Z tn $
  */
 public class PegasusSolver extends BaseSecantSolver {
 

@@ -42,7 +42,6 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * </ul>
  *
  * @since 2.2
- * @version $Id: MultidimensionalCounter.java 1558833 2014-01-16 15:26:29Z erans $
  */
 public class MultidimensionalCounter implements Iterable<Integer> {
     /**

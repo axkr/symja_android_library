@@ -33,7 +33,6 @@ import org.apache.commons.math3.util.FastMath;
  *  Generalised logistic</a> function.
  *
  * @since 3.0
- * @version $Id: Logistic.java 1547633 2013-12-03 23:03:06Z tn $
  */
 public class Logistic implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Lower asymptote. */

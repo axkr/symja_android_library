@@ -28,7 +28,6 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
  * Instances of this class are guaranteed to be immutable.
  * </p>
  * @see SecondaryEquations
- * @version $Id: EquationsMapper.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.0
  */
 public class EquationsMapper implements Serializable {

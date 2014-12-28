@@ -43,7 +43,6 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
  * derivative for all points all have degree 3n-1.
  * </p>
  *
- * @version $Id: HermiteInterpolator.java 1517203 2013-08-24 21:55:35Z psteitz $
  * @since 3.1
  */
 public class HermiteInterpolator implements UnivariateDifferentiableVectorFunction {

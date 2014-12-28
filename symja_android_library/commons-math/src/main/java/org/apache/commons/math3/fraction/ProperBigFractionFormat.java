@@ -33,7 +33,6 @@ import org.apache.commons.math3.exception.NullArgumentException;
  * will result in a <code>ParseException</code>.</p>
  *
  * @since 1.1
- * @version $Id: ProperBigFractionFormat.java 1416643 2012-12-03 19:37:14Z tn $
  */
 public class ProperBigFractionFormat extends BigFractionFormat {
 

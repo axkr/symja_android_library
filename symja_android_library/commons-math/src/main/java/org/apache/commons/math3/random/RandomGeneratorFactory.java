@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.NotStrictlyPositiveException;
  * Utilities for creating {@link RandomGenerator} instances.
  *
  * @since 3.3
- * @version $Id: RandomGeneratorFactory.java 1509230 2013-08-01 13:34:46Z erans $
  */
 public class RandomGeneratorFactory {
     /**

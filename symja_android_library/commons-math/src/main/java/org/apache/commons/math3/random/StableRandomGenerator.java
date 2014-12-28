@@ -29,7 +29,6 @@ import org.apache.commons.math3.util.FastMath;
  * <i>Handbook of computational statistics: concepts and methods</i> by
  * James E. Gentle, Wolfgang H&auml;rdle, Yuichi Mori.</p>
  *
- * @version $Id: StableRandomGenerator.java 1538368 2013-11-03 13:57:37Z erans $
  * @since 3.0
  */
 public class StableRandomGenerator implements NormalizedRandomGenerator {

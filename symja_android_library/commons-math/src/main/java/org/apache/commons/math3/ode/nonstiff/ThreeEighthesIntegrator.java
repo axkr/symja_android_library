@@ -38,7 +38,7 @@ package org.apache.commons.math3.ode.nonstiff;
  * @see ClassicalRungeKuttaIntegrator
  * @see GillIntegrator
  * @see MidpointIntegrator
- * @version $Id: ThreeEighthesIntegrator.java 1416643 2012-12-03 19:37:14Z tn $
+ * @see LutherIntegrator
  * @since 1.2
  */
 

@@ -16,8 +16,8 @@
  */
 package org.apache.commons.math3.distribution;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NotPositiveException;
@@ -29,13 +29,21 @@ import org.apache.commons.math3.util.Pair;
  * This class is mainly syntactic sugar.
  *
  * @see MixtureMultivariateRealDistribution
- * @version $Id: MixtureMultivariateNormalDistribution.java 1517418 2013-08-26 03:18:55Z dbrosius $
  * @since 3.2
  */
 public class MixtureMultivariateNormalDistribution
     extends MixtureMultivariateRealDistribution<MultivariateNormalDistribution> {
+
     /**
      * Creates a multivariate normal mixture distribution.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link org.apache.commons.math3.random.Well19937c Well19937c} as random
+     * generator to be used for sampling only (see {@link #sample()} and
+     * {@link #sample(int)}). In case no sampling is needed for the created
+     * distribution, it is advised to pass {@code null} as random generator via
+     * the appropriate constructors to avoid the additional initialisation
+     * overhead.
      *
      * @param weights Weights of each component.
      * @param means Mean vector for each component.
@@ -50,6 +58,14 @@ public class MixtureMultivariateNormalDistribution
     /**
      * Creates a mixture model from a list of distributions and their
      * associated weights.
+     * <p>
+     * <b>Note:</b> this constructor will implicitly create an instance of
+     * {@link org.apache.commons.math3.random.Well19937c Well19937c} as random
+     * generator to be used for sampling only (see {@link #sample()} and
+     * {@link #sample(int)}). In case no sampling is needed for the created
+     * distribution, it is advised to pass {@code null} as random generator via
+     * the appropriate constructors to avoid the additional initialisation
+     * overhead.
      *
      * @param components List of (weight, distribution) pairs from which to sample.
      */

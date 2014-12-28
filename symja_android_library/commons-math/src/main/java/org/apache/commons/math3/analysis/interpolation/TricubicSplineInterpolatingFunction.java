@@ -34,8 +34,9 @@ import org.apache.commons.math3.util.MathArrays;
  * </quote>
  *
  * @since 2.2
- * @version $Id: TricubicSplineInterpolatingFunction.java 1385314 2012-09-16 16:35:49Z tn $
+ * @deprecated To be removed in 4.0 (see MATH-1166).
  */
+@Deprecated
 public class TricubicSplineInterpolatingFunction
     implements TrivariateFunction {
     /**
@@ -414,7 +415,6 @@ public class TricubicSplineInterpolatingFunction
 /**
  * 3D-spline function.
  *
- * @version $Id: TricubicSplineInterpolatingFunction.java 1385314 2012-09-16 16:35:49Z tn $
  */
 class TricubicSplineFunction
     implements TrivariateFunction {

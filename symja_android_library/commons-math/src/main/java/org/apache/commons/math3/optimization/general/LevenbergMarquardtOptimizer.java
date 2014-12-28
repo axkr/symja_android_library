@@ -101,7 +101,6 @@ import org.apache.commons.math3.util.FastMath;
  *     POSSIBILITY OF SUCH LOSS OR DAMAGES.</strong></li>
  * <ol></td></tr>
  * </table>
- * @version $Id: LevenbergMarquardtOptimizer.java 1591835 2014-05-02 09:04:01Z tn $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  *

@@ -25,7 +25,6 @@ import org.apache.commons.math3.util.Incrementor;
  * @param <PAIR> The type of value the {@link #getConvergenceChecker() convergence
  *               checker} will operate on. It should include the value of the model
  *               function and point where it was evaluated.
- * @version $Id: OptimizationProblem.java 1571015 2014-02-23 14:00:48Z luc $
  * @since 3.3
  */
 public interface OptimizationProblem<PAIR> {

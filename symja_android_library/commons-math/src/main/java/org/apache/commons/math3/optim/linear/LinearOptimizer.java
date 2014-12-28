@@ -26,7 +26,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 /**
  * Base class for implementing linear optimizers.
  *
- * @version $Id: LinearOptimizer.java 1443444 2013-02-07 12:41:36Z erans $
  * @since 3.1
  */
 public abstract class LinearOptimizer

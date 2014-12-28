@@ -92,7 +92,6 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  * </ul>
  * </p>
  * @deprecated to be removed in 4.0.  Use {@link RandomDataGenerator} instead
- * @version $Id: RandomDataImpl.java 1499808 2013-07-04 17:00:42Z sebb $
  */
 @Deprecated
 public class RandomDataImpl implements RandomData, Serializable {

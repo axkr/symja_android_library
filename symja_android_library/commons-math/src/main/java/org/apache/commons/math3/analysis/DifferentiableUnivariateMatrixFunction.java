@@ -19,7 +19,6 @@ package org.apache.commons.math3.analysis;
 /**
  * Extension of {@link UnivariateMatrixFunction} representing a differentiable univariate matrix function.
  *
- * @version $Id: DifferentiableUnivariateMatrixFunction.java 1499808 2013-07-04 17:00:42Z sebb $
  * @since 2.0
  * @deprecated as of 3.1 replaced by  {@link org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableMatrixFunction}
  */

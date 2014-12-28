@@ -26,7 +26,6 @@ import org.apache.commons.math3.optim.OptimizationData;
 /**
  * Class that represents a set of {@link LinearConstraint linear constraints}.
  *
- * @version $Id: LinearConstraintSet.java 1551355 2013-12-16 21:05:01Z tn $
  * @since 3.1
  */
 public class LinearConstraintSet implements OptimizationData {

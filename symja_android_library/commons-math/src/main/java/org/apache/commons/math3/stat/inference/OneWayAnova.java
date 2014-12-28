@@ -16,6 +16,9 @@
  */
 package org.apache.commons.math3.stat.inference;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.DimensionMismatchException;
@@ -23,10 +26,8 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.stat.descriptive.summary.Sum;
-import org.apache.commons.math3.stat.descriptive.summary.SumOfSquares;
-
-import java.util.Collection;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.util.MathUtils;
 
 /**
  * Implements one-way ANOVA (analysis of variance) statistics.
@@ -47,7 +48,6 @@ import java.util.Collection;
  * </pre>
  *
  * @since 1.2
- * @version $Id: OneWayAnova.java 1244107 2012-02-14 16:17:55Z erans $
  */
 public class OneWayAnova {
 
@@ -124,9 +124,89 @@ public class OneWayAnova {
         throws NullArgumentException, DimensionMismatchException,
         ConvergenceException, MaxCountExceededException {
 
-        AnovaStats a = anovaStats(categoryData);
-        FDistribution fdist = new FDistribution(a.dfbg, a.dfwg);
+        final AnovaStats a = anovaStats(categoryData);
+        // No try-catch or advertised exception because args are valid
+        // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
+        final FDistribution fdist = new FDistribution(null, a.dfbg, a.dfwg);
         return 1.0 - fdist.cumulativeProbability(a.F);
+
+    }
+
+    /**
+     * Computes the ANOVA P-value for a collection of {@link SummaryStatistics}.
+     *
+     * <p><strong>Preconditions</strong>: <ul>
+     * <li>The categoryData <code>Collection</code> must contain
+     * {@link SummaryStatistics}.</li>
+     * <li> There must be at least two {@link SummaryStatistics} in the
+     * <code>categoryData</code> collection and each of these statistics must
+     * contain at least two values.</li></ul></p><p>
+     * This implementation uses the
+     * {@link org.apache.commons.math3.distribution.FDistribution
+     * commons-math F Distribution implementation} to estimate the exact
+     * p-value, using the formula<pre>
+     *   p = 1 - cumulativeProbability(F)</pre>
+     * where <code>F</code> is the F value and <code>cumulativeProbability</code>
+     * is the commons-math implementation of the F distribution.</p>
+     *
+     * @param categoryData <code>Collection</code> of {@link SummaryStatistics}
+     * each containing data for one category
+     * @param allowOneElementData if true, allow computation for one catagory
+     * only or for one data element per category
+     * @return Pvalue
+     * @throws NullArgumentException if <code>categoryData</code> is <code>null</code>
+     * @throws DimensionMismatchException if the length of the <code>categoryData</code>
+     * array is less than 2 or a contained {@link SummaryStatistics} does not have
+     * at least two values
+     * @throws ConvergenceException if the p-value can not be computed due to a convergence error
+     * @throws MaxCountExceededException if the maximum number of iterations is exceeded
+     * @since 3.2
+     */
+    public double anovaPValue(final Collection<SummaryStatistics> categoryData,
+                              final boolean allowOneElementData)
+        throws NullArgumentException, DimensionMismatchException,
+               ConvergenceException, MaxCountExceededException {
+
+        final AnovaStats a = anovaStats(categoryData, allowOneElementData);
+        // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
+        final FDistribution fdist = new FDistribution(null, a.dfbg, a.dfwg);
+        return 1.0 - fdist.cumulativeProbability(a.F);
+
+    }
+
+    /**
+     * This method calls the method that actually does the calculations (except
+     * P-value).
+     *
+     * @param categoryData
+     *            <code>Collection</code> of <code>double[]</code> arrays each
+     *            containing data for one category
+     * @return computed AnovaStats
+     * @throws NullArgumentException
+     *             if <code>categoryData</code> is <code>null</code>
+     * @throws DimensionMismatchException
+     *             if the length of the <code>categoryData</code> array is less
+     *             than 2 or a contained <code>double[]</code> array does not
+     *             contain at least two values
+     */
+    private AnovaStats anovaStats(final Collection<double[]> categoryData)
+        throws NullArgumentException, DimensionMismatchException {
+
+        MathUtils.checkNotNull(categoryData);
+
+        final Collection<SummaryStatistics> categoryDataSummaryStatistics =
+                new ArrayList<SummaryStatistics>(categoryData.size());
+
+        // convert arrays to SummaryStatistics
+        for (final double[] data : categoryData) {
+            final SummaryStatistics dataSummaryStatistics = new SummaryStatistics();
+            categoryDataSummaryStatistics.add(dataSummaryStatistics);
+            for (final double val : data) {
+                dataSummaryStatistics.addValue(val);
+            }
+        }
+
+        return anovaStats(categoryDataSummaryStatistics, false);
 
     }
 
@@ -183,77 +263,69 @@ public class OneWayAnova {
      *
      * @param categoryData <code>Collection</code> of <code>double[]</code>
      * arrays each containing data for one category
+     * @param allowOneElementData if true, allow computation for one catagory
+     * only or for one data element per category
      * @return computed AnovaStats
      * @throws NullArgumentException if <code>categoryData</code> is <code>null</code>
-     * @throws DimensionMismatchException if the length of the <code>categoryData</code>
-     * array is less than 2 or a contained <code>double[]</code> array does not contain
+     * @throws DimensionMismatchException if <code>allowOneElementData</code> is false and the number of
+     * categories is less than 2 or a contained SummaryStatistics does not contain
      * at least two values
      */
-    private AnovaStats anovaStats(final Collection<double[]> categoryData)
+    private AnovaStats anovaStats(final Collection<SummaryStatistics> categoryData,
+                                  final boolean allowOneElementData)
         throws NullArgumentException, DimensionMismatchException {
 
-        if (categoryData == null) {
-            throw new NullArgumentException();
-        }
+        MathUtils.checkNotNull(categoryData);
 
-        // check if we have enough categories
-        if (categoryData.size() < 2) {
-            throw new DimensionMismatchException(
-                    LocalizedFormats.TWO_OR_MORE_CATEGORIES_REQUIRED,
-                    categoryData.size(), 2);
-        }
+        if (!allowOneElementData) {
+            // check if we have enough categories
+            if (categoryData.size() < 2) {
+                throw new DimensionMismatchException(LocalizedFormats.TWO_OR_MORE_CATEGORIES_REQUIRED,
+                                                     categoryData.size(), 2);
+            }
 
-        // check if each category has enough data and all is double[]
-        for (double[] array : categoryData) {
-            if (array.length <= 1) {
-                throw new DimensionMismatchException(
-                        LocalizedFormats.TWO_OR_MORE_VALUES_IN_CATEGORY_REQUIRED,
-                        array.length, 2);
+            // check if each category has enough data
+            for (final SummaryStatistics array : categoryData) {
+                if (array.getN() <= 1) {
+                    throw new DimensionMismatchException(LocalizedFormats.TWO_OR_MORE_VALUES_IN_CATEGORY_REQUIRED,
+                                                         (int) array.getN(), 2);
+                }
             }
         }
 
         int dfwg = 0;
         double sswg = 0;
-        Sum totsum = new Sum();
-        SumOfSquares totsumsq = new SumOfSquares();
+        double totsum = 0;
+        double totsumsq = 0;
         int totnum = 0;
 
-        for (double[] data : categoryData) {
+        for (final SummaryStatistics data : categoryData) {
 
-            Sum sum = new Sum();
-            SumOfSquares sumsq = new SumOfSquares();
-            int num = 0;
+            final double sum = data.getSum();
+            final double sumsq = data.getSumsq();
+            final int num = (int) data.getN();
+            totnum += num;
+            totsum += sum;
+            totsumsq += sumsq;
 
-            for (int i = 0; i < data.length; i++) {
-                double val = data[i];
-
-                // within category
-                num++;
-                sum.increment(val);
-                sumsq.increment(val);
-
-                // for all categories
-                totnum++;
-                totsum.increment(val);
-                totsumsq.increment(val);
-            }
             dfwg += num - 1;
-            double ss = sumsq.getResult() - sum.getResult() * sum.getResult() / num;
+            final double ss = sumsq - ((sum * sum) / num);
             sswg += ss;
         }
-        double sst = totsumsq.getResult() - totsum.getResult() *
-            totsum.getResult()/totnum;
-        double ssbg = sst - sswg;
-        int dfbg = categoryData.size() - 1;
-        double msbg = ssbg/dfbg;
-        double mswg = sswg/dfwg;
-        double F = msbg/mswg;
+
+        final double sst = totsumsq - ((totsum * totsum) / totnum);
+        final double ssbg = sst - sswg;
+        final int dfbg = categoryData.size() - 1;
+        final double msbg = ssbg / dfbg;
+        final double mswg = sswg / dfwg;
+        final double F = msbg / mswg;
 
         return new AnovaStats(dfbg, dfwg, F);
+
     }
 
     /**
-        Convenience class to pass dfbg,dfwg,F values around within AnovaImpl.
+        Convenience class to pass dfbg,dfwg,F values around within OneWayAnova.
         No get/set methods provided.
     */
     private static class AnovaStats {

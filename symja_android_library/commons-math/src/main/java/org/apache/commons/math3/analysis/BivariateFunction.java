@@ -21,7 +21,6 @@ package org.apache.commons.math3.analysis;
  * An interface representing a bivariate real function.
  *
  * @since 2.1
- * @version $Id: BivariateFunction.java 1364387 2012-07-22 18:14:11Z tn $
  */
 public interface BivariateFunction {
     /**

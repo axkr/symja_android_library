@@ -35,7 +35,6 @@ import org.apache.commons.math3.optimization.ConvergenceChecker;
  *
  * @param <FUNC> Type of the objective function to be optimized.
  *
- * @version $Id: BaseAbstractMultivariateSimpleBoundsOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.0
  * @deprecated As of 3.1 since the {@link BaseAbstractMultivariateOptimizer

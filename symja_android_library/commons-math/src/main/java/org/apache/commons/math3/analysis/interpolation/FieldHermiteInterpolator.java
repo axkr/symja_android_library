@@ -45,7 +45,6 @@ import org.apache.commons.math3.util.MathUtils;
  *
  * @param <T> Type of the field elements.
  *
- * @version $Id: FieldHermiteInterpolator.java 1455194 2013-03-11 15:45:54Z luc $
  * @since 3.2
  */
 public class FieldHermiteInterpolator<T extends FieldElement<T>> {

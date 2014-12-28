@@ -40,7 +40,6 @@ import org.apache.commons.math3.linear.RealMatrix;
  *
  * @param <FUNC> the type of the objective function to be optimized
  *
- * @version $Id: BaseAbstractMultivariateVectorOptimizer.java 1499808 2013-07-04 17:00:42Z sebb $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.0
  */

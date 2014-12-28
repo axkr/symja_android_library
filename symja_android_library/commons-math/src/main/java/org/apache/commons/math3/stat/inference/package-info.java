@@ -16,8 +16,7 @@
  */
 /**
  *
- *      Classes providing hypothesis testing and confidence interval
- *      construction.
+ *      Classes providing hypothesis testing.
  *
  */
 package org.apache.commons.math3.stat.inference;

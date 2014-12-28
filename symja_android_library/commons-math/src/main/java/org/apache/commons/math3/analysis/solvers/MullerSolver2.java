@@ -43,7 +43,6 @@ import org.apache.commons.math3.util.FastMath;
  * <p>
  * The formulas here do not use divided differences directly.</p>
  *
- * @version $Id: MullerSolver2.java 1379560 2012-08-31 19:40:30Z erans $
  * @since 1.2
  * @see MullerSolver
  */

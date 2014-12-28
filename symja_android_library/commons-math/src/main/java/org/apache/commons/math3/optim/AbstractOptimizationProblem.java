@@ -26,7 +26,6 @@ import org.apache.commons.math3.util.Incrementor;
  * iterations of the algorithm, and storing the convergence checker.
  *
  * @param <PAIR> Type of the point/value pair returned by the optimization algorithm.
- * @version $Id: AbstractOptimizationProblem.java 1571015 2014-02-23 14:00:48Z luc $
  * @since 3.3
  */
 public abstract class AbstractOptimizationProblem<PAIR>

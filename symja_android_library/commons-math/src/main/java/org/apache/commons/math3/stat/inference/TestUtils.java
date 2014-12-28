@@ -17,8 +17,11 @@
 package org.apache.commons.math3.stat.inference;
 
 import java.util.Collection;
+
+import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.InsufficientDataException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.exception.NotPositiveException;
@@ -34,7 +37,6 @@ import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
  * perform inference tests.
  *
  * @since 1.1
- * @version $Id: TestUtils.java 1244130 2012-02-14 17:10:25Z tn $
  */
 public class TestUtils  {
 
@@ -46,6 +48,12 @@ public class TestUtils  {
 
     /** Singleton OneWayAnova instance. */
     private static final OneWayAnova ONE_WAY_ANANOVA = new OneWayAnova();
+
+    /** Singleton G-Test instance. */
+    private static final GTest G_TEST = new GTest();
+
+    /** Singleton K-S test instance */
+    private static final KolmogorovSmirnovTest KS_TEST = new KolmogorovSmirnovTest();
 
     /**
      * Prevent instantiation.
@@ -361,6 +369,178 @@ public class TestUtils  {
         OutOfRangeException, ConvergenceException, MaxCountExceededException {
         return ONE_WAY_ANANOVA.anovaTest(categoryData, alpha);
     }
+
+     /**
+     * @see org.apache.commons.math3.stat.inference.GTest#g(double[], long[])
+     * @since 3.1
+     */
+    public static double g(final double[] expected, final long[] observed)
+        throws NotPositiveException, NotStrictlyPositiveException,
+        DimensionMismatchException {
+        return G_TEST.g(expected, observed);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gTest( double[],  long[] )
+     * @since 3.1
+     */
+    public static double gTest(final double[] expected, final long[] observed)
+        throws NotPositiveException, NotStrictlyPositiveException,
+        DimensionMismatchException, MaxCountExceededException {
+        return G_TEST.gTest(expected, observed);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gTestIntrinsic(double[], long[] )
+     * @since 3.1
+     */
+    public static double gTestIntrinsic(final double[] expected, final long[] observed)
+        throws NotPositiveException, NotStrictlyPositiveException,
+        DimensionMismatchException, MaxCountExceededException {
+        return G_TEST.gTestIntrinsic(expected, observed);
+    }
+
+     /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gTest( double[],long[],double)
+     * @since 3.1
+     */
+    public static boolean gTest(final double[] expected, final long[] observed,
+                                final double alpha)
+        throws NotPositiveException, NotStrictlyPositiveException,
+        DimensionMismatchException, OutOfRangeException, MaxCountExceededException {
+        return G_TEST.gTest(expected, observed, alpha);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gDataSetsComparison(long[], long[])
+     * @since 3.1
+     */
+    public static double gDataSetsComparison(final long[] observed1,
+                                                  final long[] observed2)
+        throws DimensionMismatchException, NotPositiveException, ZeroException {
+        return G_TEST.gDataSetsComparison(observed1, observed2);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#rootLogLikelihoodRatio(long, long, long, long)
+     * @since 3.1
+     */
+    public static double rootLogLikelihoodRatio(final long k11, final long k12, final long k21, final long k22)
+        throws DimensionMismatchException, NotPositiveException, ZeroException {
+        return G_TEST.rootLogLikelihoodRatio(k11, k12, k21, k22);
+    }
+
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gTestDataSetsComparison(long[], long[])
+     * @since 3.1
+     */
+    public static double gTestDataSetsComparison(final long[] observed1,
+                                                        final long[] observed2)
+        throws DimensionMismatchException, NotPositiveException, ZeroException,
+        MaxCountExceededException {
+        return G_TEST.gTestDataSetsComparison(observed1, observed2);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.GTest#gTestDataSetsComparison(long[],long[],double)
+     * @since 3.1
+     */
+    public static boolean gTestDataSetsComparison(final long[] observed1,
+                                                  final long[] observed2,
+                                                  final double alpha)
+        throws DimensionMismatchException, NotPositiveException,
+        ZeroException, OutOfRangeException, MaxCountExceededException {
+        return G_TEST.gTestDataSetsComparison(observed1, observed2, alpha);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovStatistic(RealDistribution, double[])
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovStatistic(RealDistribution dist, double[] data)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovStatistic(dist, data);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovTest(RealDistribution, double[])
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovTest(RealDistribution dist, double[] data)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovTest(dist, data);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovTest(RealDistribution, double[], boolean)
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovTest(RealDistribution dist, double[] data, boolean strict)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovTest(dist, data, strict);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovTest(RealDistribution, double[], double)
+     * @since 3.3
+     */
+    public static boolean kolmogorovSmirnovTest(RealDistribution dist, double[] data, double alpha)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovTest(dist, data, alpha);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovStatistic(double[], double[])
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovStatistic(double[] x, double[] y)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovStatistic(x, y);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovTest(double[], double[])
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovTest(double[] x, double[] y)
+            throws InsufficientDataException, NullArgumentException {
+        return KS_TEST.kolmogorovSmirnovTest(x, y);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#kolmogorovSmirnovTest(double[], double[], boolean)
+     * @since 3.3
+     */
+    public static double kolmogorovSmirnovTest(double[] x, double[] y, boolean strict)
+            throws InsufficientDataException, NullArgumentException  {
+        return KS_TEST.kolmogorovSmirnovTest(x, y, strict);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#exactP(double, int, int, boolean)
+     * @since 3.3
+     */
+    public static double exactP(double d, int m, int n, boolean strict) {
+        return KS_TEST.exactP(d, n, m, strict);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#approximateP(double, int, int)
+     * @since 3.3
+     */
+    public static double approximateP(double d, int n, int m) {
+        return KS_TEST.approximateP(d, n, m);
+    }
+
+    /**
+     * @see org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest#monteCarloP(double, int, int, boolean, int)
+     * @since 3.3
+     */
+    public static double monteCarloP(double d, int n, int m, boolean strict, int iterations) {
+        return KS_TEST.monteCarloP(d, n, m, strict, iterations);
+    }
+
 
     // CHECKSTYLE: resume JavadocMethodCheck
 

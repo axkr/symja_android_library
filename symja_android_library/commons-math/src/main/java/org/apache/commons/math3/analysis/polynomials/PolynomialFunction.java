@@ -36,7 +36,6 @@ import org.apache.commons.math3.util.MathUtils;
  * <a href="http://mathworld.wolfram.com/HornersMethod.html">Horner's Method</a>
  * is used to evaluate the function.</p>
  *
- * @version $Id: PolynomialFunction.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public class PolynomialFunction implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction, Serializable {
     /**

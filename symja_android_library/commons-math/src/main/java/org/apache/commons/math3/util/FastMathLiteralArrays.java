@@ -20,7 +20,6 @@ package org.apache.commons.math3.util;
 /**
  * Utility class for loading tabulated data used by {@link FastMath}.
  *
- * @version $Id: FastMathLiteralArrays.java 1364389 2012-07-22 18:19:26Z tn $
  */
 class FastMathLiteralArrays {
     /** Exponential evaluated at integer values,

@@ -22,7 +22,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * Exception to be thrown when the maximal number of evaluations is exceeded.
  *
  * @since 3.0
- * @version $Id: TooManyEvaluationsException.java 1364378 2012-07-22 17:42:38Z tn $
  */
 public class TooManyEvaluationsException extends MaxCountExceededException {
     /** Serializable version Id. */

@@ -40,7 +40,6 @@ import org.apache.commons.math3.util.Precision;
  * </p>
  * The given interval must bracket the root.
  *
- * @version $Id: BracketingNthOrderBrentSolver.java 1379560 2012-08-31 19:40:30Z erans $
  */
 public class BracketingNthOrderBrentSolver
     extends AbstractUnivariateSolver

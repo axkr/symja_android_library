@@ -32,7 +32,6 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
  * @see Precision
  * @see MathArrays
  *
- * @version $Id: MathUtils.java 1613723 2014-07-26 20:51:41Z psteitz $
  */
 public final class MathUtils {
     /**

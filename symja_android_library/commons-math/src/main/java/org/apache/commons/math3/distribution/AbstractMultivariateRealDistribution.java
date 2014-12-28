@@ -23,7 +23,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 /**
  * Base class for multivariate probability distributions.
  *
- * @version $Id: AbstractMultivariateRealDistribution.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 3.1
  */
 public abstract class AbstractMultivariateRealDistribution

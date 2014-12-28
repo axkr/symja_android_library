@@ -23,7 +23,6 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
 /**
  * Extension of {@link MultivariateFunction} representing a
  * multivariate differentiable real function.
- * @version $Id: MultivariateDifferentiableFunction.java 1462496 2013-03-29 14:56:08Z psteitz $
  * @since 3.1
  */
 public interface MultivariateDifferentiableFunction extends MultivariateFunction {

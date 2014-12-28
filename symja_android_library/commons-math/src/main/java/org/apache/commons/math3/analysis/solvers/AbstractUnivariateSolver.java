@@ -23,7 +23,6 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
  * Base class for solvers.
  *
  * @since 3.0
- * @version $Id: AbstractUnivariateSolver.java 1379560 2012-08-31 19:40:30Z erans $
  */
 public abstract class AbstractUnivariateSolver
     extends BaseAbstractUnivariateSolver<UnivariateFunction>

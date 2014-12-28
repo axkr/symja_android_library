@@ -27,7 +27,6 @@ import org.apache.commons.math3.exception.NumberIsTooSmallException;
  * sample points must be specified on a regular grid.
  *
  * @since 2.2
- * @version $Id: TrivariateGridInterpolator.java 1455194 2013-03-11 15:45:54Z luc $
  */
 public interface TrivariateGridInterpolator {
     /**

@@ -65,7 +65,6 @@ import org.apache.commons.math3.util.FastMath;
  * This example shows that the small step size is really bad, even simply
  * for second order derivative!
  * </p>
- * @version $Id: FiniteDifferencesDifferentiator.java 1420666 2012-12-12 13:33:20Z erans $
  * @since 3.1
  */
 public class FiniteDifferencesDifferentiator

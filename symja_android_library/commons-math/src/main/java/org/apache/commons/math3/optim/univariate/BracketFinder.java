@@ -29,7 +29,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
  * This code is based on a Python implementation (from <em>SciPy</em>,
  * module {@code optimize.py} v0.5).
  *
- * @version $Id: BracketFinder.java 1547633 2013-12-03 23:03:06Z tn $
  * @since 2.2
  */
 public class BracketFinder {
@@ -110,7 +109,10 @@ public class BracketFinder {
      * @throws TooManyEvaluationsException if the maximum number of evaluations
      * is exceeded.
      */
-    public void search(UnivariateFunction func, GoalType goal, double xA, double xB) {
+    public void search(UnivariateFunction func,
+                       GoalType goal,
+                       double xA,
+                       double xB) {
         evaluations.resetCount();
         final boolean isMinim = goal == GoalType.MINIMIZE;
 

@@ -33,7 +33,6 @@ import org.apache.commons.math3.util.Precision;
  * {@code t} is the absolute accuracy.
  * The given interval must bracket the root.
  *
- * @version $Id: BrentSolver.java 1379560 2012-08-31 19:40:30Z erans $
  */
 public class BrentSolver extends AbstractUnivariateSolver {
 

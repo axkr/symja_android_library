@@ -26,7 +26,6 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
 /**
  * Base class for a multivariate scalar function optimizer.
  *
- * @version $Id: MultivariateOptimizer.java 1443444 2013-02-07 12:41:36Z erans $
  * @since 3.1
  */
 public abstract class MultivariateOptimizer
@@ -111,7 +110,7 @@ public abstract class MultivariateOptimizer
      * @throws TooManyEvaluationsException if the maximal number of
      * evaluations is exceeded.
      */
-    protected double computeObjectiveValue(double[] params) {
+    public double computeObjectiveValue(double[] params) {
         super.incrementEvaluationCount();
         return function.value(params);
     }

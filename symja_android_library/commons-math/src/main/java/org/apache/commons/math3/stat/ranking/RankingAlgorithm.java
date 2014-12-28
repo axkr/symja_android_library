@@ -21,7 +21,6 @@ package org.apache.commons.math3.stat.ranking;
  * Interface representing a rank transformation.
  *
  * @since 2.0
- * @version $Id: RankingAlgorithm.java 1244107 2012-02-14 16:17:55Z erans $
  */
 public interface RankingAlgorithm {
     /**

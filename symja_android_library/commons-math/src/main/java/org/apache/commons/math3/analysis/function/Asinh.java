@@ -28,7 +28,6 @@ import org.apache.commons.math3.util.FastMath;
  * Hyperbolic arc-sine function.
  *
  * @since 3.0
- * @version $Id: Asinh.java 1383441 2012-09-11 14:56:39Z luc $
  */
 public class Asinh implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** {@inheritDoc} */

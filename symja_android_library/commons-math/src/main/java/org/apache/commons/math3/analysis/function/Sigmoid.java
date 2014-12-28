@@ -37,7 +37,6 @@ import org.apache.commons.math3.util.FastMath;
  * by the {@link Logistic} class.
  *
  * @since 3.0
- * @version $Id: Sigmoid.java 1513430 2013-08-13 10:46:48Z erans $
  */
 public class Sigmoid implements UnivariateDifferentiableFunction, DifferentiableUnivariateFunction {
     /** Lower asymptote. */

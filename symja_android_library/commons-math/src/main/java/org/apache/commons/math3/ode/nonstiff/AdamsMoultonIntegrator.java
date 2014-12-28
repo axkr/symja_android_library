@@ -153,7 +153,6 @@ import org.apache.commons.math3.util.FastMath;
  * <p>The P<sup>-1</sup>u vector and the P<sup>-1</sup> A P matrix do not depend on the state,
  * they only depend on k and therefore are precomputed once for all.</p>
  *
- * @version $Id: AdamsMoultonIntegrator.java 1463684 2013-04-02 19:04:13Z luc $
  * @since 2.0
  */
 public class AdamsMoultonIntegrator extends AdamsIntegrator {

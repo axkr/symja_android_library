@@ -39,7 +39,6 @@ package org.apache.commons.math3.analysis.solvers;
  * pages 168-174, Springer, 1971.</p>
  *
  * @since 3.0
- * @version $Id: IllinoisSolver.java 1364387 2012-07-22 18:14:11Z tn $
  */
 public class IllinoisSolver extends BaseSecantSolver {
 

@@ -26,7 +26,6 @@ import org.apache.commons.math3.linear.NonSquareMatrixException;
  * <br/>
  * Immutable class.
  *
- * @version $Id: Weight.java 1426759 2012-12-29 13:26:44Z erans $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 3.1
  */

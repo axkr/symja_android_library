@@ -65,7 +65,6 @@ import java.util.Comparator;
  * @see <a href="http://www.jstor.org/stable/2282833">A Computer
  * Method for Calculating Kendall's Tau with Ungrouped Data</a>
  *
- * @version $Id: KendallsCorrelation.java 1548907 2013-12-07 13:08:06Z tn $
  * @since 3.3
  */
 public class KendallsCorrelation {

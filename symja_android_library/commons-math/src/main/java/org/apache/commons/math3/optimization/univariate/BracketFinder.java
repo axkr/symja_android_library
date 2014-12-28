@@ -29,7 +29,6 @@ import org.apache.commons.math3.optimization.GoalType;
  * This code is based on a Python implementation (from <em>SciPy</em>,
  * module {@code optimize.py} v0.5).
  *
- * @version $Id: BracketFinder.java 1547633 2013-12-03 23:03:06Z tn $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.2
  */

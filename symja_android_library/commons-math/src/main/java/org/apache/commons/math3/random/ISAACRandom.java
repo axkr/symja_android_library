@@ -38,7 +38,6 @@ import org.apache.commons.math3.util.FastMath;
  * implementation of the algorithm by Bob Jenkins.
  * <br/>
  *
- * @version $Id: ISAACRandom.java 1547633 2013-12-03 23:03:06Z tn $
  * @since 3.0
  */
 public class ISAACRandom extends BitsStreamGenerator implements Serializable {

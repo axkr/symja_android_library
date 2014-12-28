@@ -36,7 +36,6 @@ import org.apache.commons.math3.util.FastMath;
  * optional preconditioning.
  * </p>
  *
- * @version $Id: NonLinearConjugateGradientOptimizer.java 1462503 2013-03-29 15:48:27Z luc $
  * @deprecated As of 3.1 (to be removed in 4.0).
  * @since 2.0
  *

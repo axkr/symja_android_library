@@ -41,7 +41,6 @@ import org.apache.commons.math3.stat.descriptive.moment.Variance;
  *
  * <p>Non-bias-corrected estimates use <code>n</code> in place of <code>n - 1</code>
  *
- * @version $Id: Covariance.java 1453271 2013-03-06 10:29:51Z luc $
  * @since 2.0
  */
 public class Covariance {

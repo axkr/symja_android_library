@@ -48,7 +48,6 @@ import org.apache.commons.math3.util.FastMath;
  * </quote>
  *
  * @since 3.3
- * @version $Id: HermiteRuleFactory.java 1500018 2013-07-05 14:20:19Z erans $
  */
 public class HermiteRuleFactory extends BaseRuleFactory<Double> {
     /** &pi;<sup>1/2</sup> */

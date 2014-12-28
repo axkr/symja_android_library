@@ -45,7 +45,6 @@ import org.apache.commons.math3.util.FastMath;
  * @see <a href="http://mathworld.wolfram.com/QRDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/QR_decomposition">Wikipedia</a>
  *
- * @version $Id: RRQRDecomposition.java 1570994 2014-02-23 11:10:41Z luc $
  * @since 3.2
  */
 public class RRQRDecomposition extends QRDecomposition {

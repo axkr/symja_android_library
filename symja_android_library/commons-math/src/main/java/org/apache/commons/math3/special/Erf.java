@@ -22,7 +22,6 @@ import org.apache.commons.math3.util.FastMath;
  * This is a utility class that provides computation methods related to the
  * error functions.
  *
- * @version $Id: Erf.java 1538368 2013-11-03 13:57:37Z erans $
  */
 public class Erf {
 

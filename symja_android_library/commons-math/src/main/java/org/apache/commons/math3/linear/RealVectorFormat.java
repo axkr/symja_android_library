@@ -38,7 +38,6 @@ import org.apache.commons.math3.util.CompositeFormat;
  * returned. In the second case, however, the parse position after parsing will be
  * just after the closing curly brace, i.e. just before the trailing space.</p>
  *
- * @version $Id: RealVectorFormat.java 1416643 2012-12-03 19:37:14Z tn $
  * @since 2.0
  */
 public class RealVectorFormat {

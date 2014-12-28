@@ -28,7 +28,6 @@ import org.apache.commons.math3.util.Pair;
  * function.
  *
  * @since 3.1
- * @version $Id: GaussIntegrator.java 1500603 2013-07-08 08:31:49Z luc $
  */
 public class GaussIntegrator {
     /** Nodes. */

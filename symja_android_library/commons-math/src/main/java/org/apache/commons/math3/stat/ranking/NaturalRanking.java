@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math3.exception.MathInternalError;
-import org.apache.commons.math3.random.RandomData;
-import org.apache.commons.math3.random.RandomDataImpl;
+import org.apache.commons.math3.exception.NotANumberException;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.util.FastMath;
 
@@ -34,7 +34,7 @@ import org.apache.commons.math3.util.FastMath;
  * <p>NaNs are treated according to the configured {@link NaNStrategy} and ties
  * are handled using the selected {@link TiesStrategy}.
  * Configuration settings are supplied in optional constructor arguments.
- * Defaults are {@link NaNStrategy#MAXIMAL} and {@link TiesStrategy#AVERAGE},
+ * Defaults are {@link NaNStrategy#FAILED} and {@link TiesStrategy#AVERAGE},
  * respectively. When using {@link TiesStrategy#RANDOM}, a
  * {@link RandomGenerator} may be supplied as a constructor argument.</p>
  * <p>Examples:
@@ -66,12 +66,11 @@ import org.apache.commons.math3.util.FastMath;
  * <td>(6, 5, 7, 8, 5, 9, 2, 2, 5)</td></tr></table></p>
  *
  * @since 2.0
- * @version $Id: NaturalRanking.java 1370149 2012-08-07 08:58:37Z sebb $
  */
 public class NaturalRanking implements RankingAlgorithm {
 
     /** default NaN strategy */
-    public static final NaNStrategy DEFAULT_NAN_STRATEGY = NaNStrategy.MAXIMAL;
+    public static final NaNStrategy DEFAULT_NAN_STRATEGY = NaNStrategy.FAILED;
 
     /** default ties strategy */
     public static final TiesStrategy DEFAULT_TIES_STRATEGY = TiesStrategy.AVERAGE;
@@ -83,7 +82,7 @@ public class NaturalRanking implements RankingAlgorithm {
     private final TiesStrategy tiesStrategy;
 
     /** Source of random data - used only when ties strategy is RANDOM */
-    private final RandomData randomData;
+    private final RandomDataGenerator randomData;
 
     /**
      * Create a NaturalRanking with default strategies for handling ties and NaNs.
@@ -104,7 +103,7 @@ public class NaturalRanking implements RankingAlgorithm {
         super();
         this.tiesStrategy = tiesStrategy;
         nanStrategy = DEFAULT_NAN_STRATEGY;
-        randomData = new RandomDataImpl();
+        randomData = new RandomDataGenerator();
     }
 
     /**
@@ -129,7 +128,7 @@ public class NaturalRanking implements RankingAlgorithm {
         super();
         this.nanStrategy = nanStrategy;
         this.tiesStrategy = tiesStrategy;
-        randomData = new RandomDataImpl();
+        randomData = new RandomDataGenerator();
     }
 
     /**
@@ -142,7 +141,7 @@ public class NaturalRanking implements RankingAlgorithm {
         super();
         this.tiesStrategy = TiesStrategy.RANDOM;
         nanStrategy = DEFAULT_NAN_STRATEGY;
-        randomData = new RandomDataImpl(randomGenerator);
+        randomData = new RandomDataGenerator(randomGenerator);
     }
 
 
@@ -158,7 +157,7 @@ public class NaturalRanking implements RankingAlgorithm {
         super();
         this.nanStrategy = nanStrategy;
         this.tiesStrategy = TiesStrategy.RANDOM;
-        randomData = new RandomDataImpl(randomGenerator);
+        randomData = new RandomDataGenerator(randomGenerator);
     }
 
     /**
@@ -186,6 +185,8 @@ public class NaturalRanking implements RankingAlgorithm {
      *
      * @param data array to be ranked
      * @return array of ranks
+     * @throws NotANumberException if the selected {@link NaNStrategy} is {@code FAILED}
+     * and a {@link Double#NaN} is encountered in the input data
      */
     public double[] rank(double[] data) {
 
@@ -209,6 +210,12 @@ public class NaturalRanking implements RankingAlgorithm {
                 break;
             case FIXED:   // Record positions of NaNs
                 nanPositions = getNanPositions(ranks);
+                break;
+            case FAILED:
+                nanPositions = getNanPositions(ranks);
+                if (nanPositions.size() > 0) {
+                    throw new NotANumberException();
+                }
                 break;
             default: // this should not happen unless NaNStrategy enum is changed
                 throw new MathInternalError();
@@ -345,6 +352,7 @@ public class NaturalRanking implements RankingAlgorithm {
                 Iterator<Integer> iterator = tiesTrace.iterator();
                 long f = FastMath.round(c);
                 while (iterator.hasNext()) {
+                    // No advertised exception because args are guaranteed valid
                     ranks[iterator.next()] =
                         randomData.nextLong(f, f + length - 1);
                 }
