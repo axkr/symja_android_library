@@ -223,10 +223,6 @@ public class UtilityFunctions {
 		return binary($s("PolyLog"), a0, a1);
 	}
 
-	public static IAST ProductLog(final IExpr a) {
-		return unary($s("ProductLog"), a);
-	}
-
 	public static IAST Erfc(final IExpr a) {
 		return unary($s("Erfc"), a);
 	}

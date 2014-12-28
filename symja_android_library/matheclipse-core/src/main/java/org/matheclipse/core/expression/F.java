@@ -579,6 +579,7 @@ public class F {
 	public final static ISymbol PrimitiveRoots = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primitiveroots"
 			: "PrimitiveRoots");
 	public final static ISymbol Product = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "product" : "Product");
+	public final static ISymbol ProductLog = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "productlog" : "ProductLog");
 	public final static ISymbol Quotient = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotient" : "Quotient");
 	public final static ISymbol RandomInteger = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randominteger"
 			: "RandomInteger");
@@ -3373,6 +3374,11 @@ public class F {
 		return binary(Product, a0, a1);
 	}
 
+
+	public static IAST ProductLog(final IExpr a0) {
+		return unary(ProductLog, a0);
+	}
+	
 	/**
 	 * Create a "fractional" number
 	 * 
