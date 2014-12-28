@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -43,14 +43,14 @@ public class MonomialList extends AbstractFunctionEvaluator {
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		IAST vars = F.List();
-		ExprVariables eVar;
+		VariablesSet eVar;
 		if (ast.size() == 2) {
 			// extract all variables from the polynomial expression
-			eVar = new ExprVariables(ast.arg1());
+			eVar = new VariablesSet(ast.arg1());
 			eVar.appendToList(vars);
 		} else {
 			IAST symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
-			eVar = new ExprVariables(symbolList);
+			eVar = new VariablesSet(symbolList);
 			eVar.appendToList(vars);
 		}
 		int termOrder = TermOrder.INVLEX;

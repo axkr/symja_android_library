@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -116,7 +116,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	public static IExpr[] cancelGCD(IExpr poly1, IExpr poly2) throws JASConversionException {
 
 		try {
-			ExprVariables eVar = new ExprVariables(poly1);
+			VariablesSet eVar = new VariablesSet(poly1);
 			eVar.addVarList(poly2);
 			if (eVar.size() == 0) {
 				return null;

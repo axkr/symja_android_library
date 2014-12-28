@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -37,7 +37,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
 
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		for (int i = 2; i < ast.size(); i++) {
 			eVar.addVarList(ast.get(i));
 		}
@@ -65,7 +65,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private IExpr gcdWithOption(final IAST ast, IExpr expr, ExprVariables eVar) {
+	private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar) {
 		final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
@@ -74,7 +74,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private IExpr modulusGCD(final IAST ast, IExpr expr, ExprVariables eVar, IExpr option) {
+	private IExpr modulusGCD(final IAST ast, IExpr expr, VariablesSet eVar, IExpr option) {
 		try {
 			// found "Modulus" option => use ModIntegerRing
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -87,7 +87,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 			GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
 
 			for (int i = 2; i < ast.size() - 1; i++) {
-				eVar = new ExprVariables(ast.get(i));
+				eVar = new VariablesSet(ast.get(i));
 				if (!eVar.isSize(1)) {
 					// gcd only possible for univariate polynomials
 					return null;

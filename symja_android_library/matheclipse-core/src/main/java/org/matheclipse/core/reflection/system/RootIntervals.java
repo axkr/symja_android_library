@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -49,7 +49,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 	public static IAST croots(final IExpr arg, boolean numeric) {
 
 		try {
-			ExprVariables eVar = new ExprVariables(arg);
+			VariablesSet eVar = new VariablesSet(arg);
 			if (!eVar.isSize(1)) {
 				// only possible for univariate polynomials
 				return null;

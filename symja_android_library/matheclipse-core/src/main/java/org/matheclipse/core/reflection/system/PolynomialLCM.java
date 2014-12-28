@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -35,7 +35,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3);
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		for (int i = 2; i < ast.size(); i++) {
 			eVar.addVarList(ast.get(i));
 		}

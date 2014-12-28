@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -41,7 +41,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 		ISymbol x = Validate.checkSymbolType(ast, 3);
 		IExpr expr1 = F.evalExpandAll(ast.arg1());
 		IExpr expr2 = F.evalExpandAll(ast.arg2());
-		ExprVariables eVar = new ExprVariables();
+		VariablesSet eVar = new VariablesSet();
 		eVar.add(x);
 
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);

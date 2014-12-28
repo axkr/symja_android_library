@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -43,7 +43,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 		if (arg2.isTimes()) {
 			// Times(x, y^a,...)
 			IAST arg2AST = (IAST) arg2;
-			ExprVariables eVar = new ExprVariables(arg2AST);
+			VariablesSet eVar = new VariablesSet(arg2AST);
 			listOfVariables = eVar.getVarList();
 			exponents = new long[listOfVariables.size() - 1];
 			for (int i = 0; i < exponents.length; i++) {

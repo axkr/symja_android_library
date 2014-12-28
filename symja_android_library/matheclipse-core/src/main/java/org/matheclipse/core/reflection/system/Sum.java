@@ -17,7 +17,7 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
@@ -62,11 +62,13 @@ public class Sum extends Table implements SumRules {
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
 
+		VariablesSet variablesSet = determineIteratorExprVariables(ast);
+		IAST varList = variablesSet.getVarList();
 		IExpr argN = ast.get(ast.size() - 1);
 		Iterator iterator = null;
 		IExpr temp;
 		if (argN.isList()) {
-			argN = F.eval(argN);
+			argN = evalBlockWithoutReap(argN, varList);
 			iterator = new Iterator((IAST) argN, EvalEngine.get());
 			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
 				IAST resultList = Plus();
@@ -84,9 +86,8 @@ public class Sum extends Table implements SumRules {
 			}
 		}
 
-		// arg1 = evalBlockExpandWithoutReap(ast.arg1(), determineIteratorVariables(ast));
+		// arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
 		if (arg1.isTimes()) {
-			ExprVariables variablesSet = determineIteratorExprVariables(ast);
 			if (variablesSet.size() > 0) {
 				temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
 				if (temp != null) {
@@ -146,10 +147,10 @@ public class Sum extends Table implements SumRules {
 		return null;
 	}
 
-	private IExpr collectConstantFactors(final IAST ast, IAST prod, ExprVariables variablesSet) {
+	private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {
 		IAST filterAST = F.Times();
 		IAST restAST = F.Times();
-		prod.filter(filterAST, restAST, ExprVariables.isFree(variablesSet));
+		prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
 		if (filterAST.size() > 1) {
 			IAST reducedSum = ast.clone();
 			reducedSum.set(1, restAST.getOneIdentity(F.C1));
@@ -220,7 +221,7 @@ public class Sum extends Table implements SumRules {
 				}
 				if (temp != null) {
 					return temp;
-				} 
+				}
 			}
 
 			if (arg1.isPower() && !F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {

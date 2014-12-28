@@ -32,7 +32,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -159,7 +159,7 @@ public class QuineMcCluskyFormula {
 	}
 
 	public static QuineMcCluskyFormula read(IAST orAST) throws BooleanFunctionConversionException {
-		ExprVariables exVar = new ExprVariables(orAST);
+		VariablesSet exVar = new VariablesSet(orAST);
 		IAST vars = exVar.getVarList();
 		if (vars.size() == 1) {
 			throw new BooleanFunctionConversionException();

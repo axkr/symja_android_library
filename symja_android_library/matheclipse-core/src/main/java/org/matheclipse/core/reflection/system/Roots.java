@@ -10,7 +10,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -48,7 +48,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	}
 
 	protected static IAST roots(final IAST ast, boolean numericSolutions) {
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
 			return null;

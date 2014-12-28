@@ -4,7 +4,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import org.matheclipse.core.convert.Expr2Object;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -45,7 +45,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	protected static IAST roots(final IAST ast) {
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
 			return null;

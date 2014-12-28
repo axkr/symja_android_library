@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -40,7 +40,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 			// check for integers not implemented yet
 			return null;
 		}
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (eVar.isSize(0)) {
 			if (ast.arg1().isAtom()) {
 				return F.False;

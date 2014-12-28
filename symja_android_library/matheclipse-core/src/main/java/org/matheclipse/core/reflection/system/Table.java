@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -124,13 +124,13 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Determine all local variables of the iterators starting with index <code>2</code>.
+	 * Determine all local variables of the iterators starting with index <code>2</code> in the given <code>ats</code>.
 	 * 
 	 * @param ast
 	 * @return
 	 */
-	public ExprVariables determineIteratorExprVariables(final IAST ast) {
-		ExprVariables variableList = new ExprVariables();
+	public VariablesSet determineIteratorExprVariables(final IAST ast) {
+		VariablesSet variableList = new VariablesSet();
 		for (int i = 2; i < ast.size(); i++) {
 			if (ast.get(i).isVariable()) {
 				variableList.add((ISymbol) ast.get(i));
@@ -158,14 +158,14 @@ public class Table extends AbstractFunctionEvaluator {
 	 *            a list of symbols which should be used as local variables inside the block
 	 * @return the evaluated object
 	 */
-	public static IExpr evalBlockExpandWithoutReap(IExpr expr, IAST localVariablesList) {
+	public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
 		EvalEngine engine = EvalEngine.get();
 		IAST reapList = engine.getReapList();
 		boolean quietMode = engine.isQuietMode();
 		try {
 			engine.setQuietMode(true);
 			engine.setReapList(null);
-			return engine.evalBlock(F.Expand(expr), localVariablesList);
+			return engine.evalBlock(expr, localVariablesList);
 		} catch (RuntimeException rex) {
 			// ignore
 		} finally {

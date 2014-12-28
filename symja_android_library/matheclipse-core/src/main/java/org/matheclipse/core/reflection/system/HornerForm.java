@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -27,12 +27,12 @@ public class HornerForm extends AbstractFunctionEvaluator {
 		if (arg1.isAST()) {
 
 			IAST poly = (IAST) arg1;
-			ExprVariables eVar;
+			VariablesSet eVar;
 			IAST variables;
 			if (ast.size() == 3) {
 				variables =Validate.checkSymbolOrSymbolList(ast, 2);
 			} else {
-				eVar = new ExprVariables(ast.arg1());
+				eVar = new VariablesSet(ast.arg1());
 				variables = eVar.getVarList();
 			}
 

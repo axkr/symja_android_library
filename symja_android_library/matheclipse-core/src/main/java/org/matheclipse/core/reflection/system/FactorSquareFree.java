@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -25,7 +25,7 @@ public class FactorSquareFree extends Factor {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
-		ExprVariables eVar = new ExprVariables(ast.arg1());
+		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			throw new WrongArgumentType(ast, ast.arg1(), 1, "Factorization only implemented for univariate polynomials");
 		}

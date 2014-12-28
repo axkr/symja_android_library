@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
@@ -68,7 +68,7 @@ public class Polynomial {
 		this(polynomialExpr, variables, true);
 	}
 
-	public Polynomial(final IExpr polynomialExpr, final ExprVariables variables) {
+	public Polynomial(final IExpr polynomialExpr, final VariablesSet variables) {
 		this(polynomialExpr, variables.getVarList(), true);
 	}
 

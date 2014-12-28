@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -36,8 +36,8 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			}
 		} else {
 			if (ast.size() == 2) {
-				ExprVariables eVar;
-				eVar = new ExprVariables(ast.arg1());
+				VariablesSet eVar;
+				eVar = new VariablesSet(ast.arg1());
 				if (!eVar.isSize(1)) {
 					// only possible for univariate polynomials
 					return null;

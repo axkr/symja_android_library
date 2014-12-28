@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.SortedMap;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ExprVariables;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -47,7 +47,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (ast.size() == 3) {
 			variableList = Validate.checkSymbolOrSymbolList(ast, 2);
 		} else {
-			ExprVariables eVar = new ExprVariables(ast.arg1());
+			VariablesSet eVar = new VariablesSet(ast.arg1());
 			if (!eVar.isSize(1)) {
 				// partial fraction only possible for univariate polynomials
 				return null;
