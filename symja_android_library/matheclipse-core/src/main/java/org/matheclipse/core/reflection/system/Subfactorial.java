@@ -22,17 +22,46 @@ public class Subfactorial extends AbstractTrigArg1 {
 	public Subfactorial() {
 	}
 
+	/**
+	 * <p>
+	 * Iterative subfactorial algorithm based on the recurrence: <code>Subfactorial(n) = n * Subfactorial(n-1) + (-1)^n</code>
+	 * </p>
+	 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
+	 * 
+	 * <pre>
+	 * result = 1;
+	 * for (long i = 3; i &lt;= n; i++) {
+	 *   result = (result * i);
+	 *   if (i is ODD) {
+	 *     result = (result - 1);
+	 *   } else {
+	 *     result = (result + 1);
+	 *   }
+	 * }
+	 * </pre>
+	 * 
+	 * @param n
+	 * @return
+	 */
 	private static BigInteger subFactorial(final long n) {
 		if (0L <= n && n <= 2L) {
 			return n != 1L ? BigInteger.ONE : BigInteger.ZERO;
 		}
-		// subFactorial(n) = n*subFactorial(n-1) + (-1)^n.
-		long stub = 1L;
-		if ((n & 1L) == 1L) {
-			// odd n
-			stub = -1L;
+		BigInteger result = BigInteger.ONE;
+		boolean isOdd = true;
+		for (long i = 3; i <= n; i++) {
+			result = BigInteger.valueOf(i).multiply(result);
+			if (isOdd) {
+				// result = (result - 1)
+				result = result.subtract(BigInteger.ONE);
+				isOdd = false;
+			} else {
+				// result = (result + 1)
+				result = result.add(BigInteger.ONE);
+				isOdd = true;
+			}
 		}
-		return BigInteger.valueOf(n).multiply(subFactorial(n - 1)).add(BigInteger.valueOf(stub));
+		return result;
 	}
 
 	@Override
@@ -43,13 +72,8 @@ public class Subfactorial extends AbstractTrigArg1 {
 				BigInteger fac = subFactorial(n);
 				return F.integer(fac);
 			} catch (ArithmeticException ae) {
-				//
 				EvalEngine.get().printMessage("Subfactorial: argument n is to big.");
-			} catch (StackOverflowError soe) {
-				// recurrence resulted in StackOverflowError
-				EvalEngine.get().printMessage("Subfactorial: recurrence caused stack overflow.");
 			}
-
 		}
 		return null;
 	}
