@@ -168,27 +168,8 @@ public class Pattern extends ExprImpl implements IPattern {
 		return PATTERNID;
 	}
 
-	// public boolean isString(final String str) {
-	// if (fSymbol == null) {
-	// return str == null;
-	// }
-	// return fSymbol.toString().equals(str);
-	// }
-
-	// public void setIndex(final int i) {
-	// fIndex = i;
-	// }
-
-	// public String toString() {
-	// if (fCheck == null) {
-	// return fSymbol.toString() + "_";
-	// }
-	// return fSymbol.toString() + "_" + fCheck.toString();
-	// }
-
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		// if (symbolsAsFactoryMethod) {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("$p(");
 		if (fSymbol == null) {
@@ -209,26 +190,13 @@ public class Pattern extends ExprImpl implements IPattern {
 				if ('a' <= ch && ch <= 'z') {
 					if (!fDefault) {
 						if (fCondition == null) {
-							if (ch == 'd' || ch == 'e' || ch == 'i') {
-								return "$p(" + symbolStr + ")";
-							} else {
-								return symbolStr + "_";
-							}
+							return symbolStr + "_";
 						} else if (fCondition == F.SymbolHead) {
-							if (ch == 'x') {
-								return "x_Symbol";
-							} else if (ch == 'y') {
-								return "y_Symbol";
-							} else if (ch == 'z') {
-								return "z_Symbol";
-							}
+							return symbolStr + "_Symbol";
 						}
 					} else {
 						if (fCondition == null) {
-							if (ch == 'd' || ch == 'e' || ch == 'i') {
-							} else {
-								return symbolStr + "_DEFAULT";
-							}
+							return symbolStr + "_DEFAULT";
 						}
 					}
 				}
@@ -265,16 +233,11 @@ public class Pattern extends ExprImpl implements IPattern {
 				}
 			}
 			if (fDefault) {
-				// if (fCondition == null) {
-				// buffer.append(",null");
-				// }
 				buffer.append(",true");
 			}
 		}
 		buffer.append(')');
 		return buffer.toString();
-		// }
-		// return toString();
 	}
 
 	@Override

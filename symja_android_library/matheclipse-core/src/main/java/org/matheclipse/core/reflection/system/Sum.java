@@ -40,7 +40,9 @@ public class Sum extends Table implements SumRules {
 
 	@Override
 	public IAST getRuleAST() {
-		return RULES;
+		IAST rules = RULES1;
+		rules.addAll(RULES2);
+		return rules;
 	}
 
 	public Sum() {

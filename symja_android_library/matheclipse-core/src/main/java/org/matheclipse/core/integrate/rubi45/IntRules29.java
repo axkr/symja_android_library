@@ -87,7 +87,7 @@ ISetDelayed(Int(Times(u_,Power(x_,m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAUL
     Condition(Module(List(Set(v,Sum(Times(Power(x,Plus(m,i)),Plus(Coefficient(u,x,i),Times(Coefficient(u,x,Plus(Times(C1D2,n),i)),Power(x,Times(C1D2,n)))),Power(Plus(a,Times(b,Power(x,n))),p)),List(i,C0,Plus(Times(C1D2,n),Times(CN1,C1)))))),Condition(Int(v,x),SumQ(v))),And(And(And(And(FreeQ(List(a,b,m),x),PolynomialQ(u,x)),EvenQ(n)),NegativeIntegerQ(p)),Less(Less(C0,Exponent(u,x)),n)))),
 ISetDelayed(Int(Times(u_,Power(x_,m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Power(x_,n_))),p_)),x_Symbol),
     Condition(Int(ExpandIntegrand(Times(Power(x,m),u,Power(Plus(a,Times(b,Power(x,n))),p)),x),x),And(And(And(FreeQ(List(a,b,m),x),PolynomialQ(u,x)),PositiveIntegerQ(n)),IntegersQ(m,p)))),
-ISetDelayed(Int(Times(Power(u_,m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_,Times($p(d,true),x_)),n_))),p_)),x_Symbol),
+ISetDelayed(Int(Times(Power(u_,m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Plus(c_,Times(d_DEFAULT,x_)),n_))),p_)),x_Symbol),
     Condition(Module(List(Set(k,Denominator(n))),Times(k,Power(d,CN1),Subst(Int(SimplifyIntegrand(Times(Power(x,Plus(k,Times(CN1,C1))),Power(ReplaceAll(u,Rule(x,Plus(Times(Power(x,k),Power(d,CN1)),Times(CN1,c,Power(d,CN1))))),m),Power(Plus(a,Times(b,Power(x,Times(k,n)))),p)),x),x),x,Power(Plus(c,Times(d,x)),Power(k,CN1))))),And(And(And(FreeQ(List(a,b,c,d,p),x),PolynomialQ(u,x)),IntegerQ(m)),RationalQ(n))))
   );
 }

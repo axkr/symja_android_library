@@ -684,17 +684,17 @@ public class F {
 	public final static ISymbol a = initFinalSymbol("a");
 	public final static ISymbol b = initFinalSymbol("b");
 	public final static ISymbol c = initFinalSymbol("c");
-	public final static ISymbol d = initFinalSymbol("dv");
-	public final static ISymbol e = initFinalSymbol("ev");
+	public final static ISymbol d = initFinalSymbol("d");
+	public final static ISymbol e = initFinalSymbol("e");
 	public final static ISymbol f = initFinalSymbol("f");
 	public final static ISymbol g = initFinalSymbol("g");
 	public final static ISymbol h = initFinalSymbol("h");
-	public final static ISymbol i = initFinalSymbol("iv");
+	public final static ISymbol i = initFinalSymbol("i");
 	public final static ISymbol j = initFinalSymbol("j");
 	public final static ISymbol k = initFinalSymbol("k");
 	public final static ISymbol l = initFinalSymbol("l");
 	public final static ISymbol m = initFinalSymbol("m");
-	public final static ISymbol n = initFinalSymbol("nv");
+	public final static ISymbol n = initFinalSymbol("n");
 	public final static ISymbol o = initFinalSymbol("o");
 	public final static ISymbol p = initFinalSymbol("p");
 	public final static ISymbol q = initFinalSymbol("q");
@@ -711,12 +711,12 @@ public class F {
 	public final static IPattern a_ = initPredefinedPattern(a);
 	public final static IPattern b_ = initPredefinedPattern(b);
 	public final static IPattern c_ = initPredefinedPattern(c);
-	// public final static IPattern d_ = initPredefinedPattern(d);
-	// public final static IPattern e_ = initPredefinedPattern(e);
+	public final static IPattern d_ = initPredefinedPattern(d);
+	public final static IPattern e_ = initPredefinedPattern(e);
 	public final static IPattern f_ = initPredefinedPattern(f);
 	public final static IPattern g_ = initPredefinedPattern(g);
 	public final static IPattern h_ = initPredefinedPattern(h);
-	// public final static IPattern i_ = initPredefinedPattern(i);
+	public final static IPattern i_ = initPredefinedPattern(i);
 	public final static IPattern j_ = initPredefinedPattern(j);
 	public final static IPattern k_ = initPredefinedPattern(k);
 	public final static IPattern l_ = initPredefinedPattern(l);
@@ -735,6 +735,29 @@ public class F {
 	public final static IPattern y_ = initPredefinedPattern(y);
 	public final static IPattern z_ = initPredefinedPattern(z);
 
+	public final static IPattern a_Symbol = new Pattern(a, SymbolHead);
+	public final static IPattern b_Symbol = new Pattern(b, SymbolHead);
+	public final static IPattern c_Symbol = new Pattern(c, SymbolHead);
+	public final static IPattern d_Symbol = new Pattern(d, SymbolHead);
+	public final static IPattern e_Symbol = new Pattern(e, SymbolHead);
+	public final static IPattern f_Symbol = new Pattern(f, SymbolHead);
+	public final static IPattern g_Symbol = new Pattern(g, SymbolHead);
+	public final static IPattern h_Symbol = new Pattern(h, SymbolHead);
+	public final static IPattern i_Symbol = new Pattern(i, SymbolHead);
+	public final static IPattern j_Symbol = new Pattern(j, SymbolHead);
+	public final static IPattern k_Symbol = new Pattern(k, SymbolHead);
+	public final static IPattern l_Symbol = new Pattern(l, SymbolHead);
+	public final static IPattern m_Symbol = new Pattern(m, SymbolHead);
+	public final static IPattern n_Symbol = new Pattern(n, SymbolHead);
+	public final static IPattern o_Symbol = new Pattern(o, SymbolHead);
+	public final static IPattern p_Symbol = new Pattern(p, SymbolHead);
+	public final static IPattern q_Symbol = new Pattern(q, SymbolHead);
+	public final static IPattern r_Symbol = new Pattern(r, SymbolHead);
+	public final static IPattern s_Symbol = new Pattern(s, SymbolHead);
+	public final static IPattern t_Symbol = new Pattern(t, SymbolHead);
+	public final static IPattern u_Symbol = new Pattern(u, SymbolHead);
+	public final static IPattern v_Symbol = new Pattern(v, SymbolHead);
+	public final static IPattern w_Symbol = new Pattern(w, SymbolHead);
 	public final static IPattern x_Symbol = new Pattern(x, SymbolHead);
 	public final static IPattern y_Symbol = new Pattern(y, SymbolHead);
 	public final static IPattern z_Symbol = new Pattern(z, SymbolHead);
@@ -742,9 +765,12 @@ public class F {
 	public final static IPattern a_DEFAULT = new Pattern(a, null, true);
 	public final static IPattern b_DEFAULT = new Pattern(b, null, true);
 	public final static IPattern c_DEFAULT = new Pattern(c, null, true);
+	public final static IPattern d_DEFAULT = new Pattern(d, null, true);
+	public final static IPattern e_DEFAULT = new Pattern(e, null, true);
 	public final static IPattern f_DEFAULT = new Pattern(f, null, true);
 	public final static IPattern g_DEFAULT = new Pattern(g, null, true);
 	public final static IPattern h_DEFAULT = new Pattern(h, null, true);
+	public final static IPattern i_DEFAULT = new Pattern(i, null, true);
 	public final static IPattern j_DEFAULT = new Pattern(j, null, true);
 	public final static IPattern k_DEFAULT = new Pattern(k, null, true);
 	public final static IPattern l_DEFAULT = new Pattern(l, null, true);
@@ -3374,11 +3400,10 @@ public class F {
 		return binary(Product, a0, a1);
 	}
 
-
 	public static IAST ProductLog(final IExpr a0) {
 		return unary(ProductLog, a0);
 	}
-	
+
 	/**
 	 * Create a "fractional" number
 	 * 

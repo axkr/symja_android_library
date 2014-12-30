@@ -8,24 +8,26 @@ import org.matheclipse.core.interfaces.IAST;
  * See GIT repository at: <a href="https://bitbucket.org/axelclk/symjaunittests">https://bitbucket.org/axelclk/symjaunittests</a>.
  */
 public interface SumRules {
-  final public static IAST RULES = List(
-    ISetDelayed(Sum(Power($p(i),CN1),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+  final public static IAST RULES1 = List(
+    ISetDelayed(Sum(Power(i_,CN1),List(i_Symbol,C1,n_Symbol)),
       Condition(HarmonicNumber(n),FreeQ(n,i))),
-    ISetDelayed(Sum(Power($p(i),$p(k,IntegerQ)),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Power(i_,$p(k,IntegerQ)),List(i_Symbol,C1,n_Symbol)),
       Condition(HarmonicNumber(n,Times(CN1,k)),And(FreeQ(n,i),Negative(k)))),
-    ISetDelayed(Sum(Power($p(i),k_),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Power(i_,k_),List(i_Symbol,C1,n_Symbol)),
       Condition(HarmonicNumber(n,Times(CN1,k)),And(FreeQ(n,i),Equal(Head(k),Rational)))),
-    ISetDelayed(Sum(Power(c_,$p(i)),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,n_Symbol)),
       Condition(Times(c,Plus(Power(c,n),Times(CN1,C1)),Power(Plus(c,Times(CN1,C1)),CN1)),And(FreeQ(c,i),FreeQ(n,i)))),
-    ISetDelayed(Sum(Ceiling(Log($p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Times(CN1,C1)),CN1)),Times(Plus(n,Times(CN1,Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
-    ISetDelayed(Sum(Ceiling(Log(a_,$p(i))),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Ceiling(Log(a_,i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(a,Times(CN1,C1)),CN1)),Times(Plus(n,Times(CN1,Power(a,Floor(Log(a,n))))),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i)))),
-    ISetDelayed(Sum(Factorial($p(i)),List($p(i, SymbolHead),C1,$p(n, SymbolHead))),
-      Condition(Plus(Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(Times(CN1,n),Times(CN1,C2)))),Times(CN1,Subfactorial(CN1)),Times(CN1,C1)),FreeQ(n,i))),
-    ISetDelayed(Sum(Binomial(n_,$p(i)),List($p(i, SymbolHead),C0,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Factorial(i_),List(i_Symbol,C1,n_Symbol)),
+      Condition(Plus(Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(Times(CN1,n),Times(CN1,C2)))),Times(CN1,Subfactorial(CN1)),Times(CN1,C1)),FreeQ(n,i)))
+  );
+  final public static IAST RULES2 = List(
+    ISetDelayed(Sum(Binomial(n_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Power(C2,n),FreeQ(n,i))),
-    ISetDelayed(Sum(Times($p(i),Binomial(n_,$p(i))),List($p(i, SymbolHead),C0,$p(n, SymbolHead))),
+    ISetDelayed(Sum(Times(i_,Binomial(n_,i_)),List(i_Symbol,C0,n_Symbol)),
       Condition(Times(n,Power(C2,Plus(n,Times(CN1,C1)))),FreeQ(n,i)))
   );
 }

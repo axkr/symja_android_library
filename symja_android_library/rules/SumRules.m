@@ -1,4 +1,5 @@
 {
+{
 
 Sum(i_^(-1), {i_Symbol,1,n_Symbol}) := HarmonicNumber(n) 
   /; FreeQ(n,i),
@@ -22,12 +23,14 @@ Sum(Ceiling(Log(a_,i_)), {i_Symbol,1,n_Symbol}):=
 
 Sum(i_!, {i_Symbol,1,n_Symbol}):=
   Gamma(n+2)*(-1)^(n+1)*Subfactorial(-n-2)-Subfactorial(-1)-1 
-  /; FreeQ(n,i),
+  /; FreeQ(n,i)
   
+},{
 Sum(Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := 2^n
   /; FreeQ(n,i),
   
 Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := n*2^(n-1)
   /; FreeQ(n,i)
   
+}
 }

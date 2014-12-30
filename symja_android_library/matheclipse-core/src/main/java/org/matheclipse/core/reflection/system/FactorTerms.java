@@ -70,7 +70,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			return result;
 		} catch (JASConversionException e) {
 			// if (Config.DEBUG) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			// }
 		}
 		return null;
