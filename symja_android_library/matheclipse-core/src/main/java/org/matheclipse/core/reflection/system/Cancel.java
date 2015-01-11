@@ -93,7 +93,8 @@ public class Cancel extends AbstractFunctionEvaluator {
 				if (!denParts0.equals(F.C1)) {
 					IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);
 					if (result != null) {
-						return F.Times(result[0], result[1], numParts[1], F.Power(F.Times(result[2], denParts[1]), F.CN1));
+						return F.Times(result[0], result[1], numParts[1].getOneIdentity(F.C1),
+								F.Power(F.Times(result[2], denParts[1].getOneIdentity(F.C1)), F.CN1));
 					}
 				}
 			}

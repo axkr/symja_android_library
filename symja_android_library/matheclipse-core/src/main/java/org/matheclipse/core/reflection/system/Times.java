@@ -246,13 +246,17 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		if (ast.size() > 2) {
+		int size = ast.size();
+		if (size == 1) {
+			return F.C1;
+		}
+		if (size > 2) {
 			IAST temp = evaluateHashs(ast);
 			if (temp != null) {
 				return temp;
 			}
 		}
-		if (ast.size() == 3) {
+		if (size == 3) {
 			if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
 				// distribute the number over the sum:
 				final IAST arg2 = (IAST) ast.arg2();
@@ -261,7 +265,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return binaryOperator(ast.arg1(), ast.arg2());
 		}
 
-		if (ast.size() > 3) {
+		if (size > 3) {
 			final ISymbol sym = ast.topHead();
 			final IAST result = F.ast(sym);
 			IExpr tres;

@@ -124,6 +124,9 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		int size = ast.size();
+		if (size == 1) {
+			return F.C0;
+		}
 		if (ast.isEvalFlagOff(IAST.IS_EVALED)) {
 			if (size > 2) {
 				PlusOp plusOp = new PlusOp(size);
