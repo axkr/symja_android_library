@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -25,7 +27,7 @@ public class GCD extends AbstractArgMultiple {
 
 	/**
 	 * Compute gcd of 2 integer numbers
-	 *
+	 * 
 	 */
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
@@ -35,6 +37,14 @@ public class GCD extends AbstractArgMultiple {
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+	}
+
+	@Override
+	public IExpr evaluate(IAST ast) {
+		if (ast.size() == 1) {
+			return F.C0;
+		}
+		return super.evaluate(ast);
 	}
 
 }
