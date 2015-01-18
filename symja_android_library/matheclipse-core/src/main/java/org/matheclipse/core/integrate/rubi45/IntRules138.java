@@ -15,10 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class IntRules138 { 
   public static IAST RULES = List( 
-ISetDelayed(Int(Times(u_DEFAULT,Power(Plus(Times(a_DEFAULT,Power(x_,m_DEFAULT)),Times(b_DEFAULT,Sqrt(Times(c_DEFAULT,Power(x_,n_))))),CN1)),x_Symbol),
-    Condition(Int(Times(u,Plus(Times(a,Power(x,m)),Times(CN1,b,Sqrt(Times(c,Power(x,n))))),Power(Plus(Times(Sqr(a),Power(x,Times(C2,m))),Times(CN1,Sqr(b),c,Power(x,n))),CN1)),x),FreeQ(List(a,b,c,m,n),x))),
-ISetDelayed(Int(u_,x_Symbol),
-    Module(List(Set($s("lst"),FunctionOfLinear(u,x))),Condition(Dist(Power(Part($s("lst"),C3),CN1),Subst(Int(Part($s("lst"),C1),x),x,Plus(Part($s("lst"),C2),Times(Part($s("lst"),C3),x))),x),Not(FalseQ($s("lst")))))),
 ISetDelayed(Int(Times(u_,Power(x_,CN1)),x_Symbol),
     Condition(Module(List(Set($s("lst"),PowerVariableExpn(u,C0,x))),Condition(Times(Power(Part($s("lst"),C2),CN1),Subst(Int(NormalizeIntegrand(Simplify(Times(Part($s("lst"),C1),Power(x,CN1))),x),x),x,Power(Times(Part($s("lst"),C3),x),Part($s("lst"),C2)))),And(Not(FalseQ($s("lst"))),NonzeroQ(Part($s("lst"),C2))))),And(NonsumQ(u),Not(RationalFunctionQ(u,x))))),
 ISetDelayed(Int(Times(u_,Power(x_,m_DEFAULT)),x_Symbol),

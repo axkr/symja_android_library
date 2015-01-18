@@ -29,10 +29,6 @@ ISetDelayed(Int(Times(u_,Log(Times(c_DEFAULT,Power(Plus(a_DEFAULT,Times(b_DEFAUL
     Condition(Module(List(Set(v,ExpandIntegrand(Log(Times(c,Power(Plus(a,Times(b,Power(x,n))),p))),u,x))),Condition(Int(v,x),SumQ(v))),FreeQ(List(a,b,c,n,p),x))),
 ISetDelayed(Int(Times(u_,Power(Log(Times(e_DEFAULT,Power(Times($p("e1",true),Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_)),$p("n1",true)),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),$p("n2"))),n_DEFAULT))),p_DEFAULT)),x_Symbol),
     Condition(Module(List(Set(v,ExpandIntegrand(Power(Log(Times(e,Power(Times($s("e1"),Power(Plus(a,Times(b,x)),$s("n1")),Power(Plus(c,Times(d,x)),$s("n2"))),n))),p),u,x))),Condition(Int(v,x),SumQ(v))),FreeQ(List(a,b,c,d,e,n,$s("e1"),$s("n1"),p),x))),
-ISetDelayed(Int(Times(u_,Power(y_,CN1)),x_Symbol),
-    Module(List(Set(q,DerivativeDivides(y,u,x))),Condition(Times(q,Log(RemoveContent(y,x))),Not(FalseQ(q))))),
-ISetDelayed(Int(Times(u_,Power(Times(w_,y_),CN1)),x_Symbol),
-    Module(List(Set(q,DerivativeDivides(Times(y,w),u,x))),Condition(Times(q,Log(RemoveContent(Times(y,w),x))),Not(FalseQ(q))))),
 ISetDelayed(Int(Times(u_,Power(y_,m_DEFAULT)),x_Symbol),
     Condition(Module(List(Set(q,DerivativeDivides(y,u,x))),Condition(Times(q,Power(y,Plus(m,C1)),Power(Plus(m,C1),CN1)),Not(FalseQ(q)))),And(FreeQ(m,x),NonzeroQ(Plus(m,C1))))),
 ISetDelayed(Int(Times(u_,Power(y_,m_DEFAULT),Power(z_,n_DEFAULT)),x_Symbol),
@@ -134,6 +130,10 @@ ISetDelayed(Int(Times(u_,Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_DEFAULT
 ISetDelayed(Int(Times(u_,Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_DEFAULT)),Times(c_DEFAULT,Power(x_,j_DEFAULT))),CN1)),x_Symbol),
     Condition(Int(RationalFunctionExpand(Times(u,Power(Plus(a,Times(b,Power(x,n)),Times(c,Power(x,Times(C2,n)))),CN1)),x),x),And(And(FreeQ(List(a,b,c),x),ZeroQ(Plus(j,Times(CN1,C2,n)))),PositiveIntegerQ(n)))),
 ISetDelayed(Int(Times(u_,Power(v_,p_)),x_Symbol),
-    Condition(Module(List(Set(m,Exponent(u,x)),Set(n,Exponent(v,x))),Condition(Module(List(Set(c,Times(Coefficient(u,x,m),Power(Times(Coefficient(v,x,n),Plus(m,C1,Times(n,p))),CN1))),w),CompoundExpression(CompoundExpression(Set(c,Times(Coefficient(u,x,m),Power(Times(Coefficient(v,x,n),Plus(m,C1,Times(n,p))),CN1))),Set(w,Apart(Plus(u,Times(CN1,c,Power(x,Plus(m,Times(CN1,n))),Plus(Times(Plus(m,Times(CN1,n),C1),v),Times(Plus(p,C1),x,D(v,x))))),x))),If(ZeroQ(w),Times(c,Power(x,Plus(m,Times(CN1,n),C1)),Power(v,Plus(p,C1))),Plus(Times(c,Power(x,Plus(m,Times(CN1,n),C1)),Power(v,Plus(p,C1))),Int(Times(w,Power(v,p)),x))))),And(And(And(GreaterEqual(Plus(m,C1),n),Greater(n,C1)),Less(Plus(m,Times(n,p)),CN1)),FalseQ(DerivativeDivides(v,u,x))))),And(And(And(And(And(And(RationalQ(p),Less(p,CN1)),PolynomialQ(u,x)),PolynomialQ(v,x)),SumQ(v)),Not(And(MonomialQ(u,x),BinomialQ(v,x)))),Not(And(ZeroQ(Coefficient(u,x,C0)),ZeroQ(Coefficient(v,x,C0)))))))
+    Condition(Module(List(Set(m,Exponent(u,x)),Set(n,Exponent(v,x))),Condition(Module(List(Set(c,Times(Coefficient(u,x,m),Power(Times(Coefficient(v,x,n),Plus(m,C1,Times(n,p))),CN1))),w),CompoundExpression(CompoundExpression(Set(c,Times(Coefficient(u,x,m),Power(Times(Coefficient(v,x,n),Plus(m,C1,Times(n,p))),CN1))),Set(w,Apart(Plus(u,Times(CN1,c,Power(x,Plus(m,Times(CN1,n))),Plus(Times(Plus(m,Times(CN1,n),C1),v),Times(Plus(p,C1),x,D(v,x))))),x))),If(ZeroQ(w),Times(c,Power(x,Plus(m,Times(CN1,n),C1)),Power(v,Plus(p,C1))),Plus(Times(c,Power(x,Plus(m,Times(CN1,n),C1)),Power(v,Plus(p,C1))),Int(Times(w,Power(v,p)),x))))),And(And(And(GreaterEqual(Plus(m,C1),n),Greater(n,C1)),Less(Plus(m,Times(n,p)),CN1)),FalseQ(DerivativeDivides(v,u,x))))),And(And(And(And(And(And(RationalQ(p),Less(p,CN1)),PolynomialQ(u,x)),PolynomialQ(v,x)),SumQ(v)),Not(And(MonomialQ(u,x),BinomialQ(v,x)))),Not(And(ZeroQ(Coefficient(u,x,C0)),ZeroQ(Coefficient(v,x,C0))))))),
+ISetDelayed(Int(Times(u_DEFAULT,Power(Plus(Times(a_DEFAULT,Power(x_,m_DEFAULT)),Times(b_DEFAULT,Sqrt(Times(c_DEFAULT,Power(x_,n_))))),CN1)),x_Symbol),
+    Condition(Int(Times(u,Plus(Times(a,Power(x,m)),Times(CN1,b,Sqrt(Times(c,Power(x,n))))),Power(Plus(Times(Sqr(a),Power(x,Times(C2,m))),Times(CN1,Sqr(b),c,Power(x,n))),CN1)),x),FreeQ(List(a,b,c,m,n),x))),
+ISetDelayed(Int(u_,x_Symbol),
+    Module(List(Set($s("lst"),FunctionOfLinear(u,x))),Condition(Dist(Power(Part($s("lst"),C3),CN1),Subst(Int(Part($s("lst"),C1),x),x,Plus(Part($s("lst"),C2),Times(Part($s("lst"),C3),x))),x),Not(FalseQ($s("lst"))))))
   );
 }
