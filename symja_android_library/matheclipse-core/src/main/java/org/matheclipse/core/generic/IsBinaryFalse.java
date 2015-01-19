@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Check if the evaluation of a binary AST object gives <code>False</code>
  * 
  */
-public class IsBinaryFalse<E extends IExpr> extends ExprComparator implements  BiPredicate<E>  {
+public class IsBinaryFalse<E extends IExpr> extends ExprComparator implements BiPredicate<E> {
 	protected final EvalEngine fEngine;
 
 	protected final IAST fAST;
@@ -19,34 +19,31 @@ public class IsBinaryFalse<E extends IExpr> extends ExprComparator implements  B
 	 * Define a binary AST with the header <code>head</code>.
 	 * 
 	 * @param head
-	 *          the AST's head expresion
+	 *            the AST's head expresion
 	 */
 	public IsBinaryFalse(final IExpr head) {
 		fEngine = EvalEngine.get();
-		fAST = F.ast(head, 1, false);
+		fAST = F.ast(head, 2, true);
 	}
 
 	/**
-	 * Check if the evaluation of a binary AST object gives <code>False</code>
-	 * by settings it's first argument to <code>firstArg</code> and settings
-	 * it's second argument to <code>secondArg</code>
+	 * Check if the evaluation of a binary AST object gives <code>False</code> by settings it's first argument to
+	 * <code>firstArg</code> and settings it's second argument to <code>secondArg</code>
 	 * 
 	 */
 	public boolean apply(final IExpr firstArg, final IExpr secondArg) {
-		final IAST ast = fAST.clone();
-		ast.add(firstArg);
-		ast.add(secondArg);
-		if (fEngine.evaluate(ast).equals(F.False)) {
+		fAST.set(1, firstArg);
+		fAST.set(2, secondArg);
+		if (fEngine.evaluate(fAST).equals(F.False)) {
 			return true;
 		}
 		return false;
 	}
 
 	public int compare(final IExpr firstArg, final IExpr secondArg) {
-		final IAST ast = fAST.clone();
-		ast.add(firstArg);
-		ast.add(secondArg);
-		IExpr temp = fEngine.evaluate(ast);
+		fAST.set(1, firstArg);
+		fAST.set(2, secondArg);
+		IExpr temp = fEngine.evaluate(fAST);
 		if (temp.equals(F.False)) {
 			return 1;
 		}

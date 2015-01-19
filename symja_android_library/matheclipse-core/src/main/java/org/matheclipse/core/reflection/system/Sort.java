@@ -15,18 +15,23 @@ public class Sort extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		
+
 		if (ast.arg1().isAST()) {
 			final IAST shallowCopy = ((IAST) ast.arg1()).clone();
 			if (shallowCopy.size() <= 2) {
 				return shallowCopy;
 			}
-			if (ast.size() == 2) {
-				EvaluationSupport.sort(shallowCopy);
-			} else if (ast.arg2().isSymbol()) {
-				EvaluationSupport.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
+			try {
+				if (ast.size() == 2) {
+					EvaluationSupport.sort(shallowCopy);
+				} else {
+					// use the 2nd argument as a head for the comparator operation:
+					EvaluationSupport.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
+				}
+				return shallowCopy;
+			} catch (Exception ex) {
+
 			}
-			return shallowCopy;
 		}
 
 		return null;
