@@ -894,7 +894,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					fTraceStack.add(temp);
 				}
 				IExpr result = temp;
-				int iterationCounter = 2;
+				int iterationCounter = 1;
 				do {
 					temp = result.evaluate(this);
 					if (temp != null) {
@@ -914,6 +914,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						}
 					}
 				} while (temp != null);
+				// System.out.println("(0):" + expr.toString());
+				// System.out.println("(" + iterationCounter + ") --> " + result.toString());
 				return result;
 			}
 			return null;

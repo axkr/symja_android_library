@@ -154,6 +154,9 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				}
 				result.add(F.eval(temp));
 			} else {
+				// ElementaryIntegration<BigRational> ei = new ElementaryIntegration<BigRational>(BigRational.ZERO);
+				// Integral<BigRational> integral= ei.integrate(genPolynomial, Di_1);
+				// System.out.println(integral);
 				temp = F.eval(F.Times(jas.poly2Expr(genPolynomial), F.Power(jas.poly2Expr(Di_1), F.integer(j * (-1L)))));
 				if (!temp.equals(F.C0)) {
 					if (temp.isAST()) {
@@ -166,12 +169,10 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
@@ -191,12 +192,10 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
