@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -12,14 +12,14 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * 
  */
-public class Nor extends AbstractFunctionEvaluator {
-	public Nor() {
+public class Nand extends AbstractFunctionEvaluator {
+	public Nand() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() == 1) {
-			return F.True;
+			return F.False;
 		}
 		if (ast.size() == 2) {
 			return F.Not(ast.arg1());
@@ -29,9 +29,9 @@ public class Nor extends AbstractFunctionEvaluator {
 
 		for (int i = 1; i < ast.size(); i++) {
 			IExpr temp = F.eval(ast.get(i));
-			if (temp.isTrue()) {
-				return F.False;
-			} else if (temp.isFalse()) {
+			if (temp.isFalse()) {
+				return F.True;
+			} else if (temp.isTrue()) {
 				evaled = true;
 			} else {
 				result.add(temp);
@@ -39,10 +39,10 @@ public class Nor extends AbstractFunctionEvaluator {
 		}
 		if (evaled) {
 			if (result.size() == 1) {
-				return F.True;
+				return F.False;
 			}
 			if (result.size() == 2) {
-				return F.Not(ast.arg1());
+				return F.Not(result.arg1());
 			}
 			return result;
 		}

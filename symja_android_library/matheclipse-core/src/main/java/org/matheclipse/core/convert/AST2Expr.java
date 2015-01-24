@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Complex;
+import org.matheclipse.core.builtin.function.Complex;
 import org.matheclipse.core.builtin.function.Pattern;
 import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.parser.client.ast.ASTNode;

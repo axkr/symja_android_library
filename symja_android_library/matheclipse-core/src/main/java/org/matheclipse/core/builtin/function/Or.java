@@ -1,7 +1,6 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -10,29 +9,29 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
- * 
- * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical disjunction</a>
  * 
  */
-public class And extends AbstractFunctionEvaluator {
-	public And() {
+public class Or extends AbstractFunctionEvaluator {
+
+	public Or() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() == 1) {
-			return F.True;
+			return F.False;
 		}
 
-		boolean evaled = false;
-		final EvalEngine engine = EvalEngine.get();
-		IAST result = ast.clone();
-		int index = 1;
 		IExpr temp;
 		IExpr sym;
 		int[] symbols = new int[ast.size()];
 		int[] notSymbols = new int[ast.size()];
 
+		boolean evaled = false;
+		final EvalEngine engine = EvalEngine.get();
+		IAST result = ast.clone();
+		int index = 1;
 		for (int i = 1; i < ast.size(); i++) {
 			temp = engine.evaluateNull(ast.get(i));
 			if (temp == null) {
@@ -41,10 +40,10 @@ public class And extends AbstractFunctionEvaluator {
 				result.set(index, temp);
 				evaled = true;
 			}
-			if (temp.isFalse()) {
-				return F.False;
-			}
 			if (temp.isTrue()) {
+				return F.True;
+			}
+			if (temp.isFalse()) {
 				result.remove(index);
 				evaled = true;
 				continue;
@@ -63,15 +62,15 @@ public class And extends AbstractFunctionEvaluator {
 			if (symbols[i] != 0) {
 				for (int j = 1; j < notSymbols.length; j++) {
 					if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
-						// And[a, Not[a]] => True
-						return F.False;
+						// Or[a, Not[a]] => True
+						return F.True;
 					}
 				}
 			}
 		}
 		if (evaled) {
 			if (result.size() == 1) {
-				return F.True;
+				return F.False;
 			}
 			return result;
 		}
