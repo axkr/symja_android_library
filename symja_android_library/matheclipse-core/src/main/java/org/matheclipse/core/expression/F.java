@@ -236,6 +236,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.FullForm());
 	public final static ISymbol Head = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",
 			new org.matheclipse.core.builtin.function.Head());
+	public final static ISymbol Hold = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
+			new org.matheclipse.core.builtin.function.Hold());
 	public final static ISymbol Identity = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity",
 			new org.matheclipse.core.builtin.function.Identity());
 	public final static ISymbol If = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
@@ -456,7 +458,6 @@ public class F {
 			: "HarmonicNumber");
 	public final static ISymbol HilbertMatrix = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hilbertmatrix"
 			: "HilbertMatrix");
-	public final static ISymbol Hold = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold");
 	public final static ISymbol Horner = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "horner" : "Horner");
 	public final static ISymbol HurwitzZeta = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hurwitzzeta" : "HurwitzZeta");

@@ -79,6 +79,14 @@ public class Times extends AbstractOperator {
 
 	private boolean convertMultiply(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
 		int size = f.size();
+		String texTimesOperator = "\\,";
+		if (size > 2) {
+			if (f.arg1().isNumber() && f.arg2().isNumber()) {
+				// Issue #67: if we have 2 or more numbers we use the \cdot operator
+				/// see http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+				texTimesOperator = "\\cdot ";
+			}
+		}
 		if (size > 1) {
 			IExpr arg1 = f.arg1();
 			if (arg1.isMinusOne()) {
@@ -124,7 +132,7 @@ public class Times extends AbstractOperator {
 				}
 				fFactory.convert(buf, arg1, fPrecedence);
 				if (fOperator.compareTo("") != 0) {
-					buf.append("\\,");
+					buf.append(texTimesOperator);
 				}
 			}
 		}
@@ -132,7 +140,7 @@ public class Times extends AbstractOperator {
 		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, f.get(i), fPrecedence);
 			if ((i < f.size() - 1) && (fOperator.compareTo("") != 0)) {
-				buf.append("\\,");
+				buf.append(texTimesOperator);
 			}
 		}
 		precedenceClose(buf, precedence);

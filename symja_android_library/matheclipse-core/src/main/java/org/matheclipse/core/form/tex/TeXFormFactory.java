@@ -196,15 +196,18 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	public void convertHead(final StringBuffer buf, final Object obj) {
 		if (obj instanceof ISymbol) {
+			String str = ((ISymbol) obj).getSymbolName();
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
 				buf.append('\\');
+				buf.append(str);
+				return;
 			}
-			String str = ((ISymbol) obj).getSymbolName();
+			
 			if (str.length() == 1) {
 				buf.append(str);
 			} else {
-				buf.append("ext{");
+				buf.append("\\text{");
 				buf.append(str);
 				buf.append('}');
 			}
