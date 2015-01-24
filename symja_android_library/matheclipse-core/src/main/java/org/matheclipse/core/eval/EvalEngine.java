@@ -955,8 +955,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	private IExpr evalSetAttributesRecursive(IAST ast, boolean evalNumericFunction) {
 		final ISymbol symbol = ast.topHead();
-		final int attr = symbol.getAttributes();
-		// final Predicate<IExpr> isPattern = Predicates.isPattern();
+		// call so that attributes may be set in AbstractFunctionEvaluator#setUp() method
+		symbol.getEvaluator();
+		
+		final int attr = symbol.getAttributes(); 
 		IAST resultList = null;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
