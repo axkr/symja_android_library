@@ -1,2 +1,4 @@
+proguard.map
 /bin
 
+/build
