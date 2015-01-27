@@ -112,6 +112,7 @@ public class Times extends AbstractOperator {
 				} else {
 					if (caller == PLUS_CALL) {
 						if (size == 3) {
+							buf.append("+");
 							fFactory.convert(buf, f.arg2(), fPrecedence);
 							return true;
 						}
