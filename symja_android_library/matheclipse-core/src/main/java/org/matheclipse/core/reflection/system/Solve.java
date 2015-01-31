@@ -61,21 +61,55 @@ public class Solve extends AbstractFunctionEvaluator {
 			reset();
 		}
 
-		public void analyze() {
-			if (fDenom.isOne()) {
-				IExpr temp = null;
-				if (fNumer.isPlus()) {
-					temp = rewritePlusWithInverseFunctions((IAST) fNumer);
-				} else {
-					if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
-						temp = rewriteInverseFunction((IAST) fNumer, F.C0);
+		/**
+		 * If possible simplify the numerator expression. After that analyze the numerator expression, if it has linear, polynomial
+		 * or other form.
+		 */
+		protected void simplifyAndAnalyze() {
+			IExpr temp = null;
+			if (fNumer.isPlus()) {
+				temp = rewritePlusWithInverseFunctions((IAST) fNumer);
+			} else if (fNumer.isTimes() && !fNumer.isFree(Predicates.in(vars), true)) {
+				temp = rewriteTimesWithInverseFunctions((IAST) fNumer);
+			} else if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
+				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
+			}
+			if (temp != null) {
+				fNumer = temp;
+			}
+
+			analyze(fNumer);
+		}
+
+		/**
+		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which may contain an invertable function argument
+		 * <code>f(x)</code> as subexpression.
+		 */
+		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
+			IAST result = null;
+			int j = 1;
+			// remove constant sub-expressions from Times() expression
+			for (int i = 1; i < times.size(); i++) {
+				if (times.get(i).isFree(Predicates.in(vars), true) && times.get(i).isNumericFunction()) {
+					if (result == null) {
+						result = times.clone();
 					}
+					result.remove(j);
+					continue;
 				}
+				j++;
+			}
+			if (result == null) {
+				return rewriteInverseFunction(times, F.C0);
+			}
+			IExpr temp0 = result.getOneIdentity(F.C1);
+			if (temp0.isAST()) {
+				IExpr temp = rewriteInverseFunction((IAST) temp0, F.C0);
 				if (temp != null) {
-					fNumer = temp;
+					return temp;
 				}
 			}
-			analyze(getNumerator());
+			return temp0;
 		}
 
 		/**
@@ -138,8 +172,15 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (inverseFunction != null) {
 						// rewrite fNumer
 						inverseFunction.add(arg1);
-						return F.Subtract(ast.arg1(), inverseFunction);
+						return F.eval(F.Subtract(ast.arg1(), inverseFunction));
 					}
+				}
+
+			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
+				int position = vars.findFirstEquals(ast.arg1());
+				if (position > 0) {
+					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
+					return F.eval(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
 			}
@@ -428,7 +469,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								if (temp != null) {
 									expr = F.eval(temp);
 									exprAnalyzer = new ExprAnalyzer(expr, vars);
-									exprAnalyzer.analyze();
+									exprAnalyzer.simplifyAndAnalyze();
 								} else {
 									// reuse old analyzer; expression hasn't
 									// changed
@@ -516,7 +557,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
 			exprAnalyzer = new ExprAnalyzer(expr, vars);
-			exprAnalyzer.analyze();
+			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
 		}
 		IAST matrix = F.List();
