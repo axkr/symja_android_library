@@ -398,7 +398,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
 		int real_numerator = NumberUtil.toInt(_real.getNumerator());
 		int real_denominator = NumberUtil.toInt(_real.getDenominator());
 		int imag_numerator = NumberUtil.toInt(_imaginary.getNumerator());

@@ -181,7 +181,7 @@ public abstract class ExprImpl implements IExpr {
 	public abstract ISymbol head();
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
 		return toString();
 	}
 

@@ -421,7 +421,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
 		int numerator = fRational.getNumerator().intValue();
 		int denominator = fRational.getDenominator().intValue();
 		if (numerator == 1) {

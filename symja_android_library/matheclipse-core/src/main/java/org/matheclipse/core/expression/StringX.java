@@ -341,7 +341,7 @@ public class StringX extends ExprImpl implements IStringX {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
 		if (symbolsAsFactoryMethod) {
 			final StringBuffer buffer = new StringBuffer();
 			buffer.append("stringx(\"");

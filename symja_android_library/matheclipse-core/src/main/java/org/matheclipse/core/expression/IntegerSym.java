@@ -1093,7 +1093,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
 		int value = NumberUtil.toInt(fInteger);
 		switch (value) {
 		case -1:

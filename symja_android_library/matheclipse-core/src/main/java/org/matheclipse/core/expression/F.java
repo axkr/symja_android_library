@@ -57,7 +57,7 @@ public class F {
 	public static boolean isSystemInitialized = false;
 
 	/**
-	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
+	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, boolean, int)} method.
 	 */
 	public final static Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS = new HashMap<String, String>(61);
 

@@ -148,10 +148,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param symbolsAsFactoryMethod
 	 *            if <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
+	 * @param patternExpression
+	 *            if <code>true</code> the internal form of an expression which contains patterns (i.e. a left-hand-side of an
+	 *            assignment) should be converted to Java internal form.
 	 * @param depth
 	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
 	 */
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth);
+	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth);
 
 	/**
 	 * Returns the multiplicative inverse of this object. It is the object such as <code>this.times(this.inverse()) == ONE </code>,
