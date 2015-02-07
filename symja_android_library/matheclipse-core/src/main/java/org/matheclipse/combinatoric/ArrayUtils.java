@@ -9,7 +9,7 @@
  *
  * Created Aug 31, 2009
  */
-package org.matheclipse.combinatoric.util;
+package org.matheclipse.combinatoric;
 
 import java.util.Arrays;
 

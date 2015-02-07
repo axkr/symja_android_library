@@ -3,8 +3,6 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.combinatoric.KPartitionsIterable;
-import org.matheclipse.core.generic.combinatoric.KPermutationsIterable;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -27,8 +25,8 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			final int n = listArg0.size() - 1;
 			final int k = ((IInteger) ast.arg2()).getBigNumerator().intValue();
 			final IAST result = F.ast(F.List);
-			final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
-			final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
+			final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(listArg0, n, 1);
+			final KPartitions.KPartitionsIterable partitionIterator = new KPartitions.KPartitionsIterable(n, k);
 			IAST partition;
 
 			// first generate all permutations:

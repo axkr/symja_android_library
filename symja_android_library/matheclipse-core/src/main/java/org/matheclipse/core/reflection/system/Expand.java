@@ -7,7 +7,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.combinatoric.KPermutationsIterable;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -278,7 +277,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		private void addFactor(int[] j) {
-			final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
+			final Permutations.KPermutationsIterable perm = new Permutations.KPermutationsIterable(j, m, m);
 			IInteger multinomial = F.integer(Multinomial.multinomial(j, n));
 			final IAST times = F.Times();
 			IExpr temp;

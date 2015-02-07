@@ -2,7 +2,6 @@ package org.matheclipse.combinatoric;
 
 import java.util.Iterator;
 
-import org.matheclipse.combinatoric.util.ArrayUtils;
 
 /**
  * <p>

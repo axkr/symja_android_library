@@ -1,6 +1,5 @@
 package org.matheclipse.combinatoric;
 
-import org.matheclipse.combinatoric.util.ArrayUtils;
 
 /**
  * Partition an ordered multi-set and visit all steps of the algorithm with a
