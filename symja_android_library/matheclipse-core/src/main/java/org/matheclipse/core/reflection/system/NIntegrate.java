@@ -52,7 +52,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			IExpr function = ast.arg1();
 			if (list.size() == 4 && list.arg1().isSymbol() && list.arg2().isSignedNumber() && list.arg3().isSignedNumber()) {
 				if (function.isAST(F.Equal, 3)) {
-					function = F.Plus(((IAST) function).arg1(), F.Times(F.CN1, ((IAST) function).arg2()));
+					function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
 				}
 				try {
 					return Num.valueOf(integrate(method, list, function));

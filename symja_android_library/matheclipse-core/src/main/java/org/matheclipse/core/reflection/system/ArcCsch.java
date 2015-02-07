@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcCsch;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -32,7 +31,7 @@ public class ArcCsch extends AbstractTrigArg1 implements ArcCschRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, ArcCsch(negExpr));
+			return Negate(ArcCsch(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

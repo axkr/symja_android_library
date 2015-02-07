@@ -1,15 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.$;
+import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.Cot;
 import static org.matheclipse.core.expression.F.Csc;
 import static org.matheclipse.core.expression.F.Im;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Re;
@@ -86,8 +87,8 @@ public class ComplexExpand implements IFunctionEvaluator {
 			if (head.equals(Cot)) {
 				// -(Sin[2*Re[x]]/(Cos[2*Re[x]]-Cosh[2*Im[x]]))+(I*Sinh[2*Im[x]])/(Cos[2*Re[x]]-Cosh[2*Im[x]])
 				return Plus(
-						Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
-						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
+						Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
+						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Csc)) {
 				// (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) + ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2

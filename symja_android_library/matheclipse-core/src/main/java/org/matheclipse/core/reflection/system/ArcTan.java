@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -41,7 +40,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 	public IExpr e1ObjArg(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, ArcTan(negExpr));
+			return Negate( ArcTan(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

@@ -47,9 +47,9 @@ public class ContinuedFraction implements IFunctionEvaluator {
 			IRational rat = (IRational) arg1;
 
 			IAST continuedFractionList = F.List();
-			if (rat.getDenominator().equals(F.C1)) {
+			if (rat.getDenominator().isOne()) {
 				continuedFractionList.add(rat.getNumerator());
-			} else if (rat.getNumerator().equals(F.C1)) {
+			} else if (rat.getNumerator().isOne()) {
 				continuedFractionList.add(F.C0);
 				continuedFractionList.add(rat.getDenominator());
 			} else {
@@ -61,7 +61,7 @@ public class ContinuedFraction implements IFunctionEvaluator {
 					remainder = temp.getBigNumerator().mod(temp.getBigDenominator());
 					continuedFractionList.add(F.integer(quotient));
 					temp = F.fraction(temp.getBigDenominator(), remainder);
-					if (temp.getDenominator().equals(F.C1)) {
+					if (temp.getDenominator().isOne()) {
 						continuedFractionList.add(temp.getNumerator());
 					}
 				}

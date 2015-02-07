@@ -36,7 +36,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, Sin(negExpr));
+			return Negate(Sin(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

@@ -4,10 +4,10 @@ import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.Im;
 import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
@@ -17,10 +17,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -74,7 +71,7 @@ public class Im implements IFunctionEvaluator {
 //		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, Im(negExpr));
+			return Negate(Im(negExpr));
 		}
 		if (arg1.isTimes()) {
 			if (arg1.getAt(1).isSignedNumber()) {
@@ -127,7 +124,7 @@ public class Im implements IFunctionEvaluator {
 			// Im(E^(a+I*b)) -> E^a*Sin[b]
 			return Times(Power(F.E, a), Sin(b));
 		}
-		return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Times(CN1, b), Arg(x)))),
+		return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
 				Sin(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
 	}
 

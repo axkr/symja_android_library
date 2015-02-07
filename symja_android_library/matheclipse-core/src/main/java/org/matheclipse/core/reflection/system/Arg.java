@@ -2,9 +2,9 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
@@ -75,7 +75,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 					// y < 0
 
 					// -Pi + ArcTan(y/x)
-					return Plus(Times(CN1, Pi), ArcTan(Divide(F.fraction(y), F.fraction(x))));
+					return Plus(Negate(Pi), ArcTan(Divide(F.fraction(y), F.fraction(x))));
 				} else {
 					// y >= 0
 

@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcCoth;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -37,7 +36,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, ArcCoth(negExpr));
+			return Negate(ArcCoth(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

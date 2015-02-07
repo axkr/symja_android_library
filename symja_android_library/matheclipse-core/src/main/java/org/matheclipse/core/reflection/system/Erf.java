@@ -4,7 +4,7 @@ import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CNInfinity;
 import static org.matheclipse.core.expression.F.Erf;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -47,7 +47,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, Erf(negExpr));
+			return Negate(Erf(negExpr));
 		}
 		return null;
 	}

@@ -7,7 +7,7 @@ import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IFraction;
 
 /**
  * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
@@ -20,10 +20,8 @@ public class HilbertMatrix extends AbstractFunctionEvaluator {
 		public HilbertFunctionDiagonal() {
 		}
 
-		public IExpr evaluate(final int[] index) {
-			int res = index[0] + index[1] + 1;
-
-			return F.Power(F.integer(res), F.CN1);
+		public IFraction evaluate(final int[] index) {
+			return F.fraction(1, 1l + index[0] + index[1]);
 		}
 	}
 

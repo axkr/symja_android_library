@@ -16,6 +16,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -329,7 +330,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			// x*ArcCsc(x) + (Sqrt(1 - x^(-2))*x*Log(x + Sqrt(-1 + x^2))) / Sqrt(-1 + x^2)
 			return Plus(
 					Times(x, F.ArcCsc(x)),
-					Times(F.Sqrt(Plus(C1, Times(CN1, Power(x, F.CN2)))), x, Log(Plus(x, F.Sqrt(Plus(CN1, Power(x, C2))))),
+					Times(F.Sqrt(Plus(C1, Negate(Power(x, F.CN2)))), x, Log(Plus(x, F.Sqrt(Plus(CN1, Power(x, C2))))),
 							Power(F.Sqrt(Plus(CN1, Power(x, C2))), CN1)));
 		}
 		if (head.equals(F.ArcCsch)) {

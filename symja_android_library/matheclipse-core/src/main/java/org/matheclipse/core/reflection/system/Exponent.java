@@ -35,7 +35,7 @@ public class Exponent extends AbstractFunctionEvaluator {
 		Set<IExpr> collector = new TreeSet<IExpr>();
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
-		if (expr.equals(F.C0)) {
+		if (expr.isZero()) {
 			collector.add(F.CNInfinity);
 		} else if (expr.isAST()) {
 			IAST arg1 = (IAST) expr;

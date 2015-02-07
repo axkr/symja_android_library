@@ -151,7 +151,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			IAST ast = (IAST) plusAST.get(position);
 			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
 			if (plus.isFree(Predicates.in(vars), true)) {
-				return rewriteInverseFunction(ast, F.Times(F.CN1, plus));
+				return rewriteInverseFunction(ast, F.Negate(plus));
 			}
 			return null;
 		}

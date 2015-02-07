@@ -55,7 +55,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 				if (i.isEven()) {
 					return Sec(parts[0]);
 				} else {
-					return Times(CN1, Sec(parts[0]));
+					return Negate(Sec(parts[0]));
 				}
 			}
 			if (parts[1].isFraction()) {
@@ -70,8 +70,8 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 						return Times(CN1, Sec(Plus(parts[0], Times(rest, Pi))));
 					}
 				}
-				
-				if (f.equals(C1D2)) { 
+
+				if (f.equals(C1D2)) {
 					return Times(CN1, Csc(parts[0]));
 				}
 			}
@@ -98,7 +98,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.cos(arg1).inverse());
 	}
-	
+
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

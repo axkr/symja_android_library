@@ -381,19 +381,19 @@ public class OutputFormFactory {
 		}
 
 		if (timesAST.size() > 1) {
-			if (timesAST.get(1).isSignedNumber() && timesAST.size() > 2 && !timesAST.get(2).isNumber()) {
-				if (timesAST.get(1).equals(F.CN1)) {
+			if (timesAST.arg1().isSignedNumber() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
+				if (timesAST.arg1().isMinusOne()) {
 					append(buf, "-");
 					showOperator = false;
 				} else {
-					if (((ISignedNumber) timesAST.get(1)).isNegative()) {
-						convertNumber(buf, (INumber) timesAST.get(1), oper.getPrecedence());
+					if (((ISignedNumber) timesAST.arg1()).isNegative()) {
+						convertNumber(buf, (INumber) timesAST.arg1(), oper.getPrecedence());
 					} else {
-						convert(buf, timesAST.get(1), oper.getPrecedence());
+						convert(buf, timesAST.arg1(), oper.getPrecedence());
 					}
 				}
 			} else {
-				convert(buf, timesAST.get(1), oper.getPrecedence());
+				convert(buf, timesAST.arg1(), oper.getPrecedence());
 			}
 		}
 		for (int i = 2; i < timesAST.size(); i++) {
@@ -415,7 +415,7 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		if (list.size() > 1) {
-			convert(buf, list.get(1), oper.getPrecedence());
+			convert(buf, list.arg1(), oper.getPrecedence());
 		}
 		for (int i = 2; i < list.size(); i++) {
 			append(buf, oper.getOperatorString());
@@ -432,7 +432,7 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		append(buf, oper.getOperatorString());
-		convert(buf, list.get(1), oper.getPrecedence());
+		convert(buf, list.arg1(), oper.getPrecedence());
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
 		}
@@ -443,7 +443,7 @@ public class OutputFormFactory {
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
-		convert(buf, list.get(1), oper.getPrecedence());
+		convert(buf, list.arg1(), oper.getPrecedence());
 		append(buf, oper.getOperatorString());
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
@@ -532,10 +532,10 @@ public class OutputFormFactory {
 					return;
 				}
 				if (list.size() == 2) {
-					if (list.arg1().equals(F.C1)) {
+					if (list.arg1().isOne()) {
 						append(buf, "Infinity");
 						return;
-					} else if (list.arg1().equals(F.CN1)) {
+					} else if (list.arg1().isMinusOne()) {
 						if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 							append(buf, "(");
 						}

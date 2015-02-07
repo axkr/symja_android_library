@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcTanh;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -36,7 +35,7 @@ public class ArcTanh extends AbstractTrigArg1 implements ArcTanhRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, ArcTanh(negExpr));
+			return Negate(ArcTanh(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
@@ -49,12 +48,12 @@ public class ArcTanh extends AbstractTrigArg1 implements ArcTanhRules {
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.atanh(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.atanh(arg1));
 	}
-	
+
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

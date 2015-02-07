@@ -1,18 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.FractionalPart;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import java.math.BigInteger;
 
-import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INum;
@@ -40,7 +37,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Times(CN1, FractionalPart(negExpr));
+			return Negate(FractionalPart(negExpr));
 		}
 		return null;
 	}

@@ -158,7 +158,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				// Integral<BigRational> integral= ei.integrate(genPolynomial, Di_1);
 				// System.out.println(integral);
 				temp = F.eval(F.Times(jas.poly2Expr(genPolynomial), F.Power(jas.poly2Expr(Di_1), F.integer(j * (-1L)))));
-				if (!temp.equals(F.C0)) {
+				if (!temp.isZero()) {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 					}

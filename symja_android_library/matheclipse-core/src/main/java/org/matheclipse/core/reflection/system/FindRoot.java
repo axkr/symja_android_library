@@ -65,7 +65,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			IExpr function = ast.arg1();
 			if (list.size() >= 3 && list.arg1().isSymbol() && list.arg2().isSignedNumber()) {
 				if (function.isAST(F.Equal, 3)) {
-					function = F.Plus(((IAST) function).arg1(), F.Times(F.CN1, ((IAST) function).arg2()));
+					function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
 				}
 				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, function))));
 			}

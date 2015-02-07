@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Round;
-import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
@@ -62,7 +61,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr != null) {
-				return Times(CN1, Round(negExpr));
+				return Negate(Round(negExpr));
 			}
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#round() may throw ArithmeticException

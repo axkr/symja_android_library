@@ -78,7 +78,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-		if (i0.equals(F.C0)) {
+		if (i0.isZero()) {
 			// all other cases see e2ObjArg
 			return null;
 		}
@@ -296,7 +296,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 		if (arg1.isSignedNumber() && ((ISignedNumber) arg1).isNegative() && arg2.equals(F.C1D2)) {
 			// extract I for sqrt
-			return F.Times(F.CI, F.Power(F.Times(F.CN1, arg1), arg2));
+			return F.Times(F.CI, F.Power(F.Negate(arg1), arg2));
 		}
 
 		if (arg1.isAST()) {
@@ -327,11 +327,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	}
 
 	public IExpr e2FraArg(IFraction f0, IFraction f1) {
-		if (f0.getNumerator().equals(F.C0)) {
+		if (f0.getNumerator().isZero()) {
 			return F.C0;
 		}
 
-		if (f1.getNumerator().equals(F.C0)) {
+		if (f1.getNumerator().isZero()) {
 			return F.C1;
 		}
 
@@ -347,7 +347,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			}
 		}
 
-		if (!f1.getDenominator().equals(F.C1)) {
+		if (!f1.getDenominator().isOne()) {
 			IInteger a;
 			IInteger b;
 			IFraction f0Temp = f0;
@@ -363,7 +363,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			}
 
 			// example: (-27)^(2/3) or 8^(1/3)
-			if (!f1.getNumerator().equals(F.C1)) {
+			if (!f1.getNumerator().isOne()) {
 				try {
 					int exp = f1.getNumerator().toInt();
 					if (exp < 0) {
@@ -385,7 +385,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			if (new_numer != null) {
 				if (new_denom != null) {
 					IRational p0 = null;
-					if (new_denom[1].equals(F.C1)) {
+					if (new_denom[1].isOne()) {
 						p0 = new_numer[1];
 					} else {
 						p0 = fraction(new_numer[1], new_denom[1]);
@@ -395,11 +395,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					}
 					return Times(fraction(new_numer[0], new_denom[0]), Power(p0, new_root));
 				} else {
-					if (a.equals(C1)) {
+					if (a.isOne()) {
 						return null;
 					}
 					IRational p0 = null;
-					if (b.equals(F.C1)) {
+					if (b.isOne()) {
 						p0 = new_numer[1];
 					} else {
 						p0 = fraction(new_numer[1], b);
@@ -411,11 +411,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				}
 			} else {
 				if (new_denom != null) {
-					if (b.equals(C1)) {
+					if (b.isOne()) {
 						return null;
 					}
 					IRational p0 = null;
-					if (new_denom[1].equals(F.C1)) {
+					if (new_denom[1].isOne()) {
 						p0 = a;
 					} else {
 						p0 = F.fraction(a, new_denom[1]);
@@ -448,10 +448,10 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		try {
 			int n = root.toInt();
 			if (n > 0) {
-				if (a.equals(F.C1)) {
+				if (a.isOne()) {
 					return null;
 				}
-				if (a.equals(F.CN1)) {
+				if (a.isMinusOne()) {
 					return null;
 				}
 				IInteger[] result = a.nthRootSplit(n);

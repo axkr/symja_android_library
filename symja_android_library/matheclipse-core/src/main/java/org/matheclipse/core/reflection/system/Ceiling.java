@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Floor;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.Negate;
 
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
@@ -64,7 +63,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr != null) {
-				return Times(CN1, Floor(negExpr));
+				return Negate(Floor(negExpr));
 			}
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException

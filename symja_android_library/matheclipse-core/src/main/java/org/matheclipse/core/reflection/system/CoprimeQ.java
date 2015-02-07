@@ -28,7 +28,7 @@ public class CoprimeQ extends AbstractFunctionEvaluator {
 		for (int i = 1; i < size - 1; i++) {
 			expr = ast.get(i);
 			for (int j = i + 1; j < size; j++) {
-				if (!F.eval(F.GCD(expr, ast.get(j))).equals(F.C1)) {
+				if (!F.eval(F.GCD(expr, ast.get(j))).isOne()) {
 					return F.False;
 				}
 			}

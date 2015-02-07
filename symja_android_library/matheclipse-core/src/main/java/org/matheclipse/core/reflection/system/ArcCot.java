@@ -1,10 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcCot;
-import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Times;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -79,7 +78,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Plus(Times(CN1, Pi), ArcCot(negExpr));
+			return Plus(Negate(Pi), ArcCot(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {

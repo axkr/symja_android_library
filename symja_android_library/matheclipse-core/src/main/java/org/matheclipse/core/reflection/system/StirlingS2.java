@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Factorial;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
@@ -54,7 +55,7 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 				}
 				for (int j = 0; j < k; j++) {
 					if ((j & 1) == 1) {
-						temp.add(Times(Times(CN1, Binomial(ast.arg2(), integer(j))),
+						temp.add(Times(Negate(Binomial(ast.arg2(), integer(j))),
 								Power(Plus(ast.arg2(), integer(-j)), ast.arg1())));
 					} else {
 						temp.add(Times(Times(Binomial(ast.arg2(), integer(j))), Power(Plus(ast.arg2(), integer(-j)), ast.arg1())));

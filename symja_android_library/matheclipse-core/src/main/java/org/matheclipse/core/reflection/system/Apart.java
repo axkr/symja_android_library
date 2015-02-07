@@ -122,7 +122,7 @@ public class Apart extends AbstractFunctionEvaluator {
 						if (!genPolynomial.isZERO()) {
 							temp = F.eval(F.Times(jas.integerPoly2Expr(genPolynomial),
 									F.Power(jas.integerPoly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
-							if (!temp.equals(F.C0)) {
+							if (!temp.isZero()) {
 								if (temp.isAST()) {
 									((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 								}

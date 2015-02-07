@@ -20,7 +20,7 @@ public class SubtractFrom extends AddTo {
 
 		@Override
 		public IExpr apply(final IExpr assignedValue) {
-			return F.eval(F.Plus(assignedValue, F.Times(F.CN1, value)));
+			return F.eval(F.Plus(assignedValue, F.Negate(value)));
 		}
 
 		protected ISymbol getFunctionSymbol() {

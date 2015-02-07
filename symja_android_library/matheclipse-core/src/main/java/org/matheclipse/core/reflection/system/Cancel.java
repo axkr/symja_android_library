@@ -90,7 +90,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 				IAST[] numParts = ((IAST) parts[0]).filter(new PolynomialPredicate());
 				IAST[] denParts = ((IAST) parts[1]).filter(new PolynomialPredicate());
 				IExpr denParts0 = F.eval(denParts[0]);
-				if (!denParts0.equals(F.C1)) {
+				if (!denParts0.isOne()) {
 					IExpr[] result = Cancel.cancelGCD(numParts[0], denParts0);
 					if (result != null) {
 						return F.Times(result[0], result[1], numParts[1].getOneIdentity(F.C1),

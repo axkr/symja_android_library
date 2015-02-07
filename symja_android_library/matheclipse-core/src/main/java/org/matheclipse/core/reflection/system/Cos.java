@@ -1,6 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Times;
 
 import java.math.BigInteger;
 
@@ -58,7 +67,7 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 				if (i.isEven()) {
 					return Cos(parts[0]);
 				} else {
-					return Times(CN1, F.Cos(parts[0]));
+					return Negate(F.Cos(parts[0]));
 				}
 			}
 			if (parts[1].isFraction()) {
@@ -71,7 +80,7 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 					if (NumberUtil.isEven(divRem[0])) {
 						return Cos(Plus(parts[0], Times(rest, Pi)));
 					} else {
-						return Times(CN1, Cos(Plus(parts[0], Times(rest, Pi))));
+						return Negate(Cos(Plus(parts[0], Times(rest, Pi))));
 					}
 				}
 

@@ -69,10 +69,10 @@ public class Binomial extends AbstractArg2 {
 				return null;
 			}
 			IInteger ii = (IInteger) kObj;
-			if (ii.equals(F.C1)) {
+			if (ii.isOne()) {
 				return nObj;
 			}
-			if (ii.equals(F.C0)) {
+			if (ii.isZero()) {
 				return F.C1;
 			}
 			if (ii.isLessThan(F.C10) && ii.isGreaterThan(F.C1)) {

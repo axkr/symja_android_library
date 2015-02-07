@@ -1,10 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Times;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
@@ -40,7 +39,7 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Plus(Times(CN1, Pi), ArcCos(negExpr));
+			return Plus(Negate(Pi), ArcCos(negExpr));
 		}
 		return null;
 	}
@@ -49,7 +48,7 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(Math.acos(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.acos());
@@ -59,12 +58,12 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.acos(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.acos(arg1));
 	}
-	
+
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
