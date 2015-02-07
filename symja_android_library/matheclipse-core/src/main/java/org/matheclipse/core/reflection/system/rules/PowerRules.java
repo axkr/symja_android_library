@@ -22,16 +22,16 @@ public interface PowerRules {
     ISetDelayed(Power(E,Log(x_)),
       x),
     ISetDelayed(Power(Tan(x_),$p(m,IntegerQ)),
-      Condition(Power(Cot(x),Times(CN1,m)),Less(m,C0))),
+      Condition(Power(Cot(x),Negate(m)),Less(m,C0))),
     ISetDelayed(Power(Cot(x_),$p(m,IntegerQ)),
-      Condition(Power(Tan(x),Times(CN1,m)),Less(m,C0))),
+      Condition(Power(Tan(x),Negate(m)),Less(m,C0))),
     ISetDelayed(Power(Sec(x_),$p(m,IntegerQ)),
-      Condition(Power(Cos(x),Times(CN1,m)),Less(m,C0))),
+      Condition(Power(Cos(x),Negate(m)),Less(m,C0))),
     ISetDelayed(Power(Cos(x_),$p(m,IntegerQ)),
-      Condition(Power(Sec(x),Times(CN1,m)),Less(m,C0))),
+      Condition(Power(Sec(x),Negate(m)),Less(m,C0))),
     ISetDelayed(Power(Csc(x_),$p(m,IntegerQ)),
-      Condition(Power(Sin(x),Times(CN1,m)),Less(m,C0))),
+      Condition(Power(Sin(x),Negate(m)),Less(m,C0))),
     ISetDelayed(Power(Sin(x_),$p(m,IntegerQ)),
-      Condition(Power(Csc(x),Times(CN1,m)),Less(m,C0)))
+      Condition(Power(Csc(x),Negate(m)),Less(m,C0)))
   );
 }

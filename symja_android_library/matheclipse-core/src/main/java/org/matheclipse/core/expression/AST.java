@@ -1607,7 +1607,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (this.equals(F.Slot2)) {
 			return "Slot2";
 		}
-		if (isPower()) {
+		if (isTimes() && size() == 3 && arg1().isMinusOne()) {
+			return "Negate(" + arg2().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+		} else if (isPower()) {
 			if (equalsAt(2, F.C1D2)) {
 				if (arg1().isInteger()) {
 					// square root of an integer number

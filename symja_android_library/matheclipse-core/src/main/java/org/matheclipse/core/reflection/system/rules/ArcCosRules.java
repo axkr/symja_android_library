@@ -29,7 +29,7 @@ public interface ArcCosRules {
       Times(QQ(7L,8L),Pi)),
     ISet(ArcCos(Times(C1D2,Plus(C1,CSqrt3),C1DSqrt2)),
       Times(QQ(1L,12L),Pi)),
-    ISet(ArcCos(Times(C1D2,Plus(CN1,Times(CN1,CSqrt3)),C1DSqrt2)),
+    ISet(ArcCos(Times(C1D2,Plus(CN1,Negate(CSqrt3)),C1DSqrt2)),
       Times(QQ(11L,12L),Pi)),
     ISet(ArcCos(C1),
       C0),

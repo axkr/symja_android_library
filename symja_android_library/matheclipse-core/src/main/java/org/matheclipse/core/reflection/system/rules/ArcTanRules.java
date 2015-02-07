@@ -13,7 +13,7 @@ public interface ArcTanRules {
       C0),
     ISet(ArcTan(C0,C0),
       C0),
-    ISet(ArcTan(Plus(C2,Times(CN1,CSqrt3))),
+    ISet(ArcTan(Plus(C2,Negate(CSqrt3))),
       Times(QQ(1L,12L),Pi)),
     ISet(ArcTan(Plus(CN1,CSqrt2)),
       Times(QQ(1L,8L),Pi)),

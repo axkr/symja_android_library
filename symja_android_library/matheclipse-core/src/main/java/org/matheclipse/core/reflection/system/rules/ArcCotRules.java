@@ -11,7 +11,7 @@ public interface ArcCotRules {
   final public static IAST RULES = List(
     ISet(ArcCot(C0),
       Times(C1D2,Pi)),
-    ISet(ArcCot(Plus(C2,Times(CN1,CSqrt3))),
+    ISet(ArcCot(Plus(C2,Negate(CSqrt3))),
       Times(QQ(5L,12L),Pi)),
     ISet(ArcCot(Plus(CN1,CSqrt2)),
       Times(QQ(3L,8L),Pi)),
