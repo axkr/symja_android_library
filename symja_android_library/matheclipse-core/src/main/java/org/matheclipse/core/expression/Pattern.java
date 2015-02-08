@@ -169,13 +169,13 @@ public class Pattern extends ExprImpl implements IPattern {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("$p(");
 		if (fSymbol == null) {
 			buffer.append("(ISymbol)null");
 			if (fCondition != null) {
-				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, false, 0));
+				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 			}
 			if (fDefault) {
 				if (fCondition == null) {
@@ -229,7 +229,7 @@ public class Pattern extends ExprImpl implements IPattern {
 				} else if (fCondition == F.SymbolHead) {
 					buffer.append(", SymbolHead");
 				} else {
-					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, false, 0));
+					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
 				}
 			}
 			if (fDefault) {

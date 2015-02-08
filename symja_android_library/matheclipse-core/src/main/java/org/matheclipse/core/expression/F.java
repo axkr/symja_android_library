@@ -57,7 +57,7 @@ public class F {
 	public static boolean isSystemInitialized = false;
 
 	/**
-	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, boolean, int)} method.
+	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
 	 */
 	public final static Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS = new HashMap<String, String>(61);
 
@@ -324,7 +324,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.RotateRight());
 	public final static ISymbol Rule = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rule" : "Rule",
 			new org.matheclipse.core.builtin.function.Rule());
-	public final static ISymbol RuleDelayed = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ruledelayed" : "RuleDelayed",
+	public final static ISymbol RuleDelayed = F.initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ruledelayed" : "RuleDelayed",
 			new org.matheclipse.core.builtin.function.RuleDelayed());
 	public final static ISymbol Set = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set",
 			new org.matheclipse.core.builtin.function.Set());
@@ -3118,14 +3119,25 @@ public class F {
 	}
 
 	/**
-	 * Multiplies the given argument by <code>-1</code>.
+	 * Multiplies the given argument by <code>-1</code>. The <code>IExpr#negate()</code> method does evaluations, which don't agree
+	 * with pattern matching assumptions (in left-hand-sige expressions). so it is only called called for <code>INumber</code>
+	 * objects, otherwis a <code>Times(CN1, x)</code> AST would be created.
 	 * 
-	 * @param a
+	 * @param x
+	 *            the expression which should be negated.
 	 * @return
 	 */
-	public static IExpr Negate(final IExpr a) {
-		return a.negate();
-		// return binary(Times, CN1, a);
+	public static IExpr Negate(final IExpr x) {
+		if (x.isNumber()) {
+			return x.negate();
+		}
+		if (x.isInfinity()) {
+			return F.CNInfinity;
+		}
+		if (x.isNegativeInfinity()) {
+			return F.CInfinity;
+		}
+		return binary(Times, CN1, x);
 	}
 
 	public static IAST Negative(final IExpr a0) {
@@ -3354,7 +3366,6 @@ public class F {
 	}
 
 	public static IAST Power() {
-
 		return ast(Power);
 	}
 
@@ -3362,7 +3373,18 @@ public class F {
 		return binary(Power, a0, a1);
 	}
 
-	public static IAST Power(final IExpr a0, final long exp) {
+	public static IExpr Power(final IExpr a0, final long exp) {
+		if (a0.isNumber()) {
+			if (exp > 0L) {
+				return a0.power(exp);
+			}
+			if (exp == -1L) {
+				return a0.inverse();
+			}
+			if (exp == 0L && !a0.isZero()) {
+				return F.C1;
+			}
+		}
 		return binary(Power, a0, integer(exp));
 	}
 

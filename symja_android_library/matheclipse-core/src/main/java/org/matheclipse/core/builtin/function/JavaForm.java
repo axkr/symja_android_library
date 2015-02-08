@@ -35,7 +35,7 @@ public class JavaForm implements IFunctionEvaluator {
 		// if (arg1.isAST()) {
 		// arg1 = PatternMatcher.evalLeftHandSide((IAST) arg1);
 		// }
-		return arg1.internalFormString(strictJava, false, 0);
+		return arg1.internalFormString(strictJava, 0);
 	}
 
 	public IExpr numericEval(final IAST functionList) {

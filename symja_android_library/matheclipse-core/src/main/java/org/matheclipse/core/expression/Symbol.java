@@ -602,7 +602,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/**
 	 * {@inheritDoc}
 	 */
-	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
 			if (fSymbolName.length() == 1 && Character.isLowerCase(fSymbolName.charAt(0))) {
 				char ch = fSymbolName.charAt(0);

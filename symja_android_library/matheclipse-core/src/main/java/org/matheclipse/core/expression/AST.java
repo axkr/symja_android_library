@@ -1585,11 +1585,11 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final String sep = ",";
 		final IExpr temp = head();
 		if (temp.equals(F.Hold) && size() == 2) {
-			return arg1().internalFormString(symbolsAsFactoryMethod, patternExpression, depth);
+			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
 		}
 		if (isInfinity()) {
 			return "CInfinity";
@@ -1606,9 +1606,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (this.equals(F.Slot2)) {
 			return "Slot2";
 		}
-		if (!patternExpression && isTimes() && size() == 3 && arg1().isMinusOne()) {
-			return "Negate(" + arg2().internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1) + ")";
-		} else if (isPower()) {
+		if (isPower()) {
 			if (equalsAt(2, F.C1D2)) {
 				if (arg1().isInteger()) {
 					// square root of an integer number
@@ -1627,10 +1625,10 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 						return "CSqrt10";
 					}
 				}
-				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1) + ")";
+				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
 			}
 			if (equalsAt(2, F.C2)) {
-				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1) + ")";
+				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
 			}
 			if (equalsAt(2, F.CN1D2)) {
 				if (arg1().isInteger()) {
@@ -1651,6 +1649,17 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 					}
 				}
 			}
+			if (arg2().isInteger()) {
+				try {
+					long exp = ((IInteger) arg2()).toLong();
+					// create Power(arg1, exp)
+					return "Power(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + "," + Long.toString(exp) + ")";
+
+				} catch (Exception ex) {
+
+				}
+			}
+
 		}
 		StringBuffer text = new StringBuffer(size() * 10);
 		if (temp.isSymbol()) {
@@ -1667,7 +1676,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				if (!Character.isUpperCase(sym.toString().charAt(0))) {
 					text.append("$(");
 					for (int i = 0; i < size(); i++) {
-						text.append(get(i).internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1));
+						text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
 						if (i < size() - 1) {
 							text.append(sep);
 						}
@@ -1679,7 +1688,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		} else if (temp.isPattern() || temp.isAST()) {
 			text.append("$(");
 			for (int i = 0; i < size(); i++) {
-				text.append(get(i).internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1));
+				text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
 				if (i < size() - 1) {
 					text.append(sep);
 				}
@@ -1688,13 +1697,17 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			return text.toString();
 		}
 
-		text.append(temp.internalFormString(false, patternExpression, 0));
+		if (isTimes() && size() == 3 && arg1().isMinusOne() && !arg2().isTimes()) {
+			return "Negate(" + arg2().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+		}
+
+		text.append(temp.internalFormString(false, 0));
 		text.append('(');
 		if (isTimes() || isPlus()) {
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
-			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, patternExpression, depth);
+			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth);
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
@@ -1703,7 +1716,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 				text.append('\n');
 			}
 			for (int i = 1; i < size(); i++) {
-				text.append(get(i).internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1));
+				text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
 				if (i < size() - 1) {
 					text.append(sep);
 					if (depth == 0 && isList()) {
@@ -1720,12 +1733,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	private static void internalFormOrderless(IAST ast, StringBuffer text, final String sep, boolean symbolsAsFactoryMethod,
-			boolean patternExpression, int depth) {
+			int depth) {
 		for (int i = 1; i < ast.size(); i++) {
 			if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
-				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, patternExpression, depth);
+				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, depth);
 			} else {
-				text.append(ast.get(i).internalFormString(symbolsAsFactoryMethod, patternExpression, depth + 1));
+				text.append(ast.get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
 			}
 			if (i < ast.size() - 1) {
 				text.append(sep);
@@ -1995,7 +2008,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	@Override
-	public final IExpr power(final int n) {
+	public final IExpr power(final long n) {
 		return F.Power(this, F.integer(n));
 	}
 

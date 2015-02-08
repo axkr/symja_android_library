@@ -112,7 +112,7 @@ public interface CosRules {
     ISetDelayed(Cos(ArcTan(x_)),
       Power(Plus(C1,Sqr(x)),CN1D2)),
     ISetDelayed(Cos(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Cos(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Cos(Times(Plus(C2,Negate(x)),Pi)),Cos(Times(Plus(x,Negate(Times(C2,Quotient(IntegerPart(x),C2)))),Pi)))),GreaterEqual(x,C1D2))),
+      Condition(If(Less(x,C1),Negate(Cos(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Cos(Times(Plus(C2,Negate(x)),Pi)),Cos(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     ISetDelayed(Cos(ArcCos(x_)),
       x),
     ISetDelayed(Cos(ArcSin(x_)),

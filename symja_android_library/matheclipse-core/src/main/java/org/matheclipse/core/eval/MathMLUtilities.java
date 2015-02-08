@@ -122,7 +122,7 @@ public class MathMLUtilities {
 			try {
 				node = fEvalEngine.parseNode(inputExpression);
 				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-				out.write(parsedExpression.internalFormString(strictJava, false, 0));
+				out.write(parsedExpression.internalFormString(strictJava, 0));
 			} catch (final Throwable e) {
 				return;
 				// parsedExpression == null ==> fError occured

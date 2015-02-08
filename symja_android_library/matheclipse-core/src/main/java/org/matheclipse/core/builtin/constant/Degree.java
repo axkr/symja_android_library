@@ -25,7 +25,6 @@ public class Degree extends AbstractSymbolEvaluator implements ISignedNumberCons
 	 */
 	@Override
 	public IExpr evaluate(final ISymbol symbol) {
-		// Pi / 180
 		return Times(F.Pi, Power(F.integer(180), F.CN1));
 	}
 

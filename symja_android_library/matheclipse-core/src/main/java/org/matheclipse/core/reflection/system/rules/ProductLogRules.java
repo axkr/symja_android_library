@@ -13,7 +13,7 @@ public interface ProductLogRules {
       C0),
     ISet(ProductLog(Times(CN1D2,Pi)),
       Times(CC(0L,1L,1L,2L),Pi)),
-    ISet(ProductLog(Negate(Power(E,CN1))),
+    ISet(ProductLog(Negate(Power(E,-1))),
       CN1),
     ISet(ProductLog(CInfinity),
       CInfinity),

@@ -158,7 +158,7 @@ public class EvalUtilities extends MathMLUtilities {
 		if (inputExpression != null) {
 			node = fEvalEngine.parseNode(inputExpression);
 			parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-			return parsedExpression.internalFormString(false, false, 0);
+			return parsedExpression.internalFormString(false, 0);
 		}
 		return "";
 	}

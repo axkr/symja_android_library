@@ -181,7 +181,7 @@ public abstract class ExprImpl implements IExpr {
 	public abstract ISymbol head();
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, boolean patternExpression, int depth) {
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return toString();
 	}
 
@@ -834,7 +834,7 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr power(final int n) {
+	public final IExpr power(final long n) {
 		if (this.isNumber()) {
 			return F.eval(F.Power(this, F.integer(n)));
 		}

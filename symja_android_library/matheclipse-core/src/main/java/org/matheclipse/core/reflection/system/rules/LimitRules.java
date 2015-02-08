@@ -23,11 +23,11 @@ public interface LimitRules {
       C0),
     ISet(Limit(Log(x_),Rule(x_Symbol,CInfinity)),
       CInfinity),
-    ISet(Limit(Power(Plus(C1,Power(x_,CN1)),x_),Rule(x_Symbol,CInfinity)),
+    ISet(Limit(Power(Plus(C1,Power(x_,-1)),x_),Rule(x_Symbol,CInfinity)),
       E),
-    ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,CN1))),x_),Rule(x_Symbol,CInfinity)),
+    ISet(Limit(Power(Plus(C1,Times(a_,Power(x_,-1))),x_),Rule(x_Symbol,CInfinity)),
       Power(E,a)),
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s,IntegerQ)),Rule(x_Symbol,CInfinity)),
-      Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(Times(C2,Pi),Times(C2,v)),Power(CN1,Plus(v,C1)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s))))
+      Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(Times(C2,Pi),Times(C2,v)),Power(CN1,Plus(v,C1)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),-1))),And(EvenQ(s),Positive(s))))
   );
 }
