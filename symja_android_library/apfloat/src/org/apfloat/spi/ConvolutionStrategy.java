@@ -4,7 +4,7 @@ import org.apfloat.ApfloatRuntimeException;
 
 /**
  * Generic convolution strategy. To perform the convolution,
- * an implementing class could use e.g.<p>
+ * an implementing class could use e.g.
  *
  * <ul>
  *   <li>A simple long multiplication convolution with O(n<sup>2</sup>) complexity</li>

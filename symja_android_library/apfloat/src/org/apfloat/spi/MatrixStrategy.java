@@ -34,7 +34,7 @@ public interface MatrixStrategy
      * Transpose a square n<sub>1</sub> x n<sub>1</sub> block of n<sub>1</sub> x n<sub>2</sub> matrix.<p>
      *
      * Both n<sub>1</sub> and n<sub>2</sub> must be powers of two,
-     * and n<sub>1</sub> <= n<sub>2</sub>.
+     * and n<sub>1</sub> &lt;= n<sub>2</sub>.
      *
      * @param arrayAccess Accessor to the matrix data. This data will be transposed.
      * @param n1 Number of rows and columns in the block to be transposed.
@@ -50,10 +50,10 @@ public interface MatrixStrategy
      * lower half is moved to the right side of the upper half.<p>
      *
      * Both n<sub>1</sub> and n<sub>2</sub> must be powers of two,
-     * and n<sub>1</sub> >= 2.<p>
+     * and n<sub>1</sub> &gt;= 2.<p>
      *
      * E.g. if the matrix layout is originally as follows:
-     * <table style="width:100px; border-collapse:collapse; border:1px solid black" border="1">
+     * <table style="width:100px; border-collapse:collapse; border:1px solid black" border="1" summary="Matrix before">
      *   <tr>
      *     <td>0</td><td>1</td><td>2</td><td>3</td>
      *   </tr>
@@ -67,9 +67,10 @@ public interface MatrixStrategy
      *     <td>12</td><td>13</td><td>14</td><td>15</td>
      *   </tr>
      * </table>
+     * <p>
      *
      * Then after this method it is as follows:
-     * <table style="width:200px; border-collapse:collapse; border:1px solid black" border="1">
+     * <table style="width:200px; border-collapse:collapse; border:1px solid black" border="1" summary="Matrix after">
      *   <tr>
      *     <td>0</td><td>1</td><td>2</td><td>3</td><td style="background:lightgray">8</td><td style="background:lightgray">9</td><td style="background:lightgray">10</td><td style="background:lightgray">11</td>
      *   </tr>
@@ -96,7 +97,7 @@ public interface MatrixStrategy
      * Both n<sub>1</sub> and n<sub>2</sub> must be powers of two.
      *
      * E.g. if the matrix layout is originally as follows:
-     * <table style="width:200px; border-collapse:collapse; border:1px solid black" border="1">
+     * <table style="width:200px; border-collapse:collapse; border:1px solid black" border="1" summary="Matrix before">
      *   <tr>
      *     <td>0</td><td>1</td><td>2</td><td>3</td><td style="background:lightgray">4</td><td style="background:lightgray">5</td><td style="background:lightgray">6</td><td style="background:lightgray">7</td>
      *   </tr>
@@ -104,9 +105,10 @@ public interface MatrixStrategy
      *     <td>8</td><td>9</td><td>10</td><td>11</td><td style="background:lightgray">12</td><td style="background:lightgray">13</td><td style="background:lightgray">14</td><td style="background:lightgray">15</td>
      *   </tr>
      * </table>
+     * <p>
      *
      * Then after this method it is as follows:
-     * <table style="width:100px; border-collapse:collapse; border:1px solid black" border="1">
+     * <table style="width:100px; border-collapse:collapse; border:1px solid black" border="1" summary="Matrix after">
      *   <tr>
      *     <td>0</td><td>1</td><td>2</td><td>3</td>
      *   </tr>

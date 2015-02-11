@@ -10,7 +10,7 @@ import static org.apfloat.internal.LongRadixConstants.*;
  * Mathematical operations on numbers in a base.
  * Implementation for the <code>long</code> type.
  *
- * @version 1.6
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -59,15 +59,8 @@ public class LongBaseMath
             long result = (src1 == null ? 0 : src1.getLong()) + carry +
                           (src2 == null ? 0 : src2.getLong());
 
-            if (result >= base)
-            {
-                result -= base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result >= base ? 1 : 0);
+            result -= (result >= base ? base : 0);
 
             dst.setLong(result);
 
@@ -110,15 +103,8 @@ public class LongBaseMath
             long result = (src1 == null ? 0 : src1.getLong()) - carry -
                           (src2 == null ? 0 : src2.getLong());
 
-            if (result < 0)
-            {
-                result += base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result < 0 ? 1 : 0);
+            result += (result < 0 ? base : 0);
 
             dst.setLong(result);
 
@@ -174,26 +160,15 @@ public class LongBaseMath
             carry += tmp2;
             tmp -= tmp2 * base;
 
-            if (tmp >= base)
-            {
-                tmp -= base;
-                carry++;
-            }
-            if (tmp >= base)
-            {
-                tmp -= base;
-                carry++;
-            }
-            if (tmp < 0)
-            {
-                tmp += base;
-                carry--;
-            }
-            if (tmp < 0)
-            {
-                tmp += base;
-                carry--;
-            }
+            carry += (tmp >= base ? 1 : 0);
+            tmp -= (tmp >= base ? base : 0);
+            carry += (tmp >= base ? 1 : 0);
+            tmp -= (tmp >= base ? base : 0);
+
+            carry -= (tmp < 0 ? 1 : 0);
+            tmp += (tmp < 0 ? base : 0);
+            carry -= (tmp < 0 ? 1 : 0);
+            tmp += (tmp < 0 ? base : 0);
 
             dst.setLong(tmp);                           // = a * b % base
 
@@ -242,26 +217,15 @@ public class LongBaseMath
             result += tmp2;
             carry -= tmp2 * src2;
 
-            if (carry >= src2)
-            {
-                carry -= src2;
-                result++;
-            }
-            if (carry >= src2)
-            {
-                carry -= src2;
-                result++;
-            }
-            if (carry < 0)
-            {
-                carry += src2;
-                result--;
-            }
-            if (carry < 0)
-            {
-                carry += src2;
-                result--;
-            }
+            result += (carry >= src2 ? 1 : 0);
+            carry -= (carry >= src2 ? src2 : 0);
+            result += (carry >= src2 ? 1 : 0);
+            carry -= (carry >= src2 ? src2 : 0);
+
+            result -= (carry < 0 ? 1 : 0);
+            carry += (carry < 0 ? src2 : 0);
+            result -= (carry < 0 ? 1 : 0);
+            carry += (carry < 0 ? src2 : 0);
 
             dst.setLong(result);                        // = carry * base % src2
 

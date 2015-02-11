@@ -10,7 +10,7 @@ package org.apfloat.spi;
 public interface RadixConstants
 {
     /**
-     * Factors of numbers 2, ..., 36. For 2 <= radix <= 36,
+     * Factors of numbers 2, ..., 36. For 2 &lt;= radix &lt;= 36,
      * <code>RADIX_FACTORS[radix]</code> contains an array of
      * integers containing the different factors of the radix.
      */

@@ -102,7 +102,7 @@ public class Apfloat
      * Constructs an apfloat from the specified string, precision and radix.<p>
      *
      * Note that it's impossible to construct apfloats with a specified exponent
-     * and with radix >= 14, since the characters 'e' and 'E' will be treated as
+     * and with radix &gt;= 14, since the characters 'e' and 'E' will be treated as
      * digits of the mantissa.<p>
      *
      * For example, in radix 10, "1e5" means the decimal number 100000. But in
@@ -492,7 +492,7 @@ public class Apfloat
      *
      * @return An apfloat with the specified precision and same value as this apfloat.
      *
-     * @exception java.lang.IllegalArgumentException If <code>precision</code> is <= 0.
+     * @exception java.lang.IllegalArgumentException If <code>precision</code> is &lt;= 0.
      */
 
     public Apfloat precision(long precision)
@@ -508,7 +508,7 @@ public class Apfloat
      *
      * <code>apfloat = signum * mantissa * radix<sup>scale</sup></code><p>
      *
-     * where 1/radix <= mantissa < 1. In other words,
+     * where 1/radix &lt;= mantissa &lt; 1. In other words,
      * <code>scale&nbsp;=&nbsp;floor(log<sub>radix</sub>(apfloat))&nbsp;+&nbsp;1</code>.<p>
      *
      * For example, 1 has a scale of 1, and 100 has a scale of 3 (in radix 10).
@@ -540,7 +540,7 @@ public class Apfloat
      * <code>apfloat = signum * mantissa * radix<sup>scale</sup></code> and<p>
      * <code>mantissa = n / radix<sup>size</sup></code><p>
      *
-     * where 1/radix <= mantissa < 1 and n is the smallest possible integer.
+     * where 1/radix &lt;= mantissa &lt; 1 and n is the smallest possible integer.
      * In other words, the size is the number of significant digits in the
      * mantissa (excluding leading and trailing zeros but including all zeros
      * between the first and last nonzero digit).
@@ -860,7 +860,7 @@ public class Apfloat
     }
 
     /**
-     * Returns the fractional part. The fractional part is always <code>0 <= abs(frac()) < 1</code>.
+     * Returns the fractional part. The fractional part is always <code>0 &lt;= abs(frac()) &lt; 1</code>.
      * The fractional part has the same sign as the number. For the fractional and integer parts, this always holds:<p>
      *
      * <code>x = x.truncate() + x.frac()</code>
@@ -1021,14 +1021,14 @@ public class Apfloat
      * Compare this apfloat to the specified apfloat.<p>
      *
      * Note: if two apfloats are compared where one number doesn't have enough
-     * precise digits, the mantissa is assumed to contain zeros. For example:<p>
+     * precise digits, the mantissa is assumed to contain zeros. For example:
      *
      * <pre>
      * Apfloat x = new Apfloat("0.12", 2);
      * Apfloat y = new Apfloat("0.12345", 5);
      * </pre>
      *
-     * Now <code>x.compareTo(y) < 0</code> because <code>x</code> is assumed to
+     * Now <code>x.compareTo(y) &lt; 0</code> because <code>x</code> is assumed to
      * be <code>0.12000</code>.<p>
      *
      * However, <code>new Apfloat("0.12", 2)</code> and <code>new Apfloat("0.12", 5)</code>
@@ -1147,7 +1147,7 @@ public class Apfloat
     /**
      * Formats the object using the provided formatter.<p>
      *
-     * The format specifiers affect the output as follows:<p>
+     * The format specifiers affect the output as follows:
      * <ul>
      *   <li>By default, the exponential notation is used.</li>
      *   <li>If the alternate format is specified (<code>'#'</code>), then the fixed-point notation is used.</li>
@@ -1155,6 +1155,7 @@ public class Apfloat
      *   <li>If the <code>'-'</code> flag is specified, then the padding will be on the right.</li>
      *   <li>The precision is the number of significant digts output. If the precision of the number exceeds the number of characters output, the rounding mode for output is undefined.</li>
      * </ul>
+     * <p>
      *
      * The decimal separator will be localized if the formatter specifies a locale.
      * The digits will be localized also, but only if the radix is less than or equal to 10.

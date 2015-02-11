@@ -9,7 +9,7 @@ import org.apfloat.spi.DataStorage;
  * @see DoubleMemoryDataStorage
  * @see DoubleDiskDataStorage
  *
- * @version 1.7.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -22,6 +22,11 @@ public class DoubleDataStorageBuilder
 
     public DoubleDataStorageBuilder()
     {
+    }
+
+    protected long getMaxCachedSize()
+    {
+        return (long) 8 * Integer.MAX_VALUE;
     }
 
     protected DataStorage createCachedDataStorage()

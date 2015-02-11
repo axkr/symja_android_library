@@ -24,7 +24,7 @@ import org.apfloat.spi.Util;
  *
  * @see ApintMath
  *
- * @version 1.8.1
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -200,7 +200,7 @@ public class ApfloatMath
      *
      * @return Inverse <code>n</code>:th root of <code>x</code>, that is <code>x<sup>-1/n</sup></code>.
      *
-     * @exception java.lang.IllegalArgumentException If <code>targetPrecision <= 0</code>.
+     * @exception java.lang.IllegalArgumentException If <code>targetPrecision &lt;= 0</code>.
      * @exception java.lang.ArithmeticException If <code>x</code> or <code>n</code> is zero, or <code>x</code> is negative and <code>n</code> is even.
      */
 
@@ -220,7 +220,7 @@ public class ApfloatMath
      *
      * @return Inverse <code>n</code>:th root of <code>x</code>, that is <code>x<sup>-1/n</sup></code>.
      *
-     * @exception java.lang.IllegalArgumentException If <code>targetPrecision <= 0</code>.
+     * @exception java.lang.IllegalArgumentException If <code>targetPrecision &lt;= 0</code>.
      * @exception java.lang.ArithmeticException If <code>x</code> or <code>n</code> is zero, or <code>x</code> is negative and <code>n</code> is even.
      */
 
@@ -245,7 +245,7 @@ public class ApfloatMath
      *
      * @return Inverse <code>n</code>:th root of <code>x</code>, that is <code>x<sup>-1/n</sup></code>.
      *
-     * @exception java.lang.IllegalArgumentException If <code>targetPrecision <= 0</code> or <code>initialPrecision <= 0</code>.
+     * @exception java.lang.IllegalArgumentException If <code>targetPrecision &lt;= 0</code> or <code>initialPrecision &lt;= 0</code>.
      * @exception java.lang.ArithmeticException If <code>x</code> or <code>n</code> is zero, or <code>x</code> is negative and <code>n</code> is even.
      */
 
@@ -561,7 +561,7 @@ public class ApfloatMath
      * The integer part is simply <code>i = floor(x)</code>.
      * For the fractional part <code>f</code> the following is always true:<p>
      *
-     * <code>0 <= f < 1</code>
+     * <code>0 &lt;= f &lt; 1</code>
      *
      * @param x The argument.
      *
@@ -1061,7 +1061,7 @@ public class ApfloatMath
             }
 
             // Improve the inverse root value from the current precision
-            inverseRoot = inverseRoot(new Apfloat(640320, workingPrecision, radix), 2, workingPrecision, inverseRoot);
+            inverseRoot = inverseRoot(new Apfloat(1823176476672000L, workingPrecision, radix), 2, workingPrecision, inverseRoot);
         }
         else
         {
@@ -1071,10 +1071,10 @@ public class ApfloatMath
             LQ = RQ.getApfloat();
             LP = RP.getApfloat();
 
-            inverseRoot = inverseRoot(new Apfloat(640320, workingPrecision, radix), 2);
+            inverseRoot = inverseRoot(new Apfloat(1823176476672000L, workingPrecision, radix), 2);
         }
 
-        Apfloat pi = inverseRoot(inverseRoot.multiply(LT), 1).multiply(new Apfloat(53360, Apfloat.INFINITE, radix)).multiply(LQ);
+        Apfloat pi = inverseRoot(inverseRoot.multiply(LT), 1).multiply(LQ);
 
         // Limit precisions to actual after extended working precisions
         inverseRoot = inverseRoot.precision(precision);
@@ -1101,7 +1101,7 @@ public class ApfloatMath
      *
      * @return Natural logarithm of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>x <= 0</code>.
+     * @exception java.lang.ArithmeticException If <code>x &lt;= 0</code>.
      */
 
     public static Apfloat log(Apfloat x)
@@ -1121,7 +1121,7 @@ public class ApfloatMath
      *
      * @return Base-<code>b</code> logarithm of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>x <= 0</code> or <code>b <= 0</code>.
+     * @exception java.lang.ArithmeticException If <code>x &lt;= 0</code> or <code>b &lt;= 0</code>.
      *
      * @since 1.6
      */
@@ -1479,7 +1479,7 @@ public class ApfloatMath
      *
      * @return Inverse hyperbolic cosine of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>x < 1</code>.
+     * @exception java.lang.ArithmeticException If <code>x &lt; 1</code>.
      */
 
     public static Apfloat acosh(Apfloat x)
@@ -1520,7 +1520,7 @@ public class ApfloatMath
      *
      * @return Inverse hyperbolic tangent of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>abs(x) >= 1</code>.
+     * @exception java.lang.ArithmeticException If <code>abs(x) &gt;= 1</code>.
      */
 
     public static Apfloat atanh(Apfloat x)
@@ -1594,7 +1594,7 @@ public class ApfloatMath
      *
      * @return Inverse cosine of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>abs(x) > 1</code>.
+     * @exception java.lang.ArithmeticException If <code>abs(x) &gt; 1</code>.
      */
 
     public static Apfloat acos(Apfloat x)
@@ -1613,7 +1613,7 @@ public class ApfloatMath
      *
      * @return Inverse sine of <code>x</code>.
      *
-     * @exception java.lang.ArithmeticException If <code>abs(x) > 1</code>.
+     * @exception java.lang.ArithmeticException If <code>abs(x) &gt; 1</code>.
      */
 
     public static Apfloat asin(Apfloat x)
@@ -1646,7 +1646,7 @@ public class ApfloatMath
     /**
      * Converts cartesian coordinates to polar coordinates. Calculated using complex functions.<p>
      *
-     * Computes the phase angle by computing an arc tangent of <code>x/y</code> in the range of -&pi; < angle <= &pi;.
+     * Computes the phase angle by computing an arc tangent of <code>x/y</code> in the range of -&pi; &lt; angle &lt;= &pi;.
      *
      * @param x The argument.
      * @param y The argument.

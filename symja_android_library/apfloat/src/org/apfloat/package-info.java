@@ -92,7 +92,7 @@ just guarantee that the number never gets a fractional part. Last, an
 and the denominator. The relations of these classes are shown in a class
 diagram format below:<p>
 
-<img src="doc-files/apfloat-classes.gif"><p>
+<img src="doc-files/apfloat-classes.gif" alt="Class diagram">
 */
 
 package org.apfloat;

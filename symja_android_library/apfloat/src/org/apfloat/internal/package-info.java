@@ -52,9 +52,9 @@ element type:
 </ul>
 
 For example, the relative performance of the above implementations on some
-CPUs is as follows (bigger percentage means better performance):<p>
+CPUs is as follows (bigger percentage means better performance):
 
-<table border="1">
+<table border="1" summary="Implementations">
 <tr><th>Type</th><th>Pentium 4</th><th>Athlon XP</th><th>Athlon 64 (32-bit)</th><th>Athlon 64 (64-bit)</th><th>UltraSPARC II</th></tr>
 <tr><td>Int</td><td>100%</td><td>100%</td><td>100%</td><td>100%</td><td>100%</td></tr>
 <tr><td>Long</td><td>40%</td><td>76%</td><td>59%</td><td>95%</td><td>132%</td></tr>
@@ -67,7 +67,7 @@ one million digits with no disk storage.)<p>
 Compared to the <code>java.math.BigInteger</code> class with different digit
 sizes, the apfloat relative performance with the same CPUs is as follows:<p>
 
-<img src="doc-files/biginteger-comparison.gif"><p>
+<img src="doc-files/biginteger-comparison.gif" alt="Apfloat and BigInteger comparison"><p>
 
 (Test was done with apfloat 1.1 using Sun's Java 5.0 server VM calculating
 3<sup>n</sup> and converting the result to decimal.)<p>
@@ -180,24 +180,24 @@ ApfloatImpl, multiple ApfloatImpls can point to the same DataStorage etc. This
 sharing happens in various situations, e.g. by calling <code>floor()</code>,
 multiplying by one etc:<p>
 
-<img src="doc-files/implementation-classes.gif"><p>
+<img src="doc-files/implementation-classes.gif" alt="Implementation class diagram"><p>
 
 The sequence diagram for creating a new apfloat that is stored on disk is as
 follows. Note that the FileStorage class is a private inner class of the
 DiskDataStorage class:<p>
 
-<img src="doc-files/new-sequence.gif"><p>
+<img src="doc-files/new-sequence.gif" alt="New Apfloat sequence diagram"><p>
 
 The sequence diagram for multiplying two apfloats is as follows. In this case a
 NTT based convolution is used, and the resulting apfloat is stored in memory:<p>
 
-<img src="doc-files/multiply-sequence.gif"><p>
+<img src="doc-files/multiply-sequence.gif" alt="Multiplication sequence diagram"><p>
 
 Most of the files in the apfloat implementations are generated from templates
 where a template tag is replaced by <code>int/long/float/double</code> or
 <code>Int/Long/Float/Double</code>. Also the byte size of the element type is
 templatized and replaced by 4/8/4/8. The only files that are individually
-implemented for each element type are:<p>
+implemented for each element type are:
 
 <pre>
 *BaseMath.java

@@ -10,7 +10,7 @@ import static org.apfloat.internal.DoubleRadixConstants.*;
  * Mathematical operations on numbers in a base.
  * Implementation for the <code>double</code> type.
  *
- * @version 1.6
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -59,15 +59,8 @@ public class DoubleBaseMath
             double result = (src1 == null ? 0 : src1.getDouble()) + carry +
                             (src2 == null ? 0 : src2.getDouble());
 
-            if (result >= base)
-            {
-                result -= base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result >= base ? 1 : 0);
+            result -= (result >= base ? base : 0);
 
             dst.setDouble(result);
 
@@ -110,15 +103,8 @@ public class DoubleBaseMath
             double result = (src1 == null ? 0 : src1.getDouble()) - carry -
                             (src2 == null ? 0 : src2.getDouble());
 
-            if (result < 0)
-            {
-                result += base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result < 0 ? 1 : 0);
+            result += (result < 0 ? base : 0);
 
             dst.setDouble(result);
 
@@ -170,16 +156,11 @@ public class DoubleBaseMath
             carry = (double) (long) ((a * b + carry) * this.inverseBase);
             double result = (double) (tmp - (long) carry * (long) base);
 
-            if (result >= base)
-            {
-                result -= base;
-                carry++;
-            }
-            if (result < 0)
-            {
-                result += base;
-                carry--;
-            }
+            carry += (result >= base ? 1 : 0);
+            result -= (result >= base ? base : 0);
+
+            carry -= (result < 0 ? 1 : 0);
+            result += (result < 0 ? base : 0);
 
             dst.setDouble(result);                      // = a * b % base
 
@@ -224,16 +205,11 @@ public class DoubleBaseMath
             double result = (double) (long) ((carry * base + a) * inverseDivisor);
             carry = (double) (tmp - (long) result * (long) src2);
 
-            if (carry >= src2)
-            {
-                carry -= src2;
-                result++;
-            }
-            if (carry < 0)
-            {
-                carry += src2;
-                result--;
-            }
+            result += (carry >= src2 ? 1 : 0);
+            carry -= (carry >= src2 ? src2 : 0);
+
+            result -= (carry < 0 ? 1 : 0);
+            carry += (carry < 0 ? src2 : 0);
 
             dst.setDouble(result);                      // = carry * base % src2
 

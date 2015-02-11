@@ -28,6 +28,7 @@ public class Apcomplex
     extends Number
     implements Formattable, Serializable
 {
+	public static final Apint MINUS_ONE = new Apint(-1);
     /**
      * Constant for zero. It is safe to use <code>ZERO</code>
      * in all addition, subtraction, multiplication, division and
@@ -46,8 +47,6 @@ public class Apcomplex
 
     public static final Apint ONE = new Apint(1);
 
-    public static final Apint MINUS_ONE = new Apint(-1);
-    
     /**
      * Imaginary unit. That is, <code>Apcomplex(ZERO, ONE)</code>.
      * It is safe to use <code>I</code> in all multiplication,
@@ -298,7 +297,7 @@ public class Apcomplex
      *
      * @return An apcomplex with the specified precision and same value as this apcomplex.
      *
-     * @exception java.lang.IllegalArgumentException If <code>precision</code> is <= 0.
+     * @exception java.lang.IllegalArgumentException If <code>precision</code> is &lt;= 0.
      *
      * @since 1.2
      */
@@ -384,6 +383,7 @@ public class Apcomplex
      *
      * @return <code>this + z</code>.
      */
+
     public Apcomplex add(Apcomplex z)
         throws ApfloatRuntimeException
     {

@@ -23,7 +23,7 @@ import org.apfloat.spi.Util;
  *
  * When the data to be transformed is considered to be an
  * n<sub>1</sub> x n<sub>2</sub> matrix of data, instead of a linear array,
- * the two passes go as follows:<p>
+ * the two passes go as follows:
  *
  * <ol>
  *   <li>Do n<sub>2</sub> transforms of length n<sub>1</sub> by transforming the matrix columns.
@@ -33,6 +33,7 @@ import org.apfloat.spi.Util;
  *       Do this also by fetching b x n<sub>2</sub> blocks in memory so that the blocks just
  *       fit in the available memory.</li>
  * </ol>
+ * <p>
  *
  * The algorithm requires reading blocks of b elements from the mass storage device.
  * The smaller the amount of memory compared to the transform length is, the smaller

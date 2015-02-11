@@ -90,7 +90,7 @@ public class FloatElementaryModMath
     }
 
     /**
-     * Modular subtraction. The result is always >= 0.
+     * Modular subtraction. The result is always &gt;= 0.
      *
      * @param a First operand.
      * @param b Second operand.

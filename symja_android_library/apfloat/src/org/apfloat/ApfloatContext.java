@@ -44,7 +44,7 @@ import org.apfloat.spi.Util;
  * dynamically at run time.<p>
  *
  * The different settings that can be specified in the <code>apfloat.properties</code>
- * file are as follows:<p>
+ * file are as follows:
  *
  * <ul>
  *   <li><code>builderFactory</code>, name of the class set as in {@link #setBuilderFactory(BuilderFactory)}</li>
@@ -62,8 +62,9 @@ import org.apfloat.spi.Util;
  *   <li><code>fileSuffix</code>, set as in {@link #setProperty(String,String)} with property name {@link #FILE_SUFFIX}</li>
  *   <li><code>cleanupAtExit</code>, set as in {@link #setCleanupAtExit(boolean)}</li>
  * </ul>
+ * <p>
  *
- * An example <code>apfloat.properties</code> file could contain the following:<p>
+ * An example <code>apfloat.properties</code> file could contain the following:
  *
  * <pre>
  * builderFactory=org.apfloat.internal.IntBuilderFactory
@@ -143,6 +144,7 @@ import org.apfloat.spi.Util;
  *       shared disk storage. In this case it's also essential to configure the
  *       different processes so that they do not generate conflicting file names.</li>
  * </ul>
+ * <p>
  *
  * The other settings are generally global and do not typically need to
  * be set differently for each thread.<p>
@@ -154,7 +156,7 @@ import org.apfloat.spi.Util;
  * If these features are added to the Java platform in the future, they
  * may be added to the <code>ApfloatContext</code> API as well.
  *
- * @version 1.8.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -335,6 +337,11 @@ public class ApfloatContext
 
     public static ApfloatContext getThreadContext()
     {
+        // Quick check to improve performance
+        if (ApfloatContext.threadContexts.isEmpty())
+        {
+            return null;
+        }
         return getThreadContext(Thread.currentThread());
     }
 
@@ -974,7 +981,7 @@ public class ApfloatContext
             }
             else if (propertyName.equals(CLEANUP_AT_EXIT))
             {
-              // setCleanupAtExit(Boolean.parseBoolean(propertyValue));
+//                setCleanupAtExit(Boolean.parseBoolean(propertyValue));
             }
             else
             {
@@ -1135,7 +1142,7 @@ public class ApfloatContext
      *
      * The resource bundle is found basically using the following logic
      * (note that this is standard Java <code>ResourceBundle</code>
-     * functionality), in this order whichever is found first:<p>
+     * functionality), in this order whichever is found first:
      *
      * <ol>
      *   <li>From the class named <code>apfloat</code> (that should be a subclass of <code>ResourceBundle</code>), in the current class path</li>

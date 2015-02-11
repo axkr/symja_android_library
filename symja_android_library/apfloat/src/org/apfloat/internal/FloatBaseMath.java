@@ -10,7 +10,7 @@ import static org.apfloat.internal.FloatRadixConstants.*;
  * Mathematical operations on numbers in a base.
  * Implementation for the <code>float</code> type.
  *
- * @version 1.6
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -58,15 +58,8 @@ public class FloatBaseMath
             double result = (double) (src1 == null ? 0 : src1.getFloat()) + (double) carry +
                             (double) (src2 == null ? 0 : src2.getFloat());
 
-            if (result >= base)
-            {
-                result -= base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result >= base ? 1 : 0);
+            result -= (result >= base ? base : 0);
 
             dst.setFloat((float) result);
 
@@ -109,15 +102,8 @@ public class FloatBaseMath
             float result = (src1 == null ? 0 : src1.getFloat()) - carry -
                            (src2 == null ? 0 : src2.getFloat());
 
-            if (result < 0)
-            {
-                result += base;
-                carry = 1;
-            }
-            else
-            {
-                carry = 0;
-            }
+            carry = (result < 0 ? 1 : 0);
+            result += (result < 0 ? base : 0);
 
             dst.setFloat(result);
 

@@ -59,7 +59,7 @@ public class DoubleCRTMath
      * @param src1 First operand.
      * @param src2 Second operand.
      *
-     * @return Less than zero if <code>src1 < src2</code>, greater than zero if <code>src1 > src2</code> and zero if <code>src1 == src2</code>.
+     * @return Less than zero if <code>src1 &lt; src2</code>, greater than zero if <code>src1 &gt; src2</code> and zero if <code>src1 == src2</code>.
      */
 
     public final double compare(double[] src1, double[] src2)

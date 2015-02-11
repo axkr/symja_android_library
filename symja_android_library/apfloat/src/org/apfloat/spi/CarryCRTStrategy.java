@@ -24,7 +24,7 @@ public interface CarryCRTStrategy
      * Note that the return value's initial word may be zero or non-zero,
      * depending on how large the result is.<p>
      *
-     * Assumes that <code>MODULUS[0] > MODULUS[1] > MODULUS[2]</code>.
+     * Assumes that <code>MODULUS[0] &gt; MODULUS[1] &gt; MODULUS[2]</code>.
      *
      * @param resultMod0 The result modulo <code>MODULUS[0]</code>.
      * @param resultMod1 The result modulo <code>MODULUS[1]</code>.

@@ -22,6 +22,8 @@ public abstract class ParallelRunnable
 {
     /**
      * Subclass constructor.
+     *
+     * @param length The length of the work to be run.
      */
 
     protected ParallelRunnable(long length)

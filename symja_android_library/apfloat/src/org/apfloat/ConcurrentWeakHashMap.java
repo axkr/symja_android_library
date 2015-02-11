@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * providing weak keys and non-blocking access.
  *
  * @since 1.5
- * @version 1.5
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -88,6 +88,12 @@ class ConcurrentWeakHashMap<K, V>
     {
         expungeStaleEntries();
         return this.map.remove(wrap(key));
+    }
+
+    public boolean isEmpty()
+    {
+        // This is for the quick check, therefore we do not expunge stale entries here
+        return this.map.isEmpty();
     }
 
     public int size()

@@ -9,7 +9,7 @@ import org.apfloat.spi.DataStorage;
  * @see FloatMemoryDataStorage
  * @see FloatDiskDataStorage
  *
- * @version 1.7.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -22,6 +22,11 @@ public class FloatDataStorageBuilder
 
     public FloatDataStorageBuilder()
     {
+    }
+
+    protected long getMaxCachedSize()
+    {
+        return (long) 4 * Integer.MAX_VALUE;
     }
 
     protected DataStorage createCachedDataStorage()

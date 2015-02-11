@@ -20,6 +20,7 @@ import static org.apfloat.spi.RadixConstants.*;
  * @version 1.6.2
  * @author Mikko Tommila
  */
+
 class ApfloatHelper
 {
     private ApfloatHelper()

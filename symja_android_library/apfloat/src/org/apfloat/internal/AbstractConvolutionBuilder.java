@@ -12,9 +12,9 @@ import org.apfloat.spi.Util;
  *
  * Based on a work estimate, depending on the operand sizes and implementation-dependent
  * factors, the O(n<sup>2</sup>) long multiplication, Karatsuba multiplication and
- * the NTT algorithms are chosen e.g. as follows:<p>
+ * the NTT algorithms are chosen e.g. as follows:
  *
- * <table border="1">
+ * <table style="border-collapse:collapse; border:1px solid black" border="1" summary="Convolution algorithms">
  * <tr><th>size1</th><th>size2</th><th>Algorithm</th></tr>
  * <tr><td>16</td><td>16</td><td>Long</td></tr>
  * <tr><td>16</td><td>256</td><td>Long</td></tr>

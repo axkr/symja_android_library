@@ -13,7 +13,7 @@ import org.apfloat.spi.DataStorage;
  * are created.
  *
  * @since 1.7.0
- * @version 1.8.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -34,7 +34,7 @@ public abstract class AbstractDataStorageBuilder
         ApfloatContext ctx = ApfloatContext.getContext();
 
         // Sizes are in bytes
-        if (size <= ctx.getMemoryThreshold())
+        if (size <= ctx.getMemoryThreshold() && size <= getMaxCachedSize())
         {
             return createCachedDataStorage();
         }
@@ -50,7 +50,7 @@ public abstract class AbstractDataStorageBuilder
         ApfloatContext ctx = ApfloatContext.getContext();
 
         // Sizes are in bytes
-        if (size <= ctx.getMaxMemoryBlockSize())
+        if (size <= ctx.getMaxMemoryBlockSize() && size <= getMaxCachedSize())
         {
             // Use memory data storage if it can fit in memory
             return createCachedDataStorage();
@@ -81,6 +81,14 @@ public abstract class AbstractDataStorageBuilder
         }
         return dataStorage;
     }
+
+    /**
+     * Get the maximum cached data storage size.
+     *
+     * @return The maximum cached data storage size.
+     */
+
+    protected abstract long getMaxCachedSize();
 
     /**
      * Create a cached data storage.

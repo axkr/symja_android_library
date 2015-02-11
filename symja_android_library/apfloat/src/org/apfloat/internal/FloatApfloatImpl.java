@@ -35,7 +35,7 @@ import static org.apfloat.internal.FloatRadixConstants.*;
  * This implementation doesn't necessarily store any extra digits for added
  * precision, so the last digit of any operation may be inaccurate.
  *
- * @version 1.8.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -333,6 +333,9 @@ public class FloatApfloatImpl
 
         this.radix = radix;
 
+        // Faster to set now than calculate later
+        this.isOne = (value == 1 ? 1 : 0);
+
         if (value > 0)
         {
             this.sign = 1;
@@ -375,8 +378,10 @@ public class FloatApfloatImpl
 
         this.exponent = size;
 
+        this.initialDigits = getDigits(data[MAX_LONG_SIZE - size]);
+
         // Check if precision in floats is less than size; truncate size if so
-        long basePrecision = getBasePrecision(precision, getDigits(data[MAX_LONG_SIZE - size]));
+        long basePrecision = getBasePrecision(precision, this.initialDigits);
         if (basePrecision < size)
         {
             size = (int) basePrecision;
@@ -481,8 +486,10 @@ public class FloatApfloatImpl
             value *= doubleBase;
         }
 
+        this.initialDigits = getDigits(data[0]);
+
         // Check if precision in floats is less than size; truncate size if so
-        long basePrecision = getBasePrecision(precision, getDigits(data[0]));
+        long basePrecision = getBasePrecision(precision, this.initialDigits);
         if (basePrecision < size)
         {
             size = (int) basePrecision;
@@ -1690,7 +1697,14 @@ public class FloatApfloatImpl
     public boolean isOne()
         throws ApfloatRuntimeException
     {
-        return (this.sign == 1 && this.exponent == 1 && getSize() == 1 && getMostSignificantWord() == (float) 1);
+        if (this.isOne == UNDEFINED)
+        {
+            // Cache the value
+            // NOTE: This is not synchronized; it's OK if multiple threads set this at the same time
+            this.isOne = (this.sign == 1 && this.exponent == 1 && getSize() == 1 && getMostSignificantWord() == (float) 1 ? 1 : 0);
+        }
+
+        return (this.isOne == 1);
     }
 
     public long equalDigits(ApfloatImpl x)
@@ -2054,7 +2068,7 @@ public class FloatApfloatImpl
             return false;
         }
         else if (this.sign != that.sign ||
-                 scale()   != that.scale())
+                 this.exponent != that.exponent)
         {
             return false;
         }
@@ -2388,6 +2402,7 @@ public class FloatApfloatImpl
         throws IOException, ClassNotFoundException
     {
         this.leastZeros = UNDEFINED;
+        this.isOne = UNDEFINED;
         in.defaultReadObject();
     }
 
@@ -2428,6 +2443,7 @@ public class FloatApfloatImpl
     private int radix;
     private int hashCode = 0;
     private int initialDigits = UNDEFINED;
+    private int isOne = UNDEFINED;
     private volatile long leastZeros = UNDEFINED;
     private volatile long size = 0;
 }

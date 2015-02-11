@@ -18,7 +18,7 @@ import static org.apfloat.spi.RadixConstants.*;
  * @see Apint
  * @see AprationalMath
  *
- * @version 1.8.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -310,6 +310,10 @@ public class Aprational
         {
             return 0;
         }
+        if (denominator().equals(ONE))
+        {
+            return numerator().size();
+        }
 
         if (this.size == 0)
         {
@@ -555,7 +559,7 @@ public class Aprational
     }
 
     /**
-     * Returns the fractional part. The fractional part is always <code>0 <= abs(x.frac()) < 1</code>.
+     * Returns the fractional part. The fractional part is always <code>0 &lt;= abs(x.frac()) &lt; 1</code>.
      * The fractional part has the same sign as the number. For the fractional and integer parts, this always holds:<p>
      *
      * <code>x = x.truncate() + x.frac()</code>

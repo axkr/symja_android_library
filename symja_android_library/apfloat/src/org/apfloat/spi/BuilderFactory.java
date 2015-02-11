@@ -35,6 +35,7 @@ public interface BuilderFactory
     /**
      * Returns an <code>AdditionBuilder</code> object.
      *
+     * @param <T> The element type of the additions.
      * @param elementType The element type of the additions.
      *
      * @return An <code>AdditionBuilder</code> object.
@@ -43,6 +44,7 @@ public interface BuilderFactory
      *
      * @since 1.7.0
      */
+
     public <T> AdditionBuilder<T> getAdditionBuilder(Class<T> elementType)
         throws IllegalArgumentException;
 
@@ -75,6 +77,7 @@ public interface BuilderFactory
     /**
      * Returns a <code>CarryCRTBuilder</code> object.
      *
+     * @param <T> The element array type of the carry-CRT.
      * @param elementArrayType The element array type of the carry-CRT.
      *
      * @return A <code>CarryCRTBuilder</code> object.
@@ -83,6 +86,7 @@ public interface BuilderFactory
      *
      * @since 1.7.0
      */
+
     public <T> CarryCRTBuilder<T> getCarryCRTBuilder(Class<T> elementArrayType)
         throws IllegalArgumentException;
 

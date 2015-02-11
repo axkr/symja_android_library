@@ -9,7 +9,7 @@ import org.apfloat.spi.DataStorage;
  * @see IntMemoryDataStorage
  * @see IntDiskDataStorage
  *
- * @version 1.7.0
+ * @version 1.8.2
  * @author Mikko Tommila
  */
 
@@ -22,6 +22,11 @@ public class IntDataStorageBuilder
 
     public IntDataStorageBuilder()
     {
+    }
+
+    protected long getMaxCachedSize()
+    {
+        return (long) 4 * Integer.MAX_VALUE;
     }
 
     protected DataStorage createCachedDataStorage()

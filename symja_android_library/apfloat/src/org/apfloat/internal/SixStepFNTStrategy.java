@@ -13,7 +13,7 @@ import org.apfloat.spi.MatrixStrategy;
  *
  * When the data to be transformed is considered to be an
  * n<sub>1</sub> x n<sub>2</sub> matrix of data, instead of a linear array,
- * the six steps are as follows:<p>
+ * the six steps are as follows:
  *
  * <ol>
  *   <li>Transpose the matrix.</li>
@@ -23,6 +23,7 @@ import org.apfloat.spi.MatrixStrategy;
  *   <li>Transform the rows.</li>
  *   <li>Transpose the matrix.</li>
  * </ol>
+ * <p>
  *
  * In a convolution algorithm the last transposition step can be omitted
  * to increase performance, as well as the first transposition step in

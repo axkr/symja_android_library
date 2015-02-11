@@ -84,13 +84,13 @@ specification of all the interfaces in the SPI. These patterns include:
 
 Associations of the SPI classes are shown in a class diagram format below:<p>
 
-<img src="doc-files/spi-classes.gif"><p>
+<img src="doc-files/spi-classes.gif" alt="Class diagram"><p>
 
 The class implementing {@link org.apfloat.spi.BuilderFactory} that is used in
 creating apfloat implementations is defined in the {@link org.apfloat.ApfloatContext}.
 You can set the BuilderFactory instance programmatically by calling
 {@link org.apfloat.ApfloatContext#setBuilderFactory(BuilderFactory)},
-for example:<p>
+for example:
 
 <pre>
 BuilderFactory builderFactory = new MyBuilderFactory();
@@ -100,7 +100,7 @@ ApfloatContext.getContext().setBuilderFactory(builderFactory);
 It's a lot easier to specify this to happen automatically whenever your program
 starts. To do this just specify the BuilderFactory class name in the
 <code>apfloat.properties</code> file (or the apfloat ResourceBundle if you use one).
-For example, the <code>apfloat.properties</code> file might contain the line:<p>
+For example, the <code>apfloat.properties</code> file might contain the line:
 
 <pre>
 builderFactory=org.mycompany.MyBuilderFactory

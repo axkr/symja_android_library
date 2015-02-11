@@ -241,6 +241,7 @@ public abstract class DataStorage
          *
          * The default implementation always throws <code>UnsupportedOperationException</code>.
          *
+         * @param <T> The type of the element.
          * @param type The type of the element.
          *
          * @return The current element as the specified type.
@@ -262,6 +263,7 @@ public abstract class DataStorage
          *
          * The default implementation always throws <code>UnsupportedOperationException</code>.
          *
+         * @param <T> The type of the element.
          * @param type The type of the element.
          * @param value The value to be set to the current element as the specified type.
          *
@@ -833,32 +835,28 @@ public abstract class DataStorage
     /**
      * Maps a block of data to a memory array when the data is treated as a matrix.
      * The matrix size is n<sub>1</sub> x n<sub>2</sub>.
-     * The following picture illustrates the block being accessed (in gray):<p>
+     * The following picture illustrates the block being accessed (in gray):
      *
-     * <div align="center">
-     *   <table style="width:400px; height:300px; border-collapse:collapse; border:1px solid black" border="1">
-     *     <tr>
-     *       <td style="width:200px">
-     *         <div align="center">
-     *           <code>&larr; startColumn &rarr;</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:150px; background:lightgray">
-     *         <div align="center">
-     *           <code>&larr; columns &rarr;</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:50px">
-     *         <div align="center">
-     *           <code>&uarr;<br>
-     *           n<sub>1</sub><br>
-     *           &darr;<br></code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *   </table>
-     *   <code>&larr; n<sub>2</sub> &rarr; </code>
-     * </div>
+     * <table style="border-collapse:collapse; text-align:center" summary="Matrix">
+     *   <tr style="height:300px">
+     *     <td style="width:200px; border:1px solid black">
+     *       <code>&larr; startColumn &rarr;</code>
+     *     </td>
+     *     <td style="width:150px; border:1px solid black; background:lightgray">
+     *       <code>&larr; columns &rarr;</code>
+     *     </td>
+     *     <td style="width:50px; border:1px solid black">
+     *       <code>&uarr;<br>
+     *       n<sub>1</sub><br>
+     *       &darr;<br></code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td colspan="3">
+     *       <code>&larr; n<sub>2</sub> &rarr;</code>
+     *     </td>
+     *   </tr>
+     * </table>
      *
      * @param mode Whether the array is prepared for reading, writing or both. The value should be {@link #READ}, {@link #WRITE} or a combination of these.
      * @param startColumn The starting column where data is read.
@@ -916,142 +914,114 @@ public abstract class DataStorage
     /**
      * Maps a transposed block of data to a memory array when the data is treated as a matrix.
      * The matrix size is n<sub>1</sub> x n<sub>2</sub>. The accessed block is illustrated in gray
-     * in the following picture. The argument <code>columns</code> is the value <code>b</code>:<p>
+     * in the following picture. The argument <code>columns</code> is the value <code>b</code>:
      *
-     * <div align="center">
-     *   <table style="width:400px; height:300px; border-collapse:collapse; border:1px solid black" border="1">
-     *     <tr>
-     *       <td style="width:200px" rowspan="5">
-     *         <div align="center">
-     *           <code>&larr; startColumn &rarr;</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:150px; height:25px; background:lightgray">
-     *         <div align="center">
-     *           <code>A</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:50px" rowspan="5">
-     *         <div align="center">
-     *           <code>&uarr;<br>
-     *           n<sub>1</sub><br>
-     *           &darr;<br></code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px; background:lightgray">
-     *         <div align="center">
-     *           <code>B</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px; background:lightgray">
-     *         <div align="center">
-     *           <code>C</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px; background:lightgray">
-     *         <div align="center">
-     *           <code>D</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:200px; background:lightgray">
-     *         <div align="center">
-     *           <code>&larr; b &rarr;</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *   </table>
-     *   <code>&larr; n<sub>2</sub> &rarr; </code>
-     * </div>
+     * <table style="border-collapse:collapse; text-align:center" summary="Matrix">
+     *   <tr>
+     *     <td style="width:200px; height:300px; border:1px solid black" rowspan="5">
+     *       <code>&larr; startColumn &rarr;</code>
+     *     </td>
+     *     <td style="width:150px; height:25px; background:lightgray; border:1px solid black">
+     *       <code>A</code>
+     *     </td>
+     *     <td style="width:50px; border:1px solid black" rowspan="5">
+     *       <code>&uarr;<br>
+     *       n<sub>1</sub><br>
+     *       &darr;<br></code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td style="width:100px; height:25px; background:lightgray; border:1px solid black">
+     *       <code>B</code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td style="width:100px; height:25px; background:lightgray; border:1px solid black">
+     *       <code>C</code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td style="width:100px; height:25px; background:lightgray; border:1px solid black">
+     *       <code>D</code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td style="width:100px; height:200px; background:lightgray; border:1px solid black">
+     *       <code>&larr; b &rarr;</code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td colspan="3">
+     *       <code>&larr; n<sub>2</sub> &rarr; </code>
+     *     </td>
+     *   </tr>
+     * </table>
      *
      * The data is read from an n<sub>1</sub> x b area of the matrix, in blocks
-     * of b elements, to a b x n<sub>1</sub> memory array as follows:<p>
+     * of b elements, to a b x n<sub>1</sub> memory array as follows:
      *
-     * <div align="center">
-     *   <table style="width:300px; height:100px; border-collapse:collapse; border:1px solid black; background:lightgray" border="1">
-     *     <tr>
-     *       <td style="width:100px; height:25px">
-     *         <div align="center">
-     *           <code>A</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:200px" rowspan="4">
-     *         <div align="center">
-     *           <code>&uarr;<br>
-     *           b<br>
-     *           &darr;<br></code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px">
-     *         <div align="center">
-     *           <code>B</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px">
-     *         <div align="center">
-     *           <code>C</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td style="width:100px; height:25px">
-     *         <div align="center">
-     *           <code>D</code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *   </table>
-     *   <code>&larr; n<sub>1</sub> &rarr;</code>
-     * </div>
+     * <table style="border-collapse:collapse; text-align:center" summary="Read matrix section">
+     *   <tr style="background:lightgray">
+     *     <td style="width:100px; height:25px; border:1px solid black">
+     *       <code>A</code>
+     *     </td>
+     *     <td style="width:200px; border:1px solid black" rowspan="4">
+     *       <code>&uarr;<br>
+     *       b<br>
+     *       &darr;<br></code>
+     *     </td>
+     *   </tr>
+     *   <tr style="background:lightgray">
+     *     <td style="width:100px; height:25px; border:1px solid black">
+     *       <code>B</code>
+     *     </td>
+     *   </tr>
+     *   <tr style="background:lightgray">
+     *     <td style="width:100px; height:25px; border:1px solid black">
+     *       <code>C</code>
+     *     </td>
+     *   </tr>
+     *   <tr style="background:lightgray">
+     *     <td style="width:100px; height:25px; border:1px solid black">
+     *       <code>D</code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td colspan="2">
+     *       <code>&larr; n<sub>1</sub> &rarr;</code>
+     *     </td>
+     *   </tr>
+     * </table>
      *
      * Each b x b block is transposed, to form the final b x n<sub>1</sub> array
-     * in memory, where the columns are located linearly:<p>
+     * in memory, where the columns are located linearly:
      *
-     * <div align="center">
-     *   <table style="width:300px; height:100px; border-collapse:collapse; border:1px solid black; background:lightgray" border="1">
-     *     <tr>
-     *       <td style="width:25px; height:100px">
-     *         <div align="center">
-     *           <code>A</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:25px; height:100px">
-     *         <div align="center">
-     *           <code>B</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:25px; height:100px">
-     *         <div align="center">
-     *           <code>C</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:25px; height:100px">
-     *         <div align="center">
-     *           <code>D</code>
-     *         </div>
-     *       </td>
-     *       <td style="width:200px" rowspan="4">
-     *         <div align="center">
-     *           <code>&uarr;<br>
-     *           b<br>
-     *           &darr;<br></code>
-     *         </div>
-     *       </td>
-     *     </tr>
-     *   </table>
-     *   <code>&larr; n<sub>1</sub> &rarr;</code>
-     * </div>
+     * <table style="border-collapse:collapse; text-align:center" summary="Transposed matrix section">
+     *   <tr style="height:100px; background:lightgray">
+     *     <td style="width:25px; border:1px solid black">
+     *       <code>A</code>
+     *     </td>
+     *     <td style="width:25px; border:1px solid black">
+     *       <code>B</code>
+     *     </td>
+     *     <td style="width:25px; border:1px solid black">
+     *       <code>C</code>
+     *     </td>
+     *     <td style="width:25px; border:1px solid black">
+     *       <code>D</code>
+     *     </td>
+     *     <td style="width:200px; border:1px solid black">
+     *       <code>&uarr;<br>
+     *       b<br>
+     *       &darr;<br></code>
+     *     </td>
+     *   </tr>
+     *   <tr>
+     *     <td colspan="5">
+     *       <code>&larr; n<sub>1</sub> &rarr;</code>
+     *     </td>
+     *   </tr>
+     * </table>
      *
      * @param mode Whether the array is prepared for reading, writing or both. The value should be {@link #READ}, {@link #WRITE} or a combination of these.
      * @param startColumn The starting column where data is read.

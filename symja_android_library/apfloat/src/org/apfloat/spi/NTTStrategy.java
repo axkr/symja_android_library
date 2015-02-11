@@ -4,7 +4,7 @@ import org.apfloat.ApfloatRuntimeException;
 
 /**
  * Number Theoretic Transform (NTT) strategy.
- * An implementing class could be e.g.<p>
+ * An implementing class could be e.g.
  *
  * <ul>
  *   <li>Fast Number Theoretic Transform (FNT)</li>
@@ -12,6 +12,7 @@ import org.apfloat.ApfloatRuntimeException;
  *   <li>"Two-pass" mass storage FNT</li>
  *   <li>Winograd Fourier Transform Algorithm (WFTA)</li>
  * </ul>
+ * <p>
  *
  * Note: an implementing transformation class is required only to be able
  * to perform an inverse transform on data transformed by the same class,
