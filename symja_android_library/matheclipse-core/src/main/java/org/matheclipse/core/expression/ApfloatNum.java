@@ -402,12 +402,18 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public boolean isLessThan(ISignedNumber that) {
-		return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
+		if (that instanceof ApfloatNum) {
+			return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
+		}
+		return doubleValue() < that.doubleValue();
 	}
 
 	@Override
 	public boolean isGreaterThan(ISignedNumber that) {
-		return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
+		if (that instanceof ApfloatNum) {
+			return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
+		}
+		return doubleValue() > that.doubleValue();
 	}
 
 	@Override
