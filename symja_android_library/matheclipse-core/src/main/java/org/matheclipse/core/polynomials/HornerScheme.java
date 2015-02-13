@@ -108,9 +108,9 @@ public class HornerScheme {
 		IAST value = map.get(key);
 		IExpr coefficient;
 		if (value.isAST(F.Plus, 2)) {
-			coefficient = value.get(1);
+			coefficient = value.arg1();
 			if (coefficient.isAST(F.Times, 2)) {
-				coefficient = ((IAST) coefficient).get(1);
+				coefficient = ((IAST) coefficient).arg1();
 			}
 		} else {
 			coefficient = value;

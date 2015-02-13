@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import org.matheclipse.core.interfaces.IExpr;
-
 /**
  * HMArrayList is an implementation of {@link List}, backed by an array. All optional operations adding, removing, and replacing are
  * supported. The elements can be any objects.
@@ -160,6 +158,31 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		modCount++;
 	}
 
+	/** {@inheritDoc} */
+	final public E arg1() {
+		return array[firstIndex+1];
+	}
+
+	/** {@inheritDoc} */
+	final public E arg2() {
+		return array[firstIndex+2];
+	}
+
+	/** {@inheritDoc} */
+	final public E arg3() {
+		return array[firstIndex+3];
+	}
+
+	/** {@inheritDoc} */
+	final public E arg4() {
+		return array[firstIndex+4];
+	}
+
+	/** {@inheritDoc} */
+	final public E arg5() {
+		return array[firstIndex+5];
+	}
+	
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
