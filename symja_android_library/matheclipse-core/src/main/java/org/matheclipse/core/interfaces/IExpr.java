@@ -84,7 +84,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public IExpr apply(List<? extends IExpr> leaves);
 
-	public Object asType(Class clazz);
+	public Object asType(Class<?> clazz);
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as

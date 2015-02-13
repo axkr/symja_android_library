@@ -168,13 +168,11 @@ public class Subsets extends AbstractFunctionEvaluator {
 			while (level.isInRange()) {
 				k = level.getCurrentLevel();
 				final KSubsetsList iter = createKSubsets(f, k, F.ast(F.List), 1);
-				int i = 0;
 				for (IAST part : iter) {
 					if (part == null) {
 						break;
 					}
 					result.add(part);
-					i++;
 				}
 				level.incCurrentLevel();
 			}

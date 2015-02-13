@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.CInfinity;
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CNInfinity;
 import static org.matheclipse.core.expression.F.Erf;
 import static org.matheclipse.core.expression.F.Negate;

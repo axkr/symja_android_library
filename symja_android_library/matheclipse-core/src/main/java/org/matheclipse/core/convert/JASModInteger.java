@@ -24,7 +24,6 @@ import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
-import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrder;
 
 /**
@@ -38,7 +37,7 @@ public class JASModInteger {
 	private final TermOrder fTermOrder;
 	private final GenPolynomialRing<ModLong> fPolyFactory;
 
-	private final GenPolynomialRing<edu.jas.arith.BigInteger> fBigIntegerPolyFactory;
+	// private final GenPolynomialRing<edu.jas.arith.BigInteger> fBigIntegerPolyFactory;
 
 	private final List<? extends IExpr> fVariables;
 
@@ -53,8 +52,8 @@ public class JASModInteger {
 		}
 		this.fTermOrder = new TermOrder(TermOrder.INVLEX);
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
-				fVariables.size(), fTermOrder, vars);
+		// this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
+		// fVariables.size(), fTermOrder, vars);
 	}
 
 	public JASModInteger(final List<? extends IExpr> variablesList, ModLongRing ringFactory) {
@@ -70,8 +69,8 @@ public class JASModInteger {
 		}
 		this.fTermOrder = termOrder;
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
-				fVariables.size(), fTermOrder, vars);
+		// this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
+		// fVariables.size(), fTermOrder, vars);
 	}
 
 	public GenPolynomial<ModLong> expr2JAS(final IExpr exprPoly) throws JASConversionException {
@@ -295,7 +294,7 @@ public class JASModInteger {
 	 */
 	public GenPolynomialRing<ModLong> getPolynomialRingFactory() {
 		return fPolyFactory;
-	} 
+	}
 
 	public IExpr modLongPoly2Expr(final GenPolynomial<ModLong> poly) throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {

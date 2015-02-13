@@ -35,6 +35,7 @@ public class Inner extends AbstractFunctionEvaluator {
 					list1Dimensions.subList(0, list1Dimensions.size() - 1), list2Dimensions.subList(1, list2Dimensions.size()));
 		}
 
+		@SuppressWarnings("unchecked")
 		private IAST recursion(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur, List<Integer> list1RestDimensions,
 				List<Integer> list2RestDimensions) {
 			if (list1RestDimensions.size() > 0) {
@@ -64,6 +65,7 @@ public class Inner extends AbstractFunctionEvaluator {
 			}
 		}
 
+		@SuppressWarnings("unchecked")
 		private IAST summand(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur, final int i) {
 			IAST result = F.ast(f);
 			ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();

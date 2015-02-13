@@ -1,18 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CInfinity;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.E;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetDelayed;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.interfaces.AbstractArg12;

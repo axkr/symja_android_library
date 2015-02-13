@@ -21,10 +21,8 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Map;
 
-import org.apache.commons.math3.util.FastMath;
 
 import com.google.common.math.BigIntegerMath;
-import com.google.common.math.IntMath;
 
 /**
  * Provides primality probabilistic methods.

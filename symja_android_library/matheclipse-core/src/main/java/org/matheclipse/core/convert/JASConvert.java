@@ -401,7 +401,7 @@ public class JASConvert<C extends RingElem<C>> {
 				GenPolynomial<BigRational> v = ap.getVal();
 				IAST times = F.Times();
 
-				AlgebraicNumber<BigRational> arGen = ar.getGenerator();
+				// AlgebraicNumber<BigRational> arGen = ar.getGenerator();
 				// sb.append(" ## over " + ap.factory() + "\n");
 
 				if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {

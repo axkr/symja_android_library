@@ -1,14 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import java.math.BigInteger;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
-
-import java.math.BigInteger;
 
 /**
  * Get the next prime number. See: <a

@@ -87,7 +87,7 @@ public abstract class ExprImpl implements IExpr {
 	}
 
 	@Override
-	public Object asType(Class clazz) {
+	public Object asType(Class<?> clazz) {
 		if (clazz.equals(Boolean.class)) {
 			if (this.equals(F.True)) {
 				return Boolean.TRUE;

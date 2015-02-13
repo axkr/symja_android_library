@@ -1,7 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.expression.NumberUtil;
-
 /**
  * A numeric (double) number.
  * 

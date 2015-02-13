@@ -1,12 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

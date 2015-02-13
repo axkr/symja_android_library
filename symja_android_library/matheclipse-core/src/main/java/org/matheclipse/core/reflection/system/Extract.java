@@ -9,7 +9,6 @@ import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Extract extends AbstractFunctionEvaluator {

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

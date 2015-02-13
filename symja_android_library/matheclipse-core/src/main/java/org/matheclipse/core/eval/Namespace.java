@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
@@ -55,13 +56,12 @@ public class Namespace {
 	 * @param symbol
 	 *            the symbol which should be set-up
 	 */
-	@SuppressWarnings("unchecked")
 	public void setEvaluator(final ISymbol symbol) {
 		String functionName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String symbolName = symbol.toString();
 			if (symbolName.length() > 1) {
-				symbolName = symbolName.toLowerCase();
+				symbolName = symbolName.toLowerCase(Locale.ENGLISH);
 			}
 			functionName = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbolName);
 		} else {
@@ -69,7 +69,7 @@ public class Namespace {
 		}
 		if (functionName != null) {
 			for (Map.Entry<String, Namespace> namespaceEntry : fPackageNamespaceMap.entrySet()) {
-				Class clazz;
+				Class<?> clazz;
 				try {
 					if (namespaceEntry.getValue() == null) {
 						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName);
@@ -112,12 +112,11 @@ public class Namespace {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void setEquals(final Symbol symbol) {
 		String namespace;
 		for (int i = fNamespaces.size() - 1; i >= 0; i--) {
 			namespace = fNamespaces.get(i) + symbol.toString();
-			Class clazz;
+			Class<?> clazz;
 			try {
 				clazz = Class.forName(namespace);
 			} catch (final ClassNotFoundException e) {

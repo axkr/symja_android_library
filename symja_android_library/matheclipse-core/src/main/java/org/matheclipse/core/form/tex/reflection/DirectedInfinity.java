@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 

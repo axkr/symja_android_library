@@ -57,7 +57,6 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	public final Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
 
 	private int plusPrec;
-	private int timesPrec;
 
 	/**
 	 * Constructor
@@ -203,7 +202,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 				buf.append(str);
 				return;
 			}
-			
+
 			if (str.length() == 1) {
 				buf.append(str);
 			} else {
@@ -273,7 +272,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		buf.append(")");
 
 	}
-	
+
 	@Override
 	public void convertAST(StringBuffer buf, final IAST f, String headString) {
 		buf.append(headString);
@@ -309,7 +308,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		final String namespace = getReflectionNamespace() + headStr;
 
-		Class clazz = null;
+		Class<?> clazz = null;
 		try {
 			clazz = Class.forName(namespace);
 		} catch (final ClassNotFoundException e) {
@@ -353,7 +352,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		// exprFactory));
 		// operTab.put(Power, new MMLOperator(this, "msup", ""));
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
-		timesPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
+		// timesPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
 
 		operTab.put("Sin", new TeXFunction(this, "sin"));
 		operTab.put("Cos", new TeXFunction(this, "cos"));

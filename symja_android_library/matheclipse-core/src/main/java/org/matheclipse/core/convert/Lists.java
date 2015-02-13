@@ -219,7 +219,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_objects != null) {
 			for (int i = 0, t = p_objects.length; i < t; i++) {
-				ast.add(Object2Expr.CONST.convert(p_objects[i]));
+				ast.add(Object2Expr.convert(p_objects[i]));
 			}
 		}
 		return ast;

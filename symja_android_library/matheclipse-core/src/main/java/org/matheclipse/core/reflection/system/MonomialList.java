@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;

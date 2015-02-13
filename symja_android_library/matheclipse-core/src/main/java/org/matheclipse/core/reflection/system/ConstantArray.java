@@ -5,8 +5,6 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.builtin.function.Array.ArrayIterator;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.TableGenerator;

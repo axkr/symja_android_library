@@ -27,7 +27,7 @@ public class MethodSymbol extends Symbol {
 	public MethodSymbol(final String symbolName, final String packagename, final String classname, final String methodname) {
 		super(symbolName);
 		try {
-			Class c = Class.forName(packagename + '.' + classname);
+			Class<?> c = Class.forName(packagename + '.' + classname);
 			fMethod = c.getDeclaredMethod(methodname, new Class[] { IAST.class });
 		} catch (Exception e) {
 			e.printStackTrace();

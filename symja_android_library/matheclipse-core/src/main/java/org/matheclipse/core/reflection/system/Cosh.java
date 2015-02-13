@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Times;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;

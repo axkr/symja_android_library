@@ -1606,7 +1606,7 @@ public class F {
 	 * @return
 	 */
 	public static IExpr cast(Object obj) {
-		return Object2Expr.CONST.convert(obj);
+		return Object2Expr.convert(obj);
 	}
 
 	public static IAST Catch(final IExpr a) {
@@ -2631,16 +2631,6 @@ public class F {
 	 */
 	public synchronized static void initSymbols() {
 		initSymbols(null, null, false);
-	}
-
-	/**
-	 * Initialize the complete System. Calls {@link #initSymbols(String, ISymbolObserver, boolean)} with parameters
-	 * <code>fileName, null</code>.
-	 * 
-	 * @param fileName
-	 */
-	private synchronized static void initSymbols(String fileName) {
-		initSymbols(fileName, null, false);
 	}
 
 	/**

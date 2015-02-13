@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.function;
 
-import org.matheclipse.core.builtin.function.Module;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.Validate;

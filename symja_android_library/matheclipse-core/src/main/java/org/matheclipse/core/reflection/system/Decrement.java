@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;

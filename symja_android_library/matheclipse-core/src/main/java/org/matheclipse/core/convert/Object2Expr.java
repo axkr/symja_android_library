@@ -16,17 +16,7 @@ import java.math.BigInteger;
  * Converts objects into an IExpr expression
  * 
  */
-public class Object2Expr { // extends Converter<Object, IExpr> {
-
-	/**
-	 * Typical instance of an <code>java.lang.Object</code> to <code>IExpr</code>
-	 * converter
-	 */
-	public final static Object2Expr CONST = new Object2Expr(Object.class, IExpr.class);
-
-	public Object2Expr(final Class sType, final Class tType) {
-		super();
-	}
+public class Object2Expr {  
 
 	/**
 	 * Converts the following J<va objects into an IExpr expression
@@ -54,7 +44,7 @@ public class Object2Expr { // extends Converter<Object, IExpr> {
 	 * 
 	 * </pre>
 	 */
-	public IExpr convert(Object obj) throws ConversionException {
+	public static IExpr convert(Object obj) throws ConversionException {
 		if (obj == null) {
 			return F.Null;
 		}
@@ -87,7 +77,7 @@ public class Object2Expr { // extends Converter<Object, IExpr> {
 			return F.integer(((Number) obj).longValue());
 		}
 		if (obj instanceof java.util.List) {
-			final java.util.List lst = (java.util.List) obj;
+			final java.util.List<?> lst = (java.util.List<?>) obj;
 			IAST list = null;
 			if (lst.size() == 0) {
 				list = List();

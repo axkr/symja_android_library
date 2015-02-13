@@ -46,7 +46,6 @@ public class Matrix extends ASTDelegate {
 
 	protected AST createAST(int[][] values) {
 		AST matrix = (AST) F.ast(F.List, values.length, true);
-		IAST row;
 		for (int i = 0; i < values.length; i++) {
 			matrix.set(i + 1, AST.newInstance(F.List, values[i]));
 			// row = F.ast(F.List, values[i].length, true);

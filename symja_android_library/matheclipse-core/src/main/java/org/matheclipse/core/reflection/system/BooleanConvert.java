@@ -1,6 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.Equivalent;
+import static org.matheclipse.core.expression.F.Implies;
+import static org.matheclipse.core.expression.F.Nand;
+import static org.matheclipse.core.expression.F.Nor;
+import static org.matheclipse.core.expression.F.Not;
+import static org.matheclipse.core.expression.F.Or;
+import static org.matheclipse.core.expression.F.Xor;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

@@ -16,11 +16,8 @@
  */
 package org.matheclipse.core.stat.descriptive.summary;
 
-import static org.matheclipse.core.expression.F.eval;
-
 import java.io.Serializable;
 
-import org.apache.commons.math3.util.FastMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

@@ -3,13 +3,11 @@ package org.matheclipse.core.builtin.function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 import com.google.common.base.Function;
 
@@ -22,48 +20,48 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 	public DeleteCases() {
 	}
 
-	private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
-		protected final PatternMatcher matcher;
-		protected IAST resultCollection;
+	// private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
+	// protected final PatternMatcher matcher;
+	// protected IAST resultCollection;
+	//
+	// public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection) {
+	// this.matcher = matcher;
+	// this.resultCollection = resultCollection;
+	// }
+	//
+	// @Override
+	// public IExpr apply(final IExpr arg) {
+	// if (arg.isAST()) {
+	// IAST ast = (IAST) arg;
+	// IAST[] results = ast.filter(matcher);
+	// resultCollection.addAll(results[1]);
+	// // ast.filter(resultCollection, matcher);
+	// }
+	// return null;
+	// }
+	//
+	// }
 
-		public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection) {
-			this.matcher = matcher;
-			this.resultCollection = resultCollection;
-		}
-
-		@Override
-		public IExpr apply(final IExpr arg) {
-			if (arg.isAST()) {
-				IAST ast = (IAST) arg;
-				IAST[] results = ast.filter(matcher);
-				resultCollection.addAll(results[1]);
-				// ast.filter(resultCollection, matcher);
-			}
-			return null;
-		}
-
-	}
-
-	private static class CasesRulesFunctor implements Function<IExpr, IExpr> {
-		protected final Function<IExpr, IExpr> function;
-		protected IAST resultCollection;
-
-		public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection) {
-			this.function = function;
-			this.resultCollection = resultCollection;
-		}
-
-		@Override
-		public IExpr apply(final IExpr arg) {
-			if (arg.isAST()) {
-				IAST ast = (IAST) arg;
-				IAST[] results = ast.filter(function);
-				resultCollection.addAll(results[1]);
-			}
-			return null;
-		}
-
-	}
+	// private static class CasesRulesFunctor implements Function<IExpr, IExpr> {
+	// protected final Function<IExpr, IExpr> function;
+	// protected IAST resultCollection;
+	//
+	// public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection) {
+	// this.function = function;
+	// this.resultCollection = resultCollection;
+	// }
+	//
+	// @Override
+	// public IExpr apply(final IExpr arg) {
+	// if (arg.isAST()) {
+	// IAST ast = (IAST) arg;
+	// IAST[] results = ast.filter(function);
+	// resultCollection.addAll(results[1]);
+	// }
+	// return null;
+	// }
+	//
+	// }
 
 	@Override
 	public IExpr evaluate(final IAST ast) {

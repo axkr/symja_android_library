@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -1206,7 +1207,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name = symbol;
 			if (name.length() > 0) {
-				name = symbol.toLowerCase();
+				name = symbol.toLowerCase(Locale.ENGLISH);
 			}
 			return get(0).toString().equals(name);
 		}
@@ -1221,7 +1222,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name = symbol;
 			if (name.length() > 0) {
-				name = symbol.toLowerCase();
+				name = symbol.toLowerCase(Locale.ENGLISH);
 			}
 			return (size() == length) && get(0).toString().equals(name);
 		}
@@ -1668,7 +1669,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				name = sym.toString();
 				if (name.length() > 0) {
-					name = name.toLowerCase();
+					name = name.toLowerCase(Locale.ENGLISH);
 				}
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
 			}
@@ -2043,7 +2044,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	}
 
 	@Override
-	public Object asType(Class clazz) {
+	public Object asType(Class<?> clazz) {
 		if (clazz.equals(Boolean.class)) {
 			IExpr temp = F.eval(this);
 			if (temp.equals(F.True)) {

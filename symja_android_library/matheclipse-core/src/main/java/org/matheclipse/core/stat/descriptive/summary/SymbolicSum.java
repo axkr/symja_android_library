@@ -38,6 +38,11 @@ import org.matheclipse.core.stat.descriptive.AbstractSymbolicStorelessUnivariate
  */
 public class SymbolicSum extends AbstractSymbolicStorelessUnivariateStatistic implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -612258560190357431L;
+
 	/** */
 	private long n;
 
