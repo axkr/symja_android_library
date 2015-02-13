@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.generic.IsBinaryFalse;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 public class Sort extends AbstractFunctionEvaluator {
 
@@ -23,10 +23,10 @@ public class Sort extends AbstractFunctionEvaluator {
 			}
 			try {
 				if (ast.size() == 2) {
-					EvaluationSupport.sort(shallowCopy);
+					EvalAttributes.sort(shallowCopy);
 				} else {
 					// use the 2nd argument as a head for the comparator operation:
-					EvaluationSupport.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
+					EvalAttributes.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
 				}
 				return shallowCopy;
 			} catch (Exception ex) {

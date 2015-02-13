@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -22,7 +22,7 @@ public class Median extends AbstractTrigArg1 {
 			final IAST list = (IAST) arg1;
 			if (list.size() > 1) {
 				final IAST sortedList = list.clone();
-				EvaluationSupport.sort(sortedList);
+				EvalAttributes.sort(sortedList);
 				int size = sortedList.size();
 				if ((size & 0x00000001) == 0x00000001) {
 					// odd number of elements

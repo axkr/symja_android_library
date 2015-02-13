@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -7,7 +8,6 @@ import org.matheclipse.core.generic.ITernaryComparator.COMPARE_RESULT;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 public class Max extends AbstractFunctionEvaluator {
 	public Max() {
@@ -21,7 +21,7 @@ public class Max extends AbstractFunctionEvaluator {
 		}
 		IAST list = ast;
 		IAST resultList = list.copyHead();
-		if (EvaluationSupport.flatten(F.List, list, resultList)) {
+		if (EvalAttributes.flatten(F.List, list, resultList)) {
 			list = resultList;
 		}
 		// IExpr max = F.Times(F.CN1, ExprFactory.Infinity);

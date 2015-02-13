@@ -18,6 +18,7 @@ import org.apfloat.ApfloatContext;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.Namespace;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.generic.Functors;
@@ -35,7 +36,6 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 import com.google.common.base.Function;
 
@@ -3317,7 +3317,7 @@ public class F {
 				} else {
 					result.add(a1);
 				}
-				EvaluationSupport.sort(result);
+				EvalAttributes.sort(result);
 				return result;
 			}
 			if (a0.compareTo(a1) > 0) {
@@ -3871,7 +3871,7 @@ public class F {
 				} else {
 					result.add(a1);
 				}
-				EvaluationSupport.sort(result);
+				EvalAttributes.sort(result);
 				return result;
 			}
 			if (a0.compareTo(a1) > 0) {

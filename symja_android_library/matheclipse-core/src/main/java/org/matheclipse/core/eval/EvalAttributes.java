@@ -1,4 +1,4 @@
-package org.matheclipse.core.list.algorithms;
+package org.matheclipse.core.eval;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
@@ -7,15 +7,24 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * 
+ * Static methods for evaluating <code>ISymbol.FLAT, ISymbol.LISTABLE</code> and <code>ISymbol.ORDERLESS</code> attributes.
+ *
+ * @see org.matheclipse.core.interfaces.ISymbol#FLAT
+ * @see org.matheclipse.core.interfaces.ISymbol#LISTABLE
+ * @see org.matheclipse.core.interfaces.ISymbol#ORDERLESS
  */
-public class EvaluationSupport {
+public class EvalAttributes {
+
+	private EvalAttributes() {
+
+	}
 
 	/**
-	 * Flatten the list [i.e. the list getHeader() has the attribute ISymbol.FLAT] example: suppose the Symbol f has the attribute
-	 * ISymbol.FLAT f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * Flatten the list (i.e. typically the ASTs head has the attribute ISymbol.FLAT) example: suppose the head f should be
+	 * flattened out: <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param ast
+	 *            the <code>AST</code> whose elements should be flattened.
 	 * 
 	 * @return returns the flattened list
 	 */
@@ -37,9 +46,8 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Flatten the list (i.e. the lists <code>get(0)</code> element has the same head) example: suppose the head f should be
-	 * flattened out:<br>
-	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * Flatten the list (i.e. the ASTs head element has the same head) example: suppose the head f should be flattened out:<br>
+	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param head
 	 *            the head of the expression, which should be flattened.
@@ -66,9 +74,9 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Flatten the list (i.e. the lists <code>get(0)</code> element has the same head) example: suppose the head f should be
-	 * flattened out:<br>
-	 * f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]
+	 * Flatten the list (i.e. the ASTs head element has the same head) element has the same head) example: suppose the head f should
+	 * be flattened out:<br>
+	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param head
 	 *            the head of the expression, which should be flattened.
@@ -98,26 +106,11 @@ public class EvaluationSupport {
 	}
 
 	/**
-	 * Sort the list [i.e. the list getHeader() has the attribute ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
-	 * ISymbol.ORDERLESS f[z,d,a,b] ==> f[a,b,d,z]
+	 * Sort the list (i.e. typically the ASTs head has the attribute ISymbol.ORDERLESS) example: suppose the Symbol f has the
+	 * attribute ISymbol.ORDERLESS <code>f[z,d,a,b] ==> f[a,b,d,z]</code>
 	 * 
-	 * @param session
-	 * @param list
-	 * @return returns the sorted list
-	 */
-	public final static void sortTimesPlus(final IExpr expr) {
-		if (expr.isTimes() || expr.isPlus()) {
-			sort((IAST)expr);
-		}
-	}
-
-	/**
-	 * Sort the list [i.e. the list getHeader() has the attribute ISymbol.ORDERLESS] example: suppose the Symbol s has the attribute
-	 * ISymbol.ORDERLESS f[z,d,a,b] ==> f[a,b,d,z]
-	 * 
-	 * @param session
-	 * @param list
-	 * @return returns the sorted list
+	 * @param ast
+	 *            the AST will be sorted in place.
 	 */
 	public final static void sort(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
@@ -164,34 +157,36 @@ public class EvaluationSupport {
 		ast.addEvalFlags(IAST.IS_SORTED);
 	}
 
-	public final static void sort(final IAST list, ExprComparator comparator) {
-		list.args().sort(comparator);
+	public final static void sort(final IAST ast, ExprComparator comparator) {
+		ast.args().sort(comparator);
 	}
 
 	/**
-	 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute ISymbol.LISTABLE] example:
-	 * Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
+	 * Thread through all (sub-)lists in the arguments of the IAST (i.e. typically the ASTs head has the attribute ISymbol.LISTABLE)
+	 * example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}<code>
 	 * 
-	 * @param list
+	 * @param ast
+	 * @param listHead
+	 *            the lists head (typically <code>F.List</code>)
+	 * @param argHead
+	 *            the arguments head (typically <code>ast.head()</code>)
 	 * @param listLength
 	 *            the length of the list
-	 * 
-	 * 
-	 * @return Description of the Returned Value
+	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
 	 */
-	public static IAST threadList(final IAST list, final IExpr head, final IExpr mapHead, final int listLength, final int headOffset) {
+	public static IAST threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
 
-		final IAST result = F.ast(head, listLength, true);
-		final int listSize = list.size();
-		for (int j = headOffset; j < listLength + headOffset; j++) {
-			final IAST subResult = F.ast(mapHead, listSize - headOffset, true);
+		final IAST result = F.ast(listHead, listLength, true);
+		final int listSize = ast.size();
+		for (int j = 1; j < listLength + 1; j++) {
+			final IAST subResult = F.ast(argHead, listSize - 1, true);
 
-			for (int i = headOffset; i < listSize; i++) {
-				if (list.get(i).isAST(head)) {
-					final IAST arg = (IAST) list.get(i);
+			for (int i = 1; i < listSize; i++) {
+				if (ast.get(i).isAST(listHead)) {
+					final IAST arg = (IAST) ast.get(i);
 					subResult.set(i, arg.get(j));
 				} else {
-					subResult.set(i, list.get(i));
+					subResult.set(i, ast.get(i));
 				}
 			}
 

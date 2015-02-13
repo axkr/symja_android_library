@@ -27,7 +27,6 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.core.reflection.system.Plus;
 import org.matheclipse.core.reflection.system.Power;
 import org.matheclipse.core.reflection.system.Times;
@@ -224,7 +223,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		if ((listLength != 0) && ((result = EvaluationSupport.threadList(ast, F.List, ast.head(), listLength, 1)) != null)) {
+		if ((listLength != 0) && ((result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength)) != null)) {
 			result.setEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
@@ -712,7 +711,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			IAST flattened = null;
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
-				if ((flattened = EvaluationSupport.flatten(ast)) != null) {
+				if ((flattened = EvalAttributes.flatten(ast)) != null) {
 					IAST resultList = evalArgs(flattened, attr);
 					if (resultList != null) {
 						return resultList;
@@ -737,7 +736,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			if (astSize > 2 && (ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 				// commutative symbol
-				EvaluationSupport.sort(ast);
+				EvalAttributes.sort(ast);
 			}
 		}
 
@@ -788,7 +787,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			final IExpr arg1 = ast.arg1();
 			if (arg1.isList()) {
 				// thread over the list
-				if ((result = EvaluationSupport.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1, 1)) != null) {
+				if ((result = EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1)) != null) {
 					return result;
 				}
 			}
@@ -997,7 +996,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
 					IAST result;
-					if ((result = EvaluationSupport.flatten(resultList)) != null) {
+					if ((result = EvalAttributes.flatten(resultList)) != null) {
 						resultList = result;
 						IExpr expr = evalSetOrderless(resultList, attr);
 						if (expr != null) {
@@ -1017,7 +1016,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
 			IAST result;
-			if ((result = EvaluationSupport.flatten(ast)) != null) {
+			if ((result = EvalAttributes.flatten(ast)) != null) {
 				resultList = result;
 				IExpr expr = evalSetOrderless(ast, attr);
 				if (expr != null) {
@@ -1061,7 +1060,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	private IExpr evalSetOrderless(IAST ast, final int attr) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			EvaluationSupport.sort(ast);
+			EvalAttributes.sort(ast);
 			if (ast.isTimes()) {
 				return Times.CONST.evaluate(ast);
 				// if (ast.arg2().isNumber() && ast.arg1().isNumber()) {
@@ -1133,16 +1132,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
 					IAST result;
-					if ((result = EvaluationSupport.flatten(resultList)) != null) {
+					if ((result = EvalAttributes.flatten(resultList)) != null) {
 						resultList = result;
 						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-							EvaluationSupport.sort(resultList);
+							EvalAttributes.sort(resultList);
 						}
 						return resultList;
 					}
 				}
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvaluationSupport.sort(resultList);
+					EvalAttributes.sort(resultList);
 				}
 			}
 			return resultList;
@@ -1151,16 +1150,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
 			IAST result;
-			if ((result = EvaluationSupport.flatten(ast)) != null) {
+			if ((result = EvalAttributes.flatten(ast)) != null) {
 				resultList = result;
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvaluationSupport.sort(ast);
+					EvalAttributes.sort(ast);
 				}
 				return resultList;
 			}
 		}
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			EvaluationSupport.sort(ast);
+			EvalAttributes.sort(ast);
 		}
 		return ast;
 	}

@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -14,7 +15,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
@@ -255,7 +255,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			IAST temp;
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative
-				if ((temp = EvaluationSupport.flatten(f)) != null) {
+				if ((temp = EvalAttributes.flatten(f)) != null) {
 					ast = temp;
 				}
 			}

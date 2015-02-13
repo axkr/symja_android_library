@@ -1,12 +1,12 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 /**
  * TODO implement &quot;Flatten&quot; function (especially Flatten(list, 1) )
@@ -25,7 +25,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 		IAST resultList = F.List();
 		if (ast.size() == 2) {
 			if (arg1.isList()) {
-				if (EvaluationSupport.flatten(F.List, (IAST) arg1, resultList)) {
+				if (EvalAttributes.flatten(F.List, (IAST) arg1, resultList)) {
 					return resultList;
 				}
 			}
@@ -35,7 +35,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 			if (arg1.isList()) {
 				int level = Validate.checkIntType(arg2);
 				if (level > 0) {
-					if (EvaluationSupport.flatten(F.List, (IAST) arg1, resultList, 0, level)) {
+					if (EvalAttributes.flatten(F.List, (IAST) arg1, resultList, 0, level)) {
 						return resultList;
 					}
 				}

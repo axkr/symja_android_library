@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.list.algorithms.EvaluationSupport;
 
 /**
  */
@@ -33,7 +33,7 @@ public class Thread extends AbstractFunctionEvaluator {
 		}
 		final IAST list = (IAST) ast.arg1();
 		if (list.size() > 1) {
-			return threadList(list, head, list.head(), 1);
+			return threadList(list, head, list.head());
 		}
 		return null;
 	}
@@ -49,7 +49,7 @@ public class Thread extends AbstractFunctionEvaluator {
 	 *            the length of the list
 	 * @return
 	 */
-	public static IAST threadList(final IAST list, IExpr head, IExpr mapHead, final int headOffset) {
+	public static IAST threadList(final IAST list, IExpr head, IExpr mapHead) {
 
 		int listLength = 0;
 
@@ -67,7 +67,7 @@ public class Thread extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return EvaluationSupport.threadList(list, head, mapHead, listLength, headOffset);
+		return EvalAttributes.threadList(list, head, mapHead, listLength);
 
 	}
 }
