@@ -162,7 +162,7 @@ class GCDHelper
         return abs(scale(gcd, zeros));
     }
 
-    // Based on the "Recursive Binary GCD Algorithm" by Damien Stehlé and Paul Zimmermann.
+    // Based on the "Recursive Binary GCD Algorithm" by Damien Stehl and Paul Zimmermann.
     // Adapted from the algorithm presented in "Modern Computer Arithmetic" v. 0.5.9 by Richard P. Brent and Paul Zimmermann.
     private static HalfGcdType halfBinaryGcd(Apint a, Apint b, long k)
         throws ApfloatRuntimeException
