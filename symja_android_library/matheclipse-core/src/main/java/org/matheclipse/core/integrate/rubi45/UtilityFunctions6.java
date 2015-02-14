@@ -3,11 +3,8 @@ package org.matheclipse.core.integrate.rubi45;
 
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
 
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 /** 
  * UtilityFunctions rules from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
  * rule-based integrator</a>.
