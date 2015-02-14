@@ -59,239 +59,244 @@ public class Integrate extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		boolean calledRubi = false;
 		IExpr result;
-
-		if (ast.size() < 3) {
-			return null;
-		}
-		IExpr arg1 = ast.arg1();
-		if (ast.size() > 3) {
-			// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
-			// Integrate[fxy, y], x] ...
-			return ast.range(2).foldRight(new BinaryEval(F.Integrate), arg1);
-		}
-
-		if (ast.arg2().isList()) {
-			IAST xList = (IAST) ast.arg2();
-			if (xList.isVector() == 3) {
-				// Integrate[f[x], {x,a,b}]
-				IAST clone = ast.setAtClone(2, xList.arg1());
-				IExpr temp = F.eval(clone);
-				if (temp.isFreeAST(F.Integrate)) {
-					// F(b)-F(a)
-					IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
-					IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
-					EvalEngine engine = EvalEngine.get();
-					if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
-						engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
-						return null;
-					}
-					if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
-						engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
-						return null;
-					}
-					return F.Subtract(Fb, Fa);
-				}
+		EvalEngine engine = EvalEngine.get();
+		boolean numericMode = engine.isNumericMode();
+		try {
+			EvalEngine.get().setNumericMode(false);
+			if (ast.size() < 3) {
+				return null;
 			}
-		}
+			IExpr arg1 = ast.arg1();
+			if (ast.size() > 3) {
+				// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
+				// Integrate[fxy, y], x] ...
+				return ast.range(2).foldRight(new BinaryEval(F.Integrate), arg1);
+			}
 
-		if (ast.arg2().isSymbol()) {
-			final ISymbol x = (ISymbol) ast.arg2();
-
-			if (arg1.isNumber()) {
-				// Integrate[x_NumberQ,y_Symbol] -> x*y
-				return Times(arg1, x);
-			}
-			if (arg1.isFree(x, true)) {
-				// Integrate[x_,y_Symbol] -> x*y /; FreeQ[x,y]
-				return Times(arg1, x);
-			}
-			if (arg1.equals(x)) {
-				// Integrate[x_,x_Symbol] -> x^2 / 2
-				return Times(F.C1D2, Power(arg1, F.C2));
-			}
-			boolean showSteps = false;
-			if (showSteps) {
-				System.out.println("\nINTEGRATE: " + arg1.toString());
-				if (DEBUG_EXPR.contains(arg1)) {
-					// System.exit(-1);
-				}
-				DEBUG_EXPR.add(arg1);
-			}
-			if (arg1.isAST()) {
-				IAST fx = (IAST) arg1;
-				// if (astArg1.isTimes()) {
-				// IAST freeTimes = F.Times();
-				// IAST restTimes = F.Times();
-				// collectFreeTerms(astArg1, x, freeTimes, restTimes);
-				// IExpr free = freeTimes.getOneIdentity(F.C1);
-				// IExpr rest = restTimes.getOneIdentity(F.C1);
-				// if (!free.isOne()) {
-				// // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,y]
-				// // IExpr result = integrateByRubiRules(Integrate(rest, x));
-				// // if (result != null) {
-				// // return Times(free, result);
-				// // }
-				// return Times(free, Integrate(rest, x));
-				// }
-				// }
-
-				if (fx.isPower()) {
-					if (fx.equalsAt(1, x) && fx.isFreeAt(2, x)) {
-						if (fx.arg2().isMinusOne()) {
-							// Integrate[ 1 / x_ , x_ ] -> Log[x]
-							return Log(x);
+			if (ast.arg2().isList()) {
+				IAST xList = (IAST) ast.arg2();
+				if (xList.isVector() == 3) {
+					// Integrate[f[x], {x,a,b}]
+					IAST clone = ast.setAtClone(2, xList.arg1());
+					IExpr temp = F.eval(clone);
+					if (temp.isFreeAST(F.Integrate)) {
+						// F(b)-F(a)
+						IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
+						IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
+						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
+							engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
+							return null;
 						}
-						// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
-						IExpr temp = Plus(F.C1, fx.arg2());
-						return Divide(Power(x, temp), temp);
-					}
-					if (fx.equalsAt(2, x) && fx.isFreeAt(1, x)) {
-						if (fx.arg1().isE()) {
-							// E^x
-							return arg1;
+						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
+							engine.printMessage("Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
+							return null;
 						}
-						// a^x / Log(a)
-						return F.Divide(fx, F.Log(fx.arg1()));
+						return F.Subtract(Fb, Fa);
 					}
 				}
-				if (INT_FUNCTIONS.contains(arg1.head())) {
-					result = integrateByRubiRules(ast);
-					if (result != null) {
-						return result;
-					}
+			}
+
+			if (ast.arg2().isSymbol()) {
+				final ISymbol x = (ISymbol) ast.arg2();
+
+				if (arg1.isNumber()) {
+					// Integrate[x_NumberQ,y_Symbol] -> x*y
+					return Times(arg1, x);
 				}
-				IExpr fxExpanded = F.expand(fx, true, false);
-				if (fxExpanded.isAST()) {
-					if (fxExpanded.isPlus()) {
-						IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
-						if (polyQ.isTrue()) {
-							if (arg1.isTimes()) {
-								result = integrateByRubiRules(ast);
-								if (result != null) {
-									return result;
+				if (arg1.isFree(x, true)) {
+					// Integrate[x_,y_Symbol] -> x*y /; FreeQ[x,y]
+					return Times(arg1, x);
+				}
+				if (arg1.equals(x)) {
+					// Integrate[x_,x_Symbol] -> x^2 / 2
+					return Times(F.C1D2, Power(arg1, F.C2));
+				}
+				boolean showSteps = false;
+				if (showSteps) {
+					System.out.println("\nINTEGRATE: " + arg1.toString());
+					if (DEBUG_EXPR.contains(arg1)) {
+						// System.exit(-1);
+					}
+					DEBUG_EXPR.add(arg1);
+				}
+				if (arg1.isAST()) {
+					IAST fx = (IAST) arg1;
+					// if (astArg1.isTimes()) {
+					// IAST freeTimes = F.Times();
+					// IAST restTimes = F.Times();
+					// collectFreeTerms(astArg1, x, freeTimes, restTimes);
+					// IExpr free = freeTimes.getOneIdentity(F.C1);
+					// IExpr rest = restTimes.getOneIdentity(F.C1);
+					// if (!free.isOne()) {
+					// // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,y]
+					// // IExpr result = integrateByRubiRules(Integrate(rest, x));
+					// // if (result != null) {
+					// // return Times(free, result);
+					// // }
+					// return Times(free, Integrate(rest, x));
+					// }
+					// }
+
+					if (fx.isPower()) {
+						if (fx.equalsAt(1, x) && fx.isFreeAt(2, x)) {
+							if (fx.arg2().isMinusOne()) {
+								// Integrate[ 1 / x_ , x_ ] -> Log[x]
+								return Log(x);
+							}
+							// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
+							IExpr temp = Plus(F.C1, fx.arg2());
+							return Divide(Power(x, temp), temp);
+						}
+						if (fx.equalsAt(2, x) && fx.isFreeAt(1, x)) {
+							if (fx.arg1().isE()) {
+								// E^x
+								return arg1;
+							}
+							// a^x / Log(a)
+							return F.Divide(fx, F.Log(fx.arg1()));
+						}
+					}
+					if (INT_FUNCTIONS.contains(arg1.head())) {
+						result = integrateByRubiRules(ast);
+						if (result != null) {
+							return result;
+						}
+					}
+					IExpr fxExpanded = F.expand(fx, true, false);
+					if (fxExpanded.isAST()) {
+						if (fxExpanded.isPlus()) {
+							IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
+							if (polyQ.isTrue()) {
+								if (arg1.isTimes()) {
+									result = integrateByRubiRules(ast);
+									if (result != null) {
+										return result;
+									}
 								}
 							}
+
+							// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
+							return ((IAST) fxExpanded).mapAt(F.Integrate(null, x), 1);
 						}
 
-						// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-						return ((IAST) fxExpanded).mapAt(F.Integrate(null, x), 1);
-					}
+						final IAST arg1AST = (IAST) fxExpanded;
 
-					final IAST arg1AST = (IAST) fxExpanded;
-
-					if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
-						IExpr head = arg1AST.head();
-						IExpr temp = integrate1ArgumentFunctions(head, x);
-						if (temp != null) {
-							return temp;
-						}
-					}
-					// if (arg1AST.isPower()) {
-					// if (x.equals(arg1AST.arg1()) && arg1AST.isFreeAt(2, x)) {
-					// IExpr i = arg1AST.arg2();
-					// if (!i.isMinusOne()) {
-					// // Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^(i+1)
-					// i = Plus(i, C1);
-					// return F.Times(F.Power(i, F.CN1), F.Power(x, i));
-					// }
-					// }
-					// if (x.equals(arg1AST.arg2()) && arg1AST.isFreeAt(1, x)) {
-					// if (arg1AST.equalsAt(1, F.E)) {
-					// // E^x
-					// return arg1;
-					// }
-					// // a^x / Log(a)
-					// return F.Times(arg1AST, F.Power(F.Log(arg1AST.arg1()), F.CN1));
-					//
-					// }
-					// }
-
-					if (arg1AST.isTimes()) {
-						IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-						if (temp != null) {
-							return temp;
-						}
-
-						// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
-						IAST filterCollector = F.Times();
-						IAST restCollector = F.Times();
-						arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
-							@Override
-							public boolean apply(IExpr input) {
-								return input.isFree(x, true);
+						if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
+							IExpr head = arg1AST.head();
+							IExpr temp = integrate1ArgumentFunctions(head, x);
+							if (temp != null) {
+								return temp;
 							}
-						});
-						if (filterCollector.size() > 1) {
-							if (restCollector.size() > 1) {
-								filterCollector.add(F.Integrate(restCollector.getOneIdentity(F.C0), x));
-							}
-							return filterCollector;
 						}
-					}
+						// if (arg1AST.isPower()) {
+						// if (x.equals(arg1AST.arg1()) && arg1AST.isFreeAt(2, x)) {
+						// IExpr i = arg1AST.arg2();
+						// if (!i.isMinusOne()) {
+						// // Integrate[x_ ^ i_IntegerQ, x_Symbol] -> 1/(i+1) * x ^(i+1)
+						// i = Plus(i, C1);
+						// return F.Times(F.Power(i, F.CN1), F.Power(x, i));
+						// }
+						// }
+						// if (x.equals(arg1AST.arg2()) && arg1AST.isFreeAt(1, x)) {
+						// if (arg1AST.equalsAt(1, F.E)) {
+						// // E^x
+						// return arg1;
+						// }
+						// // a^x / Log(a)
+						// return F.Times(arg1AST, F.Power(F.Log(arg1AST.arg1()), F.CN1));
+						//
+						// }
+						// }
 
-					if (!ast.equalsAt(1, fxExpanded)) {
-						return integrateByRubiRules(ast);
-					}
+						if (arg1AST.isTimes()) {
+							IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
+							if (temp != null) {
+								return temp;
+							}
 
-					final IExpr header = arg1AST.head();
-					if (arg1AST.size() >= 3) {
-						if (header == F.Times || header == F.Power) {
-							if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
-								IExpr[] parts = Apart.getFractionalParts(arg1);
-								if (parts != null) {
-									// try Rubi rules first
-									// System.out.println(parts[0]);
-									// System.out.println(parts[1]);
-									if (parts[0].isPolynomialOfMaxDegree(x, 3L)) {// || parts[0].equals(x)) {
-										result = integrateByRubiRules(ast);
-										if (result != null) {
-											return result;
+							// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
+							IAST filterCollector = F.Times();
+							IAST restCollector = F.Times();
+							arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
+								@Override
+								public boolean apply(IExpr input) {
+									return input.isFree(x, true);
+								}
+							});
+							if (filterCollector.size() > 1) {
+								if (restCollector.size() > 1) {
+									filterCollector.add(F.Integrate(restCollector.getOneIdentity(F.C0), x));
+								}
+								return filterCollector;
+							}
+						}
+
+						if (!ast.equalsAt(1, fxExpanded)) {
+							return integrateByRubiRules(ast);
+						}
+
+						final IExpr header = arg1AST.head();
+						if (arg1AST.size() >= 3) {
+							if (header == F.Times || header == F.Power) {
+								if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && ast.arg2().isSymbol()) {
+									IExpr[] parts = Apart.getFractionalParts(arg1);
+									if (parts != null) {
+										// try Rubi rules first
+										// System.out.println(parts[0]);
+										// System.out.println(parts[1]);
+										if (parts[0].isPolynomialOfMaxDegree(x, 3L)) {// || parts[0].equals(x)) {
+											result = integrateByRubiRules(ast);
+											if (result != null) {
+												return result;
+											}
+											calledRubi = true;
 										}
-										calledRubi = true;
-									}
 
-									IAST apartPlus = Apart.partialFractionDecompositionRational(
-											new PartialFractionIntegrateGenerator(x), parts, x);
+										IAST apartPlus = Apart.partialFractionDecompositionRational(
+												new PartialFractionIntegrateGenerator(x), parts, x);
 
-									if (apartPlus != null && apartPlus.size() > 1) {
-										if (apartPlus.size() == 2) {
-											if (ast.equals(apartPlus.arg1())) {
+										if (apartPlus != null && apartPlus.size() > 1) {
+											if (apartPlus.size() == 2) {
+												if (ast.equals(apartPlus.arg1())) {
+													return null;
+												}
+												return apartPlus.arg1();
+											}
+											if (ast.equals(apartPlus)) {
 												return null;
 											}
-											return apartPlus.arg1();
+											return apartPlus;
 										}
-										if (ast.equals(apartPlus)) {
-											return null;
-										}
-										return apartPlus;
-									}
-									if (arg1AST.isTimes()) {
-										result = integratePolynomialByParts(ast, arg1AST, x);
-										if (result != null) {
-											return result;
+										if (arg1AST.isTimes()) {
+											result = integratePolynomialByParts(ast, arg1AST, x);
+											if (result != null) {
+												return result;
+											}
 										}
 									}
 								}
 							}
 						}
 					}
-				}
 
-				// EvalEngine engine= EvalEngine.get();
-				// engine.setIterationLimit(8);
-				if (!calledRubi) {
-					return integrateByRubiRules(ast);
+					// EvalEngine engine= EvalEngine.get();
+					// engine.setIterationLimit(8);
+					if (!calledRubi) {
+						return integrateByRubiRules(ast);
+					}
+				}
+			} else {
+				IExpr fx = F.eval(F.Expand(ast.arg1()));
+				if (fx.isPlus()) {
+					// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
+					return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
 				}
 			}
-		} else {
-			IExpr fx = F.eval(F.Expand(ast.arg1()));
-			if (fx.isPlus()) {
-				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
-			}
+
+			return null;
+		} finally {
+			engine.setNumericMode(numericMode);
 		}
-
-		return null;
 	}
 
 	private IExpr integrate1ArgumentFunctions(final IExpr head, final ISymbol x) {
@@ -494,200 +499,200 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param variableList
 	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
-//	private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x) {
-//		try {
-//			IAST variableList = F.List(x);
-//			IExpr exprNumerator = F.evalExpandAll(parts[0], true, false);
-//			IExpr exprDenominator = F.evalExpandAll(parts[1], true, false);
-//			ASTRange r = new ASTRange(variableList, 1);
-//			List<IExpr> varList = r.toList();
-//
-//			String[] varListStr = new String[1];
-//			varListStr[0] = variableList.arg1().toString();
-//			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-//			GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-//			GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-//
-//			// get factors
-//			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
-//			SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
-//
-//			List<GenPolynomial<BigRational>> D = new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
-//
-//			SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
-//			List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
-//			// returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
-//			// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-//
-//			if (Ai.size() > 0) {
-//				IAST result = F.Plus();
-//				IExpr temp;
-//				if (!Ai.get(0).get(0).isZERO()) {
-//					temp = F.eval(jas.poly2Expr(Ai.get(0).get(0)));
-//					if (temp.isAST()) {
-//						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-//					}
-//					result.add(F.Integrate(temp, x));
-//				}
-//				for (int i = 1; i < Ai.size(); i++) {
-//					List<GenPolynomial<BigRational>> list = Ai.get(i);
-//					long j = 0L;
-//					for (GenPolynomial<BigRational> genPolynomial : list) {
-//						if (!genPolynomial.isZERO()) {
-//							BigRational[] numer = new BigRational[3];
-//							BigRational[] denom = new BigRational[3];
-//							boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
-//							if (isDegreeLE2 && j == 1L) {
-//								Object[] objects = jas.factorTerms(genPolynomial);
-//								java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-//								java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-//								GenPolynomial<edu.jas.arith.BigInteger> genPolynomial2 = ((GenPolynomial<edu.jas.arith.BigInteger>) objects[2])
-//										.multiply(edu.jas.arith.BigInteger.valueOf(gcd));
-//								GenPolynomial<BigRational> Di_1 = D.get(i - 1).multiply(BigRational.valueOf(lcm));
-//								if (genPolynomial2.isONE()) {
-//									isQuadratic(Di_1, denom);
-//									IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-//									IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-//									IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
-//									if (a.isZero()) {
-//										// JavaForm[Log[b*x+c]/b]
-//										result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
-//									} else {
-//										// compute b^2-4*a*c from
-//										// (a*x^2+b*x+c)
-//										BigRational cmp = denom[1].multiply(denom[1]).subtract(
-//												BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
-//										int cmpTo = cmp.compareTo(BigRational.ZERO);
-//										// (2*a*x+b)
-//										IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
-//										if (cmpTo == 0) {
-//											// (-2) / (2*a*x+b)
-//											result.add(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
-//										} else if (cmpTo > 0) {
-//											// (b^2-4ac)^(1/2)
-//											temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
-//											result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp),
-//													Power(F.Plus(ax2Plusb, temp), F.CN1)))));
-//										} else {
-//											// (4ac-b^2)^(1/2)
-//											temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
-//											result.add(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
-//										}
-//									}
-//								} else {
-//									isQuadratic(genPolynomial, numer);
-//									IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-//									IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
-//									isQuadratic(D.get(i - 1), denom);
-//									IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
-//									IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
-//									if (A.isZero()) {
-//										// JavaForm[B*Log[p*x+q]/p]
-//										temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
-//									} else {
-//										// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-//										temp = Plus(
-//												Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
-//												Times(ArcTan(Times(Plus(p, Times(C2, x)),
-//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-//														Plus(Times(C2, B), Times(CN1, A, p)),
-//														Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
-//									}
-//									result.add(F.eval(temp));
-//
-//									// edu.jas.arith.BigInteger[] numer2 = new
-//									// edu.jas.arith.BigInteger[3];
-//									// isQuadratic(genPolynomial2, numer2);
-//									// IInteger A =
-//									// F.integer(numer2[1].getVal());
-//									// IInteger B =
-//									// F.integer(numer2[0].getVal());
-//									// isQuadratic(Di_1, denom);
-//									// IFraction p =
-//									// F.fraction(denom[1].numerator(),
-//									// denom[1].denominator());
-//									// IFraction q =
-//									// F.fraction(denom[0].numerator(),
-//									// denom[0].denominator());
-//									// if (A.isZero()) {
-//									// // JavaForm[B*Log[p*x+q]/p]
-//									// temp = Times(B, Log(Plus(q, Times(p,
-//									// x))), Power(p, CN1));
-//									// } else {
-//									// //
-//									// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-//									// temp = Plus(
-//									// Times(C1D2, A, Log(Plus(q, Times(p, x),
-//									// Power(x, C2)))),
-//									// Times(ArcTan(Times(Plus(p, Times(C2, x)),
-//									// Power(Plus(Times(CN1, Power(p, C2)),
-//									// Times(C4, q)), CN1D2))),
-//									// Plus(Times(C2, B), Times(CN1, A, p)),
-//									// Power(Plus(Times(CN1, Power(p, C2)),
-//									// Times(C4, q)), CN1D2)));
-//									// }
-//									// result.add(F.eval(temp));
-//								}
-//							} else if (isDegreeLE2 && j > 1L) {
-//								isQuadratic(genPolynomial, numer);
-//								IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
-//								IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
-//								isQuadratic(D.get(i - 1), denom);
-//								IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
-//								IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
-//								IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
-//								IInteger k = F.integer(j);
-//								if (A.isZero()) {
-//									// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
-//									// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
-//									temp = Times(
-//											B,
-//											Plus(Times(
-//													Integrate(
-//															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-//																	Plus(C1, Times(CN1, k))), x),
-//													Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
-//													Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-//													Times(Plus(b, Times(C2, a, x)),
-//															Power(Plus(CN1, k), CN1),
-//															Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-//															Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-//																	Times(CN1, Plus(CN1, k))))));
-//								} else {
-//									// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
-//									temp = Plus(
-//											Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
-//													Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
-//											Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
-//													Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
-//								}
-//								result.add(F.eval(temp));
-//							} else {
-//								temp = F.eval(F.Times(jas.poly2Expr(genPolynomial),
-//										F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
-//								if (!temp.equals(F.C0)) {
-//									if (temp.isAST()) {
-//										((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-//									}
-//									result.add(F.Integrate(temp, x));
-//								}
-//							}
-//						}
-//						j++;
-//					}
-//
-//				}
-//				return result;
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		} catch (JASConversionException e) {
-//			if (Config.DEBUG) {
-//				e.printStackTrace();
-//			}
-//		}
-//		return null;
-//	}
+	// private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x) {
+	// try {
+	// IAST variableList = F.List(x);
+	// IExpr exprNumerator = F.evalExpandAll(parts[0], true, false);
+	// IExpr exprDenominator = F.evalExpandAll(parts[1], true, false);
+	// ASTRange r = new ASTRange(variableList, 1);
+	// List<IExpr> varList = r.toList();
+	//
+	// String[] varListStr = new String[1];
+	// varListStr[0] = variableList.arg1().toString();
+	// JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+	// GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+	// GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+	//
+	// // get factors
+	// FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
+	// SortedMap<GenPolynomial<BigRational>, Long> sfactors = factorAbstract.baseFactors(denominator);
+	//
+	// List<GenPolynomial<BigRational>> D = new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
+	//
+	// SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
+	// List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
+	// // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
+	// // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
+	//
+	// if (Ai.size() > 0) {
+	// IAST result = F.Plus();
+	// IExpr temp;
+	// if (!Ai.get(0).get(0).isZERO()) {
+	// temp = F.eval(jas.poly2Expr(Ai.get(0).get(0)));
+	// if (temp.isAST()) {
+	// ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+	// }
+	// result.add(F.Integrate(temp, x));
+	// }
+	// for (int i = 1; i < Ai.size(); i++) {
+	// List<GenPolynomial<BigRational>> list = Ai.get(i);
+	// long j = 0L;
+	// for (GenPolynomial<BigRational> genPolynomial : list) {
+	// if (!genPolynomial.isZERO()) {
+	// BigRational[] numer = new BigRational[3];
+	// BigRational[] denom = new BigRational[3];
+	// boolean isDegreeLE2 = D.get(i - 1).degree() <= 2;
+	// if (isDegreeLE2 && j == 1L) {
+	// Object[] objects = jas.factorTerms(genPolynomial);
+	// java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+	// java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+	// GenPolynomial<edu.jas.arith.BigInteger> genPolynomial2 = ((GenPolynomial<edu.jas.arith.BigInteger>) objects[2])
+	// .multiply(edu.jas.arith.BigInteger.valueOf(gcd));
+	// GenPolynomial<BigRational> Di_1 = D.get(i - 1).multiply(BigRational.valueOf(lcm));
+	// if (genPolynomial2.isONE()) {
+	// isQuadratic(Di_1, denom);
+	// IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
+	// IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
+	// IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+	// if (a.isZero()) {
+	// // JavaForm[Log[b*x+c]/b]
+	// result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
+	// } else {
+	// // compute b^2-4*a*c from
+	// // (a*x^2+b*x+c)
+	// BigRational cmp = denom[1].multiply(denom[1]).subtract(
+	// BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
+	// int cmpTo = cmp.compareTo(BigRational.ZERO);
+	// // (2*a*x+b)
+	// IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
+	// if (cmpTo == 0) {
+	// // (-2) / (2*a*x+b)
+	// result.add(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
+	// } else if (cmpTo > 0) {
+	// // (b^2-4ac)^(1/2)
+	// temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
+	// result.add(F.Times(F.Power(temp, F.CN1), F.Log(F.Times(F.Subtract(ax2Plusb, temp),
+	// Power(F.Plus(ax2Plusb, temp), F.CN1)))));
+	// } else {
+	// // (4ac-b^2)^(1/2)
+	// temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
+	// result.add(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
+	// }
+	// }
+	// } else {
+	// isQuadratic(genPolynomial, numer);
+	// IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
+	// IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+	// isQuadratic(D.get(i - 1), denom);
+	// IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
+	// IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
+	// if (A.isZero()) {
+	// // JavaForm[B*Log[p*x+q]/p]
+	// temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
+	// } else {
+	// // JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+	// temp = Plus(
+	// Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+	// Times(ArcTan(Times(Plus(p, Times(C2, x)),
+	// Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
+	// Plus(Times(C2, B), Times(CN1, A, p)),
+	// Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+	// }
+	// result.add(F.eval(temp));
+	//
+	// // edu.jas.arith.BigInteger[] numer2 = new
+	// // edu.jas.arith.BigInteger[3];
+	// // isQuadratic(genPolynomial2, numer2);
+	// // IInteger A =
+	// // F.integer(numer2[1].getVal());
+	// // IInteger B =
+	// // F.integer(numer2[0].getVal());
+	// // isQuadratic(Di_1, denom);
+	// // IFraction p =
+	// // F.fraction(denom[1].numerator(),
+	// // denom[1].denominator());
+	// // IFraction q =
+	// // F.fraction(denom[0].numerator(),
+	// // denom[0].denominator());
+	// // if (A.isZero()) {
+	// // // JavaForm[B*Log[p*x+q]/p]
+	// // temp = Times(B, Log(Plus(q, Times(p,
+	// // x))), Power(p, CN1));
+	// // } else {
+	// // //
+	// // JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
+	// // temp = Plus(
+	// // Times(C1D2, A, Log(Plus(q, Times(p, x),
+	// // Power(x, C2)))),
+	// // Times(ArcTan(Times(Plus(p, Times(C2, x)),
+	// // Power(Plus(Times(CN1, Power(p, C2)),
+	// // Times(C4, q)), CN1D2))),
+	// // Plus(Times(C2, B), Times(CN1, A, p)),
+	// // Power(Plus(Times(CN1, Power(p, C2)),
+	// // Times(C4, q)), CN1D2)));
+	// // }
+	// // result.add(F.eval(temp));
+	// }
+	// } else if (isDegreeLE2 && j > 1L) {
+	// isQuadratic(genPolynomial, numer);
+	// IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
+	// IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
+	// isQuadratic(D.get(i - 1), denom);
+	// IFraction a = F.fraction(denom[2].numerator(), denom[2].denominator());
+	// IFraction b = F.fraction(denom[1].numerator(), denom[1].denominator());
+	// IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
+	// IInteger k = F.integer(j);
+	// if (A.isZero()) {
+	// // JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
+	// // (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
+	// temp = Times(
+	// B,
+	// Plus(Times(
+	// Integrate(
+	// Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+	// Plus(C1, Times(CN1, k))), x),
+	// Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
+	// Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
+	// Times(Plus(b, Times(C2, a, x)),
+	// Power(Plus(CN1, k), CN1),
+	// Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+	// Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+	// Times(CN1, Plus(CN1, k))))));
+	// } else {
+	// // JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
+	// temp = Plus(
+	// Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
+	// Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
+	// Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
+	// Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
+	// }
+	// result.add(F.eval(temp));
+	// } else {
+	// temp = F.eval(F.Times(jas.poly2Expr(genPolynomial),
+	// F.Power(jas.poly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
+	// if (!temp.equals(F.C0)) {
+	// if (temp.isAST()) {
+	// ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+	// }
+	// result.add(F.Integrate(temp, x));
+	// }
+	// }
+	// }
+	// j++;
+	// }
+	//
+	// }
+	// return result;
+	// }
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// } catch (JASConversionException e) {
+	// if (Config.DEBUG) {
+	// e.printStackTrace();
+	// }
+	// }
+	// return null;
+	// }
 
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
