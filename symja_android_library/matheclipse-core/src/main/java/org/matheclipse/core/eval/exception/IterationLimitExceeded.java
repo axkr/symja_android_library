@@ -17,11 +17,11 @@ public class IterationLimitExceeded extends MathException {
 	/**
 	 * 
 	 */
-	int fLimit;
+	long fLimit;
 
 	IExpr fExpr;
 
-	public IterationLimitExceeded(final int limit, final IExpr expr) {
+	public IterationLimitExceeded(final long limit, final IExpr expr) {
 		fLimit = limit;
 		fExpr = expr;
 	}
@@ -34,7 +34,7 @@ public class IterationLimitExceeded extends MathException {
 		return "Iteration limit " + fLimit + " exceeded at: " + ToString.outputForm(fExpr);
 	}
 
-	public static void throwIt(int iterationCounter, final IExpr expr) {
+	public static void throwIt(long iterationCounter, final IExpr expr) {
 		// HeapContext.enter();
 		// try {
 		throw new IterationLimitExceeded(iterationCounter, expr);// expr.copy());

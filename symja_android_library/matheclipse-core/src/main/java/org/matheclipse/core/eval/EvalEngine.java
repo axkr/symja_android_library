@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.MethodSymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -53,7 +54,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
 	public static final IExpr eval(final IExpr expr) {
-		return (instance.get()).evaluate(expr);
+		return instance.get().evaluate(expr);
 	}
 
 	/**
@@ -272,7 +273,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	transient boolean fTraceMode;
 
-	transient TraceStack fTraceStack = null;
+	transient IEvalStepListener fTraceStack = null;
 
 	transient PrintStream fOutPrintStream = null;
 
@@ -494,14 +495,26 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	public void beginTrace(Predicate<IExpr> matcher, IAST list) {
+	/**
+	 * Set the step listener for this evaluation engine. The method also calls <code>setTraceMode(true)</code> to enable the trace
+	 * mode. The caller is responsible for calling <code>setTraceMode(false)</code> if no further listening is desirable.
+	 * 
+	 * @param stepListener
+	 *            the listener which should listen to the evaluation steps.
+	 */
+	public void setStepListener(IEvalStepListener stepListener) {
+		setTraceMode(true);
+		fTraceStack = stepListener;
+	}
+
+	private void beginTrace(Predicate<IExpr> matcher, IAST list) {
 		setTraceMode(true);
 		fTraceStack = new TraceStack(matcher, list);
 	}
 
-	public IAST endTrace() {
+	private IAST endTrace() {
 		setTraceMode(false);
-		IAST ast = fTraceStack.getList();
+		IAST ast = ((TraceStack) fTraceStack).getList();
 		fTraceStack = null;
 		if (ast.size() > 1) {
 			return ast.getAST(1);
@@ -875,11 +888,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		try {
 			fRecursionCounter++;
 			if (fTraceMode) {
-				fTraceStack.pushList();
+				fTraceStack.setUp(expr, fRecursionCounter);
 			}
 
 			IExpr temp = expr.evaluate(this);
 			if (temp != null) {
+
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
@@ -888,11 +902,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// System.out.println("(1) --> " + temp.toString());
 				// }
 				if (fTraceMode) {
-					fTraceStack.addIfEmpty(expr);
-					fTraceStack.add(temp);
+					fTraceStack.add(expr, temp, fRecursionCounter, 0L);
 				}
 				IExpr result = temp;
-				int iterationCounter = 1;
+				long iterationCounter = 1;
 				do {
 					temp = result.evaluate(this);
 					if (temp != null) {
@@ -904,7 +917,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// System.out.println("("+iterationCounter+") --> " + temp.toString());
 						// }
 						if (fTraceMode) {
-							fTraceStack.add(temp);
+							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter);
 						}
 						result = temp;
 						if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
@@ -915,13 +928,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// System.out.println("(0):" + expr.toString());
 				// System.out.println("(" + iterationCounter + ") --> " + result.toString());
 				return result;
+
 			}
 			return null;
 		} finally {
-			fRecursionCounter--;
 			if (fTraceMode) {
-				fTraceStack.popList();
+				fTraceStack.tearDown(fRecursionCounter);
 			}
+			fRecursionCounter--;
 		}
 	}
 
@@ -955,8 +969,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		final ISymbol symbol = ast.topHead();
 		// call so that attributes may be set in AbstractFunctionEvaluator#setUp() method
 		symbol.getEvaluator();
-		
-		final int attr = symbol.getAttributes(); 
+
+		final int attr = symbol.getAttributes();
 		IAST resultList = null;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {

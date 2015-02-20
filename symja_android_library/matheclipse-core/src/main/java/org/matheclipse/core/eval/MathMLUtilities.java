@@ -15,7 +15,8 @@ import org.matheclipse.parser.client.ast.ASTNode;
  * 
  */
 public class MathMLUtilities {
-	protected EvalEngine fEvalEngine;
+	protected final EvalEngine fEvalEngine;
+
 
 	protected MathMLFormFactory fMathMLFactory;
 
@@ -56,6 +57,16 @@ public class MathMLUtilities {
 		// fParser = new Parser(relaxedSyntax);
 		fMSIE = mathMTagPrefix;
 		fMathMLHeader = mathMLHeader;
+	}
+	
+
+	/**
+	 * Get the current evaluation engine.
+	 * 
+	 * @return
+	 */
+	public EvalEngine getEvalEngine() {
+		return fEvalEngine;
 	}
 
 	/**

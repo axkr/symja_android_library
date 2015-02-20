@@ -3,18 +3,19 @@ package org.matheclipse.core.eval;
 import java.util.Stack;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.AbstractEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 
 import com.google.common.base.Predicate;
 
-final public class TraceStack {
+final public class TraceStack extends AbstractEvalStepListener {
 
 	final Stack<IAST> fStack = new Stack<IAST>();
 	final Predicate<IExpr> fMatcher;
 	final IAST fList;
 	IAST fTraceList;
 
-	public TraceStack(Predicate<IExpr>  matcher, IAST list) {
+	public TraceStack(Predicate<IExpr> matcher, IAST list) {
 		super();
 		fMatcher = matcher;
 		fList = list;
@@ -29,7 +30,7 @@ final public class TraceStack {
 	public void popList() {
 		IAST traceList = fTraceList;
 		fStack.pop();
-		fTraceList = fStack.peek(); 
+		fTraceList = fStack.peek();
 		if (traceList.size() > 1) {
 			fTraceList.add(traceList);
 		}
@@ -40,11 +41,10 @@ final public class TraceStack {
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher returns
-	 * <code>true</code>.
+	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code>.
 	 * 
 	 * @param expr
-	 *          an expression
+	 *            an expression
 	 */
 	public void add(IExpr expr) {
 		if (fMatcher != null) {
@@ -57,11 +57,10 @@ final public class TraceStack {
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher returns
-	 * <code>true</code> and the trace lit is empty.
+	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code> and the trace lit is empty.
 	 * 
 	 * @param expr
-	 *          an expression
+	 *            an expression
 	 */
 	public void addIfEmpty(IExpr expr) {
 		if (fTraceList.size() == 1) {
@@ -72,6 +71,25 @@ final public class TraceStack {
 			} else {
 				fTraceList.add(expr);
 			}
+		}
+	}
+
+	public void setUp(IExpr inputExpr, int recursionDepth) {
+		pushList();
+		// addIfEmpty(inputExpr);
+		// add(resultExpr);
+	}
+
+	public void tearDown(int recursionDepth) {
+		popList();
+	}
+
+	public void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter) {
+		if (iterationCounter == 0L) {
+			addIfEmpty(inputExpr);
+			add(resultExpr);
+		} else {
+			add(resultExpr);
 		}
 	}
 }
