@@ -599,7 +599,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 		if (obj instanceof IntegerSym) {
 			return fRational.compareTo(new BigFraction(((IntegerSym) obj).fInteger, BigInteger.ONE)) > 0;
 		}
-		return fRational.doubleValue() < obj.doubleValue();
+		return fRational.doubleValue() > obj.doubleValue();
 	}
 
 	@Override

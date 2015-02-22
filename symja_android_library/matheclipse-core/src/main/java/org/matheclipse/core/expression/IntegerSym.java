@@ -1072,7 +1072,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		if (obj instanceof FractionSym) {
 			return -((FractionSym) obj).fRational.compareTo(new BigFraction(fInteger, BigInteger.ONE)) > 0;
 		}
-		return fInteger.doubleValue() < obj.doubleValue();
+		return fInteger.doubleValue() > obj.doubleValue();
 	}
 
 	@Override
