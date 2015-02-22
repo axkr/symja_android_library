@@ -42,10 +42,20 @@ public interface ISignedNumber extends INumber {
 	/** {@inheritDoc} */
 	public boolean isZero();
 
+	/**
+	 * Test if <code>this</code> signed number is less <code>than</code> that signed number..
+	 * 
+	 * @return <code>this < that</code>
+	 */
 	public boolean isLessThan(ISignedNumber that);
 
+	/**
+	 * Test if <code>this</code> signed number is greater <code>than</code> that signed number..
+	 * 
+	 * @return <code>this > that</code>
+	 */
 	public boolean isGreaterThan(ISignedNumber that);
-	
+
 	/**
 	 * Returns (-1) * this
 	 * 

@@ -2030,7 +2030,6 @@ public class F {
 	}
 
 	public static IAST Dot(final IExpr a0, final IExpr a1) {
-
 		return binary(Dot, a0, a1);
 	}
 
@@ -2043,7 +2042,6 @@ public class F {
 	}
 
 	public static IAST Equal(final IExpr a0, final IExpr a1) {
-
 		return binary(Equal, a0, a1);
 	}
 
@@ -2528,13 +2526,17 @@ public class F {
 		return ast(Graphics);
 	}
 
-	public static IAST Greater(final IExpr a0, final IExpr a1) {
-
+	public static IExpr Greater(final IExpr a0, final IExpr a1) {
+		if (a0.isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? True : False;
+		}
 		return binary(Greater, a0, a1);
 	}
 
-	public static IAST GreaterEqual(final IExpr a0, final IExpr a1) {
-
+	public static IExpr GreaterEqual(final IExpr a0, final IExpr a1) {
+		if (a0.isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? False : True;
+		}
 		return binary(GreaterEqual, a0, a1);
 	}
 
@@ -2876,13 +2878,17 @@ public class F {
 		return unary(Length, a);
 	}
 
-	public static IAST Less(final IExpr a0, final IExpr a1) {
-
+	public static IExpr Less(final IExpr a0, final IExpr a1) {
+		if (a0.isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? True : False;
+		}
 		return binary(Less, a0, a1);
 	}
 
-	public static IAST LessEqual(final IExpr a0, final IExpr a1) {
-
+	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
+		if (a0.isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? False : True;
+		}
 		return binary(LessEqual, a0, a1);
 	}
 
