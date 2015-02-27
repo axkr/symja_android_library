@@ -52,6 +52,13 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			if (signedNumber != null) {
 				return signedNumber.ceil();
 			}
+
+			if (arg1.isSymbol()) {
+				ISymbol sym = (ISymbol) arg1;
+				if (assumeInteger(sym)){
+					return sym;
+				}
+			}
 			if (arg1.isPlus()) {
 				IAST[] result = ((IAST) arg1).filter(new CeilingPlusFunction());
 				if (result[0].size() > 1) {

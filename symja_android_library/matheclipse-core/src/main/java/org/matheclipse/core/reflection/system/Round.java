@@ -50,6 +50,13 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 			if (signedNumber != null) {
 				return signedNumber.round();
 			}
+
+			if (arg1.isSymbol()) {
+				ISymbol sym = (ISymbol) arg1;
+				if (assumeInteger(sym)){
+					return sym;
+				}
+			}
 			if (arg1.isPlus()) {
 				IAST[] result = ((IAST) arg1).filter(new RoundPlusFunction());
 				if (result[0].size() > 1) {

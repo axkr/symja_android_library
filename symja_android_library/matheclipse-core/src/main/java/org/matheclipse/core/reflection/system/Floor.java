@@ -54,6 +54,12 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			if (signedNumber != null) {
 				return signedNumber.floor();
 			}
+			if (arg1.isSymbol()) {
+				ISymbol sym = (ISymbol) arg1;
+				if (assumeInteger(sym)){
+					return sym;
+				}
+			}
 			if (arg1.isPlus()) {
 				IAST[] result = ((IAST) arg1).filter(new FloorPlusFunction());
 				if (result[0].size() > 1) {

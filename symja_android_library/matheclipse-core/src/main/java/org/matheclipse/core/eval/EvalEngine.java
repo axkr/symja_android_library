@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.MethodSymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssumptions;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -56,7 +57,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public static final IExpr eval(final IExpr expr) {
 		return instance.get().evaluate(expr);
 	}
-
+	
 	/**
 	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the input object.
 	 * 
@@ -272,6 +273,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see #evalTrace(IExpr, Predicate, IAST)
 	 */
 	transient boolean fTraceMode;
+
+	transient IAssumptions fAssumptions = null;
 
 	transient IEvalStepListener fTraceStack = null;
 
@@ -1321,6 +1324,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fAnswer;
 	}
 
+	/**
+	 * Get the currently available assumptions if possible.
+	 * 
+	 * @return <code>null</code> if no assumptions are available
+	 */
+	public IAssumptions getAssumptions() {
+		return fAssumptions;
+	}
+	
 	public int getIterationLimit() {
 		return fIterationLimit;
 	}
@@ -1539,6 +1551,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fNumericMode = false;
 		fEvalLHSMode = false;
 		fRecursionCounter = 0;
+	}
+
+	/**
+	 * Set the assumptions for this evaluation engine
+	 * 
+	 * @param assumptions
+	 */
+	public void setAssumptions(IAssumptions assumptions) {
+		this.fAssumptions = assumptions;
 	}
 
 	public void setIterationLimit(final int i) {
