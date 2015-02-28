@@ -8,11 +8,12 @@ import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IAssumptions;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -82,14 +83,14 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).eabs();
 		}
+		if (AbstractAssumptions.assumeNegative(arg1)) {
+			return F.Negate(arg1);
+		}
+		if (AbstractAssumptions.assumeNonNegative(arg1)) {
+			return arg1;
+		}
 		if (arg1.isSymbol()) {
 			ISymbol sym = (ISymbol) arg1;
-			if (assumeNegative(sym)){
-				return F.Negate(sym);
-			}
-			if (assumeNonNegative(sym)){
-				return sym;
-			}
 			return sym.mapConstantDouble(new AbsNumericFunction(sym));
 		}
 

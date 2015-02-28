@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.interfaces;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IAssumptions;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -184,46 +183,6 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	public static boolean assumeNegative(final ISymbol symbol) {
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isNegative(symbol)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean assumePositive(final ISymbol symbol) {
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isPositive(symbol)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean assumeNonNegative(final ISymbol symbol) {
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isNonNegative(symbol)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean assumeInteger(final ISymbol symbol) {
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isInteger(symbol)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**

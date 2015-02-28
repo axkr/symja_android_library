@@ -7,6 +7,7 @@ import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -54,11 +55,8 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			if (signedNumber != null) {
 				return signedNumber.floor();
 			}
-			if (arg1.isSymbol()) {
-				ISymbol sym = (ISymbol) arg1;
-				if (assumeInteger(sym)){
-					return sym;
-				}
+			if (AbstractAssumptions.assumeInteger(arg1)) {
+				return arg1;
 			}
 			if (arg1.isPlus()) {
 				IAST[] result = ((IAST) arg1).filter(new FloorPlusFunction());

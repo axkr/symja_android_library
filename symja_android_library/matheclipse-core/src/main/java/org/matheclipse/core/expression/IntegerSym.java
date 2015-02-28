@@ -374,10 +374,22 @@ public class IntegerSym extends ExprImpl implements IInteger {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalValue(IRational value){
+	public boolean isProbablePrime() {
+		return isProbablePrime(PRIME_CERTAINTY);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isProbablePrime(int certainty) {
+		return fInteger.isProbablePrime(certainty);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalValue(IRational value) {
 		return equals(value);
 	}
-	
+
 	@Override
 	public boolean isZero() {
 		return fInteger.equals(BigInteger.ZERO);

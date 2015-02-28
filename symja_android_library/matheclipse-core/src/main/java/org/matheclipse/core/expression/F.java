@@ -113,6 +113,14 @@ public class F {
 	public final static ISymbol StringHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "string" : "String");
 	public final static ISymbol MethodHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "methodhead" : "MethodHead");
 
+	public final static ISymbol Algebraics = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
+	public final static ISymbol Booleans = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleans" : "Booleans");
+	public final static ISymbol Complexes = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexes" : "Complexes");
+	public final static ISymbol Integers = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integers" : "Integers");
+	public final static ISymbol Primes = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primes" : "Primes");
+	public final static ISymbol Rationals = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rationals" : "Rationals");
+	public final static ISymbol Reals = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reals" : "Reals");
+
 	public final static ISymbol False = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False");
 	public final static ISymbol List = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
 	public final static ISymbol True = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
@@ -222,6 +230,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Drop());
 	public final static ISymbol Do = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do",
 			new org.matheclipse.core.builtin.function.Do());
+	public final static ISymbol Element = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "element" : "Element",
+			new org.matheclipse.core.builtin.function.Element());
 	public final static ISymbol EvenQ = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ",
 			new org.matheclipse.core.builtin.function.EvenQ());
 	public final static ISymbol First = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First",
@@ -309,6 +319,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Quiet());
 	public final static ISymbol Rational = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rational" : "Rational",
 			new org.matheclipse.core.builtin.function.Rational());
+	public final static ISymbol Refine = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "refine" : "Refine",
+			new org.matheclipse.core.builtin.function.Refine());
 	public final static ISymbol Reap = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reap" : "Reap",
 			new org.matheclipse.core.builtin.function.Reap());
 	public final static ISymbol Rest = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rest" : "Rest",

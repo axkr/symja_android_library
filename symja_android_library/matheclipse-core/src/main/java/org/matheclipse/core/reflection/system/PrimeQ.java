@@ -14,8 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Predicate;
 
 /**
- * Test if a number is prime. See: <a
- * href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
+ * Test if a number is prime. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
  * 
  * @see org.matheclipse.core.reflection.system.NextPrime
  */
@@ -35,8 +34,7 @@ public class PrimeQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 
 	public boolean apply(final IExpr obj) {
 		try {
-			final BigInteger value = ((IInteger) obj).getBigNumerator();
-			return value.isProbablePrime(32);
+			return ((IInteger) obj).isProbablePrime();
 		} catch (final Exception e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();

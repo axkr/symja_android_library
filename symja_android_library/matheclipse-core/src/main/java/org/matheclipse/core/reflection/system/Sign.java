@@ -2,8 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -38,15 +38,14 @@ public class Sign implements IFunctionEvaluator {
 				return F.Sign(directedInfininty.arg1());
 			}
 		}
-		if (arg1.isSymbol()) {
-			ISymbol sym = (ISymbol) arg1;
-			if (AbstractFunctionEvaluator.assumeNegative(sym)) {
-				return F.CN1;
-			}
-			if (AbstractFunctionEvaluator.assumePositive(sym)) {
-				return F.C1;
-			}
+
+		if (AbstractAssumptions.assumeNegative(arg1)) {
+			return F.CN1;
 		}
+		if (AbstractAssumptions.assumePositive(arg1)) {
+			return F.C1;
+		}
+
 		INumber number = NumericQ.getNumberNumericQ(arg1);
 		if (number != null) {
 			return numberSign(number);
