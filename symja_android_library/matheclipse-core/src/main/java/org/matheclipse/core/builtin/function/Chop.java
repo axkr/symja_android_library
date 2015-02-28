@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Chop extends AbstractFunctionEvaluator {
+public class Chop extends AbstractCoreFunctionEvaluator {
 	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
 	public Chop() {
 	}
