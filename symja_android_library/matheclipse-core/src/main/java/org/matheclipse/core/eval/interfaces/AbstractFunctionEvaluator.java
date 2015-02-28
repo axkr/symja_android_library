@@ -205,9 +205,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 				for (int i = 1; i < ast.size(); i++) {
 					if (ast.get(i).equals(period)) {
 						result[1] = ast.removeAtClone(i).getOneIdentity(F.C1);
-						if (result[1].isNumber()) {
-							return result;
-						}
+						return result;
 					}
 				}
 				return null;

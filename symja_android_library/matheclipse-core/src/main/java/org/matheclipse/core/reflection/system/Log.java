@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
@@ -125,6 +126,12 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 
 	@Override
 	public IExpr e1ObjArg(IExpr arg1) {
+		if (arg1.isPower()) {
+			IAST power = (IAST) arg1;
+			if (AbstractAssumptions.assumePositive(power.arg1()) && AbstractAssumptions.assumeReal(power.arg2())) {
+				return Times(power.arg2(), Log(power.arg1()));
+			}
+		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
 			if (negExpr.isPositive()) {

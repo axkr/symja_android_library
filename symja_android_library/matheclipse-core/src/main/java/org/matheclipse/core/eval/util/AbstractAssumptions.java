@@ -1,7 +1,11 @@
 package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class AbstractAssumptions implements IAssumptions {
 
@@ -56,6 +60,18 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeNegative(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isNegative();
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSymbol()) {
+			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+			if (module instanceof ISignedNumberConstant) {
+				return ((ISignedNumberConstant) module).evalReal() < 0.0;
+			}
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isNegative(expr)) {
@@ -66,6 +82,18 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumePositive(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isPositive();
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSymbol()) {
+			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+			if (module instanceof ISignedNumberConstant) {
+				return ((ISignedNumberConstant) module).evalReal() > 0.0;
+			}
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isPositive(expr)) {
@@ -76,13 +104,10 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeNonNegative(final IExpr expr) {
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isNonNegative(expr)) {
-				return true;
-			}
+		if (expr.isZero()) {
+			return true;
 		}
-		return false;
+		return assumePositive(expr); 
 	}
 
 	public static boolean assumeAlgebraic(final IExpr expr) {
@@ -116,6 +141,12 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeInteger(final IExpr expr) {
+		if (expr.isInteger()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isInteger(expr)) {
@@ -146,6 +177,17 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeReal(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSymbol()) {
+			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+				return true;
+			}
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isReal(expr)) {

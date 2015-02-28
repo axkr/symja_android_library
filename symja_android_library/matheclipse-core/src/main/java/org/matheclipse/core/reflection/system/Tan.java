@@ -21,6 +21,7 @@ import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
@@ -75,6 +76,11 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 					// Tan(z) == Cot(Pi/2 - z)
 					return Cot(Subtract(Divide(Pi,C2),arg1));
 				}
+			}
+			
+			if (AbstractAssumptions.assumeInteger(parts[1])) {
+				// period Pi
+				return F.Tan(parts[0]);
 			}
 		}
 		return null;

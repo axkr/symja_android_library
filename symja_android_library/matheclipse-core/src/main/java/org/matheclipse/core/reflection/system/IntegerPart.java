@@ -26,6 +26,9 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 			if (signedNumber != null) {
 				return signedNumberIntegerPart(signedNumber);
 			}
+			if (arg1.isIntegerResult()) {
+				return arg1;
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr != null) {
 				return Negate(IntegerPart(negExpr));

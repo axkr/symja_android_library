@@ -23,6 +23,7 @@ import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
@@ -78,6 +79,12 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 				}
 				
 			}
+			
+			if (AbstractAssumptions.assumeInteger(parts[1])) {
+				// period Pi
+				return Cot(parts[0]);
+			}
+			
 		}
 		return null;
 	}

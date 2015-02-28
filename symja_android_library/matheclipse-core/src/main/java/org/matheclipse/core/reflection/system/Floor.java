@@ -55,16 +55,16 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			if (signedNumber != null) {
 				return signedNumber.floor();
 			}
-			if (AbstractAssumptions.assumeInteger(arg1)) {
+			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
 			if (arg1.isPlus()) {
-				IAST[] result = ((IAST) arg1).filter(new FloorPlusFunction());
-				if (result[0].size() > 1) {
-					if (result[1].size() > 1) {
-						result[0].add(F.Floor(result[1]));
+				IAST[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
+				if (splittedPlus[0].size() > 1) {
+					if (splittedPlus[1].size() > 1) {
+						splittedPlus[0].add(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
 					}
-					return result[0];
+					return splittedPlus[0];
 				}
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);

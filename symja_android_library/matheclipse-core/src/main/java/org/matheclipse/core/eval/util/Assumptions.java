@@ -3,9 +3,13 @@ package org.matheclipse.core.eval.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.basic.Alloc;
+import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Assumptions extends AbstractAssumptions {
@@ -73,32 +77,32 @@ public class Assumptions extends AbstractAssumptions {
 
 	@Override
 	public boolean isBoolean(IExpr expr) {
-		return isDomain(expr, F.Booleans); 
+		return isDomain(expr, F.Booleans);
 	}
 
 	@Override
 	public boolean isComplex(IExpr expr) {
-		return isDomain(expr, F.Complexes); 
+		return isDomain(expr, F.Complexes);
 	}
 
 	@Override
-	public boolean isInteger(IExpr expr) {
-		return isDomain(expr, F.Integers); 
+	public boolean isInteger(IExpr expr) { 
+		return isDomain(expr, F.Integers);
 	}
 
 	@Override
 	public boolean isPrime(IExpr expr) {
-		return isDomain(expr, F.Primes); 
+		return isDomain(expr, F.Primes);
 	}
 
 	@Override
 	public boolean isRational(IExpr expr) {
-		return isDomain(expr, F.Rationals); 
+		return isDomain(expr, F.Rationals);
 	}
 
 	@Override
 	public boolean isReal(IExpr expr) {
-		return isDomain(expr, F.Reals); 
+		return isDomain(expr, F.Reals);
 	}
 
 }

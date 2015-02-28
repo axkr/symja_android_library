@@ -61,12 +61,6 @@ public class Element extends AbstractCoreFunctionEvaluator {
 					return F.True;
 				}
 			} else if (arg2.equals(F.Integers)) {
-				if (arg1.isInteger()) {
-					return F.True;
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
 				if (AbstractAssumptions.assumeInteger(arg1)) {
 					return F.True;
 				}
@@ -91,17 +85,6 @@ public class Element extends AbstractCoreFunctionEvaluator {
 					return F.True;
 				}
 			} else if (arg2.equals(F.Reals)) {
-				if (arg1.isSignedNumber()) {
-					return F.True;
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
-				if (arg1.isSymbol()) {
-					if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
-						return F.True;
-					}
-				}
 				if (AbstractAssumptions.assumeReal(arg1)) {
 					return F.True;
 				}

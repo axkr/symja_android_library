@@ -15,6 +15,7 @@ import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
@@ -30,10 +31,10 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.Polynomial;
@@ -825,6 +826,39 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isInteger() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isIntegerResult() {
+		ISymbol symbol = topHead();
+		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
+			return true;
+		}
+		if (isPower() && arg2().isInteger() && arg2().isPositive()) {
+			if (arg1().isIntegerResult()) {
+				return true;
+			}
+			if (AbstractAssumptions.assumeInteger(arg1())) {
+				return true;
+			}
+			return false;
+		}
+		if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
+			// TODO add more integer functions
+			// check if all arguments are &quot;integer functions&quot;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isIntegerResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumeInteger(get(i))) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
 		return false;
 	}
 

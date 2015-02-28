@@ -6,6 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -420,6 +421,15 @@ public abstract class ExprImpl implements IExpr {
 		return this instanceof IInteger;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isIntegerResult() {
+		if (AbstractAssumptions.assumeInteger(this)) {
+			return true;
+		}
+		return this instanceof IInteger;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLEOrdered(final IExpr obj) {

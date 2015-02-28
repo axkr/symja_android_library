@@ -1,13 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Csc;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Sec;
-import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.*;
 
 import java.math.BigInteger;
 
@@ -19,6 +12,7 @@ import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
@@ -65,6 +59,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 					return Negate(Sec(parts[0]));
 				}
 			}
+			
 			if (parts[1].isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
@@ -81,6 +76,11 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 				if (f.equals(C1D2)) {
 					return Times(CN1, Csc(parts[0]));
 				}
+			}
+			
+			if (AbstractAssumptions.assumeInteger(parts[1])) {
+				// period n*Pi
+				return Times(Power(CN1, parts[1]), Sec(parts[0]));
 			}
 		}
 		return null;
