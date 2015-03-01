@@ -26,71 +26,87 @@ public class Element extends AbstractCoreFunctionEvaluator {
 		final IExpr arg2 = F.eval(ast.arg2());
 		if (arg2.isSymbol()) {
 			final IExpr arg1 = F.eval(ast.arg1());
-			if (arg2.equals(F.Algebraics)) {
-				if (arg1.isNumber()) {
-					return F.True;
-				}
-				if (arg1.isSymbol()) {
-					if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
-						return F.True;
+			if (arg1.isAST(F.Alternatives)) {
+				IAST list = (IAST) arg1;
+				for (int i = 1; i < list.size(); i++) {
+					if (!assumeDomain(arg1, (ISymbol) arg2)) {
+						return null;
 					}
 				}
-				if (AbstractAssumptions.assumeAlgebraic(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Booleans)) {
-				if (arg1.isTrue() || arg1.isFalse()) {
-					return F.True;
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
-				if (AbstractAssumptions.assumeBoolean(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Complexes)) {
-				if (arg1.isNumber()) {
-					return F.True;
-				}
-				if (arg1.isSymbol()) {
-					if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
-						return F.True;
-					}
-				}
-				if (AbstractAssumptions.assumeComplex(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Integers)) {
-				if (AbstractAssumptions.assumeInteger(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Primes)) {
-				if (arg1.isInteger() && ((IInteger) arg1).isProbablePrime()) {
-					return F.True;
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
-				if (AbstractAssumptions.assumePrime(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Rationals)) {
-				if (arg1.isRational()) {
-					return F.True;
-				}
-				if (arg1.isNumber()) {
-					return F.False;
-				}
-				if (AbstractAssumptions.assumeRational(arg1)) {
-					return F.True;
-				}
-			} else if (arg2.equals(F.Reals)) {
-				if (AbstractAssumptions.assumeReal(arg1)) {
-					return F.True;
-				}
+				return F.True;
+			} else if (assumeDomain(arg1, (ISymbol) arg2)) {
+				return F.True;
 			}
+			return null;
 		}
 		return null;
+	}
+
+	private boolean assumeDomain(final IExpr arg1, final ISymbol arg2) {
+		if (arg2.equals(F.Algebraics)) {
+			if (arg1.isNumber()) {
+				return true;
+			}
+			if (arg1.isSymbol()) {
+				if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
+					return true;
+				}
+			}
+			if (AbstractAssumptions.assumeAlgebraic(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Booleans)) {
+			if (arg1.isTrue() || arg1.isFalse()) {
+				return true;
+			}
+			if (arg1.isNumber()) {
+				return true;
+			}
+			if (AbstractAssumptions.assumeBoolean(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Complexes)) {
+			if (arg1.isNumber()) {
+				return true;
+			}
+			if (arg1.isSymbol()) {
+				if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
+					return true;
+				}
+			}
+			if (AbstractAssumptions.assumeComplex(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Integers)) {
+			if (AbstractAssumptions.assumeInteger(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Primes)) {
+			if (arg1.isInteger() && ((IInteger) arg1).isProbablePrime()) {
+				return true;
+			}
+			if (arg1.isNumber()) {
+				return true;
+			}
+			if (AbstractAssumptions.assumePrime(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Rationals)) {
+			if (arg1.isRational()) {
+				return true;
+			}
+			if (arg1.isNumber()) {
+				return true;
+			}
+			if (AbstractAssumptions.assumeRational(arg1)) {
+				return true;
+			}
+		} else if (arg2.equals(F.Reals)) {
+			if (AbstractAssumptions.assumeReal(arg1)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

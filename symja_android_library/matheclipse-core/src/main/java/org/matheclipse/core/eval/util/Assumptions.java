@@ -148,7 +148,15 @@ public class Assumptions extends AbstractAssumptions {
 			ISymbol domain = (ISymbol) element.arg2();
 			if (domain.equals(F.Algebraics) || domain.equals(F.Booleans) || domain.equals(F.Complexes) || domain.equals(F.Integers)
 					|| domain.equals(F.Primes) || domain.equals(F.Rationals) || domain.equals(F.Reals)) {
-				assumptions.elementsMap.put(element.arg1(), domain);
+				IExpr arg1 = element.arg1();
+				if (arg1.isAST(F.Alternatives)) {
+					IAST alternatives = (IAST) arg1;
+					for (int i = 1; i < alternatives.size(); i++) {
+						assumptions.elementsMap.put(alternatives.get(i), domain);
+					}
+				} else {
+					assumptions.elementsMap.put(arg1, domain);
+				}
 				return true;
 			}
 		}

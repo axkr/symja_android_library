@@ -122,6 +122,8 @@ public class F {
 	public final static ISymbol Reals = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reals" : "Reals");
 
 	public final static ISymbol False = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False");
+	public final static ISymbol Alternatives = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "alternatives"
+			: "Alternatives");
 	public final static ISymbol List = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
 	public final static ISymbol True = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
 	public final static ISymbol Null = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "null" : "Null");
@@ -1393,6 +1395,10 @@ public class F {
 
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
+	}
+
+	public static IAST Alternatives(final IExpr... a) {
+		return ast(a, Alternatives);
 	}
 
 	public static IAST Apart(final IExpr a0) {
