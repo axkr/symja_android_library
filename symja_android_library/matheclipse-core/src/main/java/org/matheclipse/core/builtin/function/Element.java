@@ -44,36 +44,14 @@ public class Element extends AbstractCoreFunctionEvaluator {
 
 	private boolean assumeDomain(final IExpr arg1, final ISymbol arg2) {
 		if (arg2.equals(F.Algebraics)) {
-			if (arg1.isNumber()) {
-				return true;
-			}
-			if (arg1.isSymbol()) {
-				if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
-					return true;
-				}
-			}
 			if (AbstractAssumptions.assumeAlgebraic(arg1)) {
 				return true;
 			}
 		} else if (arg2.equals(F.Booleans)) {
-			if (arg1.isTrue() || arg1.isFalse()) {
-				return true;
-			}
-			if (arg1.isNumber()) {
-				return true;
-			}
 			if (AbstractAssumptions.assumeBoolean(arg1)) {
 				return true;
 			}
 		} else if (arg2.equals(F.Complexes)) {
-			if (arg1.isNumber()) {
-				return true;
-			}
-			if (arg1.isSymbol()) {
-				if (((ISymbol) arg1).getEvaluator() instanceof ISignedNumberConstant) {
-					return true;
-				}
-			}
 			if (AbstractAssumptions.assumeComplex(arg1)) {
 				return true;
 			}
@@ -82,22 +60,10 @@ public class Element extends AbstractCoreFunctionEvaluator {
 				return true;
 			}
 		} else if (arg2.equals(F.Primes)) {
-			if (arg1.isInteger() && ((IInteger) arg1).isProbablePrime()) {
-				return true;
-			}
-			if (arg1.isNumber()) {
-				return true;
-			}
 			if (AbstractAssumptions.assumePrime(arg1)) {
 				return true;
 			}
 		} else if (arg2.equals(F.Rationals)) {
-			if (arg1.isRational()) {
-				return true;
-			}
-			if (arg1.isNumber()) {
-				return true;
-			}
 			if (AbstractAssumptions.assumeRational(arg1)) {
 				return true;
 			}

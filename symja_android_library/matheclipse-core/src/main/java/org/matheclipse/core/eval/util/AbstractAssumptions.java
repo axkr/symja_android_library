@@ -2,8 +2,10 @@ package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -107,13 +109,39 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isZero()) {
 			return true;
 		}
-		return assumePositive(expr); 
+		return assumePositive(expr);
 	}
 
+	/**
+	 * TODO implement algebraic number conditions.
+	 * 
+	 * @param expr
+	 * @return
+	 */
 	public static boolean assumeAlgebraic(final IExpr expr) {
+		if (expr.isRational()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return true;
+		}
+		if (expr.isSymbol()) {
+			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+				return true;
+			}
+		} 
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isAlgebraic(expr)) {
+				return true;
+			}
+			if (assumptions.isRational(expr)) {
+				return true;
+			}
+			if (assumptions.isInteger(expr)) {
+				return true;
+			}
+			if (assumptions.isPrime(expr)) {
 				return true;
 			}
 		}
@@ -121,6 +149,12 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeBoolean(final IExpr expr) {
+		if (expr.isTrue() || expr.isFalse()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isBoolean(expr)) {
@@ -131,9 +165,32 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeComplex(final IExpr expr) {
+		if (expr.isNumber()) {
+			return true;
+		}
+		if (expr.isSymbol()) {
+			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+				return true;
+			}
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isComplex(expr)) {
+				return true;
+			}
+			if (assumptions.isRational(expr)) {
+				return true;
+			}
+			if (assumptions.isInteger(expr)) {
+				return true;
+			}
+			if (assumptions.isPrime(expr)) {
+				return true;
+			}
+			if (assumptions.isReal(expr)) {
+				return true;
+			}
+			if (assumptions.isAlgebraic(expr)) {
 				return true;
 			}
 		}
@@ -152,11 +209,20 @@ public class AbstractAssumptions implements IAssumptions {
 			if (assumptions.isInteger(expr)) {
 				return true;
 			}
+			if (assumptions.isPrime(expr)) {
+				return true;
+			}
 		}
 		return false;
 	}
 
 	public static boolean assumePrime(final IExpr expr) {
+		if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isPrime(expr)) {
@@ -167,9 +233,21 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeRational(final IExpr expr) {
+		if (expr.isRational()) {
+			return true;
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isRational(expr)) {
+				return true;
+			}
+			if (assumptions.isInteger(expr)) {
+				return true;
+			}
+			if (assumptions.isPrime(expr)) {
 				return true;
 			}
 		}
@@ -191,6 +269,15 @@ public class AbstractAssumptions implements IAssumptions {
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isReal(expr)) {
+				return true;
+			}
+			if (assumptions.isInteger(expr)) {
+				return true;
+			}
+			if (assumptions.isPrime(expr)) {
+				return true;
+			}
+			if (assumptions.isRational(expr)) {
 				return true;
 			}
 		}

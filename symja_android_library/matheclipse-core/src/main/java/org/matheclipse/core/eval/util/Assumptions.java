@@ -175,19 +175,43 @@ public class Assumptions extends AbstractAssumptions {
 			assumptions.valueMap.put(element.arg1(), gla);
 			return true;
 		}
+		if (element.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) element.arg1();
+			IExpr key = element.arg2();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+				gla.addLess(num);
+			} else {
+				gla.addLess(num);
+			}
+			assumptions.valueMap.put(key, gla);
+			return true;
+		}
 		return false;
 	}
 
 	private static boolean addGreaterEqual(IAST element, Assumptions assumptions) {
+		// arg1 >= arg2
 		if (element.arg2().isSignedNumber()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addGreaterEqual((ISignedNumber) element.arg2());
-			} else {
-				gla.addGreaterEqual((ISignedNumber) element.arg2());
 			}
+			gla.addGreaterEqual((ISignedNumber) element.arg2());
 			assumptions.valueMap.put(element.arg1(), gla);
+			return true;
+		}
+
+		if (element.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) element.arg1();
+			IExpr key = element.arg2();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+			}
+			gla.addLessEqual(num);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
 		return false;
@@ -205,19 +229,42 @@ public class Assumptions extends AbstractAssumptions {
 			assumptions.valueMap.put(element.arg1(), gla);
 			return true;
 		}
+		if (element.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) element.arg1();
+			IExpr key = element.arg2();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+				gla.addGreater(num);
+			} else {
+				gla.addGreater(num);
+			}
+			assumptions.valueMap.put(key, gla);
+			return true;
+		}
 		return false;
 	}
 
 	private static boolean addLessEqual(IAST element, Assumptions assumptions) {
+		// arg1 <= arg2;
 		if (element.arg2().isSignedNumber()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addLessEqual((ISignedNumber) element.arg2());
-			} else {
-				gla.addLessEqual((ISignedNumber) element.arg2());
 			}
+			gla.addLessEqual((ISignedNumber) element.arg2());
 			assumptions.valueMap.put(element.arg1(), gla);
+			return true;
+		}
+		if (element.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) element.arg1();
+			IExpr key = element.arg2();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+			}
+			gla.addGreaterEqual(num);
+			assumptions.valueMap.put(key, gla);
 			return true;
 		}
 		return false;
@@ -237,6 +284,15 @@ public class Assumptions extends AbstractAssumptions {
 					}
 				}
 				result = true;
+			}
+			if (!result) {
+				num = gla.getLessEqual();
+				if (num != null) {
+					if (!num.isLessThan(F.C0)) {
+						return false;
+					}
+					result = true;
+				}
 			}
 			return result;
 		}
@@ -258,6 +314,15 @@ public class Assumptions extends AbstractAssumptions {
 				}
 				result = true;
 			}
+			if (!result) {
+				num = gla.getGreaterEqual();
+				if (num != null) {
+					if (!num.isGreaterThan(F.C0)) {
+						return false;
+					}
+					result = true;
+				}
+			}
 			return result;
 		}
 		return false;
@@ -273,6 +338,14 @@ public class Assumptions extends AbstractAssumptions {
 			if (num != null) {
 				if (num.isZero()) {
 					result = true;
+				}
+			}
+			if (!result) {
+				num = gla.getGreaterEqual();
+				if (num != null) {
+					if (num.isZero()) {
+						result = true;
+					}
 				}
 			}
 			if (result) {
