@@ -116,6 +116,7 @@
 	           <keep access="public" extends="com.google.common.base.Function" /> 
 	           <keep access="public" extends="org.matheclipse.core.interfaces.IExpr" /> 
 	           <keep access="public" extends="org.matheclipse.core.interfaces.IEvaluator" />
+	           <keep access="public" extends="org.matheclipse.core.eval.MathMLUtilities" /> 
 	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
 	           <keep access="public" extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
 	           <keep access="public" extends="org.matheclipse.core.form.mathml.IConverter" />
@@ -124,6 +125,8 @@
 	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorBoolean" />
 	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorInt" />
 	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorLong" />
+	           <keep access="public" extends="org.matheclipse.core.interfaces.IEvalStepListener" />
+	           <keep access="public" extends="org.matheclipse.core.eval.util.IAssumptions" />
 	           <keep access="public" extends="org.apache.log4j.Appender" />
 	           <keep access="public" extends="org.apache.log4j.spi.OptionHandler" />
 	           <keep access="public" extends="org.apfloat.spi.BuilderFactory" />
@@ -200,6 +203,24 @@
 	                     <field access    ="public"
 	                            name      ="*" />
 	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.form.output.OutputFormFactory">
+	                     <method access    ="public"
+	                             name      ="*" />
+	                     <field access    ="public"
+	                            name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.convert.AST2Expr">
+	                     <method access    ="public"
+	                             name      ="*" />
+	                     <field access    ="public"
+	                            name      ="*" />
+	           </keep> 
+	           <keep access="public" name="org.matheclipse.core.convert.Object2Expr">
+	                     <method access    ="public"
+	                             name      ="*" />
+	                     <field access    ="public"
+	                            name      ="*" />
+	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.interfaces.IExpr">
 	                     <method access    ="public"
 	                             name      ="*" />
@@ -260,7 +281,15 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
-
+	           <keep access="public" name="org.matheclipse.core.interfaces.IEvalStepListener">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+				<keep access="public" name="org.matheclipse.core.eval.util.IAssumptions">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           
 	           <keep access="public" name="${main-class}">
 	                     <method access    ="public static"
 	                             type      ="void"
