@@ -208,7 +208,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ).
+	 * get(1) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
 	 * 
 	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -217,7 +218,9 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ).
+	 * get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
+	 * returns <code>y</code>.
 	 * 
 	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -226,7 +229,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).
+	 * get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -235,7 +239,9 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(4) ).
+	 * get(4) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
+	 * <code>d</code>.
 	 * 
 	 * @return the fourth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -244,7 +250,9 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
 	/**
 	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(5) ).
+	 * get(5) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns
+	 * <code>e</code>.
 	 * 
 	 * @return the fifth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
@@ -259,7 +267,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public ASTRange args();
 
 	/**
-	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied).
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not cloned).
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */

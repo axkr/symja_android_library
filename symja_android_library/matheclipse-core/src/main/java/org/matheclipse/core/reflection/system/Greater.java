@@ -41,12 +41,12 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 * @param a2
 	 *            right-hand-side of the comparator expression
 	 * @param originalHead
-	 *            symbol for which the simplification was started
+	 *            symbol of the comparator operator for which the simplification was started
 	 * @param oppositeHead
-	 *            opposite of the symbol for which the comparison was started
+	 *            opposite of the symbol of the comparator operator for which the comparison was started
 	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 	 */
-	final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
+	final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
 		IExpr lhs;
 		ISignedNumber rhs;
 		boolean useOppositeHeader = false;
@@ -87,13 +87,18 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 * Create the result for a <code>simplifyCompare()</code> step.
 	 * 
 	 * @param lhsAST
+	 *            left-hand-side of the comparator expression
 	 * @param rhs
+	 *            right-hand-side of the comparator expression
 	 * @param useOppositeHeader
+	 *            use the opposite header to create the result
 	 * @param originalHead
+	 *            symbol of the comparator operator for which the simplification was started
 	 * @param oppositeHead
+	 *            opposite of the symbol of the comparator operator for which the comparison was started
 	 * @return
 	 */
-	private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
+	private IAST createComparatorResult(IAST lhsAST, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
 			ISymbol oppositeHead) {
 		IAST lhsClone = lhsAST.removeAtClone(1);
 		if (useOppositeHeader) {
@@ -158,10 +163,10 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		// don't compare strings
 		IExpr a0 = o0;
 		IExpr a1 = o1;
-		if (!(a0.isSignedNumber()) && NumericQ.CONST.apply(a0)) {
+		if (!(a0.isSignedNumber()) && a0.isNumericFunction()) {
 			a0 = F.evaln(a0);
 		}
-		if (!(a1.isSignedNumber()) && NumericQ.CONST.apply(a1)) {
+		if (!(a1.isSignedNumber()) && a1.isNumericFunction()) {
 			a1 = F.evaln(a1);
 		}
 		if (a0.isNumeric() && a1.isRational()) {

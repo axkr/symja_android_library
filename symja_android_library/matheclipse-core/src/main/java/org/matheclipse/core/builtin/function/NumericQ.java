@@ -21,7 +21,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	/**
 	 * Constructor for the unary predicate
 	 */
-	public final static NumericQ CONST = new NumericQ();
+//	public final static NumericQ CONST = new NumericQ();
 
 	public NumericQ() {
 	}
