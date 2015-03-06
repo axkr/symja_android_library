@@ -864,6 +864,76 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNegativeResult() {
+		if (isTimes()) {
+			boolean flag = false;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isNonNegativeResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumeNonNegative(get(i))) {
+					continue;
+				}
+				if (get(i).isNegativeResult()) {
+					flag = !flag;
+					continue;
+				}
+				if (AbstractAssumptions.assumeNegative(get(i))) {
+					flag = !flag;
+					continue;
+				}
+				return false;
+			}
+			return flag;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNonNegativeResult() {
+		ISymbol symbol = topHead();
+		if (symbol.equals(F.Abs)) {
+			return true;
+		}
+		if (isPlus()) {
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isNonNegativeResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumeNonNegative(get(i))) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (isTimes()) {
+			boolean flag = true;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isNonNegativeResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumeNonNegative(get(i))) {
+					continue;
+				}
+				if (get(i).isNegativeResult()) {
+					flag = !flag;
+					continue;
+				}
+				if (AbstractAssumptions.assumeNegative(get(i))) {
+					flag = !flag;
+					continue;
+				}
+				return false;
+			}
+			return flag;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return false;
 	}

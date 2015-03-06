@@ -378,13 +378,13 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isFreeAST(final IExpr pattern) {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAST(Predicate<IExpr> predicate){
+	public boolean isFreeAST(Predicate<IExpr> predicate) {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFunction() {
@@ -402,10 +402,10 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public boolean isIndeterminate(){
+	public boolean isIndeterminate() {
 		return false;
 	}
 
@@ -429,7 +429,25 @@ public abstract class ExprImpl implements IExpr {
 		}
 		return this instanceof IInteger;
 	}
-	
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegativeResult() {
+		if (AbstractAssumptions.assumeNegative(this)) {
+			return true;
+		}
+		return isNegative();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNonNegativeResult() {
+		if (AbstractAssumptions.assumeNonNegative(this)) {
+			return true;
+		}
+		return isZero() || isPositive();
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLEOrdered(final IExpr obj) {
@@ -704,13 +722,13 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalValue(IRational value){
+	public boolean isRationalValue(IRational value) {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isTan() {
@@ -746,7 +764,7 @@ public abstract class ExprImpl implements IExpr {
 	public boolean isValue() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isVariable() {

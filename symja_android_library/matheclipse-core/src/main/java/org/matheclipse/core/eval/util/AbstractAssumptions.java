@@ -106,10 +106,25 @@ public class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeNonNegative(final IExpr expr) {
-		if (expr.isZero()) {
-			return true;
+		if (expr.isSignedNumber()) {
+			return !((ISignedNumber) expr).isNegative();
 		}
-		return assumePositive(expr);
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSymbol()) {
+			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+			if (module instanceof ISignedNumberConstant) {
+				return ((ISignedNumberConstant) module).evalReal() >= 0.0;
+			}
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isNonNegative(expr)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -465,7 +465,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	public boolean isInteger();
-	
+
 	/**
 	 * Test if this expression is a integer function (i.e. a number, a symbolic constant or an integer function where all arguments
 	 * are also &quot;integer functions&quot;)
@@ -474,7 +474,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isRealFunction
 	 */
 	public boolean isIntegerResult();
-	
+
+	/**
+	 * Test if this expression has a negative result.
+	 * 
+	 * @return <code>true</code>, if the given expression is a negative function or value.
+	 * @see #isRealFunction
+	 */
+	public boolean isNegativeResult();
+
+	/**
+	 * Test if this expression has a non-negative result.
+	 * 
+	 * @return <code>true</code>, if the given expression is a non-negative function or value.
+	 * @see #isRealFunction
+	 */
+	public boolean isNonNegativeResult();
+
 	/**
 	 * Compares this expression with the specified expression for order. Returns true if this expression is canonical less than or
 	 * equal to the specified expression (&lt;= relation).
