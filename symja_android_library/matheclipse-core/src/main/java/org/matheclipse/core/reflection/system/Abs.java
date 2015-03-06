@@ -5,11 +5,9 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
@@ -83,10 +81,10 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).eabs();
 		}
-		if (AbstractAssumptions.assumeNegative(arg1)) {
+		if (arg1.isNegativeResult()) {
 			return F.Negate(arg1);
 		}
-		if (AbstractAssumptions.assumeNonNegative(arg1)) {
+		if (arg1.isNonNegativeResult()) {
 			return arg1;
 		}
 		if (arg1.isSymbol()) {
