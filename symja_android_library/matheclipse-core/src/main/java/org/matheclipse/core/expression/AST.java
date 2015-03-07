@@ -865,6 +865,18 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegativeResult() {
+		if (isPlus()) {
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isNegativeResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumeNegative(get(i))) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
 		if (isTimes()) {
 			boolean flag = false;
 			for (int i = 1; i < size(); i++) {
@@ -932,6 +944,45 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPositiveResult() {
+		if (isPlus()) {
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isPositiveResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumePositive(get(i))) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (isTimes()) {
+			boolean flag = true;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isPositiveResult()) {
+					continue;
+				}
+				if (AbstractAssumptions.assumePositive(get(i))) {
+					continue;
+				}
+				if (get(i).isNegativeResult()) {
+					flag = !flag;
+					continue;
+				}
+				if (AbstractAssumptions.assumeNegative(get(i))) {
+					flag = !flag;
+					continue;
+				}
+				return false;
+			}
+			return flag;
+		}
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {

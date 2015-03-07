@@ -441,6 +441,15 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPositiveResult() {
+		if (AbstractAssumptions.assumePositive(this)) {
+			return true;
+		}
+		return isPositive();
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNonNegativeResult() {
 		if (AbstractAssumptions.assumeNonNegative(this)) {
 			return true;

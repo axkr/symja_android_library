@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,7 +28,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 *            right-hand-side of the comparator expression
 	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 	 */
-	protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+	protected IAST simplifyCompare(IExpr a1, IExpr a2) {
 		return simplifyCompare(a1, a2, F.Greater, F.Less);
 	}
 
@@ -113,9 +112,19 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		Validate.checkRange(ast, 3);
 
 		if (ast.size() == 3) {
-			IExpr result = simplifyCompare(ast.arg1(), ast.arg2());
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			IExpr result = simplifyCompare(arg1, arg2);
 			if (result != null) {
+				// the result may return an AST with an "opposite header" (i.e. Less instead of Greater)
 				return result;
+			}
+			if (arg2.isSignedNumber()) {
+				// this part is used in other comparator operations like Less, GreaterEqual,...
+				IExpr temp = checkAssumptions(arg1, arg2);
+				if (temp != null) {
+					return temp;
+				}
 			}
 		}
 		COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
@@ -156,6 +165,38 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			return result;
 		}
 
+		return null;
+	}
+
+	/**
+	 * Check assumptions for thie comparison operator. Will be overridden in <code>GreaterEqual, Less, LessEqual</code>.
+	 * 
+	 * @param arg1
+	 *            the left-hand-side of the comparison
+	 * @param arg2
+	 *            the right-hand-side of the comparison
+	 * @return
+	 */
+	protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
+		if (arg2.isNegative()) {
+			// arg1 > "negative number"
+			if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+				return F.True;
+			}
+		} else if (arg2.isZero()) {
+			// arg1 > 0
+			if (arg1.isPositiveResult()) {
+				return F.True;
+			}
+			if (arg1.isNegativeResult()) {
+				return F.False;
+			}
+		} else {
+			// arg1 > "positive number" > 0
+			if (arg1.isNegativeResult()) {
+				return F.False;
+			}
+		}
 		return null;
 	}
 
