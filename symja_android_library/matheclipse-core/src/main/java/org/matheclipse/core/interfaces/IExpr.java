@@ -19,7 +19,54 @@ import edu.jas.structure.GcdRingElem;
 
 /**
  * 
- * (I)nterface for a mathematical (Expr)ession
+ * (I)nterface for a mathematical (Expr)ession<br />
+ * 
+ * <code>IExpr</code> is the main interface for the Symja object type hierarchy:
+ * 
+ * <pre>
+ * java.lang.Object
+ *    |--- java.util.AbstractCollection
+ *    |       |--- java.util.AbstractList
+ *    |               |--- org.matheclipse.core.expression.HMArrayList
+ *    |                       |--- org.matheclipse.core.expression.AST - abstract syntax tree which represents lists, vectors, matrices and functions
+ *    |                                           implements IAST, List, IExpr
+ *    |
+ *    |--- org.matheclipse.core.expression.ExprImpl 
+ *            |           implements IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.ApcomplexNum - Apcomplex number
+ *            |                   implements IComplexNum, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.ApfloatNum - Apfloat number
+ *            |                   implements INum, ISignedNumber, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.ComplexNum - a complex number with real and imaginary part represented by Java <code>double</code>
+ *            |                   implements IComplexNum, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.ComplexSym - exact complex number
+ *            |                   implements IComplex, IBigNumber, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.FractionSym - exact fraction number
+ *            |                   implements IFraction, IRational, ISignedNumber, IBigNumber, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.IntegerSym - exact integer number 
+ *            |                   implements IInteger, IRational, ISignedNumber, IBigNumber, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.Num - a real number which is represented by a Java <code>double</code> value
+ *            |                   implements INum, ISignedNumber, INumber, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.Pattern - a pattern object (i.e. <code>x_</code>)
+ *            |                   implements IPattern, IPatternObject, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.PatternSequence - a pattern sequence object (i.e. <code>x__</code>)
+ *            |                   implements IPatternSequence, IPatternObject, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.StringX - a Java <code>string</code> wrapper
+ *            |                   implements IStringX, IExpr
+ *            |
+ *            |--- org.matheclipse.core.expression.Symbol - represents variables, function names or constants
+ *                                implements ISymbol, IExpr
+ * </pre>
  * 
  */
 public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable {
