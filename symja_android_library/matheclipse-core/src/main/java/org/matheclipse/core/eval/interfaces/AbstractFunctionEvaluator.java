@@ -94,7 +94,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	/**
 	 * Check if the expression is canonical negative.
 	 * 
-	 * @return <code>true</code> if the first argument is canonical negative
+	 * @return the negative expression or <code>null</code> if the negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expr) {
 		IAST result;
@@ -181,6 +181,9 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 			} else if (expr.isNegativeInfinity()) {
 				return F.CInfinity;
 			}
+		}
+		if (expr.isNegativeResult()) {
+			return F.eval(F.Negate(expr));
 		}
 		return null;
 	}
