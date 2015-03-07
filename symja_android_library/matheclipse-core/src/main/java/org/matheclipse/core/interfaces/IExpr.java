@@ -523,6 +523,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isIntegerResult();
 
 	/**
+	 * Test if this expression is a real function (i.e. a number, a symbolic constant or an integer function where all arguments
+	 * are also &quot;reals functions&quot;)
+	 * 
+	 * @return <code>true</code>, if the given expression is a real function or value.
+	 * @see #isIntegerResult
+	 */
+	public boolean isRealResult();
+	
+	/**
 	 * Test if this expression has a negative result (i.e. less than 0).
 	 * 
 	 * @return <code>true</code>, if the given expression is a negative function or value.
@@ -817,16 +826,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	public boolean isRationalValue(IRational value);
-
-	/**
-	 * Test if this expression is a real (non-complex) value (i.e. a real number or a real symbolic constant or a
-	 * <code>Plus, Times</code> expression with only real values)
-	 * 
-	 * @return <code>true</code>, if the given expression is a real (non-complex) value.
-	 * @see #isConstant
-	 * @see #isNumericFunction
-	 */
-	public boolean isRealFunction();
 
 	/**
 	 * Test if this expression is of the form <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code> or

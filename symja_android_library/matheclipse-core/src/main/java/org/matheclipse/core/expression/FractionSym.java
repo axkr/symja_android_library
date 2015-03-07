@@ -99,7 +99,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
-		return fRational.getNumerator().equals(BigInteger.ZERO);
+		return getBigNumerator().equals(BigInteger.ZERO);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isOne() {
+		return getBigNumerator().equals(BigInteger.ONE) && getBigDenominator().equals(BigInteger.ONE);
 	}
 
 	/** {@inheritDoc} */
@@ -176,10 +182,10 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalValue(IRational value){
+	public boolean isRationalValue(IRational value) {
 		return equals(value);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public FractionSym eabs() {
@@ -408,10 +414,10 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof FractionSym) {
-			return this.multiply((FractionSym) that);
+			return this.multiply((FractionSym) that).normalize();
 		}
 		if (that instanceof IntegerSym) {
-			return this.multiply(valueOf(((IntegerSym) that).fInteger));
+			return this.multiply(valueOf(((IntegerSym) that).fInteger)).normalize();
 		}
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
@@ -612,7 +618,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public IFraction abs() {
 		return eabs();
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {

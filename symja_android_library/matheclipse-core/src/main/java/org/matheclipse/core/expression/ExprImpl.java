@@ -429,6 +429,15 @@ public abstract class ExprImpl implements IExpr {
 		}
 		return this instanceof IInteger;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealResult() {
+		if (AbstractAssumptions.assumeReal(this)) {
+			return true;
+		}
+		return this instanceof ISignedNumber;
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -655,12 +664,6 @@ public abstract class ExprImpl implements IExpr {
 	@Override
 	public boolean isRational() {
 		return this instanceof IRational;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isRealFunction() {
-		return isSignedNumber() || isConstant();
 	}
 
 	/** {@inheritDoc} */

@@ -88,7 +88,7 @@ public class Re implements IFunctionEvaluator {
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;
-			if (astPower.arg1().isRealFunction()) {
+			if (astPower.arg1().isRealResult()) {
 				// test for x^(a+I*b)
 				IExpr x = astPower.arg1();
 				if (astPower.get(2).isNumber()) {

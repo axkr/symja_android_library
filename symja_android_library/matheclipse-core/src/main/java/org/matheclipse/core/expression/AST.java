@@ -864,6 +864,36 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isRealResult() {
+		IExpr head = head();
+		if (size() == 2 && F.Cos.equals(head) && F.Sin.equals(head)) {
+			// TODO add more functions
+			return arg1().isRealResult();
+		}
+		if (isPlus() || isTimes()) {
+			// check if all arguments are &quot;real values&quot;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isRealResult()) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (isPower() && (!arg2().isZero() || !arg1().isZero())) {
+			if (!arg1().isRealResult()) {
+				return false;
+			}
+			if (!arg2().isRealResult()) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNegativeResult() {
 		if (isPlus()) {
 			for (int i = 1; i < size(); i++) {
@@ -982,7 +1012,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
@@ -1048,21 +1078,6 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 			// check if all arguments are &quot;numeric&quot;
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isNumericFunction()) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isRealFunction() {
-		if (isPlus() || isTimes()) {
-			// check if all arguments are &quot;real values&quot;
-			for (int i = 1; i < size(); i++) {
-				if (!get(i).isRealFunction()) {
 					return false;
 				}
 			}

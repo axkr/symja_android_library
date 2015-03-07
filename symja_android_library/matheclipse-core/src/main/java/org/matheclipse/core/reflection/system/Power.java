@@ -314,6 +314,17 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					}
 				}
 			} else if (astArg1.isPower()) {
+				if (astArg1.arg2().isSignedNumber() && arg2.isSignedNumber()) {
+					IExpr temp = astArg1.arg2().times(arg2);
+					if (temp.isOne()) {
+						if (astArg1.arg1().isNonNegativeResult()) {
+							return astArg1.arg1();
+						}
+						if (astArg1.arg1().isRealResult()) {
+							return F.Abs(astArg1.arg1());
+						}
+					}
+				}
 				if (arg2.isInteger()) {
 					// (a ^ b )^n => a ^ (b * n)
 					if (astArg1.arg2().isNumber()) {
