@@ -248,7 +248,12 @@ public abstract class ExprImpl implements IExpr {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isAST(final IExpr header, final int sz) {
+	public final boolean isAST(final IExpr header, final int length) {
+		return false;
+	}
+
+	@Override
+	public boolean isAST(IExpr header, int minLength, int maxLength) {
 		return false;
 	}
 
@@ -429,7 +434,7 @@ public abstract class ExprImpl implements IExpr {
 		}
 		return this instanceof IInteger;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isRealResult() {

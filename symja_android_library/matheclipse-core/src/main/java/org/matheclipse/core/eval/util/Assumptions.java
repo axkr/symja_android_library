@@ -25,6 +25,15 @@ public class Assumptions extends AbstractAssumptions {
 			this.values = new ISignedNumber[5];
 		}
 
+		final public boolean isLessOrGreaterRelation() {
+			for (int i = 0; i <= LESSEQUAL_ID; i++) {
+				if (values != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		final public void addGreater(ISignedNumber expr) {
 			values[GREATER_ID] = expr;
 		}
@@ -92,19 +101,19 @@ public class Assumptions extends AbstractAssumptions {
 				if (addElement(ast, assumptions)) {
 					return assumptions;
 				}
-			} else if (ast.isAST(F.Greater, 3)) {
+			} else if (ast.isAST(F.Greater, 3, 4)) {
 				if (addGreater(ast, assumptions)) {
 					return assumptions;
 				}
-			} else if (ast.isAST(F.GreaterEqual, 3)) {
+			} else if (ast.isAST(F.GreaterEqual, 3, 4)) {
 				if (addGreaterEqual(ast, assumptions)) {
 					return assumptions;
 				}
-			} else if (ast.isAST(F.Less, 3)) {
+			} else if (ast.isAST(F.Less, 3, 4)) {
 				if (addLess(ast, assumptions)) {
 					return assumptions;
 				}
-			} else if (ast.isAST(F.LessEqual, 3)) {
+			} else if (ast.isAST(F.LessEqual, 3, 4)) {
 				if (addLessEqual(ast, assumptions)) {
 					return assumptions;
 				}
@@ -163,21 +172,45 @@ public class Assumptions extends AbstractAssumptions {
 		return false;
 	}
 
-	private static boolean addGreater(IAST element, Assumptions assumptions) {
-		if (element.arg2().isSignedNumber()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
+	private static boolean addGreater(IAST greaterAST, Assumptions assumptions) {
+		if (greaterAST.size() == 4) {
+			// arg1 > arg2 > arg3
+			IExpr arg1 = greaterAST.arg1();
+			IExpr arg2 = greaterAST.arg2();
+			IExpr arg3 = greaterAST.arg3();
+			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+				if (((ISignedNumber) arg1).isGreaterThan(((ISignedNumber) arg3))) {
+					ISignedNumber num1 = (ISignedNumber) arg1;
+					ISignedNumber num3 = (ISignedNumber) arg3;
+					IExpr key = arg2;
+					SignedNumberRelations gla = assumptions.valueMap.get(key);
+					if (gla == null) {
+						gla = new SignedNumberRelations();
+					}
+					gla.addLess(num1);
+					gla.addGreater(num3);
+					assumptions.valueMap.put(key, gla);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// arg1 > arg2
+		if (greaterAST.arg2().isSignedNumber()) {
+			SignedNumberRelations gla = assumptions.valueMap.get(greaterAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addGreater((ISignedNumber) element.arg2());
+				gla.addGreater((ISignedNumber) greaterAST.arg2());
 			} else {
-				gla.addGreater((ISignedNumber) element.arg2());
+				gla.addGreater((ISignedNumber) greaterAST.arg2());
 			}
-			assumptions.valueMap.put(element.arg1(), gla);
+			assumptions.valueMap.put(greaterAST.arg1(), gla);
 			return true;
 		}
-		if (element.arg1().isSignedNumber()) {
-			ISignedNumber num = (ISignedNumber) element.arg1();
-			IExpr key = element.arg2();
+		if (greaterAST.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) greaterAST.arg1();
+			IExpr key = greaterAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -191,21 +224,44 @@ public class Assumptions extends AbstractAssumptions {
 		return false;
 	}
 
-	private static boolean addGreaterEqual(IAST element, Assumptions assumptions) {
+	private static boolean addGreaterEqual(IAST greaterEqualAST, Assumptions assumptions) {
+		if (greaterEqualAST.size() == 4) {
+			// arg1 >= arg2 >= arg3
+			IExpr arg1 = greaterEqualAST.arg1();
+			IExpr arg2 = greaterEqualAST.arg2();
+			IExpr arg3 = greaterEqualAST.arg3();
+			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+				if (!((ISignedNumber) arg1).isLessThan(((ISignedNumber) arg3))) {
+					ISignedNumber num1 = (ISignedNumber) arg1;
+					ISignedNumber num3 = (ISignedNumber) arg3;
+					IExpr key = arg2;
+					SignedNumberRelations gla = assumptions.valueMap.get(key);
+					if (gla == null) {
+						gla = new SignedNumberRelations();
+					}
+					gla.addLessEqual(num1);
+					gla.addGreaterEqual(num3);
+					assumptions.valueMap.put(key, gla);
+					return true;
+				}
+			}
+			return false;
+		}
+
 		// arg1 >= arg2
-		if (element.arg2().isSignedNumber()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
+		if (greaterEqualAST.arg2().isSignedNumber()) {
+			SignedNumberRelations gla = assumptions.valueMap.get(greaterEqualAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
 			}
-			gla.addGreaterEqual((ISignedNumber) element.arg2());
-			assumptions.valueMap.put(element.arg1(), gla);
+			gla.addGreaterEqual((ISignedNumber) greaterEqualAST.arg2());
+			assumptions.valueMap.put(greaterEqualAST.arg1(), gla);
 			return true;
 		}
 
-		if (element.arg1().isSignedNumber()) {
-			ISignedNumber num = (ISignedNumber) element.arg1();
-			IExpr key = element.arg2();
+		if (greaterEqualAST.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) greaterEqualAST.arg1();
+			IExpr key = greaterEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -217,48 +273,92 @@ public class Assumptions extends AbstractAssumptions {
 		return false;
 	}
 
-	private static boolean addLess(IAST element, Assumptions assumptions) {
-		if (element.arg2().isSignedNumber()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
+	private static boolean addLess(IAST lessAST, Assumptions assumptions) {
+		if (lessAST.size() == 4) {
+			// arg1 < arg2 < arg3;
+			IExpr arg1 = lessAST.arg1();
+			IExpr arg2 = lessAST.arg2();
+			IExpr arg3 = lessAST.arg3();
+			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+				if (((ISignedNumber) arg1).isLessThan(((ISignedNumber) arg3))) {
+					ISignedNumber num1 = (ISignedNumber) arg1;
+					ISignedNumber num3 = (ISignedNumber) arg3;
+					IExpr key = arg2;
+					SignedNumberRelations gla = assumptions.valueMap.get(key);
+					if (gla == null) {
+						gla = new SignedNumberRelations();
+					}
+					gla.addGreater(num1);
+					gla.addLess(num3);
+					assumptions.valueMap.put(key, gla);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// arg1 < arg2
+		if (lessAST.arg2().isSignedNumber()) {
+			SignedNumberRelations gla = assumptions.valueMap.get(lessAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addLess((ISignedNumber) element.arg2());
-			} else {
-				gla.addLess((ISignedNumber) element.arg2());
 			}
-			assumptions.valueMap.put(element.arg1(), gla);
+			gla.addLess((ISignedNumber) lessAST.arg2());
+			assumptions.valueMap.put(lessAST.arg1(), gla);
 			return true;
 		}
-		if (element.arg1().isSignedNumber()) {
-			ISignedNumber num = (ISignedNumber) element.arg1();
-			IExpr key = element.arg2();
+		if (lessAST.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) lessAST.arg1();
+			IExpr key = lessAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
-				gla.addGreater(num);
-			} else {
-				gla.addGreater(num);
 			}
+			gla.addGreater(num);
 			assumptions.valueMap.put(key, gla);
 			return true;
 		}
 		return false;
 	}
 
-	private static boolean addLessEqual(IAST element, Assumptions assumptions) {
+	private static boolean addLessEqual(IAST lessEqualAST, Assumptions assumptions) {
+
+		if (lessEqualAST.size() == 4) {
+			// arg1 <= arg2 <= arg3
+			IExpr arg1 = lessEqualAST.arg1();
+			IExpr arg2 = lessEqualAST.arg2();
+			IExpr arg3 = lessEqualAST.arg3();
+			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+				if (!((ISignedNumber) arg1).isGreaterThan(((ISignedNumber) arg3))) {
+					ISignedNumber num1 = (ISignedNumber) arg1;
+					ISignedNumber num3 = (ISignedNumber) arg3;
+					IExpr key = arg2;
+					SignedNumberRelations gla = assumptions.valueMap.get(key);
+					if (gla == null) {
+						gla = new SignedNumberRelations();
+					}
+					gla.addGreaterEqual(num1);
+					gla.addLessEqual(num3);
+					assumptions.valueMap.put(key, gla);
+					return true;
+				}
+			}
+			return false;
+		}
+
 		// arg1 <= arg2;
-		if (element.arg2().isSignedNumber()) {
-			SignedNumberRelations gla = assumptions.valueMap.get(element.arg1());
+		if (lessEqualAST.arg2().isSignedNumber()) {
+			SignedNumberRelations gla = assumptions.valueMap.get(lessEqualAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
 			}
-			gla.addLessEqual((ISignedNumber) element.arg2());
-			assumptions.valueMap.put(element.arg1(), gla);
+			gla.addLessEqual((ISignedNumber) lessEqualAST.arg2());
+			assumptions.valueMap.put(lessEqualAST.arg1(), gla);
 			return true;
 		}
-		if (element.arg1().isSignedNumber()) {
-			ISignedNumber num = (ISignedNumber) element.arg1();
-			IExpr key = element.arg2();
+		if (lessEqualAST.arg1().isSignedNumber()) {
+			ISignedNumber num = (ISignedNumber) lessEqualAST.arg1();
+			IExpr key = lessEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -393,6 +493,10 @@ public class Assumptions extends AbstractAssumptions {
 
 	@Override
 	public boolean isReal(IExpr expr) {
+		SignedNumberRelations gla = valueMap.get(expr);
+		if (gla != null && gla.isLessOrGreaterRelation()) {
+			return true;
+		}
 		return isDomain(expr, F.Reals);
 	}
 

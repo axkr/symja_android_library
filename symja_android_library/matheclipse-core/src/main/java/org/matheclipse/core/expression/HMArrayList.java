@@ -160,29 +160,29 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	/** {@inheritDoc} */
 	final public E arg1() {
-		return array[firstIndex+1];
+		return array[firstIndex + 1];
 	}
 
 	/** {@inheritDoc} */
 	final public E arg2() {
-		return array[firstIndex+2];
+		return array[firstIndex + 2];
 	}
 
 	/** {@inheritDoc} */
 	final public E arg3() {
-		return array[firstIndex+3];
+		return array[firstIndex + 3];
 	}
 
 	/** {@inheritDoc} */
 	final public E arg4() {
-		return array[firstIndex+4];
+		return array[firstIndex + 4];
 	}
 
 	/** {@inheritDoc} */
 	final public E arg5() {
-		return array[firstIndex+5];
+		return array[firstIndex + 5];
 	}
-	
+
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
@@ -420,6 +420,10 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	public final boolean isSameHead(E head, int length) {
 		return array[firstIndex] == head && length == (lastIndex - firstIndex);
+	}
+
+	public final boolean isSameHead(E head, int minLength, int maxLength) {
+		return array[firstIndex] == head && minLength <= (lastIndex - firstIndex) && maxLength >= (lastIndex - firstIndex);
 	}
 
 	/**

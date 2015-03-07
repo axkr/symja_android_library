@@ -276,9 +276,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. Therefore this expression is not an
 	 * <b>atomic expression</b>.
 	 * 
+	 * @param header
+	 *            the header element to chck for
+	 * @param length
+	 *            the length the AST expression must have
 	 * @see #isAtom()
 	 */
 	public boolean isAST(IExpr header, int length);
+
+	/**
+	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position <code>0</code> and
+	 * optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. Therefore this expression is not an
+	 * <b>atomic expression</b>.
+	 * 
+	 * @param header
+	 *            the header element to chck for
+	 * @param minLength
+	 *            the minimum size the AST expression must have
+	 * @param maxLength
+	 *            the maximum size the AST expression must have
+	 * @see #isAtom()
+	 */
+	public boolean isAST(IExpr header, int minLength, int maxLength);
 
 	/**
 	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position <code>0</code> and
@@ -523,14 +542,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isIntegerResult();
 
 	/**
-	 * Test if this expression is a real function (i.e. a number, a symbolic constant or an integer function where all arguments
-	 * are also &quot;reals functions&quot;)
+	 * Test if this expression is a real function (i.e. a number, a symbolic constant or an integer function where all arguments are
+	 * also &quot;reals functions&quot;)
 	 * 
 	 * @return <code>true</code>, if the given expression is a real function or value.
 	 * @see #isIntegerResult
 	 */
 	public boolean isRealResult();
-	
+
 	/**
 	 * Test if this expression has a negative result (i.e. less than 0).
 	 * 

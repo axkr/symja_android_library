@@ -1347,6 +1347,12 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isAST(IExpr header, int minLength, int maxLength) {
+		return isSameHead(header, minLength, maxLength);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isAST(IExpr header, int length, IExpr... args) {
 		if (isSameHead(header, length)) {
 			for (int i = 0; i < args.length; i++) {

@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.LogRules;
 import org.matheclipse.parser.client.SyntaxError;
@@ -125,14 +126,27 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 	}
 
 	@Override
-	public IExpr e1ObjArg(IExpr arg1) {
-		if (arg1.isPower()) {
-			IAST power = (IAST) arg1;
-			if (AbstractAssumptions.assumePositive(power.arg1()) && AbstractAssumptions.assumeReal(power.arg2())) {
-				return Times(power.arg2(), Log(power.arg1()));
+	public IExpr e1ObjArg(IExpr expr) {
+		if (expr.isPower()) {
+			IExpr arg1 = expr.getAt(1);
+			IExpr arg2 = expr.getAt(2);
+			// arg2*Log(arg1)
+			IExpr temp = F.eval(Times(arg2, Log(arg1)));
+			IExpr imTemp = F.eval(F.Im(temp));
+			if (imTemp.isSignedNumber()) {
+				if (((ISignedNumber) imTemp).isGreaterThan(F.num(-1 * Math.PI))
+						&& ((ISignedNumber) imTemp).isLessThan(F.num(Math.PI))) {
+					// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi < Im(arg2*Log(arg1)) < Pi
+					return temp;
+				}
 			}
+			if (AbstractAssumptions.assumePositive(arg1) && AbstractAssumptions.assumeReal(arg2)) {
+				// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is Real
+				return temp;
+			}
+
 		}
-		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 		if (negExpr != null) {
 			if (negExpr.isPositiveResult()) {
 				return F.Plus(Log(negExpr), Times(CI, F.Pi));
