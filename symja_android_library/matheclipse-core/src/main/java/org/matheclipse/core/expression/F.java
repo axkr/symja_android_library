@@ -2055,6 +2055,10 @@ public class F {
 		return binary(Drop, a0, a1);
 	}
 
+	public static IAST Element(final IExpr a0, final IExpr a1) {
+		return binary(Element, a0, a1);
+	}
+	
 	public static IAST Equal(final IExpr... a) {
 		return ast(a, Equal);
 	}

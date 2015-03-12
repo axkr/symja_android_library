@@ -7,7 +7,6 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.INumericFunction;

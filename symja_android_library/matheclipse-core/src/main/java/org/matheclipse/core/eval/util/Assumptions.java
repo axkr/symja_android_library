@@ -127,25 +127,28 @@ public class Assumptions extends AbstractAssumptions {
 
 	private static IAssumptions addList(IAST ast, Assumptions assumptions) {
 		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isAST(F.Element, 3)) {
-				if (!addElement((IAST) ast.get(i), assumptions)) {
-					return null;
-				}
-			} else if (ast.isAST(F.Greater, 3)) {
-				if (!addGreater((IAST) ast.get(i), assumptions)) {
-					return null;
-				}
-			} else if (ast.isAST(F.GreaterEqual, 3)) {
-				if (!addGreaterEqual((IAST) ast.get(i), assumptions)) {
-					return null;
-				}
-			} else if (ast.isAST(F.Less, 3)) {
-				if (!addLess((IAST) ast.get(i), assumptions)) {
-					return null;
-				}
-			} else if (ast.isAST(F.LessEqual, 3)) {
-				if (!addLessEqual((IAST) ast.get(i), assumptions)) {
-					return null;
+			if (ast.get(i).isAST()) {
+				IAST temp = (IAST) ast.get(i);
+				if (temp.isAST(F.Element, 3)) {
+					if (!addElement(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.Greater, 3)) {
+					if (!addGreater(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.GreaterEqual, 3)) {
+					if (!addGreaterEqual(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.Less, 3)) {
+					if (!addLess(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.LessEqual, 3)) {
+					if (!addLessEqual(temp, assumptions)) {
+						return null;
+					}
 				}
 			}
 		}
