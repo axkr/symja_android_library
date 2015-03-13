@@ -3,6 +3,8 @@ package org.matheclipse.commons.math.linear;
 import org.apache.commons.math3.Field;
 import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.linear.FieldMatrix;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 
 /**
  * <p>
@@ -213,11 +215,14 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * 
 	 * @param minusOneFactor
 	 *            factor <code>-1</code> for multiplying all elements of the free part of the reduced row echelon form matrix
-	 * @return
+	 * @return <code>null</code> if the inut matrix has full rank
 	 */
 	public FieldMatrix<T> getNullSpace(T minusOneFactor) {
 		int rank = getMatrixRank();
 		int newRowDimension = rowReducedMatrix.getColumnDimension() - rank;
+		if (newRowDimension == 0) {
+			return null;
+		}
 		int newColumnDimension = rowReducedMatrix.getColumnDimension();
 		if (nullSpaceCache != null) {
 			return nullSpaceCache;

@@ -32,7 +32,11 @@ public class NullSpace extends AbstractFunctionEvaluator {
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			return Convert.matrix2List(fmw.getNullSpace(new ExprFieldElement(F.CN1)));
+			FieldMatrix<ExprFieldElement>  nullspace = fmw.getNullSpace(new ExprFieldElement(F.CN1));
+			if (nullspace==null){
+				return F.List();
+			}
+			return Convert.matrix2List(nullspace);
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
