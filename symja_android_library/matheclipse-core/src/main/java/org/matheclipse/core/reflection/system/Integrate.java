@@ -157,6 +157,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 					if (INT_FUNCTIONS.contains(arg1.head())) {
+						if (arg1.isAST()) {
+							final IAST arg1AST = (IAST) arg1;
+							if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
+								IExpr head = arg1AST.head();
+								IExpr temp = integrate1ArgumentFunctions(head, x);
+								if (temp != null) {
+									return temp;
+								}
+							}
+						}
 						result = integrateByRubiRules(ast);
 						if (result != null) {
 							return result;
@@ -180,7 +190,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 
 						final IAST arg1AST = (IAST) fxExpanded;
-
 						if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
 							IExpr head = arg1AST.head();
 							IExpr temp = integrate1ArgumentFunctions(head, x);
