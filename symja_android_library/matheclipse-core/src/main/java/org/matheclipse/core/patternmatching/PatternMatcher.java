@@ -490,10 +490,8 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 					if ((lhsPatternAST.getEvalFlags() & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
 						if (!matched) {
 							IExpr temp = null;
-							ISymbol symbol = lhsPatternAST.topHead();
-							int attr = symbol.getAttributes();
 							fPatternMap.resetPattern(patternValues);
-							temp = matchDefaultAST(symbol, attr, lhsPatternAST);
+							temp = matchDefaultAST(lhsPatternAST.topHead(), lhsPatternAST);
 							if (temp != null) {
 								matched = matchExpr(temp, lhsEvalExpr, stackMatcher);
 							}
@@ -522,38 +520,45 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	}
 
 	/**
-	 * Match the <code>ast</code> with its <code>Default[]</code> values.
+	 * Match the <code>lhsPatternAST</code> with its <code>Default[]</code> values.
 	 * 
-	 * @param symbol
-	 * @param attr
-	 * @param ast
-	 * @return
+	 * @param symbolWithDefaultValue
+	 *            the symbol for getting the associated default values from
+	 * @param lhsPatternAST
+	 *            left-hand-side which may contain patterns with default values
+	 * @return <code>null</code> if the given <code>ast</code> could not be matched or contains no pattern with default value.
 	 */
-	private IExpr matchDefaultAST(ISymbol symbol, int attr, IAST ast) {
-		IAST cloned = F.ast(ast.head(), ast.size(), false);
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isPatternDefault()) {
-				IExpr positionDefaultValue = symbol.getDefaultValue(i);
+	private IExpr matchDefaultAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST) {
+		IAST cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+		boolean defaultValueMatched = false;
+		for (int i = 1; i < lhsPatternAST.size(); i++) {
+			if (lhsPatternAST.get(i).isPatternDefault()) {
+				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				if (positionDefaultValue != null) {
-					if (!matchPattern((IPattern) ast.get(i), positionDefaultValue)) {
+					if (!matchPattern((IPattern) lhsPatternAST.get(i), positionDefaultValue)) {
 						return null;
 					}
+					defaultValueMatched = true;
 					continue;
 				} else {
-					IExpr commonDefaultValue = symbol.getDefaultValue();
+					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
 					if (commonDefaultValue != null) {
-						if (!matchPattern((IPattern) ast.get(i), commonDefaultValue)) {
+						if (!matchPattern((IPattern) lhsPatternAST.get(i), commonDefaultValue)) {
 							return null;
 						}
+						defaultValueMatched = true;
 						continue;
 					}
 				}
 
 			}
-			cloned.add(ast.get(i));
+			cloned.add(lhsPatternAST.get(i));
 		}
-		if (cloned.size() == 2) {
-			return cloned.get(1);
+		if (defaultValueMatched) {
+			if (cloned.size() == 2) {
+				return cloned.arg1();
+			}
+			return cloned;
 		}
 		return null;
 	}
