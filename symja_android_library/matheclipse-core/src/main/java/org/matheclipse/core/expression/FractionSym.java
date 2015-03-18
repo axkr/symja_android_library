@@ -8,8 +8,10 @@ import org.apache.commons.math3.fraction.FractionConversionException;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -548,6 +550,24 @@ public class FractionSym extends ExprImpl implements IFraction {
 	@Override
 	public IInteger ceil() {
 		return IntegerSym.valueOf(NumberUtil.ceiling(fRational));
+	}
+
+	/** {@inheritDoc} */
+	public IAST factorInteger() {
+		IInteger num = getNumerator();
+		IInteger den = getDenominator();
+		IAST result = den.factorInteger();
+
+		// negate the exponents of the denominator part
+		for (int i = 1; i < result.size(); i++) {
+			IAST list = (IAST) result.get(i);
+			list.set(2, ((ISignedNumber) list.arg2()).negate());
+		}
+
+		// add th factors from the numerator part
+		result.addAll(num.factorInteger());
+		EvalAttributes.sort(result);
+		return result;
 	}
 
 	/** {@inheritDoc} */

@@ -10,7 +10,17 @@ public interface IRational extends ISignedNumber, IBigNumber {
 
 	/** {@inheritDoc} */
 	public IRational abs();
-	
+
+	/**
+	 * Return the factors paired with their exponents for integer and fractional numbers. For factors of the denominator part of
+	 * fractional numbers the exponents are negative.
+	 * 
+	 * <pre>
+	 * factorInteger(-4) ==> {{-1,1},{2,2}}
+	 * </pre>
+	 */
+	public IAST factorInteger();
+
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
@@ -19,16 +29,16 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	public IInteger getDenominator();
 
 	/**
-	 * Returns the numerator of this fraction.
-	 * 
-	 * @return denominator
-	 */
-	public IInteger getNumerator();
-
-	/**
 	 * Returns this number as <code>BigFraction</code> number.
 	 * 
 	 * @return <code>this</code> number s big fraction.
 	 */
 	public BigFraction getFraction();
+
+	/**
+	 * Returns the numerator of this fraction.
+	 * 
+	 * @return denominator
+	 */
+	public IInteger getNumerator();
 }

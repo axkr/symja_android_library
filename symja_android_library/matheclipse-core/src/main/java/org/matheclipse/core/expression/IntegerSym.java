@@ -663,6 +663,7 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	public IAST factorInteger() {
 		IInteger factor;
 		IInteger last = IntegerSym.valueOf(-2);
