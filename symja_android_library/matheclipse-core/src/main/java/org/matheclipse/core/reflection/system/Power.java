@@ -517,7 +517,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	/** {@inheritDoc} */
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 
