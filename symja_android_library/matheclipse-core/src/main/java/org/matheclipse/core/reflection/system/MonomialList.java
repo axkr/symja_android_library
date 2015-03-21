@@ -133,7 +133,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	 *            the &quot;Modulus&quot; option
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	private static IAST monomialListModulus(IExpr polynomial, List<IExpr> variablesList, final int termOrder, IExpr option)
+	private static IAST monomialListModulus(IExpr polynomial, List<ISymbol> variablesList, final int termOrder, IExpr option)
 			throws JASConversionException {
 		try {
 			// found "Modulus" option => use ModIntegerRing

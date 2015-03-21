@@ -5,18 +5,18 @@ import java.util.Collection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class VisitorCollectionBoolean extends AbstractVisitorBoolean {
+public class VisitorCollectionBoolean<T extends IExpr> extends AbstractVisitorBoolean {
 	protected int fHeadOffset;
 
-	protected Collection<IExpr> fCollection;
+	protected Collection<T> fCollection;
 
-	public VisitorCollectionBoolean(Collection<IExpr> collection) {
+	public VisitorCollectionBoolean(Collection<T> collection) {
 		super();
 		fHeadOffset = 1;
 		fCollection = collection;
 	}
 
-	public VisitorCollectionBoolean(int hOffset, Collection<IExpr> collection) {
+	public VisitorCollectionBoolean(int hOffset, Collection<T> collection) {
 		super();
 		fHeadOffset = hOffset;
 		fCollection = collection;

@@ -55,8 +55,8 @@ public class VariablesSet {
 	 * 
 	 * @see IExpr#isVariable()
 	 */
-	public static class VariablesVisitor extends VisitorCollectionBoolean {
-		public VariablesVisitor(Collection<IExpr> collection) {
+	public static class VariablesVisitor extends VisitorCollectionBoolean<ISymbol> {
+		public VariablesVisitor(Collection<ISymbol> collection) {
 			super(collection);
 		}
 
@@ -89,7 +89,7 @@ public class VariablesSet {
 	/**
 	 * The set of all collected variables.
 	 */
-	private final Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
+	private final Set<ISymbol> fVariablesSet = new TreeSet<ISymbol>();
 
 	/**
 	 * Constructor for an empty instance.
@@ -131,7 +131,7 @@ public class VariablesSet {
 	 * @return the list of variables.
 	 */
 	public List<IExpr> appendToList(final List<IExpr> list) {
-		final Iterator<IExpr> iter = fVariablesSet.iterator();
+		final Iterator<ISymbol> iter = fVariablesSet.iterator();
 		while (iter.hasNext()) {
 			list.add(iter.next());
 		}
@@ -145,7 +145,7 @@ public class VariablesSet {
 	 * @return
 	 * @see java.util.Set#contains(java.lang.Object)
 	 */
-	public boolean contains(IExpr o) {
+	public boolean contains(ISymbol o) {
 		return fVariablesSet.contains(o);
 	}
 
@@ -165,9 +165,9 @@ public class VariablesSet {
 	 * 
 	 * @return the ordered list of variables.
 	 */
-	public List<IExpr> getArrayList() {
-		final Iterator<IExpr> iter = fVariablesSet.iterator();
-		final List<IExpr> list = new ArrayList<IExpr>();
+	public List<ISymbol> getArrayList() {
+		final Iterator<ISymbol> iter = fVariablesSet.iterator();
+		final List<ISymbol> list = new ArrayList<ISymbol>();
 		while (iter.hasNext()) {
 			list.add(iter.next());
 		}
@@ -180,7 +180,7 @@ public class VariablesSet {
 	 * @return the ordered list of variables.
 	 */
 	public IAST getVarList() {
-		final Iterator<IExpr> iter = fVariablesSet.iterator();
+		final Iterator<ISymbol> iter = fVariablesSet.iterator();
 		final IAST list = List();
 		while (iter.hasNext()) {
 			list.add(iter.next());
@@ -190,7 +190,7 @@ public class VariablesSet {
 
 	public String[] getVarListAsString() {
 		String[] result = new String[fVariablesSet.size()];
-		final Iterator<IExpr> iter = fVariablesSet.iterator();
+		final Iterator<ISymbol> iter = fVariablesSet.iterator();
 		int i = 0;
 		while (iter.hasNext()) {
 			result[i++] = iter.next().toString();

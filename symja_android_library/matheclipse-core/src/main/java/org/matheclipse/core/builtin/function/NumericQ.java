@@ -51,7 +51,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	 * 
 	 * @param arg1
 	 *            an expression
-	 * @return a signed number if possible
+	 * @return a signed number if possible, otherwise return <code>null</code>
 	 */
 	public static ISignedNumber getSignedNumberNumericQ(IExpr arg1) {
 		if (arg1.isSignedNumber()) {
