@@ -271,11 +271,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		}
 
 		if (o0 instanceof IAST) {
+			IAST a0 = (IAST) o0;
 			if (o1 instanceof IInteger) {
-				return eFunIntArg((IAST) o0, (IInteger) o1);
+				return eFunIntArg(a0, (IInteger) o1);
 			}
 			if (o1 instanceof IAST) {
-				return e2FunArg((IAST) o0, (IAST) o1);
+				return e2FunArg(a0, (IAST) o1);
 			}
 		}
 
