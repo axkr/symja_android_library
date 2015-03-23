@@ -56,28 +56,40 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST holdallAST) {
 		boolean calledRubi = false;
+		boolean evaled = false;
 		IExpr result;
 		EvalEngine engine = EvalEngine.get();
 		boolean numericMode = engine.isNumericMode();
 		try {
 			EvalEngine.get().setNumericMode(false);
-			if (ast.size() < 3) {
+			if (holdallAST.size() < 3) {
 				return null;
 			}
-			IExpr arg1 = ast.arg1();
-			if (ast.size() > 3) {
+			IExpr arg1 = engine.evaluateNull(holdallAST.arg1());
+			if (arg1 != null) {
+				evaled = true;
+			} else {
+				arg1 =  holdallAST.arg1();
+			}
+			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
 				// Integrate[fxy, y], x] ...
-				return ast.range(2).foldRight(new BinaryEval(F.Integrate), arg1);
+				return holdallAST.range(2).foldRight(new BinaryEval(F.Integrate), arg1);
 			}
 
-			if (ast.arg2().isList()) {
-				IAST xList = (IAST) ast.arg2();
+			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());
+			if (arg2 != null) {
+				evaled = true;
+			}else {
+				arg2 =  holdallAST.arg2();
+			}
+			if (arg2.isList()) {
+				IAST xList = (IAST) arg2;
 				if (xList.isVector() == 3) {
 					// Integrate[f[x], {x,a,b}]
-					IAST clone = ast.setAtClone(2, xList.arg1());
+					IAST clone = holdallAST.setAtClone(2, xList.arg1());
 					IExpr temp = F.eval(clone);
 					if (temp.isFreeAST(F.Integrate)) {
 						// F(b)-F(a)
@@ -96,6 +108,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 
+			final IAST ast = holdallAST.setAtClone(1, arg1);
+			ast.set(2, arg2);
 			if (ast.arg2().isSymbol()) {
 				final ISymbol x = (ISymbol) ast.arg2();
 
@@ -267,12 +281,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 										if (apartPlus != null && apartPlus.size() > 1) {
 											if (apartPlus.size() == 2) {
 												if (ast.equals(apartPlus.arg1())) {
-													return null;
+													return returnIntegrate(ast, evaled);
 												}
 												return apartPlus.arg1();
 											}
 											if (ast.equals(apartPlus)) {
-												return null;
+												return returnIntegrate(ast, evaled);
 											}
 											return apartPlus;
 										}
@@ -302,10 +316,17 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 			}
 
-			return null;
+			return returnIntegrate(ast, evaled);
 		} finally {
 			engine.setNumericMode(numericMode);
 		}
+	}
+
+	private IExpr returnIntegrate(final IAST ast, boolean evaled) {
+		if (evaled) {
+			return ast;
+		}
+		return null;
 	}
 
 	private IExpr integrate1ArgumentFunctions(final IExpr head, final ISymbol x) {
@@ -1053,6 +1074,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES);
 		ast.addAll(org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES);
 		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.HOLDALL);
+		super.setUp(symbol);
 	}
 
 }

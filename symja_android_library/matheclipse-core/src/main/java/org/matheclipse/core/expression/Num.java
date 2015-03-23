@@ -24,6 +24,7 @@ public class Num extends ExprImpl implements INum {
 	 */
 	private static final long serialVersionUID = 188084692735007429L;
 
+	
 	double fDouble;
 
 	/**
