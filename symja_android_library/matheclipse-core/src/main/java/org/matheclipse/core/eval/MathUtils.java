@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.NIntegrate;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.eval.DoubleVariable;
@@ -49,17 +51,42 @@ public class MathUtils {
 		return integrate(integrand, v, a, b);
 	}
 
+	/**
+	 * Integrate a function numerically with the LegendreGauss method.
+	 * 
+	 * @param fun
+	 *            the function which should be integrated
+	 * @param v
+	 *            the variable
+	 * @param aS
+	 *            lower bound double value string for integration
+	 * @param bS
+	 *            upper bound double value string for integration
+	 * @return
+	 * @throws MathException
+	 */
 	public static double integrate(String fun, String v, String aS, String bS) throws MathException {
-		// Variable var = new Variable(v);
-		// Parser parser = new Parser(Parser.STANDARD_FUNCTIONS |
-		// Parser.OPTIONAL_PARENS
-		// | Parser.OPTIONAL_STARS | Parser.OPTIONAL_SPACES
-		// | Parser.BRACES | Parser.BRACKETS| Parser.BOOLEANS);
-		// parser.add(var);
-		// setUpParser(parser);
-		String var = v;
+		return integrate("LegendreGauss", fun, v, aS, bS);
+	}
+
+	/**
+	 * Integrate a function numerically.
+	 * 
+	 * @param method
+	 *            the following methods are possible: LegendreGauss, Simpson, Romberg, Trapezoid
+	 * @param fun
+	 *            the function which should be integrated
+	 * @param v
+	 *            the variable
+	 * @param aS
+	 *            lower bound double value string for integration
+	 * @param bS
+	 *            upper bound double value string for integration
+	 * @return
+	 * @throws MathException
+	 */
+	public static double integrate(String method, String fun, String v, String aS, String bS) throws MathException {
 		EvalDouble parser = new EvalDouble(true);
-		parser.defineVariable(var);
 		double a, b;
 		try {
 			a = parser.evaluate(aS);
@@ -77,41 +104,24 @@ public class MathUtils {
 			throw e;
 		}
 
-		ASTNode function;
-		try {
-			function = parser.parse(fun);
-		} catch (MathException e) {
-			// throw new ParseError(context.getString(R.string.invalidfunction)
-			// +
-			// e.getMessage(), e.context);
-			throw e;
-		}
-
-		rom = new Double[13][13];
-		for (int i = 0; i < 13; i++) {
-			double step = (b - a) / Math.pow(2, i);
-			double aTemp = a;
-			// var.setVal(a);
-			// double value = double value = function.getVal()/2;
-			parser.defineVariable(var, a);
-			double value = parser.evaluateNode(function) / 2;
-			for (int j = 0; j < Math.pow(2, i) - 1; j++) {
-				aTemp += step;
-				// var.setVal(aTemp);
-				// value += function.getVal();
-				parser.defineVariable(var, aTemp);
-				value += parser.evaluateNode(function);
-			}
-			// var.setVal(b);
-			// value += function.getVal() / 2;
-			parser.defineVariable(var, b);
-			value += parser.evaluateNode(function) / 2;
-			value *= step;
-			rom[i][0] = Double.valueOf(value);
-		}
-		return romberg(12, 12);
+		IExpr function = parse(fun, null);
+		IExpr var = parse(v, null);
+		IAST list = F.List();
+		list.add(var);
+		list.add(F.num(a));
+		list.add(F.num(b));
+		return NIntegrate.integrate("LegendreGauss", list, function);
 	}
 
+	/**
+	 * TODO use LegendreGauss method
+	 * 
+	 * @param fun
+	 * @param v1
+	 * @param v2
+	 * @param bounds
+	 * @return
+	 */
 	public static double integrate(String fun, String v1, String v2, String[] bounds) {
 		double x1, x2;
 		// Expression y1, y2, integFun;
@@ -687,10 +697,8 @@ public class MathUtils {
 	}
 
 	/**
-	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
-	 * <code>function</code> unequals <code>null</code>, replace all occurences
-	 * of symbol <code>x</code> in the function with the parsed expression.
-	 * After that evaluate the given expression.
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if <code>function</code> unequals <code>null</code>, replace
+	 * all occurences of symbol <code>x</code> in the function with the parsed expression. After that evaluate the given expression.
 	 * 
 	 * @param function
 	 * @return

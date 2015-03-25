@@ -22,14 +22,11 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Function for <a
- * href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
- * integration</a> of univariate real functions.
+ * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical integration</a> of univariate real functions.
  * 
  * Uses the <a href=
- * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html"
- * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator,
- * TrapezoidIntegrator</a> implementations.
+ * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html" >Commons
+ * math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator</a> implementations.
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
 
@@ -55,7 +52,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 					function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
 				}
 				try {
-					return Num.valueOf(integrate(method, list, function));
+					return Num.valueOf(integrate(method.getSymbolName(), list, function));
 				} catch (ConvergenceException e) {
 					throw new WrappedException(e);
 				} catch (Exception e) {
@@ -70,7 +67,20 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private double integrate(ISymbol method, IAST list, IExpr function) throws ConvergenceException {
+	/**
+	 * Integrate a function numerically.
+	 * 
+	 * @param method
+	 *            the following methods are possible: LegendreGauss, Simpson, Romberg, Trapezoid
+	 * @param list
+	 *            a list of the form <code>{x, lowerBound, upperBound}</code>, where <code>lowerBound</code> and
+	 *            <code>upperBound</code> are numbers which could be converted to a Java double value.
+	 * @param function
+	 *            the function which should be integrated.
+	 * @return
+	 * @throws ConvergenceException
+	 */
+	public static double integrate(String method, IAST list, IExpr function) throws ConvergenceException {
 		GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
 		ISymbol xVar = (ISymbol) list.arg1();
@@ -79,17 +89,17 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
-		if (method.isSymbolName("LegendreGauss")) {
-			GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
-			return integ.integrate(f);
-		}
+		// if (method.equalsIgnoreCase("legendregauss")) {
+		// GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
+		// return integ.integrate(f);
+		// }
 
 		UnivariateIntegrator integrator = null;
-		if (method.isSymbolName("Simpson")) {
+		if (method.equalsIgnoreCase("Simpson")) {
 			integrator = new SimpsonIntegrator();
-		} else if (method.isSymbolName("Romberg")) {
+		} else if (method.equalsIgnoreCase("Romberg")) {
 			integrator = new RombergIntegrator();
-		} else if (method.isSymbolName("Trapezoid")) {
+		} else if (method.equalsIgnoreCase("Trapezoid")) {
 			integrator = new TrapezoidIntegrator();
 		} else {
 			// default: LegendreGauss

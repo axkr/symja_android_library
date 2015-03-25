@@ -2838,11 +2838,11 @@ public class F {
 	}
 
 	public static boolean isNumIntValue(double value) {
-		return isZero(value - Math.round(value), Config.DOUBLE_TOLERANCE);
+		return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
 	}
 
 	public static boolean isNumIntValue(double value, double epsilon) {
-		return isZero(value - Math.round(value), epsilon);
+		return isZero(value - Math.rint(value), epsilon);
 	}
 
 	/**
