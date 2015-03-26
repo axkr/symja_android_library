@@ -2755,12 +2755,12 @@ public class F {
 	 * 
 	 * @param integerString
 	 *            the integer number represented as a String
-	 * @param numberFormat
-	 *            the format of the number (usually 10)
+	 * @param radix
+	 *            the radix to be used while parsing
 	 * @return Object
 	 */
-	public static IInteger integer(final String integerString, final int numberFormat) {
-		return IntegerSym.valueOf(integerString, numberFormat);
+	public static IInteger integer(final String integerString, final int radix) {
+		return IntegerSym.valueOf(integerString, radix);
 	}
 
 	public static IAST Insert(final IExpr a0, final IExpr a1, final IExpr a2) {
