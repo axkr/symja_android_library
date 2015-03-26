@@ -1,12 +1,16 @@
 package org.matheclipse.core.convert;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
+import org.matheclipse.core.builtin.function.Complex;
+import org.matheclipse.core.builtin.function.Pattern;
+import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -16,9 +20,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.builtin.function.Complex;
-import org.matheclipse.core.builtin.function.Pattern;
-import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
@@ -279,54 +280,7 @@ public class AST2Expr {
 		}
 		if (node instanceof SymbolNode) {
 			String nodeStr = node.getString();
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				if (nodeStr.length() == 1) {
-					if (nodeStr.equals("I")) {
-						// special - convert on input
-						return F.CI;
-					}
-					return F.$s(nodeStr);
-				}
-				nodeStr = nodeStr.toLowerCase();
-				if (nodeStr.equals("infinity")) {
-					// special - convert on input
-					return F.CInfinity;
-				} else if (nodeStr.equals("complexinfinity")) {
-					// special - convert on input
-					return F.CComplexInfinity;
-				}
-				IExpr temp = PREDEFINED_ALIASES_MAP.get(nodeStr);
-				if (temp != null) {
-					return temp;
-				}
-				return F.$s(nodeStr);
-			} else {
-				if (fLowercaseEnabled) {
-					nodeStr = nodeStr.toLowerCase();
-					String temp = PREDEFINED_SYMBOLS_MAP.get(nodeStr);
-					if (temp != null) {
-						nodeStr = temp;
-					}
-				}
-
-				if (Config.RUBI_CONVERT_SYMBOLS) {
-					Integer num = RUBI_STATISTICS_MAP.get(nodeStr);
-					if (num == null) {
-						RUBI_STATISTICS_MAP.put(nodeStr, 1);
-					} else {
-						RUBI_STATISTICS_MAP.put(nodeStr, num + 1);
-					}
-				}
-
-				if (nodeStr.equals("I")) {
-					// special - convert on input
-					return F.CI;
-				} else if (nodeStr.equals("Infinity")) {
-					// special - convert on input
-					return F.CInfinity;
-				}
-				return F.$s(nodeStr);
-			}
+			return convertSymbol(nodeStr);
 		}
 		// because of inheritance check Pattern2Node before PatternNode
 		if (node instanceof Pattern2Node) {
@@ -366,6 +320,58 @@ public class AST2Expr {
 		}
 
 		return F.$s(node.toString());
+	}
+
+	public IExpr convertSymbol(final String nodeStr) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (nodeStr.length() == 1) {
+				if (nodeStr.equals("I")) {
+					// special - convert on input
+					return F.CI;
+				}
+				return F.$s(nodeStr);
+			}
+			String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
+			if (lowercaseStr.equals("infinity")) {
+				// special - convert on input
+				return F.CInfinity;
+			} else if (lowercaseStr.equals("complexinfinity")) {
+				// special - convert on input
+				return F.CComplexInfinity;
+			}
+			IExpr temp = PREDEFINED_ALIASES_MAP.get(lowercaseStr);
+			if (temp != null) {
+				return temp;
+			}
+			return F.$s(lowercaseStr);
+		} else {
+			String lowercaseStr = nodeStr;
+			if (fLowercaseEnabled) {
+				lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
+				String temp = PREDEFINED_SYMBOLS_MAP.get(lowercaseStr);
+				if (temp != null) {
+					lowercaseStr = temp;
+				}
+			}
+
+			if (Config.RUBI_CONVERT_SYMBOLS) {
+				Integer num = RUBI_STATISTICS_MAP.get(lowercaseStr);
+				if (num == null) {
+					RUBI_STATISTICS_MAP.put(lowercaseStr, 1);
+				} else {
+					RUBI_STATISTICS_MAP.put(lowercaseStr, num + 1);
+				}
+			}
+
+			if (lowercaseStr.equals("I")) {
+				// special - convert on input
+				return F.CI;
+			} else if (lowercaseStr.equals("Infinity")) {
+				// special - convert on input
+				return F.CInfinity;
+			}
+			return F.$s(lowercaseStr);
+		}
 	}
 
 	/**
