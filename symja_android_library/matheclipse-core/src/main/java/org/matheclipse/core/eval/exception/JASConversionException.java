@@ -1,7 +1,9 @@
 package org.matheclipse.core.eval.exception;
 
+import org.matheclipse.parser.client.math.MathException;
 
-public class JASConversionException extends Throwable {
+
+public class JASConversionException extends MathException {
 	/**
 	 * 
 	 */
