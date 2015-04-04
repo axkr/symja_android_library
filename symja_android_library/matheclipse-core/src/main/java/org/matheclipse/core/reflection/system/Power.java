@@ -237,12 +237,16 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Indeterminate;
 			}
 
-			if ((arg2.isSignedNumber()) && ((ISignedNumber) arg2).isNegative()) {
-				ee.printMessage("Infinite expression 0^(negative number)");
-				return F.CComplexInfinity;
+			IExpr a = F.eval(F.Re(arg2));
+			if (a.isSignedNumber()) {
+				if (((ISignedNumber) a).isNegative()) {
+					ee.printMessage("Infinite expression 0^(negative number)");
+					return F.CComplexInfinity;
+				}
+				return F.C0;
 			}
 
-			return F.C0;
+			return null;
 		}
 
 		if (arg2.isZero()) {
