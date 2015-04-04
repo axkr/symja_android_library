@@ -411,12 +411,42 @@ public class OutputFormFactory {
 
 	public void convertBinaryOperator(final Appendable buf, final IAST list, final InfixOperator oper, final int precedence)
 			throws IOException {
+
+		if (list.size() == 3) {
+			if (oper.getPrecedence() < precedence) {
+				append(buf, "(");
+			}
+			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
+				append(buf, "(");
+			}
+			convert(buf, list.arg1(), oper.getPrecedence());
+			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
+				append(buf, ")");
+			}
+
+			append(buf, oper.getOperatorString());
+
+			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
+				append(buf, "(");
+			}
+			convert(buf, list.arg2(), oper.getPrecedence());
+			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
+				append(buf, ")");
+			}
+
+			if (oper.getPrecedence() < precedence) {
+				append(buf, ")");
+			}
+			return;
+		}
+
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
 		if (list.size() > 1) {
 			convert(buf, list.arg1(), oper.getPrecedence());
 		}
+
 		for (int i = 2; i < list.size(); i++) {
 			append(buf, oper.getOperatorString());
 			convert(buf, list.get(i), oper.getPrecedence());
