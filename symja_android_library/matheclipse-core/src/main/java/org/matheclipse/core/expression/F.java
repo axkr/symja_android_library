@@ -2058,7 +2058,7 @@ public class F {
 	public static IAST Element(final IExpr a0, final IExpr a1) {
 		return binary(Element, a0, a1);
 	}
-	
+
 	public static IAST Equal(final IExpr... a) {
 		return ast(a, Equal);
 	}
@@ -2594,7 +2594,10 @@ public class F {
 		return ternary(If, a0, a1, a2);
 	}
 
-	public static IAST Im(final IExpr a0) {
+	public static IExpr Im(final IExpr a0) {
+		if (a0 != null && a0.isNumber()) {
+			return ((INumber)a0).getIm();
+		}
 		return unary(Im, a0);
 	}
 
@@ -3518,7 +3521,10 @@ public class F {
 		return binary(Rational, a0, a1);
 	}
 
-	public static IAST Re(final IExpr a0) {
+	public static IExpr Re(final IExpr a0) {
+		if (a0 != null && a0.isNumber()) {
+			return ((INumber)a0).getRe();
+		}
 		return unary(Re, a0);
 	}
 
