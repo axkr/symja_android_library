@@ -30,6 +30,8 @@
         <copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
         <copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
     	<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
+    	<copy file="matheclipse-core/src/main/java/META-INF/MANIFEST.MF" todir="${classes.dir}/META-INF" />
+        <copy file="matheclipse-core/src/main/java/META-INF/services/javax.script.ScriptEngineFactory" todir="${classes.dir}/META-INF/services" />
         
     	<javac srcdir="${src.dir}" destdir="${classes.dir}" 
     	       classpathref="classpath"  
@@ -70,7 +72,7 @@
           </patternset>
 		</unjar>   -->
 		
-		<jar destfile="${jar.dir}/symja-${date}.jar" basedir="${classes.dir}">
+		<jar manifest="${classes.dir}/META-INF/MANIFEST.MF" destfile="${jar.dir}/symja-${date}.jar" basedir="${classes.dir}">
 	 
 		</jar>
 	</target>
@@ -111,6 +113,7 @@
 	           <keepclasseswithmembers name="org.matheclipse.core.eval.EvalComplex" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
 	           <keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" /> 
+	           <keepclasseswithmembers name="org.matheclipse.core.eval.ExprEvaluator" />
 	            
 	           <keep access="public" extends="com.google.common.base.Predicate" /> 
 	           <keep access="public" extends="com.google.common.base.Function" /> 
@@ -127,6 +130,7 @@
 	           <keep access="public" extends="org.matheclipse.core.visit.IVisitorLong" />
 	           <keep access="public" extends="org.matheclipse.core.interfaces.IEvalStepListener" />
 	           <keep access="public" extends="org.matheclipse.core.eval.util.IAssumptions" />
+	           <keep access="public" extends="org.matheclipse.core.eval.util.Assumptions" />
 	           <keep access="public" extends="org.apache.log4j.Appender" />
 	           <keep access="public" extends="org.apache.log4j.spi.OptionHandler" />
 	           <keep access="public" extends="org.apfloat.spi.BuilderFactory" />
@@ -164,6 +168,10 @@
 	                             name      ="*" />
 	           </keep> 
 	           <keep access="public" name="org.matheclipse.core.eval.EvalEngine">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
+	           <keep access="public" name="org.matheclipse.core.eval.ExprEvaluator">
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
@@ -285,11 +293,14 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
-				<keep access="public" name="org.matheclipse.core.eval.util.IAssumptions">
+			   <keep access="public" name="org.matheclipse.core.eval.util.IAssumptions">
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
-	           
+	           <keep access="public" name="org.matheclipse.core.eval.util.Assumptions">
+	                     <method access    ="public"
+	                             name      ="*" />
+	           </keep>
 	           <keep access="public" name="${main-class}">
 	                     <method access    ="public static"
 	                             type      ="void"
@@ -311,26 +322,83 @@
 -libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar
 -injars      ${jar.dir}/symja-${date}.jar
 -outjars     ${jar.dir}/symja-lib-${date}.jar
+-keepattributes Signature
 
--keep public class * {
+-keep public class org.matheclipse.** { 
     public protected *;
 }
 
--keepclassmembernames class * {
+-keep public class com.google.common.base.FinalizableReference {
+    public protected *;
+}
+
+-keep public class * extends com.google.common.base.FinalizableReference {
+    public protected *;
+}
+
+-keep public class * extends org.apache.log4j.Appender {
+    public protected *;
+}
+
+-keep public class * extends org.apache.log4j.spi.OptionHandler {
+    public protected *;
+}
+
+-keep public class * implements org.apfloat.spi.BuilderFactory {
+    public protected *;
+}
+
+-keep public class * implements java.lang.Number {
+    public protected *;
+}
+
+-keep public class com.google.common.base.Predicate {
+    public protected *;
+}
+
+-keep public class * implements com.google.common.base.Predicate {
+    public protected *;
+}
+
+-keep public class com.google.common.base.Function {
+    public protected *;
+}
+
+-keep public class * implements com.google.common.base.Function {
+    public protected *;
+}
+
+-keep public class org.apache.commons.math3.Field {
+    public protected *;
+}
+
+-keep public class * implements org.apache.commons.math3.Field {
+    public protected *;
+}
+
+-keep public class org.apache.commons.math3.FieldElement {
+    public protected *;
+}
+
+-keep public class * implements org.apache.commons.math3.FieldElement {
+    public protected *;
+}
+
+-keepclassmembernames class org.matheclipse.** {
   java.lang.Class class$(java.lang.String);
   java.lang.Class class$(java.lang.String, boolean);
 }
 
--keepclasseswithmembernames class * {
+-keepclasseswithmembernames class org.matheclipse.** {
   native &lt;methods&gt;;
 }
 
--keepclassmembers enum * {
+-keepclassmembers enum org.matheclipse.** {
   public static **[] values();
   public static ** valueOf(java.lang.String);
 }
 
--keepclassmembers class * implements java.io.Serializable {
+-keepclassmembers class org.matheclipse.** implements java.io.Serializable {
     static final long serialVersionUID;
     private static final java.io.ObjectStreamField[] serialPersistentFields;
     private void writeObject(java.io.ObjectOutputStream);
