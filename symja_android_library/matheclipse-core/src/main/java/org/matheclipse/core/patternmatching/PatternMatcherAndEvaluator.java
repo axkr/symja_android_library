@@ -208,7 +208,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	}
 
 	@Override
-	public int equivalent(final Object obj) {
+	public int equivalent(final IPatternMatcher obj) {
 		// don't compare fSetSymbol here
 		int comp = super.equivalent(obj);
 		if (comp == 0) {

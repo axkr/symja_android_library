@@ -206,20 +206,11 @@ public class DownRulesData implements Serializable {
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		final IExpr leftHandSide = pmEvaluator.getLHS();
 		if (!isComplicatedPatternRule(leftHandSide)) {
-
 			fSimplePatternDownRules = getSimplePatternDownRules();
 			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
-
 		} else {
-
 			fPatternDownRules = getPatternDownRules();
 			fPatternDownRules.remove(pmEvaluator);
-			// for (int i = 0; i < fPatternDownRules.size(); i++) {
-			// if (pmEvaluator.equals(fPatternDownRules.get(i))) {
-			// fPatternDownRules.set(i, pmEvaluator);
-			// return pmEvaluator;
-			// }
-			// }
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;
 		}
@@ -233,7 +224,11 @@ public class DownRulesData implements Serializable {
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					return true;
 				}
-				if (lhsAST.arg1().isAST()) {
+				if (lhsAST.arg1().isPattern()) {
+					return true;
+				} else if (lhsAST.arg1().isPatternSequence()) {
+					return true;
+				} else if (lhsAST.arg1().isAST()) {
 					IAST arg1 = (IAST) lhsAST.arg1();
 					if (arg1.isCondition()) {
 						return true;
@@ -249,11 +244,7 @@ public class DownRulesData implements Serializable {
 							return true;
 						}
 					}
-				} else if (lhsAST.arg1().isPattern()) {
-					return true;
-				} else if (lhsAST.arg1().isPatternSequence()) {
-					return true;
-				}
+				}  
 				for (int i = 2; i < lhsAST.size(); i++) {
 					if (lhsAST.get(i).isPatternDefault()) {
 						return true;
@@ -464,7 +455,7 @@ public class DownRulesData implements Serializable {
 		}
 		return buf.toString();
 	}
-	
+
 	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		Iterator<IExpr> iter;
 		IExpr key;

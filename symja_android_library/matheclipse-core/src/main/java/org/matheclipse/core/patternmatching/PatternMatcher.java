@@ -818,7 +818,10 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 
 	@Override
 	public boolean equals(final Object obj) {
-		return equivalent(obj) == 0;
+		if (obj instanceof IPatternMatcher) {
+			return equivalent((IPatternMatcher) obj) == 0;
+		}
+		return false;
 		// if (this == obj) {
 		// return true;
 		// }
@@ -900,7 +903,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		return equivalent(o);
 	}
 
-	public int equivalent(final Object obj) {
+	public int equivalent(final IPatternMatcher obj) {
 		if (this == obj) {
 			return 0;
 		}
@@ -931,6 +934,6 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 				return 0;
 			}
 		}
-		return 1;
+		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
 	}
 }
