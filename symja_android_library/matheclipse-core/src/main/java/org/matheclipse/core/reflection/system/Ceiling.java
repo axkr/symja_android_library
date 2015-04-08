@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.F.Negate;
 
 import org.matheclipse.core.builtin.function.NumericQ;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -47,31 +48,43 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = F.eval(ast.arg1());
-			ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
-			if (signedNumber != null) {
-				return signedNumber.ceil();
-			}
-
-			if (arg1.isIntegerResult()) {
-				return arg1;
-			}
-			
-			if (arg1.isPlus()) {
-				IAST[] splittedPlus = ((IAST) arg1).filter(new CeilingPlusFunction());
-				if (splittedPlus[0].size() > 1) {
-					if (splittedPlus[1].size() > 1) {
-						splittedPlus[0].add(F.Ceiling(splittedPlus[1].getOneIdentity(F.C0)));
-					}
-					return splittedPlus[0];
+			IExpr arg1 = EvalEngine.evalNull(ast.arg1());
+			if (arg1 != null) {
+				IExpr temp = evalCeiling(arg1);
+				if (temp == null) {
+					return F.Ceiling(arg1);
 				}
+				return temp;
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-			if (negExpr != null) {
-				return Negate(Floor(negExpr));
-			}
+			return evalCeiling(ast.arg1());
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException
+		}
+		return null;
+	}
+
+	public IExpr evalCeiling(IExpr arg1) {
+		ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+		if (signedNumber != null) {
+			return signedNumber.ceil();
+		}
+
+		if (arg1.isIntegerResult()) {
+			return arg1;
+		}
+		
+		if (arg1.isPlus()) {
+			IAST[] splittedPlus = ((IAST) arg1).filter(new CeilingPlusFunction());
+			if (splittedPlus[0].size() > 1) {
+				if (splittedPlus[1].size() > 1) {
+					splittedPlus[0].add(F.Ceiling(splittedPlus[1].getOneIdentity(F.C0)));
+				}
+				return splittedPlus[0];
+			}
+		}
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Negate(Floor(negExpr));
 		}
 		return null;
 	}
@@ -81,7 +94,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(ISymbol.HOLDALL |ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 }

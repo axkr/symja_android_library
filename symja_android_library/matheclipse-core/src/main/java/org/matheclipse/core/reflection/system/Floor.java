@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Ceiling;
 import static org.matheclipse.core.expression.F.Negate;
 
 import org.matheclipse.core.builtin.function.NumericQ;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -49,29 +50,41 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = F.eval(ast.arg1());
-			ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
-			if (signedNumber != null) {
-				return signedNumber.floor();
-			}
-			if (arg1.isIntegerResult()) {
-				return arg1;
-			}
-			if (arg1.isPlus()) {
-				IAST[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
-				if (splittedPlus[0].size() > 1) {
-					if (splittedPlus[1].size() > 1) {
-						splittedPlus[0].add(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
-					}
-					return splittedPlus[0];
+			IExpr arg1 = EvalEngine.evalNull(ast.arg1());
+			if (arg1 != null) {
+				IExpr temp = evalFloor(arg1);
+				if (temp == null) {
+					return F.Floor(arg1);
 				}
+				return temp;
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-			if (negExpr != null) {
-				return Negate(Ceiling(negExpr));
-			}
+			return evalFloor(ast.arg1());
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() may throw ArithmeticException
+		}
+		return null;
+	}
+
+	public IExpr evalFloor(IExpr arg1) {
+		ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+		if (signedNumber != null) {
+			return signedNumber.floor();
+		}
+		if (arg1.isIntegerResult()) {
+			return arg1;
+		}
+		if (arg1.isPlus()) {
+			IAST[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
+			if (splittedPlus[0].size() > 1) {
+				if (splittedPlus[1].size() > 1) {
+					splittedPlus[0].add(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
+				}
+				return splittedPlus[0];
+			}
+		}
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr != null) {
+			return Negate(Ceiling(negExpr));
 		}
 		return null;
 	}
