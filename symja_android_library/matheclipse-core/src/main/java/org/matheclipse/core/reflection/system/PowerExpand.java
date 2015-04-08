@@ -1,22 +1,27 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.*;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
-import static org.matheclipse.core.expression.F.*;
 
 /**
  * Expand the powers of a given expression.
  */
 public class PowerExpand extends AbstractFunctionEvaluator {
 
-	class PowerExpandVisitor extends VisitorExpr {
-		public PowerExpandVisitor() {
+	private class PowerExpandVisitor extends VisitorExpr {
+		final boolean assumptions;
+
+		public PowerExpandVisitor(boolean assumptions) {
 			super();
+			this.assumptions = assumptions;
 		}
 
 		/** {@inheritDoc} */
@@ -32,7 +37,14 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			if (head.equals(Log)) {
 				if (x1.isPower()) {
 					IAST powerAST = (IAST) x1;
-					return Times(powerAST.arg2(), Log(powerAST.arg1()));
+					// Log[x_ ^ y_] :> y * Log(x)
+					IAST logResult = Times(powerAST.arg2(), Log(powerAST.arg1()));
+					if (assumptions) {
+						IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), Times(C2, Pi)));
+						IAST timesResult = Times(C2, I, Pi, floorResult);
+						return Plus(logResult, timesResult);
+					}
+					return logResult;
 				}
 			}
 			if (evaled) {
@@ -61,12 +73,30 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				if (x1.isTimes()) {
 					// Power[x_ * y_, z_] :> x^z * y^z
 					IAST timesAST = (IAST) x1;
-					return timesAST.mapAt(Power(Null, x2), 1);
+					IAST timesResult = timesAST.mapAt(Power(Null, x2), 1);
+					if (assumptions) {
+						IAST plusResult = Plus(C1D2);
+						for (int i = 1; i < timesAST.size(); i++) {
+							plusResult.add(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+						}
+						IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
+						timesResult.add(expResult);
+						return timesResult;
+					}
+					return timesResult;
 				}
 				if (x1.isPower()) {
 					// Power[x_ ^ y_, z_] :> x ^(y*z)
 					IAST powerAST = (IAST) x1;
-					return Power(powerAST.arg1(), Times(powerAST.arg2(), x2));
+					IAST powerResult = Power(powerAST.arg1(), Times(powerAST.arg2(), x2));
+					if (assumptions) {
+						IAST floorResult = Floor(Divide(Subtract(Pi, Im(Times(powerAST.arg2(), Log(powerAST.arg1())))),
+								Times(C2, Pi)));
+						IAST expResult = Power(E, Times(C2, I, Pi, x2, floorResult));
+						IAST timesResult = Times(powerResult, expResult);
+						return timesResult;
+					}
+					return powerResult;
 				}
 			}
 			if (evaled) {
@@ -74,7 +104,6 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			}
 			return null;
 		}
-
 	}
 
 	public PowerExpand() {
@@ -83,14 +112,25 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 2);
+		Validate.checkRange(ast, 2, 3);
 		if (ast.arg1().isAST()) {
-			PowerExpandVisitor pweVisitor = new PowerExpandVisitor();
+			boolean assumptions = false;
+			if (ast.size() == 3) {
+				final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+				IExpr option = options.getOption(Assumptions);
+				if (option != null && option.isTrue()) {
+					// found "Assumptions -> True"
+					assumptions = true;
+				}
+			}
+
+			PowerExpandVisitor pweVisitor = new PowerExpandVisitor(assumptions);
 			IExpr result = ast.arg1().accept(pweVisitor);
 			if (result != null) {
 				return result;
 			}
 			return ast.arg1();
+
 		}
 		return ast.arg1();
 	}

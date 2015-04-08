@@ -46,7 +46,7 @@ public class AST2Expr {
 
 	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "Alternatives", "Apart", "AppellF1", "Append",
 			"AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin",
-			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "AtomQ", "Attributes", "BernoulliB",
+			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BernoulliB",
 			"Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "Break", "Cancel", "CartesianProduct",
 			"Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT", "ChessboardDistance", "Chop",
 			"Clear", "ClearAll", "Coefficient", "CoefficientList", "Collect", "Complement", "Complex", "ComplexExpand",

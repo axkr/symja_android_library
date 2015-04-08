@@ -123,6 +123,39 @@ public class Options {
 		return null;
 	}
 
+	public IExpr getOption(final ISymbol option) {
+		IAST rule = null;
+		if (fCurrentOptionsList != null) {
+			try {
+				for (int i = 1; i < fCurrentOptionsList.size(); i++) {
+					if (fCurrentOptionsList.get(i).isAST()) {
+						rule = (IAST) fCurrentOptionsList.get(i);
+						if (rule.isRuleAST() && rule.arg1().equals(option)) {
+							return rule.get(2);
+						}
+					}
+				}
+			} catch (Exception e) {
+
+			}
+		}
+		if (fDefaultOptionsList != null) {
+			try {
+				for (int i = 1; i < fDefaultOptionsList.size(); i++) {
+					if (fDefaultOptionsList.get(i).isAST()) {
+						rule = (IAST) fDefaultOptionsList.get(i);
+						if (rule.isRuleAST() && rule.arg1().equals(option)) {
+							return rule.get(2);
+						}
+					}
+				}
+			} catch (Exception e) {
+
+			}
+		}
+		return null;
+	}
+
 	public IAST replaceAll(final IAST options) {
 		IAST result = options.clone();
 		if (fCurrentOptionsList != null) {

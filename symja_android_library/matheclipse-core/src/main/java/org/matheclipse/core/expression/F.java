@@ -105,6 +105,7 @@ public class F {
 	public final static ISymbol Pi = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pi" : "Pi",
 			new org.matheclipse.core.builtin.constant.Pi());
 
+	public final static ISymbol Assumptions = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "assumptions" : "Assumptions");
 	public final static ISymbol IntegerHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integer" : "Integer");
 	public final static ISymbol SymbolHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
 	public final static ISymbol RealHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "real" : "Real");
@@ -134,6 +135,7 @@ public class F {
 	public final static ISymbol Constant = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "constant" : "Constant");
 	public final static ISymbol NumericFunction = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericfunction"
 			: "NumericFunction");
+	
 	public final static ISymbol Orderless = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderless" : "Orderless");
 	public final static ISymbol OneIdentity = F
 			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oneidentity" : "OneIdentity");
