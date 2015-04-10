@@ -71,7 +71,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (arg1 != null) {
 				evaled = true;
 			} else {
-				arg1 =  holdallAST.arg1();
+				arg1 = holdallAST.arg1();
 			}
 			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
@@ -82,8 +82,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());
 			if (arg2 != null) {
 				evaled = true;
-			}else {
-				arg2 =  holdallAST.arg2();
+			} else {
+				arg2 = holdallAST.arg2();
 			}
 			if (arg2.isList()) {
 				IAST xList = (IAST) arg2;
@@ -1048,7 +1048,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
 		// ast.addAll(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
 
-		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
+		// org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 	}
 
 	/**
