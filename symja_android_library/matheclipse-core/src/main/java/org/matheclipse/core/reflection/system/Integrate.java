@@ -866,10 +866,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// long start = System.currentTimeMillis();
 
 		IAST ast = null;
-		if (Config.SERIALIZE_SYMBOLS) {
-			ast = F.ast(F.List, 10000, false);
-			getRuleASTRubi45(ast);
-		}
+		// if (Config.SERIALIZE_SYMBOLS) {
+		ast = F.ast(F.List, 10000, false);
+		getRuleASTRubi45(ast);
+		// }
 
 		// INT_FUNCTIONS.add(F.Times);
 		INT_FUNCTIONS.add(F.Power);
@@ -1087,31 +1087,31 @@ public class Integrate extends AbstractFunctionEvaluator {
 		symbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(symbol);
 
-		if (!Config.SERIALIZE_SYMBOLS) {
-			InputStream in;
-			EvalEngine engine = EvalEngine.get();
-			boolean oldPackageMode = engine.isPackageMode();
-			boolean oldTraceMode = engine.isTraceMode();
-			try {
-				engine.setPackageMode(true);
-				engine.setTraceMode(false);
-
-				in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
-				ObjectInputStream ois = new ObjectInputStream(in);
-				// symbol.clearAll(engine);
-				symbol.readRules(ois);
-				ois.close();
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				engine.setPackageMode(oldPackageMode);
-				engine.setTraceMode(oldTraceMode);
-			}
-		}
+		// if (!Config.SERIALIZE_SYMBOLS) {
+		// InputStream in;
+		// EvalEngine engine = EvalEngine.get();
+		// boolean oldPackageMode = engine.isPackageMode();
+		// boolean oldTraceMode = engine.isTraceMode();
+		// try {
+		// engine.setPackageMode(true);
+		// engine.setTraceMode(false);
+		//
+		// in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+		// ObjectInputStream ois = new ObjectInputStream(in);
+		// // symbol.clearAll(engine);
+		// symbol.readRules(ois);
+		// ois.close();
+		// in.close();
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// } catch (ClassNotFoundException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } finally {
+		// engine.setPackageMode(oldPackageMode);
+		// engine.setTraceMode(oldTraceMode);
+		// }
+		// }
 	}
 
 }
