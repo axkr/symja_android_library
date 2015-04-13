@@ -719,7 +719,7 @@ public class F {
 	public final static ISymbol CSymbol = initFinalSymbol("C");
 	public final static ISymbol FSymbol = initFinalSymbol("F");
 	public final static ISymbol GSymbol = initFinalSymbol("G");
-	
+
 	public final static IPattern a_ = initPredefinedPattern(a);
 	public final static IPattern b_ = initPredefinedPattern(b);
 	public final static IPattern c_ = initPredefinedPattern(c);
@@ -752,7 +752,7 @@ public class F {
 	public final static IPattern C_ = initPredefinedPattern(CSymbol);
 	public final static IPattern F_ = initPredefinedPattern(FSymbol);
 	public final static IPattern G_ = initPredefinedPattern(GSymbol);
-	
+
 	public final static IPattern a_Symbol = new Pattern(a, SymbolHead);
 	public final static IPattern b_Symbol = new Pattern(b, SymbolHead);
 	public final static IPattern c_Symbol = new Pattern(c, SymbolHead);
@@ -3953,12 +3953,20 @@ public class F {
 		return arg;
 	}
 
-	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
-
 	public final static ISymbol HoldForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdForm" : "HoldForm");
 	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
+
+	/**
+	 * Global map of predefined constant expressions. 
+	 */
+	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
+
+	/**
+	 * Global array of predefined constant expressions.
+	 */
 	public final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3, C4,
-			C5, C6, C7, C8, C9, C10, CI, CNI, C1D2,
+			C5, C6, C7, C8, C9, C10, CI, CNI,
+			C1D2,
 			CN1D2,
 			C1D3,
 			CN1D3,
@@ -4009,10 +4017,8 @@ public class F {
 			FSymbol,
 			GSymbol,
 			// start pattern
-			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, 
-			A_, B_, C_, F_, G_,
-			a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol,
-			g_Symbol,
+			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_, B_, C_, F_,
+			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol,
 			h_Symbol,
 			i_Symbol,
 			j_Symbol,
@@ -4414,7 +4420,7 @@ public class F {
 			Slot1 = $(Slot, C1);
 			Slot2 = $(Slot, C2);
 
-			for (int i = 0; i < GLOBAL_IDS.length; i++) {
+			for (short i = 0; i < GLOBAL_IDS.length; i++) {
 				GLOBAL_IDS_MAP.put(GLOBAL_IDS[i], new ExprID(i));
 			}
 

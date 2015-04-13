@@ -1,26 +1,37 @@
 package org.matheclipse.core.expression;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 
-import org.matheclipse.core.builtin.constant.E;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+/**
+ * The ExprID class holds an index wrapper for the <code>F.GLOBAL_IDS[]</code> array of predefined constant expressions. The ExprID
+ * is especially used in the serialization and deserialization of an <code>IExpr</code> object, by representing an index entry in the
+ * <code>F.GLOBAL_IDS[]</code> array.
+ *
+ * @see F#GLOBAL_IDS
+ */
 public class ExprID extends ExprImpl {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2183178872222820512L;
 
-	private int fExprID;
+	private short fExprID;
 
-	public ExprID(int exprID) {
+	/**
+	 * The ExprID class holds an index wrapper for the <code>F.GLOBAL_IDS[]</code> array of predefined constant expressions. The ExprID
+	 * is especially used in the serialization and deserialization of an <code>IExpr</code> object, by representing an index entry in the
+	 * <code>F.GLOBAL_IDS[]</code> array.
+	 *
+	 * @param the index in array <code>F.GLOBAL_IDS</code>
+	 * @see F#GLOBAL_IDS
+	 */
+	public ExprID(short exprID) {
 		fExprID = exprID;
 	}
 
@@ -54,6 +65,11 @@ public class ExprID extends ExprImpl {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @return the <code>F.GLOBAL_IDS[ExprID]</code> expression
+	 * @throws ObjectStreamException
+	 */
 	public Object readResolve() throws ObjectStreamException {
 		return F.GLOBAL_IDS[fExprID];
 	}
