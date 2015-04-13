@@ -775,7 +775,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		int size = lastIndex - firstIndex;
 		fields.put("size", size); //$NON-NLS-1$
 		stream.writeFields();
-//		stream.writeInt(array.length);
+		// stream.writeInt(array.length);
 		// don't use an iterator here!
 		for (int i = 0; i < size; i++) {
 			stream.writeObject(get(i));

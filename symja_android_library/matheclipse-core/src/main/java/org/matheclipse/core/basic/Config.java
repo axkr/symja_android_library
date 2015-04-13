@@ -77,7 +77,7 @@ public class Config {
 	/**
 	 * Used to serialize the Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
 	 */
-	public static boolean SERIALIZE_SYMBOLS = false;
+	public static boolean SERIALIZE_SYMBOLS = false; 
 
 	/**
 	 * Version string for console application

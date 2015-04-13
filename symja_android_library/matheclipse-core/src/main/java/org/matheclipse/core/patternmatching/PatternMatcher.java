@@ -1,5 +1,7 @@
 package org.matheclipse.core.patternmatching;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,7 +238,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * priority of this matcher
 	 * 
 	 */
-	protected int fPriority;
+	protected transient int fPriority;
 
 	/**
 	 * Additional condition for pattern-matching maybe <code>null</code>
@@ -248,7 +250,7 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 	 * A map from a pattern to a possibly found value during pattern-matching. Will be set to <code>null</code> if the
 	 * left-hand-side pattern expression contains no pattern.
 	 */
-	protected PatternMap fPatternMap;
+	protected transient PatternMap fPatternMap;
 
 	/**
 	 * Needed for serialization
@@ -555,9 +557,9 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			cloned.add(lhsPatternAST.get(i));
 		}
 		if (defaultValueMatched) {
-//			if (cloned.size() == 1) {
-//				return null;
-//			}
+			// if (cloned.size() == 1) {
+			// return null;
+			// }
 			if (cloned.size() == 2) {
 				return cloned.arg1();
 			}
@@ -938,5 +940,14 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			}
 		}
 		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		ObjectInputStream.GetField fields = stream.readFields();
+		this.fPatternMap = new PatternMap();
+		if (fLhsPatternExpr != null) {
+			init(fLhsPatternExpr);
+		}
 	}
 }

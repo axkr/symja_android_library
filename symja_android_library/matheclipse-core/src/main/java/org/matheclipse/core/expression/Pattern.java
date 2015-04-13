@@ -80,7 +80,7 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * The hash value of this object computed in the constructor.
 	 * 
 	 */
-	final int fHashValue;
+	// final int fHashValue;
 
 	/**
 	 * The associated symbol for this pattern
@@ -108,7 +108,7 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	/** package private */
 	public Pattern(final ISymbol symbol, IExpr condition, boolean def) {
-		fHashValue = (symbol == null) ? 199 : 19 + symbol.hashCode();
+		// fHashValue = (symbol == null) ? 199 : 19 + symbol.hashCode();
 		fSymbol = symbol;
 		fCondition = condition;
 		fDefault = def;
@@ -160,7 +160,7 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public int hashCode() {
-		return fHashValue;
+		return (fSymbol == null) ? 199 : 19 + fSymbol.hashCode();
 	}
 
 	/*
