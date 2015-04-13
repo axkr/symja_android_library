@@ -39,7 +39,7 @@ public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "Algebraics", "Booleans", "ComplexInfinity", "Catalan", "Complexes", "Degree",
-			"EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldForm", "HoldRest",
+			"EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
 			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "Modulus", "Null", "NumericFunction",
 			"OneIdentity", "Orderless", "Pi", "Primes", "Rationals", "Real", "Reals", "Slot", "SlotSequence", "String", "Symbol",
 			"True" };
@@ -62,7 +62,7 @@ public class AST2Expr {
 			"FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FresnelC",
 			"FresnelS", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify", "Function",
 			"Gamma", "GCD", "GeometricMean", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis",
-			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "Horner", "HornerForm", "HurwitzZeta",
+			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
 			"HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner",
 			"Insert", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "JacobiMatrix", "JacobiSymbol",

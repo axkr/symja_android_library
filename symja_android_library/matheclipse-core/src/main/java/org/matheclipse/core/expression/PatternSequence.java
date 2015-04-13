@@ -89,7 +89,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 		if (obj instanceof PatternSequence) {
 			PatternSequence pattern = (PatternSequence) obj;
-			if (fSymbol == pattern.fSymbol) {
+			if (fSymbol.equals(pattern.fSymbol)) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
 					return fCondition.equals(pattern.fCondition);
 				}

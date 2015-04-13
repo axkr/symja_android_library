@@ -16,9 +16,14 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -858,12 +863,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
 	 */
 	public IAST getRuleAST() {
-		// TODO Integrate[] is currently not working properly in all cases!
 		// long start = System.currentTimeMillis();
 
-		IAST ast = F.ast(F.List, 10000, false);
-
-		getRuleASTRubi45(ast);
+		IAST ast = null;
+		if (Config.SERIALIZE_SYMBOLS) {
+			ast = F.ast(F.List, 10000, false);
+			getRuleASTRubi45(ast);
+		}
 
 		// INT_FUNCTIONS.add(F.Times);
 		INT_FUNCTIONS.add(F.Power);
@@ -1080,6 +1086,32 @@ public class Integrate extends AbstractFunctionEvaluator {
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(symbol);
+
+		if (!Config.SERIALIZE_SYMBOLS) {
+			InputStream in;
+			EvalEngine engine = EvalEngine.get();
+			boolean oldPackageMode = engine.isPackageMode();
+			boolean oldTraceMode = engine.isTraceMode();
+			try {
+				engine.setPackageMode(true);
+				engine.setTraceMode(false);
+
+				in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+				ObjectInputStream ois = new ObjectInputStream(in);
+				// symbol.clearAll(engine);
+				symbol.readRules(ois);
+				ois.close();
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				engine.setPackageMode(oldPackageMode);
+				engine.setTraceMode(oldTraceMode);
+			}
+		}
 	}
 
 }

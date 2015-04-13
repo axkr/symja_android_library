@@ -3,6 +3,8 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.List;
 
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -119,4 +121,19 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 		return 0;
 	}
 
+
+	public IAST getAsAST() {
+		ISymbol setSymbol;
+		IAST ast;
+		setSymbol = getSetSymbol();
+		ast = F.ast(setSymbol);
+		ast.add(fLhsPatternExpr);
+		ast.add(getRHS());
+		return ast;
+	}
+
+	@Override
+	public String toString() {
+		return getAsAST().toString();
+	}
 }

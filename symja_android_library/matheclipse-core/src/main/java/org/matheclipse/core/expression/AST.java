@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -79,7 +80,7 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
 	 * 
 	 */
-	protected EnumMap<PROPERTY, Object> fProperties = null;
+	protected transient EnumMap<PROPERTY, Object> fProperties = null;
 
 	/** {@inheritDoc} */
 	public Object getProperty(PROPERTY key) {
@@ -106,9 +107,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 * Flags for controlling evaluation and left-hand-side pattern-matching expressions
 	 * 
 	 */
-	transient private int fEvalFlags = 0;
+	 private int fEvalFlags = 0;
 
-	transient protected int fPatternMatchingHashValue = 0;
+	 protected int fPatternMatchingHashValue = 0;
 
 	/**
 	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
@@ -2643,4 +2644,31 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return addAtClone(1, expr);
 	}
 
+//	private void writeObject(ObjectOutputStream stream) throws IOException {
+//		int size = size();
+//		IExpr temp;
+//		stream.writeInt(size);
+//		// don't use an iterator here!
+//		for (int i = 0; i < size; i++) {
+//			temp = get(i);
+//			stream.writeObject(temp);
+//		}
+//	}
+//
+//	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+//		int size = stream.readInt();
+//		lastIndex = size;
+//		array = new IExpr[size];
+//		// IExpr temp;
+//		for (int i = 0; i < lastIndex; i++) {
+//			array[i] = (IExpr) stream.readObject();
+//		}
+//	}
+	private Object writeReplace() throws ObjectStreamException {
+		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
+		if (temp != null) {
+			return temp;
+		}
+		return this;
+	}
 }

@@ -57,7 +57,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public static final IExpr eval(final IExpr expr) {
 		return instance.get().evaluate(expr);
 	}
-	
+
 	/**
 	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the input object.
 	 * 
@@ -1332,7 +1332,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public IAssumptions getAssumptions() {
 		return fAssumptions;
 	}
-	
+
 	public int getIterationLimit() {
 		return fIterationLimit;
 	}

@@ -48,7 +48,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	private transient int hashValue;
 
-	private transient E[] array;
+	protected transient E[] array;
 
 	protected HMArrayList(E[] array) {
 		this.array = array;
@@ -772,12 +772,13 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		ObjectOutputStream.PutField fields = stream.putFields();
-		fields.put("size", lastIndex - firstIndex); //$NON-NLS-1$
+		int size = lastIndex - firstIndex;
+		fields.put("size", size); //$NON-NLS-1$
 		stream.writeFields();
-		stream.writeInt(array.length);
-		Iterator<?> it = iterator();
-		while (it.hasNext()) {
-			stream.writeObject(it.next());
+//		stream.writeInt(array.length);
+		// don't use an iterator here!
+		for (int i = 0; i < size; i++) {
+			stream.writeObject(get(i));
 		}
 	}
 
@@ -785,9 +786,10 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		ObjectInputStream.GetField fields = stream.readFields();
 		lastIndex = fields.get("size", 0); //$NON-NLS-1$
-		array = newElementArray(stream.readInt());
+		array = newElementArray(lastIndex);
 		for (int i = 0; i < lastIndex; i++) {
 			array[i] = (E) stream.readObject();
 		}
 	}
+
 }

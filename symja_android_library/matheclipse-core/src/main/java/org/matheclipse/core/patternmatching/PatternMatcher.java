@@ -555,6 +555,9 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 			cloned.add(lhsPatternAST.get(i));
 		}
 		if (defaultValueMatched) {
+//			if (cloned.size() == 1) {
+//				return null;
+//			}
 			if (cloned.size() == 2) {
 				return cloned.arg1();
 			}

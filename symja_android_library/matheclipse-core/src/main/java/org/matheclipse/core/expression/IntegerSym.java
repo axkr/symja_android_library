@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.List;
 
+import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Map;
@@ -1221,5 +1222,13 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	public ComplexNum complexNumValue() {
 		// double precision complex number
 		return ComplexNum.valueOf(doubleValue());
+	}
+	
+	private Object writeReplace() throws ObjectStreamException {
+		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
+		if (temp != null) {
+			return temp;
+		}
+		return this;
 	}
 }

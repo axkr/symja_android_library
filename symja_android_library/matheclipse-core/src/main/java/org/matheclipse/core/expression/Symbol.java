@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,7 @@ import com.google.common.base.Function;
  * Implements Symbols for function, constant and variable names
  * 
  */
-public class Symbol extends ExprImpl implements ISymbol {
+public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/**
 	 * 
@@ -225,9 +227,16 @@ public class Symbol extends ExprImpl implements ISymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
-		// Symbols are unique objects
-		// Makes no sense to compare the symbol names.
-		return this == obj;
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Symbol) {
+			if (fHashValue != ((Symbol) obj).fHashValue) {
+				return false;
+			}
+			return fSymbolName.equals(((Symbol) obj).fSymbolName);
+		}
+		return false;
 	}
 
 	@Override
@@ -509,7 +518,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 	public boolean isVariable() {
 		return (fAttributes & CONSTANT) != CONSTANT;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFalse() {
@@ -604,10 +613,13 @@ public class Symbol extends ExprImpl implements ISymbol {
 	 */
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
-			if (fSymbolName.length() == 1 && Character.isLowerCase(fSymbolName.charAt(0))) {
+			if (fSymbolName.length() == 1) {// && Character.isLowerCase(fSymbolName.charAt(0))) {
 				char ch = fSymbolName.charAt(0);
 				if ('a' <= ch && ch <= 'z') {
 					return fSymbolName;
+				}
+				if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
+					return fSymbolName + "Symbol";
 				}
 			}
 			if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -633,7 +645,7 @@ public class Symbol extends ExprImpl implements ISymbol {
 			String name;
 			if (fSymbolName.length() == 1) {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString());
-			} else { 
+			} else {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase());
 			}
 			if (name != null) {
@@ -748,36 +760,87 @@ public class Symbol extends ExprImpl implements ISymbol {
 	}
 
 	/** {@inheritDoc} */
+	// @Override
+	public void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		fSymbolName = stream.readUTF();
+		fAttributes = stream.read();
+		// boolean hasDownRulesData = stream.readBoolean();
+		// if (hasDownRulesData) {
+		// fDownRulesData.readSymbol(stream);
+		// }
+		// boolean hasUpRulesData = stream.readBoolean();
+		// if (hasUpRulesData) {
+		// fUpRulesData.readSymbol(stream);
+		// }
+	}
+
+	private Object writeReplace() throws ObjectStreamException {
+		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
+		if (temp != null) {
+			return temp;
+		}
+		return this;
+	}
+
+	/** {@inheritDoc} */
+	public void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+		stream.writeUTF(fSymbolName);
+		stream.write(fAttributes);
+		// if (fDownRulesData == null) {
+		// stream.writeBoolean(false);
+		// } else {
+		// stream.writeBoolean(true);
+		// fDownRulesData.writeSymbol(stream);
+		// }
+		// if (fUpRulesData == null) {
+		// stream.writeBoolean(false);
+		// } else {
+		// stream.writeBoolean(true);
+		// fUpRulesData.writeSymbol(stream);
+		// }
+	}
+
+	public Object readResolve() throws ObjectStreamException {
+		Symbol sym = (Symbol) F.$s(fSymbolName);
+		sym.fAttributes = fAttributes;
+		return sym;
+	}
+
+	/** {@inheritDoc} */
 	@Override
-	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
+	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
-			fDownRulesData.readSymbol(stream);
+			fDownRulesData = (DownRulesData) stream.readObject();
+			// fDownRulesData.readSymbol(stream);
 		}
 		boolean hasUpRulesData = stream.readBoolean();
 		if (hasUpRulesData) {
-			fUpRulesData.readSymbol(stream);
+			fUpRulesData = (UpRulesData) stream.readObject();
+			// fUpRulesData.readSymbol(stream);
 		}
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	public void writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
 		if (fDownRulesData == null) {
 			stream.writeBoolean(false);
 		} else {
 			stream.writeBoolean(true);
-			fDownRulesData.writeSymbol(stream);
+			stream.writeObject(fDownRulesData);
+			// fDownRulesData.writeSymbol(stream);
 		}
 		if (fUpRulesData == null) {
 			stream.writeBoolean(false);
 		} else {
 			stream.writeBoolean(true);
-			fUpRulesData.writeSymbol(stream);
+			stream.writeObject(fUpRulesData);
+			// fUpRulesData.writeSymbol(stream);
 		}
 	}
 

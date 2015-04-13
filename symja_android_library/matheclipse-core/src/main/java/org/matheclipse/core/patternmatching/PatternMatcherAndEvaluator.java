@@ -203,6 +203,22 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 		return fRightHandSide;
 	}
 
+	public IAST getAsAST() {
+		IExpr condition;
+		ISymbol setSymbol;
+		IAST ast;
+		setSymbol = getSetSymbol();
+		ast = F.ast(setSymbol);
+		ast.add(getLHS());
+		condition = getCondition();
+		if (condition != null) {
+			ast.add(F.Condition(getRHS(), condition));
+		} else {
+			ast.add(getRHS());
+		}
+		return ast;
+	}
+
 	public ISymbol getSetSymbol() {
 		return fSetSymbol;
 	}
@@ -239,5 +255,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 			}
 		}
 		return comp;
+	}
+
+	@Override
+	public String toString() {
+		return getAsAST().toString();
 	}
 }

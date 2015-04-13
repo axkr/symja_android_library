@@ -406,12 +406,28 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public String definitionToString() throws IOException;
 
 	/**
-	 * Deserialize the rules associated to this object
+	 * Deserialize only the symbolname and attribute associated to this object
 	 * 
 	 * @param stream
 	 * @throws IOException
 	 */
-	public void readSymbol(java.io.ObjectInputStream stream) throws IOException;
+	// public void readSymbol(java.io.ObjectInputStream stream) throws IOException;
+
+	/**
+	 * Deserialize the rules associated to this object
+	 * 
+	 * @param stream
+	 * @throws java.io.IOException
+	 */
+	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException;
+
+	/**
+	 * Serialize only the symbolname and attribute associated to this object
+	 * 
+	 * @param stream
+	 * @throws java.io.IOException
+	 */
+	// public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException;
 
 	/**
 	 * Serialize the rules associated to this object
@@ -419,5 +435,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param stream
 	 * @throws java.io.IOException
 	 */
-	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException;
+	public void writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
+
 }

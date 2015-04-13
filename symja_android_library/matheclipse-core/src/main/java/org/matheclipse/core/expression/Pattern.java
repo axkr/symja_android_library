@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.ObjectStreamException;
 import java.util.List;
 import java.util.Map;
 
@@ -115,15 +116,18 @@ public class Pattern extends ExprImpl implements IPattern {
 
 	@Override
 	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
 		if (obj instanceof Pattern) {
 			if (hashCode() != obj.hashCode()) {
 				return false;
 			}
-			if (this == obj) {
-				return true;
-			}
 			Pattern pattern = (Pattern) obj;
-			if (fSymbol == pattern.fSymbol) {
+			if (fDefault != pattern.fDefault) {
+				return false;
+			}
+			if (fSymbol.equals(pattern.fSymbol)) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
 					return fCondition.equals(pattern.fCondition);
 				}
@@ -187,7 +191,7 @@ public class Pattern extends ExprImpl implements IPattern {
 			String symbolStr = fSymbol.toString();
 			char ch = symbolStr.charAt(0);
 			if (symbolStr.length() == 1) {
-				if ('a' <= ch && ch <= 'z') {
+				if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')) {
 					if (!fDefault) {
 						if (fCondition == null) {
 							return symbolStr + "_";
@@ -321,33 +325,38 @@ public class Pattern extends ExprImpl implements IPattern {
 	 */
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof Pattern) {
+			Pattern pat = ((Pattern) expr);
 			int cp;
 			if (fSymbol == null) {
-				if (((Pattern) expr).fSymbol == null) {
+				if (pat.fSymbol == null) {
 					cp = -1;
 				} else {
 					cp = 0;
 				}
-			} else if (((Pattern) expr).fSymbol == null) {
+			} else if (pat.fSymbol == null) {
 				cp = 1;
 			} else {
-				cp = fSymbol.compareTo(((Pattern) expr).fSymbol);
+				cp = fSymbol.compareTo(pat.fSymbol);
 			}
 			if (cp != 0) {
 				return cp;
 			}
+			if (fDefault != pat.fDefault) {
+				return fDefault ? 1 : -1;
+			}
 			if (fCondition == null) {
-				if (((Pattern) expr).fCondition != null) {
+				if (pat.fCondition != null) {
 					return -1;
 				}
 				return 0;
 			} else {
-				if (((Pattern) expr).fCondition == null) {
+				if (pat.fCondition == null) {
 					return 1;
 				} else {
-					return fCondition.compareTo(((Pattern) expr).fCondition);
+					return fCondition.compareTo(pat.fCondition);
 				}
 			}
+
 		}
 		return super.compareTo(expr);
 	}
@@ -443,4 +452,12 @@ public class Pattern extends ExprImpl implements IPattern {
 		return false;
 	}
 
+	private Object writeReplace() throws ObjectStreamException {
+		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
+		if (temp != null) {
+			return temp;
+		}
+		// System.out.println(toString());
+		return this;
+	}
 }

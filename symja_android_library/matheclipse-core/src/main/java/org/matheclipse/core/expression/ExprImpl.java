@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +35,7 @@ import edu.jas.structure.ElemFactory;
  * Abstract base class for atomic expression objects.
  */
 @SuppressWarnings("serial")
-public abstract class ExprImpl implements IExpr {
+public abstract class ExprImpl implements IExpr, Serializable {
 
 	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
 		IExpr result = expr;

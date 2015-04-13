@@ -28,8 +28,8 @@ public class UpRulesData implements Serializable {
 	 */
 	private static final long serialVersionUID = 779382003637253257L;
 
-	private transient Map<IExpr, PatternMatcherEquals> fEqualUpRules;
-	private transient TreeMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
+	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
+	private TreeMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
 
 	public UpRulesData() {
 		this.fEqualUpRules = null;
@@ -180,70 +180,70 @@ public class UpRulesData implements Serializable {
 		return definitionList;
 	}
 
-	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
-
-		String astString;
-		IExpr key;
-		IExpr value;
-		EvalEngine engine = EvalEngine.get();
-		ISymbol setSymbol;
-		int len = stream.read();
-		if (len > 0) {
-			// fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
-			// for (int i = 0; i < len; i++) {
-			// astString = stream.readUTF();
-			// setSymbol = F.$s(astString);
-			//
-			// astString = stream.readUTF();
-			// key = engine.parse(astString);
-			// astString = stream.readUTF();
-			// value = engine.parse(astString);
-			// fEqualRules.put(key, new Pair<ISymbol, IExpr>(setSymbol, value));
-			// }
-			fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
-			for (int i = 0; i < len; i++) {
-				astString = stream.readUTF();
-				setSymbol = F.$s(astString);
-
-				astString = stream.readUTF();
-				key = engine.parse(astString);
-				astString = stream.readUTF();
-				value = engine.parse(astString);
-				fEqualUpRules.put(key, new PatternMatcherEquals(setSymbol, key, value));
-			}
-		}
-
-		len = stream.read();
-		IExpr lhs;
-		IExpr rhs;
-		IExpr condition;
-		int condLength;
-		PatternMatcherAndEvaluator pmEvaluator;
-		if (len > 0) {
-			fSimplePatternUpRules = TreeMultimap.create();
-			for (int i = 0; i < len; i++) {
-				astString = stream.readUTF();
-				setSymbol = F.$s(astString);
-
-				astString = stream.readUTF();
-				lhs = engine.parse(astString);
-				astString = stream.readUTF();
-				rhs = engine.parse(astString);
-				pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
-
-				condLength = stream.read();
-				if (condLength == 0) {
-					condition = null;
-				} else {
-					astString = stream.readUTF();
-					condition = engine.parse(astString);
-					pmEvaluator.setCondition(condition);
-				}
-				addSimplePatternUpRule(lhs, pmEvaluator);
-			}
-
-		}
-	}
+//	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
+//
+//		String astString;
+//		IExpr key;
+//		IExpr value;
+//		EvalEngine engine = EvalEngine.get();
+//		ISymbol setSymbol;
+//		int len = stream.read();
+//		if (len > 0) {
+//			// fEqualRules = new HashMap<IExpr, Pair<ISymbol, IExpr>>();
+//			// for (int i = 0; i < len; i++) {
+//			// astString = stream.readUTF();
+//			// setSymbol = F.$s(astString);
+//			//
+//			// astString = stream.readUTF();
+//			// key = engine.parse(astString);
+//			// astString = stream.readUTF();
+//			// value = engine.parse(astString);
+//			// fEqualRules.put(key, new Pair<ISymbol, IExpr>(setSymbol, value));
+//			// }
+//			fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
+//			for (int i = 0; i < len; i++) {
+//				astString = stream.readUTF();
+//				setSymbol = F.$s(astString);
+//
+//				astString = stream.readUTF();
+//				key = engine.parse(astString);
+//				astString = stream.readUTF();
+//				value = engine.parse(astString);
+//				fEqualUpRules.put(key, new PatternMatcherEquals(setSymbol, key, value));
+//			}
+//		}
+//
+//		len = stream.read();
+//		IExpr lhs;
+//		IExpr rhs;
+//		IExpr condition;
+//		int condLength;
+//		PatternMatcherAndEvaluator pmEvaluator;
+//		if (len > 0) {
+//			fSimplePatternUpRules = TreeMultimap.create();
+//			for (int i = 0; i < len; i++) {
+//				astString = stream.readUTF();
+//				setSymbol = F.$s(astString);
+//
+//				astString = stream.readUTF();
+//				lhs = engine.parse(astString);
+//				astString = stream.readUTF();
+//				rhs = engine.parse(astString);
+//				pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
+//
+//				condLength = stream.read();
+//				if (condLength == 0) {
+//					condition = null;
+//				} else {
+//					astString = stream.readUTF();
+//					condition = engine.parse(astString);
+//					pmEvaluator.setCondition(condition);
+//				}
+//				addSimplePatternUpRule(lhs, pmEvaluator);
+//			}
+//
+//		}
+//	}
 
 	@Override
 	public String toString() {
@@ -258,49 +258,49 @@ public class UpRulesData implements Serializable {
 		return buf.toString();
 	}
 	
-	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
-		Iterator<IExpr> iter;
-		IExpr key;
-		IExpr condition;
-
-		PatternMatcherEquals pme;
-		ISymbol setSymbol;
-		PatternMatcherAndEvaluator pmEvaluator;
-		if (fEqualUpRules == null || fEqualUpRules.size() == 0) {
-			stream.write(0);
-		} else {
-			stream.write(fEqualUpRules.size());
-			iter = fEqualUpRules.keySet().iterator();
-			while (iter.hasNext()) {
-				key = iter.next();
-				pme = fEqualUpRules.get(key);
-				stream.writeUTF(pme.getLHS().toString());
-				stream.writeUTF(key.fullFormString());
-				stream.writeUTF(pme.getRHS().fullFormString());
-			}
-		}
-
-		if (fSimplePatternUpRules == null || fSimplePatternUpRules.size() == 0) {
-			stream.write(0);
-		} else {
-			stream.write(fSimplePatternUpRules.size());
-			Iterator<IPatternMatcher> listIter = fSimplePatternUpRules.values().iterator();
-			IPatternMatcher elem;
-			while (listIter.hasNext()) {
-				elem = listIter.next();
-				pmEvaluator = (PatternMatcherAndEvaluator) elem;
-				setSymbol = pmEvaluator.getSetSymbol();
-				stream.writeUTF(setSymbol.toString());
-				stream.writeUTF(pmEvaluator.getLHS().fullFormString());
-				stream.writeUTF(pmEvaluator.getRHS().fullFormString());
-				condition = pmEvaluator.getCondition();
-				if (condition == null) {
-					stream.write(0);
-				} else {
-					stream.write(1);
-					stream.writeUTF(condition.fullFormString());
-				}
-			}
-		}
-	}
+//	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
+//		Iterator<IExpr> iter;
+//		IExpr key;
+//		IExpr condition;
+//
+//		PatternMatcherEquals pme;
+//		ISymbol setSymbol;
+//		PatternMatcherAndEvaluator pmEvaluator;
+//		if (fEqualUpRules == null || fEqualUpRules.size() == 0) {
+//			stream.write(0);
+//		} else {
+//			stream.write(fEqualUpRules.size());
+//			iter = fEqualUpRules.keySet().iterator();
+//			while (iter.hasNext()) {
+//				key = iter.next();
+//				pme = fEqualUpRules.get(key);
+//				stream.writeUTF(pme.getLHS().toString());
+//				stream.writeUTF(key.fullFormString());
+//				stream.writeUTF(pme.getRHS().fullFormString());
+//			}
+//		}
+//
+//		if (fSimplePatternUpRules == null || fSimplePatternUpRules.size() == 0) {
+//			stream.write(0);
+//		} else {
+//			stream.write(fSimplePatternUpRules.size());
+//			Iterator<IPatternMatcher> listIter = fSimplePatternUpRules.values().iterator();
+//			IPatternMatcher elem;
+//			while (listIter.hasNext()) {
+//				elem = listIter.next();
+//				pmEvaluator = (PatternMatcherAndEvaluator) elem;
+//				setSymbol = pmEvaluator.getSetSymbol();
+//				stream.writeUTF(setSymbol.toString());
+//				stream.writeUTF(pmEvaluator.getLHS().fullFormString());
+//				stream.writeUTF(pmEvaluator.getRHS().fullFormString());
+//				condition = pmEvaluator.getCondition();
+//				if (condition == null) {
+//					stream.write(0);
+//				} else {
+//					stream.write(1);
+//					stream.writeUTF(condition.fullFormString());
+//				}
+//			}
+//		}
+//	}
 }

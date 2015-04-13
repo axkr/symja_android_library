@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -701,5 +702,13 @@ public class FractionSym extends ExprImpl implements IFraction {
 		double nr = fRational.getNumerator().doubleValue();
 		double dr = fRational.getDenominator().doubleValue();
 		return ComplexNum.valueOf(nr / dr);
+	}
+	
+	private Object writeReplace() throws ObjectStreamException {
+		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
+		if (temp != null) {
+			return temp;
+		}
+		return this;
 	}
 }

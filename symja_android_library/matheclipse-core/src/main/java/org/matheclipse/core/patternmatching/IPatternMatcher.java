@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.matheclipse.core.interfaces.IExpr;
@@ -9,7 +10,7 @@ import com.google.common.base.Predicate;
 /**
  * Interface for the pattern matcher
  */
-public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher> {
+public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher>, Serializable {
 
 	/**
 	 * Contains the "pattern-matching" expression

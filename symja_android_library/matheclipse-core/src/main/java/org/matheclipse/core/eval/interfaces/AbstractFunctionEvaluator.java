@@ -1,5 +1,10 @@
 package org.matheclipse.core.eval.interfaces;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,6 +43,18 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		}
 
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
+		if (Config.SERIALIZE_SYMBOLS) {
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+				ObjectOutputStream oos = new ObjectOutputStream(out);
+				symbol.writeRules(oos);
+				oos.close();
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/** {@inheritDoc} */
