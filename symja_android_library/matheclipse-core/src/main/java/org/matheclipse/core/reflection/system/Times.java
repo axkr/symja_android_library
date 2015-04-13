@@ -124,13 +124,20 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		if (o0.isPower()) {
 			final IAST f0 = (IAST) o0;
-			if (f0.arg2().isNumber()) {
-				if (f0.equalsAt(1, o1)) {
-					return Power(o1, Plus(F.C1, f0.arg2()));
-				}
+			// if (f0.arg2().isNumber()) {
+			if (f0.equalsAt(1, o1)) {
+				return Power(o1, Plus(F.C1, f0.arg2()));
+			}
+			// }
+			if (o1.isPower()) {
+				final IAST f1 = (IAST) o1;
+				if (f0.arg2().isNumber()) {
+					// if (f0.equalsAt(1, o1)) {
+					// return Power(o1, Plus(F.C1, f0.arg2()));
+					// }
 
-				if (o1.isPower()) {
-					final IAST f1 = (IAST) o1;
+					// if (o1.isPower()) {
+					// final IAST f1 = (IAST) o1;
 
 					if (f1.arg2().isNumber()) {
 						if (f0.equalsAt(1, f1.arg1())) {
@@ -143,6 +150,10 @@ public class Times extends AbstractArgMultiple implements INumeric {
 							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
 						}
 					}
+				}
+				if (f0.arg1().equals(f1.arg1())) {
+					// x^(a)*x^(b) => x ^(a+b)
+					return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
 				}
 			}
 		}
