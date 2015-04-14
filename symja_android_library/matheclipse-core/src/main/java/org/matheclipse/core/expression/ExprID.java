@@ -55,14 +55,18 @@ public class ExprID extends ExprImpl {
 		return 0;
 	}
 
-	@Override
-	public int hierarchy() {
-		return 0;
+	public short getExprID() {
+		return fExprID;
 	}
 
 	@Override
 	public ISymbol head() {
 		return null;
+	}
+
+	@Override
+	public int hierarchy() {
+		return 0;
 	}
 
 	/**

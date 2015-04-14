@@ -2,6 +2,10 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.List;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -34,7 +38,7 @@ import com.google.common.math.BigIntegerMath;
 /**
  * IInteger implementation which simply delegates most of the methods to the BigInteger methods
  */
-public class IntegerSym extends ExprImpl implements IInteger {
+public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	/**
 	 * The BigInteger constant minus one.
 	 * 
@@ -88,10 +92,10 @@ public class IntegerSym extends ExprImpl implements IInteger {
 	private transient int fHashValue = 0;
 
 	/**
-	 * do not use directly, needed for XML transformations
+	 * do not use directly, needed for serialization/deserialization
 	 * 
 	 */
-	private IntegerSym() {
+	public IntegerSym() {
 		fInteger = null;
 	}
 
@@ -1223,12 +1227,59 @@ public class IntegerSym extends ExprImpl implements IInteger {
 		// double precision complex number
 		return ComplexNum.valueOf(doubleValue());
 	}
-	
+
 	private Object writeReplace() throws ObjectStreamException {
 		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
 		if (temp != null) {
 			return temp;
 		}
 		return this;
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		if ((fInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0)
+				&& (fInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0)) {
+			int value = fInteger.intValue();
+			if (value <= Byte.MAX_VALUE && value >= Byte.MIN_VALUE) {
+				objectOutput.writeByte(1);
+				objectOutput.writeByte((byte) value);
+				return;
+			}
+			if (value <= Short.MAX_VALUE && value >= Short.MIN_VALUE) {
+				objectOutput.writeByte(2);
+				objectOutput.writeShort((short) value);
+				return;
+			}
+			if (value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE) {
+				objectOutput.writeByte(4);
+				objectOutput.writeInt((int) value);
+				return;
+			}
+		}
+
+		objectOutput.writeByte(0);
+		objectOutput.writeObject(fInteger);
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		byte attributeFlags = objectInput.readByte();
+		int value;
+		switch (attributeFlags) {
+		case 1:
+			value = objectInput.readByte();
+			fInteger = BigInteger.valueOf(value);
+			return;
+		case 2:
+			value = objectInput.readShort();
+			fInteger = BigInteger.valueOf(value);
+			return;
+		case 4:
+			value = objectInput.readInt();
+			fInteger = BigInteger.valueOf(value);
+			return;
+		}
+		fInteger = (BigInteger) objectInput.readObject();
 	}
 }

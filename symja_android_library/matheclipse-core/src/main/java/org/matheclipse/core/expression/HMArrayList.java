@@ -51,11 +51,15 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	protected transient E[] array;
 
 	protected HMArrayList(E[] array) {
+		init(array);
+	}
+
+	final protected void init(E[] array) {
 		this.array = array;
 		firstIndex = hashValue = 0;
 		lastIndex = modCount = array.length;
 	}
-
+	
 	/**
 	 * Constructs a new instance of {@code ArrayList} with ten capacity.
 	 */

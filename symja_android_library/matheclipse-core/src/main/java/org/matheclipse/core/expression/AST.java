@@ -1,5 +1,9 @@
 package org.matheclipse.core.expression;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -74,7 +78,7 @@ import edu.jas.structure.ElemFactory;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  */
-public class AST extends HMArrayList<IExpr> implements IAST {
+public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	/**
 	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
@@ -107,9 +111,9 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 	 * Flags for controlling evaluation and left-hand-side pattern-matching expressions
 	 * 
 	 */
-	 private int fEvalFlags = 0;
+	private int fEvalFlags = 0;
 
-	 protected int fPatternMatchingHashValue = 0;
+	protected transient int fPatternMatchingHashValue = 0;
 
 	/**
 	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
@@ -2644,31 +2648,87 @@ public class AST extends HMArrayList<IExpr> implements IAST {
 		return addAtClone(1, expr);
 	}
 
-//	private void writeObject(ObjectOutputStream stream) throws IOException {
-//		int size = size();
-//		IExpr temp;
-//		stream.writeInt(size);
-//		// don't use an iterator here!
-//		for (int i = 0; i < size; i++) {
-//			temp = get(i);
-//			stream.writeObject(temp);
-//		}
-//	}
-//
-//	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-//		int size = stream.readInt();
-//		lastIndex = size;
-//		array = new IExpr[size];
-//		// IExpr temp;
-//		for (int i = 0; i < lastIndex; i++) {
-//			array[i] = (IExpr) stream.readObject();
-//		}
-//	}
+	// private void writeObject(ObjectOutputStream stream) throws IOException {
+	// int size = size();
+	// IExpr temp;
+	// stream.writeInt(size);
+	// // don't use an iterator here!
+	// for (int i = 0; i < size; i++) {
+	// temp = get(i);
+	// stream.writeObject(temp);
+	// }
+	// }
+	//
+	// private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+	// int size = stream.readInt();
+	// lastIndex = size;
+	// array = new IExpr[size];
+	// // IExpr temp;
+	// for (int i = 0; i < lastIndex; i++) {
+	// array[i] = (IExpr) stream.readObject();
+	// }
+	// }
 	private Object writeReplace() throws ObjectStreamException {
 		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
 		if (temp != null) {
 			return temp;
 		}
 		return this;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeShort(fEvalFlags);
+
+		int size = size();
+		byte attributeFlags = (byte) 0;
+		if (size > 0 && size < 256) {
+			ExprID temp = F.GLOBAL_IDS_MAP.get(head());
+			if (temp != null) {
+				short val = temp.getExprID();
+				if (val <= Short.MAX_VALUE) {
+					// optimized path
+					attributeFlags = (byte) size;
+					objectOutput.writeByte(attributeFlags);
+					objectOutput.writeShort(val);
+					for (int i = 1; i < size; i++) {
+						objectOutput.writeObject(get(i));
+					}
+					return;
+				}
+			}
+		}
+
+		objectOutput.writeByte(attributeFlags);
+		objectOutput.writeInt(size);
+		for (int i = 0; i < size; i++) {
+			objectOutput.writeObject(get(i));
+		}
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		this.fEvalFlags = objectInput.readShort();
+
+		int size;
+		byte attributeFlags = objectInput.readByte();
+		if (attributeFlags != 0) {
+			size = attributeFlags;
+			short exprID = objectInput.readShort();
+			IExpr[] array = new IExpr[size];
+			init(array);
+			this.array[0] = F.GLOBAL_IDS[exprID];
+			for (int i = 1; i < size; i++) {
+				this.array[i] = (IExpr) objectInput.readObject();
+			}
+			return;
+		}
+
+		size = objectInput.readInt();
+		IExpr[] array = new IExpr[size];
+		init(array);
+		for (int i = 0; i < size; i++) {
+			this.array[i] = (IExpr) objectInput.readObject();
+		}
 	}
 }
