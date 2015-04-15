@@ -2682,16 +2682,36 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 		int size = size();
 		byte attributeFlags = (byte) 0;
-		if (size > 0 && size < 256) {
+		if (size > 0 && size < 128) {
 			ExprID temp = F.GLOBAL_IDS_MAP.get(head());
 			if (temp != null) {
-				short val = temp.getExprID();
-				if (val <= Short.MAX_VALUE) {
+
+				short exprID = temp.getExprID();
+				if (exprID <= Short.MAX_VALUE) {
+					int exprIDSize = 1;
+					short[] exprIDArray = new short[size];
+					exprIDArray[0] = exprID;
+					for (int i = 1; i < size; i++) {
+						temp = F.GLOBAL_IDS_MAP.get(get(i));
+						if (temp == null) {
+							break;
+						}
+						exprID = temp.getExprID();
+						if (exprID <= Short.MAX_VALUE) {
+							exprIDArray[i] = exprID;
+							exprIDSize++;
+						} else {
+							break;
+						}
+					}
 					// optimized path
 					attributeFlags = (byte) size;
 					objectOutput.writeByte(attributeFlags);
-					objectOutput.writeShort(val);
-					for (int i = 1; i < size; i++) {
+					objectOutput.writeByte((byte) exprIDSize);
+					for (int i = 0; i < exprIDSize; i++) {
+						objectOutput.writeShort(exprIDArray[i]);
+					}
+					for (int i = exprIDSize; i < size; i++) {
 						objectOutput.writeObject(get(i));
 					}
 					return;
@@ -2714,11 +2734,13 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 		byte attributeFlags = objectInput.readByte();
 		if (attributeFlags != 0) {
 			size = attributeFlags;
-			short exprID = objectInput.readShort();
 			IExpr[] array = new IExpr[size];
 			init(array);
-			this.array[0] = F.GLOBAL_IDS[exprID];
-			for (int i = 1; i < size; i++) {
+			int exprIDSize = objectInput.readByte();
+			for (int i = 0; i < exprIDSize; i++) {
+				this.array[i] = F.GLOBAL_IDS[objectInput.readShort()];
+			}
+			for (int i = exprIDSize; i < size; i++) {
 				this.array[i] = (IExpr) objectInput.readObject();
 			}
 			return;
