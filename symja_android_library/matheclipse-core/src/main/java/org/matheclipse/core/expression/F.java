@@ -3456,6 +3456,10 @@ public class F {
 		return unary(Reap, a);
 	}
 
+	public static IAST Refine(final IExpr a0, final IExpr a1) {
+		return binary(Refine, a0, a1);
+	}
+
 	public static IAST ReplaceAll(final IExpr a0, final IExpr a1) {
 		return binary(ReplaceAll, a0, a1);
 	}
@@ -3957,7 +3961,7 @@ public class F {
 	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
 
 	/**
-	 * Global map of predefined constant expressions. 
+	 * Global map of predefined constant expressions.
 	 */
 	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
 
@@ -4361,8 +4365,8 @@ public class F {
 			RandomInteger,
 			RandomReal,
 			// RandomSample,
-			Range, Rational, Rationalize, Re, Reap, ReplaceAll, ReplacePart, ReplaceRepeated, Rest, Resultant, Return, Reverse,
-			Riffle, RootIntervals, RootOf, Roots, Surd,
+			Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart, ReplaceRepeated, Rest, Resultant, Return,
+			Reverse, Riffle, RootIntervals, RootOf, Roots, Surd,
 			RotateLeft,
 			RotateRight,
 			Round,
