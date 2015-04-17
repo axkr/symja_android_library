@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr; 
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -454,12 +455,12 @@ public class Functors {
 	private static void addRuleToCollection(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers, IAST rule) {
 		if (rule.get(1).isFree(PATTERNQ_PREDICATE, true)) {
 			if (rule.get(1).isOrderlessAST() || rule.get(1).isFlatAST()) {
-				matchers.add(new PatternMatcherAndEvaluator(F.SetDelayed, rule.get(1), rule.get(2)));
+				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.get(1), rule.get(2)));
 				return;
 			}
 			equalRules.put(rule.get(1), rule.get(2));
 		} else {
-			matchers.add(new PatternMatcherAndEvaluator(F.SetDelayed, rule.get(1), rule.get(2)));
+			matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.get(1), rule.get(2)));
 		}
 	}
 

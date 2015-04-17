@@ -82,7 +82,7 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 			} else {
 				lhsSymbol = lhsAST.get(i).topHead();
 			}
-			result[0] = lhsSymbol.putUpRule(F.UpSet, false, lhsAST, rightHandSide);
+			result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET, false, lhsAST, rightHandSide);
 		}
 		return result;
 		// }

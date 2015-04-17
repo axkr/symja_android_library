@@ -135,7 +135,7 @@ public class DownRulesData implements Serializable {
 		return null;
 	}
 
-	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
 		if (equalRule) {
 			fEqualDownRules = getEqualDownRules();

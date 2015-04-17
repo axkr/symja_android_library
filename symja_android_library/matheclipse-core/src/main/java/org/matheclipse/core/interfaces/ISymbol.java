@@ -17,6 +17,11 @@ import com.google.common.base.Function;
  * 
  */
 public interface ISymbol extends IExpr { // Variable<IExpr>
+
+	public static enum RuleType {
+		SET, SET_DELAYED, UPSET, UPSET_DELAYED;
+	}
+
 	/**
 	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
 	 */
@@ -219,24 +224,28 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	/**
 	 * Associate a new &quot;down value&quot; rule with default priority to this symbol.
 	 * 
+	 * @param setSymbol
+	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
 	 * @param packageMode
-	 *            TODO
+	 *            <code>true</code> if we are on &quot;package mode&quot;
 	 * 
 	 * @return
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
+	public IPatternMatcher putDownRule(final RuleType setSymbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
 			boolean packageMode);
 
 	/**
 	 * Associate a new rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
 	 * 
+	 * @param setSymbol
+	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
@@ -244,28 +253,27 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param priority
 	 *            the priority of the rule
 	 * @param packageMode
-	 *            TODO
-	 * @param condition
-	 *            additional condition for rules containing patterns
-	 * @param moduleInitializer
-	 *            if the right-hand-side is a module, this is the initializer part
+	 *            <code>true</code> if we are on &quot;package mode&quot;
+	 * 
 	 * 
 	 * @return
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putDownRule(ISymbol symbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide, int priority,
-			boolean packageMode);
+	public IPatternMatcher putDownRule(final RuleType setSymbol, boolean equalRule, IExpr leftHandSide, IExpr rightHandSide,
+			int priority, boolean packageMode);
 
 	/**
 	 * Associate a new rule, which invokes a method, to this symbol.
 	 * 
 	 */
-	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
+	public IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
 	/**
 	 * Associate a new &quot;up value&quot; rule with default priority to this symbol.
 	 * 
+	 * @param setSymbol
+	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
@@ -274,20 +282,18 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
+	public IPatternMatcher putUpRule(final RuleType setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
 
 	/**
 	 * Associate a new &quot;up value&quot; rule with the given priority to this symbol.<br/>
 	 * Rules with lower numbers have higher priorities.
 	 * 
+	 * @param setSymbol
+	 *            which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was used for defining this rule
 	 * @param equalRule
 	 *            <code>true</code> if the leftHandSide could be matched with equality
 	 * @param leftHandSide
 	 * @param rightHandSide
-	 * @param condition
-	 *            additional condition for rules containing patterns
-	 * @param moduleInitializer
-	 *            if the right-hand-side is a module, this is the initializer part
 	 * @param priority
 	 *            the priority of the rule
 	 * 
@@ -295,7 +301,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @see PatternMap#DEFAULT_RULE_PRIORITY
 	 */
-	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
+	public IPatternMatcher putUpRule(final RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide, final int priority);
 
 	/**

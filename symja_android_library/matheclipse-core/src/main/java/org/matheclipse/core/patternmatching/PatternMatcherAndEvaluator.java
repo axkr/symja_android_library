@@ -20,7 +20,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	private static final long serialVersionUID = 2241135467123931061L;
 
 	private IExpr fRightHandSide;
-	private ISymbol fSetSymbol;
+	private ISymbol.RuleType fSetSymbol;
 
 	/**
 	 * 
@@ -31,7 +31,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	 * @param rightHandSide
 	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
-	public PatternMatcherAndEvaluator(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
@@ -219,8 +219,25 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 		return ast;
 	}
 
+	/**
+	 * Return <code>Set</code> or <code>SetDelayed</code> symbol.
+	 * 
+	 * @return <code>null</code> if no symbol was defined
+	 */
 	public ISymbol getSetSymbol() {
-		return fSetSymbol;
+		if (fSetSymbol == ISymbol.RuleType.SET_DELAYED) {
+			return F.SetDelayed;
+		}
+		if (fSetSymbol == ISymbol.RuleType.SET) {
+			return F.Set;
+		}
+		if (fSetSymbol == ISymbol.RuleType.UPSET_DELAYED) {
+			return F.UpSetDelayed;
+		}
+		if (fSetSymbol == ISymbol.RuleType.UPSET) {
+			return F.UpSet;
+		}
+		return null;
 	}
 
 	@Override

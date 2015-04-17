@@ -73,7 +73,7 @@ public class UpRulesData implements Serializable {
 		return null;
 	}
 
-	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
+	public IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide) {
 		if (equalRule) {
 			fEqualUpRules = getEqualUpRules();

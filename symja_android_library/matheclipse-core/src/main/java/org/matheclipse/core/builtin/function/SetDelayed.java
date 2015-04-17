@@ -42,7 +42,7 @@ public class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreate
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 
-			result[0] = lhsSymbol.putDownRule(F.SetDelayed, false, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 		if (leftHandSide.isSymbol()) {
@@ -51,7 +51,7 @@ public class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreate
 				lhsSymbol.set(rightHandSide);
 				return result;
 			}
-			result[0] = lhsSymbol.putDownRule(F.SetDelayed, true, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, true, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 		throw new RuleCreationError(leftHandSide);

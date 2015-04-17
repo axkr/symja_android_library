@@ -63,7 +63,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 		final Object[] result = new Object[] { null, rightHandSide };
 		if (leftHandSide.isAST()) {
 			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-			result[0] = lhsSymbol.putDownRule(F.Set, false, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET, false, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 		if (leftHandSide.isSymbol()) {
@@ -73,7 +73,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 				lhsSymbol.set(rightHandSide);
 				return result;
 			}
-			result[0] = lhsSymbol.putDownRule(F.Set, true, leftHandSide, rightHandSide, packageMode);
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET, true, leftHandSide, rightHandSide, packageMode);
 			return result;
 		}
 

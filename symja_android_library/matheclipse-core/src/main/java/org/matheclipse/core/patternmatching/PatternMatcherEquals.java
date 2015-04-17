@@ -31,7 +31,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	 * Contains the "set" symbol used to define this pattern matcher
 	 * 
 	 */
-	protected ISymbol fSetSymbol;
+	private ISymbol.RuleType fSetSymbol;
 
 	/**
 	 * 
@@ -42,7 +42,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	 * @param rightHandSide
 	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
-	public PatternMatcherEquals(final ISymbol setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+	public PatternMatcherEquals(final ISymbol.RuleType setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
 		super(leftHandSide);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
@@ -87,8 +87,25 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 		return fRightHandSide;
 	}
 
+	/**
+	 * Return <code>Set</code> or <code>SetDelayed</code> symbol.
+	 * 
+	 * @return <code>null</code> if no symbol was defined
+	 */
 	public ISymbol getSetSymbol() {
-		return fSetSymbol;
+		if (fSetSymbol == ISymbol.RuleType.SET_DELAYED) {
+			return F.SetDelayed;
+		}
+		if (fSetSymbol == ISymbol.RuleType.SET) {
+			return F.Set;
+		}
+		if (fSetSymbol == ISymbol.RuleType.UPSET_DELAYED) {
+			return F.UpSetDelayed;
+		}
+		if (fSetSymbol == ISymbol.RuleType.UPSET) {
+			return F.UpSet;
+		}
+		return null;
 	}
 
 	@Override

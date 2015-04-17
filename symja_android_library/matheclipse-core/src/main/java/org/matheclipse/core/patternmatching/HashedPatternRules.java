@@ -2,6 +2,7 @@ package org.matheclipse.core.patternmatching;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Data structure for <code>HashedOrderlessMatcher</code>.
@@ -121,9 +122,9 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		if (fRulesData == null) {
 			fRulesData = new DownRulesData();
 			if (fCondition != null) {
-				fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
+				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
 			} else {
-				fRulesData.putDownRule(F.SetDelayed, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
+				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
 			}
 		}
 		return fRulesData;

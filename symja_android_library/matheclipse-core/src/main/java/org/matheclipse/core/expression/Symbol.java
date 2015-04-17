@@ -359,14 +359,14 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IPatternMatcher putDownRule(ISymbol symbol, final boolean equalRule, final IExpr leftHandSide,
+	public IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, boolean packageMode) {
 		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY, packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IPatternMatcher putDownRule(ISymbol setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority, boolean packageMode) {
 		if (!packageMode) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
@@ -392,13 +392,13 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IPatternMatcher putUpRule(ISymbol symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
+	public IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
 		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IPatternMatcher putUpRule(ISymbol setSymbol, final boolean equalRule, final IAST leftHandSide,
+	public IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {

@@ -473,7 +473,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			fAnswer = arg0;
 		}
 		ISymbol ans = F.$s("$ans");
-		ans.putDownRule(F.Set, true, ans, fAnswer, false);
+		ans.putDownRule(ISymbol.RuleType.SET, true, ans, fAnswer, false);
 		if (fOutListDisabled) {
 			return;
 		}

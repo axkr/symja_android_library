@@ -62,7 +62,7 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 			} else {
 				lhsSymbol = lhsAST.get(i).topHead();
 			}
-			result[0] = lhsSymbol.putUpRule(F.UpSetDelayed, false, lhsAST, rightHandSide);
+			result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET_DELAYED, false, lhsAST, rightHandSide);
 		}
 		return result;
 		// }
