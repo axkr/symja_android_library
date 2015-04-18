@@ -1,6 +1,9 @@
 package org.matheclipse.core.patternmatching;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.matheclipse.core.builtin.function.Condition;
 import org.matheclipse.core.builtin.function.Module;
@@ -11,8 +14,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 
-public class PatternMatcherAndEvaluator extends PatternMatcher implements Serializable {
+public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
 	/**
 	 * 
@@ -21,6 +25,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 
 	private IExpr fRightHandSide;
 	private ISymbol.RuleType fSetSymbol;
+
+	/**
+	 * Public constructor for serialization.
+	 */
+	public PatternMatcherAndEvaluator() {
+
+	}
 
 	/**
 	 * 
@@ -277,5 +288,34 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Serial
 	@Override
 	public String toString() {
 		return getAsAST().toString();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		short ordinal = (short) fSetSymbol.ordinal();
+		if (fPatternCondition == null) {
+			ordinal |= 0x8000;
+		}
+		objectOutput.writeShort(ordinal);
+		objectOutput.writeObject(fLhsPatternExpr);
+		objectOutput.writeObject(fRightHandSide);
+		if (fPatternCondition != null) {
+			objectOutput.writeObject(fPatternCondition);
+		}
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		short ordinal = objectInput.readShort();
+		fSetSymbol = RuleType.values()[ordinal & 0x7FFF];
+		fLhsPatternExpr = (IExpr) objectInput.readObject();
+		fRightHandSide = (IExpr) objectInput.readObject();
+		if ((ordinal & 0x8000) == 0x0000) {
+			fPatternCondition = (IExpr) objectInput.readObject();
+		}
+		this.fPatternMap = new PatternMap();
+		if (fLhsPatternExpr != null) {
+			fPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
+		}
 	}
 }

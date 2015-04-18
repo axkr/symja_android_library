@@ -1,19 +1,23 @@
 package org.matheclipse.core.patternmatching;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.List;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 
 /**
  * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
  * <code>equals()</code> method.
  * 
  */
-public class PatternMatcherEquals extends IPatternMatcher implements Serializable {
+public class PatternMatcherEquals extends IPatternMatcher implements Externalizable {
 	/**
 	 * 
 	 */
@@ -33,6 +37,12 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	 */
 	private ISymbol.RuleType fSetSymbol;
 
+	/**
+	 * Public constructor for serialization.
+	 */
+	public PatternMatcherEquals() {
+		
+	}
 	/**
 	 * 
 	 * @param setSymbol
@@ -138,7 +148,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 		return 0;
 	}
 
-
 	public IAST getAsAST() {
 		ISymbol setSymbol;
 		IAST ast;
@@ -152,5 +161,19 @@ public class PatternMatcherEquals extends IPatternMatcher implements Serializabl
 	@Override
 	public String toString() {
 		return getAsAST().toString();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeShort(fSetSymbol.ordinal());
+		objectOutput.writeObject(fLhsPatternExpr);
+		objectOutput.writeObject(fRightHandSide);
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		fSetSymbol = RuleType.values()[objectInput.readShort()];
+		fLhsPatternExpr = (IExpr) objectInput.readObject();
+		fRightHandSide = (IExpr) objectInput.readObject();
 	}
 }

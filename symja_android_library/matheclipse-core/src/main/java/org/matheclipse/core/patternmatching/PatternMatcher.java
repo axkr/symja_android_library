@@ -1,8 +1,9 @@
 package org.matheclipse.core.patternmatching;
 
+import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class PatternMatcher extends IPatternMatcher implements Serializable {
+public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 	/**
 	 * 
@@ -942,12 +943,28 @@ public class PatternMatcher extends IPatternMatcher implements Serializable {
 		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
 	}
 
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		ObjectInputStream.GetField fields = stream.readFields();
+//	@SuppressWarnings("unchecked")
+//	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+//		ObjectInputStream.GetField fields = stream.readFields();
+//		this.fPatternMap = new PatternMap();
+//		if (fLhsPatternExpr != null) {
+//			init(fLhsPatternExpr);
+//		}
+//	}
+	
+	@Override
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeObject(fLhsPatternExpr);
+		objectOutput.writeObject(fPatternCondition);
+	}
+
+	@Override
+	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+		fLhsPatternExpr = (IExpr) objectInput.readObject();
+		fPatternCondition = (IExpr) objectInput.readObject();
 		this.fPatternMap = new PatternMap();
 		if (fLhsPatternExpr != null) {
-			init(fLhsPatternExpr);
+			fPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
 		}
 	}
 }
