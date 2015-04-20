@@ -164,8 +164,13 @@ public class Factor extends AbstractFunctionEvaluator {
 	 */
 	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM, boolean numeric2Rational) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-		TermOrder to = new TermOrder(TermOrder.INVLEX);
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
+		return factorComplex(polyRat, jas, varList, head, noGCDLCM);
+	}
+
+	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas, List<IExpr> varList,
+			ISymbol head, boolean noGCDLCM) {
+		TermOrder to = new TermOrder(TermOrder.INVLEX);
 		// Object[] objects = jas.factorTerms(polyRat);
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {

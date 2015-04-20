@@ -10,6 +10,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -23,6 +24,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
+import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 
@@ -116,8 +118,13 @@ public class Roots extends AbstractFunctionEvaluator {
 
 		try {
 			result = F.List();
-			IExpr temp;
-			IAST factors = Factor.factorComplex(expr, varList, F.List, true, numericSolutions);
+			IExpr temp; 
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
+			if (polyRat.degree(0) <= 2) {
+				return rootsOfExprPolynomial(expr, varList);
+			}
+			IAST factors = Factor.factorComplex(polyRat, jas, varList, F.List, true);
 			for (int i = 1; i < factors.size(); i++) {
 				temp = F.evalExpand(factors.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
@@ -132,7 +139,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				} else {
 					// if (numericSolutions) {
 					double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
-					if (coefficients==null){
+					if (coefficients == null) {
 						return null;
 					}
 					IAST resultList = findRoots(coefficients);
@@ -146,21 +153,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			result = QuarticSolver.createSet(result);
 			return result;
 		} catch (JASConversionException e) {
-			try {
-				// try to generate a common expression polynomial
-				JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
-				GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
-				result = rootsOfPolynomial(ePoly);
-				if (result != null && expr.isNumericMode()) {
-					for (int i = 1; i < result.size(); i++) {
-						result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
-					}
-				}
-			} catch (JASConversionException e2) {
-				if (Config.SHOW_STACKTRACE) {
-					e2.printStackTrace();
-				}
-			}
+			result = rootsOfExprPolynomial(expr, varList);
 		}
 		if (result != null) {
 			if (!denom.isNumber()) {
@@ -178,6 +171,26 @@ public class Roots extends AbstractFunctionEvaluator {
 			return result;
 		}
 		return null;
+	}
+
+	public static IAST rootsOfExprPolynomial(final IExpr expr, List<IExpr> varList) {
+		IAST result = null;
+		try {
+			// try to generate a common expression polynomial
+			JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
+			GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
+			result = rootsOfPolynomial(ePoly);
+			if (result != null && expr.isNumericMode()) {
+				for (int i = 1; i < result.size(); i++) {
+					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+				}
+			}
+		} catch (JASConversionException e2) {
+			if (Config.SHOW_STACKTRACE) {
+				e2.printStackTrace();
+			}
+		}
+		return result;
 	}
 
 	private static IAST rootsOfPolynomial(GenPolynomial<IExpr> ePoly) {
