@@ -3960,6 +3960,116 @@ public class F {
 	public final static ISymbol HoldForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdForm" : "HoldForm");
 	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
 
+	public final static ISymbol AppellF1 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
+	public final static ISymbol CosIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
+	public final static ISymbol EllipticE = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
+	public final static ISymbol EllipticF = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticf" : "EllipticF");
+	public final static ISymbol EllipticPi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticpi" : "EllipticPi");
+	public final static ISymbol FresnelC = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnelc" : "FresnelC");
+	public final static ISymbol FresnelS = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnels" : "FresnelS");
+	public final static ISymbol HypergeometricPFQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfq"
+			: "HypergeometricPFQ");
+	public final static ISymbol Hypergeometric2F1 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric2f1"
+			: "Hypergeometric2F1");
+	public final static ISymbol SinIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinintegral" : "SinIntegral");
+	public final static ISymbol CoshIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coshintegral"
+			: "CoshIntegral");
+	public final static ISymbol SinhIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinhintegral"
+			: "SinhIntegral");
+	public final static ISymbol ExpIntegralEi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegralei"
+			: "ExpIntegralEi");
+	public final static ISymbol LogIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "logintegral" : "LogIntegral");
+	public final static ISymbol PolyLog = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polylog" : "PolyLog");
+	public final static ISymbol LogGamma = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "loggamma" : "LogGamma");
+	public final static ISymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
+	public final static ISymbol PolyGamma = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygamma" : "PolyGamma");
+	public final static ISymbol ExpIntegralE = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegrale"
+			: "ExpIntegralE");
+
+	public static IAST AppellF1(final IExpr... a) {
+		return ast(a, AppellF1);
+	}
+
+	public static IAST CosIntegral(final IExpr a) {
+		return unary(CosIntegral, a);  
+	}
+
+	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
+		return binary(EllipticE, a0, a1);
+	}
+
+	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
+		return binary(EllipticF, a0, a1);
+	}
+
+	public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(EllipticPi, a0, a1, a2);
+	}
+
+	public static IAST FresnelC(final IExpr a) {
+		return unary(FresnelC, a);
+	}
+
+	public static IAST FresnelS(final IExpr a) {
+		return unary(FresnelS, a);
+	}
+
+	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(HypergeometricPFQ, a0, a1, a2);
+	}
+
+	public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
+	}
+
+	public static IAST SinIntegral(final IExpr a) {
+		return unary(SinIntegral, a);
+	}
+
+	public static IAST CoshIntegral(final IExpr a) {
+		return unary(CoshIntegral, a);
+	}
+
+	public static IAST SinhIntegral(final IExpr a) {
+		return unary(SinhIntegral, a);
+	}
+
+	public static IAST Erfi(final IExpr a) {
+		return unary(Erfi, a);
+	}
+
+	public static IAST ExpIntegralEi(final IExpr a) {
+		return unary(ExpIntegralEi, a);
+	}
+
+	public static IAST LogIntegral(final IExpr a) {
+		return unary(LogIntegral, a);
+	}
+
+	public static IAST PolyLog(final IExpr a0, final IExpr a1) {
+		return binary(PolyLog, a0, a1);
+	}
+
+	public static IAST Erfc(final IExpr a) {
+		return unary(Erfc, a);
+	}
+
+	public static IAST LogGamma(final IExpr a0) {
+		return unary(LogGamma, a0);
+	}
+
+	public static IAST Zeta(final IExpr a0, final IExpr a1) {
+		return binary(Zeta, a0, a1);
+	}
+
+	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
+		return binary(PolyGamma, a0, a1);
+	}
+
+	public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
+		return binary(ExpIntegralE, a0, a1);
+	}
+
 	/**
 	 * Global map of predefined constant expressions.
 	 */
@@ -3969,7 +4079,10 @@ public class F {
 	 * Global array of predefined constant expressions.
 	 */
 	public final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3, C4,
-			C5, C6, C7, C8, C9, C10, CI, CNI,
+			C5, C6, C7, C8, C9,
+			C10,
+			CI,
+			CNI,
 			C1D2,
 			CN1D2,
 			C1D3,
@@ -3996,7 +4109,10 @@ public class F {
 			Slot1,
 			Slot2,
 			// start symbols
-			a, b, c, d, e, f, g, h,
+			a, b, c, d, e,
+			f,
+			g,
+			h,
 			i,
 			j,
 			k,
@@ -4022,16 +4138,8 @@ public class F {
 			GSymbol,
 			// start pattern
 			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_, B_, C_, F_,
-			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol,
-			h_Symbol,
-			i_Symbol,
-			j_Symbol,
-			k_Symbol,
-			l_Symbol,
-			m_Symbol,
-			n_Symbol,
-			o_Symbol,
-			p_Symbol,
+			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol, h_Symbol, i_Symbol, j_Symbol, k_Symbol,
+			l_Symbol, m_Symbol, n_Symbol, o_Symbol, p_Symbol,
 			q_Symbol,
 			r_Symbol,
 			s_Symbol,
@@ -4116,7 +4224,7 @@ public class F {
 			And,
 			Alternatives,
 			Apart,
-			// AppellF1,
+			AppellF1,
 			Append,
 			AppendTo,
 			Apply,
@@ -4176,7 +4284,8 @@ public class F {
 			CoprimeQ,
 			Cos,
 			Cosh,
-			// CosIntegral, CoshIntegral,
+			CosIntegral,
+			CoshIntegral,
 			Cot,
 			Coth,
 			Count,
@@ -4211,7 +4320,10 @@ public class F {
 			Eigenvalues,
 			Eigenvectors,
 			Element,
-			// Eliminate, EllipticE, EllipticF, EllipticPi,
+			// Eliminate,
+			EllipticE,
+			EllipticF,
+			EllipticPi,
 			Equal,
 			Equivalent,
 			Erf,
@@ -4219,30 +4331,15 @@ public class F {
 			Erfi,
 			EuclidianDistance,
 			// EulerE,
-			EulerPhi,
-			EvenQ,
-			Exp,
-			Expand,
-			ExpandAll,
-			// ExpIntegralE, ExpIntegralEi,
-			Exponent, ExtendedGCD, Extract, Factor, Factorial, Factorial2,
-			FactorInteger,
-			FactorSquareFree,
-			FactorSquareFreeList,
-			FactorTerms,
-			Flatten,
-			Fibonacci,
-			FindRoot,
-			First,
-			Fit,
-			FixedPoint,
-			Floor,
-			Fold,
+			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract, Factor,
+			Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten, Fibonacci,
+			FindRoot, First, Fit, FixedPoint, Floor, Fold,
 			FoldList,
 			For,
 			FractionalPart,
 			FreeQ,
-			// FresnelC, FresnelS,
+			FresnelC,
+			FresnelS,
 			FrobeniusSolve,
 			FromCharacterCode,
 			FromContinuedFraction,
@@ -4267,7 +4364,7 @@ public class F {
 			Horner,
 			// HornerForm,
 			HurwitzZeta,
-			// HypergeometricPFQ, Hypergeometric2F1,
+			 HypergeometricPFQ, Hypergeometric2F1,
 			Identity, IdentityMatrix, If, Im,
 			Implies,
 			Increment,
@@ -4298,7 +4395,10 @@ public class F {
 			List,
 			ListQ,
 			Log,
-			// Log2, Log10, LogGamma, LogicalExpand, LogIntegral,
+			// Log2, Log10, 
+			LogGamma, 
+			//LogicalExpand, 
+			LogIntegral,
 			LowerCaseQ,
 			LUDecomposition,
 			ManhattanDistance,
@@ -4350,7 +4450,8 @@ public class F {
 			Plot,
 			Plot3D,
 			Plus,
-			// Pochhammer, PolyGamma, PolyLog,
+			// Pochhammer, 
+			PolyGamma, PolyLog,
 			PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ, PolynomialQuotient, PolynomialQuotientRemainder,
 			PolynomialRemainder, Position, Positive, PossibleZeroQ, Power, PowerExpand,
 			PowerMod,
@@ -4375,7 +4476,7 @@ public class F {
 			Simplify, Sin, Sinc,
 			SingularValueDecomposition,
 			Sinh,
-			// SinIntegral, SinhIntegral,
+			SinIntegral, SinhIntegral,
 			Solve, Sort, Sow, Sqrt, SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin, StringLength,
 			StringTake, Subfactorial, Subscript, Subsuperscript, Subsets, SubtractFrom, Sum, Superscript, Switch, SyntaxLength,
 			SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm, Thread, Through, Throw, TimeConstrained, Times, TimesBy, Timing,
