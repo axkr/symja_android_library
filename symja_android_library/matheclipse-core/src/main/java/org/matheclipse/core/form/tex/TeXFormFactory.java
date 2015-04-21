@@ -207,7 +207,14 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 				buf.append(str);
 			} else {
 				buf.append("\\text{");
-				buf.append(str);
+				String header = str;
+				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
+					if (str != null) {
+						header = str;
+					}
+				}
+				buf.append(header);
 				buf.append('}');
 			}
 			return;

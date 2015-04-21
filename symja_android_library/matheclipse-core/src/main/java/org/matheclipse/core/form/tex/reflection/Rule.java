@@ -6,7 +6,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 public class Rule extends AbstractOperator {
 
   public Rule() {
-    super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Rule").getPrecedence(), "-&gt;");
+    super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Rule").getPrecedence(), "\\to ");
   }
 
 }
