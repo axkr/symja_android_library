@@ -16,7 +16,7 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class PowerExpand extends AbstractFunctionEvaluator {
 
-	private class PowerExpandVisitor extends VisitorExpr {
+	private static class PowerExpandVisitor extends VisitorExpr {
 		final boolean assumptions;
 
 		public PowerExpandVisitor(boolean assumptions) {
@@ -124,15 +124,19 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				}
 			}
 
-			PowerExpandVisitor pweVisitor = new PowerExpandVisitor(assumptions);
-			IExpr result = ast.arg1().accept(pweVisitor);
-			if (result != null) {
-				return result;
-			}
-			return ast.arg1();
+			return powerExpand((IAST)ast.arg1(), assumptions);
 
 		}
 		return ast.arg1();
+	}
+
+	public static IExpr powerExpand(final IAST ast, boolean assumptions) {
+		PowerExpandVisitor pweVisitor = new PowerExpandVisitor(assumptions);
+		IExpr result = ast.accept(pweVisitor);
+		if (result != null) {
+			return result;
+		}
+		return ast;
 	}
 
 	/** {@inheritDoc} */

@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.PowerExpand;
 
 /**
  * Solve polynomial equations up to fourth degree (<code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>).
@@ -461,8 +462,21 @@ public class QuarticSolver {
 	public static IAST createSet(IAST result) {
 		Set<IExpr> set1 = new TreeSet<IExpr>();
 		for (int i = 1; i < result.size(); i++) {
-			IExpr temp = F.evalExpandAll(F.PowerExpand(result.get(i)));
-			if (!temp.equals(F.Indeterminate)) {
+			IExpr temp = result.get(i);
+			if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
+				temp = PowerExpand.powerExpand((IAST) temp, false);
+			}
+			if (temp.isAtom()&& !temp.isIndeterminate()){
+				set1.add(temp);
+				continue;
+			}
+			temp = F.eval(temp);
+			if (temp.isAtom()&& !temp.isIndeterminate()){
+				set1.add(temp);
+				continue;
+			}
+			temp = F.evalExpandAll(temp);
+			if (!temp.isIndeterminate()) {
 				set1.add(temp);
 			}
 		}
@@ -498,18 +512,18 @@ public class QuarticSolver {
 			if (c.isZero()) {
 				result.add(F.C0);
 				if (!b.isZero()) {
-					result.add(F.Times(F.CN1, b, Power(a, CN1)));
+					result.add(F.Times(F.CN1, b, Power(a, -1L)));
 				}
 			} else {
-				result.add(Times(Plus(Times(CN1, b), Sqrt(Plus(Power(b, C2), Times(CN1, C4, a, c)))), Power(Times(C2, a), CN1)));
+				result.add(Times(Plus(Times(CN1, b), Sqrt(Plus(Power(b, 2), Times(CN1, C4, a, c)))), Power(Times(C2, a), -1L)));
 
-				result.add(Times(Plus(Times(CN1, b), Times(CN1, Sqrt(Plus(Power(b, C2), Times(CN1, C4, a, c))))),
-						Power(Times(C2, a), CN1)));
+				result.add(Times(Plus(Times(CN1, b), Times(CN1, Sqrt(Plus(Power(b, 2L), Times(CN1, C4, a, c))))),
+						Power(Times(C2, a), -1L)));
 				return createSet(result);
 			}
 		} else {
 			if (!b.isZero()) {
-				result.add(Times(CN1, c, Power(b, CN1)));
+				result.add(Times(CN1, c, Power(b, -1L)));
 			}
 		}
 		return createSet(result);
