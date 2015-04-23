@@ -398,6 +398,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void clearAll(EvalEngine engine);
 
 	/**
+	 * Check if ths symbol contains a "DownRule" or "UpRule"
+	 * 
+	 * @return <code>true</code> if this symbol contains a "DownRule" or "UpRule"
+	 */
+	public boolean containsRules();
+
+	/**
 	 * Return a list of the rules associated to this symbol
 	 * 
 	 * @return
@@ -405,19 +412,11 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public List<IAST> definition();
 
 	/**
-	 * Return the rules associated to this symbol in String representation
+	 * Return the rules associated to this symbol in <code>String</code> representation
 	 * 
-	 * @return
+	 * @return the <code>String</code> representation of the symbol definition
 	 */
 	public String definitionToString() throws IOException;
-
-	/**
-	 * Deserialize only the symbolname and attribute associated to this object
-	 * 
-	 * @param stream
-	 * @throws IOException
-	 */
-	// public void readSymbol(java.io.ObjectInputStream stream) throws IOException;
 
 	/**
 	 * Deserialize the rules associated to this object
@@ -428,19 +427,12 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException;
 
 	/**
-	 * Serialize only the symbolname and attribute associated to this object
+	 * Serialize the rule definitions associated to this symbol
 	 * 
 	 * @param stream
 	 * @throws java.io.IOException
+	 * @return <code>false</code> if the symbol contains no rule definion.
 	 */
-	// public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException;
-
-	/**
-	 * Serialize the rules associated to this object
-	 * 
-	 * @param stream
-	 * @throws java.io.IOException
-	 */
-	public void writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
+	public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
 
 }

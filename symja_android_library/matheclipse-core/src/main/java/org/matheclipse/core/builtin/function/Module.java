@@ -80,8 +80,8 @@ public class Module extends AbstractCoreFunctionEvaluator {
 
 		try {
 			rememberVariables(intializerList, engine, varAppend, moduleVariables);
-			IExpr temp = engine.evaluate(F.subst(arg2, Functors.rules(moduleVariables)));
-			return temp;
+			return engine.evaluate(F.subst(arg2, Functors.rules(moduleVariables)));
+//			return temp;
 		} finally {
 			engine.removeUserVariables(moduleVariables);
 		}

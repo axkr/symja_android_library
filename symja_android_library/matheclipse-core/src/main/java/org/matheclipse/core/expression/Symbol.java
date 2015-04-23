@@ -67,12 +67,12 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
-	private transient DownRulesData fDownRulesData = new DownRulesData();
+	private transient DownRulesData fDownRulesData;
 
 	/**
 	 * The pattern matching &quot;up value&quot; rules associated with this symbol.
 	 */
-	private transient UpRulesData fUpRulesData = new UpRulesData();
+	private transient UpRulesData fUpRulesData;
 
 	/**
 	 * {@inheritDoc}
@@ -813,11 +813,13 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
+			fDownRulesData = new DownRulesData();
 			fDownRulesData = (DownRulesData) stream.readObject();
 			// fDownRulesData.readSymbol(stream);
 		}
 		boolean hasUpRulesData = stream.readBoolean();
 		if (hasUpRulesData) {
+			fUpRulesData = new UpRulesData();
 			fUpRulesData = (UpRulesData) stream.readObject();
 			// fUpRulesData.readSymbol(stream);
 		}
@@ -825,23 +827,31 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public void writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
+		if (!containsRules()) {
+			return false;
+		}
 		if (fDownRulesData == null) {
 			stream.writeBoolean(false);
 		} else {
 			stream.writeBoolean(true);
 			stream.writeObject(fDownRulesData);
-			// fDownRulesData.writeSymbol(stream);
 		}
 		if (fUpRulesData == null) {
 			stream.writeBoolean(false);
 		} else {
 			stream.writeBoolean(true);
 			stream.writeObject(fUpRulesData);
-			// fUpRulesData.writeSymbol(stream);
 		}
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean containsRules() {
+		return fDownRulesData != null || fUpRulesData != null;
 	}
 
 	/**

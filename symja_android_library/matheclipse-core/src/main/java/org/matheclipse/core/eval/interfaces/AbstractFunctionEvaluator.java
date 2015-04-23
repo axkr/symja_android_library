@@ -43,7 +43,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		}
 
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
-		if (Config.SERIALIZE_SYMBOLS) {
+		if (Config.SERIALIZE_SYMBOLS && symbol.containsRules()) {
 			FileOutputStream out;
 			try {
 				out = new FileOutputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
