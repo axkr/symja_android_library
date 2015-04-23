@@ -113,8 +113,6 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	 */
 	private int fEvalFlags = 0;
 
-	protected transient int fPatternMatchingHashValue = 0;
-
 	/**
 	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
 	 * 
@@ -225,7 +223,7 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	public IAST clone() {
 		AST ast = (AST) super.clone();
 		ast.fEvalFlags = 0;
-		ast.fPatternMatchingHashValue = 0;
+		// ast.fPatternMatchingHashValue = 0;
 		ast.fProperties = null;
 		return ast;
 	}
@@ -1639,38 +1637,30 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	 */
 	@Override
 	final public int patternHashCode() {
-		if (fPatternMatchingHashValue == 0) {
-			if (size() > 1) {
-				final int attr = topHead().getAttributes() & ISymbol.FLATORDERLESS;
-				if (attr != ISymbol.NOATTRIBUTE) {
-					if (attr == ISymbol.FLATORDERLESS) {
-						fPatternMatchingHashValue = (17 * head().hashCode());
-					} else if (attr == ISymbol.FLAT) {
-						if (arg1() instanceof IAST) {
-							fPatternMatchingHashValue = (31 * head().hashCode() + ((IAST) arg1()).head().hashCode());
-						} else {
-							fPatternMatchingHashValue = (37 * head().hashCode() + arg1().hashCode());
-						}
-					} else { // attr == ISymbol.ORDERLESS
-						fPatternMatchingHashValue = (17 * head().hashCode() + size());
-					}
-				} else {
+		if (size() > 1) {
+			final int attr = topHead().getAttributes() & ISymbol.FLATORDERLESS;
+			if (attr != ISymbol.NOATTRIBUTE) {
+				if (attr == ISymbol.FLATORDERLESS) {
+					return (17 * head().hashCode());
+				} else if (attr == ISymbol.FLAT) {
 					if (arg1() instanceof IAST) {
-						fPatternMatchingHashValue = (31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size());
-					} else {
-						fPatternMatchingHashValue = (37 * head().hashCode() + arg1().hashCode() + size());
+						return (31 * head().hashCode() + ((IAST) arg1()).head().hashCode());
 					}
+					return (37 * head().hashCode() + arg1().hashCode());
 				}
+				return (17 * head().hashCode() + size());
 			} else {
-				if (size() == 1) {
-					fPatternMatchingHashValue = (17 * head().hashCode());
-				} else {
-					// this case shouldn't happen
-					fPatternMatchingHashValue = 41;
+				if (arg1() instanceof IAST) {
+					return (31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size());
 				}
+				return (37 * head().hashCode() + arg1().hashCode() + size());
 			}
 		}
-		return fPatternMatchingHashValue;
+		if (size() == 1) {
+			return (17 * head().hashCode());
+		}
+		// this case shouldn't happen
+		return 41;
 	}
 
 	@Override

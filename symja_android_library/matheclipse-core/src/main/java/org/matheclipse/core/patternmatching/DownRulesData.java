@@ -74,7 +74,7 @@ public class DownRulesData implements Serializable {
 		try {
 			IExpr result;
 			IPatternMatcher pmEvaluator;
-			if ((fSimplePatternDownRules != null) && (expression instanceof IAST)) {
+			if ((fSimplePatternDownRules != null) && (expression.isAST())) {
 				final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
 				final IPatternMatcher[] list = fSimplePatternDownRules.get(hash).toArray(new IPatternMatcher[0]);
 				if (list != null) {
