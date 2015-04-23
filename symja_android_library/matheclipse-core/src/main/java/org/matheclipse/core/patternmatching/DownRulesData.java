@@ -76,29 +76,32 @@ public class DownRulesData implements Serializable {
 			IPatternMatcher pmEvaluator;
 			if ((fSimplePatternDownRules != null) && (expression.isAST())) {
 				final Integer hash = Integer.valueOf(((IAST) expression).patternHashCode());
-				final IPatternMatcher[] list = fSimplePatternDownRules.get(hash).toArray(new IPatternMatcher[0]);
-				if (list != null) {
-					for (int i = 0; i < list.length; i++) {
-						pmEvaluator = (IPatternMatcher) list[i].clone();
-						if (showSteps) {
-							IExpr rhs = pmEvaluator.getRHS();
-							if (rhs == null) {
-								rhs = F.Null;
-							}
-							System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
-							// + "  :=  " + rhs.toString());
-						}
-						result = pmEvaluator.eval(expression);
-						if (result != null) {
+				if (fSimplePatternDownRules.containsKey(hash)) {
+					final IPatternMatcher[] list = fSimplePatternDownRules.get(hash).toArray(new IPatternMatcher[0]);
+					if (list != null) {
+						for (int i = 0; i < list.length; i++) {
+							pmEvaluator = (IPatternMatcher) list[i].clone();
 							if (showSteps) {
 								IExpr rhs = pmEvaluator.getRHS();
 								if (rhs == null) {
 									rhs = F.Null;
 								}
-								// System.out.println("\nSIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
-								System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
+								System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
+								// + "  :=  " + rhs.toString());
 							}
-							return result;
+							result = pmEvaluator.eval(expression);
+							if (result != null) {
+								if (showSteps) {
+									IExpr rhs = pmEvaluator.getRHS();
+									if (rhs == null) {
+										rhs = F.Null;
+									}
+									// System.out.println("\nSIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  " +
+									// rhs.toString());
+									System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
+								}
+								return result;
+							}
 						}
 					}
 				}
@@ -329,93 +332,93 @@ public class DownRulesData implements Serializable {
 		return definitionList;
 	}
 
-//	public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
-//		try {
-//			String astString;
-//			IExpr key;
-//			IExpr value;
-//			EvalEngine engine = new EvalEngine(true, true);
-//			ISymbol setSymbol;
-//			int len = stream.read();
-//			if (len > 0) {
-//				fEqualDownRules = (HashMap) stream.readObject();
-//
-//				// fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>();
-//				// for (int i = 0; i < len; i++) {
-//				// astString = stream.readUTF();
-//				// setSymbol = F.$s(astString);
-//				//
-//				// astString = stream.readUTF();
-//				// key = engine.parse(astString);
-//				// astString = stream.readUTF();
-//				// value = engine.parse(astString);
-//				// fEqualDownRules.put(key, new PatternMatcherEquals(setSymbol, key, value));
-//				// }
-//			}
-//
-//			len = stream.read();
-//			IExpr lhs;
-//			IExpr rhs;
-//			IExpr condition;
-//			int listLength;
-//			int condLength;
-//			PatternMatcherAndEvaluator pmEvaluator;
-//			if (len > 0) {
-//				fSimplePatternDownRules = (TreeMultimap) stream.readObject();
-//				// fSimplePatternDownRules = TreeMultimap.create();
-//				// for (int i = 0; i < len; i++) {
-//				// astString = stream.readUTF();
-//				// setSymbol = F.$s(astString);
-//				//
-//				// astString = stream.readUTF();
-//				// lhs = engine.parse(astString);
-//				// astString = stream.readUTF();
-//				// rhs = engine.parse(astString);
-//				// pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
-//				//
-//				// condLength = stream.read();
-//				// if (condLength == 0) {
-//				// condition = null;
-//				// } else {
-//				// astString = stream.readUTF();
-//				// condition = engine.parse(astString);
-//				// pmEvaluator.setCondition(condition);
-//				// }
-//				// addSimplePatternDownRule(lhs, pmEvaluator);
-//				// }
-//
-//			}
-//
-//			len = stream.read();
-//			if (len > 0) {
-//				fPatternDownRules = (TreeSet) stream.readObject();
-//				// fPatternDownRules = new TreeSet<IPatternMatcher>();
-//				// listLength = stream.read();
-//				// for (int j = 0; j < listLength; j++) {
-//				// astString = stream.readUTF();
-//				// setSymbol = F.$s(astString);
-//				//
-//				// astString = stream.readUTF();
-//				// lhs = engine.parse(astString);
-//				// astString = stream.readUTF();
-//				// rhs = engine.parse(astString);
-//				// pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
-//				//
-//				// condLength = stream.read();
-//				// if (condLength == 0) {
-//				// condition = null;
-//				// } else {
-//				// astString = stream.readUTF();
-//				// condition = engine.parse(astString);
-//				// pmEvaluator.setCondition(condition);
-//				// }
-//				// addSimplePatternDownRule(lhs, pmEvaluator);
-//				// }
-//			}
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	// public void readSymbol(java.io.ObjectInputStream stream) throws IOException {
+	// try {
+	// String astString;
+	// IExpr key;
+	// IExpr value;
+	// EvalEngine engine = new EvalEngine(true, true);
+	// ISymbol setSymbol;
+	// int len = stream.read();
+	// if (len > 0) {
+	// fEqualDownRules = (HashMap) stream.readObject();
+	//
+	// // fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>();
+	// // for (int i = 0; i < len; i++) {
+	// // astString = stream.readUTF();
+	// // setSymbol = F.$s(astString);
+	// //
+	// // astString = stream.readUTF();
+	// // key = engine.parse(astString);
+	// // astString = stream.readUTF();
+	// // value = engine.parse(astString);
+	// // fEqualDownRules.put(key, new PatternMatcherEquals(setSymbol, key, value));
+	// // }
+	// }
+	//
+	// len = stream.read();
+	// IExpr lhs;
+	// IExpr rhs;
+	// IExpr condition;
+	// int listLength;
+	// int condLength;
+	// PatternMatcherAndEvaluator pmEvaluator;
+	// if (len > 0) {
+	// fSimplePatternDownRules = (TreeMultimap) stream.readObject();
+	// // fSimplePatternDownRules = TreeMultimap.create();
+	// // for (int i = 0; i < len; i++) {
+	// // astString = stream.readUTF();
+	// // setSymbol = F.$s(astString);
+	// //
+	// // astString = stream.readUTF();
+	// // lhs = engine.parse(astString);
+	// // astString = stream.readUTF();
+	// // rhs = engine.parse(astString);
+	// // pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
+	// //
+	// // condLength = stream.read();
+	// // if (condLength == 0) {
+	// // condition = null;
+	// // } else {
+	// // astString = stream.readUTF();
+	// // condition = engine.parse(astString);
+	// // pmEvaluator.setCondition(condition);
+	// // }
+	// // addSimplePatternDownRule(lhs, pmEvaluator);
+	// // }
+	//
+	// }
+	//
+	// len = stream.read();
+	// if (len > 0) {
+	// fPatternDownRules = (TreeSet) stream.readObject();
+	// // fPatternDownRules = new TreeSet<IPatternMatcher>();
+	// // listLength = stream.read();
+	// // for (int j = 0; j < listLength; j++) {
+	// // astString = stream.readUTF();
+	// // setSymbol = F.$s(astString);
+	// //
+	// // astString = stream.readUTF();
+	// // lhs = engine.parse(astString);
+	// // astString = stream.readUTF();
+	// // rhs = engine.parse(astString);
+	// // pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, lhs, rhs);
+	// //
+	// // condLength = stream.read();
+	// // if (condLength == 0) {
+	// // condition = null;
+	// // } else {
+	// // astString = stream.readUTF();
+	// // condition = engine.parse(astString);
+	// // pmEvaluator.setCondition(condition);
+	// // }
+	// // addSimplePatternDownRule(lhs, pmEvaluator);
+	// // }
+	// }
+	// } catch (ClassNotFoundException e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	@Override
 	public String toString() {
@@ -430,76 +433,76 @@ public class DownRulesData implements Serializable {
 		return buf.toString();
 	}
 
-//	public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
-//		Iterator<IExpr> iter;
-//		IExpr key;
-//		IExpr condition;
-//		PatternMatcherEquals pme;
-//		ISymbol setSymbol;
-//		PatternMatcherAndEvaluator pmEvaluator;
-//		if (fEqualDownRules == null || fEqualDownRules.size() == 0) {
-//			stream.write(0);
-//		} else {
-//			stream.write(fEqualDownRules.size());
-//			stream.writeObject(fEqualDownRules);
-//			// stream.write(fEqualDownRules.size());
-//			// iter = fEqualDownRules.keySet().iterator();
-//			// while (iter.hasNext()) {
-//			// key = iter.next();
-//			// pme = fEqualDownRules.get(key);
-//			// stream.writeUTF(pme.getSetSymbol().toString());
-//			// stream.writeUTF(key.fullFormString());
-//			// stream.writeUTF(pme.getRHS().fullFormString());
-//			// }
-//		}
-//
-//		if (fSimplePatternDownRules == null || fSimplePatternDownRules.size() == 0) {
-//			stream.write(0);
-//		} else {
-//			stream.write(fSimplePatternDownRules.size());
-//			stream.writeObject(fSimplePatternDownRules);
-//			// stream.write(fSimplePatternDownRules.size());
-//			// Iterator<IPatternMatcher> listIter = fSimplePatternDownRules.values().iterator();
-//			// IPatternMatcher elem;
-//			// while (listIter.hasNext()) {
-//			// elem = listIter.next();
-//			// pmEvaluator = (PatternMatcherAndEvaluator) elem;
-//			// setSymbol = pmEvaluator.getSetSymbol();
-//			// stream.writeUTF(setSymbol.toString());
-//			// stream.writeUTF(pmEvaluator.getLHS().fullFormString());
-//			// stream.writeUTF(pmEvaluator.getRHS().fullFormString());
-//			// condition = pmEvaluator.getCondition();
-//			// if (condition == null) {
-//			// stream.write(0);
-//			// } else {
-//			// stream.write(1);
-//			// stream.writeUTF(condition.fullFormString());
-//			// }
-//			// }
-//		}
-//		if (fPatternDownRules == null || fPatternDownRules.size() == 0) {
-//			stream.write(0);
-//		} else {
-//			stream.write(fPatternDownRules.size());
-//			stream.writeObject(fPatternDownRules);
-//			// stream.write(fPatternDownRules.size());
-//			//
-//			// IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
-//			// for (int i = 0; i < list.length; i++) {
-//			// pmEvaluator = (PatternMatcherAndEvaluator) list[i];// /fPatternDownRules.get(i);
-//			// setSymbol = pmEvaluator.getSetSymbol();
-//			// stream.writeUTF(setSymbol.toString());
-//			// stream.writeUTF(pmEvaluator.getLHS().fullFormString());
-//			// stream.writeUTF(pmEvaluator.getRHS().fullFormString());
-//			// condition = pmEvaluator.getCondition();
-//			// if (condition == null) {
-//			// stream.write(0);
-//			// } else {
-//			// stream.write(1);
-//			// stream.writeUTF(condition.fullFormString());
-//			// }
-//			// }
-//
-//		}
-//	}
+	// public void writeSymbol(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	// Iterator<IExpr> iter;
+	// IExpr key;
+	// IExpr condition;
+	// PatternMatcherEquals pme;
+	// ISymbol setSymbol;
+	// PatternMatcherAndEvaluator pmEvaluator;
+	// if (fEqualDownRules == null || fEqualDownRules.size() == 0) {
+	// stream.write(0);
+	// } else {
+	// stream.write(fEqualDownRules.size());
+	// stream.writeObject(fEqualDownRules);
+	// // stream.write(fEqualDownRules.size());
+	// // iter = fEqualDownRules.keySet().iterator();
+	// // while (iter.hasNext()) {
+	// // key = iter.next();
+	// // pme = fEqualDownRules.get(key);
+	// // stream.writeUTF(pme.getSetSymbol().toString());
+	// // stream.writeUTF(key.fullFormString());
+	// // stream.writeUTF(pme.getRHS().fullFormString());
+	// // }
+	// }
+	//
+	// if (fSimplePatternDownRules == null || fSimplePatternDownRules.size() == 0) {
+	// stream.write(0);
+	// } else {
+	// stream.write(fSimplePatternDownRules.size());
+	// stream.writeObject(fSimplePatternDownRules);
+	// // stream.write(fSimplePatternDownRules.size());
+	// // Iterator<IPatternMatcher> listIter = fSimplePatternDownRules.values().iterator();
+	// // IPatternMatcher elem;
+	// // while (listIter.hasNext()) {
+	// // elem = listIter.next();
+	// // pmEvaluator = (PatternMatcherAndEvaluator) elem;
+	// // setSymbol = pmEvaluator.getSetSymbol();
+	// // stream.writeUTF(setSymbol.toString());
+	// // stream.writeUTF(pmEvaluator.getLHS().fullFormString());
+	// // stream.writeUTF(pmEvaluator.getRHS().fullFormString());
+	// // condition = pmEvaluator.getCondition();
+	// // if (condition == null) {
+	// // stream.write(0);
+	// // } else {
+	// // stream.write(1);
+	// // stream.writeUTF(condition.fullFormString());
+	// // }
+	// // }
+	// }
+	// if (fPatternDownRules == null || fPatternDownRules.size() == 0) {
+	// stream.write(0);
+	// } else {
+	// stream.write(fPatternDownRules.size());
+	// stream.writeObject(fPatternDownRules);
+	// // stream.write(fPatternDownRules.size());
+	// //
+	// // IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
+	// // for (int i = 0; i < list.length; i++) {
+	// // pmEvaluator = (PatternMatcherAndEvaluator) list[i];// /fPatternDownRules.get(i);
+	// // setSymbol = pmEvaluator.getSetSymbol();
+	// // stream.writeUTF(setSymbol.toString());
+	// // stream.writeUTF(pmEvaluator.getLHS().fullFormString());
+	// // stream.writeUTF(pmEvaluator.getRHS().fullFormString());
+	// // condition = pmEvaluator.getCondition();
+	// // if (condition == null) {
+	// // stream.write(0);
+	// // } else {
+	// // stream.write(1);
+	// // stream.writeUTF(condition.fullFormString());
+	// // }
+	// // }
+	//
+	// }
+	// }
 }
