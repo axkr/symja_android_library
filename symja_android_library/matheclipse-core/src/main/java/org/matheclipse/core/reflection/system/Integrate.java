@@ -140,6 +140,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 				if (arg1.isAST()) {
 					IAST fx = (IAST) arg1;
+					if (fx.head().equals(x)){
+						// issue #91
+						return null;
+					}
 					// if (astArg1.isTimes()) {
 					// IAST freeTimes = F.Times();
 					// IAST restTimes = F.Times();
