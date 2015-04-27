@@ -111,7 +111,7 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 	/**
 	 * Check if the expression is canonical negative.
 	 * 
-	 * @return the negative expression or <code>null</code> if the negative expression couldn't be extracted.
+	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expr) {
 		IAST result;
@@ -167,32 +167,30 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 						result.set(i, plusAST.get(i).negate());
 					}
 					return result;
-				} else {
-					if (arg1.isTimes()) {
-						IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
-						if (arg1Negated != null) {
-							int positiveElementsCounter = 0;
-							result = plusAST.clone();
-							result.set(1, arg1Negated);
-							for (int i = 2; i < plusAST.size(); i++) {
-								IExpr temp = plusAST.get(i);
-								if (!temp.isTimes() && !temp.isPower()) {
-									return null;
-								}
-								arg1Negated = getNormalizedNegativeExpression(temp);
-								if (arg1Negated != null) {
-									result.set(i, arg1Negated);
-								} else {
-									positiveElementsCounter++;
-									if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
-										// number of positive elements is greater than number of negative elements
-										return null;
-									}
-									result.set(i, temp.negate());
-								}
+				} else if (arg1.isTimes()) {
+					IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
+					if (arg1Negated != null) {
+						int positiveElementsCounter = 0;
+						result = plusAST.clone();
+						result.set(1, arg1Negated);
+						for (int i = 2; i < plusAST.size(); i++) {
+							IExpr temp = plusAST.get(i);
+							if (!temp.isTimes() && !temp.isPower()) {
+								return null;
 							}
-							return result;
+							arg1Negated = getNormalizedNegativeExpression(temp);
+							if (arg1Negated != null) {
+								result.set(i, arg1Negated);
+							} else {
+								positiveElementsCounter++;
+								if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
+									// number of positive elements is greater than number of negative elements
+									return null;  
+								}
+								result.set(i, temp.negate());
+							}
 						}
+						return result;
 					}
 				}
 			} else if (expr.isNegativeInfinity()) {

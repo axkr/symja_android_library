@@ -1,12 +1,12 @@
 package org.matheclipse.core.eval.interfaces;
-
-import org.apache.commons.math3.linear.FieldMatrix;
+ 
 import org.apache.commons.math3.linear.RealMatrix;
+import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.ConvertIExpr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -17,14 +17,14 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		FieldMatrix<ExprFieldElement> matrix;
+		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
 			final IAST list = (IAST) ast.arg1();
-			matrix = Convert.list2Matrix(list);
+			matrix = ConvertIExpr.list2Matrix(list);
 			matrix = matrixEval(matrix);
-			return Convert.matrix2List(matrix);
+			return ConvertIExpr.matrix2List(matrix);
 			// return F.eval(F.Together(Convert.matrix2List(matrix)));
 
 		} catch (final ClassCastException e) {
@@ -49,9 +49,9 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			EvalEngine engine = EvalEngine.get();
 			if (engine.isApfloat()) {
 				final IAST list = (IAST) ast.arg1();
-				FieldMatrix<ExprFieldElement> fieldMatrix = Convert.list2Matrix(list);
+				FieldMatrix fieldMatrix = ConvertIExpr.list2Matrix(list);
 				fieldMatrix = matrixEval(fieldMatrix);
-				return Convert.matrix2List(fieldMatrix);
+				return ConvertIExpr.matrix2List(fieldMatrix);
 			}
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2RealMatrix(list);
@@ -70,7 +70,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 		return evaluate(ast);
 	}
 
-	public abstract FieldMatrix<ExprFieldElement> matrixEval(FieldMatrix<ExprFieldElement> matrix);
+	public abstract FieldMatrix matrixEval(FieldMatrix matrix);
 
 	public abstract RealMatrix realMatrixEval(RealMatrix matrix);
 }

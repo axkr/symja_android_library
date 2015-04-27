@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
@@ -646,7 +647,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			if (fSymbolName.length() == 1) {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString());
 			} else {
-				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase());
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase(Locale.ENGLISH));
 			}
 			if (name != null) {
 				return name;

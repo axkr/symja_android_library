@@ -1,10 +1,10 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.Field;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -36,7 +36,7 @@ import edu.jas.structure.ElemFactory;
  */
 @SuppressWarnings("serial")
 public abstract class ExprImpl implements IExpr, Serializable {
-
+ 
 	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
 		IExpr result = expr;
 		IExpr temp = expr.accept(visitor);

@@ -1,12 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.FieldMatrix;
+import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.ConvertIExpr;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -25,18 +24,18 @@ public class NullSpace extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		FieldMatrix<ExprFieldElement> matrix;
+		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
 			final IAST list = (IAST) ast.arg1();
-			matrix = Convert.list2Matrix(list);
-			FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
-			FieldMatrix<ExprFieldElement>  nullspace = fmw.getNullSpace(new ExprFieldElement(F.CN1));
-			if (nullspace==null){
+			matrix = ConvertIExpr.list2Matrix(list);
+			FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+			FieldMatrix nullspace = fmw.getNullSpace(F.CN1);
+			if (nullspace == null) {
 				return F.List();
 			}
-			return Convert.matrix2List(nullspace);
+			return ConvertIExpr.matrix2List(nullspace);
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {

@@ -1,8 +1,7 @@
 package org.matheclipse.commons.math.linear;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
-import org.apache.commons.math3.linear.FieldMatrix;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
@@ -16,7 +15,7 @@ import org.apache.commons.math3.linear.FieldMatrix;
  * form</a>
  * </p>
  */
-public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
+public class FieldReducedRowEchelonForm {
 	/**
 	 * Wrapper for a row and column index.
 	 * 
@@ -35,19 +34,19 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		}
 	}
 
-	private final FieldMatrix<T> rowReducedMatrix;
-	private FieldMatrix<T> nullSpaceCache;
+	private final FieldMatrix rowReducedMatrix;
+	private FieldMatrix nullSpaceCache;
 	private int matrixRankCache;
 
 	/**
 	 * Cached zero element of the field.
 	 */
-	private final T zero;
+	private final IExpr zero;
 
 	/**
 	 * Cached one element of the field.
 	 */
-	private final T one;
+	private final IExpr one;
 
 	/**
 	 * Number of rows.
@@ -67,13 +66,12 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * 
 	 * @see #rowReduce()
 	 */
-	public FieldReducedRowEchelonForm(FieldMatrix<T> matrix) {
+	public FieldReducedRowEchelonForm(FieldMatrix matrix) {
 		this.rowReducedMatrix = matrix.copy();
 		this.numRows = matrix.getRowDimension();
 		this.numCols = matrix.getColumnDimension();
-		Field<T> field = matrix.getField();
-		this.zero = field.getZero();
-		this.one = field.getOne();
+		this.zero = F.C0;
+		this.one = F.C1;
 		this.matrixRankCache = -1;
 		this.nullSpaceCache = null;
 		rowReduce();
@@ -85,8 +83,8 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param expr
 	 * @return
 	 */
-	protected boolean isZero(T expr) {
-		return expr.equals(zero);
+	protected boolean isZero(IExpr expr) {
+		return expr.isZero();
 	}
 
 	/**
@@ -95,8 +93,8 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param expr
 	 * @return
 	 */
-	protected boolean isOne(T expr) {
-		return expr.equals(one);
+	protected boolean isOne(IExpr expr) {
+		return expr.isOne();
 	}
 
 	private RowColIndex findPivot(RowColIndex a) {
@@ -123,7 +121,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		return pivot;
 	}
 
-	private T getCoordinate(RowColIndex a) {
+	private IExpr getCoordinate(RowColIndex a) {
 		return rowReducedMatrix.getEntry(a.row, a.col);
 	}
 
@@ -134,7 +132,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * 
 	 * @return
 	 */
-	public FieldMatrix<T> getRowReducedMatrix() {
+	public FieldMatrix getRowReducedMatrix() {
 		return rowReducedMatrix;
 	}
 
@@ -146,7 +144,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param b
 	 */
 	private void swapRow(RowColIndex a, RowColIndex b) {
-		T[] temp = rowReducedMatrix.getRow(a.row);
+		IExpr[] temp = rowReducedMatrix.getRow(a.row);
 		rowReducedMatrix.setRow(a.row, rowReducedMatrix.getRow(b.row));
 		rowReducedMatrix.setRow(b.row, temp);
 
@@ -178,7 +176,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @return
 	 */
 	private boolean isRowZeroes(int row) {
-		T[] temp = rowReducedMatrix.getRow(row);
+		IExpr[] temp = rowReducedMatrix.getRow(row);
 		for (int i = 0; i < numCols; i++) {
 			if (!isZero(temp[i])) {
 				return false;
@@ -196,12 +194,12 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param from
 	 * @param scalar
 	 */
-	private void multiplyAdd(RowColIndex to, RowColIndex from, T factor) {
-		T[] row = rowReducedMatrix.getRow(to.row);
-		T[] rowMultiplied = rowReducedMatrix.getRow(from.row);
+	private void multiplyAdd(RowColIndex to, RowColIndex from, IExpr factor) {
+		IExpr[] row = rowReducedMatrix.getRow(to.row);
+		IExpr[] rowMultiplied = rowReducedMatrix.getRow(from.row);
 
 		for (int i = 0; i < numCols; i++) {
-			rowReducedMatrix.setEntry(to.row, i, row[i].add((rowMultiplied[i].multiply(factor))));
+			rowReducedMatrix.setEntry(to.row, i, row[i].plus((rowMultiplied[i].multiply(factor))));
 		}
 	}
 
@@ -215,7 +213,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 *            factor <code>-1</code> for multiplying all elements of the free part of the reduced row echelon form matrix
 	 * @return <code>null</code> if the input matrix has full rank, otherwise return the nullspaace.
 	 */
-	public FieldMatrix<T> getNullSpace(T minusOneFactor) {
+	public FieldMatrix getNullSpace(IExpr minusOneFactor) {
 		int rank = getMatrixRank();
 		int newRowDimension = rowReducedMatrix.getColumnDimension() - rank;
 		if (newRowDimension == 0) {
@@ -230,7 +228,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 		return nullSpaceCache;
 	}
 
-	private void getResultOfNullspace(T minusOneFactor, int rank) {
+	private void getResultOfNullspace(IExpr minusOneFactor, int rank) {
 		// search free columns
 		boolean[] columns = new boolean[nullSpaceCache.getColumnDimension()];
 		int numberOfFreeColumns = 0;
@@ -291,7 +289,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * 
 	 * @return
 	 */
-	private FieldMatrix<T> rowReduce() {
+	private FieldMatrix rowReduce() {
 		int maxRows = numRows;
 		RowColIndex pivot = new RowColIndex(0, 0);
 		int submatrix = 0;
@@ -326,7 +324,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 
 			// Force pivot to be 1
 			if (!isOne(getCoordinate(pivot))) {
-				T scalar = getCoordinate(pivot).reciprocal();
+				IExpr scalar = getCoordinate(pivot).inverse();
 				scaleRow(pivot, scalar);
 			}
 			// Step 3
@@ -337,7 +335,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 					continue;
 				}
 				RowColIndex belowPivot = new RowColIndex(i, pivot.col);
-				T complement = (getCoordinate(belowPivot).negate().divide(getCoordinate(pivot)));
+				IExpr complement = (getCoordinate(belowPivot).negate().divide(getCoordinate(pivot)));
 				multiplyAdd(belowPivot, pivot, complement);
 			}
 			// Step 5
@@ -347,7 +345,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 			for (int i = pivot.row; i >= 0; i--) {
 				if (i == pivot.row) {
 					if (!isOne(getCoordinate(pivot))) {
-						scaleRow(pivot, getCoordinate(pivot).reciprocal());
+						scaleRow(pivot, getCoordinate(pivot).inverse());
 					}
 					continue;
 				}
@@ -356,7 +354,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 				}
 
 				RowColIndex abovePivot = new RowColIndex(i, pivot.col);
-				T complement = (getCoordinate(abovePivot).negate().divide(getCoordinate(pivot)));
+				IExpr complement = (getCoordinate(abovePivot).negate().divide(getCoordinate(pivot)));
 				multiplyAdd(abovePivot, pivot, complement);
 			}
 			// Step 4
@@ -402,7 +400,7 @@ public class FieldReducedRowEchelonForm<T extends FieldElement<T>> {
 	 * @param x
 	 * @param d
 	 */
-	private void scaleRow(RowColIndex x, T factor) {
+	private void scaleRow(RowColIndex x, IExpr factor) {
 		for (int i = 0; i < numCols; i++) {
 			rowReducedMatrix.multiplyEntry(x.row, i, factor);
 		}

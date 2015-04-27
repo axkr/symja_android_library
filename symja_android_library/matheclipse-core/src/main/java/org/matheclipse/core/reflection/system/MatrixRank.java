@@ -1,12 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.FieldMatrix;
+import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.ConvertIExpr;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -25,15 +24,15 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		FieldMatrix<ExprFieldElement> matrix;
+		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = F.eval(ast.arg1());
 			if (arg1.isMatrix() != null) {
 				final IAST astMatrix = (IAST) arg1;
-				matrix = Convert.list2Matrix(astMatrix);
-				FieldReducedRowEchelonForm<ExprFieldElement> fmw = new FieldReducedRowEchelonForm<ExprFieldElement>(matrix);
+				matrix = ConvertIExpr.list2Matrix(astMatrix);
+				FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
 				return F.integer(fmw.getMatrixRank());
 			}
 

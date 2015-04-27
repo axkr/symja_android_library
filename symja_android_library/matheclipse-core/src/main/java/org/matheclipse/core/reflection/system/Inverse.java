@@ -1,13 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.FieldDecompositionSolver;
-import org.apache.commons.math3.linear.FieldLUDecomposition;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.matheclipse.commons.math.linear.FieldDecompositionSolver;
+import org.matheclipse.commons.math.linear.FieldLUDecomposition;
+import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
-import org.matheclipse.core.expression.ExprFieldElement;
 
 /**
  * Invert a matrix
@@ -22,10 +21,10 @@ public class Inverse extends AbstractMatrix1Matrix {
   }
 
   @Override
-  public FieldMatrix<ExprFieldElement> matrixEval(FieldMatrix<ExprFieldElement> matrix) {
-    final FieldLUDecomposition<ExprFieldElement> lu = new FieldLUDecomposition<ExprFieldElement>(
+  public FieldMatrix matrixEval(FieldMatrix matrix) {
+    final FieldLUDecomposition lu = new FieldLUDecomposition(
         matrix);
-    FieldDecompositionSolver<ExprFieldElement> solver = lu.getSolver();
+    FieldDecompositionSolver solver = lu.getSolver();
     if (!solver.isNonSingular()) {
       return null;
     }

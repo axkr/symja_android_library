@@ -66,7 +66,7 @@ public class AST2Expr {
 			"HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner",
 			"Insert", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "JacobiMatrix", "JacobiSymbol",
-			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LegendreP",
+			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform","LegendreP",
 			"Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve", "List",
 			"ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral", "LowerCaseQ", "LUDecomposition",
 			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ",

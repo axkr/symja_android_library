@@ -513,6 +513,10 @@ public class F {
 	public final static ISymbol KOrderlessPartitions = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "korderlesspartitions"
 			: "KOrderlessPartitions");
 	public final static ISymbol KPartitions = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "kpartitions" : "KPartitions");
+
+	public final static ISymbol LaplaceTransform = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "laplacetransform"
+			: "LaplaceTransform");
+
 	public final static ISymbol LCM = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lcm" : "LCM");
 	public final static ISymbol Less = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "less" : "Less");
 	public final static ISymbol LessEqual = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lessequal" : "LessEqual");
@@ -2155,7 +2159,23 @@ public class F {
 	 * @see EvalEngine#eval(IExpr)
 	 */
 	public static IExpr evalExpand(IExpr a) {
-		return EvalEngine.eval(Expand(a));
+		IExpr result = EvalEngine.eval(a);
+		if (result.isAST()) {
+			IAST ast = (IAST) result;
+			if (ast.isPlus()) {
+				for (int i = 1; i < ast.size(); i++) {
+					IExpr temp = ast.get(i);
+					if (temp.isTimes() || temp.isPower() || temp.isPlus()) {
+						return EvalEngine.eval(Expand(result));
+					}
+				}
+				return ast;
+			}
+			if (ast.isTimes() || ast.isPower()) {
+				return EvalEngine.eval(Expand(result));
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -2794,6 +2814,10 @@ public class F {
 
 	public static IAST Join(final IExpr a0, final IExpr a1) {
 		return binary(Join, a0, a1);
+	}
+
+	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternary(LaplaceTransform, a0, a1, a2);
 	}
 
 	public static IAST Last(final IExpr a0) {
@@ -3746,6 +3770,11 @@ public class F {
 	}
 
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
+		if (a0.isPlus()) {
+			IAST clone = ((IAST) a0).clone();
+			clone.add(binary(Times, CN1, a1));
+			return clone;
+		}
 		return binary(Plus, a0, binary(Times, CN1, a1));
 	}
 
@@ -3991,7 +4020,7 @@ public class F {
 	}
 
 	public static IAST CosIntegral(final IExpr a) {
-		return unary(CosIntegral, a);  
+		return unary(CosIntegral, a);
 	}
 
 	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
@@ -4079,7 +4108,8 @@ public class F {
 	 * Global array of predefined constant expressions.
 	 */
 	public final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3, C4,
-			C5, C6, C7, C8, C9,
+			C5, C6, C7, C8,
+			C9,
 			C10,
 			CI,
 			CNI,
@@ -4109,7 +4139,8 @@ public class F {
 			Slot1,
 			Slot2,
 			// start symbols
-			a, b, c, d, e,
+			a, b, c, d,
+			e,
 			f,
 			g,
 			h,
@@ -4138,8 +4169,19 @@ public class F {
 			GSymbol,
 			// start pattern
 			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_, B_, C_, F_,
-			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol, h_Symbol, i_Symbol, j_Symbol, k_Symbol,
-			l_Symbol, m_Symbol, n_Symbol, o_Symbol, p_Symbol,
+			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol,
+			e_Symbol,
+			f_Symbol,
+			g_Symbol,
+			h_Symbol,
+			i_Symbol,
+			j_Symbol,
+			k_Symbol,
+			l_Symbol,
+			m_Symbol,
+			n_Symbol,
+			o_Symbol,
+			p_Symbol,
 			q_Symbol,
 			r_Symbol,
 			s_Symbol,
@@ -4333,13 +4375,7 @@ public class F {
 			// EulerE,
 			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract, Factor,
 			Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten, Fibonacci,
-			FindRoot, First, Fit, FixedPoint, Floor, Fold,
-			FoldList,
-			For,
-			FractionalPart,
-			FreeQ,
-			FresnelC,
-			FresnelS,
+			FindRoot, First, Fit, FixedPoint, Floor, Fold, FoldList, For, FractionalPart, FreeQ, FresnelC, FresnelS,
 			FrobeniusSolve,
 			FromCharacterCode,
 			FromContinuedFraction,
@@ -4363,9 +4399,12 @@ public class F {
 			HoldForm,
 			Horner,
 			// HornerForm,
-			HurwitzZeta,
-			 HypergeometricPFQ, Hypergeometric2F1,
-			Identity, IdentityMatrix, If, Im,
+			HurwitzZeta, HypergeometricPFQ,
+			Hypergeometric2F1,
+			Identity,
+			IdentityMatrix,
+			If,
+			Im,
 			Implies,
 			Increment,
 			Inner,
@@ -4375,16 +4414,23 @@ public class F {
 			IntegerQ,
 			Integrate,
 			// InterpolatingFunction, InterpolatingPolynomial,
-			Intersection, Inverse, InverseErf, InverseFunction, JacobiMatrix, JacobiSymbol,
+			Intersection,
+			Inverse,
+			InverseErf,
+			InverseFunction,
+			JacobiMatrix,
+			JacobiSymbol,
 			JavaForm,
 			Join,
 			KOrderlessPartitions,
 			KPartitions,
+			LaplaceTransform,
 			Last,
 			LCM,
 			LeafCount,
 			// LaguerreL, LegendreP,
-			Length, Less,
+			Length,
+			Less,
 			LessEqual,
 			LetterQ,
 			Level,
@@ -4395,9 +4441,9 @@ public class F {
 			List,
 			ListQ,
 			Log,
-			// Log2, Log10, 
-			LogGamma, 
-			//LogicalExpand, 
+			// Log2, Log10,
+			LogGamma,
+			// LogicalExpand,
 			LogIntegral,
 			LowerCaseQ,
 			LUDecomposition,
@@ -4411,7 +4457,8 @@ public class F {
 			MatrixPower,
 			MatrixQ,
 			// MatrixRank,
-			Max, Mean,
+			Max,
+			Mean,
 			Median,
 			MemberQ,
 			Min,
@@ -4419,7 +4466,9 @@ public class F {
 			Module,
 			MoebiusMu,
 			// MonomialList,
-			Most, Multinomial, Nand, Negative, Nest,
+			Most, Multinomial, Nand,
+			Negative,
+			Nest,
 			NestList,
 			NestWhile,
 			NestWhileList,
@@ -4435,7 +4484,8 @@ public class F {
 			NRoots,
 			NSolve,
 			// NullSpace,
-			NumberQ, Numerator, NumericQ, OddQ, Options, Or, Order,
+			NumberQ, Numerator, NumericQ, OddQ, Options, Or,
+			Order,
 			OrderedQ,
 			Out,
 			Outer,
@@ -4443,44 +4493,44 @@ public class F {
 			PadLeft,
 			PadRight,
 			// ParametricPlot,
-			Part, Partition,
+			Part,
+			Partition,
 			Pattern,
 			Permutations,
 			Piecewise,
 			Plot,
 			Plot3D,
 			Plus,
-			// Pochhammer, 
-			PolyGamma, PolyLog,
-			PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ, PolynomialQuotient, PolynomialQuotientRemainder,
-			PolynomialRemainder, Position, Positive, PossibleZeroQ, Power, PowerExpand,
+			// Pochhammer,
+			PolyGamma, PolyLog, PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ, PolynomialQuotient,
+			PolynomialQuotientRemainder, PolynomialRemainder, Position, Positive, PossibleZeroQ, Power,
+			PowerExpand,
 			PowerMod,
 			PreDecrement,
 			PreIncrement,
 			Prepend,
 			PrependTo,
 			// Prime,
-			PrimeQ, PrimitiveRoots, Print, Product, ProductLog,
+			PrimeQ, PrimitiveRoots, Print, Product,
+			ProductLog,
 			Quiet,
 			Quotient,
 			RandomInteger,
 			RandomReal,
 			// RandomSample,
 			Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart, ReplaceRepeated, Rest, Resultant, Return,
-			Reverse, Riffle, RootIntervals, RootOf, Roots, Surd,
+			Reverse, Riffle, RootIntervals, RootOf, Roots,
+			Surd,
 			RotateLeft,
 			RotateRight,
 			Round,
 			// RowReduce,
 			Rule, RuleDelayed, SameQ, Scan, Sec, Sech, Select, Sequence, Set, SetAttributes, SetDelayed, Show, Sign, SignCmp,
-			Simplify, Sin, Sinc,
-			SingularValueDecomposition,
-			Sinh,
-			SinIntegral, SinhIntegral,
-			Solve, Sort, Sow, Sqrt, SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin, StringLength,
-			StringTake, Subfactorial, Subscript, Subsuperscript, Subsets, SubtractFrom, Sum, Superscript, Switch, SyntaxLength,
-			SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm, Thread, Through, Throw, TimeConstrained, Times, TimesBy, Timing,
-			ToCharacterCode, Together, ToString, Total, ToUnicode, Tr, Trace, Transpose, TrigExpand, TrigReduce, TrigToExp, TrueQ,
+			Simplify, Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral, Solve, Sort, Sow, Sqrt,
+			SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin, StringLength, StringTake, Subfactorial,
+			Subscript, Subsuperscript, Subsets, SubtractFrom, Sum, Superscript, Switch, SyntaxLength, SyntaxQ, Table, Take, Tan,
+			Tanh, Taylor, TeXForm, Thread, Through, Throw, TimeConstrained, Times, TimesBy, Timing, ToCharacterCode, Together,
+			ToString, Total, ToUnicode, Tr, Trace, Transpose, TrigExpand, TrigReduce, TrigToExp, TrueQ,
 			// Tuples,
 			Unequal, Unevaluated, Union, Unique, UnitStep,
 			// UnitVector,

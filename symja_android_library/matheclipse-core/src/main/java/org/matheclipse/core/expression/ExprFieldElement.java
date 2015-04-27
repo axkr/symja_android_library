@@ -101,25 +101,29 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 
 	@Override
 	public ExprFieldElement negate() {
-		if (val.isNumber()) {
-			return new ExprFieldElement(((INumber) val).opposite());
+		IExpr result = F.Negate(val);
+		if (result.isAtom()) {
+			return new ExprFieldElement(result);
 		}
-		return new ExprFieldElement(F.evalExpandAll(F.Times(val, F.CN1)));
-	}
+		return new ExprFieldElement(F.eval(result));
+	} 
 
 	@Override
 	public ExprFieldElement reciprocal() {
 		if (val.isNumber()) {
 			return new ExprFieldElement(((INumber) val).inverse());
 		}
-		return new ExprFieldElement(F.evalExpandAll(val.power(-1)));
+		if (val.isAtom()) {
+			return new ExprFieldElement(F.Power(val,-1L));
+		}
+		return new ExprFieldElement(F.eval(val.power(-1)));
 	}
 
 	@Override
 	public ExprFieldElement subtract(ExprFieldElement a) {
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.minus(a.val));
-		}
+		} 
 		return new ExprFieldElement(F.evalExpandAll(F.Subtract(val, a.val)));
 	}
 

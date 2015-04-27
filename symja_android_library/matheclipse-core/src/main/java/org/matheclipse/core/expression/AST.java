@@ -395,7 +395,7 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	@Override
 	public IExpr plus(final IExpr that) {
-		return F.Plus(this, that);
+		return F.eval(F.Plus(this, that));
 	}
 
 	@Override
