@@ -135,7 +135,7 @@ public class Object2Expr {
 		return F.stringx(obj.toString());
 	}
 
-	public static IExpr convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {
+	public static IAST convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {
 		return AST.newInstance(F.List, array);
 	}
 }

@@ -15,8 +15,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.DoubleMath;
 
 public class Expr2Object {
-	public static int MAX_POLYNOMIAL = 4;
-
 	public static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
 		double[] result = new double[ast.size() - 1];
 		for (int i = 1; i < ast.size(); i++) {
@@ -31,7 +29,7 @@ public class Expr2Object {
 
 	public static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
 		int[] dim = ast.isMatrix();
-		if (dim==null){
+		if (dim == null) {
 			return new double[0][0];
 		}
 		double[][] result = new double[dim[0]][dim[1]];
@@ -49,12 +47,19 @@ public class Expr2Object {
 	}
 
 	public static double[] toPolynomial(IExpr expr, ISymbol sym) {
-		double[] array = new double[MAX_POLYNOMIAL];
 		Map<Integer, Double> map = toPolynomialMap(expr, sym);
 		if (map == null) {
 			return null;
 		}
+		int max = 5;
 		int k;
+		for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+			k = entry.getKey();
+			if (k > max) {
+				max = k;
+			}
+		}
+		double[] array = new double[max + 1];
 		for (Map.Entry<Integer, Double> entry : map.entrySet()) {
 			k = entry.getKey();
 			if (k <= 4) {
@@ -63,6 +68,17 @@ public class Expr2Object {
 				return null;
 			}
 		}
+
+		int n = array.length;
+		while ((n > 1) && (array[n - 1] == 0.0)) {
+			--n;
+		}
+		if (n < array.length) {
+			double[] coefficients = new double[n];
+			System.arraycopy(array, 0, coefficients, 0, n);
+			return coefficients;
+		}
+
 		return array;
 	}
 
@@ -70,8 +86,7 @@ public class Expr2Object {
 	 * 
 	 * @param expr
 	 * @param sym
-	 * @return <code>null</code> if the expression couldn't be converted to a
-	 *         polynomial.
+	 * @return <code>null</code> if the expression couldn't be converted to a polynomial.
 	 */
 	public static Map<Integer, Double> toPolynomialMap(IExpr expr, ISymbol sym) {
 		try {

@@ -3,7 +3,11 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
+import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
+import org.apache.commons.math3.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2Object;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -14,10 +18,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Determine the numerical roots of a univariate polynomial
  * 
- * See Wikipedia entries for: <a
- * href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation
- * </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
- * function</a> and <a
+ * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
+ * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
  * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
  * 
  * @see Roots
@@ -53,16 +55,17 @@ public class NRoots extends AbstractFunctionEvaluator {
 		IExpr expr = evalExpandAll(ast.arg1());
 		IAST variables = eVar.getVarList();
 		ISymbol sym = (ISymbol) variables.arg1();
-		double[] poly = Expr2Object.toPolynomial(expr, sym);
-		IAST result = null;
-		if (poly != null) {
-			if (poly[3] == 0.0) {
-				return quadratic(poly[2], poly[1], poly[0]);
-			}
-			result = cubic(poly[3], poly[2], poly[1], poly[0]);
-			if (result != null) {
-				return result;
-			}
+		double[] coefficients = Expr2Object.toPolynomial(expr, sym);
+
+		if (coefficients != null) {
+			// IAST result = rootsUp2Degree3(coefficients);
+			// if (result != null) {
+			// return result;
+			// }
+			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
+			System.out.println(expr);
+			Complex[] roots = solver.solveAllComplex(coefficients, 0);
+			return Object2Expr.convertComplex(roots);
 		}
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
@@ -76,6 +79,31 @@ public class NRoots extends AbstractFunctionEvaluator {
 			}
 		}
 		return rootsOfVariable(expr, denom);
+	}
+
+	/**
+	 * 
+	 * @param coefficients
+	 * @return <code>null</code> if the result couldn't be evaluated
+	 */
+	public static IAST rootsUp2Degree3(double[] coefficients) {
+		IAST result = null;
+		if (coefficients.length == 0) {
+			return null;
+		}
+		if (coefficients.length == 1) {
+			return quadratic(0.0, 0.0, coefficients[0]);
+		}
+		if (coefficients.length == 2) {
+			return quadratic(0.0, coefficients[1], coefficients[0]);
+		}
+		if (coefficients.length == 3) {
+			return quadratic(coefficients[2], coefficients[1], coefficients[0]);
+		}
+		if (coefficients.length == 4) {
+			result = cubic(coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
+		}
+		return result;
 	}
 
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom) {
@@ -114,9 +142,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * See <a href=
-	 * "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations"
-	 * >http
+	 * See <a href= "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" >http
 	 * ://stackoverflow.com/questions/13328676/c-solving-cubic-equations</a>
 	 * 
 	 * @param a
