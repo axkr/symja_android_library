@@ -63,7 +63,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 			// return result;
 			// }
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-			System.out.println(expr);
+			// System.out.println(expr);
 			Complex[] roots = solver.solveAllComplex(coefficients, 0);
 			return Object2Expr.convertComplex(roots);
 		}
