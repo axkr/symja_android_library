@@ -516,10 +516,13 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	 */
 	@Override
 	public ISignedNumber inverse() {
-		if (NumberUtil.isNegative(fInteger)) {
-			return FractionSym.valueOf(BigInteger.valueOf(-1), fInteger.negate());
+		if (isOne()) {
+			return this;
 		}
-		return FractionSym.valueOf(BigInteger.ONE, fInteger);
+		if (NumberUtil.isNegative(fInteger)) {
+			return FractionSym.valueOf(BigInteger.valueOf(-1), fInteger.negate()).normalize();
+		}
+		return FractionSym.valueOf(BigInteger.ONE, fInteger).normalize();
 	}
 
 	/**
@@ -564,7 +567,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 			return F.C0;
 		}
 		if (that instanceof FractionSym) {
-			return FractionSym.valueOf(fInteger).multiply((FractionSym) that);
+			return FractionSym.valueOf(fInteger).multiply((FractionSym) that).normalize();
 		}
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
@@ -1235,7 +1238,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		}
 		return this;
 	}
-	
+
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		if ((fInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0)

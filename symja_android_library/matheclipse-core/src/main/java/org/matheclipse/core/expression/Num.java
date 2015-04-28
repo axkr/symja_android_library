@@ -411,6 +411,9 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public ISignedNumber inverse() {
+		if (isOne()) {
+			return this;
+		}
 		return newInstance(1 / fDouble);
 	}
 

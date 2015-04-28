@@ -226,7 +226,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
-			res = res.plus(v.getEntry(iter.key()).multiply(iter.value()));
+			res = res.plus(v.getEntry(iter.key()).times(iter.value()));
 		}
 		return res;
 	}
@@ -250,7 +250,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		OpenIntToFieldHashMap.Iterator iter = res.entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
-			res.setEntry(iter.key(), iter.value().multiply(v.getEntry(iter.key())));
+			res.setEntry(iter.key(), iter.value().times(v.getEntry(iter.key())));
 		}
 		return res;
 	}
@@ -352,7 +352,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
-			entries.put(iter.key(), iter.value().multiply(d));
+			entries.put(iter.key(), iter.value().times(d));
 		}
 		return this;
 	}
@@ -383,7 +383,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 			OpenIntToFieldHashMap.Iterator iter2 = v.entries.iterator();
 			while (iter2.hasNext()) {
 				iter2.advance();
-				res.setEntry(iter.key(), iter2.key(), iter.value().multiply(iter2.value()));
+				res.setEntry(iter.key(), iter2.key(), iter.value().times(iter2.value()));
 			}
 		}
 		return res;
@@ -402,7 +402,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 				int row = iter.key();
 				IExpr value = iter.value();
 				for (int col = 0; col < n; col++) {
-					res.setEntry(row, col, value.multiply(v.getEntry(col)));
+					res.setEntry(row, col, value.times(v.getEntry(col)));
 				}
 			}
 			return res;

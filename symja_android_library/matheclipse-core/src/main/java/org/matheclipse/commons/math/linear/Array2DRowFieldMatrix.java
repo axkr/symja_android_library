@@ -313,7 +313,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 			for (int col = 0; col < nCols; col++) {
 				IExpr sum = F.C0;
 				for (int i = 0; i < nSum; i++) {
-					sum = sum.plus(dataRow[i].multiply(m.data[i][col]));
+					sum = sum.plus(dataRow[i].times(m.data[i][col]));
 				}
 				outDataRow[col] = sum;
 			}
@@ -404,7 +404,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 		checkRowIndex(row);
 		checkColumnIndex(column);
 
-		data[row][column] = data[row][column].multiply(factor);
+		data[row][column] = data[row][column].times(factor);
 	}
 
 	/** {@inheritDoc} */
@@ -432,7 +432,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 			final IExpr[] dataRow = data[row];
 			IExpr sum = F.C0;
 			for (int i = 0; i < nCols; i++) {
-				sum = sum.plus(dataRow[i].multiply(v[i]));
+				sum = sum.plus(dataRow[i].times(v[i]));
 			}
 			out[row] = sum;
 		}
@@ -452,7 +452,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 		for (int col = 0; col < nCols; ++col) {
 			IExpr sum = F.C0;
 			for (int i = 0; i < nRows; ++i) {
-				sum = sum.plus(data[i][col].multiply(v[i]));
+				sum = sum.plus(data[i][col].times(v[i]));
 			}
 			out[col] = sum;
 		}

@@ -484,7 +484,7 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 			final IExpr[] outBlock = out.blocks[blockIndex];
 			final IExpr[] tBlock = blocks[blockIndex];
 			for (int k = 0; k < outBlock.length; ++k) {
-				outBlock[k] = tBlock[k].multiply(d);
+				outBlock[k] = tBlock[k].times(d);
 			}
 		}
 
@@ -532,7 +532,7 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 								IExpr sum = zero;
 								int r = rStart;
 								for (int l = lStart; l < lEnd; ++l) {
-									sum = sum.plus(tBlock[l].multiply(m.getEntry(r, q)));
+									sum = sum.plus(tBlock[l].times(m.getEntry(r, q)));
 									++r;
 								}
 								outBlock[k] = outBlock[k].plus(sum);
@@ -598,14 +598,14 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 							int l = lStart;
 							int n = nStart;
 							while (l < lEnd - 3) {
-								sum = sum.plus(tBlock[l].multiply(mBlock[n])).plus(tBlock[l + 1].multiply(mBlock[n + jWidth]))
-										.plus(tBlock[l + 2].multiply(mBlock[n + jWidth2]))
-										.plus(tBlock[l + 3].multiply(mBlock[n + jWidth3]));
+								sum = sum.plus(tBlock[l].times(mBlock[n])).plus(tBlock[l + 1].times(mBlock[n + jWidth]))
+										.plus(tBlock[l + 2].times(mBlock[n + jWidth2]))
+										.plus(tBlock[l + 3].times(mBlock[n + jWidth3]));
 								l += 4;
 								n += jWidth4;
 							}
 							while (l < lEnd) {
-								sum = sum.plus(tBlock[l++].multiply(mBlock[n]));
+								sum = sum.plus(tBlock[l++].times(mBlock[n]));
 								n += jWidth;
 							}
 							outBlock[k] = outBlock[k].plus(sum);
@@ -1176,7 +1176,7 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 		final int k = (row - iBlock * BLOCK_SIZE) * blockWidth(jBlock) + (column - jBlock * BLOCK_SIZE);
 		final IExpr[] blockIJ = blocks[iBlock * blockColumns + jBlock];
 
-		blockIJ[k] = blockIJ[k].multiply(factor);
+		blockIJ[k] = blockIJ[k].times(factor);
 	}
 
 	/** {@inheritDoc} */
@@ -1252,13 +1252,13 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 					IExpr sum = zero;
 					int q = qStart;
 					while (q < qEnd - 3) {
-						sum = sum.plus(block[k].multiply(v[q])).plus(block[k + 1].multiply(v[q + 1]))
-								.plus(block[k + 2].multiply(v[q + 2])).plus(block[k + 3].multiply(v[q + 3]));
+						sum = sum.plus(block[k].times(v[q])).plus(block[k + 1].times(v[q + 1]))
+								.plus(block[k + 2].times(v[q + 2])).plus(block[k + 3].times(v[q + 3]));
 						k += 4;
 						q += 4;
 					}
 					while (q < qEnd) {
-						sum = sum.plus(block[k++].multiply(v[q++]));
+						sum = sum.plus(block[k++].times(v[q++]));
 					}
 					out[p] = out[p].plus(sum);
 				}
@@ -1295,13 +1295,13 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 					IExpr sum = zero;
 					int p = pStart;
 					while (p < pEnd - 3) {
-						sum = sum.plus(block[k].multiply(v[p])).plus(block[k + jWidth].multiply(v[p + 1]))
-								.plus(block[k + jWidth2].multiply(v[p + 2])).plus(block[k + jWidth3].multiply(v[p + 3]));
+						sum = sum.plus(block[k].times(v[p])).plus(block[k + jWidth].times(v[p + 1]))
+								.plus(block[k + jWidth2].times(v[p + 2])).plus(block[k + jWidth3].times(v[p + 3]));
 						k += jWidth4;
 						p += 4;
 					}
 					while (p < pEnd) {
-						sum = sum.plus(block[k].multiply(v[p++]));
+						sum = sum.plus(block[k].times(v[p++]));
 						k += jWidth;
 					}
 					out[q] = out[q].plus(sum);

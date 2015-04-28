@@ -152,7 +152,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 		checkRowIndex(row);
 		checkColumnIndex(column);
 		final int key = computeKey(row, column);
-		final IExpr value = entries.get(key).multiply(factor);
+		final IExpr value = entries.get(key).times(factor);
 		if (value.isZero()) {
 			entries.remove(key);
 		} else {

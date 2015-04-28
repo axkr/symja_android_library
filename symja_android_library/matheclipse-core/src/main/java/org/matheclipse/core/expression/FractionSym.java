@@ -266,7 +266,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return F.num(this);
 	}
 
-	public INumber normalize() {
+	public ISignedNumber normalize() {
 		if (getBigDenominator().equals(BigInteger.ONE)) {
 			return F.integer(getBigNumerator());
 		}
@@ -402,7 +402,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber inverse() {
-		return newInstance(NumberUtil.inverse(fRational));
+		return newInstance(NumberUtil.inverse(fRational)).normalize();
 	}
 
 	/**
@@ -703,7 +703,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 		double dr = fRational.getDenominator().doubleValue();
 		return ComplexNum.valueOf(nr / dr);
 	}
-	
+
 	private Object writeReplace() throws ObjectStreamException {
 		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
 		if (temp != null) {

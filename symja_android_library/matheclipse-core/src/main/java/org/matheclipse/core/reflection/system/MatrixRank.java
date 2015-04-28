@@ -4,6 +4,7 @@ import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;

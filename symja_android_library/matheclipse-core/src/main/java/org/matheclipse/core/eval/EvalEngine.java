@@ -905,7 +905,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// System.out.println("(1) --> " + temp.toString());
 				// }
 				if (fTraceMode) {
-					fTraceStack.add(expr, temp, fRecursionCounter, 0L);
+					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
 				}
 				IExpr result = temp;
 				long iterationCounter = 1;
@@ -920,7 +920,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// System.out.println("("+iterationCounter+") --> " + temp.toString());
 						// }
 						if (fTraceMode) {
-							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter);
+							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
 						}
 						result = temp;
 						if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
@@ -1374,12 +1374,26 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public int getRecursionLimit() {
 		return fRecursionLimit;
 	}
+	
+	public int getRecursionCounter() {
+		return fRecursionCounter;
+	}
+	
 
 	/**
 	 * @return
 	 */
 	public String getSessionID() {
 		return fSessionID;
+	}
+
+	/**
+	 * Get the defined step listener or <code>null</code> if no listener is assigned.
+	 * 
+	 * @return <code>null</code> if no step listener is assigned.
+	 */
+	public IEvalStepListener getStepListener() {
+		return fTraceStack;
 	}
 
 	/**

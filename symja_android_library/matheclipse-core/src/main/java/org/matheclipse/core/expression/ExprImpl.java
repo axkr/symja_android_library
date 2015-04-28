@@ -36,7 +36,7 @@ import edu.jas.structure.ElemFactory;
  */
 @SuppressWarnings("serial")
 public abstract class ExprImpl implements IExpr, Serializable {
- 
+
 	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
 		IExpr result = expr;
 		IExpr temp = expr.accept(visitor);
@@ -139,9 +139,11 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr divide(IExpr that) {
-		// don't use times(that.inverse()) directly!
-		if (that.isNumber()) {
-			return F.eval(F.Times(this, that.inverse()));
+		if (isNumber() && that.isNumber()) {
+			if (that.isOne()) {
+				return this;
+			}
+			return times(that.inverse());
 		}
 		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}

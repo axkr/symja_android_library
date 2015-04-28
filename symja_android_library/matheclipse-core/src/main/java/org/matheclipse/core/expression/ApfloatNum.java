@@ -303,6 +303,9 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public ApfloatNum inverse() {
+		if (isOne()) {
+			return this;
+		}
 		return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
 

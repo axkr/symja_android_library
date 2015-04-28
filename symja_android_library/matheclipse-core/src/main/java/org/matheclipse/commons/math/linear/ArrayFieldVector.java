@@ -531,7 +531,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 	public FieldVector mapMultiply(IExpr d) throws NullArgumentException {
 		IExpr[] out = MathArrays.buildArray(data.length);
 		for (int i = 0; i < data.length; i++) {
-			out[i] = data[i].multiply(d);
+			out[i] = data[i].times(d);
 		}
 		return new ArrayFieldVector(out, false);
 	}
@@ -539,7 +539,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 	/** {@inheritDoc} */
 	public FieldVector mapMultiplyToSelf(IExpr d) throws NullArgumentException {
 		for (int i = 0; i < data.length; i++) {
-			data[i] = data[i].multiply(d);
+			data[i] = data[i].times(d);
 		}
 		return this;
 	}
@@ -598,7 +598,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 			checkVectorDimensions(v);
 			IExpr[] out = MathArrays.buildArray(data.length);
 			for (int i = 0; i < data.length; i++) {
-				out[i] = data[i].multiply(v.getEntry(i));
+				out[i] = data[i].times(v.getEntry(i));
 			}
 			return new ArrayFieldVector(out, false);
 		}
@@ -617,7 +617,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		checkVectorDimensions(v.data.length);
 		IExpr[] out = MathArrays.buildArray(data.length);
 		for (int i = 0; i < data.length; i++) {
-			out[i] = data[i].multiply(v.data[i]);
+			out[i] = data[i].times(v.data[i]);
 		}
 		return new ArrayFieldVector(out, false);
 	}
@@ -689,7 +689,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 			checkVectorDimensions(v);
 			IExpr dot = F.C0;
 			for (int i = 0; i < data.length; i++) {
-				dot = dot.plus(data[i].multiply(v.getEntry(i)));
+				dot = dot.plus(data[i].times(v.getEntry(i)));
 			}
 			return dot;
 		}
@@ -708,7 +708,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		checkVectorDimensions(v.data.length);
 		IExpr dot = F.C0;
 		for (int i = 0; i < data.length; i++) {
-			dot = dot.plus(data[i].multiply(v.data[i]));
+			dot = dot.plus(data[i].times(v.data[i]));
 		}
 		return dot;
 	}
@@ -743,7 +743,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 			final FieldMatrix out = new Array2DRowFieldMatrix(m, n);
 			for (int i = 0; i < m; i++) {
 				for (int j = 0; j < n; j++) {
-					out.setEntry(i, j, data[i].multiply(v.getEntry(j)));
+					out.setEntry(i, j, data[i].times(v.getEntry(j)));
 				}
 			}
 			return out;
@@ -763,7 +763,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		final FieldMatrix out = new Array2DRowFieldMatrix(m, n);
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
-				out.setEntry(i, j, data[i].multiply(v.data[j]));
+				out.setEntry(i, j, data[i].times(v.data[j]));
 			}
 		}
 		return out;

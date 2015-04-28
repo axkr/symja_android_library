@@ -23,8 +23,13 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
+
+import android.webkit.WebStorage.Origin;
 
 /**
  * Calculates the LUP-decomposition of a square matrix.
@@ -55,6 +60,8 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class FieldLUDecomposition {
 
+	private final FieldMatrix originalMatrix;
+	
 	/** Entries of LU decomposition. */
 	private IExpr[][] lu;
 
@@ -88,7 +95,7 @@ public class FieldLUDecomposition {
 		if (!matrix.isSquare()) {
 			throw new NonSquareMatrixException(matrix.getRowDimension(), matrix.getColumnDimension());
 		}
-
+		this.originalMatrix = matrix;
 		final int m = matrix.getColumnDimension();
 		lu = matrix.getData();
 		pivot = new int[m];
@@ -113,7 +120,7 @@ public class FieldLUDecomposition {
 				final IExpr[] luRow = lu[row];
 				sum = luRow[col];
 				for (int i = 0; i < row; i++) {
-					sum = sum.subtract(luRow[i].multiply(lu[i][col]));
+					sum = sum.subtract(luRow[i].times(lu[i][col]));
 				}
 				luRow[col] = sum;
 			}
@@ -124,7 +131,7 @@ public class FieldLUDecomposition {
 				final IExpr[] luRow = lu[row];
 				sum = luRow[col];
 				for (int i = 0; i < col; i++) {
-					sum = sum.subtract(luRow[i].multiply(lu[i][col]));
+					sum = sum.subtract(luRow[i].times(lu[i][col]));
 				}
 				luRow[col] = sum;
 
@@ -254,7 +261,7 @@ public class FieldLUDecomposition {
 			final int m = pivot.length;
 			IExpr determinant = even ? F.C1 : F.CN1;
 			for (int i = 0; i < m; i++) {
-				determinant = determinant.multiply(lu[i][i]);
+				determinant = determinant.times(lu[i][i]);
 			}
 			return determinant;
 		}
@@ -266,12 +273,14 @@ public class FieldLUDecomposition {
 	 * @return a solver
 	 */
 	public FieldDecompositionSolver getSolver() {
-		return new Solver(null, lu, pivot, singular);
+		return new Solver(originalMatrix, lu, pivot, singular);
 	}
 
 	/** Specialized solver. */
 	private static class Solver implements FieldDecompositionSolver {
 
+		private final FieldMatrix originalMatrix;
+		
 		/** Entries of LU decomposition. */
 		private final IExpr[][] lu;
 
@@ -293,7 +302,8 @@ public class FieldLUDecomposition {
 		 * @param singular
 		 *            singularity indicator
 		 */
-		private Solver(final Field<IExpr> field, final IExpr[][] lu, final int[] pivot, final boolean singular) {
+		private Solver(FieldMatrix matrix, final IExpr[][] lu, final int[] pivot, final boolean singular) {
+			this.originalMatrix = matrix;
 			this.lu = lu;
 			this.pivot = pivot;
 			this.singular = singular;
@@ -328,7 +338,7 @@ public class FieldLUDecomposition {
 				for (int col = 0; col < m; col++) {
 					final IExpr bpCol = bp[col];
 					for (int i = col + 1; i < m; i++) {
-						bp[i] = bp[i].subtract(bpCol.multiply(lu[i][col]));
+						bp[i] = bp[i].subtract(bpCol.times(lu[i][col]));
 					}
 				}
 
@@ -337,7 +347,7 @@ public class FieldLUDecomposition {
 					bp[col] = bp[col].divide(lu[col][col]);
 					final IExpr bpCol = bp[col];
 					for (int i = 0; i < col; i++) {
-						bp[i] = bp[i].subtract(bpCol.multiply(lu[i][col]));
+						bp[i] = bp[i].subtract(bpCol.times(lu[i][col]));
 					}
 				}
 
@@ -371,7 +381,7 @@ public class FieldLUDecomposition {
 			}
 
 			// Apply permutations to b
-			final IExpr[] bp = MathArrays.buildArray( m);
+			final IExpr[] bp = MathArrays.buildArray(m);
 			for (int row = 0; row < m; row++) {
 				bp[row] = b.getEntry(pivot[row]);
 			}
@@ -380,7 +390,7 @@ public class FieldLUDecomposition {
 			for (int col = 0; col < m; col++) {
 				final IExpr bpCol = bp[col];
 				for (int i = col + 1; i < m; i++) {
-					bp[i] = bp[i].subtract(bpCol.multiply(lu[i][col]));
+					bp[i] = bp[i].subtract(bpCol.times(lu[i][col]));
 				}
 			}
 
@@ -389,7 +399,7 @@ public class FieldLUDecomposition {
 				bp[col] = bp[col].divide(lu[col][col]);
 				final IExpr bpCol = bp[col];
 				for (int i = 0; i < col; i++) {
-					bp[i] = bp[i].subtract(bpCol.multiply(lu[i][col]));
+					bp[i] = bp[i].subtract(bpCol.times(lu[i][col]));
 				}
 			}
 
@@ -425,7 +435,7 @@ public class FieldLUDecomposition {
 					final IExpr[] bpI = bp[i];
 					final IExpr luICol = lu[i][col];
 					for (int j = 0; j < nColB; j++) {
-						bpI[j] = bpI[j].subtract(bpCol[j].multiply(luICol));
+						bpI[j] = bpI[j].subtract(bpCol[j].times(luICol));
 					}
 				}
 			}
@@ -441,13 +451,19 @@ public class FieldLUDecomposition {
 					final IExpr[] bpI = bp[i];
 					final IExpr luICol = lu[i][col];
 					for (int j = 0; j < nColB; j++) {
-						bpI[j] = bpI[j].subtract(bpCol[j].multiply(luICol));
+						bpI[j] = bpI[j].subtract(bpCol[j].times(luICol));
 					}
 				}
 			}
 
-			return new Array2DRowFieldMatrix(null, bp, false);
-
+			FieldMatrix result = new Array2DRowFieldMatrix(null, bp, false);
+			EvalEngine engine = EvalEngine.get();
+			IEvalStepListener listener = engine.getStepListener();
+			if (listener != null) {
+				listener.add(ConvertIExpr.matrix2List(originalMatrix), ConvertIExpr.matrix2List(result), engine.getRecursionCounter(), -1,
+						"LUDecomposition solver");
+			}
+			return result;
 		}
 
 		/** {@inheritDoc} */

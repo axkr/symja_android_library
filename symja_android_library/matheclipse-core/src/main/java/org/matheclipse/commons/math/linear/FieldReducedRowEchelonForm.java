@@ -1,6 +1,9 @@
 package org.matheclipse.commons.math.linear;
 
+import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -34,6 +37,7 @@ public class FieldReducedRowEchelonForm {
 		}
 	}
 
+	private final FieldMatrix originalMatrix;
 	private final FieldMatrix rowReducedMatrix;
 	private FieldMatrix nullSpaceCache;
 	private int matrixRankCache;
@@ -67,6 +71,7 @@ public class FieldReducedRowEchelonForm {
 	 * @see #rowReduce()
 	 */
 	public FieldReducedRowEchelonForm(FieldMatrix matrix) {
+		this.originalMatrix = matrix;
 		this.rowReducedMatrix = matrix.copy();
 		this.numRows = matrix.getRowDimension();
 		this.numCols = matrix.getColumnDimension();
@@ -199,7 +204,7 @@ public class FieldReducedRowEchelonForm {
 		IExpr[] rowMultiplied = rowReducedMatrix.getRow(from.row);
 
 		for (int i = 0; i < numCols; i++) {
-			rowReducedMatrix.setEntry(to.row, i, row[i].plus((rowMultiplied[i].multiply(factor))));
+			rowReducedMatrix.setEntry(to.row, i, row[i].plus((rowMultiplied[i].times(factor))));
 		}
 	}
 
@@ -366,6 +371,12 @@ public class FieldReducedRowEchelonForm {
 
 			submatrix++;
 			pivot.row++;
+		}
+		EvalEngine engine = EvalEngine.get();
+		IEvalStepListener listener = engine.getStepListener();
+		if (listener != null) {
+			listener.add(ConvertIExpr.matrix2List(originalMatrix), ConvertIExpr.matrix2List(rowReducedMatrix),
+					engine.getRecursionCounter(), -1, "ReducedRowEchelonForm");
 		}
 		return rowReducedMatrix;
 	}

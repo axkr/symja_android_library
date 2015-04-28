@@ -34,7 +34,8 @@ public interface IEvalStepListener {
 	 * @param recursionDepth
 	 *            TODO
 	 * @param iterationCounter
+	 * @param hint TODO
 	 */
-	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter);
+	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
 
 }

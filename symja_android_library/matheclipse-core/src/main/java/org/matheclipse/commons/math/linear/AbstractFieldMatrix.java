@@ -222,7 +222,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 		final FieldMatrix out = createMatrix(rowCount, columnCount);
 		for (int row = 0; row < rowCount; ++row) {
 			for (int col = 0; col < columnCount; ++col) {
-				out.setEntry(row, col, getEntry(row, col).multiply(d));
+				out.setEntry(row, col, getEntry(row, col).times(d));
 			}
 		}
 
@@ -242,7 +242,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 			for (int col = 0; col < nCols; ++col) {
 				IExpr sum = F.C0;
 				for (int i = 0; i < nSum; ++i) {
-					sum = sum.plus(getEntry(row, i).multiply(m.getEntry(i, col)));
+					sum = sum.plus(getEntry(row, i).times(m.getEntry(i, col)));
 				}
 				out.setEntry(row, col, sum);
 			}
@@ -665,7 +665,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 		for (int row = 0; row < nRows; ++row) {
 			IExpr sum = F.C0;
 			for (int i = 0; i < nCols; ++i) {
-				sum = sum.plus(getEntry(row, i).multiply(v[i]));
+				sum = sum.plus(getEntry(row, i).times(v[i]));
 			}
 			out[row] = sum;
 		}
@@ -688,7 +688,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 			for (int row = 0; row < nRows; ++row) {
 				IExpr sum = F.C0;
 				for (int i = 0; i < nCols; ++i) {
-					sum = sum.plus(getEntry(row, i).multiply(v.getEntry(i)));
+					sum = sum.plus(getEntry(row, i).times(v.getEntry(i)));
 				}
 				out[row] = sum;
 			}
@@ -710,7 +710,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 		for (int col = 0; col < nCols; ++col) {
 			IExpr sum = F.C0;
 			for (int i = 0; i < nRows; ++i) {
-				sum = sum.plus(getEntry(i, col).multiply(v[i]));
+				sum = sum.plus(getEntry(i, col).times(v[i]));
 			}
 			out[col] = sum;
 		}
@@ -733,7 +733,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 			for (int col = 0; col < nCols; ++col) {
 				IExpr sum = F.C0;
 				for (int i = 0; i < nRows; ++i) {
-					sum = sum.plus(getEntry(i, col).multiply(v.getEntry(i)));
+					sum = sum.plus(getEntry(i, col).times(v.getEntry(i)));
 				}
 				out[col] = sum;
 			}
