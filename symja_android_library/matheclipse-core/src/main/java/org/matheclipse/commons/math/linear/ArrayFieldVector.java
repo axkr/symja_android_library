@@ -35,7 +35,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * This class implements the {@link FieldVector} interface with a {@link FieldElement} array.
+ * This class implements the {@link FieldVector} interface with a {@link IExpr} array.
  * 
  * @param <T>
  *            the type of the field elements

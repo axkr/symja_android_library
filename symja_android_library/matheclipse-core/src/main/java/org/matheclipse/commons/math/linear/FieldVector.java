@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IExpr;
  *   RealVector result = v.mapAddToSelf(3.0).mapTanToSelf().mapSquareToSelf();
  * </pre>
  * <p>
- * Note that as almost all operations on {@link FieldElement} throw {@link
+ * Note that as almost all operations on {@link IExpr} throw {@link
  * NullArgumentException} when operating on a null element, it is the responsibility
  * of <code>FieldVector</code> implementations to make sure no null elements
  * are inserted into the vector. This must be done in all constructors and
@@ -223,7 +223,7 @@ public interface FieldVector  {
      * @param index Index location of entry to be fetched.
      * @return the vector entry at {@code index}.
      * @throws OutOfRangeException if the index is not valid.
-     * @see #setEntry(int, FieldElement)
+     * @see #setEntry(int, IExpr)
      */
     IExpr getEntry(int index) throws OutOfRangeException;
 

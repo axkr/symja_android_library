@@ -4,7 +4,6 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
-import org.matheclipse.core.convert.ConvertIExpr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,9 +21,9 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			Validate.checkSize(ast, 2);
 
 			final IAST list = (IAST) ast.arg1();
-			matrix = ConvertIExpr.list2Matrix(list);
+			matrix = Convert.list2Matrix(list);
 			matrix = matrixEval(matrix);
-			return ConvertIExpr.matrix2List(matrix);
+			return Convert.matrix2List(matrix);
 			// return F.eval(F.Together(Convert.matrix2List(matrix)));
 
 		} catch (final ClassCastException e) {
@@ -49,9 +48,9 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			EvalEngine engine = EvalEngine.get();
 			if (engine.isApfloat()) {
 				final IAST list = (IAST) ast.arg1();
-				FieldMatrix fieldMatrix = ConvertIExpr.list2Matrix(list);
+				FieldMatrix fieldMatrix = Convert.list2Matrix(list);
 				fieldMatrix = matrixEval(fieldMatrix);
-				return ConvertIExpr.matrix2List(fieldMatrix);
+				return Convert.matrix2List(fieldMatrix);
 			}
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2RealMatrix(list);

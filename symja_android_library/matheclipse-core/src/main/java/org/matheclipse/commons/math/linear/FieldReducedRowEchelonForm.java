@@ -1,6 +1,6 @@
 package org.matheclipse.commons.math.linear;
 
-import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -375,7 +375,7 @@ public class FieldReducedRowEchelonForm {
 		EvalEngine engine = EvalEngine.get();
 		IEvalStepListener listener = engine.getStepListener();
 		if (listener != null) {
-			listener.add(ConvertIExpr.matrix2List(originalMatrix), ConvertIExpr.matrix2List(rowReducedMatrix),
+			listener.add(Convert.matrix2List(originalMatrix), Convert.matrix2List(rowReducedMatrix),
 					engine.getRecursionCounter(), -1, "ReducedRowEchelonForm");
 		}
 		return rowReducedMatrix;

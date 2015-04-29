@@ -64,7 +64,7 @@ public class MatrixUtils {
 	 * @param columns
 	 *            number of columns of the matrix
 	 * @return FieldMatrix with specified dimensions
-	 * @see #createFieldMatrix(FieldElement[][])
+	 * @see #createFieldMatrix(IExpr[][])
 	 * @since 2.0
 	 */
 	public static FieldMatrix createFieldMatrix(final int rows, final int columns) {

@@ -23,7 +23,7 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
 import org.apache.commons.math3.linear.SingularMatrixException;
-import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -38,7 +38,7 @@ import android.webkit.WebStorage.Origin;
  * upper triangular and P is a permutation matrix. All matrices are m&times;m.
  * </p>
  * <p>
- * Since {@link FieldElement field elements} do not provide an ordering operator, the permutation matrix is computed here only in
+ * Since {@link IExpr field elements} do not provide an ordering operator, the permutation matrix is computed here only in
  * order to avoid a zero pivot element, no attempt is done to get the largest pivot element.
  * </p>
  * <p>
@@ -460,7 +460,7 @@ public class FieldLUDecomposition {
 			EvalEngine engine = EvalEngine.get();
 			IEvalStepListener listener = engine.getStepListener();
 			if (listener != null) {
-				listener.add(ConvertIExpr.matrix2List(originalMatrix), ConvertIExpr.matrix2List(result), engine.getRecursionCounter(), -1,
+				listener.add(Convert.matrix2List(originalMatrix), Convert.matrix2List(result), engine.getRecursionCounter(), -1,
 						"LUDecomposition solver");
 			}
 			return result;

@@ -1,14 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.FieldElement;
-import org.apache.commons.math3.linear.BlockFieldMatrix;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.FieldVector;
+import org.matheclipse.commons.math.linear.BlockFieldMatrix;
+import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.expression.ExprField;
-import org.matheclipse.core.expression.ExprFieldElement;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -20,10 +17,10 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		FieldMatrix<ExprFieldElement> matrix0;
-		FieldMatrix<ExprFieldElement> matrix1;
-		FieldVector<ExprFieldElement> vector0;
-		FieldVector<ExprFieldElement> vector1;
+		FieldMatrix matrix0;
+		FieldMatrix matrix1;
+		FieldVector vector0;
+		FieldVector vector1;
 		IAST res;
 		try {
 			IAST list;
@@ -47,15 +44,14 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 				if (o1.isMatrix() != null) {
 					list = (IAST) o1;
 					matrix1 = Convert.list2Matrix(list);
-					FieldElement<ExprFieldElement>[] av = vector0.toArray();
-					BlockFieldMatrix<ExprFieldElement> m = new BlockFieldMatrix<ExprFieldElement>(ExprField.CONST,1,av.length);
+					IExpr[] av = vector0.toArray();
+					BlockFieldMatrix m = new BlockFieldMatrix(1, av.length);
 					m.setRow(0, vector0.toArray());
-					return Convert.matrix2List(m.multiply(
-							matrix1));
+					return Convert.matrix2List(m.multiply(matrix1));
 				} else if (o1.isVector() != (-1)) {
 					list = (IAST) o1;
 					vector1 = Convert.list2Vector(list);
-					return vector0.dotProduct(vector1).getExpr();
+					return vector0.dotProduct(vector1);
 				}
 			}
 
@@ -67,7 +63,7 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
-		} 
+		}
 		return null;
 	}
 

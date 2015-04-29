@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -32,7 +32,7 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 			IExpr arg1 = F.eval(ast.arg1());
 			if (arg1.isMatrix() != null) {
 				final IAST astMatrix = (IAST) arg1;
-				matrix = ConvertIExpr.list2Matrix(astMatrix);
+				matrix = Convert.list2Matrix(astMatrix);
 				FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
 				return F.integer(fmw.getMatrixRank());
 			}

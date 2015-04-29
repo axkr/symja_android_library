@@ -4,14 +4,13 @@ import static org.matheclipse.core.expression.F.List;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.BlockFieldMatrix;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.matheclipse.core.expression.ExprFieldElement;
+import org.matheclipse.commons.math.linear.ArrayFieldVector;
+import org.matheclipse.commons.math.linear.BlockFieldMatrix;
+import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -42,77 +41,6 @@ public class Convert {
 		} catch (final Throwable ex) {
 		}
 		return null;
-	}
-
-	/**
-	 * Returns a FieldMatrix if possible.
-	 * 
-	 * @param listMatrix
-	 * @return
-	 * @throws ClassCastException
-	 * @throws IndexOutOfBoundsException
-	 */
-	public static FieldMatrix<ExprFieldElement> list2Matrix(final IAST listMatrix) throws ClassCastException,
-			IndexOutOfBoundsException {
-		if (listMatrix == null) {
-			return null;
-		}
-		final Object header = listMatrix.head();
-		if (header != F.List) {
-			return null;
-		}
-
-		IAST currInRow = (IAST) listMatrix.get(1);
-		if (currInRow.size() == 1) {
-			// special case 0-Matrix
-			ExprFieldElement[][] array = new ExprFieldElement[0][0];
-			return new BlockFieldMatrix<ExprFieldElement>(array);
-		}
-		final int rowSize = listMatrix.size() - 1;
-		final int colSize = currInRow.size() - 1;
-
-		final ExprFieldElement[][] elements = new ExprFieldElement[rowSize][colSize];
-		for (int i = 1; i < rowSize + 1; i++) {
-			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List) {
-				return null;
-			}
-			for (int j = 1; j < colSize + 1; j++) {
-				elements[i - 1][j - 1] = new ExprFieldElement(currInRow.get(j));
-			}
-		}
-		return new BlockFieldMatrix<ExprFieldElement>(elements);
-	}
-	
-	/**
-	 * Converts a FieldMatrix to the list expression representation.
-	 * 
-	 * @param matrix
-	 * @return
-	 */
-	public static IAST matrix2List(final FieldMatrix<ExprFieldElement> matrix) {
-		if (matrix == null) {
-			return null;
-		}
-		final int rowSize = matrix.getRowDimension();
-		final int colSize = matrix.getColumnDimension();
-
-		final IAST out = F.List();
-		IAST currOutRow;
-		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.List();
-			out.add(currOutRow);
-			for (int j = 0; j < colSize; j++) {
-				IExpr expr = matrix.getEntry(i, j).getExpr();
-				if (expr instanceof INumber) {
-					currOutRow.add(expr);
-				} else {
-					currOutRow.add(F.eval(F.Together(expr)));
-				}
-			}
-		}
-		out.addEvalFlags(IAST.IS_MATRIX);
-		return out;
 	}
 
 	/**
@@ -182,25 +110,6 @@ public class Convert {
 		return out;
 	}
 
-	public static FieldVector<ExprFieldElement> list2Vector(final IAST listVector) throws ClassCastException,
-			IndexOutOfBoundsException {
-		if (listVector == null) {
-			return null;
-		}
-		final Object header = listVector.head();
-		if (header != F.List) {
-			return null;
-		}
-
-		final int rowSize = listVector.size() - 1;
-
-		final ExprFieldElement[] elements = new ExprFieldElement[rowSize];
-		for (int i = 0; i < rowSize; i++) {
-			elements[i] = new ExprFieldElement(listVector.get(i + 1));
-		}
-		return new ArrayFieldVector<ExprFieldElement>(elements);
-	}
-
 	public static RealVector list2RealVector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
 		if (listVector == null) {
 			return null;
@@ -217,26 +126,6 @@ public class Convert {
 			elements[i] = ((ISignedNumber) listVector.get(i + 1)).doubleValue();
 		}
 		return new ArrayRealVector(elements);
-	}
-
-	/**
-	 * Convert a FieldVector to a IAST list.
-	 * 
-	 * @param vector
-	 * @return
-	 */
-	public static IAST vector2List(final FieldVector<ExprFieldElement> vector) {
-		if (vector == null) {
-			return null;
-		}
-		final int rowSize = vector.getDimension();
-
-		final IAST out = F.List();
-		for (int i = 0; i < rowSize; i++) {
-			out.add(vector.getEntry(i).getExpr());
-		}
-		out.addEvalFlags(IAST.IS_VECTOR);
-		return out;
 	}
 
 	/**
@@ -300,6 +189,114 @@ public class Convert {
 		}
 
 		return sum;
+	}
+
+	/**
+	 * Returns a FieldMatrix if possible.
+	 * 
+	 * @param listMatrix
+	 * @return
+	 * @throws ClassCastException
+	 * @throws IndexOutOfBoundsException
+	 */
+	public static FieldMatrix list2Matrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
+		if (listMatrix == null) {
+			return null;
+		}
+		final Object header = listMatrix.head();
+		if (header != F.List) {
+			return null;
+		}
+	
+		IAST currInRow = (IAST) listMatrix.get(1);
+		if (currInRow.size() == 1) {
+			// special case 0-Matrix
+			IExpr[][] array = new IExpr[0][0];
+			return new BlockFieldMatrix(array);
+		}
+		final int rowSize = listMatrix.size() - 1;
+		final int colSize = currInRow.size() - 1;
+	
+		final IExpr[][] elements = new IExpr[rowSize][colSize];
+		for (int i = 1; i < rowSize + 1; i++) {
+			currInRow = (IAST) listMatrix.get(i);
+			if (currInRow.head() != F.List) {
+				return null;
+			}
+			for (int j = 1; j < colSize + 1; j++) {
+				elements[i - 1][j - 1] = currInRow.get(j);
+			}
+		}
+		return new BlockFieldMatrix(elements);
+	}
+
+	public static FieldVector list2Vector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
+		if (listVector == null) {
+			return null;
+		}
+		final Object header = listVector.head();
+		if (header != F.List) {
+			return null;
+		}
+	
+		final int rowSize = listVector.size() - 1;
+	
+		final IExpr[] elements = new IExpr[rowSize];
+		for (int i = 0; i < rowSize; i++) {
+			elements[i] = listVector.get(i + 1);
+		}
+		return new ArrayFieldVector(elements);
+	}
+
+	/**
+	 * Converts a FieldMatrix to the list expression representation.
+	 * 
+	 * @param matrix
+	 * @return
+	 */
+	public static IAST matrix2List(final FieldMatrix matrix) {
+		if (matrix == null) {
+			return null;
+		}
+		final int rowSize = matrix.getRowDimension();
+		final int colSize = matrix.getColumnDimension();
+	
+		final IAST out = F.List();
+		IAST currOutRow;
+		for (int i = 0; i < rowSize; i++) {
+			currOutRow = F.List();
+			out.add(currOutRow);
+			for (int j = 0; j < colSize; j++) {
+				IExpr expr = matrix.getEntry(i, j);
+				if (expr instanceof INumber) {
+					currOutRow.add(expr);
+				} else {
+					currOutRow.add(F.eval(F.Together(expr)));
+				}
+			}
+		}
+		out.addEvalFlags(IAST.IS_MATRIX);
+		return out;
+	}
+
+	/**
+	 * Convert a FieldVector to a IAST list.
+	 * 
+	 * @param vector
+	 * @return
+	 */
+	public static IAST vector2List(final FieldVector vector) {
+		if (vector == null) {
+			return null;
+		}
+		final int rowSize = vector.getDimension();
+	
+		final IAST out = F.List();
+		for (int i = 0; i < rowSize; i++) {
+			out.add(vector.getEntry(i));
+		}
+		out.addEvalFlags(IAST.IS_VECTOR);
+		return out;
 	}
 	
 	/**

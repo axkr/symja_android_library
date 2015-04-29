@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.ConvertIExpr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,9 +27,9 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			Validate.checkSize(ast, 2);
 
 			final IAST list = (IAST) ast.arg1();
-			matrix = ConvertIExpr.list2Matrix(list);
+			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-			return ConvertIExpr.matrix2List(fmw.getRowReducedMatrix());
+			return Convert.matrix2List(fmw.getRowReducedMatrix());
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
