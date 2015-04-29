@@ -7,8 +7,8 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
 import org.matheclipse.commons.math.linear.ArrayFieldVector;
-import org.matheclipse.commons.math.linear.BlockFieldMatrix;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
@@ -212,7 +212,7 @@ public class Convert {
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
-			return new BlockFieldMatrix(array);
+			return new Array2DRowFieldMatrix(array);
 		}
 		final int rowSize = listMatrix.size() - 1;
 		final int colSize = currInRow.size() - 1;
@@ -227,7 +227,7 @@ public class Convert {
 				elements[i - 1][j - 1] = currInRow.get(j);
 			}
 		}
-		return new BlockFieldMatrix(elements);
+		return new Array2DRowFieldMatrix(elements);
 	}
 
 	public static FieldVector list2Vector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
