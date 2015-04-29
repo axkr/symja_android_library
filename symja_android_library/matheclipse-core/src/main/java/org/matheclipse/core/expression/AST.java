@@ -390,11 +390,14 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	}
 
 	public IExpr opposite() {
-		return F.Times(F.CN1, this);
+		return negate();
 	}
 
 	@Override
 	public IExpr plus(final IExpr that) {
+		if (that.isZero()) {
+			return this;
+		}
 		return F.eval(F.Plus(this, that));
 	}
 
@@ -405,7 +408,10 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	@Override
 	public IExpr times(final IExpr that) {
-		return F.Times(this, that);
+		if (that.isZero()) {
+			return F.C0;
+		}
+		return F.eval(F.Times(this, that));
 	}
 
 	/** {@inheritDoc} */
@@ -2167,16 +2173,13 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	@Override
 	public IExpr minus(final IExpr that) {
-		return F.Plus(this, F.Times(F.CN1, that));
+		return subtract(that);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr multiply(final IExpr that) {
-		if (that.isZero()) {
-			return F.C0;
-		}
-		return F.eval(F.Times(this, that));
+		return times(that);
 	}
 
 	@Override
@@ -2399,15 +2402,18 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	@Override
 	public IExpr subtract(IExpr that) {
+		if (that.isZero()) {
+			return this;
+		}
+		if (that.isNumber()) {
+			return F.eval(F.Plus(this, that.negate()));
+		}
 		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
 	}
 
 	@Override
 	public IExpr sum(IExpr that) {
-		if (that.isZero()) {
-			return this;
-		}
-		return F.eval(F.Plus(this, that));
+		return plus(that);
 	}
 
 	@Override
@@ -2430,6 +2436,12 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	public IExpr divide(IExpr that) {
 		if (that.isNumber()) {
 			return F.eval(F.Times(this, that.inverse()));
+		}
+		if (that.isOne()) {
+			return this;
+		}
+		if (that.isMinusOne()) {
+			return negate();
 		}
 		return F.eval(F.Times(this, F.Power(that, F.CN1)));
 	}
