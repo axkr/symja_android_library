@@ -97,10 +97,10 @@ public class D extends AbstractFunctionEvaluator {
 		if (fx.isAST()) {
 			final IAST listArg1 = (IAST) fx;
 			final IExpr header = listArg1.head();
-			if (header == F.Plus) {
+			if (listArg1.isPlus()) {
 				// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
 				return listArg1.mapAt(F.D(F.Null, x), 1);
-			} else if (header == F.Times) {
+			} else if (listArg1.isTimes()) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 			} else if (listArg1.isPower()) {
 				if (listArg1.isFreeAt(2, x)) {
@@ -146,6 +146,21 @@ public class D extends AbstractFunctionEvaluator {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
 					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1), F.D(listArg1.arg2(), x));
 				}
+				// } else if (header == F.LaplaceTransform && (listArg1.size() == 4)) {
+				// if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x, true)) {
+				// // D(LaplaceTransform(c,t,s), s) -> -c / s^2
+				// return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
+				// } else if (listArg1.arg1().equals(x)) {
+				// // D(LaplaceTransform(c,t,s), c) -> 1/s
+				// return F.Power(x, -1L);
+				// } else if (listArg1.arg1().isFree(x, true) && listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x, true))
+				// {
+				// // D(LaplaceTransform(c,t,s), w) -> 0
+				// return F.C0;
+				// } else if (listArg1.arg2().equals(x)) {
+				// // D(LaplaceTransform(c,t,s), t) -> 0
+				// return F.C0;
+				// }
 			} else if (listArg1.size() == 2) {
 				return getDerivativeArg1(x, listArg1.arg1(), header);
 			}
