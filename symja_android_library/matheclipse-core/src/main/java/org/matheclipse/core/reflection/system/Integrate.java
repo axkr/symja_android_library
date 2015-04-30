@@ -243,11 +243,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 						// }
 
 						if (arg1AST.isTimes()) {
-							IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-							if (temp != null) {
-								return temp;
-							}
-
 							// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
 							IAST filterCollector = F.Times();
 							IAST restCollector = F.Times();
@@ -262,6 +257,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 									filterCollector.add(F.Integrate(restCollector.getOneIdentity(F.C0), x));
 								}
 								return filterCollector;
+							}
+							
+							IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
+							if (temp != null) {
+								return temp;
 							}
 						}
 
