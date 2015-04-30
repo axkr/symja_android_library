@@ -19,8 +19,6 @@ package org.matheclipse.commons.math.linear;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
 import org.apache.commons.math3.exception.NoDataException;
@@ -59,6 +57,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 
 	/**
 	 * Create a new {@code FieldMatrix<IExpr>} with the supplied row and column dimensions.
+	 * 
 	 * @param rowDimension
 	 *            Number of rows in the new matrix.
 	 * @param columnDimension
@@ -67,8 +66,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	 * @throws NotStrictlyPositiveException
 	 *             if row or column dimension is not positive.
 	 */
-	public Array2DRowFieldMatrix(final int rowDimension, final int columnDimension)
-			throws NotStrictlyPositiveException {
+	public Array2DRowFieldMatrix(final int rowDimension, final int columnDimension) throws NotStrictlyPositiveException {
 		super(rowDimension, columnDimension);
 		data = MathArrays.buildArray(rowDimension, columnDimension);
 	}
@@ -91,30 +89,6 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	 * @see #Array2DRowFieldMatrix(FieldElemenIExpr[][], boolean)
 	 */
 	public Array2DRowFieldMatrix(final IExpr[][] d) throws DimensionMismatchException, NullArgumentException, NoDataException {
-		this(null, d);
-	}
-
-	/**
-	 * Create a new {@code FieldMatrix<IExpr>} using the input array as the underlying data array.
-	 * <p>
-	 * The input array is copied, not referenced. This constructor has the same effect as calling
-	 * {@link #Array2DRowFieldMatrix(FieldElemenIExpr[][], boolean)} with the second argument set to {@code true}.
-	 * </p>
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param d
-	 *            Data for the new matrix.
-	 * @throws DimensionMismatchException
-	 *             if {@code d} is not rectangular.
-	 * @throws NullArgumentException
-	 *             if {@code d} is {@code null}.
-	 * @throws NoDataException
-	 *             if there are not at least one row and one column.
-	 * @see #Array2DRowFieldMatrix(FieldElemenIExpr[][], boolean)
-	 */
-	public Array2DRowFieldMatrix(final Field<IExpr> field, final IExpr[][] d) throws DimensionMismatchException,
-			NullArgumentException, NoDataException {
 		super();
 		copyIn(d);
 	}
@@ -127,6 +101,8 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	 * built and no data will be copied.
 	 * </p>
 	 *
+	 * @param field
+	 *            Field to which the elements belong.
 	 * @param d
 	 *            Data for the new matrix.
 	 * @param copyArray
@@ -141,33 +117,6 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	 */
 	public Array2DRowFieldMatrix(final IExpr[][] d, final boolean copyArray) throws DimensionMismatchException, NoDataException,
 			NullArgumentException {
-		this(null, d, copyArray);
-	}
-
-	/**
-	 * Create a new {@code FieldMatrix<IExpr>} using the input array as the underlying data array.
-	 * <p>
-	 * If an array is built specially in order to be embedded in a {@code FieldMatrix<IExpr>} and not used directly, the
-	 * {@code copyArray} may be set to {@code false}. This will prevent the copying and improve performance as no new array will be
-	 * built and no data will be copied.
-	 * </p>
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param d
-	 *            Data for the new matrix.
-	 * @param copyArray
-	 *            Whether to copy or reference the input array.
-	 * @throws DimensionMismatchException
-	 *             if {@code d} is not rectangular.
-	 * @throws NoDataException
-	 *             if there are not at least one row and one column.
-	 * @throws NullArgumentException
-	 *             if {@code d} is {@code null}.
-	 * @see #Array2DRowFieldMatrix()
-	 */
-	public Array2DRowFieldMatrix(final Field<IExpr> field, final IExpr[][] d, final boolean copyArray)
-			throws DimensionMismatchException, NoDataException, NullArgumentException {
 		super();
 		if (copyArray) {
 			copyIn(d);
@@ -194,25 +143,12 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	 * Create a new (column) {@code FieldMatrix<IExpr>} using {@code v} as the data for the unique column of the created matrix. The
 	 * input array is copied.
 	 *
-	 * @param v
-	 *            Column vector holding data for new matrix.
-	 * @throws NoDataException
-	 *             if v is empty
-	 */
-	public Array2DRowFieldMatrix(final IExpr[] v) throws NoDataException {
-		this(null, v);
-	}
-
-	/**
-	 * Create a new (column) {@code FieldMatrix<IExpr>} using {@code v} as the data for the unique column of the created matrix. The
-	 * input array is copied.
-	 *
 	 * @param field
 	 *            Field to which the elements belong.
 	 * @param v
 	 *            Column vector holding data for new matrix.
 	 */
-	public Array2DRowFieldMatrix(final Field<IExpr> field, final IExpr[] v) {
+	public Array2DRowFieldMatrix(final IExpr[] v) {
 		super();
 		final int nRows = v.length;
 		data = MathArrays.buildArray(nRows, 1);
@@ -230,7 +166,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 	/** {@inheritDoc} */
 	@Override
 	public FieldMatrix copy() {
-		return new Array2DRowFieldMatrix(null, copyOut(), false);
+		return new Array2DRowFieldMatrix(copyOut(), false);
 	}
 
 	/**
@@ -258,7 +194,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 			}
 		}
 
-		return new Array2DRowFieldMatrix(null, outData, false);
+		return new Array2DRowFieldMatrix(outData, false);
 	}
 
 	/**
@@ -286,7 +222,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 			}
 		}
 
-		return new Array2DRowFieldMatrix(null, outData, false);
+		return new Array2DRowFieldMatrix(outData, false);
 
 	}
 
@@ -319,7 +255,7 @@ public class Array2DRowFieldMatrix extends AbstractFieldMatrix implements Serial
 			}
 		}
 
-		return new Array2DRowFieldMatrix(null, outData, false);
+		return new Array2DRowFieldMatrix(outData, false);
 
 	}
 

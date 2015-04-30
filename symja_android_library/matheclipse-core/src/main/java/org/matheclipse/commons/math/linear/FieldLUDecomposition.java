@@ -17,8 +17,6 @@
 
 package org.matheclipse.commons.math.linear;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.NonSquareMatrixException;
@@ -28,8 +26,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
-
-import android.webkit.WebStorage.Origin;
 
 /**
  * Calculates the LUP-decomposition of a square matrix.
@@ -351,7 +347,7 @@ public class FieldLUDecomposition {
 					}
 				}
 
-				return new ArrayFieldVector(null, bp, false);
+				return new ArrayFieldVector(bp, false);
 
 			}
 		}
@@ -456,7 +452,7 @@ public class FieldLUDecomposition {
 				}
 			}
 
-			FieldMatrix result = new Array2DRowFieldMatrix(null, bp, false);
+			FieldMatrix result = new Array2DRowFieldMatrix(bp, false);
 			EvalEngine engine = EvalEngine.get();
 			IEvalStepListener listener = engine.getStepListener();
 			if (listener != null) {

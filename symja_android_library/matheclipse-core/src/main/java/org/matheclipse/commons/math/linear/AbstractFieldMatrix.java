@@ -512,7 +512,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 
 	/** {@inheritDoc} */
 	public FieldVector getRowVector(final int row) throws OutOfRangeException {
-		return new ArrayFieldVector(null, getRow(row), false);
+		return new ArrayFieldVector(getRow(row), false);
 	}
 
 	/** {@inheritDoc} */
@@ -530,7 +530,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 
 	/** {@inheritDoc} */
 	public FieldVector getColumnVector(final int column) throws OutOfRangeException {
-		return new ArrayFieldVector(null, getColumn(column), false);
+		return new ArrayFieldVector(getColumn(column), false);
 	}
 
 	/** {@inheritDoc} */
@@ -676,7 +676,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 	/** {@inheritDoc} */
 	public FieldVector operate(final FieldVector v) throws DimensionMismatchException {
 		try {
-			return new ArrayFieldVector(null, operate(((ArrayFieldVector) v).getDataRef()), false);
+			return new ArrayFieldVector(operate(((ArrayFieldVector) v).getDataRef()), false);
 		} catch (ClassCastException cce) {
 			final int nRows = getRowDimension();
 			final int nCols = getColumnDimension();
@@ -693,7 +693,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 				out[row] = sum;
 			}
 
-			return new ArrayFieldVector(null, out, false);
+			return new ArrayFieldVector(out, false);
 		}
 	}
 
@@ -721,7 +721,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 	/** {@inheritDoc} */
 	public FieldVector preMultiply(final FieldVector v) throws DimensionMismatchException {
 		try {
-			return new ArrayFieldVector(null, preMultiply(((ArrayFieldVector) v).getDataRef()), false);
+			return new ArrayFieldVector(preMultiply(((ArrayFieldVector) v).getDataRef()), false);
 		} catch (ClassCastException cce) {
 			final int nRows = getRowDimension();
 			final int nCols = getColumnDimension();
@@ -738,7 +738,7 @@ public abstract class AbstractFieldMatrix implements FieldMatrix {
 				out[col] = sum;
 			}
 
-			return new ArrayFieldVector(null, out, false);
+			return new ArrayFieldVector(out, false);
 		}
 	}
 

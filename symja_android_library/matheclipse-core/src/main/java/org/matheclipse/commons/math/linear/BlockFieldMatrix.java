@@ -993,7 +993,7 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 			outIndex += jWidth;
 		}
 
-		return new ArrayFieldVector(null, outData, false);
+		return new ArrayFieldVector(outData, false);
 	}
 
 	/** {@inheritDoc} */
@@ -1025,7 +1025,7 @@ public class BlockFieldMatrix extends AbstractFieldMatrix implements Serializabl
 			}
 		}
 
-		return new ArrayFieldVector(null, outData, false);
+		return new ArrayFieldVector(outData, false);
 	}
 
 	/** {@inheritDoc} */

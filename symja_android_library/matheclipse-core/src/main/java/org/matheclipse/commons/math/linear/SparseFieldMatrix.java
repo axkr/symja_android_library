@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 package org.matheclipse.commons.math.linear;
-
-import org.matheclipse.core.expression.F;
+ 
 import org.matheclipse.core.interfaces.IExpr;
 
 /**

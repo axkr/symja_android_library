@@ -16,7 +16,6 @@
  */
 package org.matheclipse.commons.math.linear;
 
-import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NotPositiveException;

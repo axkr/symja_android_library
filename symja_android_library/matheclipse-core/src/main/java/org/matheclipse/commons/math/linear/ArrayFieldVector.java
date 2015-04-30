@@ -19,8 +19,6 @@ package org.matheclipse.commons.math.linear;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.NotPositiveException;
@@ -59,6 +57,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 
 	/**
 	 * Construct a vector of zeroes.
+	 * 
 	 * @param size
 	 *            Size of the vector.
 	 */
@@ -103,22 +102,6 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 	}
 
 	/**
-	 * Construct a vector from an array, copying the input array.
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param d
-	 *            Array.
-	 * @throws NullArgumentException
-	 *             if {@code d} is {@code null}.
-	 * @see #ArrayFieldVector()
-	 */
-	public ArrayFieldVector(Field<IExpr> field, IExpr[] d) throws NullArgumentException {
-		MathUtils.checkNotNull(d);
-		data = d.clone();
-	}
-
-	/**
 	 * Create a new ArrayFieldVector using the input array as the underlying data array. If an array is built specially in order to
 	 * be embedded in a ArrayFieldVector and not used directly, the {@code copyArray} may be set to {@code false}. This will prevent
 	 * the copying and improve performance as no new array will be built and no data will be copied. This constructor needs a
@@ -146,26 +129,6 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 	}
 
 	/**
-	 * Create a new ArrayFieldVector using the input array as the underlying data array. If an array is built specially in order to
-	 * be embedded in a ArrayFieldVector and not used directly, the {@code copyArray} may be set to {@code false}. This will prevent
-	 * the copying and improve performance as no new array will be built and no data will be copied.
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param d
-	 *            Data for the new vector.
-	 * @param copyArray
-	 *            If {@code true}, the input array will be copied, otherwise it will be referenced.
-	 * @throws NullArgumentException
-	 *             if {@code d} is {@code null}.
-	 * @see #ArrayFieldVector(boolean)
-	 */
-	public ArrayFieldVector(Field<IExpr> field, IExpr[] d, boolean copyArray) throws NullArgumentException {
-		MathUtils.checkNotNull(d);
-		data = copyArray ? d.clone() : d;
-	}
-
-	/**
 	 * Construct a vector from part of a array.
 	 *
 	 * @param d
@@ -180,32 +143,6 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 	 *             if the size of {@code d} is less than {@code pos + size}.
 	 */
 	public ArrayFieldVector(IExpr[] d, int pos, int size) throws NullArgumentException, NumberIsTooLargeException {
-		MathUtils.checkNotNull(d);
-		if (d.length < pos + size) {
-			throw new NumberIsTooLargeException(pos + size, d.length, true);
-		}
-		data = MathArrays.buildArray(size);
-		System.arraycopy(d, pos, data, 0, size);
-	}
-
-	/**
-	 * Construct a vector from part of a array.
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param d
-	 *            Array.
-	 * @param pos
-	 *            Position of the first entry.
-	 * @param size
-	 *            Number of entries to copy.
-	 * @throws NullArgumentException
-	 *             if {@code d} is {@code null}.
-	 * @throws NumberIsTooLargeException
-	 *             if the size of {@code d} is less than {@code pos + size}.
-	 */
-	public ArrayFieldVector(Field<IExpr> field, IExpr[] d, int pos, int size) throws NullArgumentException,
-			NumberIsTooLargeException {
 		MathUtils.checkNotNull(d);
 		if (d.length < pos + size) {
 			throw new NumberIsTooLargeException(pos + size, d.length, true);
@@ -393,37 +330,6 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		System.arraycopy(v2, 0, data, v1.length, v2.length);
 	}
 
-	/**
-	 * Construct a vector by appending one vector to another vector.
-	 *
-	 * @param field
-	 *            Field to which the elements belong.
-	 * @param v1
-	 *            First vector (will be put in front of the new vector).
-	 * @param v2
-	 *            Second vector (will be put at back of the new vector).
-	 * @throws NullArgumentException
-	 *             if {@code v1} or {@code v2} is {@code null}.
-	 * @throws ZeroException
-	 *             if both arrays are empty.
-	 * @see #ArrayFieldVector()
-	 */
-	public ArrayFieldVector(Field<IExpr> field, IExpr[] v1, IExpr[] v2) throws NullArgumentException, ZeroException {
-		MathUtils.checkNotNull(v1);
-		MathUtils.checkNotNull(v2);
-		if (v1.length + v2.length == 0) {
-			throw new ZeroException(LocalizedFormats.VECTOR_MUST_HAVE_AT_LEAST_ONE_ELEMENT);
-		}
-		data = MathArrays.buildArray(v1.length + v2.length);
-		System.arraycopy(v1, 0, data, 0, v1.length);
-		System.arraycopy(v2, 0, data, v1.length, v2.length);
-	}
-
-	/** {@inheritDoc} */
-	public Field<IExpr> getField() {
-		return null;
-	}
-
 	/** {@inheritDoc} */
 	public FieldVector copy() {
 		return new ArrayFieldVector(this, true);
@@ -458,7 +364,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		for (int i = 0; i < data.length; i++) {
 			out[i] = data[i].plus(v.data[i]);
 		}
-		return new ArrayFieldVector(null, out, false);
+		return new ArrayFieldVector(out, false);
 	}
 
 	/** {@inheritDoc} */
@@ -804,7 +710,7 @@ public class ArrayFieldVector implements FieldVector, Serializable {
 		final IExpr[] out = MathArrays.buildArray(data.length + 1);
 		System.arraycopy(data, 0, out, 0, data.length);
 		out[data.length] = in;
-		return new ArrayFieldVector(null, out, false);
+		return new ArrayFieldVector(out, false);
 	}
 
 	/** {@inheritDoc} */

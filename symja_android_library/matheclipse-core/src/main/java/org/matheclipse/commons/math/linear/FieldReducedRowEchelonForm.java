@@ -41,17 +41,7 @@ public class FieldReducedRowEchelonForm {
 	private final FieldMatrix rowReducedMatrix;
 	private FieldMatrix nullSpaceCache;
 	private int matrixRankCache;
-
-	/**
-	 * Cached zero element of the field.
-	 */
-	private final IExpr zero;
-
-	/**
-	 * Cached one element of the field.
-	 */
-	private final IExpr one;
-
+ 
 	/**
 	 * Number of rows.
 	 */
@@ -75,8 +65,6 @@ public class FieldReducedRowEchelonForm {
 		this.rowReducedMatrix = matrix.copy();
 		this.numRows = matrix.getRowDimension();
 		this.numCols = matrix.getColumnDimension();
-		this.zero = F.C0;
-		this.one = F.C1;
 		this.matrixRankCache = -1;
 		this.nullSpaceCache = null;
 		rowReduce();
@@ -282,7 +270,7 @@ public class FieldReducedRowEchelonForm {
 		row = 0;
 		for (int i = 0; i < columns.length; i++) {
 			if (columns[i]) {
-				nullSpaceCache.setEntry(row++, i, one);
+				nullSpaceCache.setEntry(row++, i, F.C1);
 			}
 		}
 	}

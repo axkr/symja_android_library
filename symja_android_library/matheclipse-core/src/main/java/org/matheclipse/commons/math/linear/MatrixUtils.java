@@ -19,8 +19,6 @@ package org.matheclipse.commons.math.linear;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.exception.NullArgumentException;
@@ -126,7 +124,7 @@ public class MatrixUtils {
 			Arrays.fill(dRow, zero);
 			dRow[row] = one;
 		}
-		return new Array2DRowFieldMatrix(null, d, false);
+		return new Array2DRowFieldMatrix(d, false);
 	}
 
 	/**
@@ -169,7 +167,7 @@ public class MatrixUtils {
 		if (data.length == 0) {
 			throw new ZeroException(LocalizedFormats.VECTOR_MUST_HAVE_AT_LEAST_ONE_ELEMENT);
 		}
-		return new ArrayFieldVector(null, data, true);
+		return new ArrayFieldVector(data, true);
 	}
 
 	/**
