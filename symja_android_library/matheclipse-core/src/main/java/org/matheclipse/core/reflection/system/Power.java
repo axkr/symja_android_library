@@ -1,15 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.F.*;
 
 import java.math.BigInteger;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -83,11 +81,13 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			return null;
 		}
 
-		if (i1.isNegative()) {
-			return F.fraction(F.C1, i0.pow(((IInteger) i1.negate()).getBigNumerator().intValue()));
-		}
+		try {
+			long n = i1.toLong();
+			return i0.power(n);
+		} catch (ArithmeticException ae) {
 
-		return i0.pow(i1.getBigNumerator().intValue());
+		}
+		return null;
 	}
 
 	@Override
@@ -290,11 +290,30 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					}
 				}
 			}
-		}
+			if (arg2.isMinusOne() || arg2.isInteger()) {
+				if (arg1.isNumber()) {
+					if (arg2.isMinusOne()) {
+						return ((INumber) arg1).inverse();
+					}
+					try {
+						long n = ((IInteger) arg2).toLong();
+						return ((INumber) arg1).power(n);
+					} catch (ArithmeticException ae) {
 
-		if (arg2.isMinusOne()) {
-			if (arg1.isNumber()) {
-				return ((INumber) arg1).inverse();
+					}
+				} else {
+					IExpr o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+					if (o1negExpr != null) {
+						if (arg2.isMinusOne()) {
+							return Times(CN1, Power(o1negExpr, CN1));
+						} else {
+							IInteger ii = (IInteger) arg2;
+							if (ii.isEven()) {
+								return Power(o1negExpr, arg2);
+							}
+						}
+					}
+				}
 			}
 		}
 

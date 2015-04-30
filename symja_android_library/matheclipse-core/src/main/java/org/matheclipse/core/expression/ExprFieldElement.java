@@ -114,7 +114,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 			return new ExprFieldElement(((INumber) val).inverse());
 		}
 		if (val.isAtom()) {
-			return new ExprFieldElement(F.Power(val,-1L));
+			return new ExprFieldElement(F.Power(val,-1));
 		}
 		return new ExprFieldElement(F.eval(val.power(-1)));
 	}

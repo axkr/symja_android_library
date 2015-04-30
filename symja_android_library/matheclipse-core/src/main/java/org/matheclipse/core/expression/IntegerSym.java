@@ -566,6 +566,9 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		if (isZero()) {
 			return F.C0;
 		}
+		if (isOne()) {
+			return that;
+		}
 		if (that instanceof FractionSym) {
 			return FractionSym.valueOf(fInteger).multiply((FractionSym) that).normalize();
 		}

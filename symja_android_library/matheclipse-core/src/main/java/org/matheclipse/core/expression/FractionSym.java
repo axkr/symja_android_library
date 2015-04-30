@@ -397,8 +397,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 			exp >>>= 1;
 		}
 		return result;
-	}
-
+	} 
+	
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber inverse() {

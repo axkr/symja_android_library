@@ -876,7 +876,34 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	@Override
 	public final IExpr power(final long n) {
 		if (this.isNumber()) {
-			return F.eval(F.Power(this, F.integer(n)));
+			long exp = n;
+			if (n < 0) {
+				exp *= -1;
+			}
+			int b2pow = 0;
+
+			while ((exp & 1) == 0) {
+				b2pow++;
+				exp >>= 1;
+			}
+
+			INumber r = (INumber) this;
+			INumber x = r;
+
+			while ((exp >>= 1) > 0) {
+				x = (INumber) x.multiply(x);
+				if ((exp & 1) != 0) {
+					r = (INumber) r.multiply(x);
+				}
+			}
+
+			while (b2pow-- > 0) {
+				r = (INumber) r.multiply(r);
+			}
+			if (n < 0) {
+				return r.inverse();
+			}
+			return r;
 		}
 		return F.Power(this, F.integer(n));
 	}

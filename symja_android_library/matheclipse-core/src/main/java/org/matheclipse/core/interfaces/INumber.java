@@ -97,4 +97,5 @@ public interface INumber extends IExpr {
 	 *         is equal to a mathematical integer.
 	 */
 	public INumber floor() throws ArithmeticException;
+	
 }

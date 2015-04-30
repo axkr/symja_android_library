@@ -168,9 +168,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		if (o1.isPlus()) {
 			final IAST f1 = (IAST) o1;
-			// if (o0.isMinusOne()) {
-			// return f1.mapAt(F.Times(o0, null), 2);
-			// }
+			if (o0.isMinusOne()) {
+				return f1.mapAt(F.Times(o0, null), 2);
+			}
 			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
 				// Note: this doesn't work for Together() function, if we allow o0 to be a fractional number
 				return f1.mapAt(F.Times(o0, null), 2);
