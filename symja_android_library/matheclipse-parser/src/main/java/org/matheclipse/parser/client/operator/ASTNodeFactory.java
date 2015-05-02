@@ -95,7 +95,7 @@ public class ASTNodeFactory implements IParserFactory {
 			// new PostfixOperator("...", "RepeatedNull", 1500),
 			new InfixOperator("=!=", "UnsameQ", 2400, InfixOperator.NONE),
 			new InfixOperator("->", "Rule", 1100, InfixOperator.RIGHT_ASSOCIATIVE),
-			new InfixOperator("^;=", "UpSetDelayed", 300, InfixOperator.NONE), new PrefixOperator("++", "PreIncrement", 6400),
+			new InfixOperator("^:=", "UpSetDelayed", 300, InfixOperator.NONE), new PrefixOperator("++", "PreIncrement", 6400),
 			new PostfixOperator("&", "Function", 800), new InfixOperator(">", "Greater", 2600, InfixOperator.NONE),
 			new PrefixOperator("--", "PreDecrement", 6400),
 			new SubtractOperator("-", "Subtract", 2900, InfixOperator.LEFT_ASSOCIATIVE),
