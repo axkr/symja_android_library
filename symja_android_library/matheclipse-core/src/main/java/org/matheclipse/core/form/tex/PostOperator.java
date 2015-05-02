@@ -1,25 +1,24 @@
 package org.matheclipse.core.form.tex;
 
+import org.matheclipse.core.form.tex.AbstractConverter;
+import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 
-/**
- *
- */
-public class AbstractOperator extends AbstractConverter {
+public class PostOperator extends AbstractConverter {
 	protected int fPrecedence;
 	protected String fOperator;
 
-	public AbstractOperator(final int precedence, final String oper) {
+	public PostOperator(final int precedence, final String oper) {
 		fPrecedence = precedence;
 		fOperator = oper;
 	}
 
-	public AbstractOperator(final TeXFormFactory factory, final int precedence, final String oper) {
+	public PostOperator(final TeXFormFactory factory, final int precedence, final String oper) {
 		super(factory);
 		fPrecedence = precedence;
 		fOperator = oper;
 	}
-	
+
 	public void precedenceOpen(final StringBuffer buf, final int precedence) {
 		if (precedence > fPrecedence) {
 			buf.append("\\left( ");
@@ -30,19 +29,16 @@ public class AbstractOperator extends AbstractConverter {
 		if (precedence > fPrecedence) {
 			buf.append("\\right) ");
 		}
-	} 
+	}
 
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		precedenceOpen(buf, precedence);
-		for (int i = 1; i < f.size(); i++) {
-			fFactory.convert(buf, f.get(i), fPrecedence);
-			if (i < f.size() - 1) {
-				if (fOperator.compareTo("") != 0) {
-					buf.append(fOperator);
-				}
-			}
+		if (f.size() != 2) {
+			return false;
 		}
+		precedenceOpen(buf, precedence);
+		fFactory.convert(buf, f.arg1(), fPrecedence);
+		buf.append(fOperator);
 		precedenceClose(buf, precedence);
 		return true;
 	}
