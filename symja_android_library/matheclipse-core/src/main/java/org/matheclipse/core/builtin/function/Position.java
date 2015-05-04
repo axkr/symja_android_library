@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
@@ -36,8 +37,21 @@ public class Position extends AbstractCoreFunctionEvaluator {
 				return position((IAST) arg1, arg2, level);
 			}
 			if (ast.size() == 4) {
+				final Options options = new Options(ast.topHead(), ast, 2);
+				IExpr option = options.getOption("Heads");
+				if (option != null) {
+					if (option.isTrue()) {
+						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
+						return position((IAST) arg1, arg2, level);
+					}
+					if (option.isFalse()) {
+						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
+						return position((IAST) arg1, arg2, level);
+					}
+					return null;
+				}
 				IExpr arg3 = F.eval(ast.arg3());
-				final LevelSpec level = new LevelSpecification(arg3, false);
+				final LevelSpec level = new LevelSpecification(arg3, true);
 				return position((IAST) arg1, arg2, level);
 			}
 		}
@@ -89,9 +103,13 @@ public class Position extends AbstractCoreFunctionEvaluator {
 		final PatternMatcher matcher = new PatternMatcher(pattern);
 		final PositionConverter pos = new PositionConverter();
 
-		final IAST cloneList = list.copyHead();
+		final IAST cloneList = List();
 		final IAST resultList = List();
-		Position.position(list, cloneList, resultList, level, matcher, pos, 1);
+		int headOffset = 1;
+		if (level.isIncludeHeads()) {
+			headOffset = 0;
+		}
+		Position.position(list, cloneList, resultList, level, matcher, pos, headOffset);
 		return resultList;
 	}
 
