@@ -328,6 +328,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * @return
 	 */
 	public static boolean equivalent(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1, PatternMap pm2) {
+		if (patternExpr1 == patternExpr2) {
+			return true;
+		}
 		if (!patternExpr1.isPatternExpr()) {
 			if (!patternExpr2.isPatternExpr()) {
 				return patternExpr1.equals(patternExpr2);
@@ -341,16 +344,29 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				if (l1.size() != l2.size()) {
 					return false;
 				}
+				IExpr temp1, temp2;
 				for (int i = 0; i < l1.size(); i++) {
-					if (l1.get(i).hashCode() != l2.get(i).hashCode()) {
-						if (l1.get(i).isPatternExpr() && l2.get(i).isPatternExpr()) {
-							continue;
+					temp1 = l1.get(i);
+					temp2 = l2.get(i);
+					if (temp1 == temp2) {
+						continue;
+					}
+					if (temp1.hashCode() != temp2.hashCode()) {
+						if (temp1.isPatternExpr() && temp2.isPatternExpr()) {
+							if (!equivalent(temp1, temp2, pm1, pm2)) {
+								return false;
+							} else {
+								continue;
+							}
 						}
 						return false;
 					}
-				}
-				for (int i = 0; i < l1.size(); i++) {
-					if (!equivalent(l1.get(i), l2.get(i), pm1, pm2)) {
+					if (!temp1.isPatternExpr() || !temp2.isPatternExpr()) {
+						if (!temp1.equals(temp2)) {
+							return false;
+						}
+					}
+					if (!equivalent(temp1, temp2, pm1, pm2)) {
 						return false;
 					}
 				}
@@ -367,8 +383,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					return false;
 				}
 				// test if the "check" expressions are equal
-				final Object o1 = p1.getCondition();
-				final Object o2 = p2.getCondition();
+				final IExpr o1 = p1.getCondition();
+				final IExpr o2 = p2.getCondition();
 				if ((o1 == null) || (o2 == null)) {
 					return o1 == o2;
 				}
@@ -916,10 +932,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		if (obj instanceof PatternMatcher) {
 			final PatternMatcher pm = (PatternMatcher) obj;
 			if (fPatternMap.size() != pm.fPatternMap.size()) {
-				if (fPatternMap.size() < pm.fPatternMap.size()) {
-					return -1;
-				}
-				return 1;
+				return (fPatternMap.size() < pm.fPatternMap.size()) ? -1 : 1;
 			}
 			if (isRuleWithoutPatterns()) {
 				return fLhsPatternExpr.compareTo(pm.fLhsPatternExpr);
@@ -927,31 +940,25 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
 				if (fPatternCondition != null) {
 					if (pm.fPatternCondition != null) {
-						if (fPatternCondition.equals(pm.fPatternCondition)) {
-							return 0;
-						}
-						return 1;
+						return fPatternCondition.compareTo(pm.fPatternCondition);
 					}
-					return -1;
-				}
-				if (pm.fPatternCondition != null) {
 					return 1;
 				}
-				return 0;
+				return (pm.fPatternCondition != null) ? -1 : 0;
 			}
 		}
 		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
 	}
 
-//	@SuppressWarnings("unchecked")
-//	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-//		ObjectInputStream.GetField fields = stream.readFields();
-//		this.fPatternMap = new PatternMap();
-//		if (fLhsPatternExpr != null) {
-//			init(fLhsPatternExpr);
-//		}
-//	}
-	
+	// @SuppressWarnings("unchecked")
+	// private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+	// ObjectInputStream.GetField fields = stream.readFields();
+	// this.fPatternMap = new PatternMap();
+	// if (fLhsPatternExpr != null) {
+	// init(fLhsPatternExpr);
+	// }
+	// }
+
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeObject(fLhsPatternExpr);

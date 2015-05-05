@@ -23,4 +23,10 @@ public interface IPatternObject {
 	 */
 	public int getIndex(PatternMap pm);
 
+	/**
+	 * Get the associated conditionn if available
+	 * 
+	 * @return <code>null</code> if no condition is associated.
+	 */
+	public IExpr getCondition();
 }
