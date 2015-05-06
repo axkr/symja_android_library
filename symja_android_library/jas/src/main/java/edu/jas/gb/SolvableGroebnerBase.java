@@ -1,12 +1,12 @@
 /*
- * $Id: SolvableGroebnerBase.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: SolvableGroebnerBase.java 5102 2015-02-07 11:03:52Z kredel $
  */
 
 package edu.jas.gb;
 
 
-import java.util.List;
 import java.io.Serializable;
+import java.util.List;
 
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.RingElem;

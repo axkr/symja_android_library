@@ -1,5 +1,5 @@
 /*
- * $Id: PseudoReductionSeq.java 4967 2014-10-19 20:33:00Z kredel $
+ * $Id: PseudoReductionSeq.java 5243 2015-05-01 12:42:10Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -11,9 +11,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import edu.jas.gb.ReductionAbstract;
-import edu.jas.poly.PolyUtil;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.PolyUtil;
 import edu.jas.structure.RingElem;
 
 
@@ -124,16 +124,15 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
     }
 
 
-
-
     /**
      * Normalform recursive.
      * @param Ap recursive polynomial.
      * @param Pp recursive polynomial list.
      * @return nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings("unchecked")
-    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp, GenPolynomial<GenPolynomial<C>> Ap) {
+    @SuppressWarnings("cast")
+    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp,
+                    GenPolynomial<GenPolynomial<C>> Ap) {
         if (Pp == null || Pp.isEmpty()) {
             return Ap;
         }
@@ -193,15 +192,14 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
                     logger.info("red div = " + f);
                     //logger.info("red a = " + a);
                 }
-                @SuppressWarnings("cast")
                 GenPolynomial<C> c = (GenPolynomial<C>) lbc[i];
                 //if (a.remainder(c).isZERO()) { //c.isUnit() ) {
-                if (PolyUtil.<C> baseSparsePseudoRemainder(a,c).isZERO()) { //c.isUnit() ) {
+                if (PolyUtil.<C> baseSparsePseudoRemainder(a, c).isZERO()) { //c.isUnit() ) {
                     if (debug) {
                         logger.info("red c = " + c);
                     }
                     //a = a.divide(c);
-                    b = PolyUtil.<C> basePseudoDivide(a,c);
+                    b = PolyUtil.<C> basePseudoDivide(a, c);
                     GenPolynomial<GenPolynomial<C>> Sp = S.subtractMultiple(b, f, p[i]);
                     if (e.equals(Sp.leadingExpVector())) { // TODO: avoid
                         //throw new RuntimeException("degree not descending");
@@ -224,8 +222,97 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
     }
 
 
-
-
+    /**
+     * Normalform with recording. <b>Note:</b> Only meaningful if all divisions
+     * are exact. Compute first the multiplication factor <code>m</code> with
+     * <code>normalform(Pp,Ap,m)</code>, then call this method with
+     * <code>normalform(row,Pp,m*Ap)</code>.
+     * @param row recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
+     */
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return Ap;
+        }
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
+        }
+        GenPolynomial<C>[] P = new GenPolynomial[0];
+        synchronized (Pp) {
+            P = Pp.toArray(P);
+        }
+        int l = P.length;
+        ExpVector[] htl = new ExpVector[l];
+        Object[] lbc = new Object[l]; // want C 
+        GenPolynomial<C>[] p = new GenPolynomial[l];
+        Map.Entry<ExpVector, C> m;
+        int j = 0;
+        int i;
+        for (i = 0; i < l; i++) {
+            p[i] = P[i];
+            m = p[i].leadingMonomial();
+            if (m != null) {
+                p[j] = p[i];
+                htl[j] = m.getKey();
+                lbc[j] = m.getValue();
+                j++;
+            }
+        }
+        l = j;
+        ExpVector e;
+        C a;
+        boolean mt = false;
+        GenPolynomial<C> zero = Ap.ring.getZERO();
+        GenPolynomial<C> R = Ap.ring.getZERO().copy();
+        GenPolynomial<C> fac = null;
+        GenPolynomial<C> S = Ap.copy();
+        while (S.length() > 0) {
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
+            }
+            if (!mt) {
+                //logger.debug("irred");
+                //R = R.sum(a, e);
+                //S = S.subtract(a, e);
+                R.doPutToMap(e, a);
+                S.doRemoveFromMap(e, a);
+                // System.out.println(" S = " + S);
+            } else {
+                e = e.subtract(htl[i]);
+                //logger.info("red div = " + e);
+                C c = (C) lbc[i];
+                if (a.remainder(c).isZERO()) { //c.isUnit() ) {
+                    a = a.divide(c);
+                    S = S.subtractMultiple(a, e, p[i]);
+                    //System.out.print("|");
+                } else {
+                    //System.out.print("*");
+                    R = R.multiply(c);
+                    //S = S.multiply(c);
+                    S = S.scaleSubtractMultiple(c, a, e, p[i]);
+                }
+                //Q = p[i].multiply(a, e);
+                //S = S.subtract(Q);
+                fac = row.get(i);
+                if (fac == null) {
+                    fac = zero.sum(a, e);
+                } else {
+                    fac = fac.sum(a, e);
+                }
+                row.set(i, fac);
+            }
+        }
+        return R;
+    }
 
 
     /**
@@ -317,100 +404,6 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
         }
         pf = new PseudoReductionEntry<C>(R, mfac);
         return pf;
-    }
-
-
-    /**
-     * Normalform with recording. <b>Note:</b> Only meaningful if all divisions
-     * are exact. Compute first the multiplication factor <code>m</code> with
-     * <code>normalform(Pp,Ap,m)</code>, then call this method with
-     * <code>normalform(row,Pp,m*Ap)</code>.
-     * @param row recording matrix, is modified.
-     * @param Pp a polynomial list for reduction.
-     * @param Ap a polynomial.
-     * @return nf(Pp,Ap), the normal form of Ap wrt. Pp.
-     */
-    @SuppressWarnings("unchecked")
-    public GenPolynomial<C> normalform(List<GenPolynomial<C>> row, List<GenPolynomial<C>> Pp,
-                    GenPolynomial<C> Ap) {
-        if (Pp == null || Pp.isEmpty()) {
-            return Ap;
-        }
-        if (Ap == null || Ap.isZERO()) {
-            return Ap;
-        }
-        GenPolynomial<C>[] P = new GenPolynomial[0];
-        synchronized (Pp) {
-            P = Pp.toArray(P);
-        }
-        int l = P.length;
-        ExpVector[] htl = new ExpVector[l];
-        Object[] lbc = new Object[l]; // want C 
-        GenPolynomial<C>[] p = new GenPolynomial[l];
-        Map.Entry<ExpVector, C> m;
-        int j = 0;
-        int i;
-        for (i = 0; i < l; i++) {
-            p[i] = P[i];
-            m = p[i].leadingMonomial();
-            if (m != null) {
-                p[j] = p[i];
-                htl[j] = m.getKey();
-                lbc[j] = m.getValue();
-                j++;
-            }
-        }
-        l = j;
-        ExpVector e;
-        C a;
-        boolean mt = false;
-        GenPolynomial<C> zero = Ap.ring.getZERO();
-        GenPolynomial<C> R = Ap.ring.getZERO().copy();
-        GenPolynomial<C> fac = null;
-        GenPolynomial<C> S = Ap.copy();
-        while (S.length() > 0) {
-            m = S.leadingMonomial();
-            e = m.getKey();
-            a = m.getValue();
-            for (i = 0; i < l; i++) {
-                mt = e.multipleOf(htl[i]);
-                if (mt)
-                    break;
-            }
-            if (!mt) {
-                //logger.debug("irred");
-                //R = R.sum(a, e);
-                //S = S.subtract(a, e);
-                R.doPutToMap(e, a);
-                S.doRemoveFromMap(e, a);
-                // System.out.println(" S = " + S);
-                //throw new RuntimeException("Syzygy no GB");
-            } else {
-                e = e.subtract(htl[i]);
-                //logger.info("red div = " + e);
-                C c = (C) lbc[i];
-                if (a.remainder(c).isZERO()) { //c.isUnit() ) {
-                    a = a.divide(c);
-                    S = S.subtractMultiple(a, e, p[i]);
-                    //System.out.print("|");
-                } else {
-                    //System.out.print("*");
-                    R = R.multiply(c);
-                    //S = S.multiply(c);
-                    S = S.scaleSubtractMultiple(c, a, e, p[i]);
-                }
-                //Q = p[i].multiply(a, e);
-                //S = S.subtract(Q);
-                fac = row.get(i);
-                if (fac == null) {
-                    fac = zero.sum(a, e);
-                } else {
-                    fac = fac.sum(a, e);
-                }
-                row.set(i, fac);
-            }
-        }
-        return R;
     }
 
 }

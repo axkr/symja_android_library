@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionAbstract.java 4781 2014-04-06 21:50:57Z kredel $
+ * $Id: SolvableReductionAbstract.java 5041 2014-12-29 11:58:22Z kredel $
  */
 
 package edu.jas.gb;
@@ -302,5 +302,89 @@ public abstract class SolvableReductionAbstract<C extends RingElem<C>> implement
         GenSolvablePolynomial<C> Cp = (GenSolvablePolynomial<C>) App.subtract(Bpp);
         return Cp;
     }
+
+
+    /**
+     * Is top reducible. Is left right symmetric.
+     * @param A solvable polynomial.
+     * @param P solvable polynomial list.
+     * @return true if A is top reducible with respect to P.
+     */
+    public boolean isTopReducible(List<GenSolvablePolynomial<C>> P, GenSolvablePolynomial<C> A) {
+        if (P == null || P.isEmpty()) {
+            return false;
+        }
+        if (A == null || A.isZERO()) {
+            return false;
+        }
+        boolean mt = false;
+        ExpVector e = A.leadingExpVector();
+        for (GenSolvablePolynomial<C> p : P) {
+            mt = e.multipleOf(p.leadingExpVector());
+            if (mt) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Is reducible. Is left right symmetric.
+     * @param Ap solvable polynomial.
+     * @param Pp solvable polynomial list.
+     * @return true if Ap is reducible with respect to Pp.
+     */
+    public boolean isReducible(List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+        return !isNormalform(Pp, Ap);
+    }
+
+
+    /**
+     * Is in Normalform. Is left right symmetric.
+     * @param Ap polynomial.
+     * @param Pp polynomial list.
+     * @return true if Ap is in normalform with respect to Pp.
+     */
+    @SuppressWarnings("unchecked")
+    public boolean isNormalform(List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+        if (Pp == null || Pp.isEmpty()) {
+            return true;
+        }
+        if (Ap == null || Ap.isZERO()) {
+            return true;
+        }
+        GenSolvablePolynomial<C>[] P = new GenSolvablePolynomial[0];
+        synchronized (Pp) {
+            P = Pp.toArray(P);
+        }
+        int l = P.length;
+        ExpVector[] htl = new ExpVector[l];
+        GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
+        ExpVector f;
+        int i;
+        int j = 0;
+        for (i = 0; i < l; i++) {
+            p[i] = P[i];
+            f = p[i].leadingExpVector();
+            if (f != null) {
+                p[j] = p[i];
+                htl[j] = f;
+                j++;
+            }
+        }
+        l = j;
+        boolean mt = false;
+        for (ExpVector e : Ap.getMap().keySet()) {
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 
 }

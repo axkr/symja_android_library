@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseAbstract.java 4781 2014-04-06 21:50:57Z kredel $
+ * $Id: SolvableGroebnerBaseAbstract.java 5219 2015-04-12 09:59:36Z kredel $
  */
 
 package edu.jas.gb;
@@ -16,6 +16,7 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
+import edu.jas.poly.QLRSolvablePolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.PolynomialList;
 import edu.jas.poly.TermOrder;
@@ -89,6 +90,15 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
 
     /**
      * Constructor.
+     * @param pl pair selection strategy
+     */
+    public SolvableGroebnerBaseAbstract(PairList<C> pl) {
+        this(new SolvableReductionSeq<C>(), pl);
+    }
+
+
+    /**
+     * Constructor.
      * @param sred Solvable reduction engine
      * @param pl pair selection strategy
      */
@@ -98,6 +108,35 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
         this.strategy = pl;
         blas = new BasicLinAlg<GenPolynomial<C>>();
         cbb = new GroebnerBaseSeq<C>();
+    }
+
+
+    /**
+     * Normalize polynomial list.
+     * @param A list of polynomials.
+     * @return list of polynomials with zeros removed and ones/units reduced.
+     */
+    public List<GenSolvablePolynomial<C>> normalizeZerosOnes(List<GenSolvablePolynomial<C>> A) {
+        //List<GenPolynomial<C>> a = PolynomialList.<C> castToList(A);
+        //List<GenPolynomial<C>> n = cbb.normalizeZeroOnes(a);
+        //List<GenSolvablePolynomial<C>> N = PolynomialList.<C> castToSolvableList(n);
+        List<GenSolvablePolynomial<C>> N = new ArrayList<GenSolvablePolynomial<C>>(A.size());
+        if (A == null || A.isEmpty()) {
+            return N;
+        }
+        for (GenSolvablePolynomial<C> p : A) {
+            if (p == null || p.isZERO()) {
+                continue;
+            }
+            if (p.isUnit()) {
+                N.clear();
+                N.add(p.ring.getONE());
+                return N;
+            }
+            N.add((GenSolvablePolynomial<C>) p.abs());
+        }
+        //N.trimToSize();
+        return N;
     }
 
 
@@ -170,6 +209,8 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
                 }
                 h = sred.leftNormalform(F, s);
                 if (!h.isZERO()) {
+                    logger.info("no left GB: pi = " + pi + ", pj = " + pj);
+                    logger.info("s  = " + s + ", h = " + h);
                     return false;
                 }
             }
@@ -216,20 +257,30 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
         if (Fp == null || Fp.size() == 0) { // 0 not 1
             return true;
         }
-        GenSolvablePolynomialRing<C> fac = Fp.get(0).ring; // assert != null
-        //List<GenSolvablePolynomial<C>> X = generateUnivar( modv, Fp );
-        List<GenSolvablePolynomial<C>> X = fac.univariateList(modv);
+        if (Fp.size() == 1 && Fp.get(0).isONE()) { 
+            return true;
+        }
+        GenSolvablePolynomialRing<C> ring = Fp.get(0).ring; // assert != null
+        // add also coefficient generators
+        List<GenSolvablePolynomial<C>> X;
+        X = PolynomialList.castToSolvableList(ring.generators(modv)); 
+        logger.info("right multipliers = " + X);
         List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(Fp.size() * (1 + X.size()));
         F.addAll(Fp);
-        GenSolvablePolynomial<C> p, x, pi, pj, s, h;
+        GenSolvablePolynomial<C> p, q, x, pi, pj, s, h;
         for (int i = 0; i < Fp.size(); i++) {
             p = Fp.get(i);
             for (int j = 0; j < X.size(); j++) {
                 x = X.get(j);
-                p = p.multiply(x);
-                p = sred.leftNormalform(F, p);
-                if (!p.isZERO()) {
-                    F.add(p);
+                if (x.isONE()) {
+                    continue;
+                }
+                q = p.multiply(x);
+                q = sred.leftNormalform(F, q);
+                //System.out.println("is: q generated = " + q + ", p = " + p + ", x = " + x);
+                if (!q.isZERO()) {
+                    return false;
+                    //F.add(q);
                 }
             }
         }
@@ -381,6 +432,19 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
 
 
     /**
+     * Solvable Extended Groebner base using critical pair class.
+     * @param modv module variable number.
+     * @param F polynomial list.
+     * @return a container for an extended left Groebner base G of F together
+     *         with back-and-forth transformations.
+     */
+    public SolvableExtendedGB<C> extLeftGB(int modv, List<GenSolvablePolynomial<C>> F) {
+        throw new UnsupportedOperationException("extLeftGB not implemented in "
+                        + this.getClass().getSimpleName());
+    }
+
+
+    /**
      * Left minimal ordered groebner basis.
      * @param Gp a left Groebner base.
      * @return leftGBmi(F) a minimal left Groebner base of Gp.
@@ -446,6 +510,69 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
 
 
     /**
+     * Right minimal ordered groebner basis.
+     * @param Gp a right Groebner base.
+     * @return rightGBmi(F) a minimal right Groebner base of Gp.
+     */
+    public List<GenSolvablePolynomial<C>> rightMinimalGB(List<GenSolvablePolynomial<C>> Gp) {
+        ArrayList<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>();
+        ListIterator<GenSolvablePolynomial<C>> it = Gp.listIterator();
+        for (GenSolvablePolynomial<C> a : Gp) {
+            if (a.length() != 0) { // always true
+                G.add(a);
+            }
+        }
+        if (G.size() <= 1) {
+            return G;
+        }
+
+        ExpVector e;
+        ExpVector f;
+        GenSolvablePolynomial<C> a, p;
+        ArrayList<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>();
+        boolean mt;
+
+        while (G.size() > 0) {
+            a = G.remove(0);
+            e = a.leadingExpVector();
+
+            it = G.listIterator();
+            mt = false;
+            while (it.hasNext() && !mt) {
+                p = it.next();
+                f = p.leadingExpVector();
+                mt = e.multipleOf(f);
+            }
+            it = F.listIterator();
+            while (it.hasNext() && !mt) {
+                p = it.next();
+                f = p.leadingExpVector();
+                mt = e.multipleOf(f);
+            }
+            if (!mt) {
+                F.add(a);
+            } else {
+                // System.out.println("dropped " + a.length());
+            }
+        }
+        G = F;
+        if (G.size() <= 1) {
+            return G;
+        }
+
+        F = new ArrayList<GenSolvablePolynomial<C>>();
+        while (G.size() > 0) {
+            a = G.remove(0);
+            // System.out.println("doing " + a.length());
+            a = sred.rightNormalform(G, a);
+            a = sred.rightNormalform(F, a);
+            F.add(a);
+        }
+        return F;
+    }
+
+
+    /**
      * Twosided Groebner base using pairlist class.
      * @param Fp solvable polynomial list.
      * @return tsGB(Fp) a twosided Groebner base of Fp.
@@ -473,16 +600,11 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
      */
     @SuppressWarnings("unchecked")
     public List<GenSolvablePolynomial<C>> rightGB(int modv, List<GenSolvablePolynomial<C>> F) {
-        GenSolvablePolynomialRing<C> ring = null;
-        for (GenSolvablePolynomial<C> p : F) {
-            if (p != null) {
-                ring = p.ring;
-                break;
-            }
+        List<GenSolvablePolynomial<C>> G = normalizeZerosOnes(F);
+        if (G.size() <= 1) {
+            return G;
         }
-        if (ring == null) {
-            return F;
-        }
+        GenSolvablePolynomialRing<C> ring = G.get(0).ring; // assert != null
         GenSolvablePolynomialRing<C> rring = ring.reverse(true); //true
         //System.out.println("reversed ring = " + rring);
         GenSolvablePolynomial<C> q;
@@ -494,7 +616,7 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
                 rF.add(q);
             }
         }
-        if (debug) {
+        if (logger.isInfoEnabled()) {
             PolynomialList<C> pl = new PolynomialList<C>(rring, rF);
             logger.info("reversed problem = " + pl.toScript());
         }
@@ -509,7 +631,7 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
         }
         //System.out.println("reversed left GB = " + rG);
         ring = rring.reverse(true); // true
-        List<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>(rG.size());
+        G = new ArrayList<GenSolvablePolynomial<C>>(rG.size());
         for (GenSolvablePolynomial<C> p : rG) {
             if (p != null) {
                 q = (GenSolvablePolynomial<C>) p.reverse(ring);

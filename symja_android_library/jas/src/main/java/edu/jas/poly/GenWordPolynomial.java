@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomial.java 4956 2014-10-16 22:45:10Z kredel $
+ * $Id: GenWordPolynomial.java 5184 2015-04-01 21:17:18Z kredel $
  */
 
 package edu.jas.poly;
@@ -116,6 +116,27 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
 
 
     /**
+     * Constructor for GenWordPolynomial x<sup>e</sup>.
+     * @param r polynomial ring factory.
+     * @param e exponent vector.
+     */
+    public GenWordPolynomial(GenWordPolynomialRing<C> r, ExpVector e) {
+        this(r, r.coFac.getONE(), r.alphabet.valueOf(e));
+    }
+
+
+    /**
+     * Constructor for GenWordPolynomial c * x<sup>e</sup>.
+     * @param r polynomial ring factory.
+     * @param c coefficient.
+     * @param e exponent vector.
+     */
+    public GenWordPolynomial(GenWordPolynomialRing<C> r, C c, ExpVector e) {
+        this(r, c, r.alphabet.valueOf(e));
+    }
+
+
+    /**
      * Constructor for GenWordPolynomial.
      * @param r polynomial ring factory.
      * @param v the SortedMap of some other polynomial.
@@ -165,7 +186,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
 
 
     /**
-     * Put an Word to coefficient entry into the internal map of this
+     * Put a Word to coefficient entry into the internal map of this
      * GenWordPolynomial. <b>Note:</b> Do not use this method unless you are
      * constructing a new polynomial. this is modified and breaks the
      * immutability promise of this class.
@@ -181,6 +202,27 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
         }
         if (!c.isZERO()) {
             val.put(e, c);
+        }
+    }
+
+
+    /**
+     * Remove a Word to coefficient entry from the internal map of this
+     * GenWordPolynomial. <b>Note:</b> Do not use this method unless you are
+     * constructing a new polynomial. this is modified and breaks the
+     * immutability promise of this class.
+     * @param e Word.
+     * @param c expected coefficient, null for ignore.
+     */
+    public void doRemoveFromMap(Word e, C c) {
+        C b = val.remove(e);
+        if (debug) {
+            if (c == null) { // ignore b
+                return;
+            }
+            if (!c.equals(b)) {
+                logger.error("map entry wrong " + e + " to " + c + " old " + b);
+            }
         }
     }
 
@@ -244,7 +286,12 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
                 if (parenthesis) {
                     s.append("( ");
                 }
-                s.append(c.toString());
+                String cs = c.toString();
+                if (cs.indexOf("+")>=0||cs.indexOf("-")>=0) {
+                    s.append("( " + cs + " )");
+                } else {
+                    s.append(cs);
+                }
                 if (parenthesis) {
                     s.append(" )");
                 }
@@ -297,7 +344,12 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
                 if (parenthesis) {
                     s.append("( ");
                 }
-                s.append(c.toScript());
+                String cs = c.toScript();
+                if (cs.indexOf("+")>=0||cs.indexOf("-")>=0) {
+                    s.append("( " + cs + " )");
+                } else {
+                    s.append(cs);
+                }
                 if (parenthesis) {
                     s.append(" )");
                 }

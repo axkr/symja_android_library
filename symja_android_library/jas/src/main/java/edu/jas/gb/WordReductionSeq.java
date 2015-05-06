@@ -1,5 +1,5 @@
 /*
- * $Id: WordReductionSeq.java 4782 2014-04-06 21:56:08Z kredel $
+ * $Id: WordReductionSeq.java 5243 2015-05-01 12:42:10Z kredel $
  */
 
 package edu.jas.gb;
@@ -67,7 +67,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
             }
         }
         Word[] htl = new Word[l];
-        Object[] lbc = new Object[l]; // want C[]
+        C[] lbc = (C[]) new RingElem[l]; // want C[]
         GenWordPolynomial<C>[] p = new GenWordPolynomial[l];
         int i;
         int j = 0;
@@ -113,7 +113,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 if (debug) {
                     logger.info("red divideWord: e = " + e + ", f = " + f);
                 }
-                a = a.divide((C) lbc[i]);
+                a = a.divide(lbc[i]);
                 Q = p[i].multiply(a, e, cone, f);
                 S = S.subtract(Q);
             }
@@ -151,7 +151,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
             }
         }
         Word[] htl = new Word[l];
-        Object[] lbc = new Object[l]; // want C[]
+        C[] lbc = (C[]) new RingElem[l]; // want C[]
         GenWordPolynomial<C>[] p = new GenWordPolynomial[l];
         Map.Entry<Word, C> m;
         int j = 0;
@@ -192,7 +192,6 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 R = R.sum(a, e);
                 S = S.subtract(a, e);
                 // System.out.println(" S = " + S);
-                //throw new RuntimeException("Syzygy no GB");
             } else {
                 Word[] elr = e.divideWord(htl[i]);
                 e = elr[0];
@@ -200,7 +199,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 if (debug) {
                     logger.info("redRec divideWord: e = " + e + ", f = " + f);
                 }
-                C c = (C) lbc[i];
+                C c = lbc[i];
                 a = a.divide(c);
                 Q = p[i].multiply(a, e, cone, f);
                 S = S.subtract(Q);

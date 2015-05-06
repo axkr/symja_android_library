@@ -1,5 +1,5 @@
 /*
- * $Id: DReductionSeq.java 4964 2014-10-17 19:43:31Z kredel $
+ * $Id: DReductionSeq.java 5243 2015-05-01 12:42:10Z kredel $
  */
 
 package edu.jas.gb;
@@ -454,7 +454,6 @@ public class DReductionSeq<C extends RingElem<C>> extends ReductionAbstract<C> i
                 R = R.sum( a, e );
                 S = S.subtract( a, e ); 
                 // System.out.println(" S = " + S);
-                //throw new RuntimeException("Syzygy no GB");
             } else { 
                 e =  e.subtract( htl[i] );
                 //logger.info("red div = " + e);

@@ -1,5 +1,5 @@
 /*
- * $Id: HenselUtil.java 4965 2014-10-17 20:07:51Z kredel $
+ * $Id: HenselUtil.java 5047 2014-12-30 17:44:11Z kredel $
  */
 
 package edu.jas.ufd;
@@ -325,7 +325,7 @@ public class HenselUtil {
         // polynomials mod q
         GenPolynomial<MOD> Aq;
         GenPolynomial<MOD> Bq;
-        GenPolynomial<MOD> Eq;
+        //GenPolynomial<MOD> Eq;
 
         // polynomials over the integers
         GenPolynomial<BigInteger> E;
@@ -405,13 +405,13 @@ public class HenselUtil {
             B1p = Rp;
             A1p = Ap.sum(Bq.multiply(Qp));
 
-            if (false && debug) {
-                Eq = A1p.multiply(Aq).sum(B1p.multiply(Bq)).subtract(Ep);
-                if (!Eq.isZERO()) {
-                    System.out.println("A*A1p+B*B1p-Ep2 != 0 " + Eq);
-                    throw new RuntimeException("A*A1p+B*B1p-Ep2 != 0 mod " + Q.getIntegerModul());
-                }
-            }
+            //if (debug) {
+            //    Eq = A1p.multiply(Aq).sum(B1p.multiply(Bq)).subtract(Ep);
+            //    if (!Eq.isZERO()) {
+            //        System.out.println("A*A1p+B*B1p-Ep2 != 0 " + Eq);
+            //        throw new RuntimeException("A*A1p+B*B1p-Ep2 != 0 mod " + Q.getIntegerModul());
+            //    }
+            //}
 
             // construct q-adic approximation, convert to integer
             Ea = PolyUtil.integerFromModularCoefficients(fac, A1p);
@@ -440,14 +440,14 @@ public class HenselUtil {
             Bq = PolyUtil.<MOD> fromIntegerCoefficients(qfac, Bi);
             Sp = PolyUtil.<MOD> fromIntegerCoefficients(qfac, Si);
             Tp = PolyUtil.<MOD> fromIntegerCoefficients(qfac, Ti);
-            if (false && debug) {
-                E = Ai.multiply(Si).sum(Bi.multiply(Ti));
-                Eq = PolyUtil.<MOD> fromIntegerCoefficients(qfac, E);
-                if (!Eq.isONE()) {
-                    System.out.println("Ai*Si+Bi*Ti=1 " + Eq);
-                    throw new RuntimeException("Ai*Si+Bi*Ti != 1 mod " + Q.getIntegerModul());
-                }
-            }
+            //if (debug) {
+            //    E = Ai.multiply(Si).sum(Bi.multiply(Ti));
+            //    Eq = PolyUtil.<MOD> fromIntegerCoefficients(qfac, E);
+            //    if (!Eq.isONE()) {
+            //        System.out.println("Ai*Si+Bi*Ti=1 " + Eq);
+            //        throw new RuntimeException("Ai*Si+Bi*Ti != 1 mod " + Q.getIntegerModul());
+            //    }
+            //}
         }
         GreatestCommonDivisorAbstract<BigInteger> ufd = new GreatestCommonDivisorPrimitive<BigInteger>();
 

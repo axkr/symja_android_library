@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotient.java 4963 2014-10-17 19:19:18Z kredel $
+ * $Id: SolvableQuotient.java 5220 2015-04-12 10:42:41Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -128,7 +128,8 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             den = ring.ring.getONE();
             return;
         }
-        if (n.isONE() || d.isONE()) {
+        //if (n.isONE() || d.isONE()) {
+        if (n.isConstant() || d.isConstant()) {
             num = n;
             den = d;
             return;
@@ -140,6 +141,11 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             logger.info("constructor: gcd = " + Arrays.toString(gcd)); // + ", " + n + ", " +d);
             n = gcd[1];
             d = gcd[2];
+            if (n.isConstant() || d.isConstant()) {
+                num = n;
+                den = d;
+                return;
+            }
         }
         // not perfect, TODO 
         GenSolvablePolynomial<C>[] simp = ring.engine.leftSimplifier(n, d);
@@ -333,8 +339,10 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
             return false;
         }
         SolvableQuotient<C> a = (SolvableQuotient<C>) b;
+        if (num.equals(a.num) && den.equals(a.den)) { // short cut
+            return true;
+        }
         return compareTo(a) == 0;
-        //return num.equals(a.num) && den.equals(a.den);
     }
 
 

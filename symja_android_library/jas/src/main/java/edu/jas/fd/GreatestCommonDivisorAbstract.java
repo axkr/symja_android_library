@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorAbstract.java 4822 2014-04-21 15:06:13Z kredel $
+ * $Id: GreatestCommonDivisorAbstract.java 5105 2015-02-07 14:35:17Z kredel $
  */
 
 package edu.jas.fd;
@@ -12,6 +12,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import edu.jas.gbmod.SolvableSyzygyAbstract;
+import edu.jas.gbmod.SolvableSyzygySeq;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
@@ -45,7 +46,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
     final SolvableSyzygyAbstract<C> syz;
 
 
-    /**
+    /*
      * Engine for commutative gcd computation.
      */
     //edu.jas.ufd.GreatestCommonDivisorAbstract<C> cgcd;
@@ -53,9 +54,10 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
 
     /**
      * Constructor.
+     * @param cf coefficient ring.
      */
-    public GreatestCommonDivisorAbstract() {
-        syz = new SolvableSyzygyAbstract<C>();
+    public GreatestCommonDivisorAbstract(RingFactory<C> cf) {
+        syz = new SolvableSyzygySeq<C>(cf);
         //cgcd = GCDFactory.<C> getImplementation(pfac.coFac);
     }
 

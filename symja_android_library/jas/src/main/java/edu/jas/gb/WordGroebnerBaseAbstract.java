@@ -1,5 +1,5 @@
 /*
- * $Id: WordGroebnerBaseAbstract.java 4955 2014-10-13 21:34:09Z kredel $
+ * $Id: WordGroebnerBaseAbstract.java 5041 2014-12-29 11:58:22Z kredel $
  */
 
 package edu.jas.gb;
@@ -7,11 +7,17 @@ package edu.jas.gb;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import edu.jas.poly.GenWordPolynomial;
+import edu.jas.poly.GenWordPolynomialRing;
+import edu.jas.poly.Word;
 import edu.jas.structure.RingElem;
 
 
@@ -88,22 +94,100 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements
      */
     public List<GenWordPolynomial<C>> normalizeZerosOnes(List<GenWordPolynomial<C>> A) {
         List<GenWordPolynomial<C>> N = new ArrayList<GenWordPolynomial<C>>(A.size());
-        if ( A == null || A.isEmpty() ) {
+        if (A == null || A.isEmpty()) {
             return N;
         }
         for (GenWordPolynomial<C> p : A) {
-            if ( p == null || p.isZERO() ) {
+            if (p == null || p.isZERO()) {
                 continue;
             }
-            if ( p.isUnit() ) {
+            if (p.isUnit()) {
                 N.clear();
-                N.add( p.ring.getONE() );
+                N.add(p.ring.getONE());
                 return N;
             }
-            N.add( p.abs() );
+            N.add(p.abs());
         }
         //N.trimToSize();
         return N;
+    }
+
+
+    /**
+     * Common zero test, test if univariate leading words exist for all
+     * variables.
+     * @param F polynomial list.
+     * @return -1, 0 or 1 if "dimension"(ideal(F)) &eq; -1, 0 or &ge; 1.
+     */
+    public int commonZeroTest(List<GenWordPolynomial<C>> F) {
+        if (F == null || F.isEmpty()) {
+            return 1;
+        }
+        GenWordPolynomialRing<C> pfac = F.get(0).ring;
+        if (pfac.alphabet.length() <= 0) {
+            return -1;
+        }
+        Set<String> v = new HashSet<String>(); // for non reduced GBs
+        for (GenWordPolynomial<C> p : F) {
+            if (p.isZERO()) {
+                continue;
+            }
+            if (p.isConstant()) { // for non-monic lists
+                return -1;
+            }
+            Word e = p.leadingWord();
+            if (e == null) {
+                continue;
+            }
+            SortedMap<String, Integer> u = e.dependencyOnVariables();
+            if (u == null) {
+                continue;
+            }
+            if (u.size() == 1) {
+                v.add(u.firstKey());
+            }
+        }
+        if (pfac.alphabet.length() == v.size()) {
+            return 0;
+        }
+        return 1;
+    }
+
+
+    /**
+     * Univariate head term degrees.
+     * @param A list of polynomials.
+     * @return a list of the degrees of univariate head terms.
+     */
+    public List<Long> univariateDegrees(List<GenWordPolynomial<C>> A) {
+        List<Long> ud = new ArrayList<Long>();
+        if (A == null || A.size() == 0) {
+            return ud;
+        }
+        GenWordPolynomialRing<C> pfac = A.get(0).ring;
+        if (pfac.alphabet.length() <= 0) {
+            return ud;
+        }
+        SortedMap<String, Long> v = new TreeMap<String, Long>(); // for non reduced GBs
+        for (GenWordPolynomial<C> p : A) {
+            Word e = p.leadingWord();
+            if (e == null) {
+                continue;
+            }
+            SortedMap<String, Integer> u = e.dependencyOnVariables();
+            if (u == null) {
+                continue;
+            }
+            if (u.size() == 1) {
+                Long d = v.get(u.firstKey());
+                if (d == null) { // record only once
+                    v.put(u.firstKey(), Long.valueOf(u.get(u.firstKey())));
+                }
+            }
+        }
+        ud.addAll(v.values());
+        //Collections.reverse(ud);
+        return ud;
     }
 
 
@@ -113,7 +197,7 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements
      * @return true, if F is a Groebner base, else false.
      */
     public boolean isGB(List<GenWordPolynomial<C>> F) {
-        if (F == null || F.isEmpty()) {
+        if (F == null || F.size() <= 1) {
             return true;
         }
         for (int i = 0; i < F.size(); i++) {
@@ -121,13 +205,21 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements
             for (int j = i + 1; j < F.size(); j++) {
                 GenWordPolynomial<C> pj = F.get(j);
                 List<GenWordPolynomial<C>> S = red.SPolynomials(pi, pj);
-                if (S.isEmpty()) {
-                    continue;
-                }
                 for (GenWordPolynomial<C> s : S) {
+                    //System.out.println("s-pol("+i+","+j+"): " + s.leadingWord());
                     GenWordPolynomial<C> h = red.normalform(F, s);
                     if (!h.isZERO()) {
                         logger.info("no GB: pi = " + pi + ", pj = " + pj);
+                        logger.info("s  = " + s + ", h = " + h);
+                        return false;
+                    }
+                }
+                S = red.SPolynomials(pj, pi);
+                for (GenWordPolynomial<C> s : S) {
+                    //System.out.println("s-pol("+j+","+i+"): " + s.leadingWord());
+                    GenWordPolynomial<C> h = red.normalform(F, s);
+                    if (!h.isZERO()) {
+                        logger.info("no GB: pj = " + pj + ", pi = " + pi);
                         logger.info("s  = " + s + ", h = " + h);
                         return false;
                     }

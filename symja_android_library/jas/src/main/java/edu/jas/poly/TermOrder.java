@@ -1,5 +1,5 @@
 /*
- * $Id: TermOrder.java 4639 2013-09-13 19:52:32Z kredel $
+ * $Id: TermOrder.java 5226 2015-04-19 10:16:29Z kredel $
  */
 
 package edu.jas.poly;
@@ -8,6 +8,7 @@ package edu.jas.poly;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -279,7 +280,7 @@ public final class TermOrder implements Serializable {
         if (w == null || w.length == 0) {
             throw new IllegalArgumentException("invalid term order weight");
         }
-        weight = Arrays.copyOf(w,w.length); // > Java-5
+        weight = Arrays.copyOf(w, w.length); // > Java-5
         this.evord = 0;
         this.evord2 = 0;
         evbeg1 = 0;
@@ -739,7 +740,7 @@ public final class TermOrder implements Serializable {
             }
             break;
         }
-            //----- begin reversed -----------
+        //----- begin reversed -----------
         case TermOrder.REVLEX: {
             switch (evord2) {
             case TermOrder.LEX: {
@@ -1252,7 +1253,7 @@ public final class TermOrder implements Serializable {
             }
             break;
         }
-            //----- end reversed-----------
+        //----- end reversed-----------
         default: {
             horder = null;
         }
@@ -1317,7 +1318,7 @@ public final class TermOrder implements Serializable {
         if (weight == null) {
             return null;
         }
-        return Arrays.copyOf(weight,weight.length); // > Java-5
+        return Arrays.copyOf(weight, weight.length); // > Java-5
     }
 
 
@@ -1672,7 +1673,7 @@ public final class TermOrder implements Serializable {
                 w[i] = wj;
             }
             t = new TermOrder(w);
-            logger.info("new TO = " + t);
+            logger.info("reverse = " + t + ", from = " + this);
             return t;
         }
         if (evord2 == 0) {
@@ -1684,7 +1685,7 @@ public final class TermOrder implements Serializable {
         } else {
             t = new TermOrder(revert(evord2), revert(evord), evend2, evend2 - evbeg2);
         }
-        logger.info("new TO = " + t);
+        logger.info("reverse = " + t + ", from = " + this);
         return t;
     }
 
@@ -1726,6 +1727,51 @@ public final class TermOrder implements Serializable {
             break;
         }
         return i;
+    }
+
+
+    /**
+     * Permutation of a long array.
+     * @param a array of long.
+     * @param P permutation.
+     * @return P(a).
+     */
+    public static long[] longArrayPermutation(List<Integer> P, long[] a) {
+        if (a == null || a.length <= 1) {
+            return a;
+        }
+        long[] b = new long[a.length];
+        int j = 0;
+        for (Integer i : P) {
+            b[j] = a[i];
+            j++;
+        }
+        return b;
+    }
+
+
+    /**
+     * Permutation of the termorder.
+     * @param P permutation.
+     * @return P(a).
+     */
+    public TermOrder permutation(List<Integer> P) {
+        TermOrder tord = this;
+        if (getEvord2() != 0) {
+            //throw new IllegalArgumentException("split term orders not permutable");
+            tord = new TermOrder(getEvord2());
+            logger.warn("split term order '" + this + "' not permutable, resetting to most base term order "
+                            + tord);
+        }
+        long[][] weight = getWeight();
+        if (weight != null) {
+            long[][] w = new long[weight.length][];
+            for (int i = 0; i < weight.length; i++) {
+                w[i] = longArrayPermutation(P, weight[i]);
+            }
+            tord = new TermOrder(w);
+        }
+        return tord;
     }
 
 }

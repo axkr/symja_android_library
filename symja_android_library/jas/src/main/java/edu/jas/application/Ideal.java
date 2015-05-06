@@ -1,5 +1,5 @@
 /*
- * $Id: Ideal.java 4960 2014-10-17 18:46:22Z kredel $
+ * $Id: Ideal.java 5083 2015-01-25 20:08:31Z kredel $
  */
 
 package edu.jas.application;
@@ -20,6 +20,7 @@ import edu.jas.gb.ExtendedGB;
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.Reduction;
 import edu.jas.gbmod.SyzygyAbstract;
+import edu.jas.gbmod.SyzygySeq;
 import edu.jas.gbufd.GBFactory;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.gbufd.PolyGBUtil;
@@ -1150,7 +1151,7 @@ public class Ideal<C extends GcdRingElem<C>> implements Comparable<Ideal<C>>, Se
         F.add(h);
         F.addAll(getList());
         //System.out.println("F = " + F);
-        SyzygyAbstract<C> syz = new SyzygyAbstract<C>();
+        SyzygyAbstract<C> syz = new SyzygySeq<C>(getRing().coFac);
         List<List<GenPolynomial<C>>> S = syz.zeroRelationsArbitrary(F);
         //System.out.println("S = " + S);
         List<GenPolynomial<C>> gen = new ArrayList<GenPolynomial<C>>(S.size());

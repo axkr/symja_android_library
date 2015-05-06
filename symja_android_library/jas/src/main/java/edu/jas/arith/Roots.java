@@ -265,26 +265,26 @@ public class Roots {
      * @param a big decimal complex.
      * @return sqrt(a).
      */
-//    public static BigDecimalComplex sqrt(BigDecimalComplex a) {
-//        if (a.isZERO() || a.isONE()) {
-//            return a;
-//        }
-//        BigDecimal r = a.re.abs().sum(a.abs().re);
-//        BigDecimal t = new BigDecimal(2);
-//        BigDecimal ti = new BigDecimal("0.5");
-//        //BigDecimal u = r.divide(t);
-//        BigDecimal u = r.multiply(ti);
-//        BigDecimal v = Roots.sqrt(u);
-//        //System.out.println("r = " + r + ", a = " + a);
-//        //System.out.println("v = " + v + ", u = " + u);
-//        if (a.re.signum() >= 0) {
-//            return new BigDecimalComplex(v, a.im.divide(v.multiply(t)));
-//        }
-//        u = v;
-//        if (a.im.signum() < 0) {
-//            u = u.negate();
-//        }
-//        return new BigDecimalComplex(a.im.abs().divide(v.multiply(t)), u);
-//    }
+	// public static BigDecimalComplex sqrt(BigDecimalComplex a) {
+	// if (a.isZERO() || a.isONE()) {
+	// return a;
+	// }
+	// BigDecimal r = a.re.abs().sum(a.abs().re);
+	// BigDecimal t = new BigDecimal(2);
+	// BigDecimal ti = new BigDecimal("0.5");
+	// //BigDecimal u = r.divide(t);
+	// BigDecimal u = r.multiply(ti);
+	// BigDecimal v = Roots.sqrt(u);
+	// //System.out.println("r = " + r + ", a = " + a);
+	// //System.out.println("v = " + v + ", u = " + u);
+	// if (a.re.signum() >= 0) {
+	// return new BigDecimalComplex(v, a.im.divide(v.multiply(t)));
+	// }
+	// u = v;
+	// if (a.im.signum() < 0) {
+	// u = u.negate();
+	// }
+	// return new BigDecimalComplex(a.im.abs().divide(v.multiply(t)), u);
+	// }
 
 }

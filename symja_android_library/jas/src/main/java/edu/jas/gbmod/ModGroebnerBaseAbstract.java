@@ -1,5 +1,5 @@
 /*
- * $Id: ModGroebnerBaseAbstract.java 4178 2012-09-09 10:45:10Z kredel $
+ * $Id: ModGroebnerBaseAbstract.java 5080 2015-01-25 17:40:00Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -7,13 +7,12 @@ package edu.jas.gbmod;
 
 import java.util.List;
 
-import edu.jas.gb.GroebnerBase;
-import edu.jas.gbufd.GBFactory;
+import org.apache.log4j.Logger;
+
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.ModuleList;
 import edu.jas.poly.PolynomialList;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.RingFactory;
 
 
 /**
@@ -21,41 +20,10 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGroebnerBase<C> {
+public abstract class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGroebnerBase<C> {
 
 
-    //private static final Logger logger = Logger.getLogger(ModGroebnerBase.class);
-
-
-    /**
-     * Used Groebner base algorithm.
-     */
-    protected final GroebnerBase<C> bb;
-
-
-    /**
-     * Constructor.
-     */
-    @Deprecated
-    public ModGroebnerBaseAbstract() {
-        bb = GBFactory.getImplementation();
-    }
-
-
-    /**
-     * Constructor.
-     */
-    public ModGroebnerBaseAbstract(RingFactory<C> cf) {
-        bb = GBFactory.getImplementation(cf);
-    }
-
-
-    /**
-     * Module Groebner base test.
-     */
-    public boolean isGB(int modv, List<GenPolynomial<C>> F) {
-        return bb.isGB(modv, F);
-    }
+    private static final Logger logger = Logger.getLogger(ModGroebnerBaseAbstract.class);
 
 
     /**
@@ -72,15 +40,7 @@ public class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGro
         }
         PolynomialList<C> F = M.getPolynomialList();
         int modv = M.cols; // > 0  
-        return bb.isGB(modv, F.list);
-    }
-
-
-    /**
-     * Groebner base using pairlist class.
-     */
-    public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
-        return bb.GB(modv, F);
+        return isGB(modv, F.list);
     }
 
 
@@ -100,10 +60,27 @@ public class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGro
 
         PolynomialList<C> F = M.getPolynomialList();
         int modv = M.cols;
-        List<GenPolynomial<C>> G = bb.GB(modv, F.list);
+        List<GenPolynomial<C>> G = GB(modv, F.list);
         F = new PolynomialList<C>(F.ring, G);
         N = F.getModuleList(modv);
         return N;
+    }
+
+
+    /**
+     * Cleanup and terminate ThreadPool.
+     */
+    public void terminate() {
+        logger.info("terminate not implemented");
+    }
+
+
+    /**
+     * Cancel ThreadPool.
+     */
+    public int cancel() {
+        logger.info("cancel not implemented");
+        return 0;
     }
 
 }

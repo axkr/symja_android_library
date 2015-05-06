@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoSeq.java 4966 2014-10-19 10:56:48Z kredel $
+ * $Id: GroebnerBasePseudoSeq.java 5061 2015-01-01 19:45:33Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -8,14 +8,13 @@ package edu.jas.gbufd;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.log4j.Logger;
 
 import edu.jas.gb.GroebnerBaseAbstract;
+import edu.jas.gb.OrderedPairlist;
 import edu.jas.gb.Pair;
 import edu.jas.gb.PairList;
-import edu.jas.gb.OrderedPairlist;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.structure.GcdRingElem;
@@ -27,6 +26,7 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
 /**
  * Groebner Base with pseudo reduction sequential algorithm. Implements
  * coefficient fraction free Groebner bases.
+ * Coefficients can for example be integers or (commutative) univariate polynomials.
  * @param <C> coefficient type
  * @author Heinz Kredel
  * 
@@ -85,11 +85,11 @@ public class GroebnerBasePseudoSeq<C extends GcdRingElem<C>> extends GroebnerBas
      * Constructor.
      * @param red pseudo reduction engine. <b>Note:</b> red must be an instance
      *            of PseudoReductionSeq.
-     * @param rf coefficient ring factory. 
+     * @param rf coefficient ring factory.
      * @param pl pair selection strategy
      */
     public GroebnerBasePseudoSeq(PseudoReduction<C> red, RingFactory<C> rf, PairList<C> pl) {
-        super(red,pl);
+        super(red, pl);
         this.red = red;
         cofac = rf;
         engine = GCDFactory.<C> getImplementation(rf);
@@ -106,14 +106,14 @@ public class GroebnerBasePseudoSeq<C extends GcdRingElem<C>> extends GroebnerBas
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
         List<GenPolynomial<C>> G = normalizeZerosOnes(F);
         G = engine.basePrimitivePart(G);
-        if ( G.size() <= 1 ) {
+        if (G.size() <= 1) {
             return G;
         }
         GenPolynomialRing<C> ring = G.get(0).ring;
-        if ( ring.coFac.isField() ) { // TODO remove
+        if (ring.coFac.isField()) { // TODO remove
             throw new IllegalArgumentException("coefficients from a field");
         }
-        PairList<C> pairlist = strategy.create( modv, ring ); 
+        PairList<C> pairlist = strategy.create(modv, ring);
         pairlist.put(G);
 
         /*
@@ -179,7 +179,7 @@ public class GroebnerBasePseudoSeq<C extends GcdRingElem<C>> extends GroebnerBas
             if (debug) {
                 logger.debug("ht(H) = " + H.leadingExpVector());
             }
-            H = engine.basePrimitivePart(H); 
+            H = engine.basePrimitivePart(H);
             H = H.abs();
             if (H.isConstant()) {
                 G.clear();
@@ -221,7 +221,7 @@ public class GroebnerBasePseudoSeq<C extends GcdRingElem<C>> extends GroebnerBas
                 // already positive a = a.abs();
                 G.add(a);
             }
-	}
+        }
         */
         if (G.size() <= 1) {
             return G;

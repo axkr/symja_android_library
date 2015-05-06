@@ -1,5 +1,5 @@
 /*
- * $Id: WordFactory.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: WordFactory.java 5182 2015-04-01 21:12:44Z kredel $
  */
 
 package edu.jas.poly;
@@ -120,7 +120,7 @@ public final class WordFactory implements MonoidFactory<Word> {
         }
         alphabet = cleanSpace(s);
         translation = null;
-        ONE = new Word(this,"",false);
+        ONE = new Word(this, "", false);
     }
 
 
@@ -130,22 +130,22 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public WordFactory(String[] S) {
         String[] V = cleanAll(S);
-        if ( isSingleLetters(V) ) {
+        if (isSingleLetters(V)) {
             alphabet = concat(V);
             translation = null;
         } else {
-            alphabet = transRef.substring(0,V.length);
+            alphabet = transRef.substring(0, V.length);
             translation = V;
             logger.info("alphabet = " + alphabet + ", translation = " + Arrays.toString(translation));
         }
-        ONE = new Word(this,"",false);
+        ONE = new Word(this, "", false);
     }
 
 
     /**
      * Is this structure finite or infinite.
      * @return true if this structure is finite, else false.
-     * @see edu.jas.structure.ElemFactory#isFinite() 
+     * @see edu.jas.structure.ElemFactory#isFinite()
      */
     public boolean isFinite() {
         if (alphabet.length() == 0) {
@@ -160,6 +160,9 @@ public final class WordFactory implements MonoidFactory<Word> {
      * @return true if this monoid is commutative, else false.
      */
     public boolean isCommutative() {
+        if (alphabet.length() == 0) {
+            return true;
+        }
         return false;
     }
 
@@ -231,13 +234,32 @@ public final class WordFactory implements MonoidFactory<Word> {
 
 
     /**
+     * Get the variable names.
+     * @return array of variable names
+     */
+    public String[] getVars() {
+        String[] vars = new String[alphabet.length()];
+        if (translation == null) {
+            for (int i = 0; i < alphabet.length(); i++) {
+                vars[i] = String.valueOf(getVal(i));
+            }
+        } else {
+            for (int i = 0; i < alphabet.length(); i++) {
+                vars[i] = translation[i];
+            }
+        }
+        return vars;
+    }
+
+
+    /**
      * Get the string representation.
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
         StringBuffer s = new StringBuffer("\"");
-        if ( translation == null ) {
+        if (translation == null) {
             for (int i = 0; i < alphabet.length(); i++) {
                 if (i != 0) {
                     s.append(",");
@@ -340,18 +362,29 @@ public final class WordFactory implements MonoidFactory<Word> {
         int n = alphabet.length();
         int m = e.length();
         if (m > n) {
-            throw new IllegalArgumentException("alphabet to short for exponent " + e + ", alpahbet = " + alphabet);
+            throw new IllegalArgumentException("alphabet to short for exponent " + e + ", alpahbet = "
+                            + alphabet);
         }
-        for ( int i = 0; i < m; i++ ) {
-            int x = (int) e.getVal(m-i-1);
+        for (int i = 0; i < m; i++) {
+            int x = (int) e.getVal(m - i - 1);
             Word y = gens.get(i);
             Word u = ONE;
-            for ( int j = 0; j < x; j++ ) {
+            for (int j = 0; j < x; j++) {
                 u = u.multiply(y);
             }
             w = w.multiply(u);
         }
         return w;
+    }
+
+
+    /**
+     * IndexOf for letter in alphabet.
+     * @param s letter character.
+     * @return index of s in the alphabet, or -1 if s is not contained in the alphabet.
+     */
+    public int indexOf(char s) {
+        return alphabet.indexOf(s);
     }
 
 
@@ -390,14 +423,14 @@ public final class WordFactory implements MonoidFactory<Word> {
     public Word parse(String s) {
         String st = clean(s);
         String regex;
-        if ( translation == null ) {
+        if (translation == null) {
             regex = "[" + alphabet + " ]*";
         } else {
             regex = "[" + concat(translation) + " ]*";
         }
         if (!st.matches(regex)) {
-            throw new IllegalArgumentException("word '" + st + "' contains letters not from: " 
-                                               + alphabet + " or from " + concat(translation));
+            throw new IllegalArgumentException("word '" + st + "' contains letters not from: " + alphabet
+                            + " or from " + concat(translation));
         }
         // todo
         return new Word(this, st, true);
@@ -471,10 +504,10 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public static String[] cleanAll(String[] v) {
         String[] t = new String[v.length];
-        for ( int i = 0; i < v.length; i++ ) {
+        for (int i = 0; i < v.length; i++) {
             t[i] = cleanSpace(v[i]);
-            if ( t[i].length() == 0 ) {
-                logger.error("empty v[i]: '"+ v[i] + "'");
+            if (t[i].length() == 0) {
+                logger.error("empty v[i]: '" + v[i] + "'");
             }
             //System.out.println("clean all: " + v[i] + " --> " + t[i]);
         }
@@ -489,10 +522,10 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public static String concat(String[] v) {
         StringBuffer s = new StringBuffer();
-        if ( v == null ) {
+        if (v == null) {
             return s.toString();
         }
-        for ( int i = 0; i < v.length; i++ ) {
+        for (int i = 0; i < v.length; i++) {
             //String a = v[i];
             //if ( a.length() != 1 ) {
             //    //logger.error("v[i] not single letter "+ a);
@@ -511,10 +544,10 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public static String[] trimAll(String[] v) {
         String[] t = new String[v.length];
-        for ( int i = 0; i < v.length; i++ ) {
+        for (int i = 0; i < v.length; i++) {
             t[i] = v[i].trim();
-            if ( t[i].length() == 0 ) {
-                logger.error("empty v[i]: '"+ v[i] + "'");
+            if (t[i].length() == 0) {
+                logger.error("empty v[i]: '" + v[i] + "'");
             }
         }
         return t;
@@ -528,8 +561,8 @@ public final class WordFactory implements MonoidFactory<Word> {
      * @return index of s in v, or -1 if s is not contained in v.
      */
     public static int indexOf(String[] v, String s) {
-        for ( int i = 0; i < v.length; i++ ) {
-            if ( s.equals(v[i]) ) {
+        for (int i = 0; i < v.length; i++) {
+            if (s.equals(v[i])) {
                 return i;
             }
         }
@@ -543,8 +576,8 @@ public final class WordFactory implements MonoidFactory<Word> {
      * @return true, if all variables have length 1, else false.
      */
     public static boolean isSingleLetters(String[] v) {
-        for ( int i = 0; i < v.length; i++ ) {
-            if ( v[i].length() != 1 ) {
+        for (int i = 0; i < v.length; i++) {
+            if (v[i].length() != 1) {
                 return false;
             }
         }
@@ -559,15 +592,15 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public String translate(String[] v) {
         StringBuffer s = new StringBuffer();
-        for ( int i = 0; i < v.length; i++ ) {
+        for (int i = 0; i < v.length; i++) {
             String a = v[i];
-            int k = indexOf(translation,a);
-            if ( k < 0 ) {
+            int k = indexOf(translation, a);
+            if (k < 0) {
                 System.out.println("t = " + Arrays.toString(translation));
                 System.out.println("v = " + Arrays.toString(v));
-                logger.error("v[i] not found in t: "+ a);
+                logger.error("v[i] not found in t: " + a);
                 //continue;
-                throw new IllegalArgumentException("v[i] not found in t: "+ a);
+                throw new IllegalArgumentException("v[i] not found in t: " + a);
             }
             s.append(transRef.charAt(k));
         }
@@ -582,7 +615,7 @@ public final class WordFactory implements MonoidFactory<Word> {
      */
     public String transVar(char c) {
         int k = alphabet.indexOf(c);
-        return translation[k]; 
+        return translation[k];
     }
 
 }

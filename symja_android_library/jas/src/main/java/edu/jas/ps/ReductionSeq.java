@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionSeq.java 4062 2012-07-27 12:22:37Z kredel $
+ * $Id: ReductionSeq.java 4987 2014-11-22 18:26:30Z kredel $
  */
 
 package edu.jas.ps;
@@ -169,7 +169,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
         ArrayList<MultiVarPowerSeries<C>> p = new ArrayList<MultiVarPowerSeries<C>>(P.size());
         ArrayList<Long> ecart = new ArrayList<Long>(P.size());
         Map.Entry<ExpVector, C> m;
-        int j = 0;
+        //int j = 0;
         for (int i = 0; i < P.size(); i++) {
             m = P.get(i).orderMonomial();
             //System.out.println("m_i = " + m);
@@ -179,7 +179,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 htl.add(m.getKey());
                 lbc.add(m.getValue());
                 ecart.add(P.get(i).ecart());
-                j++;
+                //j++;
             }
         }
         //int ll = j;

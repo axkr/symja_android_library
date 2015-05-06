@@ -1,5 +1,5 @@
 /*
- * $Id: RingFactoryTokenizer.java 4960 2014-10-17 18:46:22Z kredel $
+ * $Id: RingFactoryTokenizer.java 5241 2015-04-30 20:33:57Z kredel $
  */
 
 package edu.jas.application;
@@ -36,6 +36,7 @@ import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.RelationTable;
 import edu.jas.poly.TermOrder;
+import edu.jas.poly.InvalidExpressionException;
 import edu.jas.structure.RingFactory;
 import edu.jas.ufd.Quotient;
 import edu.jas.ufd.QuotientRing;
@@ -43,10 +44,10 @@ import edu.jas.ufd.QuotientRing;
 
 /**
  * RingFactory Tokenizer. Used to read ring factories from input streams. It can
- * read also QuotientRing factory.
+ * also read QuotientRing factory.
+ * @see edu.jas.poly.GenPolynomialTokenizer
  * @author Heinz Kredel
  */
-
 public class RingFactoryTokenizer {
 
 
@@ -68,7 +69,6 @@ public class RingFactoryTokenizer {
     private RelationTable table;
 
 
-    //private Reader in;
     private final StreamTokenizer tok;
 
 
@@ -153,14 +153,11 @@ public class RingFactoryTokenizer {
         nvars = 1;
         fac = new BigRational(1);
 
-        //pfac = null;
         pfac = new GenPolynomialRing<BigRational>(fac, nvars, tord, vars);
-
-        //spfac = null;
         spfac = new GenSolvablePolynomialRing<BigRational>(fac, nvars, tord, vars);
 
         reader = r;
-        tok = new StreamTokenizer(r);
+        tok = new StreamTokenizer(reader);
         tok.resetSyntax();
         // tok.eolIsSignificant(true); no more
         tok.eolIsSignificant(false);
@@ -169,6 +166,7 @@ public class RingFactoryTokenizer {
         tok.wordChars('A', 'Z');
         tok.wordChars('_', '_'); // for subscripts x_i
         tok.wordChars('/', '/'); // wg. rational numbers
+        tok.wordChars('.', '.'); // wg. floats
         tok.wordChars(128 + 32, 255);
         tok.whitespaceChars(0, ' ');
         tok.commentChar('#');
@@ -288,51 +286,9 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for comments. syntax: (* comment *) | /_* comment *_/
-     * without _ Does not work with this pushBack(), unused.
-     */
-    public String nextComment() throws IOException {
-        // syntax: (* comment *) | /* comment */ 
-        StringBuffer c = new StringBuffer();
-        int tt;
-        if (debug)
-            logger.debug("comment: " + tok);
-        tt = tok.nextToken();
-        if (debug)
-            logger.debug("comment: " + tok);
-        if (tt == '(') {
-            tt = tok.nextToken();
-            if (debug)
-                logger.debug("comment: " + tok);
-            if (tt == '*') {
-                if (debug)
-                    logger.debug("comment: ");
-                while (true) {
-                    tt = tok.nextToken();
-                    if (tt == '*') {
-                        tt = tok.nextToken();
-                        if (tt == ')') {
-                            return c.toString();
-                        }
-                        tok.pushBack();
-                    }
-                    c.append(tok.sval);
-                }
-            }
-            tok.pushBack();
-            if (debug)
-                logger.debug("comment: " + tok);
-        }
-        tok.pushBack();
-        if (debug)
-            logger.debug("comment: " + tok);
-        return c.toString();
-    }
-
-
-    /**
-     * Parsing method for variable list. syntax: (a, b c, de) gives [ "a", "b",
-     * "c", "de" ]
+     * Parsing method for variable list. Syntax: 
+     * <pre>(a, b c, de)</pre> gives 
+     * <code>[ "a", "b", "c", "de" ]</code>
      * @return the next variable list.
      * @throws IOException
      */
@@ -368,14 +324,15 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for coefficient ring. syntax: Rat | Q | Int | Z | Mod
-     * modul | Complex | C | D | Quat | AN[ (var) ( poly ) | AN[ modul (var) (
-     * poly ) ] | RatFunc (var_list) | ModFunc modul (var_list) | IntFunc
-     * (var_list)
+     * Parsing method for coefficient ring. Syntax: 
+     * <pre>Rat | Q | Int | Z | Mod modul | Complex | C | D | Quat |
+ AN[ (var) ( poly ) | AN[ modul (var) ( poly ) ] | 
+ RatFunc (var_list) | ModFunc modul (var_list) | IntFunc (var_list)
+</pre>
      * @return the next coefficient factory.
      * @throws IOException
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({ "unchecked", "cast" })
     public RingFactory nextCoefficientRing() throws IOException {
         RingFactory coeff = null;
         coeffType ct = null;
@@ -416,13 +373,13 @@ public class RingFactoryTokenizer {
                 if (tok.sval != null && tok.sval.length() > 0) {
                     if (digit(tok.sval.charAt(0))) {
                         BigInteger mo = new BigInteger(tok.sval);
-                        BigInteger lm = new BigInteger(ModLongRing.MAX_LONG); //Long.MAX_VALUE);
+                        BigInteger lm = new BigInteger(ModLongRing.MAX_LONG); //wrong: Long.MAX_VALUE);
                         if (mo.compareTo(lm) < 0) {
                             coeff = new ModLongRing(mo.getVal());
                         } else {
                             coeff = new ModIntegerRing(mo.getVal());
                         }
-                        System.out.println("coeff = " + coeff + " :: " + coeff.getClass());
+                        //System.out.println("coeff = " + coeff + " :: " + coeff.getClass());
                         ct = coeffType.ModInt;
                     } else {
                         tok.pushBack();
@@ -490,7 +447,9 @@ public class RingFactoryTokenizer {
                     //System.out.println("anv = " + anv.length + " " + anv[0]);
                     int vs = anv.length;
                     if (vs != 1) {
-                        logger.error("AlgebraicNumber only for univariate polynomials");
+                        throw new InvalidExpressionException(
+                                        "AlgebraicNumber only for univariate polynomials "
+                                                        + Arrays.toString(anv));
                     }
                     String[] ovars = vars;
                     vars = anv;
@@ -551,7 +510,8 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for weight list. syntax: (w1, w2, w3, ..., wn)
+     * Parsing method for weight list. Syntax: 
+     * <pre>(w1, w2, w3, ..., wn)</pre>
      * @return the next weight list.
      * @throws IOException
      */
@@ -593,14 +553,14 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for weight array. syntax: ( (w11, ...,w1n), ..., (wm1,
-     * ..., wmn) )
+     * Parsing method for weight array. Syntax: 
+     * <pre>( (w11, ...,w1n), ..., (wm1, ..., wmn) )</pre>
      * @return the next weight array.
      * @throws IOException
      */
     public long[][] nextWeightArray() throws IOException {
         List<long[]> l = new ArrayList<long[]>();
-        long[][] w;
+        long[][] w = null;
         long[] e;
         char first;
         int tt;
@@ -644,7 +604,7 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for split index. syntax: |i|
+     * Parsing method for split index. Syntax: <pre>|i|</pre>
      * @return the next split index.
      * @throws IOException
      */
@@ -661,7 +621,8 @@ public class RingFactoryTokenizer {
             tt = tok.nextToken();
             if (tt == StreamTokenizer.TT_EOF) {
                 return e;
-            } else if (tok.sval != null) {
+            } 
+            if (tok.sval != null) {
                 first = tok.sval.charAt(0);
                 if (digit(first)) {
                     e = Integer.parseInt(tok.sval);
@@ -690,7 +651,7 @@ public class RingFactoryTokenizer {
                 if (tt == ',') {
                     tt = tok.nextToken();
                     if (tt == StreamTokenizer.TT_EOF) {
-                        return e0; // ??
+                        return e0;
                     }
                     if (tok.sval != null) {
                         first = tok.sval.charAt(0);
@@ -712,8 +673,8 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for term order name. syntax: termOrderName = L, IL, LEX,
-     * G, IG, GRLEX, W(weights) |split index|
+     * Parsing method for term order name. Syntax: 
+     * <pre>L | IL | LEX | G | IG | GRLEX | W(weights) | '|'split index'|'</pre>
      * @return the next term order.
      * @throws IOException
      */
@@ -759,8 +720,9 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial relation table. syntax: ( p_1,
-     * p_2, p_3, ..., p_{n+3} ) semantics: p_{n+1} * p_{n+2} = p_{n+3} The next
+     * Parsing method for solvable polynomial relation table. Syntax: 
+     * <pre>( p_1, p_2, p_3, ..., p_{n+1}, p_{n+2}, p_{n+3} )</pre>
+     * semantics: <code>p_{n+1} * p_{n+2} = p_{n+3}</code>. The next
      * relation table is stored into the solvable polynomial factory.
      * @throws IOException
      */
@@ -811,9 +773,9 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for polynomial set. syntax: coeffRing varList
-     * termOrderName polyList.
-     * @return the next polynomial set.
+     * Parsing method for polynomial ring. Syntax: 
+     * <pre>coeffRing varList termOrderName polyList</pre>
+     * @return the next polynomial ring.
      * @throws IOException
      */
     @SuppressWarnings("unchecked")
@@ -834,6 +796,7 @@ public class RingFactoryTokenizer {
         tord = nextTermOrder();
         logger.info("tord = " + tord);
         // check more TOs
+
         initFactory(coeff, parsedCoeff); // global: nvars, tord, vars
         // now pfac is initialized
         return pfac;
@@ -841,9 +804,9 @@ public class RingFactoryTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial set. syntax: varList termOrderName
-     * relationTable polyList.
-     * @return the next solvable polynomial set.
+     * Parsing method for solvable polynomial ring. Syntax: 
+     * <pre>varList termOrderName relationTable polyList</pre>
+     * @return the next solvable polynomial ring.
      * @throws IOException
      */
     @SuppressWarnings("unchecked")
@@ -853,7 +816,7 @@ public class RingFactoryTokenizer {
         //if (debug) logger.debug("comment = " + comments);
 
         RingFactory coeff = nextCoefficientRing();
-        logger.info("coeff = " + coeff);
+        logger.info("coeff = " + coeff.getClass().getSimpleName());
 
         vars = nextVariableList();
         logger.info("vars = " + Arrays.toString(vars));
@@ -879,12 +842,12 @@ public class RingFactoryTokenizer {
     }
 
 
-    private boolean digit(char x) {
+    static boolean digit(char x) {
         return '0' <= x && x <= '9';
     }
 
 
-    //private boolean letter(char x) {
+    //static boolean letter(char x) {
     //    return ('a' <= x && x <= 'z') || ('A' <= x && x <= 'Z');
     //}
 
@@ -903,8 +866,9 @@ public class RingFactoryTokenizer {
 
     /**
      * Parse variable list from String.
-     * @param s String. Syntax: (n1,...,nk) or (n1 ... nk), brackets are also
-     *            optional.
+     * @param s String. Syntax: 
+     * <pre>(n1,...,nk)</pre> or <pre>(n1 ... nk)</pre>
+     * parenthesis are optional.
      * @return array of variable names found in s.
      */
     public static String[] variableList(String s) {

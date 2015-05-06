@@ -1,53 +1,50 @@
 /*
- * $Id: ModGroebnerBase.java 3445 2010-12-25 17:24:04Z kredel $
+ * $Id: ModGroebnerBase.java 5080 2015-01-25 17:40:00Z kredel $
  */
 
 package edu.jas.gbmod;
 
-import java.util.List;
 
-import edu.jas.structure.RingElem;
+import java.util.List;
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.ModuleList;
-
+import edu.jas.structure.RingElem;
 
 
 /**
- * Module Groebner Bases interface.
- * Defines Groebner bases and GB test.
+ * Module Groebner Bases interface. Defines Groebner bases and GB test.
  * @author Heinz Kredel
  */
 
-public interface ModGroebnerBase<C extends RingElem<C>>  {
+public interface ModGroebnerBase<C extends RingElem<C>> {
 
 
-  /**
-   * Module Groebner base test.
-   */
-  public boolean isGB(int modv, List<GenPolynomial<C>> F);
+    /**
+     * Module Groebner base test.
+     */
+    public boolean isGB(int modv, List<GenPolynomial<C>> F);
 
 
-  /**
-   * isGB.
-   * @param M a module basis.
-   * @return true, if M is a Groebner base, else false.
-   */
-  public boolean isGB(ModuleList<C> M);
+    /**
+     * isGB.
+     * @param M a module basis.
+     * @return true, if M is a Groebner base, else false.
+     */
+    public boolean isGB(ModuleList<C> M);
 
 
-  /**
-   * Groebner base using pairlist class.
-   */
-  public List<GenPolynomial<C>> 
-         GB(int modv, List<GenPolynomial<C>> F);
+    /**
+     * Groebner base using pairlist class.
+     */
+    public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F);
 
 
-  /**
-   * GB.
-   * @param M a module basis.
-   * @return GB(M), a Groebner base of M.
-   */
-  public ModuleList<C> GB(ModuleList<C> M);
+    /**
+     * GB.
+     * @param M a module basis.
+     * @return GB(M), a Groebner base of M.
+     */
+    public ModuleList<C> GB(ModuleList<C> M);
 
 }

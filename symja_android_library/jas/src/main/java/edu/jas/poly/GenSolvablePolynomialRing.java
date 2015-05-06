@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomialRing.java 4956 2014-10-16 22:45:10Z kredel $
+ * $Id: GenSolvablePolynomialRing.java 5183 2015-04-01 21:13:40Z kredel $
  */
 
 package edu.jas.poly;
@@ -174,9 +174,9 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * polynomial factory, only the coefficient factories differ and the
      * solvable multiplication relations are <b>empty</b>.
      * @param cf factory for coefficients of type C.
-     * @param o other solvable polynomial ring.
+     * @param o other (solvable) polynomial ring.
      */
-    public GenSolvablePolynomialRing(RingFactory<C> cf, GenSolvablePolynomialRing o) {
+    public GenSolvablePolynomialRing(RingFactory<C> cf, GenPolynomialRing o) {
         this(cf, o.nvar, o.tord, o.getVars(), null);
     }
 
@@ -370,6 +370,41 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
             }
         }
         return coFac.isAssociative();
+    }
+
+
+    /**
+     * Get a (constant) GenPolynomial&lt;C&gt; element from a coefficient value.
+     * @param a coefficient.
+     * @return a GenPolynomial&lt;C&gt;.
+     */
+    @Override
+    public GenSolvablePolynomial<C> valueOf(C a) {
+        return new GenSolvablePolynomial<C>(this, a);
+    }
+
+
+    /**
+     * Get a GenPolynomial&lt;C&gt; element from an exponent vector.
+     * @param e exponent vector.
+     * @return a GenPolynomial&lt;C&gt;.
+     */
+    @Override
+    public GenSolvablePolynomial<C> valueOf(ExpVector e) {
+        return new GenSolvablePolynomial<C>(this, coFac.getONE(), e);
+    }
+
+
+    /**
+     * Get a GenPolynomial&lt;C&gt; element from a coeffcient and an exponent
+     * vector.
+     * @param a coefficient.
+     * @param e exponent vector.
+     * @return a GenPolynomial&lt;C&gt;.
+     */
+    @Override
+    public GenSolvablePolynomial<C> valueOf(C a, ExpVector e) {
+        return new GenSolvablePolynomial<C>(this, a, e);
     }
 
 
@@ -698,7 +733,7 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
      * Distributive representation as polynomial with all main variables.
      * @return distributive polynomial ring factory.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({ "unchecked", "cast" })
     @Override
     public GenSolvablePolynomialRing<C> distribute() {
         if (!(coFac instanceof GenPolynomialRing)) {
@@ -733,6 +768,25 @@ public class GenSolvablePolynomialRing<C extends RingElem<C>> extends GenPolynom
         //System.out.println("pfac = " + pfac.toScript());
         // coeffTable not avaliable here
         return pfac;
+    }
+
+
+    /**
+     * Permutation of polynomial ring variables.
+     * @param P permutation.
+     * @return P(this).
+     */
+    @Override
+    public GenPolynomialRing<C> permutation(List<Integer> P) {
+        GenPolynomialRing<C> pfac = super.permutation(P);
+        GenSolvablePolynomialRing<C> spfac;
+        spfac = new GenSolvablePolynomialRing<C>(pfac.coFac, pfac.nvar, pfac.tord, pfac.vars);
+        List<GenSolvablePolynomial<C>> rl = this.table.relationList();
+        PolynomialList<C> prl = new PolynomialList<C>(spfac,rl);
+        List<GenPolynomial<C>> pl = prl.getList();
+        pl = TermOrderOptimization.permutation(P, spfac, pl);
+        spfac.table.addRelations(pl);
+        return spfac;
     }
 
 }

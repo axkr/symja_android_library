@@ -1,5 +1,5 @@
 /*
- * $Id: GenMatrix.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GenMatrix.java 4987 2014-11-22 18:26:30Z kredel $
  */
 
 package edu.jas.vector;
@@ -692,7 +692,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
      * @return [this/S, this - (this/S)*S].
      */
     public GenMatrix<C>[] quotientRemainder(GenMatrix<C> S) {
-        throw new UnsupportedOperationException("quotientRemainder not implemented");
+        throw new UnsupportedOperationException("quotientRemainder not implemented, input = " + S);
     }
 
 

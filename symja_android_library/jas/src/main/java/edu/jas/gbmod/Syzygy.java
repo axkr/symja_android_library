@@ -1,22 +1,22 @@
 /*
- * $Id: Syzygy.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: Syzygy.java 5083 2015-01-25 20:08:31Z kredel $
  */
 
 package edu.jas.gbmod;
 
-import java.util.List;
+
 import java.io.Serializable;
+import java.util.List;
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.ModuleList;
 import edu.jas.poly.PolynomialList;
 import edu.jas.structure.RingElem;
-
 import edu.jas.vector.GenVector;
 
+
 /**
- * Syzygy interface.
- * Defines Syzygy computations and tests.
+ * Syzygy interface. Defines Syzygy computations and tests.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -25,45 +25,38 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
 
 
     /**
-     * Syzygy module from Groebner base.
-     * F must be a Groebner base.
+     * Syzygy module from Groebner base. F must be a Groebner base.
      * @param F a Groebner base.
      * @return syz(F), a basis for the module of syzygies for F.
      */
-    public List<List<GenPolynomial<C>>> 
-           zeroRelations(List<GenPolynomial<C>> F);
+    public List<List<GenPolynomial<C>>> zeroRelations(List<GenPolynomial<C>> F);
 
 
     /**
-     * Syzygy module from Groebner base.
-     * F must be a Groebner base.
+     * Syzygy module from Groebner base. F must be a Groebner base.
      * @param modv number of module variables.
      * @param F a Groebner base.
      * @return syz(F), a basis for the module of syzygies for F.
      */
-    public List<List<GenPolynomial<C>>> 
-           zeroRelations(int modv, List<GenPolynomial<C>> F);
+    public List<List<GenPolynomial<C>>> zeroRelations(int modv, List<GenPolynomial<C>> F);
 
 
     /**
-     * Syzygy module from Groebner base.
-     * v must be a Groebner base.
+     * Syzygy module from Groebner base. v must be a Groebner base.
      * @param modv number of module variables.
      * @param v a Groebner base.
      * @return syz(v), a basis for the module of syzygies for v.
      */
-    public List<List<GenPolynomial<C>>> 
-           zeroRelations(int modv, GenVector<GenPolynomial<C>> v);
+    public List<List<GenPolynomial<C>>> zeroRelations(int modv, GenVector<GenPolynomial<C>> v);
 
 
     /**
-     * Syzygy module from module Groebner base.
-     * M must be a module Groebner base.
+     * Syzygy module from module Groebner base. M must be a module Groebner
+     * base.
      * @param M a module Groebner base.
      * @return syz(M), a basis for the module of syzygies for M.
      */
-    public ModuleList<C> 
-          zeroRelations(ModuleList<C> M);
+    public ModuleList<C> zeroRelations(ModuleList<C> M);
 
 
     /**
@@ -72,9 +65,7 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param F a polynomial list.
      * @return true, if Z is a list of syzygies for F, else false.
      */
-    public boolean 
-           isZeroRelation(List<List<GenPolynomial<C>>> Z, 
-                          List<GenPolynomial<C>> F);
+    public boolean isZeroRelation(List<List<GenPolynomial<C>>> Z, List<GenPolynomial<C>> F);
 
 
     /**
@@ -83,28 +74,24 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param F a module list.
      * @return true, if Z is a list of syzygies for F, else false.
      */
-    public boolean 
-           isZeroRelation(ModuleList<C> Z, ModuleList<C> F);
+    public boolean isZeroRelation(ModuleList<C> Z, ModuleList<C> F);
 
 
     /**
-     * Resolution of a module.
-     * Only with direct GBs.
+     * Resolution of a module. Only with direct GBs.
      * @param M a module list of a Groebner basis.
      * @return a resolution of M.
      */
-    public List<ResPart<C>>
-           resolution(ModuleList<C> M);
+    public List<ResPart<C>> resolution(ModuleList<C> M);
 
 
     /**
-     * Resolution of a polynomial list.
-     * Only with direct GBs.
+     * Resolution of a polynomial list. Only with direct GBs.
      * @param F a polynomial list of a Groebner basis.
      * @return a resolution of F.
      */
     public List // <ResPart<C>|ResPolPart<C>>
-           resolution(PolynomialList<C> F);
+    resolution(PolynomialList<C> F);
 
 
     /**
@@ -113,7 +100,7 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @return a resolution of F.
      */
     public List // <ResPart<C>|ResPolPart<C>>
-           resolutionArbitrary(PolynomialList<C> F);
+    resolutionArbitrary(PolynomialList<C> F);
 
 
     /**
@@ -121,8 +108,7 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param M a module list of an arbitrary basis.
      * @return a resolution of M.
      */
-    public List<ResPart<C>>
-           resolutionArbitrary(ModuleList<C> M);
+    public List<ResPart<C>> resolutionArbitrary(ModuleList<C> M);
 
 
     /**
@@ -130,8 +116,7 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param F a polynomial list.
      * @return syz(F), a basis for the module of syzygies for F.
      */
-    public List<List<GenPolynomial<C>>> 
-           zeroRelationsArbitrary(List<GenPolynomial<C>> F);
+    public List<List<GenPolynomial<C>>> zeroRelationsArbitrary(List<GenPolynomial<C>> F);
 
 
     /**
@@ -140,8 +125,7 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param F a polynomial list.
      * @return syz(F), a basis for the module of syzygies for F.
      */
-    public List<List<GenPolynomial<C>>> 
-           zeroRelationsArbitrary(int modv, List<GenPolynomial<C>> F);
+    public List<List<GenPolynomial<C>>> zeroRelationsArbitrary(int modv, List<GenPolynomial<C>> F);
 
 
     /**
@@ -149,7 +133,6 @@ public interface Syzygy<C extends RingElem<C>> extends Serializable {
      * @param M an arbitrary module base.
      * @return syz(M), a basis for the module of syzygies for M.
      */
-    public ModuleList<C> 
-           zeroRelationsArbitrary(ModuleList<C> M); 
+    public ModuleList<C> zeroRelationsArbitrary(ModuleList<C> M);
 
 }

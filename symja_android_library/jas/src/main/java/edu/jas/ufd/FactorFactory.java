@@ -1,5 +1,5 @@
 /*
- * $Id: FactorFactory.java 4067 2012-07-27 16:17:35Z kredel $
+ * $Id: FactorFactory.java 5047 2014-12-30 17:44:11Z kredel $
  */
 
 package edu.jas.ufd;
@@ -94,6 +94,7 @@ public class FactorFactory {
      * @param fac BigInteger.
      * @return factorization algorithm implementation.
      */
+    @SuppressWarnings("unused")
     public static FactorAbstract<BigInteger> getImplementation(BigInteger fac) {
         return new FactorInteger<ModLong>();
     }
@@ -105,6 +106,7 @@ public class FactorFactory {
      * @param fac BigRational.
      * @return factorization algorithm implementation.
      */
+    @SuppressWarnings("unused")
     public static FactorAbstract<BigRational> getImplementation(BigRational fac) {
         return new FactorRational();
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableQuotientRing.java 4945 2014-10-05 21:45:31Z axelclk $
+ * $Id: SolvableQuotientRing.java 5105 2015-02-07 14:35:17Z kredel $
  */
 
 package edu.jas.gbmod;
@@ -56,7 +56,7 @@ public class SolvableQuotientRing<C extends GcdRingElem<C>> implements RingFacto
      */
     public SolvableQuotientRing(GenSolvablePolynomialRing<C> r) {
         ring = r;
-        engine = new SolvableSyzygyAbstract<C>();
+        engine = new SolvableSyzygySeq<C>(ring.coFac);
         logger.debug("quotient ring constructed");
     }
 

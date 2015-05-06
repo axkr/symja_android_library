@@ -1,5 +1,5 @@
 /*
- * $Id: FactorsMap.java 3992 2012-07-14 21:32:18Z kredel $
+ * $Id: FactorsMap.java 5050 2014-12-31 13:06:24Z kredel $
  */
 
 package edu.jas.ufd;
@@ -58,7 +58,7 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
      *            number field.
      */
     public FactorsMap(GenPolynomial<C> p, SortedMap<GenPolynomial<C>, Long> map,
-            SortedMap<Factors<C>, Long> amap) {
+                    SortedMap<Factors<C>, Long> amap) {
         poly = p;
         factors = map;
         afactors = amap;
@@ -98,7 +98,7 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
             }
             sb.append(f.toString());
             Long e = afactors.get(f);
-            if ( e == null ) {
+            if (e == null) {
                 continue;
             }
             if (e > 1) {
@@ -142,7 +142,7 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
                 sb.append("\n * ");
             }
             Long e = afactors.get(f);
-            if ( e == null ) { // should not happen
+            if (e == null) { // should not happen
                 System.out.println("f = " + f);
                 System.out.println("afactors = " + afactors);
                 throw new RuntimeException("this should not happen");
@@ -156,6 +156,22 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+
+    /**
+     * Length. Number of factors.
+     * @return number of distinct factors.
+     */
+    public int length() {
+        int i = factors.keySet().size();
+        if (afactors == null) {
+            return i;
+        }
+        for (Factors<C> f : afactors.keySet()) {
+             i += f.length();
+        }
+        return i;
     }
 
 

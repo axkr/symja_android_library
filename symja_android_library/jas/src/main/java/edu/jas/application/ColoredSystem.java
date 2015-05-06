@@ -1,5 +1,5 @@
 /*
- * $Id: ColoredSystem.java 4125 2012-08-19 19:05:22Z kredel $
+ * $Id: ColoredSystem.java 5121 2015-02-16 22:48:13Z kredel $
  */
 
 package edu.jas.application;
@@ -123,6 +123,35 @@ public class ColoredSystem<C extends GcdRingElem<C>> {
         if (debug) {
             s.append("green coefficients:\n" + getGreenCoefficients() + "\n");
             s.append("red coefficients:\n" + getRedCoefficients() + "\n");
+        }
+        s.append("colored polynomials:\n" + list + "\n");
+        s.append("uncolored polynomials:\n" + getPolynomialList() + "\n");
+        if (debug) {
+            s.append("essential polynomials:\n" + getEssentialPolynomialList() + "\n");
+        }
+        if (pairlist != null) {
+            s.append(pairlist.toString() + "\n");
+        }
+        return s.toString();
+    }
+
+
+    /**
+     * Get the Script representation.
+     * @see edu.jas.structure.Element#toScript()
+     */
+    public String toScript() {
+        StringBuffer s = new StringBuffer("ColoredSystem: \n");
+        if (list.size() > 0) {
+            s.append("polynomial ring : " + list.get(0).green.ring.toScript() + "\n");
+        } else {
+            s.append("parameter polynomial ring : " + condition.zero.getRing().toScript() + "\n");
+        }
+        s.append("conditions == 0 : " + getConditionZero().toString() + "\n");
+        s.append("conditions != 0 : " + getConditionNonZero().toString() + "\n");
+        if (debug) {
+            s.append("green coefficients:\n" + getGreenCoefficients().toString() + "\n");
+            s.append("red coefficients:\n" + getRedCoefficients().toString() + "\n");
         }
         s.append("colored polynomials:\n" + list + "\n");
         s.append("uncolored polynomials:\n" + getPolynomialList() + "\n");

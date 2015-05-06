@@ -1,19 +1,17 @@
 /*
- * $Id: WordGroebnerBaseSeq.java 4955 2014-10-13 21:34:09Z kredel $
+ * $Id: WordGroebnerBaseSeq.java 5041 2014-12-29 11:58:22Z kredel $
  */
 
 package edu.jas.gb;
 
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.poly.PolyUtil;
 import edu.jas.poly.GenWordPolynomial;
 import edu.jas.poly.GenWordPolynomialRing;
+import edu.jas.poly.PolyUtil;
 import edu.jas.structure.RingElem;
 
 
@@ -69,48 +67,16 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
     public List<GenWordPolynomial<C>> GB(List<GenWordPolynomial<C>> F) {
         List<GenWordPolynomial<C>> G = normalizeZerosOnes(F);
         G = PolyUtil.<C> wordMonic(G);
-        if ( G.size() <= 1 ) {
+        if (G.size() <= 1) {
             return G;
         }
         GenWordPolynomialRing<C> ring = G.get(0).ring;
-        if ( ! ring.coFac.isField() ) {
+        if (!ring.coFac.isField()) {
             throw new IllegalArgumentException("coefficients not from a field");
         }
-        WordPairList<C> pairlist = strategy.create( ring ); 
+        //Collections.sort(G);
+        OrderedWordPairlist<C> pairlist = (OrderedWordPairlist<C>) strategy.create(ring);
         pairlist.put(G);
-
-        /*
-        GenWordPolynomial<C> p;
-        WordPairList<C> pairlist = null;
-        int l = F.size();
-        ListIterator<GenWordPolynomial<C>> it = F.listIterator();
-        while (it.hasNext()) {
-            p = it.next();
-            if (p.length() > 0) {
-                p = p.monic();
-                if (p.isONE()) {
-                    G.clear();
-                    G.add(p);
-                    return G; // since no threads are activated
-                }
-                G.add(p);
-                if (pairlist == null) {
-                    //pairlist = new OrderedPairlist<C>(p.ring );
-                    pairlist = strategy.create(p.ring);
-                    if (!p.ring.coFac.isField()) {
-                        throw new IllegalArgumentException("coefficients not from a field");
-                    }
-                }
-                // putOne not required
-                pairlist.put(p);
-            } else {
-                l--;
-            }
-        }
-        if (l <= 1) {
-            return G; // since no threads are activated
-        }
-        */
         logger.info("start " + pairlist);
 
         WordPair<C> pair;
@@ -126,9 +92,9 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
             }
             pi = pair.pi;
             pj = pair.pj;
-            if ( /*false &&*/debug) {
-                logger.debug("pi    = " + pi);
-                logger.debug("pj    = " + pj);
+            if (debug) {
+                logger.info("pi   = " + pi + ", pj = " + pj);
+                //logger.info("pj    = " + pj);
             }
 
             S = red.SPolynomials(pi, pj);
@@ -141,8 +107,13 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
                     continue;
                 }
                 if (debug) {
-                    logger.debug("ht(S) = " + s.leadingWord());
+                    logger.info("ht(S) = " + s.leadingWord());
                 }
+                boolean t = pairlist.criterion3(pair.i, pair.j, s.leadingWord());
+                //System.out.println("criterion3(" + pair.i + "," + pair.j + ") = " + t);
+                //if ( !t ) {
+                //    continue;  
+                //}
 
                 H = red.normalform(G, s);
                 if (debug) {
@@ -154,6 +125,11 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
                     //pair.setZero();
                     continue;
                 }
+                if (!t) {
+                    logger.info("criterion3(" + pair.i + "," + pair.j + ") wrong: " + s.leadingWord()
+                                    + " --> " + H.leadingWord());
+                }
+
                 H = H.monic();
                 if (debug) {
                     logger.info("ht(H) = " + H.leadingWord());
@@ -173,9 +149,11 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
                 }
             }
         }
-        logger.debug("#sequential list = " + G.size());
+        //logger.info("#sequential list = " + G.size());
         G = minimalGB(G);
         logger.info("" + pairlist);
+        //Collections.sort(G);
+        //Collections.reverse(G);
         return G;
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorHensel.java 4965 2014-10-17 20:07:51Z kredel $
+ * $Id: GreatestCommonDivisorHensel.java 5047 2014-12-30 17:44:11Z kredel $
  */
 
 package edu.jas.ufd;
@@ -672,10 +672,10 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
                 //System.out.println("exception : " + ni);
                 continue;
             }
-            if (false && !HenselMultUtil.<MOD> isHenselLift(ui, uq, F, k, lift)) { // not meaningfull test
-                logger.info("isHenselLift: false");
-                //continue;
-            }
+            //if (!HenselMultUtil.<MOD> isHenselLift(ui, uq, F, k, lift)) { // not meaningfull test
+            //    logger.info("isHenselLift: false");
+            //    //continue;
+            //}
 
             // convert Ci from Z_{p^k}[x,y1,...,yr] to Z[x,y1,...,yr] to Z[x][y1,...,yr] to Z[y1,...,yr][x]
             GenPolynomial<BigInteger> ci = PolyUtil.integerFromModularCoefficients(dfac, lift.get(0));

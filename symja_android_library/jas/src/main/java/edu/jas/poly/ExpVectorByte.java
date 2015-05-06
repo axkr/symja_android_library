@@ -1,12 +1,12 @@
 /*
- * $Id: ExpVectorByte.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: ExpVectorByte.java 5226 2015-04-19 10:16:29Z kredel $
  */
 
 package edu.jas.poly;
 
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -298,9 +298,9 @@ public final class ExpVectorByte extends ExpVector
 
 
     /**
-     * Reverse j variables. Used e.g. in opposite rings. Reverses the first j-1
-     * variables, the rest is unchanged.
-     * @param j index of first variable not reversed.
+     * Reverse lower j variables. Used e.g. in opposite rings. Reverses the
+     * first j-1 variables, the rest is unchanged.
+     * @param j index of first variable reversed.
      * @return reversed exponent vector.
      */
     @Override
@@ -310,11 +310,10 @@ public final class ExpVectorByte extends ExpVector
         }
         byte[] w = new byte[val.length];
         for (int i = 0; i < j; i++) {
-            w[i] = val[j - 1 - i];
-        }
-        // copy rest
-        for (int i = j; i < val.length; i++) {
             w[i] = val[i];
+        }
+        for (int i = j; i < val.length; i++) {
+            w[i] = val[val.length + j - 1 - i];
         }
         return new ExpVectorByte(w);
     }
@@ -337,6 +336,22 @@ public final class ExpVectorByte extends ExpVector
         byte[] w = new byte[val.length + Vi.val.length];
         System.arraycopy(val, 0, w, 0, val.length);
         System.arraycopy(Vi.val, 0, w, val.length, Vi.val.length);
+        return new ExpVectorByte(w);
+    }
+
+
+    /**
+     * Permutation of exponent vector.
+     * @param P permutation.
+     * @return P(e).
+     */
+    @Override
+    public ExpVectorByte permutation(List<Integer> P) {
+        byte[] w = new byte[val.length];
+        int j = 0;
+        for (Integer i : P) {
+            w[j++] = val[i];
+        }
         return new ExpVectorByte(w);
     }
 

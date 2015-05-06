@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoParallel.java 4966 2014-10-19 10:56:48Z kredel $
+ * $Id: GroebnerBasePseudoParallel.java 5061 2015-01-01 19:45:33Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -30,6 +30,7 @@ import edu.jas.util.ThreadPool;
 /**
  * Groebner Base with pseudo reduction multi-threaded parallel algorithm.
  * Implements coefficient fraction free Groebner bases.
+ * Coefficients can for example be integers or (commutative) univariate polynomials.
  * @param <C> coefficient type
  * @author Heinz Kredel
  * 

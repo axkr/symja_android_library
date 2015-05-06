@@ -1,5 +1,5 @@
 /*
- * $Id: PolyGBUtil.java 4963 2014-10-17 19:19:18Z kredel $
+ * $Id: PolyGBUtil.java 5220 2015-04-12 10:42:41Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -386,6 +386,7 @@ public class PolyGBUtil {
         //GBFactory.<C> getImplementation(tfac.coFac);
         logger.warn("intersect computing GB");
         List<GenSolvablePolynomial<C>> g = sbb.leftGB(c);
+        //List<GenSolvablePolynomial<C>> g = sbb.twosidedGB(c);
         if (debug) {
             logger.debug("intersect GB = " + g);
         }
@@ -463,11 +464,11 @@ public class PolyGBUtil {
         if (d.isZERO()) {
             return n;
         }
-        if (n.isONE()) {
-            return n;
+        if (n.isConstant()) {
+            return r.getONE();
         }
-        if (d.isONE()) {
-            return d;
+        if (d.isConstant()) {
+            return r.getONE();
         }
         if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
             //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
@@ -481,7 +482,7 @@ public class PolyGBUtil {
         SolvableGroebnerBaseAbstract<C> sbb = new SolvableGroebnerBaseSeq<C>();
         logger.warn("syzGcd computing GB: " + A);
         List<GenSolvablePolynomial<C>> G = sbb.rightGB(A); //leftGB, not: sbb.twosidedGB(A);
-        if (logger.isInfoEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.info("G = " + G);
         }
         if (G.size() == 1) {

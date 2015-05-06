@@ -1,5 +1,5 @@
 /*
- * $Id: Factors.java 4965 2014-10-17 20:07:51Z kredel $
+ * $Id: Factors.java 5050 2014-12-31 13:06:24Z kredel $
  */
 
 package edu.jas.ufd;
@@ -178,6 +178,26 @@ public class Factors<C extends GcdRingElem<C>> implements Comparable<Factors<C>>
             sb.append(arp.toScript());
         }
         return sb.toString();
+    }
+
+
+    /**
+     * Length. Number of factors.
+     * @return number of factors.
+     */
+    public int length() {
+        int i = 0;
+        if (afac == null) {
+            return i;
+        }
+        i += afactors.size();
+        if (arfactors == null) {
+            return i;
+        }
+        for (Factors<AlgebraicNumber<C>> f : arfactors) {
+             i += f.length();
+        }
+        return i;
     }
 
 

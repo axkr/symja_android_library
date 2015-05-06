@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReduction.java 4781 2014-04-06 21:50:57Z kredel $
+ * $Id: SolvableReduction.java 5025 2014-12-27 13:15:16Z kredel $
  */
 
 package edu.jas.gb;
@@ -124,5 +124,33 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      */
     public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
                     List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap);
+
+
+    /**
+     * Is top reducible. Condition is lt(B) | lt(A) for some B in F.
+     * Is left right symetric.
+     * @param A polynomial.
+     * @param P polynomial list.
+     * @return true if A is top reducible with respect to P.
+     */
+    public boolean isTopReducible(List<GenSolvablePolynomial<C>> P, GenSolvablePolynomial<C> A);
+
+
+    /**
+     * Is reducible. Is left right symetric.
+     * @param A polynomial.
+     * @param P polynomial list.
+     * @return true if A is reducible with respect to P.
+     */
+    public boolean isReducible(List<GenSolvablePolynomial<C>> P, GenSolvablePolynomial<C> A);
+
+
+    /**
+     * Is in normalform. Is left right symetric.
+     * @param A polynomial.
+     * @param P polynomial list.
+     * @return true if A is in normalform with respect to P.
+     */
+    public boolean isNormalform(List<GenSolvablePolynomial<C>> P, GenSolvablePolynomial<C> A);
 
 }

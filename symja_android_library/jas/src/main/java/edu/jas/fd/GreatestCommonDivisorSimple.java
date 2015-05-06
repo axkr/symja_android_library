@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorSimple.java 4820 2014-04-21 07:59:48Z kredel $
+ * $Id: GreatestCommonDivisorSimple.java 5105 2015-02-07 14:35:17Z kredel $
  */
 
 package edu.jas.fd;
@@ -11,6 +11,7 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.PolyUtil;
 import edu.jas.structure.GcdRingElem;
+import edu.jas.structure.RingFactory;
 
 
 /**
@@ -29,6 +30,15 @@ public class GreatestCommonDivisorSimple<C extends GcdRingElem<C>> extends Great
 
 
     private final boolean debug = true; //logger.isDebugEnabled();
+
+
+    /**
+     * Constructor.
+     * @param cf coefficient ring.
+     */
+    public GreatestCommonDivisorSimple(RingFactory<C> cf) {
+        super(cf);
+    }
 
 
     /**

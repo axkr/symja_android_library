@@ -1,5 +1,5 @@
 /*
- * $Id: ExpVector.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: ExpVector.java 5174 2015-03-29 14:02:36Z kredel $
  */
 
 package edu.jas.poly;
@@ -269,9 +269,9 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
 
 
     /**
-     * Reverse j variables. Used e.g. in opposite rings. Reverses the first j-1
-     * variables, the rest is unchanged.
-     * @param j index of first variable not reversed.
+     * Reverse lower j variables. Used e.g. in opposite
+     * rings. Reverses the first j-1 variables, the rest is unchanged.
+     * @param j index of first variable reversed.
      * @return reversed exponent vector.
      */
     public abstract ExpVector reverse(int j);
@@ -283,6 +283,14 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      * @return combined exponent vector.
      */
     public abstract ExpVector combine(ExpVector V);
+
+
+    /**
+     * Permutation of exponent vector.
+     * @param P permutation.
+     * @return P(e).
+     */
+    public abstract ExpVector permutation(List<Integer> P);
 
 
     /**

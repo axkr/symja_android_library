@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 4959 2014-10-16 23:15:53Z kredel $
+ * $Id: PolyUtil.java 5109 2015-02-09 21:48:55Z kredel $
  */
 
 package edu.jas.poly;
@@ -611,7 +611,7 @@ public class PolyUtil {
             return p;
         }
         C lm = lc.inverse();
-        GenSolvablePolynomial<C> L = (GenSolvablePolynomial<C>) p.ring.coFac.getONE();
+        GenPolynomial<C> L = p.ring.coFac.getONE();
         L = L.multiply(lm);
         return p.multiplyLeft(L);
     }
@@ -1199,6 +1199,45 @@ public class PolyUtil {
         for (Map.Entry<ExpVector, GenPolynomial<C>> m1 : P.getMap().entrySet()) {
             GenPolynomial<C> c1 = m1.getValue();
             ExpVector e1 = m1.getKey();
+            GenPolynomial<C> c = PolyUtil.<C> basePseudoDivide(c1, s);
+            if (!c.isZERO()) {
+                pv.put(e1, c); // or m1.setValue( c )
+            } else {
+                System.out.println("rDiv, P  = " + P);
+                System.out.println("rDiv, c1 = " + c1);
+                System.out.println("rDiv, s  = " + s);
+                System.out.println("rDiv, c  = " + c);
+                throw new RuntimeException("something is wrong");
+            }
+        }
+        return p;
+    }
+
+
+    /**
+     * GenPolynomial divide. For recursive polynomials. Division by coefficient
+     * ring element.
+     * @param <C> coefficient type.
+     * @param P recursive GenPolynomial.
+     * @param s GenPolynomial.
+     * @return this/s.
+     */
+    public static <C extends RingElem<C>> GenWordPolynomial<GenPolynomial<C>> recursiveDivide(
+                    GenWordPolynomial<GenPolynomial<C>> P, GenPolynomial<C> s) {
+        if (s == null || s.isZERO()) {
+            throw new ArithmeticException("division by zero " + P + ", " + s);
+        }
+        if (P.isZERO()) {
+            return P;
+        }
+        if (s.isONE()) {
+            return P;
+        }
+        GenWordPolynomial<GenPolynomial<C>> p = P.ring.getZERO().copy();
+        SortedMap<Word, GenPolynomial<C>> pv = p.val; //getMap();
+        for (Map.Entry<Word, GenPolynomial<C>> m1 : P.getMap().entrySet()) {
+            GenPolynomial<C> c1 = m1.getValue();
+            Word e1 = m1.getKey();
             GenPolynomial<C> c = PolyUtil.<C> basePseudoDivide(c1, s);
             if (!c.isZERO()) {
                 pv.put(e1, c); // or m1.setValue( c )
@@ -1970,6 +2009,7 @@ public class PolyUtil {
      * @deprecated use evaluateAll() with three arguments
      */
     @Deprecated
+    @SuppressWarnings("unused")
     public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac, GenPolynomialRing<C> dfac,
                     GenPolynomial<C> A, List<C> a) {
         return evaluateAll(cfac, A, a);
@@ -2244,10 +2284,26 @@ public class PolyUtil {
 
 
     /**
-     * Maximal degree of polynomial list.
-     * @return maximum degree of the polynomial list.
+     * Total degree of polynomial list.
+     * @return total degree of the polynomial list.
      */
     public static <C extends RingElem<C>> long totalDegree(List<GenPolynomial<C>> P) {
+        long degree = 0;
+        for (GenPolynomial<C> g : P) {
+            long total = g.totalDegree();
+            if (degree < total) {
+                degree = total;
+            }
+        }
+        return degree;
+    }
+
+
+    /**
+     * Maximal degree of polynomial list.
+     * @return maximal degree of the polynomial list.
+     */
+    public static <C extends RingElem<C>> long maxDegree(List<GenPolynomial<C>> P) {
         long degree = 0;
         for (GenPolynomial<C> g : P) {
             long total = g.degree();
@@ -2530,7 +2586,8 @@ public class PolyUtil {
         if (tfac.equals(R)) { // check 
             return H;
         }
-        logger.warn("tfac != R: tfac = " + tfac.toScript() + ", R = " + R.toScript());
+        logger.warn("tfac != R: tfac = " + tfac.toScript() + ", R = " + R.toScript() + ", pfac = "
+                        + pfac.toScript());
         // throw new RuntimeException("contract(pfac) != R");
         return H;
     }

@@ -1,5 +1,5 @@
 /*
- * $Id: ColorPolynomial.java 3984 2012-07-12 21:36:16Z kredel $
+ * $Id: ColorPolynomial.java 5122 2015-02-17 08:35:15Z kredel $
  */
 
 package edu.jas.application;
@@ -12,8 +12,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.RingElem;
 
 
@@ -26,6 +29,9 @@ import edu.jas.structure.RingElem;
 
 public class ColorPolynomial<C extends RingElem<C>> implements Serializable
     /* implements RingElem< ColorPolynomial<C> > */ {
+
+
+    private static final Logger logger = Logger.getLogger(ColorPolynomial.class);
 
 
     /**
@@ -64,7 +70,7 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
 
 
     /**
-     * String representation of GenPolynomial.
+     * String representation of ColorPolynomial.
      * @see java.lang.Object#toString()
      */
     @Override
@@ -76,6 +82,22 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
         s.append(red.toString());
         s.append(" :white: ");
         s.append(white.toString());
+        return s.toString();
+    }
+
+
+    /**
+     * Script representation of ColorPolynomial.
+     * @see edu.jas.structure.Element#toScript()
+     */
+    public String toScript() {
+        StringBuffer s = new StringBuffer();
+        s.append(":green: ");
+        s.append(green.toScript());
+        s.append(" :red: ");
+        s.append(red.toScript());
+        s.append(" :white: ");
+        s.append(white.toScript());
         return s.toString();
     }
 
@@ -232,7 +254,9 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
         int s = red.length() + white.length();
         int t = f.length();
         if (t != s) {
-            throw new RuntimeException("illegal coloring state " + s + " != " + t);
+            logger.warn("illegal coloring state " + s + " != " + t);
+            logger.info("f = " + f + ", red = " + red + ", white = " + white);
+            //throw new RuntimeException("illegal coloring state " + s + " != " + t);
         }
         return f;
     }
@@ -397,9 +421,20 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
      */
     public ColorPolynomial<C> multiply(GenPolynomial<C> s, ExpVector e) {
         GenPolynomial<GenPolynomial<C>> g, r, w;
-        g = green.multiply(s, e);
-        r = red.multiply(s, e);
-        w = white.multiply(s, e);
+        if (green instanceof GenSolvablePolynomial) {
+            logger.info("use left multiplication");
+            GenSolvablePolynomial<GenPolynomial<C>> gs, rs, ws;
+            gs = (GenSolvablePolynomial<GenPolynomial<C>>) green;
+            rs = (GenSolvablePolynomial<GenPolynomial<C>>) red;
+            ws = (GenSolvablePolynomial<GenPolynomial<C>>) white;
+            g = gs.multiplyLeft(s, e);
+            r = rs.multiplyLeft(s, e);
+            w = ws.multiplyLeft(s, e);
+        } else {
+            g = green.multiply(s, e);
+            r = red.multiply(s, e);
+            w = white.multiply(s, e);
+        }
         return new ColorPolynomial<C>(g, r, w);
     }
 
@@ -411,6 +446,7 @@ public class ColorPolynomial<C extends RingElem<C>> implements Serializable
      */
     public ColorPolynomial<C> multiply(GenPolynomial<C> s) {
         GenPolynomial<GenPolynomial<C>> g, r, w;
+        // coefficients commute
         g = green.multiply(s);
         r = red.multiply(s);
         w = white.multiply(s);

@@ -1,5 +1,5 @@
 /*
- * $Id: ReductionSeq.java 4783 2014-04-06 21:58:40Z kredel $
+ * $Id: ReductionSeq.java 5243 2015-05-01 12:42:10Z kredel $
  */
 
 package edu.jas.gb;
@@ -184,7 +184,6 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 R.doPutToMap(e, a);
                 S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
-                //throw new RuntimeException("Syzygy no GB");
             } else {
                 e = e.subtract(htl[i]);
                 //logger.info("red div = " + e);

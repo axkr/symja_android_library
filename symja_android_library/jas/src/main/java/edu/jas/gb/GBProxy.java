@@ -1,5 +1,5 @@
 /*
- * $Id: GBProxy.java 4655 2013-10-05 10:12:32Z kredel $
+ * $Id: GBProxy.java 5104 2015-02-07 13:12:43Z kredel $
  */
 
 package edu.jas.gb;
@@ -99,7 +99,7 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
      * @return GB(F) a Groebner base of F.
      */
     @Override
-    public List<GenPolynomial<C>> GB( final int modv, final List<GenPolynomial<C>> F ) {
+    public List<GenPolynomial<C>> GB(final int modv, final List<GenPolynomial<C>> F) {
         if (F == null || F.isEmpty()) {
             return F;
         }
@@ -107,10 +107,12 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
         List<GenPolynomial<C>> G = null;
         List<Callable<List<GenPolynomial<C>>>> cs = new ArrayList<Callable<List<GenPolynomial<C>>>>(2);
         cs.add(new Callable<List<GenPolynomial<C>>>() {
+
+
             public List<GenPolynomial<C>> call() {
                 try {
                     //System.out.println("starting e1 " + e1.getClass().getName());
-                    List<GenPolynomial<C>> G = e1.GB(modv,F);
+                    List<GenPolynomial<C>> G = e1.GB(modv, F);
                     if (debug) {
                         logger.info("GBProxy done e1 " + e1.getClass().getName());
                     }
@@ -128,10 +130,12 @@ public class GBProxy<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<C> {
             }
         });
         cs.add(new Callable<List<GenPolynomial<C>>>() {
+
+
             public List<GenPolynomial<C>> call() {
                 try {
                     //System.out.println("starting e2 " + e2.getClass().getName());
-                    List<GenPolynomial<C>> G = e2.GB(modv,F);
+                    List<GenPolynomial<C>> G = e2.GB(modv, F);
                     if (debug) {
                         logger.info("GBProxy done e2 " + e2.getClass().getName());
                     }

@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedWordPairlist.java 4955 2014-10-13 21:34:09Z kredel $
+ * $Id: OrderedWordPairlist.java 5052 2014-12-31 19:37:07Z kredel $
  */
 
 package edu.jas.gb;
@@ -108,6 +108,9 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
         if (pairlist != null && pairlist.size() != 0) {
             s.append(", size=" + pairlist.size());
         }
+        //if (red != null ) {
+        //    s.append(", bitmask=" + red);
+        //}
         s.append(")");
         return s.toString();
     }
@@ -123,37 +126,58 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
         if (oneInGB) {
             return P.size() - 1;
         }
+        if (p.isONE()) {
+            return putOne();
+        }
         Word e = p.leadingWord();
+        Word g;
         int l = P.size();
+        BitSet redi = new BitSet();
+        //redi.set(0, l); // from -- to
         for (int j = 0; j < l; j++) {
             GenWordPolynomial<C> pj = P.get(j);
             Word f = pj.leadingWord();
-            Word g = f.lcm(e);
-            //System.out.println("g = " + g);
-            if (g == null) {
-                //System.out.println("criterion 4");
-                continue; // criterion 4
+
+            // pj, p
+            g = f.lcm(e);
+            //System.out.println("g(f,g) = " + g);
+            if (g != null) {
+                WordPair<C> pair = new WordPair<C>(pj, p, j, l);
+                //System.out.println("pair.new      = " + pair);
+                //multiple pairs under same keys -> list of pairs
+                LinkedList<WordPair<C>> xl = pairlist.get(g);
+                if (xl == null) {
+                    xl = new LinkedList<WordPair<C>>();
+                }
+                //xl.addLast( pair ); // first or last ?
+                xl.addFirst(pair); // first or last ? better for d- e-GBs
+                pairlist.put(g, xl);
+                redi.set(j); // = red.get(l).set(j);
             }
-            WordPair<C> pair = new WordPair<C>(pj, p, j, l);
-            //System.out.println("pair.new      = " + pair);
-            //multiple pairs under same keys -> list of pairs
-            LinkedList<WordPair<C>> xl = pairlist.get(g);
-            if (xl == null) {
-                xl = new LinkedList<WordPair<C>>();
+
+            // p, pj
+            g = e.lcm(f);
+            //System.out.println("g(e,f) = " + g);
+            if (g != null) {
+                WordPair<C> pair = new WordPair<C>(p, pj, l, j);
+                //System.out.println("pair.new      = " + pair);
+                //multiple pairs under same keys -> list of pairs
+                LinkedList<WordPair<C>> xl = pairlist.get(g);
+                if (xl == null) {
+                    xl = new LinkedList<WordPair<C>>();
+                }
+                //xl.addLast( pair ); // first or last ?
+                xl.addFirst(pair); // first or last ? better for d- e-GBs
+                pairlist.put(g, xl);
+                red.get(j).set(l);
             }
-            //xl.addLast( pair ); // first or last ?
-            xl.addFirst(pair); // first or last ? better for d- e-GBs
-            pairlist.put(g, xl);
         }
+        red.add(redi);
         //System.out.println("pairlist.keys@put = " + pairlist.keySet() );  
         //System.out.println("#pairlist = " + pairlist.size() );  
         P.add(p);
-        BitSet redi = new BitSet();
-        redi.set(0, l);
-        red.add(redi);
-        //System.out.println("pairlist.set = " + red); //.get( pair.j )); //pair);
         //System.out.println("pairlist.key = " + pairlist.keySet() );  
-        return P.size() - 1;
+        return l; //P.size() - 1;
     }
 
 
@@ -162,7 +186,8 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
      * @param F word polynomial list.
      * @return the index of the last added word polynomial.
      */
-    public int put(List<GenWordPolynomial<C>> F) { 
+    public int put(List<GenWordPolynomial<C>> F) {
+        //System.out.println("pairlist.F = " + F );  
         int i = 0;
         for (GenWordPolynomial<C> p : F) {
             i = put(p);
@@ -173,7 +198,7 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
 
     /**
      * Remove the next required pair from the pairlist and reduction matrix.
-     * Appy the criterions 3 and 4 to see if the S-polynomial is required.
+     * Appy the criterion 3 to see if the S-polynomial is required.
      * @return the next pair if one exists, otherwise null.
      */
     public synchronized WordPair<C> removeNext() {
@@ -183,10 +208,11 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
         Iterator<Map.Entry<Word, LinkedList<WordPair<C>>>> ip = pairlist.entrySet().iterator();
 
         WordPair<C> pair = null;
-        boolean c = false;
+        //boolean c = false;
         int i, j;
 
-        while (!c && ip.hasNext()) {
+        //while (!c && ip.hasNext()) {
+        if (ip.hasNext()) {
             Map.Entry<Word, LinkedList<WordPair<C>>> me = ip.next();
             Word g = me.getKey();
             LinkedList<WordPair<C>> xl = me.getValue();
@@ -194,29 +220,28 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
                 logger.info("g  = " + g);
             }
             pair = null;
-            while (!c && xl.size() > 0) {
+            //while (!c && xl.size() > 0) {
+            if (xl.size() > 0) {
                 pair = xl.removeFirst();
                 // xl is also modified in pairlist 
                 i = pair.i;
                 j = pair.j;
                 // System.out.println("pair(" + j + "," +i+") ");
-                c = criterion3(i, j, g); // should be okay
+                //c = criterion3(i, j, g); // to check
                 //if ( !c ) {
                 //    System.out.println("criterion 3");
                 //}
-                //System.out.println("c3_o  = " + c); 
-                red.get(j).clear(i); // set(i,false) jdk1.4
+                red.get(j).clear(i);
             }
             if (xl.size() == 0) {
                 ip.remove();
-                // = pairlist.remove( g );
             }
         }
-        if (!c) {
-            pair = null;
-        } else {
-            remCount++; // count only real pairs
-        }
+        //if (!c) {
+        //    pair = null;
+        //} else {
+        remCount++; // count only real pairs
+        //}
         return pair;
     }
 
@@ -293,13 +318,11 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
      * @return true if the S-polynomial(i,j) is required.
      */
     public boolean criterion3(int i, int j, Word eij) {
-        // assert i < j;
         boolean s = red.get(j).get(i);
-        if (!s) {
-            logger.warn("c3.s false for " + j + " " + i);
-            return s;
-        }
-        // now s = true;
+        //if (s) {
+        //   logger.warn("c3.s true for " + i + " " + j);
+        //   //return s;
+        //}
         for (int k = 0; k < P.size(); k++) {
             // System.out.println("i , k , j "+i+" "+k+" "+j); 
             if (i != k && j != k) {
@@ -307,15 +330,28 @@ public class OrderedWordPairlist<C extends RingElem<C>> implements WordPairList<
                 Word ek = A.leadingWord();
                 boolean m = eij.multipleOf(ek);
                 if (m) {
-                    if (k < i) {
-                        // System.out.println("k < i "+k+" "+i); 
-                        s = red.get(i).get(k) || red.get(j).get(k);
-                    } else if (i < k && k < j) {
-                        // System.out.println("i < k < j "+i+" "+k+" "+j); 
-                        s = red.get(k).get(i) || red.get(j).get(k);
-                    } else if (j < k) {
-                        //System.out.println("j < k "+j+" "+k); 
-                        s = red.get(k).get(i) || red.get(k).get(j);
+                    if (i < j) {
+                        if (k < i) {
+                            // System.out.println("k < i "+k+" "+i); 
+                            s = red.get(i).get(k) || red.get(j).get(k);
+                        } else if (i < k && k < j) {
+                            // System.out.println("i < k < j "+i+" "+k+" "+j); 
+                            s = red.get(k).get(i) || red.get(j).get(k);
+                        } else if (j < k) {
+                            //System.out.println("j < k "+j+" "+k); 
+                            s = red.get(k).get(i) || red.get(k).get(j);
+                        }
+                    } else { // j < i
+                        if (k < j) {
+                            //System.out.println("k < j "+k+" "+j); 
+                            s = red.get(k).get(j) || red.get(k).get(i);
+                        } else if (j < k && k < i) {
+                            //System.out.println("j < k < i "+j+" "+k+" "+i); 
+                            s = red.get(j).get(k) || red.get(k).get(i);
+                        } else if (i < k) {
+                            //System.out.println("i < k "+i+" "+k); 
+                            s = red.get(j).get(k) || red.get(i).get(k);
+                        }
                     }
                     //System.out.println("s."+k+" = " + s); 
                     if (!s) {

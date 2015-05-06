@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseParallel.java 4964 2014-10-17 19:43:31Z kredel $
+ * $Id: SolvableGroebnerBaseParallel.java 5219 2015-04-12 09:59:36Z kredel $
  */
 
 package edu.jas.gb;
@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
+import edu.jas.poly.PolynomialList;
 import edu.jas.structure.RingElem;
 import edu.jas.util.Terminator;
 import edu.jas.util.ThreadPool;
@@ -295,6 +296,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
      * @param F solvable polynomial list.
      * @return a container for an extended left Groebner base of F.
      */
+    @Override
     public SolvableExtendedGB<C> extLeftGB(int modv, List<GenSolvablePolynomial<C>> F) {
         throw new UnsupportedOperationException("parallel extLeftGB not implemented");
     }
@@ -311,17 +313,21 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
         if (Fp == null || Fp.size() == 0) { // 0 not 1
             return new ArrayList<GenSolvablePolynomial<C>>();
         }
-        GenSolvablePolynomialRing<C> fac = Fp.get(0).ring; // assert != null
-        //List<GenSolvablePolynomial<C>> X = generateUnivar( modv, Fp );
-        List<GenSolvablePolynomial<C>> X = fac.univariateList(modv);
-        //System.out.println("X univ = " + X);
+        GenSolvablePolynomialRing<C> ring = Fp.get(0).ring; // assert != null
+        // add also coefficient generators
+        List<GenSolvablePolynomial<C>> X;
+        X = PolynomialList.castToSolvableList(ring.generators(modv)); 
+        logger.info("right multipliers = " + X);
         List<GenSolvablePolynomial<C>> F = new ArrayList<GenSolvablePolynomial<C>>(Fp.size() * (1 + X.size()));
         F.addAll(Fp);
         GenSolvablePolynomial<C> p, x, q;
-        for (int i = 0; i < Fp.size(); i++) {
-            p = Fp.get(i);
+        for (int i = 0; i < F.size(); i++) { // F changes
+            p = F.get(i);
             for (int j = 0; j < X.size(); j++) {
                 x = X.get(j);
+                if (x.isONE()) {
+                    continue;
+                }
                 q = p.multiply(x);
                 q = sred.leftNormalform(F, q);
                 if (!q.isZERO()) {
@@ -364,7 +370,7 @@ public class SolvableGroebnerBaseParallel<C extends RingElem<C>> extends Solvabl
         Terminator fin = new Terminator(threads);
         TwosidedSolvableReducer<C> R;
         for (int i = 0; i < threads; i++) {
-            R = new TwosidedSolvableReducer<C>(fin, X, G, pairlist);
+            R = new TwosidedSolvableReducer<C>(fin, modv, X, G, pairlist);
             pool.addJob(R);
         }
         fin.waitDone();
@@ -519,6 +525,9 @@ class TwosidedSolvableReducer<C extends RingElem<C>> implements Runnable {
     private final PairList<C> pairlist;
 
 
+    private final int modv;
+
+
     private final Terminator pool;
 
 
@@ -531,9 +540,10 @@ class TwosidedSolvableReducer<C extends RingElem<C>> implements Runnable {
     private static final boolean debug = logger.isDebugEnabled();
 
 
-    TwosidedSolvableReducer(Terminator fin, List<GenSolvablePolynomial<C>> X,
+    TwosidedSolvableReducer(Terminator fin, int modv, List<GenSolvablePolynomial<C>> X,
                     List<GenSolvablePolynomial<C>> G, PairList<C> L) {
         pool = fin;
+        this.modv = modv;
         this.X = X;
         this.G = G;
         pairlist = L;
@@ -542,13 +552,12 @@ class TwosidedSolvableReducer<C extends RingElem<C>> implements Runnable {
 
 
     public void run() {
-        GenSolvablePolynomial<C> p, x;
+        GenSolvablePolynomial<C> p, x, S, H;
         Pair<C> pair;
-        GenSolvablePolynomial<C> S;
-        GenSolvablePolynomial<C> H;
         boolean set = false;
         int reduction = 0;
         int sleeps = 0;
+        logger.debug("modv = " + modv); // avoid "unused"
         while (pairlist.hasNext() || pool.hasJobs()) {
             while (!pairlist.hasNext()) {
                 // wait

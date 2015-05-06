@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPairlist.java 4947 2014-10-08 22:05:22Z axelclk $
+ * $Id: OrderedPairlist.java 5166 2015-03-28 10:49:15Z kredel $
  */
 
 package edu.jas.gb;
@@ -121,6 +121,9 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         s.append(", #rem="+remCount);
         if ( pairlist != null && pairlist.size() != 0 ) {
             s.append(", size="+pairlist.size());
+        }
+        if (moduleVars > 0) {
+            s.append(", modv="+moduleVars);
         }
         s.append(")");
         return s.toString();

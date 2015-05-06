@@ -1,5 +1,5 @@
 /*
- * $Id: Product.java 4940 2014-10-05 13:34:52Z axelclk $
+ * $Id: Product.java 5043 2014-12-29 12:38:51Z kredel $
  */
 
 package edu.jas.arith;
@@ -759,6 +759,7 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
      * @param S other element.
      * @return [ gcd(this,S), c1, c2 ] with c1*this + c2*b = gcd(this,S).
      */
+    @SuppressWarnings("cast")
     public Product<C>[] egcd(Product<C> S) {
         Product<C>[] ret = (Product<C>[]) new Product[3];
         ret[0] = null;

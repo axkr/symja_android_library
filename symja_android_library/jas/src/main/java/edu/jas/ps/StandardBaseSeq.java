@@ -134,9 +134,9 @@ public class StandardBaseSeq<C extends RingElem<C>>
      * @param F power series list.
      * @return STD(F) a Standard base of F.
      */
-//    public List<MultiVarPowerSeries<C>> STD(List<MultiVarPowerSeries<C>> F) {
-//        return STD(0, F);
-//    }
+    public List<MultiVarPowerSeries<C>> STD(List<MultiVarPowerSeries<C>> F) {
+        return STD(0, F);
+    }
 
 
     /**
@@ -145,112 +145,112 @@ public class StandardBaseSeq<C extends RingElem<C>>
      * @param F power series list.
      * @return STD(F) a Standard base of F.
      */
-//    public List<MultiVarPowerSeries<C>> STD(int modv, List<MultiVarPowerSeries<C>> F) {
-//        List<MultiVarPowerSeries<C>> G = normalizeZerosOnes(F);
-//        G = PSUtil.<C> monic(G);
-//        if (G.size() <= 1) {
-//            return G;
-//        }
-//        MultiVarPowerSeriesRing<C> ring = G.get(0).ring;
-//        if (!ring.coFac.isField()) {
-//            throw new IllegalArgumentException("coefficients not from a field");
-//        }
-//        OrderedPairlist<C> pairlist = new OrderedPairlist<C>(modv, ring); //strategy.create( modv, ring ); 
-//        pairlist.put(G);
-//
-//        /*
-//        MultiVarPowerSeries<C> p = null;
-//        List<MultiVarPowerSeries<C>> G = new ArrayList<MultiVarPowerSeries<C>>();
-//        OrderedPairlist<C> pairlist = null;
-//        int l = F.size();
-//        ListIterator<MultiVarPowerSeries<C>> it = F.listIterator();
-//        while (it.hasNext()) {
-//            p = it.next();
-//            if (!p.isZERO()) {
-//                //p = p.monic();
-//                if (p.isUnit()) {
-//                    G.clear();
-//                    G.add(p);
-//                    return G; // since no threads are activated
-//                }
-//                G.add(p);
-//                if (pairlist == null) {
-//                    pairlist = new OrderedPairlist<C>(modv, p.ring);
-//                    if (!p.ring.coFac.isField()) {
-//                        throw new IllegalArgumentException("coefficients not from a field");
-//                    }
-//                }
-//                // putOne not required
-//                pairlist.put(p);
-//            } else {
-//                l--;
-//            }
-//        }
-//        if (l <= 1) {
-//            return G; // since no threads are activated
-//        }
-//        */
-//        logger.info("start " + pairlist);
-//
-//        Pair<C> pair;
-//        MultiVarPowerSeries<C> pi, pj, S, H;
-//        while (pairlist.hasNext()) {
-//            pair = pairlist.removeNext();
-//            //logger.debug("pair = " + pair);
-//            if (pair == null) {
-//                continue;
-//            }
-//            pi = pair.pi;
-//            pj = pair.pj;
-//            if ( /*false &&*/debug) {
-//                logger.debug("pi    = " + pi);
-//                logger.debug("pj    = " + pj);
-//            }
-//
-//            S = red.SPolynomial(pi, pj);
-//            //S.setTruncate(p.ring.truncate()); // ??
-//            if (S.isZERO()) {
-//                pair.setZero();
-//                continue;
-//            }
-//            if (logger.isInfoEnabled()) {
-//                ExpVector es = S.orderExpVector();
-//                logger.info("ht(S) = " + es.toString(S.ring.vars) + ", " + es); // + ", S = " + S);
-//            }
-//
-//            //long t = System.currentTimeMillis();
-//            H = red.normalform(G, S);
-//            if (H.isZERO()) {
-//                pair.setZero();
-//                continue;
-//            }
-//            //t = System.currentTimeMillis() - t;
-//            //System.out.println("time = " + t);
-//            if (logger.isInfoEnabled()) {
-//                ExpVector eh = H.orderExpVector();
-//                logger.info("ht(H) = " + eh.toString(S.ring.vars) + ", " + eh); // + ", coeff(HT(H)) = " + H.coefficient(eh));
-//            }
-//
-//            //H = H.monic();
-//            if (H.isUnit()) {
-//                G.clear();
-//                G.add(H);
-//                return G; // since no threads are activated
-//            }
-//            if (logger.isDebugEnabled()) {
-//                logger.info("H = " + H);
-//            }
-//            //if (!H.isZERO()) {
-//            //l++;
-//            G.add(H);
-//            pairlist.put(H);
-//            //}
-//        }
-//        logger.debug("#sequential list = " + G.size());
-//        G = minimalSTD(G);
-//        logger.info("" + pairlist);
-//        return G;
-//    }
+    public List<MultiVarPowerSeries<C>> STD(int modv, List<MultiVarPowerSeries<C>> F) {
+        List<MultiVarPowerSeries<C>> G = normalizeZerosOnes(F);
+        G = PSUtil.<C> monic(G);
+        if (G.size() <= 1) {
+            return G;
+        }
+        MultiVarPowerSeriesRing<C> ring = G.get(0).ring;
+        if (!ring.coFac.isField()) {
+            throw new IllegalArgumentException("coefficients not from a field");
+        }
+        OrderedPairlist<C> pairlist = new OrderedPairlist<C>(modv, ring); //strategy.create( modv, ring ); 
+        pairlist.put(G);
+
+        /*
+        MultiVarPowerSeries<C> p = null;
+        List<MultiVarPowerSeries<C>> G = new ArrayList<MultiVarPowerSeries<C>>();
+        OrderedPairlist<C> pairlist = null;
+        int l = F.size();
+        ListIterator<MultiVarPowerSeries<C>> it = F.listIterator();
+        while (it.hasNext()) {
+            p = it.next();
+            if (!p.isZERO()) {
+                //p = p.monic();
+                if (p.isUnit()) {
+                    G.clear();
+                    G.add(p);
+                    return G; // since no threads are activated
+                }
+                G.add(p);
+                if (pairlist == null) {
+                    pairlist = new OrderedPairlist<C>(modv, p.ring);
+                    if (!p.ring.coFac.isField()) {
+                        throw new IllegalArgumentException("coefficients not from a field");
+                    }
+                }
+                // putOne not required
+                pairlist.put(p);
+            } else {
+                l--;
+            }
+        }
+        if (l <= 1) {
+            return G; // since no threads are activated
+        }
+        */
+        logger.info("start " + pairlist);
+
+        Pair<C> pair;
+        MultiVarPowerSeries<C> pi, pj, S, H;
+        while (pairlist.hasNext()) {
+            pair = pairlist.removeNext();
+            //logger.debug("pair = " + pair);
+            if (pair == null) {
+                continue;
+            }
+            pi = pair.pi;
+            pj = pair.pj;
+            if ( /*false &&*/debug) {
+                logger.debug("pi    = " + pi);
+                logger.debug("pj    = " + pj);
+            }
+
+            S = red.SPolynomial(pi, pj);
+            //S.setTruncate(p.ring.truncate()); // ??
+            if (S.isZERO()) {
+                pair.setZero();
+                continue;
+            }
+            if (logger.isInfoEnabled()) {
+                ExpVector es = S.orderExpVector();
+                logger.info("ht(S) = " + es.toString(S.ring.vars) + ", " + es); // + ", S = " + S);
+            }
+
+            //long t = System.currentTimeMillis();
+            H = red.normalform(G, S);
+            if (H.isZERO()) {
+                pair.setZero();
+                continue;
+            }
+            //t = System.currentTimeMillis() - t;
+            //System.out.println("time = " + t);
+            if (logger.isInfoEnabled()) {
+                ExpVector eh = H.orderExpVector();
+                logger.info("ht(H) = " + eh.toString(S.ring.vars) + ", " + eh); // + ", coeff(HT(H)) = " + H.coefficient(eh));
+            }
+
+            //H = H.monic();
+            if (H.isUnit()) {
+                G.clear();
+                G.add(H);
+                return G; // since no threads are activated
+            }
+            if (logger.isDebugEnabled()) {
+                logger.info("H = " + H);
+            }
+            //if (!H.isZERO()) {
+            //l++;
+            G.add(H);
+            pairlist.put(H);
+            //}
+        }
+        logger.debug("#sequential list = " + G.size());
+        G = minimalSTD(G);
+        logger.info("" + pairlist);
+        return G;
+    }
 
 
     /**

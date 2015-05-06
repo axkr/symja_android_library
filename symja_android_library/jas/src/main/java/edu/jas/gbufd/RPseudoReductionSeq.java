@@ -1,5 +1,5 @@
 /*
- * $Id: RPseudoReductionSeq.java 4968 2014-10-19 20:38:55Z kredel $
+ * $Id: RPseudoReductionSeq.java 5046 2014-12-30 16:46:04Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -366,8 +366,9 @@ public class RPseudoReductionSeq<C extends RegularRingElem<C>> extends RReductio
      * @return nf(Ap) with respect to Pp.
      */
     @SuppressWarnings("unchecked")
-    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp, GenPolynomial<GenPolynomial<C>> Ap) {
-	throw new UnsupportedOperationException("not implemented"); 
+    public GenPolynomial<GenPolynomial<C>> normalformRecursive(List<GenPolynomial<GenPolynomial<C>>> Pp,
+                    GenPolynomial<GenPolynomial<C>> Ap) {
+        throw new UnsupportedOperationException("not implemented");
     }
 
 

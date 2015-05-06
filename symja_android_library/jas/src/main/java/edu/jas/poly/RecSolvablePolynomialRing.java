@@ -1,5 +1,5 @@
 /*
- * $Id: RecSolvablePolynomialRing.java 4957 2014-10-16 23:03:23Z kredel $
+ * $Id: RecSolvablePolynomialRing.java 5186 2015-04-01 21:35:45Z kredel $
  */
 
 package edu.jas.poly;
@@ -329,8 +329,12 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
     @SuppressWarnings("unused")
     @Override
     public boolean isAssociative() {
+        if (!coFac.isAssociative()) {
+            return false;
+        }
         RecSolvablePolynomial<C> Xi, Xj, Xk, p, q;
         List<GenPolynomial<GenPolynomial<C>>> gens = generators();
+        //System.out.println("Rec gens = " + gens);
         int ngen = gens.size();
         for (int i = 0; i < ngen; i++) {
             Xi = (RecSolvablePolynomial<C>) gens.get(i);
@@ -351,13 +355,48 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
                 }
             }
         }
-        return coFac.isAssociative();
+        return true;
+    }
+
+
+    /**
+     * Get a (constant) RecSolvablePolynomial&lt;C&gt; element from a coefficient value.
+     * @param a coefficient.
+     * @return a RecSolvablePolynomial&lt;C&gt;.
+     */
+    @Override
+    public RecSolvablePolynomial<C> valueOf(GenPolynomial<C> a) {
+        return new RecSolvablePolynomial<C>(this, a);
+    }
+
+
+    /**
+     * Get a RecSolvablePolynomial&lt;C&gt; element from an exponent vector.
+     * @param e exponent vector.
+     * @return a RecSolvablePolynomial&lt;C&gt;.
+     */
+    @Override
+    public RecSolvablePolynomial<C> valueOf(ExpVector e) {
+        return new RecSolvablePolynomial<C>(this, coFac.getONE(), e);
+    }
+
+
+    /**
+     * Get a RecSolvablePolynomial&lt;C&gt; element from a coeffcient and an exponent
+     * vector.
+     * @param a coefficient.
+     * @param e exponent vector.
+     * @return a RecSolvablePolynomial&lt;C&gt;.
+     */
+    @Override
+    public RecSolvablePolynomial<C> valueOf(GenPolynomial<C> a, ExpVector e) {
+        return new RecSolvablePolynomial<C>(this, a, e);
     }
 
 
     /**
      * Get a (constant) RecSolvablePolynomial&lt;C&gt; element from a long
-     * value.
+     * value
      * @param a long.
      * @return a RecSolvablePolynomial&lt;C&gt;.
      */
@@ -676,7 +715,7 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
      * Distributive representation as polynomial with all main variables.
      * @return distributive polynomial ring factory.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({"cast","unchecked"})
     public static <C extends RingElem<C>> // must be static because of types
     GenSolvablePolynomialRing<C> distribute(RecSolvablePolynomialRing<C> rf) {
         // setup solvable polynomial ring
@@ -689,6 +728,21 @@ public class RecSolvablePolynomialRing<C extends RingElem<C>> extends
         pfd.table.addRelations(rld);
         //System.out.println("pfd = " + pfd.toScript());
         return pfd;
+    }
+
+
+    /**
+     * Permutation of polynomial ring variables.
+     * @param P permutation.
+     * @return P(this).
+     */
+    @Override
+    public GenSolvablePolynomialRing<GenPolynomial<C>> permutation(List<Integer> P) {
+        if (!coeffTable.isEmpty()) {
+            throw new UnsupportedOperationException("permutation with coeff relations: " + this);
+        }
+        GenSolvablePolynomialRing<GenPolynomial<C>> pfac = (GenSolvablePolynomialRing<GenPolynomial<C>>) super.permutation(P);
+        return pfac;
     }
 
 }

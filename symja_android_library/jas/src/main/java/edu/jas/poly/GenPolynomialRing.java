@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialRing.java 4972 2014-10-22 21:49:51Z kredel $
+ * $Id: GenPolynomialRing.java 5226 2015-04-19 10:16:29Z kredel $
  */
 
 package edu.jas.poly;
@@ -112,6 +112,12 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * Log4j logger object.
      */
     private static final Logger logger = Logger.getLogger(GenPolynomialRing.class);
+
+
+    /**
+     * Count for number of polynomial creations.
+     */
+    public static int creations = 0;
 
 
     /**
@@ -358,17 +364,18 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
 
 
     /**
-     * Get a scripting compatible string representation of an ExpVector of this ring.
+     * Get a scripting compatible string representation of an ExpVector of this
+     * ring.
      * @param e exponent vector
      * @return script compatible representation for the ExpVector.
      */
     public String toScript(ExpVector e) {
-        if (vars != null ) {
+        if (vars != null) {
             return e.toScript(vars);
         }
         return e.toScript();
     }
-    
+
 
     /**
      * Comparison with any other object.
@@ -412,6 +419,15 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         h += (coFac.hashCode() << 11);
         h += tord.hashCode();
         return h;
+    }
+
+
+    /**
+     * Get the number of polynomial creations.
+     * @return creations.
+     */
+    public int getCreations() {
+        return creations;
     }
 
 
@@ -600,16 +616,16 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
 
     /**
      * Random polynomial. Generates a random polynomial with k = 5, l = n, d =
-     * (nvar == 1) ? n : 3, q = (nvar == 1) ? 0.7 : 0.3.
+     * n, q = (nvar == 1) ? 0.5 : 0.3.
      * @param n number of terms.
      * @param rnd is a source for random bits.
      * @return a random polynomial.
      */
     public GenPolynomial<C> random(int n, Random rnd) {
         if (nvar == 1) {
-            return random(3, n, n, 0.7f, rnd);
+            return random(3, n, n, 0.5f, rnd);
         }
-        return random(5, n, 3, 0.3f, rnd);
+        return random(3, n, n, 0.3f, rnd);
     }
 
 
@@ -760,6 +776,23 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
     public List<GenPolynomial<C>> generators() {
         List<? extends C> cogens = coFac.generators();
         List<? extends GenPolynomial<C>> univs = univariateList();
+        List<GenPolynomial<C>> gens = new ArrayList<GenPolynomial<C>>(univs.size() + cogens.size());
+        for (C c : cogens) {
+            gens.add(getONE().multiply(c));
+        }
+        gens.addAll(univs);
+        return gens;
+    }
+
+
+    /**
+     * Get a list of the generating elements excluding the module variables.
+     * @param modv number of module variables
+     * @return list of generators for the polynomial ring.
+     */
+    public List<GenPolynomial<C>> generators(int modv) {
+        List<? extends C> cogens = coFac.generators();
+        List<? extends GenPolynomial<C>> univs = univariateList(modv);
         List<GenPolynomial<C>> gens = new ArrayList<GenPolynomial<C>>(univs.size() + cogens.size());
         for (C c : cogens) {
             gens.add(getONE().multiply(c));
@@ -974,17 +1007,23 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             v = new String[vars.length];
             int k = tord.getSplit();
             if (partial && k < vars.length) {
+                // copy upper
                 for (int j = 0; j < k; j++) {
-                    v[vars.length - k + j] = vars[vars.length - 1 - j];
+                    //v[vars.length - k + j] = vars[vars.length - 1 - j]; // reverse upper
+                    v[vars.length - k + j] = vars[vars.length - k + j];
                 }
+                // reverse lower
                 for (int j = 0; j < vars.length - k; j++) {
-                    v[j] = vars[j];
+                    //v[j] = vars[j]; // copy upper
+                    v[j] = vars[vars.length - k - j - 1];
                 }
             } else {
                 for (int j = 0; j < vars.length; j++) {
                     v[j] = vars[vars.length - 1 - j];
                 }
             }
+            //System.out.println("vars = " + Arrays.toString(vars));
+            //System.out.println("v    = " + Arrays.toString(v));
         }
         TermOrder to = tord.reverse(partial);
         GenPolynomialRing<C> pfac = new GenPolynomialRing<C>(coFac, nvar, to, v);
@@ -1081,6 +1120,51 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
                 knownVars.add(vars[i]); // eventualy names 'overwritten'
             }
         }
+    }
+
+
+    /**
+     * Permute variable names.
+     * @param vars variable names.
+     * @param P permutation.
+     * @return P(vars).
+     */
+    public static String[] permuteVars(List<Integer> P, String[] vars) {
+        if (vars == null || vars.length <= 1) {
+            return vars;
+        }
+        String[] b = new String[vars.length];
+        int j = 0;
+        for (Integer i : P) {
+            b[j++] = vars[i];
+        }
+        return b;
+    }
+
+
+    /**
+     * Permutation of polynomial ring variables.
+     * @param P permutation.
+     * @return P(this).
+     */
+    public GenPolynomialRing<C> permutation(List<Integer> P) {
+        if (nvar <= 1) {
+            return this;
+        }
+        TermOrder tp = tord.permutation(P);
+        if (vars == null) {
+            return new GenPolynomialRing<C>(coFac, nvar, tp);
+        }
+        String[] v1 = new String[vars.length];
+        for (int i = 0; i < v1.length; i++) {
+            v1[i] = vars[v1.length - 1 - i];
+        }
+        String[] vp = permuteVars(P, v1);
+        String[] v2 = new String[vp.length];
+        for (int i = 0; i < vp.length; i++) {
+            v2[i] = vp[vp.length - 1 - i];
+        }
+        return new GenPolynomialRing<C>(coFac, nvar, tp, v2);
     }
 
 

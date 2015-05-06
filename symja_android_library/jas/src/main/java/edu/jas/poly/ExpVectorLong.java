@@ -1,13 +1,13 @@
 /*
- * $Id: ExpVectorLong.java 4638 2013-09-13 19:14:05Z kredel $
+ * $Id: ExpVectorLong.java 5226 2015-04-19 10:16:29Z kredel $
  */
 
 package edu.jas.poly;
 
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -58,7 +58,7 @@ public final class ExpVectorLong extends ExpVector
         if (v == null) {
             throw new IllegalArgumentException("null val not allowed");
         }
-        val = Arrays.copyOf(v,v.length); // > Java-5
+        val = Arrays.copyOf(v, v.length); // > Java-5
     }
 
 
@@ -236,13 +236,38 @@ public final class ExpVectorLong extends ExpVector
 
 
     /**
-     * Reverse j variables. Used e.g. in opposite rings. Reverses the first j-1
-     * variables, the rest is unchanged.
-     * @param j index of first variable not reversed.
+     * Reverse lower j variables. Used e.g. in opposite rings. Reverses the
+     * first j-1 variables, the rest is unchanged.
+     * @param j index of first variable reversed.
      * @return reversed exponent vector.
      */
     @Override
     public ExpVectorLong reverse(int j) {
+        if (j <= 0 || j > val.length) {
+            return this;
+        }
+        long[] w = new long[val.length];
+        // copy first
+        for (int i = 0; i < j; i++) {
+            w[i] = val[i];
+        }
+        // reverse rest
+        for (int i = j; i < val.length; i++) {
+            w[i] = val[val.length + j - 1 - i];
+        }
+        //System.out.println("val = " + Arrays.toString(val));
+        //System.out.println("w   = " + Arrays.toString(w));
+        return new ExpVectorLong(w);
+    }
+
+
+    /**
+     * Reverse upper j variables. Reverses the last j-1 variables, the rest is
+     * unchanged.
+     * @param j index of first variable not reversed.
+     * @return reversed exponent vector.
+     */
+    public ExpVectorLong reverseUpper(int j) {
         if (j <= 0 || j > val.length) {
             return this;
         }
@@ -275,6 +300,22 @@ public final class ExpVectorLong extends ExpVector
         long[] w = new long[val.length + Vl.val.length];
         System.arraycopy(val, 0, w, 0, val.length);
         System.arraycopy(Vl.val, 0, w, val.length, Vl.val.length);
+        return new ExpVectorLong(w);
+    }
+
+
+    /**
+     * Permutation of exponent vector.
+     * @param P permutation.
+     * @return P(e).
+     */
+    @Override
+    public ExpVectorLong permutation(List<Integer> P) {
+        long[] w = new long[val.length];
+        int j = 0;
+        for (Integer i : P) {
+            w[j++] = val[i];
+        }
         return new ExpVectorLong(w);
     }
 

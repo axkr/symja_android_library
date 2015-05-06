@@ -1,5 +1,5 @@
 /*
- * $Id: GBFactory.java 4963 2014-10-17 19:19:18Z kredel $
+ * $Id: GBFactory.java 5104 2015-02-07 13:12:43Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -277,7 +277,8 @@ public class GBFactory {
             bba = new GroebnerBaseRational<BigRational>(pli); // pl not possible
             break;
         default:
-            throw new IllegalArgumentException("algorithm not available for BigRational " + a);
+            throw new IllegalArgumentException("algorithm not available for " + fac.toScriptFactory()
+                            + ", Algo = " + a);
         }
         return bba;
     }
@@ -499,7 +500,7 @@ public class GBFactory {
 
 
     /**
-     * Determine suitable concurrent implementation of GB algorithms if
+     * Determine suitable parallel/concurrent implementation of GB algorithms if
      * possible.
      * @param fac RingFactory&lt;C&gt;.
      * @return GB proxy algorithm implementation.
@@ -511,7 +512,7 @@ public class GBFactory {
 
 
     /**
-     * Determine suitable concurrent implementation of GB algorithms if
+     * Determine suitable parallel/concurrent implementation of GB algorithms if
      * possible.
      * @param fac RingFactory&lt;C&gt;.
      * @param pl pair selection strategy
@@ -529,11 +530,40 @@ public class GBFactory {
             GroebnerBaseAbstract<C> e2 = new GroebnerBaseParallel<C>(th, pl);
             return new GBProxy<C>(e1, e2);
         } else if (fac.characteristic().signum() == 0) {
+            if (fac instanceof GenPolynomialRing) {
+                GenPolynomialRing pfac = (GenPolynomialRing) fac;
+                OrderedPairlist ppl = new OrderedPairlist<GenPolynomial<C>>();
+                GroebnerBaseAbstract e1 = new GroebnerBasePseudoRecSeq<C>(pfac, ppl);
+                GroebnerBaseAbstract e2 = new GroebnerBasePseudoRecParallel<C>(th, pfac, ppl);
+                return new GBProxy<C>(e1, e2);
+            }
             GroebnerBaseAbstract<C> e1 = new GroebnerBasePseudoSeq<C>(fac, pl);
             GroebnerBaseAbstract<C> e2 = new GroebnerBasePseudoParallel<C>(th, fac, pl);
             return new GBProxy<C>(e1, e2);
         }
         return getImplementation(fac, pl);
+    }
+
+
+    /**
+     * Determine suitable parallel/concurrent implementation of GB algorithms if
+     * possible.
+     * @param fac RingFactory&lt;C&gt;.
+     * @return GB proxy algorithm implementation.
+     */
+    public static <C extends GcdRingElem<C>> // interface RingElem not sufficient 
+    GroebnerBaseAbstract<GenPolynomial<C>> getProxy(GenPolynomialRing<C> fac) {
+        if (ComputerThreads.NO_THREADS) {
+            //return GBFactory.<GenPolynomial<C>> getImplementation(fac);
+            return GBFactory.getImplementation(fac);
+        }
+        logger.debug("fac = " + fac.getClass().getName());
+        int th = (ComputerThreads.N_CPUS > 2 ? ComputerThreads.N_CPUS - 1 : 2);
+        OrderedPairlist<GenPolynomial<C>> ppl = new OrderedPairlist<GenPolynomial<C>>();
+        GroebnerBaseAbstract<GenPolynomial<C>> e1 = new GroebnerBasePseudoRecSeq<C>(fac, ppl);
+        GroebnerBaseAbstract<GenPolynomial<C>> e2 = new GroebnerBasePseudoRecParallel<C>(th, fac, ppl);
+        //return new GBProxy<GenPolynomial<C>>(e1, e2);
+        return new GBProxy(e1, e2);
     }
 
 }

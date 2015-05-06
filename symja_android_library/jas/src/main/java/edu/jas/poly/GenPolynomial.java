@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomial.java 4972 2014-10-22 21:49:51Z kredel $
+ * $Id: GenPolynomial.java 5226 2015-04-19 10:16:29Z kredel $
  */
 
 package edu.jas.poly;
@@ -125,7 +125,10 @@ Iterable<Monomial<C>> {
      */
     protected GenPolynomial(GenPolynomialRing<C> r, SortedMap<ExpVector, C> v) {
         this(r);
-        val.putAll(v); // assume no zero coefficients
+        if (v.size() > 0) {
+            GenPolynomialRing.creations++;
+            val.putAll(v); // assume no zero coefficients and val is empty
+        }
     }
 
 
@@ -563,7 +566,7 @@ Iterable<Monomial<C>> {
             return -1;
         }
         //if (c != 0) {
-            //System.out.println("c = " + c);
+        //System.out.println("c = " + c);
         //}
         // now all keys are equal
         return c;
@@ -878,6 +881,74 @@ Iterable<Monomial<C>> {
 
 
     /**
+     * GenPolynomial destructive summation.
+     * @param S GenPolynomial.
+     */
+    public void doAddTo(GenPolynomial<C> S) {
+        if (S == null || S.isZERO()) {
+            return;
+        }
+        if (this.isZERO()) {
+            this.val.putAll(S.val);
+            return;
+        }
+        assert (ring.nvar == S.ring.nvar);
+        SortedMap<ExpVector, C> nv = this.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector e = me.getKey();
+            C y = me.getValue(); //sv.get(e); // assert y != null
+            C x = nv.get(e);
+            if (x != null) {
+                x = x.sum(y);
+                if (!x.isZERO()) {
+                    nv.put(e, x);
+                } else {
+                    nv.remove(e);
+                }
+            } else {
+                nv.put(e, y);
+            }
+        }
+        return;
+    }
+
+
+    /**
+     * GenPolynomial destructive summation.
+     * @param a coefficient.
+     * @param e exponent.
+     */
+    public void doAddTo(C a, ExpVector e) {
+        if (a == null || a.isZERO()) {
+            return;
+        }
+        SortedMap<ExpVector, C> nv = this.val;
+        C x = nv.get(e);
+        if (x != null) {
+            x = x.sum(a);
+            if (!x.isZERO()) {
+                nv.put(e, x);
+            } else {
+                nv.remove(e);
+            }
+        } else {
+            nv.put(e, a);
+        }
+        return;
+    }
+
+
+    /**
+     * GenPolynomial destructive summation.
+     * @param a coefficient.
+     */
+    public void doAddTo(C a) {
+        doAddTo(a, ring.evzero);
+    }
+
+
+    /**
      * GenPolynomial subtraction.
      * @param S GenPolynomial.
      * @return this-S.
@@ -923,10 +994,7 @@ Iterable<Monomial<C>> {
      * @return this - a x<sup>e</sup>.
      */
     public GenPolynomial<C> subtract(C a, ExpVector e) {
-        if (a == null) {
-            return this;
-        }
-        if (a.isZERO()) {
+        if (a == null || a.isZERO()) {
             return this;
         }
         GenPolynomial<C> n = this.copy();
@@ -961,19 +1029,13 @@ Iterable<Monomial<C>> {
      * GenPolynomial subtract a multiple.
      * @param a coefficient.
      * @param S GenPolynomial.
-     * @return this - a x<sup>e</sup> S.
+     * @return this - a S.
      */
     public GenPolynomial<C> subtractMultiple(C a, GenPolynomial<C> S) {
-        if (a == null) {
+        if (a == null || a.isZERO()) {
             return this;
         }
-        if (a.isZERO()) {
-            return this;
-        }
-        if (S == null) {
-            return this;
-        }
-        if (S.isZERO()) {
+        if (S == null || S.isZERO()) {
             return this;
         }
         if (this.isZERO()) {
@@ -1011,16 +1073,10 @@ Iterable<Monomial<C>> {
      * @return this - a x<sup>e</sup> S.
      */
     public GenPolynomial<C> subtractMultiple(C a, ExpVector e, GenPolynomial<C> S) {
-        if (a == null) {
+        if (a == null || a.isZERO()) {
             return this;
         }
-        if (a.isZERO()) {
-            return this;
-        }
-        if (S == null) {
-            return this;
-        }
-        if (S.isZERO()) {
+        if (S == null || S.isZERO()) {
             return this;
         }
         if (this.isZERO()) {
@@ -1035,6 +1091,51 @@ Iterable<Monomial<C>> {
             f = e.sum(f);
             C y = me.getValue(); // assert y != null
             y = a.multiply(y);
+            C x = nv.get(f);
+            if (x != null) {
+                x = x.subtract(y);
+                if (!x.isZERO()) {
+                    nv.put(f, x);
+                } else {
+                    nv.remove(f);
+                }
+            } else if (!y.isZERO()) {
+                nv.put(f, y.negate());
+            }
+        }
+        return n;
+    }
+
+
+    /**
+     * GenPolynomial scale and subtract a multiple.
+     * @param b scale factor.
+     * @param a coefficient.
+     * @param S GenPolynomial.
+     * @return this * b - a S.
+     */
+    public GenPolynomial<C> scaleSubtractMultiple(C b, C a, GenPolynomial<C> S) {
+        if (a == null || S == null) {
+            return this.multiply(b);
+        }
+        if (a.isZERO() || S.isZERO()) {
+            return this.multiply(b);
+        }
+        if (this.isZERO() || b == null || b.isZERO()) {
+            return S.multiply(a.negate()); //left?
+        }
+        if (b.isONE()) {
+            return subtractMultiple(a, S);
+        }
+        assert (ring.nvar == S.ring.nvar);
+        GenPolynomial<C> n = this.multiply(b);
+        SortedMap<ExpVector, C> nv = n.val;
+        SortedMap<ExpVector, C> sv = S.val;
+        for (Map.Entry<ExpVector, C> me : sv.entrySet()) {
+            ExpVector f = me.getKey();
+            //f = e.sum(f);
+            C y = me.getValue(); // assert y != null
+            y = a.multiply(y); // now y can be zero
             C x = nv.get(f);
             if (x != null) {
                 x = x.subtract(y);

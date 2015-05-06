@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialTokenizer.java 4956 2014-10-16 22:45:10Z kredel $
+ * $Id: GenPolynomialTokenizer.java 5240 2015-04-26 18:06:05Z kredel $
  */
 
 package edu.jas.poly;
@@ -65,7 +65,6 @@ public class GenPolynomialTokenizer {
     private RelationTable table;
 
 
-    //private Reader in;
     private final StreamTokenizer tok;
 
 
@@ -99,7 +98,7 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * noargs constructor reads from System.in.
+     * No-args constructor reads from System.in.
      */
     public GenPolynomialTokenizer() {
         this(new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF8"))));
@@ -107,7 +106,7 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * constructor with Ring and Reader.
+     * Constructor with Ring and Reader.
      * @param rf ring factory.
      * @param r reader stream.
      */
@@ -139,7 +138,7 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * constructor with Reader.
+     * Constructor with Reader.
      * @param r reader stream.
      */
     @SuppressWarnings("unchecked")
@@ -163,6 +162,7 @@ public class GenPolynomialTokenizer {
         tok.wordChars('A', 'Z');
         tok.wordChars('_', '_'); // for subscripts x_i
         tok.wordChars('/', '/'); // wg. rational numbers
+        tok.wordChars('.', '.'); // wg. floats
         tok.wordChars(128 + 32, 255);
         tok.whitespaceChars(0, ' ');
         tok.commentChar('#');
@@ -220,7 +220,7 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Initialize polynomial and solvable polynomial factories.
+     * Initialize coefficient and solvable polynomial factories.
      * @param rf ring factory.
      * @param ct coefficient type.
      */
@@ -266,7 +266,17 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for GenPolynomial. syntax ? (simple)
+     * Parsing method for GenPolynomial. Syntax depends also on the 
+     * syntax of the coefficients, as the respective parser is used.
+     * Basic term/monomial syntax:
+     * <pre>
+ ... coefficient variable**exponent ... variable^exponent + ... - ....
+</pre>
+     * Juxtaposition means multiplication <code>*</code>. Then terms/monomials can be 
+     * added or subtracted <code>+, -</code> and grouped by parenthesis <code>()</code>. 
+     * There are some heuristics to detect when a coefficient should 
+     * be parsed. To force parsing of a coefficient enclose it in 
+     * braces <code>{}</code>.
      * @return the next polynomial.
      * @throws IOException
      */
@@ -368,16 +378,29 @@ public class GenPolynomialTokenizer {
                 //no break;
                 break;
 
+                //case '.': // eventually a float
+                //System.out.println("start . = " + reader);
+                //throw new InvalidExpressionException("float must start with a digit ");
+
             case StreamTokenizer.TT_WORD:
                 //System.out.println("TT_WORD: " + tok.sval);
                 if (tok.sval == null || tok.sval.length() == 0)
                     break;
                 // read coefficient
                 first = tok.sval.charAt(0);
-                if (digit(first)) {
+                if (digit(first)||first == '/'||first == '.') {
                     //System.out.println("coeff 0 = " + tok.sval );
                     StringBuffer df = new StringBuffer();
                     df.append(tok.sval);
+                    if (tok.sval.length() > 1 && digit(tok.sval.charAt(1))) {
+                        //System.out.println("start / or . = " + tok.sval);
+                        if (first == '/') { // let x/2 be x 1/2
+                            df.insert(0,"1");
+                        }
+                        if (first == '.') { // let x.2 be x 0.2
+                            df.insert(0,"0");
+                        }
+                    }
                     if (tok.sval.charAt(tok.sval.length() - 1) == 'i') { // complex number
                         tt = tok.nextToken();
                         if (debug)
@@ -402,7 +425,7 @@ public class GenPolynomialTokenizer {
                         }
                     }
                     tt = tok.nextToken();
-                    if (tt == '.') { // decimal number
+                    if (tt == '.') { // decimal number, obsolete by word char?
                         tt = tok.nextToken();
                         if (debug)
                             logger.debug("tt,dot = " + tok);
@@ -534,7 +557,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for exponent (of variable). syntax: ^long | **long.
+     * Parsing method for exponent (of variable). Syntax: 
+     * <pre>^long | **long</pre>
      * @return the next exponent or 1.
      * @throws IOException
      */
@@ -577,8 +601,10 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for comments. syntax: (* comment *) | /_* comment *_/
-     * without _ Does not work with this pushBack(), unused.
+     * Parsing method for comments. Syntax: 
+     * <pre>(* comment *) | /_* comment *_/</pre>
+     * without <code>_</code>. 
+     * Unused, as it does not work with this pushBack().
      */
     public String nextComment() throws IOException {
         // syntax: (* comment *) | /* comment */ 
@@ -620,8 +646,9 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for variable list. syntax: (a, b c, de) gives [ "a", "b",
-     * "c", "de" ]
+     * Parsing method for variable list. Syntax: 
+     * <pre>(a, b c, de)</pre> gives 
+     * <code>[ "a", "b", "c", "de" ]</code>
      * @return the next variable list.
      * @throws IOException
      */
@@ -644,6 +671,8 @@ public class GenPolynomialTokenizer {
                 }
                 tt = tok.nextToken();
             }
+        } else {
+            tok.pushBack();
         }
         Object[] ol = l.toArray();
         String[] v = new String[ol.length];
@@ -655,9 +684,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for coefficient ring. syntax: Rat | Q | Int | Z | Mod
-     * modul | Complex | C | D | Quat | AN[ (var) ( poly ) ] | AN[ modul (var) (
-     * poly ) ] | IntFunc (var_list)
+     * Parsing method for coefficient ring. Syntax: 
+     * <pre>Rat | Q | Int | Z | Mod modul | Complex | C | D | Quat | AN[ (var) ( poly ) ] | AN[ modul (var) ( poly ) ] | IntFunc (var_list)</pre>
      * @return the next coefficient factory.
      * @throws IOException
      */
@@ -823,7 +851,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for weight list. syntax: (w1, w2, w3, ..., wn)
+     * Parsing method for weight list. Syntax: 
+     * <pre>(w1, w2, w3, ..., wn)</pre>
      * @return the next weight list.
      * @throws IOException
      */
@@ -865,8 +894,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for weight array. syntax: ( (w11, ...,w1n), ..., (wm1,
-     * ..., wmn) )
+     * Parsing method for weight array. Syntax: 
+     * <pre>( (w11, ...,w1n), ..., (wm1, ..., wmn) )</pre>
      * @return the next weight array.
      * @throws IOException
      */
@@ -916,7 +945,7 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for split index. syntax: |i|
+     * Parsing method for split index. Syntax: <pre>|i|</pre>
      * @return the next split index.
      * @throws IOException
      */
@@ -927,7 +956,9 @@ public class GenPolynomialTokenizer {
         int tt;
         tt = tok.nextToken();
         if (tt == '|') {
-            logger.debug("split index");
+            if (debug) {
+                logger.debug("split index");
+            }
             tt = tok.nextToken();
             if (tt == StreamTokenizer.TT_EOF) {
                 return e;
@@ -944,7 +975,9 @@ public class GenPolynomialTokenizer {
                 }
             }
         } else if (tt == '[') {
-            logger.debug("split index");
+            if (debug) {
+                logger.debug("split index");
+            }
             tt = tok.nextToken();
             if (tt == StreamTokenizer.TT_EOF) {
                 return e;
@@ -981,8 +1014,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for term order name. syntax: termOrderName = L, IL, LEX,
-     * G, IG, GRLEX, W(weights) |split index|
+     * Parsing method for term order name. Syntax: 
+     * <pre>L | IL | LEX | G | IG | GRLEX | W(weights) | '|'split index'|'</pre>
      * @return the next term order.
      * @throws IOException
      */
@@ -1028,7 +1061,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for polynomial list. syntax: ( p1, p2, p3, ..., pn )
+     * Parsing method for polynomial list. Syntax: 
+     * <pre>( p1, p2, p3, ..., pn )</pre>
      * @return the next polynomial list.
      * @throws IOException
      */
@@ -1067,8 +1101,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for submodule list. syntax: ( ( p11, p12, p13, ..., p1n ),
-     * ..., ( pm1, pm2, pm3, ..., pmn ) )
+     * Parsing method for submodule list. Syntax: 
+     * <pre>( ( p11, p12, p13, ..., p1n ), ..., ( pm1, pm2, pm3, ..., pmn ) )</pre>
      * @return the next list of polynomial lists.
      * @throws IOException
      */
@@ -1102,8 +1136,9 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial relation table. syntax: ( p_1,
-     * p_2, p_3, ..., p_{n+3} ) semantics: p_{n+1} * p_{n+2} = p_{n+3} The next
+     * Parsing method for solvable polynomial relation table. Syntax: 
+     * <pre>( p_1, p_2, p_3, ..., p_{n+1}, p_{n+2}, p_{n+3} )</pre>
+     * semantics: <code>p_{n+1} * p_{n+2} = p_{n+3}</code>. The next
      * relation table is stored into the solvable polynomial factory.
      * @throws IOException
      */
@@ -1119,7 +1154,7 @@ public class GenPolynomialTokenizer {
         int tt;
         tt = tok.nextToken();
         if (debug) {
-            logger.debug("relation table: " + tt);
+            logger.debug("start relation table: " + tt);
         }
         if (tok.sval != null) {
             if (tok.sval.equalsIgnoreCase("RelationTable")) {
@@ -1151,8 +1186,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for polynomial set. syntax: coeffRing varList
-     * termOrderName polyList.
+     * Parsing method for polynomial set. Syntax: 
+     * <pre>coeffRing varList termOrderName polyList</pre>
      * @return the next polynomial set.
      * @throws IOException
      */
@@ -1185,8 +1220,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for module set. syntax: coeffRing varList termOrderName
-     * moduleList.
+     * Parsing method for module set. Syntax: 
+     * <pre>coeffRing varList termOrderName moduleList</pre>
      * @return the next module set.
      * @throws IOException
      */
@@ -1220,8 +1255,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial list. syntax: ( p1, p2, p3, ...,
-     * pn )
+     * Parsing method for solvable polynomial list. Syntax: 
+     * <pre>( p1, p2, p3, ..., pn )</pre>
      * @return the next solvable polynomial list.
      * @throws IOException
      */
@@ -1245,7 +1280,9 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial. syntax: p.
+     * Parsing method for solvable polynomial. Syntax: same as for polynomial.
+     * If the relation table is set-up, then multiplication will mean 
+     * solvable-multiplication.
      * @return the next polynomial.
      * @throws IOException
      */
@@ -1262,12 +1299,11 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable polynomial set. syntax: varList termOrderName
-     * relationTable polyList.
+     * Parsing method for solvable polynomial set. Syntax: 
+     * <pre>varList termOrderName relationTable polyList</pre>
      * @return the next solvable polynomial set.
      * @throws IOException
      */
-
     @SuppressWarnings("unchecked")
     public PolynomialList nextSolvablePolynomialSet() throws IOException {
         //String comments = "";
@@ -1306,8 +1342,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable submodule list. syntax: ( ( p11, p12, p13,
-     * ..., p1n ), ..., ( pm1, pm2, pm3, ..., pmn ) )
+     * Parsing method for solvable submodule list. Syntax: 
+     * <pre>( ( p11, p12, p13, ..., p1n ), ..., ( pm1, pm2, pm3, ..., pmn ) )</pre>
      * @return the next list of solvable polynomial lists.
      * @throws IOException
      */
@@ -1341,8 +1377,8 @@ public class GenPolynomialTokenizer {
 
 
     /**
-     * Parsing method for solvable module set. syntax: varList termOrderName
-     * relationTable moduleList.
+     * Parsing method for solvable module set. Syntax: 
+     * <pre>varList termOrderName relationTable moduleList</pre>
      * @return the next solvable module set.
      * @throws IOException
      */
@@ -1390,12 +1426,12 @@ public class GenPolynomialTokenizer {
     //}
 
 
-    private static boolean digit(char x) {
+    static boolean digit(char x) {
         return '0' <= x && x <= '9';
     }
 
 
-    private static boolean letter(char x) {
+    static boolean letter(char x) {
         return ('a' <= x && x <= 'z') || ('A' <= x && x <= 'Z');
     }
 
@@ -1414,8 +1450,9 @@ public class GenPolynomialTokenizer {
 
     /**
      * Parse variable list from String.
-     * @param s String. Syntax: (n1,...,nk) or (n1 ... nk), parenthesis are also
-     *            optional.
+     * @param s String. Syntax: 
+     * <pre>(n1,...,nk)</pre> or <pre>(n1 ... nk)</pre> 
+     * parenthesis are optional.
      * @return array of variable names found in s.
      */
     public static String[] variableList(String s) {

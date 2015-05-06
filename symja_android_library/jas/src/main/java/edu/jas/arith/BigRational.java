@@ -1,5 +1,5 @@
 /*
- * $Id: BigRational.java 4834 2014-06-28 10:05:37Z axelclk $
+ * $Id: BigRational.java 5040 2014-12-29 11:31:34Z kredel $
  */
 
 package edu.jas.arith;
@@ -307,7 +307,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
 
 
     /**
-     * Get this as a <tt>double</tt>. 
+     * Get this as a <tt>double</tt>.
      * @return this as a <tt>double</tt>
      * @see java.lang.Number#doubleValue()
      */
@@ -811,7 +811,11 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             return T;
         }
         if (R2.equals(BigInteger.ONE)) {
-            D1 = R1.gcd(S2);
+            if (R1.equals(S2)) {
+                D1 = R1;
+            } else {
+                D1 = R1.gcd(S2);
+            }
             RB1 = R1.divide(D1);
             SB2 = S2.divide(D1);
             T1 = RB1.multiply(S1);
@@ -819,17 +823,29 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             return T;
         }
         if (S2.equals(BigInteger.ONE)) {
-            D2 = S1.gcd(R2);
+            if (S1.equals(R2)) {
+                D2 = S1;
+            } else {
+                D2 = S1.gcd(R2);
+            }
             SB1 = S1.divide(D2);
             RB2 = R2.divide(D2);
             T1 = SB1.multiply(R1);
             T = new BigRational(T1, RB2);
             return T;
         }
-        D1 = R1.gcd(S2);
+        if (R1.equals(S2)) {
+            D1 = R1;
+        } else {
+            D1 = R1.gcd(S2);
+        }
         RB1 = R1.divide(D1);
         SB2 = S2.divide(D1);
-        D2 = S1.gcd(R2);
+        if (S1.equals(R2)) {
+            D2 = S1;
+        } else {
+            D2 = S1.gcd(R2);
+        }
         SB1 = S1.divide(D2);
         RB2 = R2.divide(D2);
         T1 = RB1.multiply(SB1);
@@ -974,25 +990,21 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      */
     public BigRational sum(BigRational S) {
         BigInteger D = null;
-        BigInteger E;
-        BigInteger J1Y;
-        BigInteger J2Y;
+        BigInteger E, J1Y, J2Y;
+        BigRational T;
         BigInteger R1 = null;
         BigInteger R2 = null;
         BigInteger RB2 = null;
         BigInteger S1 = null;
         BigInteger S2 = null;
         BigInteger SB2 = null;
-        BigRational T;
         BigInteger T1;
         BigInteger T2;
         if (this.equals(ZERO)) {
-            T = S;
-            return T;
+            return S;
         }
         if (S.equals(ZERO)) {
-            T = this;
-            return T;
+            return this;
         }
         R1 = num; //this.numerator(); 
         R2 = den; //this.denominator();
@@ -1020,17 +1032,25 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
         } else {
             D = R2.gcd(S2);
         }
-        RB2 = R2.divide(D);
-        SB2 = S2.divide(D);
+        if (D.equals(BigInteger.ONE)) {
+            RB2 = R2;
+            SB2 = S2;
+        } else {
+            RB2 = R2.divide(D);
+            SB2 = S2.divide(D);
+        }
         J1Y = R1.multiply(SB2);
         J2Y = RB2.multiply(S1);
         T1 = J1Y.add(J2Y);
         if (T1.equals(BigInteger.ZERO)) {
-            T = ZERO;
-            return T;
+            return ZERO;
         }
         if (!D.equals(BigInteger.ONE)) {
-            E = T1.gcd(D);
+            if (T1.equals(D)) {
+                E = D;
+            } else {
+                E = T1.gcd(D);
+            }
             if (!E.equals(BigInteger.ONE)) {
                 T1 = T1.divide(E);
                 R2 = R2.divide(E);

@@ -1,5 +1,5 @@
 /*
- * $Id: FDUtil.java 4940 2014-10-05 13:34:52Z axelclk $
+ * $Id: FDUtil.java 5105 2015-02-07 14:35:17Z kredel $
  */
 
 package edu.jas.fd;
@@ -16,6 +16,7 @@ import edu.jas.gbmod.SolvableQuotient;
 import edu.jas.gbmod.SolvableQuotientRing;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.PolyUtil;
@@ -67,7 +68,7 @@ public class FDUtil {
                                 "RecSolvablePolynomial with twisted coeffs not supported");
             }
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(P.ring.coFac);
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<C> h;
         GenSolvablePolynomial<C> r = P;
@@ -121,7 +122,7 @@ public class FDUtil {
                                 "RecSolvablePolynomial with twisted coeffs not supported");
             }
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(P.ring.coFac);
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<C> h;
         GenSolvablePolynomial<C> r = P;
@@ -197,7 +198,7 @@ public class FDUtil {
                                 "RecSolvablePolynomial with twisted coeffs not supported");
             }
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(P.ring.coFac);
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<C> h;
         GenSolvablePolynomial<C> r = P;
@@ -250,7 +251,8 @@ public class FDUtil {
         //if (S.isConstant()) {
         //    return P.ring.getZERO();
         //}
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) P.ring.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(cofac.coFac);
 
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<GenPolynomial<C>> h;
@@ -325,7 +327,8 @@ public class FDUtil {
             }
             Pp = Pp.multiply(ldcf);
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) P.ring.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(cofac.coFac);
         GenSolvablePolynomial<C> a = (GenSolvablePolynomial<C>) P.leadingBaseCoefficient();
         rhs = (GenSolvablePolynomial<GenPolynomial<C>>) q.multiply(S).sum(r);
         GenSolvablePolynomial<C> b = (GenSolvablePolynomial<C>) rhs.leadingBaseCoefficient();
@@ -396,7 +399,8 @@ public class FDUtil {
             ret[1] = S.ring.getZERO();
             return ret;
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) P.ring.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(cofac.coFac);
 
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<GenPolynomial<C>> h;
@@ -468,7 +472,8 @@ public class FDUtil {
             }
             Pp = Pp.multiply(ldcf); // side?
         }
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) P.ring.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(cofac.coFac);
 
         GenSolvablePolynomial<GenPolynomial<C>> pr = P.rightRecursivePolynomial();
         GenSolvablePolynomial<C> a = (GenSolvablePolynomial<C>) pr.leadingBaseCoefficient();
@@ -620,7 +625,8 @@ public class FDUtil {
         //    ret[1] = S.ring.getZERO();
         //    return ret;
         //}
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) P.ring.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorSimple<C>(cofac.coFac);
 
         ExpVector e = S.leadingExpVector();
         GenSolvablePolynomial<GenPolynomial<C>> h, q, hr, rr;
@@ -1085,7 +1091,8 @@ public class FDUtil {
         GenSolvablePolynomial<C> d;
         GenSolvablePolynomial<C> x;
         GenSolvablePolynomial<C> z;
-        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorPrimitive<C>();
+        GenPolynomialRing<C> cofac = (GenPolynomialRing) fac.coFac;
+        GreatestCommonDivisorAbstract<C> fd = new GreatestCommonDivisorPrimitive<C>(cofac.coFac);
         int s = 0;
         // lcm/ore of denominators ??
         Map<ExpVector, SolvableQuotient<C>> Am = A.getMap();

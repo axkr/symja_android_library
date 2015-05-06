@@ -1,13 +1,12 @@
 /*
- * $Id: QuotPair.java 4669 2013-10-20 17:11:16Z kredel $
+ * $Id: QuotPair.java 5204 2015-04-05 10:30:15Z kredel $
  */
 
 package edu.jas.structure;
 
 
 /**
- * Quotient pair interface. 
- * Defines selectors for numerator and denominator.
+ * Quotient pair interface. Defines selectors for numerator and denominator.
  * @param C base element type
  * @author Heinz Kredel
  */

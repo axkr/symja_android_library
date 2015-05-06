@@ -1,5 +1,5 @@
 /*
- * $Id: FactorAbsolute.java 4965 2014-10-17 20:07:51Z kredel $
+ * $Id: FactorAbsolute.java 5047 2014-12-30 17:44:11Z kredel $
  */
 
 package edu.jas.ufd;
@@ -516,17 +516,17 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
                 afactors.add(a.negate());
                 adenom.add(Qa);
             }
-            if (false && P.degree(0) == 3 && Ga.degree(0) == 1) {
-                GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil
-                                .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
-                GenPolynomial<AlgebraicNumber<C>> Qa = qra[0];
-                if (!qra[1].isZERO()) {
-                    throw new ArithmeticException("remainder not zero");
-                }
-                System.out.println("Qa3 = " + Qa);
-                //afactors.add( a.negate() );
-                //adenom.add( Qa );
-            }
+            // if (P.degree(0) == 3 && Ga.degree(0) == 1) {
+            //     GenPolynomial<AlgebraicNumber<C>>[] qra = PolyUtil
+            //                   .<AlgebraicNumber<C>> basePseudoQuotientRemainder(Pa, Ga);
+            //     GenPolynomial<AlgebraicNumber<C>> Qa = qra[0];
+            //     if (!qra[1].isZERO()) {
+            //         throw new ArithmeticException("remainder not zero");
+            //     }
+            //     System.out.println("Qa3 = " + Qa);
+            //     //afactors.add( a.negate() );
+            //     //adenom.add( Qa );
+            // }
         }
         return new PartialFraction<C>(A, P, cfactors, cdenom, afactors, adenom);
     }
