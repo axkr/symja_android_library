@@ -125,11 +125,11 @@ public class Together extends AbstractFunctionEvaluator {
 
 		temp = F.eval(numer.getOneIdentity(F.C0));
 		IExpr exprNumerator = F.evalExpandAll(temp);
-//		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exprNumerator);
-//		if (negExpr != null) {
-//			exprNumerator = negExpr;
-//			denom.add(F.CN1);
-//		}
+		// IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exprNumerator);
+		// if (negExpr != null) {
+		// exprNumerator = negExpr;
+		// denom.add(F.CN1);
+		// }
 		temp = F.eval(denom.getOneIdentity(F.C1));
 		IExpr exprDenominator = F.evalExpandAll(temp);
 
@@ -215,7 +215,7 @@ public class Together extends AbstractFunctionEvaluator {
 		if (arg1.isAtom()) {
 			return arg1;
 		}
-		if (arg1.isAST()) {
+		if (arg1.isPlusTimesPower()) {
 			IExpr temp = togetherNull((IAST) arg1);
 			if (temp != null) {
 				return temp;

@@ -347,6 +347,12 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPlusTimesPower() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isFalse() {
 		return false;
 	}

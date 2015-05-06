@@ -268,8 +268,12 @@ public class Convert {
 				if (expr instanceof INumber) {
 					currOutRow.add(expr);
 				} else {
-					// TODO Performance hotspot
-					currOutRow.add(F.eval(F.Together(expr)));
+					if (expr.isPlusTimesPower()) {
+						// TODO Performance hotspot
+						currOutRow.add(F.eval(F.Together(expr)));
+					} else {
+						currOutRow.add(expr);
+					}
 				}
 			}
 		}

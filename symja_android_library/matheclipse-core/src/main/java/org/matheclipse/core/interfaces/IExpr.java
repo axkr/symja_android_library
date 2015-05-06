@@ -411,6 +411,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isE();
 
 	/**
+	 * Test if this expression is a <code>Plus, Power or Times</code> function.
+	 * 
+	 */
+	public boolean isPlusTimesPower();
+
+	/**
 	 * Test if this expression equals the symbol "False"
 	 * 
 	 */

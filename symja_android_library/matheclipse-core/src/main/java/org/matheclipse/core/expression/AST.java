@@ -461,6 +461,12 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isPlusTimesPower() {
+		return isPlus() || isTimes() || isPower();
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isIndeterminate() {
 		return false;
 	}
@@ -2184,7 +2190,7 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 
 	@Override
 	public final IExpr power(final long n) {
-		if (n==1L) {
+		if (n == 1L) {
 			return this;
 		}
 		return F.Power(this, F.integer(n));
