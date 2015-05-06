@@ -130,6 +130,7 @@ public class HashedOrderlessMatcher {
 	 * @see HashedPatternRules
 	 */
 	public IAST evaluate(final IAST orderlessAST) {
+		// TODO Performance hotspot
 		int[] hashValues = new int[(orderlessAST.size() - 1)];
 		if (!fPatternHashRuleMap.isEmpty()) {
 			HashValueVisitor v = new HashValueVisitor();

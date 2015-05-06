@@ -181,15 +181,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 							return F.Divide(fx, F.Log(fx.arg1()));
 						}
 					}
-					if (INT_FUNCTIONS.contains(arg1.head())) {
-						if (arg1.isAST()) {
-							final IAST arg1AST = (IAST) arg1;
-							if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
-								IExpr head = arg1AST.head();
-								IExpr temp = integrate1ArgumentFunctions(head, x);
-								if (temp != null) {
-									return temp;
-								}
+					if (INT_FUNCTIONS.contains(fx.head())) {
+						if (fx.size() == 2 && x.equals(fx.arg1())) {
+							IExpr head = fx.head();
+							IExpr temp = integrate1ArgumentFunctions(head, x);
+							if (temp != null) {
+								return temp;
 							}
 						}
 						result = integrateByRubiRules(ast);
@@ -200,12 +197,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr fxExpanded = F.expand(fx, true, false);
 					if (fxExpanded.isAST()) {
 						if (fxExpanded.isPlus()) {
-							IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
-							if (polyQ.isTrue()) {
-								if (arg1.isTimes()) {
-									result = integrateByRubiRules(ast);
-									if (result != null) {
-										return result;
+							if (fxExpanded != fx) {
+								IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
+								if (polyQ.isTrue()) {
+									if (arg1.isTimes()) {
+										result = integrateByRubiRules(ast);
+										if (result != null) {
+											return result;
+										}
 									}
 								}
 							}
@@ -258,7 +257,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 								}
 								return filterCollector;
 							}
-							
+
 							IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
 							if (temp != null) {
 								return temp;

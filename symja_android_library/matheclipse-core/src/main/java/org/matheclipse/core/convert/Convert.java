@@ -49,8 +49,7 @@ public class Convert {
 	 * @param listMatrix
 	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
 	 * @throws ClassCastException
-	 *           if not all elements are convertable to a <code>double</code>
-	 *           value.
+	 *             if not all elements are convertable to a <code>double</code> value.
 	 * @throws IndexOutOfBoundsException
 	 */
 	public static RealMatrix list2RealMatrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
@@ -149,13 +148,12 @@ public class Convert {
 	}
 
 	/**
-	 * Converts a PolynomialFunction to the (polynomial) expression
-	 * representation.
+	 * Converts a PolynomialFunction to the (polynomial) expression representation.
 	 * 
 	 * @param pf
-	 *          the polynomial function
+	 *            the polynomial function
 	 * @param sym
-	 *          the name of the polynomial functions variable
+	 *            the name of the polynomial functions variable
 	 * @return
 	 */
 	public static IExpr polynomialFunction2Expr(final PolynomialFunction pf, ISymbol sym) {
@@ -165,13 +163,12 @@ public class Convert {
 	}
 
 	/**
-	 * Converts an array of coefficients into the (polynomial) expression
-	 * representation.
+	 * Converts an array of coefficients into the (polynomial) expression representation.
 	 * 
 	 * @param coefficients
-	 *          the coefficients of the polynomial function
+	 *            the coefficients of the polynomial function
 	 * @param sym
-	 *          the name of the polynomial functions variable
+	 *            the name of the polynomial functions variable
 	 * @return
 	 */
 	public static IExpr polynomialFunction2Expr(double[] coefficients, ISymbol sym) {
@@ -207,7 +204,7 @@ public class Convert {
 		if (header != F.List) {
 			return null;
 		}
-	
+
 		IAST currInRow = (IAST) listMatrix.get(1);
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
@@ -216,7 +213,7 @@ public class Convert {
 		}
 		final int rowSize = listMatrix.size() - 1;
 		final int colSize = currInRow.size() - 1;
-	
+
 		final IExpr[][] elements = new IExpr[rowSize][colSize];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
@@ -238,9 +235,9 @@ public class Convert {
 		if (header != F.List) {
 			return null;
 		}
-	
+
 		final int rowSize = listVector.size() - 1;
-	
+
 		final IExpr[] elements = new IExpr[rowSize];
 		for (int i = 0; i < rowSize; i++) {
 			elements[i] = listVector.get(i + 1);
@@ -260,7 +257,7 @@ public class Convert {
 		}
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
-	
+
 		final IAST out = F.List();
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
@@ -271,6 +268,7 @@ public class Convert {
 				if (expr instanceof INumber) {
 					currOutRow.add(expr);
 				} else {
+					// TODO Performance hotspot
 					currOutRow.add(F.eval(F.Together(expr)));
 				}
 			}
@@ -290,7 +288,7 @@ public class Convert {
 			return null;
 		}
 		final int rowSize = vector.getDimension();
-	
+
 		final IAST out = F.List();
 		for (int i = 0; i < rowSize; i++) {
 			out.add(vector.getEntry(i));
@@ -298,22 +296,19 @@ public class Convert {
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;
 	}
-	
+
 	/**
-	 * Convert an expression into a JScience polynomial. Throws different
-	 * exceptions if the conversion is not possible:<br>
+	 * Convert an expression into a JScience polynomial. Throws different exceptions if the conversion is not possible:<br>
 	 * 
 	 * @param exprPoly
-	 *          an expression which should be converted into a JScience polynomial
+	 *            an expression which should be converted into a JScience polynomial
 	 * @param variables
-	 *          a list of the variables which could occur in the polynomial
+	 *            a list of the variables which could occur in the polynomial
 	 * @return the corresponding JScience polynomial
 	 * @throws ArithmeticException
-	 *           if the exponent of a <code>Power</code> expression doesn't fit
-	 *           into a Java <code>int</code>
+	 *             if the exponent of a <code>Power</code> expression doesn't fit into a Java <code>int</code>
 	 * @throws ClassCastException
-	 *           if the expression is an AST with an unsuitable head (i.e. no
-	 *           <code>Plus, Times, Power</code> head)
+	 *             if the expression is an AST with an unsuitable head (i.e. no <code>Plus, Times, Power</code> head)
 	 */
 	// public static Polynomial<IExpr> expr2Polynomial(final IExpr exprPoly,
 	// final List<IExpr> variables) throws ArithmeticException,

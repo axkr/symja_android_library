@@ -108,9 +108,8 @@ public class DownRulesData implements Serializable {
 			}
 
 			if (fPatternDownRules != null) {
-				IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
-				for (int i = 0; i < list.length; i++) {
-					pmEvaluator = (IPatternMatcher) list[i].clone();
+				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
+					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
 						if (rhs == null) {
@@ -133,7 +132,7 @@ public class DownRulesData implements Serializable {
 				}
 			}
 		} catch (CloneNotSupportedException cnse) {
-			cnse.printStackTrace();
+			cnse.printStackTrace();  
 		}
 		return null;
 	}
@@ -142,31 +141,31 @@ public class DownRulesData implements Serializable {
 			boolean showSteps) throws CloneNotSupportedException {
 		IExpr result;
 		IPatternMatcher pmEvaluator;
-		final IPatternMatcher[] list = multiMap.get(hash).toArray(new IPatternMatcher[0]);
-		if (list != null) {
-			for (int i = 0; i < list.length; i++) {
-				pmEvaluator = (IPatternMatcher) list[i].clone();
+		
+		// TODO Performance hotspot
+		Set<IPatternMatcher> nset = multiMap.get(hash);
+		for (IPatternMatcher patternEvaluator : nset) {
+			pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
+			if (showSteps) {
+				IExpr rhs = pmEvaluator.getRHS();
+				if (rhs == null) {
+					rhs = F.Null;
+				}
+				System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
+				// + "  :=  " + rhs.toString());
+			}
+			result = pmEvaluator.eval(expression);
+			if (result != null) {
 				if (showSteps) {
 					IExpr rhs = pmEvaluator.getRHS();
 					if (rhs == null) {
 						rhs = F.Null;
 					}
-					System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
-					// + "  :=  " + rhs.toString());
+					// System.out.println("\nSIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  " +
+					// rhs.toString());
+					System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
 				}
-				result = pmEvaluator.eval(expression);
-				if (result != null) {
-					if (showSteps) {
-						IExpr rhs = pmEvaluator.getRHS();
-						if (rhs == null) {
-							rhs = F.Null;
-						}
-						// System.out.println("\nSIMPLE:  " + pmEvaluator.getLHS().toString() + "  :=  " +
-						// rhs.toString());
-						System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
-					}
-					return result;
-				}
+				return result;
 			}
 		}
 		return null;
