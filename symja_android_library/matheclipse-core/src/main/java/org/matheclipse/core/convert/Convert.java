@@ -265,7 +265,7 @@ public class Convert {
 			out.add(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j);
-				if (expr instanceof INumber) {
+				if (expr.isNumber()) {
 					currOutRow.add(expr);
 				} else {
 					if (expr.isPlusTimesPower()) {
