@@ -449,7 +449,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (expr instanceof AST) {
 			final AST ast = (AST) expr;
 			if (ast.size() > 1) {
-				if (ast.isPower()) {
+				if (ast.isPlus()) {
+					return 1;
+				} else if (ast.isPower()) {
 					if (ast.arg1() instanceof ISymbol) {
 						final int cp = fSymbolName.compareTo(((Symbol) ast.arg1()).fSymbolName);
 						if (cp != 0) {
