@@ -292,7 +292,7 @@ public class StringX extends ExprImpl implements IStringX {
 
 	@Override
 	public int hashCode() {
-		return fString.hashCode();
+		return 37 * fString.hashCode();
 	}
 
 	public int hierarchy() {

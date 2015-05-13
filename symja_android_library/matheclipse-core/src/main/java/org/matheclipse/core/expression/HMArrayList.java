@@ -59,7 +59,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		firstIndex = hashValue = 0;
 		lastIndex = modCount = array.length;
 	}
-	
+
 	/**
 	 * Constructs a new instance of {@code ArrayList} with ten capacity.
 	 */
@@ -377,20 +377,14 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			if (hashCode() != obj.hashCode()) {
 				return false;
 			}
-			if (size() != ((AST) obj).size()) {
-				return false;
-			}
 			if (obj == this) {
 				return true;
 			}
 			HMArrayList<E> list = (HMArrayList<E>) obj;
+			if (size() != list.size()) {
+				return false;
+			}
 			int j = list.firstIndex;
-			// for (int i = firstIndex; i < lastIndex; i++) {
-			// if (array[i].hashCode() != list.array[j++].hashCode()) {
-			// return false;
-			// }
-			// }
-			// j = list.firstIndex;
 			for (int i = firstIndex; i < lastIndex; i++) {
 				if (!array[i].equals(list.array[j++])) {
 					return false;
@@ -402,15 +396,14 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
-	 * list equals <code>length</code>.
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code>
 	 * 
 	 * @param head
 	 *            object to compare with element at location <code>0</code>
 	 * @return
 	 */
 	public final boolean isSameHead(E head) {
-		return array[firstIndex] == head;
+		return array[firstIndex].equals(head);
 	}
 
 	/**
@@ -423,11 +416,11 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * @return
 	 */
 	public final boolean isSameHead(E head, int length) {
-		return array[firstIndex] == head && length == (lastIndex - firstIndex);
+		return array[firstIndex].equals(head) && length == (lastIndex - firstIndex);
 	}
 
 	public final boolean isSameHead(E head, int minLength, int maxLength) {
-		return array[firstIndex] == head && minLength <= (lastIndex - firstIndex) && maxLength >= (lastIndex - firstIndex);
+		return array[firstIndex].equals(head) && minLength <= (lastIndex - firstIndex) && maxLength >= (lastIndex - firstIndex);
 	}
 
 	/**
@@ -440,7 +433,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 * @return
 	 */
 	public final boolean isSameHeadSizeGE(E head, int length) {
-		return array[firstIndex] == head && length <= (lastIndex - firstIndex);
+		return array[firstIndex].equals(head) && length <= (lastIndex - firstIndex);
 	}
 
 	@Override
@@ -538,6 +531,8 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		if (hashValue == 0) {
 			hashValue = 17;
 			for (int i = firstIndex; i < lastIndex; i++) {
+				// http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
+				// hashValue ^= array[i].hashCode() + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
 				hashValue = 23 * hashValue + array[i].hashCode();
 			}
 		}
