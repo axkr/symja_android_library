@@ -35,12 +35,14 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
 public class OutputFormFactory {
 
 	private final boolean fRelaxedSyntax;
+	private final boolean fPlusReversed;
 	private boolean fIgnoreNewLine = false;
 	private boolean fEmpty = true;
 	private int fColumnCounter;
 
-	private OutputFormFactory(final boolean relaxedSyntax) {
+	private OutputFormFactory(final boolean relaxedSyntax, final boolean reversed) {
 		fRelaxedSyntax = relaxedSyntax;
+		fPlusReversed = reversed;
 	}
 
 	/**
@@ -53,7 +55,22 @@ public class OutputFormFactory {
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax) {
-		return new OutputFormFactory(relaxedSyntax);
+		return get(relaxedSyntax, false);
+	}
+
+	/**
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
+	 * 
+	 * @param relaxedSyntax
+	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e. sin() instead
+	 *            of Sin[]. If <code>true</code> use single square brackets instead of double square brackets for extracting parts
+	 *            of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 * @param plusReversed
+	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed order
+	 * @return
+	 */
+	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
+		return new OutputFormFactory(relaxedSyntax, plusReversed);
 	}
 
 	/**
@@ -305,9 +322,88 @@ public class OutputFormFactory {
 
 	private void convertPlusOperator(final Appendable buf, final IAST plusAST, final InfixOperator oper, final int precedence)
 			throws IOException {
-		if (oper.getPrecedence() < precedence) {
+		int operPrecedence = oper.getPrecedence();
+		if (operPrecedence < precedence) {
 			append(buf, "(");
 		}
+		String operatorStr = oper.getOperatorString();
+
+		IExpr plusArg;
+		int size = plusAST.size();
+		if (size > 0) {
+			convertPlusArgument(buf, plusAST.arg1(), operatorStr, operPrecedence, size, 1);
+			for (int i = 2; i < size; i++) {
+				plusArg = plusAST.get(i);
+				convertPlusArgument(buf, plusArg, operatorStr, operPrecedence, size, i);
+			}
+		}
+		if (operPrecedence < precedence) {
+			append(buf, ")");
+		}
+	}
+
+	public void convertPlusArgument(final Appendable buf, IExpr plusArg, String operatorStr, final int precedence, int size, int i)
+			throws IOException {
+		if (plusArg.isTimes()) {
+			final String multCh = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getOperatorString();
+			boolean showOperator = true;
+			final IAST timesAST = (IAST) plusArg;
+			IExpr arg1 = timesAST.arg1();
+
+			if (arg1.isNumber() && (((INumber) arg1).complexSign() < 0)) {
+				if (((INumber) arg1).isOne()) {
+					showOperator = false;
+				} else {
+					if (((INumber) arg1).isMinusOne()) {
+						append(buf, "-");
+						showOperator = false;
+					} else {
+						convertNumber(buf, (INumber) arg1, precedence);
+					}
+				}
+			} else {
+				if (i != 1) {
+					append(buf, operatorStr);
+				}
+				convert(buf, arg1, ASTNodeFactory.TIMES_PRECEDENCE);
+			}
+
+			IExpr timesArg;
+			for (int j = 2; j < timesAST.size(); j++) {
+				timesArg = timesAST.get(j);
+
+				if (showOperator) {
+					append(buf, multCh);
+				} else {
+					showOperator = true;
+				}
+
+				convert(buf, timesArg, ASTNodeFactory.TIMES_PRECEDENCE);
+
+			}
+
+		} else {
+			if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
+				// special case negative number:
+				convert(buf, plusArg);
+			} else {
+				if (i != 1) {
+					append(buf, operatorStr);
+				}
+				convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
+			}
+
+		}
+	}
+
+	private void convertPlusOperatorReversed(final Appendable buf, final IAST plusAST, final InfixOperator oper,
+			final int precedence) throws IOException {
+		int operPrecedence = oper.getPrecedence();
+		if (operPrecedence < precedence) {
+			append(buf, "(");
+		}
+
+		String operatorStr = oper.getOperatorString();
 
 		IExpr plusArg;
 		int size = plusAST.size() - 1;
@@ -329,12 +425,12 @@ public class OutputFormFactory {
 							append(buf, "-");
 							showOperator = false;
 						} else {
-							convertNumber(buf, (INumber) arg1, oper.getPrecedence());
+							convertNumber(buf, (INumber) arg1, operPrecedence);
 						}
 					}
 				} else {
 					if (i < size) {
-						append(buf, oper.getOperatorString());
+						append(buf, operatorStr);
 					}
 					convert(buf, arg1, ASTNodeFactory.TIMES_PRECEDENCE);
 				}
@@ -358,7 +454,7 @@ public class OutputFormFactory {
 					convert(buf, plusArg);
 				} else {
 					if (i < size) {
-						append(buf, oper.getOperatorString());
+						append(buf, operatorStr);
 					}
 
 					convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
@@ -367,7 +463,7 @@ public class OutputFormFactory {
 			}
 		}
 
-		if (oper.getPrecedence() < precedence) {
+		if (operPrecedence < precedence) {
 			append(buf, ")");
 		}
 	}
@@ -526,7 +622,11 @@ public class OutputFormFactory {
 				}
 				if ((operator instanceof InfixOperator) && (list.size() > 2)) {
 					if (head.equals(F.Plus)) {
-						convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
+						if (fPlusReversed) {
+							convertPlusOperatorReversed(buf, list, (InfixOperator) operator, precedence);
+						} else {
+							convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
+						}
 						return;
 					} else if (head.equals(F.Times)) {
 						convertTimesOperator(buf, list, (InfixOperator) operator, precedence);

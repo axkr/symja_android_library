@@ -174,7 +174,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	public Symbol(final String symbolName, final IEvaluator evaluator) {
 		super();
-		fHashValue = (symbolName == null) ? 197 : 7 * symbolName.hashCode();
+		fHashValue = symbolName.hashCode();
 		fSymbolName = symbolName;
 		fEvaluator = evaluator;
 	}
@@ -448,6 +448,11 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		if (expr instanceof AST) {
 			final AST ast = (AST) expr;
+
+			if (expr.isAST(F.DirectedInfinity)) {
+				return 1;
+			}
+
 			if (ast.size() > 1) {
 				if (ast.isPlus()) {
 					return 1;
@@ -850,7 +855,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean containsRules() {

@@ -1533,11 +1533,12 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 					}
 					return 1;
 				} else {
-					cp = lastTimes.compareTo(ast.arg1());
-					if (cp != 0) {
-						return cp;
-					}
-					return F.C1.compareTo(ast.arg2());
+					return compareToAST(ast);
+					// cp = lastTimes.compareTo(ast.arg1());
+					// if (cp != 0) {
+					// return cp;
+					// }
+					// return F.C1.compareTo(ast.arg2());
 				}
 			}
 		} else if (ast.isTimes()) {
@@ -1564,14 +1565,24 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
+		if (isAST(F.DirectedInfinity)) {
+			if (!expr.isAST(F.DirectedInfinity)) {
+				return -1;
+			}
+			return compareToAST((AST) expr);
+		} else  {
+			if (expr.isAST(F.DirectedInfinity)) {
+				return 1;
+			}
+		}
+		
 		if (expr instanceof AST) {
 			// special comparison for Times?
 			if (isTimes()) {
 				return compareToTimes((AST) expr);
-			} else {
-				if (expr.isTimes()) {
-					return -1 * ((AST) expr).compareToTimes(this);
-				}
+			}
+			if (expr.isTimes()) {
+				return -1 * ((AST) expr).compareToTimes(this);
 			}
 			return compareToAST((AST) expr);
 		}
@@ -1579,18 +1590,22 @@ public class AST extends HMArrayList<IExpr> implements IAST, Externalizable {
 		if (expr instanceof Symbol) {
 			return -1 * ((Symbol) expr).compareTo(this);
 		}
-
-		if (hierarchy() > expr.hierarchy()) {
-			return 1;
-		}
-		if (hierarchy() < expr.hierarchy()) {
-			return -1;
-		}
-		return 0;
+		int x = hierarchy();
+		int y = expr.hierarchy();
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
 	private int compareToAST(final AST ast) {
 		// compare the headers of the 2 expressions:
+		if (isPlusTimesPower()) {
+			if (!ast.isPlusTimesPower()) {
+				return -1;
+			}
+		} else {
+			if (ast.isPlusTimesPower()) {
+				return 1;
+			}
+		}
 		int cp = head().compareTo(ast.head());
 		if (cp != 0) {
 			return cp;
