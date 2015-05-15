@@ -17,7 +17,7 @@ package org.matheclipse.parser.client.ast;
 
 /**
  * A node for a parsed floating number string. The floating point string is not
- * converted to a binary float or double type. only th String representation is
+ * converted to a binary float or double type. only the String representation is
  * stored.
  * 
  */

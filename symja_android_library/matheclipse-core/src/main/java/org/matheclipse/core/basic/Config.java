@@ -7,9 +7,10 @@ import org.apache.commons.math3.util.Precision;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * 
+ * General configuration settings.
  */
 public class Config {
+	
 	/**
 	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation from the
 	 * Plot[], Plot3D[] and ParametricPlot[] functions
@@ -78,12 +79,6 @@ public class Config {
 	 * Used to serialize the Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
 	 */
 	public static boolean SERIALIZE_SYMBOLS = false; 
-
-	/**
-	 * Version string for console application
-	 * 
-	 */
-	// public final static String VERSION = "00.00.70.00";
 
 	/**
 	 * <code>true</code> if the engine is started by a servlet<br/>
