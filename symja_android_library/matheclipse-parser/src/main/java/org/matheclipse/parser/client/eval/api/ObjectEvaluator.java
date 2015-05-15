@@ -147,7 +147,6 @@ public class ObjectEvaluator<DATA, DATA_VARIABLE, USER_DATA_TYPE> {
 	 * Reevaluate the <code>expression</code> (possibly after a new Variable
 	 * assignment)
 	 * 
-	 * @param Expression
 	 * @return
 	 * @throws SyntaxError
 	 */

@@ -1374,11 +1374,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public int getRecursionLimit() {
 		return fRecursionLimit;
 	}
-	
+
 	public int getRecursionCounter() {
 		return fRecursionCounter;
 	}
-	
 
 	/**
 	 * @return
@@ -1475,6 +1474,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fNumericMode;
 	}
 
+	/**
+	 * Check if the appending of expressions to the history list for the <code>Out[]</code> function is enabled. If enabled, the
+	 * special variable <code>$ans</code> returns the result from the last evluation done with this evaluation engine.
+	 * 
+	 * @see org.matheclipse.core.reflection.Out
+	 */
 	public boolean isOutListDisabled() {
 		return fOutListDisabled;
 	}
