@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.Field;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -34,8 +33,12 @@ import edu.jas.structure.ElemFactory;
 /**
  * Abstract base class for atomic expression objects.
  */
-@SuppressWarnings("serial")
 public abstract class ExprImpl implements IExpr, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3346614106664542983L;
 
 	public static IExpr replaceRepeated(final IExpr expr, VisitorReplaceAll visitor) {
 		IExpr result = expr;

@@ -13,6 +13,11 @@ import com.google.common.base.Predicate;
 public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher>, Serializable {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2841686297882535691L;
+	
+	/**
 	 * Contains the "pattern-matching" expression
 	 * 
 	 */
