@@ -2,7 +2,10 @@ package org.matheclipse.core.eval.interfaces;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -264,4 +267,37 @@ public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
 		return null;
 	}
 
+	/**
+	 * Initialize the serialized Rubi integration rules from ressource <code>/ser/integrate.ser</code>.
+	 * 
+	 * @param symbol
+	 */
+	public static void initSerializedRules(final ISymbol symbol) {
+			EvalEngine engine = EvalEngine.get();
+			boolean oldPackageMode = engine.isPackageMode();
+			boolean oldTraceMode = engine.isTraceMode();
+			try {
+				engine.setPackageMode(true);
+				engine.setTraceMode(false);
+
+				InputStream in = AbstractFunctionEvaluator.class.getResourceAsStream("/ser/" + symbol.getSymbolName().toLowerCase(Locale.ENGLISH)
+						+ ".ser");
+				ObjectInputStream ois = new ObjectInputStream(in);
+				// InputStream in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+				// read files with BufferedInputStream to improve performance
+				// ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(in));
+				symbol.readRules(ois);
+				ois.close();
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				engine.setPackageMode(oldPackageMode);
+				engine.setTraceMode(oldTraceMode);
+			}
+	}
+	
 }
