@@ -10,6 +10,7 @@
 
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="doc.dir"     value="${build.dir}/javadoc"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
 
     <property name="main-class"  value="org.matheclipse.core.eval.Console"/>
@@ -29,6 +30,7 @@
         <mkdir dir="${classes.dir}"/>
         <copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
         <copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
+        <copydir src="matheclipse-core/src/main/java/ser" dest="${classes.dir}/ser" />
     	<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
     	<copy file="matheclipse-core/src/main/java/META-INF/MANIFEST.MF" todir="${classes.dir}/META-INF" />
         <copy file="matheclipse-core/src/main/java/META-INF/services/javax.script.ScriptEngineFactory" todir="${classes.dir}/META-INF/services" />
@@ -41,7 +43,12 @@
     	       includeantruntime="false" />
     </target>
 
-	<target name="jar" depends="compile">
+    <!-- Generate javadocs for current project into ${doc.dir} -->
+    <target name="doc" depends="compile" description="generate documentation">
+        <javadoc sourcepath="${src.dir}" encoding="utf-8" packagenames="org.matheclipse.core.*,org.matheclipse.parser.*" destdir="${doc.dir}"/>
+    </target>
+  
+	<target name="jar" depends="doc">
 		<mkdir dir="${jar.dir}"/>
 <!--		<unjar src="lib/jsr305.jar" dest="${classes.dir}">
 		  <patternset>
@@ -324,10 +331,6 @@
 -outjars     ${jar.dir}/symja-lib-${date}.jar
 -keepattributes Signature
 
--keep public class org.matheclipse.** { 
-    public protected *;
-}
-
 -keep public class com.google.common.base.FinalizableReference {
     public protected *;
 }
@@ -384,21 +387,52 @@
     public protected *;
 }
 
--keepclassmembernames class org.matheclipse.** {
+-keep public class org.matheclipse.parser.** { 
+    public protected *;
+}
+
+-keepclassmembernames class org.matheclipse.parser.** {
   java.lang.Class class$(java.lang.String);
   java.lang.Class class$(java.lang.String, boolean);
 }
 
--keepclasseswithmembernames class org.matheclipse.** {
+-keepclasseswithmembernames class org.matheclipse.parser.** {
   native &lt;methods&gt;;
 }
 
--keepclassmembers enum org.matheclipse.** {
+-keepclassmembers enum org.matheclipse.parser.** {
   public static **[] values();
   public static ** valueOf(java.lang.String);
 }
 
--keepclassmembers class org.matheclipse.** implements java.io.Serializable {
+-keepclassmembers class org.matheclipse.parser.** implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+-keep public class org.matheclipse.core.** { 
+    public protected *;
+}
+
+-keepclassmembernames class org.matheclipse.core.** {
+  java.lang.Class class$(java.lang.String);
+  java.lang.Class class$(java.lang.String, boolean);
+}
+
+-keepclasseswithmembernames class org.matheclipse.core.** {
+  native &lt;methods&gt;;
+}
+
+-keepclassmembers enum org.matheclipse.core.** {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
+
+-keepclassmembers class org.matheclipse.core.** implements java.io.Serializable {
     static final long serialVersionUID;
     private static final java.io.ObjectStreamField[] serialPersistentFields;
     private void writeObject(java.io.ObjectOutputStream);
