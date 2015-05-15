@@ -295,10 +295,10 @@ public class ASTNodeFactory implements IParserFactory {
 						if (lowercaseName.length() > 1) {
 							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos") && !lowercaseName.equals("tan")
 									&& !lowercaseName.equals("cot") && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
-								System.out.println(nodeStr + " => " + '§' + lowercaseName);
+								System.out.println(nodeStr + " => §" + lowercaseName);
 							}
 						}
-						return '§' + lowercaseName;
+						return "§" + lowercaseName;
 					}
 				}
 			} else {
@@ -306,9 +306,9 @@ public class ASTNodeFactory implements IParserFactory {
 					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
 					if (temp == null) {
 						if (lowercaseName.length() > 1) {
-							System.out.println(nodeStr + " => " + '§' + lowercaseName);
+							System.out.println(nodeStr + " => §" + lowercaseName);
 						}
-						return '§' + lowercaseName;
+						return "§" + lowercaseName;
 					}
 				}
 			}
