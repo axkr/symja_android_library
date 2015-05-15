@@ -31,7 +31,7 @@ import org.matheclipse.parser.client.math.Complex;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * A java console program to run the evaluator interactivly
+ * A java console program to run the parsers numerical evaluators interactivly
  */
 public class Console {
 
