@@ -884,7 +884,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// long start = System.currentTimeMillis();
 
 		IAST ast = null;
-		if (Config.SERIALIZE_SYMBOLS) {
+		if (!Config.LOAD_SERIALIZED_RULES) {
 			ast = F.ast(F.List, 10000, false);
 			getRuleASTRubi45(ast);
 		}
@@ -1112,7 +1112,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		symbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(symbol);
 
-		if (!Config.SERIALIZE_SYMBOLS) {
+		if (Config.LOAD_SERIALIZED_RULES) {
 			initSerializedRules(symbol);
 		}
 	}

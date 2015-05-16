@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * General configuration settings.
  */
 public class Config {
-	
+
 	/**
 	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation from the
 	 * Plot[], Plot3D[] and ParametricPlot[] functions
@@ -76,9 +76,14 @@ public class Config {
 	public static boolean RUBI_CONVERT_SYMBOLS = false;
 
 	/**
-	 * Used to serialize the Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
+	 * Used to serialize the internal Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
 	 */
-	public static boolean SERIALIZE_SYMBOLS = false; 
+	public static boolean SERIALIZE_SYMBOLS = false;
+
+	/**
+	 * If set to true the <code>Integrate</code> initialization Rules will be read from ressource <code>/ser/integrate.ser</code>
+	 */
+	public static boolean LOAD_SERIALIZED_RULES = false;
 
 	/**
 	 * <code>true</code> if the engine is started by a servlet<br/>
