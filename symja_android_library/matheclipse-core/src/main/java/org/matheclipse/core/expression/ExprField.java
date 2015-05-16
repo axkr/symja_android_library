@@ -10,6 +10,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 
+/**
+ * Class for representing a field of <code>ExprFieldElement</code>.
+ * 
+ * @see ExprFieldElement
+ */
 public class ExprField implements Field<ExprFieldElement> {
 	public final static ExprField CONST = new ExprField();
 
@@ -21,17 +26,13 @@ public class ExprField implements Field<ExprFieldElement> {
 		return ONE;
 	}
 
-	// @Override
-	// public Class<? extends FieldElement<ExprFieldElement>> getRuntimeClass()
-	// {
-	// return ExprFieldElement.class;
-	// }
-
+	/** {@inheritDoc} */
 	@Override
 	public ExprFieldElement getZero() {
 		return ZERO;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Class<? extends FieldElement<ExprFieldElement>> getRuntimeClass() {
 		return ExprFieldElement.class;

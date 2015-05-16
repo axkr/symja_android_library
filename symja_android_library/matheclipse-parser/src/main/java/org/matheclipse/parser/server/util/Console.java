@@ -31,7 +31,10 @@ import org.matheclipse.parser.client.math.Complex;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * A java console program to run the parsers numerical evaluators interactivly
+ * A java console program to run the DoubleEvaluator and ComplexEvaluator numerical evaluators interactivly.
+ *
+ * @see DoubleEvaluator
+ * @see ComplexEvaluator
  */
 public class Console {
 
@@ -60,7 +63,8 @@ public class Console {
 				f.close();
 				System.out.println(console.interpreter(buff.toString()));
 			} catch (final IOException ioe) {
-				final String msg = "Cannot read from the specified file. " + "Make sure the path exists and you have read permission.";
+				final String msg = "Cannot read from the specified file. "
+						+ "Make sure the path exists and you have read permission.";
 				System.out.println(msg);
 				return;
 			}
@@ -123,7 +127,7 @@ public class Console {
 	 * Sets the arguments for the <code>main</code> method
 	 * 
 	 * @param args
-	 *          the aruments of the program
+	 *            the aruments of the program
 	 */
 	private void setArgs(final String args[]) {
 		for (int i = 0; i < args.length; i++) {
@@ -159,8 +163,7 @@ public class Console {
 	}
 
 	/**
-	 * Evaluates the given string-expression and returns the result in
-	 * <code>OutputForm</code>
+	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
 	 * 
 	 * @param strEval
 	 * 
@@ -195,7 +198,7 @@ public class Console {
 	 * 
 	 * @param out
 	 * @param prompt
-	 *          the prompt string to display
+	 *            the prompt string to display
 	 * 
 	 */
 	public void printPrompt(final PrintStream out, final String prompt) {
@@ -207,7 +210,7 @@ public class Console {
 	 * read a string from the console. The string is terminated by a newline
 	 * 
 	 * @param out
-	 *          Description of Parameter
+	 *            Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
@@ -242,9 +245,9 @@ public class Console {
 	 * read a string from the console. The string is terminated by a newline
 	 * 
 	 * @param prompt
-	 *          the prompt string to display
+	 *            the prompt string to display
 	 * @param out
-	 *          Description of Parameter
+	 *            Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 

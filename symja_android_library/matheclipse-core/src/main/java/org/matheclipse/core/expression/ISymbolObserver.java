@@ -2,6 +2,10 @@ package org.matheclipse.core.expression;
 
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * Interface for observing the creation of symbols.
+ *
+ */
 public interface ISymbolObserver {
 	/**
 	 * If a symbol with a starting upper case character in its name is created this

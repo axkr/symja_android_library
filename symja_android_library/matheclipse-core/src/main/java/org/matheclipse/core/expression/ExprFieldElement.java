@@ -8,6 +8,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INumber;
 
+/**
+ * Class for representing a field of (wrapped) <code>IExpr</code> values.
+ * 
+ * @see IExpr
+ */
 public class ExprFieldElement implements FieldElement<ExprFieldElement>, Comparable<ExprFieldElement> {
 	private final IExpr val;
 
@@ -106,7 +111,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 			return new ExprFieldElement(result);
 		}
 		return new ExprFieldElement(F.eval(result));
-	} 
+	}
 
 	@Override
 	public ExprFieldElement reciprocal() {
@@ -114,7 +119,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 			return new ExprFieldElement(((INumber) val).inverse());
 		}
 		if (val.isAtom()) {
-			return new ExprFieldElement(F.Power(val,-1));
+			return new ExprFieldElement(F.Power(val, -1));
 		}
 		return new ExprFieldElement(F.eval(val.power(-1)));
 	}
@@ -123,7 +128,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 	public ExprFieldElement subtract(ExprFieldElement a) {
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.minus(a.val));
-		} 
+		}
 		return new ExprFieldElement(F.evalExpandAll(F.Subtract(val, a.val)));
 	}
 

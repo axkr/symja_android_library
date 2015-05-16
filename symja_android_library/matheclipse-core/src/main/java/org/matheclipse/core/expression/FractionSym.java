@@ -26,7 +26,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * 
+ * IFraction implementation which delegates most of the methods to the Apache commons BigFraction methods
  */
 public class FractionSym extends ExprImpl implements IFraction {
 
@@ -397,8 +397,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 			exp >>>= 1;
 		}
 		return result;
-	} 
-	
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber inverse() {

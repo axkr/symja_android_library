@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
@@ -374,14 +375,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IExpr getAssignedValue();
 
 	/**
-	 * Apply the function to the currently assigned value of the symbol and reassign the result value to the symbol.
+	 * Apply the function to the currently assigned value of the symbol and reassign the result value to the symbol. Used for
+	 * functions like AppendTo, Decrement, Increment,...
 	 * 
 	 * @param function
 	 *            the function which should be applied
 	 * @param functionSymbol
-	 *            TODO
+	 *            if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions message
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
 	 *         <code>null</code> if the reassignment isn't possible.
+	 * 
+	 * @see WrongArgumentType
 	 */
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
 

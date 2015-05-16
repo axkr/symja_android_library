@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Implements Symbols for function, constant and variable names
  * 
+ * @deprecated
  */
 public class MethodSymbol extends Symbol {
 	/**
@@ -24,6 +25,15 @@ public class MethodSymbol extends Symbol {
 
 	private Method fMethod;
 
+	/**
+	 * 
+	 * @param symbolName
+	 * @param packagename
+	 * @param classname
+	 * @param methodname
+	 * 
+	 * @deprecated
+	 */
 	public MethodSymbol(final String symbolName, final String packagename, final String classname, final String methodname) {
 		super(symbolName);
 		try {
@@ -34,6 +44,14 @@ public class MethodSymbol extends Symbol {
 		}
 	}
 
+	/**
+	 * 
+	 * @param symbolName
+	 * @param classname
+	 * @param methodname
+	 * 
+	 * @deprecated
+	 */
 	public MethodSymbol(final String symbolName, final String classname, final String methodname) {
 		this(symbolName, "org.matheclipse.core.reflection.system", classname, methodname);
 
@@ -89,9 +107,8 @@ public class MethodSymbol extends Symbol {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr obj) {

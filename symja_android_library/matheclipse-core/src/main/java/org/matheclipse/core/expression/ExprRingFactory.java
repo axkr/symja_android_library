@@ -9,6 +9,10 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.structure.RingFactory;
 
+/**
+ * Ring factory class. Defines tests for field and query of characteristic.
+ * 
+ */
 public class ExprRingFactory implements RingFactory<IExpr> {
 	/**
 	 * 
@@ -41,7 +45,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 * Get a BigRational element from a long.
 	 * 
 	 * @param a
-	 *          long.
+	 *            long.
 	 * @return BigRational from a.
 	 */
 	public IExpr fromInteger(long a) {
@@ -52,7 +56,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 * Get a BigRational element from a long.
 	 * 
 	 * @param a
-	 *          long.
+	 *            long.
 	 * @return BigRational from a.
 	 */
 	public static IExpr valueOf(long a) {

@@ -5,20 +5,42 @@ import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * 
+ * @deprecated
+ */
 public class Matrix extends ASTDelegate {
 	private final int fColumns;
 
+	/**
+	 * 
+	 * @param ast
+	 * @param columns
+	 * 
+	 * @deprecated
+	 */
 	public Matrix(IAST ast, int columns) {
 		super(ast);
 		fColumns = columns;
 	}
 
+	/**
+	 * 
+	 * @param rows
+	 * @param columns
+	 * @deprecated
+	 */
 	public Matrix(int rows, int columns) {
 		super();
 		fColumns = columns;
 		fAst = createAST(rows, columns);
 	}
 
+	/**
+	 * 
+	 * @param values
+	 * @deprecated
+	 */
 	public Matrix(int[][] values) {
 		super();
 		fColumns = values[0].length;
@@ -26,14 +48,12 @@ public class Matrix extends ASTDelegate {
 	}
 
 	/**
-	 * Create a new AST matrix instance (i.e. List of Lists) and set all sublist
-	 * elements to <code>null</code>
+	 * Create a new AST matrix instance (i.e. List of Lists) and set all sublist elements to <code>null</code>
 	 * 
 	 * @param rowSize
-	 *          the initial number of rows, which should be initialized
+	 *            the initial number of rows, which should be initialized
 	 * @param columnSize
-	 *          the initial number of columns, which should be assigned to
-	 *          <code>null</code>
+	 *            the initial number of columns, which should be assigned to <code>null</code>
 	 * @return a new AST matrix instance
 	 */
 	protected AST createAST(int rowSize, int columnSize) {
@@ -102,8 +122,8 @@ public class Matrix extends ASTDelegate {
 
 	public Matrix minus(final Matrix that) {
 		if ((that.getRows() != getRows()) || (that.getColumns() != fColumns)) {
-			throw new DimensionException("Matrix#minus([" + getRows() + "," + fColumns + "],[" + that.getRows() + "," + that.getColumns()
-					+ "])");
+			throw new DimensionException("Matrix#minus([" + getRows() + "," + fColumns + "],[" + that.getRows() + ","
+					+ that.getColumns() + "])");
 		}
 		return null;
 	}
@@ -118,8 +138,8 @@ public class Matrix extends ASTDelegate {
 
 	public Matrix plus(final Matrix that) {
 		if ((that.getRows() != getRows()) || (that.getColumns() != fColumns)) {
-			throw new DimensionException("Matrix#plus([" + getRows() + "," + fColumns + "],[" + that.getRows() + "," + that.getColumns()
-					+ "])");
+			throw new DimensionException("Matrix#plus([" + getRows() + "," + fColumns + "],[" + that.getRows() + ","
+					+ that.getColumns() + "])");
 		}
 		AST resultAST = createAST(fAst.size() - 1);
 		AST tempAST;

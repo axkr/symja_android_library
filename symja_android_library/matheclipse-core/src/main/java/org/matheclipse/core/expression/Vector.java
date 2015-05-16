@@ -3,16 +3,35 @@ package org.matheclipse.core.expression;
 import org.matheclipse.core.eval.exception.DimensionException;
 import org.matheclipse.core.generic.BinaryMap;
 
+/**
+ * 
+ * @deprecated
+ */
 public class Vector extends ASTDelegate {
+	/**
+	 * 
+	 * @param ast
+	 * @deprecated
+	 */
 	public Vector(AST ast) {
 		super(ast);
 	}
 
+	/**
+	 * 
+	 * @param size
+	 * @deprecated
+	 */
 	public Vector(int size) {
 		super();
 		fAst = createAST(size);
 	}
 
+	/**
+	 * 
+	 * @param values
+	 * @deprecated
+	 */
 	public Vector(int[] values) {
 		super();
 		fAst = createAST(values);
@@ -54,7 +73,7 @@ public class Vector extends ASTDelegate {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return fAst.hashCode() * 61;

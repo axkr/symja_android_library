@@ -3,14 +3,27 @@ package org.matheclipse.core.expression;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * 
+ * 
+ * @deprecated
+ */
 public abstract class ASTDelegate {
 
 	protected IAST fAst;
 
+	/**
+	 * @deprecated
+	 */
 	protected ASTDelegate() {
 		this(null);
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @deprecated
+	 */
 	public ASTDelegate(IAST ast) {
 		super();
 		fAst = ast;
@@ -20,7 +33,7 @@ public abstract class ASTDelegate {
 	 * Create a new AST List instance
 	 * 
 	 * @param size
-	 *          the initial number of elements
+	 *            the initial number of elements
 	 * @return a new AST List instance
 	 */
 	protected AST createAST(int size) {

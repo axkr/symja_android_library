@@ -36,7 +36,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.math.BigIntegerMath;
 
 /**
- * IInteger implementation which simply delegates most of the methods to the BigInteger methods
+ * IInteger implementation which delegates most of the methods to the BigInteger methods
  */
 public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	/**
