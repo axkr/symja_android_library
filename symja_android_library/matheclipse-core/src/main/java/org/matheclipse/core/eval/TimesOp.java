@@ -34,11 +34,15 @@ public class TimesOp {
 	 * @return
 	 */
 	public static IExpr times(IExpr a1, IExpr a2) {
-		IAST times = F.Times(a1, a2);
-		IExpr expr = Times.CONST.evaluate(times);
+		IExpr expr = timesNull(a1, a2);
 		if (expr == null) {
-			return times;
+			return F.Times(a1, a2);
 		}
 		return expr;
+	}
+	
+	public static IExpr timesNull(IExpr a1, IExpr a2) {
+		IAST times = F.Times(a1, a2);
+		return Times.CONST.evaluate(times);
 	}
 }
