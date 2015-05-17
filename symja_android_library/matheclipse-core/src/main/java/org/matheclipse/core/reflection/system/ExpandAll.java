@@ -31,9 +31,12 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 
 	/**
 	 * Expand the given <code>ast</code> expression.
+	 * 
 	 * @param patt
-	 * @param expandNegativePowers TODO
-	 * @param distributePlus TODO
+	 * @param expandNegativePowers
+	 *            TODO
+	 * @param distributePlus
+	 *            TODO
 	 * @param ast
 	 * @return <code>null</code> if the expression couldn't be expanded.
 	 */
@@ -46,6 +49,9 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			if ((ast.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
 				ast = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
 			}
+		}
+		if (expr.isAllExpanded()) {
+			return expr;
 		}
 		IAST result = null;
 		IExpr temp = null;
@@ -62,13 +68,21 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			}
 		}
 		if (result == null) {
-			return Expand.expand(ast, patt, expandNegativePowers, distributePlus);
+			return setAllExpanded(Expand.expand(ast, patt, expandNegativePowers, distributePlus), expandNegativePowers,
+					distributePlus);
 		}
 		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);
 		if (temp != null) {
-			return temp;
+			return setAllExpanded(temp, expandNegativePowers, distributePlus);
 		}
-		return result;
+		return setAllExpanded(result, expandNegativePowers, distributePlus);
+	}
+
+	private static IExpr setAllExpanded(IExpr expr, boolean expandNegativePowers, boolean distributePlus) {
+		if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
+			((IAST) expr).setEvalFlags(IAST.IS_ALL_EXPANDED);
+		}
+		return expr;
 	}
 
 }

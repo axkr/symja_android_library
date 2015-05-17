@@ -125,6 +125,16 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public final int IS_EVALED = 0x0800;
 
 	/**
+	 * This expression is already evaluated by Expand() function
+	 */
+	public final int IS_EXPANDED = 0x1000;
+	
+	/**
+	 * This expression is already evaluated by ExpandAll() function
+	 */
+	public final int IS_ALL_EXPANDED = 0x2000;
+	
+	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
 	 * @param ast

@@ -120,13 +120,9 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	@Override
 	public int compareTo(IExpr expr) {
-		if (hierarchy() > expr.hierarchy()) {
-			return 1;
-		}
-		if (hierarchy() < expr.hierarchy()) {
-			return -1;
-		}
-		return 0;
+		int x = hierarchy();
+		int y = expr.hierarchy();
+		return (x < y) ? -1 : ((x == y) ? 0 : 1); 
 	}
 
 	@Override
@@ -348,6 +344,18 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isExpanded() {
+		return true;
+	}
+	 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAllExpanded() {
+		return true;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPlusTimesPower() {

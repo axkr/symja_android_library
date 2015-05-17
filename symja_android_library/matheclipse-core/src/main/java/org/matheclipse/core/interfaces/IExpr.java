@@ -411,6 +411,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isE();
 
 	/**
+	 * Test if this expression is already expanded i.e. <code>Plus, Times, Power</code> expression is expanded.
+	 * 
+	 */
+	public boolean isExpanded();
+
+	/**
+	 * Test if this expression and all subexpressions are already expanded i.e. all <code>Plus, Times, Power</code>
+	 * (sub-)expressions are expanded.
+	 * 
+	 */
+	public boolean isAllExpanded();
+
+	/**
 	 * Test if this expression is a <code>Plus, Power or Times</code> function.
 	 * 
 	 */
