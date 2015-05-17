@@ -470,19 +470,19 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 				} else if (ast.isTimes()) {
 					// compare with the last ast element:
 					final IExpr lastTimes = ast.last();
-					if (lastTimes instanceof AST) {
-						final IExpr lastTimesHeader = ((IAST) lastTimes).head();
-						if ((lastTimesHeader == F.Power) && (((IAST) lastTimes).size() == 3)) {
-							final int cp = compareTo(((IAST) lastTimes).arg1());
-							if (cp != 0) {
-								return cp;
-							}
-							return F.C1.compareTo(((IAST) lastTimes).arg2());
+					if (lastTimes.isPower()) {
+						final int cp = compareTo(((IAST) lastTimes).arg1());
+						if (cp != 0) {
+							return cp;
 						}
+						// "x^1"  compared to "x^arg2()"
+						return F.C1.compareTo(((IAST) lastTimes).arg2());
 					}
-					final int cp = compareTo(lastTimes);
-					if (cp != 0) {
-						return cp;
+					if (lastTimes.isSymbol()) {
+						final int cp = compareTo(lastTimes);
+						if (cp != 0) {
+							return cp;
+						}
 					}
 				}
 			}
