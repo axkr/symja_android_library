@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -125,12 +126,18 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 
 				if (expr.isAST()) {
-					IAST inverseFunction = InverseFunction.getUnaryInverseFunction((IAST) expr);
+					IAST function = (IAST) expr;
+					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
 					if (inverseFunction != null) {
 						IExpr temp = rewriteInverseFunction(plusAST, i);
 						if (temp != null) {
 							return temp;
 						}
+					} else if (function.isPower() && function.arg2().isFraction()) {
+						// issue #95
+						IFraction arg2 = (IFraction) function.arg2();
+						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+						return F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
 					}
 				}
 
