@@ -137,7 +137,14 @@ public class Solve extends AbstractFunctionEvaluator {
 						// issue #95
 						IFraction arg2 = (IFraction) function.arg2();
 						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+						// if (plus.isFree(Predicates.in(vars), true)) {
 						return F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+						// } else {
+						// IInteger numer = arg2.getNumerator();
+						// IInteger denom = arg2.getDenominator();
+						// return F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus), denom)),
+						// F.Expand(F.Power(function.arg1(), numer))));
+						// }
 					}
 				}
 
