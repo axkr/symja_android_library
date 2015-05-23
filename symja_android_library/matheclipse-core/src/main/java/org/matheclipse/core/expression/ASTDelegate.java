@@ -36,11 +36,11 @@ public abstract class ASTDelegate {
 	 *            the initial number of elements
 	 * @return a new AST List instance
 	 */
-	protected AST createAST(int size) {
-		return (AST) F.ast(F.List, size, false);
+	protected IAST createAST(int size) {
+		return F.ast(F.List, size, false);
 	}
 
-	protected AST createAST(int[] values) {
+	protected IAST createAST(int[] values) {
 		return AST.newInstance(F.List, values);
 	}
 

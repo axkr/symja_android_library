@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import org.matheclipse.core.eval.exception.DimensionException;
 import org.matheclipse.core.generic.BinaryMap;
+import org.matheclipse.core.interfaces.IAST;
 
 /**
  * 
@@ -13,7 +14,7 @@ public class Vector extends ASTDelegate {
 	 * @param ast
 	 * @deprecated
 	 */
-	public Vector(AST ast) {
+	public Vector(IAST ast) {
 		super(ast);
 	}
 
@@ -41,7 +42,7 @@ public class Vector extends ASTDelegate {
 		if (that.size() != fAst.size()) {
 			throw new DimensionException("Vector#plus([" + fAst.size() + "],[" + that.size() + "])");
 		}
-		AST resultAST = createAST(fAst.size() - 1);
+		IAST resultAST = createAST(fAst.size() - 1);
 		fAst.map(resultAST, that.fAst, new BinaryMap(F.Plus()));
 		return new Vector(resultAST);
 	}

@@ -25,7 +25,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast,2);
 		if (ast.arg1().isList()) {
-			final AST lst = (AST) ast.arg1();
+			final IAST lst = (IAST) ast.arg1();
 			final int len0 = lst.size() - 1;
 
 			final IAST resultList = List();

@@ -480,16 +480,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr getPart(final List<Integer> positions);
 
 	/**
-	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping for the
-	 * property.
-	 * 
-	 * @param property
-	 * @return
-	 * @see #putProperty(PROPERTY, Object)
-	 */
-	public Object getProperty(PROPERTY property);
-
-	/**
 	 * Are the given evaluation flags disabled for this list ?
 	 * 
 	 * @return
@@ -665,17 +655,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return <code>this</code> after prepending the given expression.
 	 */
 	public IAST prependClone(IExpr expr);
-
-	/**
-	 * Associates the specified value with the specified property in the associated <code>EnumMap<PROPERTY, Object></code> map. If
-	 * the map previously contained a mapping for this key, the old value is replaced.
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
-	 * @see #getProperty(PROPERTY)
-	 */
-	public Object putProperty(PROPERTY property, Object value);
 
 	/**
 	 * Get the range of elements [0..ast.size()[ of the AST. This range elements are the head of the function prepended by the

@@ -34,7 +34,7 @@ public class Transpose implements IFunctionEvaluator {
 			IAST originalRow;
 			IAST transposedResultRow;
 			for (int i = 1; i <= dim[0]; i++) {
-				originalRow = (AST) originalMatrix.get(i);
+				originalRow = (IAST) originalMatrix.get(i);
 				for (int j = 1; j <= dim[1]; j++) {
 					transposedResultRow = (IAST) transposedMatrix.get(j);
 					transposedResultRow.set(i, transform(originalRow.get(j)));

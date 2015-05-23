@@ -446,8 +446,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			}
 			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
-		if (expr instanceof AST) {
-			final AST ast = (AST) expr;
+		if (expr.isAST()) {
+			final IAST ast = (IAST) expr;
 
 			if (expr.isAST(F.DirectedInfinity)) {
 				return 1;

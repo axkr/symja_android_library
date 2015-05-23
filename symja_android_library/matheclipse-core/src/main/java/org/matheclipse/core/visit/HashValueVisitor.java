@@ -19,9 +19,6 @@ public class HashValueVisitor extends AbstractVisitorInt {
 		// fCurrentDepth = 0;
 	}
 
-	/**
-	 * @see org.matheclipse.core.expression.AST#hashCode()
-	 */
 	public int visit(IAST list) {
 		int hash = 0;
 		if (list.size() > 1) {

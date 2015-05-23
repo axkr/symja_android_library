@@ -56,23 +56,18 @@ public class Matrix extends ASTDelegate {
 	 *            the initial number of columns, which should be assigned to <code>null</code>
 	 * @return a new AST matrix instance
 	 */
-	protected AST createAST(int rowSize, int columnSize) {
-		AST matrix = (AST) F.ast(F.List, rowSize, true);
+	protected IAST createAST(int rowSize, int columnSize) {
+		IAST matrix = F.ast(F.List, rowSize, true);
 		for (int i = 1; i < rowSize + 1; i++) {
 			matrix.set(i, F.ast(F.List, columnSize, false));
 		}
 		return matrix;
 	}
 
-	protected AST createAST(int[][] values) {
-		AST matrix = (AST) F.ast(F.List, values.length, true);
+	protected IAST createAST(int[][] values) {
+		IAST matrix = F.ast(F.List, values.length, true);
 		for (int i = 0; i < values.length; i++) {
 			matrix.set(i + 1, AST.newInstance(F.List, values[i]));
-			// row = F.ast(F.List, values[i].length, true);
-			// matrix.set(i + 1, row);
-			// for (int j = 0; j < values[i].length; j++) {
-			// row.set(j + 1, F.integer(values[i][j]));
-			// }
 		}
 		return matrix;
 	}
@@ -141,8 +136,8 @@ public class Matrix extends ASTDelegate {
 			throw new DimensionException("Matrix#plus([" + getRows() + "," + fColumns + "],[" + that.getRows() + ","
 					+ that.getColumns() + "])");
 		}
-		AST resultAST = createAST(fAst.size() - 1);
-		AST tempAST;
+		IAST resultAST = createAST(fAst.size() - 1);
+		IAST tempAST;
 		for (int i = 1; i < fAst.size(); i++) {
 			tempAST = createAST(getColumns());
 			((IAST) fAst.get(i)).map(tempAST, (IAST) that.fAst.get(i), new BinaryMap(F.Plus()));

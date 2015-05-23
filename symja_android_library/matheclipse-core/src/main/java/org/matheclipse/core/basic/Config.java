@@ -131,13 +131,6 @@ public class Config {
 	public static int STRING_MAX_SIZE = 4096;
 
 	/**
-	 * Maximum size of the AST pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.AST
-	 */
-	public static int AST_MAX_POOL_SIZE = 65536;
-
-	/**
 	 * Maximum size of the IntegerImpl pools in <i>server mode</i>.
 	 * 
 	 * @see org.matheclipse.core.expression.Expression

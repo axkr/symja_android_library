@@ -34,7 +34,7 @@ public class Tr implements IFunctionEvaluator {
 			}
 			IAST row;
 			for (int i = 1; i <= len; i++) {
-				row = (AST) mat.get(i);
+				row = (IAST) mat.get(i);
 				tr.set(i, row.get(i));
 			}
 			return tr;

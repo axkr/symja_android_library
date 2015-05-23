@@ -23,12 +23,14 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamField;
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
+
+import org.matheclipse.core.builtin.constant.E;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * HMArrayList is an implementation of {@link List}, backed by an array. All optional operations adding, removing, and replacing are
@@ -36,58 +38,24 @@ import java.util.RandomAccess;
  * 
  * Copied and modified from the Apache Harmony project.
  * 
- * @since 1.2
  */
-public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneable, Serializable, RandomAccess {
+public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cloneable, Serializable, RandomAccess {
+
+	private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$
 
 	private static final long serialVersionUID = 8683452581122892189L;
 
-	private transient int firstIndex;
+	protected transient IExpr[] array;
+
+	transient int firstIndex;
 
 	protected transient int lastIndex;
-
-	private transient int hashValue;
-
-	protected transient E[] array;
-
-	protected HMArrayList(E[] array) {
-		init(array);
-	}
-
-	final protected void init(E[] array) {
-		this.array = array;
-		firstIndex = hashValue = 0;
-		lastIndex = modCount = array.length;
-	}
 
 	/**
 	 * Constructs a new instance of {@code ArrayList} with ten capacity.
 	 */
 	public HMArrayList() {
 		this(10);
-	}
-
-	public HMArrayList(E ex, E... es) {
-		int len = es.length + 1;
-		firstIndex = hashValue = 0;
-		array = newElementArray(len);
-		array[0] = ex;
-		System.arraycopy(es, 0, array, 1, es.length);
-		lastIndex = modCount = len;
-	}
-
-	/**
-	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
-	 * 
-	 * @param capacity
-	 *            the initial capacity of this {@code ArrayList}.
-	 */
-	public HMArrayList(int capacity) {
-		if (capacity < 0) {
-			throw new IllegalArgumentException();
-		}
-		firstIndex = lastIndex = hashValue = 0;
-		array = newElementArray(capacity);
 	}
 
 	/**
@@ -107,9 +75,49 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		modCount = 1;
 	}
 
-	@SuppressWarnings("unchecked")
-	private E[] newElementArray(int size) {
-		return (E[]) new Object[size];
+	public HMArrayList(IExpr ex, IExpr... es) {
+		int len = es.length + 1;
+		firstIndex = hashValue = 0;
+		array = newElementArray(len);
+		array[0] = ex;
+		System.arraycopy(es, 0, array, 1, es.length);
+		lastIndex = modCount = len;
+	}
+
+	protected HMArrayList(IExpr[] array) {
+		init(array);
+	}
+
+	/**
+	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
+	 * 
+	 * @param capacity
+	 *            the initial capacity of this {@code ArrayList}.
+	 */
+	public HMArrayList(int capacity) {
+		if (capacity < 0) {
+			throw new IllegalArgumentException();
+		}
+		firstIndex = lastIndex = hashValue = 0;
+		array = newElementArray(capacity);
+	}
+
+	/**
+	 * Adds the specified object at the end of this {@code ArrayList}.
+	 * 
+	 * @param object
+	 *            the object to add.
+	 * @return always true
+	 */
+	@Override
+	public boolean add(IExpr object) {
+		hashValue = 0;
+		if (lastIndex == array.length) {
+			growAtEnd(1);
+		}
+		array[lastIndex++] = object;
+		modCount++;
+		return true;
 	}
 
 	/**
@@ -125,7 +133,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public void add(int location, E object) {
+	public void add(int location, IExpr object) {
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (0 < location && location < size) {
@@ -163,82 +171,24 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
+	 * Adds the objects in the specified collection to this {@code ArrayList}.
 	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	final public E arg1() {
-		return array[firstIndex + 1];
-	}
-
-	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
-	 * returns <code>y</code>.
-	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	final public E arg2() {
-		return array[firstIndex + 2];
-	}
-
-	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
-	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	final public E arg3() {
-		return array[firstIndex + 3];
-	}
-
-	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
-	 * 
-	 * @return the fourth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	final public E arg4() {
-		return array[firstIndex + 4];
-	}
-
-	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns
-	 * <code>e</code>.
-	 * 
-	 * @return the fifth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	final public E arg5() {
-		return array[firstIndex + 5];
-	}
-
-	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 */
 	@Override
-	public boolean add(E object) {
+	public boolean addAll(Collection<? extends IExpr> collection) {
 		hashValue = 0;
-		if (lastIndex == array.length) {
-			growAtEnd(1);
+		Object[] dumpArray = collection.toArray();
+		if (dumpArray.length == 0) {
+			return false;
 		}
-		array[lastIndex++] = object;
+		if (dumpArray.length > array.length - lastIndex) {
+			growAtEnd(dumpArray.length);
+		}
+		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
+		lastIndex += dumpArray.length;
 		modCount++;
 		return true;
 	}
@@ -256,7 +206,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public boolean addAll(int location, Collection<? extends E> collection) {
+	public boolean addAll(int location, Collection<? extends IExpr> collection) {
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (location < 0 || location > size) {
@@ -311,29 +261,6 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 */
-	@Override
-	public boolean addAll(Collection<? extends E> collection) {
-		hashValue = 0;
-		Object[] dumpArray = collection.toArray();
-		if (dumpArray.length == 0) {
-			return false;
-		}
-		if (dumpArray.length > array.length - lastIndex) {
-			growAtEnd(dumpArray.length);
-		}
-		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
-		lastIndex += dumpArray.length;
-		modCount++;
-		return true;
-	}
-
-	/**
 	 * Removes all elements from this {@code ArrayList}, leaving it empty.
 	 * 
 	 * @see #isEmpty
@@ -350,47 +277,22 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	}
 
 	/**
-	 * Returns a new {@code ArrayList} with the same elements, the same size and the same capacity as this {@code ArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public Object clone() {
-		try {
-			HMArrayList<E> newList = (HMArrayList<E>) super.clone();
+	public IAST clone()   {
+//		try {
+			HMArrayList newList = (HMArrayList) super.clone();
 			newList.array = array.clone();
 			newList.hashValue = 0;
 			return newList;
-		} catch (CloneNotSupportedException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * Searches this {@code ArrayList} for the specified object.
-	 * 
-	 * @param object
-	 *            the object to search for.
-	 * @return {@code true} if {@code object} is an element of this {@code ArrayList}, {@code false} otherwise
-	 */
-	@Override
-	public boolean contains(Object object) {
-		if (object != null) {
-			for (int i = firstIndex; i < lastIndex; i++) {
-				if (object.equals(array[i])) {
-					return true;
-				}
-			}
-		} else {
-			for (int i = firstIndex; i < lastIndex; i++) {
-				if (array[i] == null) {
-					return true;
-				}
-			}
-		}
-		return false;
+//		} catch (CloneNotSupportedException e) {
+//			return null;
+//		}
 	}
 
 	/**
@@ -408,74 +310,9 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			}
 		}
 	}
-
+	
 	@Override
-	public boolean equals(final Object obj) {
-		if (obj instanceof HMArrayList) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
-			if (obj == this) {
-				return true;
-			}
-			HMArrayList<E> list = (HMArrayList<E>) obj;
-			if (size() != list.size()) {
-				return false;
-			}
-			int j = list.firstIndex;
-			for (int i = firstIndex; i < lastIndex; i++) {
-				if (!array[i].equals(list.array[j++])) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code>
-	 * 
-	 * @param head
-	 *            object to compare with element at location <code>0</code>
-	 * @return
-	 */
-	public final boolean isSameHead(E head) {
-		return array[firstIndex].equals(head);
-	}
-
-	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
-	 * list equals <code>length</code>.
-	 * 
-	 * @param head
-	 *            object to compare with element at location <code>0</code>
-	 * @param length
-	 * @return
-	 */
-	public final boolean isSameHead(E head, int length) {
-		return array[firstIndex].equals(head) && length == (lastIndex - firstIndex);
-	}
-
-	public final boolean isSameHead(E head, int minLength, int maxLength) {
-		return array[firstIndex].equals(head) && minLength <= (lastIndex - firstIndex) && maxLength >= (lastIndex - firstIndex);
-	}
-
-	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
-	 * list is greater or equal <code>length</code>.
-	 * 
-	 * @param head
-	 *            object to compare with element at location <code>0</code>
-	 * @param length
-	 * @return
-	 */
-	public final boolean isSameHeadSizeGE(E head, int length) {
-		return array[firstIndex].equals(head) && length <= (lastIndex - firstIndex);
-	}
-
-	@Override
-	public E get(int location) {
+	public IExpr get(int location) {
 		int index;
 		if ((index = firstIndex + location) < lastIndex) {
 			return array[index];
@@ -483,7 +320,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
 				+ Integer.valueOf(lastIndex - firstIndex));
 	}
-
+ 
 	private void growAtEnd(int required) {
 		int size = lastIndex - firstIndex;
 		if (firstIndex >= required - (array.length - lastIndex)) {
@@ -503,7 +340,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			if (increment < 12) {
 				increment = 12;
 			}
-			E[] newArray = newElementArray(size + increment);
+            IExpr[] newArray = newElementArray(size + increment);
 			if (size > 0) {
 				System.arraycopy(array, firstIndex, newArray, 0, size);
 				firstIndex = 0;
@@ -512,6 +349,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			array = newArray;
 		}
 	}
+	
 
 	private void growAtFront(int required) {
 		int size = lastIndex - firstIndex;
@@ -532,7 +370,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			if (increment < 12) {
 				increment = 12;
 			}
-			E[] newArray = newElementArray(size + increment);
+			IExpr[] newArray = newElementArray(size + increment);
 			if (size > 0) {
 				System.arraycopy(array, firstIndex, newArray, newArray.length - size, size);
 			}
@@ -551,7 +389,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		if (increment < 12) {
 			increment = 12;
 		}
-		E[] newArray = newElementArray(size + increment);
+		IExpr[] newArray = newElementArray(size + increment);
 		int newFirst = increment - required;
 		// Copy elements after location to the new array skipping inserted
 		// elements
@@ -564,58 +402,25 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		array = newArray;
 	}
 
-	@Override
-	public int hashCode() {
-		if (hashValue == 0) {
-			hashValue = 17;
-			for (int i = firstIndex; i < lastIndex; i++) {
-				// http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
-				// hashValue ^= array[i].hashCode() + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
-				hashValue = 23 * hashValue + array[i].hashCode();
-			}
-		}
-		return hashValue;
+	final protected void init(IExpr[] array) {
+		this.array = array;
+		firstIndex = hashValue = 0;
+		lastIndex = modCount = array.length;
 	}
 
-	@Override
-	public int indexOf(Object object) {
-		if (object != null) {
-			for (int i = firstIndex; i < lastIndex; i++) {
-				if (object.equals(array[i])) {
-					return i - firstIndex;
-				}
-			}
-		} else {
-			for (int i = firstIndex; i < lastIndex; i++) {
-				if (array[i] == null) {
-					return i - firstIndex;
-				}
-			}
-		}
-		return -1;
+	@SuppressWarnings("unchecked")
+	private IExpr[] newElementArray(int size) {
+		return new IExpr[size];
 	}
 
-	@Override
-	public boolean isEmpty() {
-		return lastIndex == firstIndex;
-	}
-
-	@Override
-	public int lastIndexOf(Object object) {
-		if (object != null) {
-			for (int i = lastIndex - 1; i >= firstIndex; i--) {
-				if (object.equals(array[i])) {
-					return i - firstIndex;
-				}
-			}
-		} else {
-			for (int i = lastIndex - 1; i >= firstIndex; i--) {
-				if (array[i] == null) {
-					return i - firstIndex;
-				}
-			}
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		ObjectInputStream.GetField fields = stream.readFields();
+		lastIndex = fields.get("size", 0); //$NON-NLS-1$
+		array = newElementArray(lastIndex);
+		for (int i = 0; i < lastIndex; i++) {
+			array[i] = (IExpr) stream.readObject();
 		}
-		return -1;
 	}
 
 	/**
@@ -628,9 +433,9 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
-	public E remove(int location) {
+	public IExpr remove(int location) {
 		hashValue = 0;
-		E result;
+		IExpr result;
 		int size = lastIndex - firstIndex;
 		if (0 <= location && location < size) {
 			if (location == size - 1) {
@@ -717,7 +522,7 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 			throw new IndexOutOfBoundsException("Index: " + (lastIndex - firstIndex - end));
 		}
 	}
-
+	
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
@@ -730,10 +535,10 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 *             when {@code location < 0 || >= size()}
 	 */
 	@Override
-	public E set(int location, E object) {
+	public IExpr set(int location, IExpr object) {
 		hashValue = 0;
 		if (0 <= location && location < (lastIndex - firstIndex)) {
-			E result = array[firstIndex + location];
+			IExpr result = array[firstIndex + location];
 			array[firstIndex + location] = object;
 			return result;
 		}
@@ -797,15 +602,13 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 	 */
 	public void trimToSize() {
 		int size = lastIndex - firstIndex;
-		E[] newArray = newElementArray(size);
+		IExpr[] newArray = newElementArray(size);
 		System.arraycopy(array, firstIndex, newArray, 0, size);
 		array = newArray;
 		firstIndex = 0;
 		lastIndex = array.length;
 		modCount = 0;
 	}
-
-	private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		ObjectOutputStream.PutField fields = stream.putFields();
@@ -816,16 +619,6 @@ public class HMArrayList<E> extends AbstractList<E> implements List<E>, Cloneabl
 		// don't use an iterator here!
 		for (int i = 0; i < size; i++) {
 			stream.writeObject(get(i));
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		ObjectInputStream.GetField fields = stream.readFields();
-		lastIndex = fields.get("size", 0); //$NON-NLS-1$
-		array = newElementArray(lastIndex);
-		for (int i = 0; i < lastIndex; i++) {
-			array[i] = (E) stream.readObject();
 		}
 	}
 
