@@ -1,20 +1,11 @@
 package org.matheclipse.core.expression;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
-import java.util.Collection;
-import java.util.List;
-import java.util.RandomAccess;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 1 argument</b>.
  * </p>
  * 
  * <p>
@@ -36,18 +27,11 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @see AST
  */
-public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externalizable, RandomAccess {
+public class AST1 extends AST0 {
 
-	private final static int SIZE = 1;
+	private final static int SIZE = 2;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5023978098877603499L;
-
-	IExpr arg0;
-
-	transient int hashValue;
+	IExpr arg1;
 
 	/**
 	 * Constructs a new instance
@@ -55,8 +39,9 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	public AST1() {
 	}
 
-	protected AST1(IExpr arg0) {
+	protected AST1(IExpr arg0, IExpr arg1) {
 		this.arg0 = arg0;
+		this.arg1 = arg1;
 	}
 
 	/**
@@ -68,147 +53,7 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 * @see IExpr#head()
 	 */
 	public IExpr arg1() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
-	 * returns <code>y</code>.
-	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg2() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
-	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg3() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
-	 * 
-	 * @return the fourth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg4() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns
-	 * <code>e</code>.
-	 * 
-	 * @return the fifth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public IExpr arg5() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	@Override
-	public boolean add(IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before any
-	 * previous element at the specified location. If the location is equal to the size of this {@code ArrayList}, the object is
-	 * added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public void add(int location, IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 */
-	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in the order
-	 * they are returned from the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IAST addOneIdentity(IAST subAST) {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Removes all elements from this {@code ArrayList}, leaving it empty.
-	 * 
-	 * @see #isEmpty
-	 * @see #size
-	 */
-	@Override
-	public void clear() {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
+		return arg1;
 	}
 
 	/**
@@ -219,7 +64,7 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0);
+		return new AST(arg0, arg1);
 	}
 
 	@Override
@@ -235,7 +80,7 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head());
+			return arg0.equals(list.head()) && arg1.equals(list.arg1());
 		}
 		return false;
 	}
@@ -244,84 +89,21 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	public IExpr get(int location) {
 		if (location == 0) {
 			return arg0;
+		} else if (location == 1) {
+			return arg1;
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
 	}
 
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
 			hashValue = 391 + arg0.hashCode();
+			hashValue = 23 * hashValue + arg1.hashCode();
 		}
 		return hashValue;
 	}
-
-	@Override
-	public final IExpr head() {
-		return arg0;
-	}
-
-	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		this.fEvalFlags = objectInput.readShort();
-
-		int size;
-		byte attributeFlags = objectInput.readByte();
-		if (attributeFlags != 0) {
-			size = attributeFlags;
-			int exprIDSize = objectInput.readByte();
-			for (int i = 0; i < exprIDSize; i++) {
-				set(i, F.GLOBAL_IDS[objectInput.readShort()]);
-			}
-			for (int i = exprIDSize; i < size; i++) {
-				set(i, (IExpr) objectInput.readObject());
-			}
-			return;
-		}
-
-		size = objectInput.readInt();
-		for (int i = 0; i < size; i++) {
-			set(i, (IExpr) objectInput.readObject());
-		}
-	}
-
-	/**
-	 * Removes the object at the specified location from this list.
-	 * 
-	 * @param location
-	 *            the index of the object to remove.
-	 * @return the removed object.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || >= size()}
-	 */
-	@Override
-	public IExpr remove(int location) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean remove(Object object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Removes the objects in the specified range from the start to the end, but not including the end index.
-	 * 
-	 * @param start
-	 *            the index at which to start removing.
-	 * @param end
-	 *            the index one after the end of the range to remove.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code start < 0, start > end} or {@code end > size()}
-	 */
-	@Override
-	protected void removeRange(int start, int end) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
+	
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
@@ -341,8 +123,12 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 			result = arg0;
 			arg0 = object;
 			return result;
+		} else if (location == 1) {
+			result = arg1;
+			arg1 = object;
+			return result;
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
 	}
 
 	/**
@@ -364,63 +150,8 @@ public class AST1 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	public Object[] toArray() {
 		Object[] result = new Object[SIZE];
 		result[0] = arg0;
+		result[1] = arg1;
 		return result;
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		objectOutput.writeShort(fEvalFlags);
-
-		int size = size();
-		byte attributeFlags = (byte) 0;
-
-		ExprID temp = F.GLOBAL_IDS_MAP.get(head());
-		if (temp != null) {
-			short exprID = temp.getExprID();
-			if (exprID <= Short.MAX_VALUE) {
-				int exprIDSize = 1;
-				short[] exprIDArray = new short[size];
-				exprIDArray[0] = exprID;
-				for (int i = 1; i < size; i++) {
-					temp = F.GLOBAL_IDS_MAP.get(get(i));
-					if (temp == null) {
-						break;
-					}
-					exprID = temp.getExprID();
-					if (exprID <= Short.MAX_VALUE) {
-						exprIDArray[i] = exprID;
-						exprIDSize++;
-					} else {
-						break;
-					}
-				}
-				// optimized path
-				attributeFlags = (byte) size;
-				objectOutput.writeByte(attributeFlags);
-				objectOutput.writeByte((byte) exprIDSize);
-				for (int i = 0; i < exprIDSize; i++) {
-					objectOutput.writeShort(exprIDArray[i]);
-				}
-				for (int i = exprIDSize; i < size; i++) {
-					objectOutput.writeObject(get(i));
-				}
-				return;
-			}
-		}
-
-		objectOutput.writeByte(attributeFlags);
-		objectOutput.writeInt(size);
-		for (int i = 0; i < size; i++) {
-			objectOutput.writeObject(get(i));
-		}
-	}
-
-	private Object writeReplace() throws ObjectStreamException {
-		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
-		if (temp != null) {
-			return temp;
-		}
-		return this;
 	}
 
 }

@@ -5,7 +5,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 1 argument</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 2 arguments</b>.
  * </p>
  * 
  * <p>
@@ -28,10 +28,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * @see AST
  */
 public class AST2 extends AST1 {
+	private final static int SIZE = 3;
 
-	private final static int SIZE = 2;
-
-	IExpr arg1;
+	IExpr arg2;
 
 	/**
 	 * Constructs a new instance
@@ -39,21 +38,23 @@ public class AST2 extends AST1 {
 	public AST2() {
 	}
 
-	protected AST2(IExpr arg0, IExpr arg1) {
+	public AST2(IExpr arg0, IExpr arg1, IExpr arg2) {
 		this.arg0 = arg0;
 		this.arg1 = arg1;
+		this.arg2 = arg2;
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
+	 * returns <code>y</code>.
 	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg1() {
-		return arg1;
+	public IExpr arg2() {
+		return arg2;
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class AST2 extends AST1 {
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0, arg1);
+		return new AST(arg0, arg1, arg2);
 	}
 
 	@Override
@@ -80,30 +81,34 @@ public class AST2 extends AST1 {
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head()) && arg1.equals(list.arg1());
+			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
 		}
 		return false;
 	}
 
 	@Override
 	public IExpr get(int location) {
-		if (location == 0) {
+		switch (location) {
+		case 0:
 			return arg0;
-		} else if (location == 1) {
+		case 1:
 			return arg1;
+		case 2:
+			return arg2;
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
-
+	
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
 			hashValue = 391 + arg0.hashCode();
 			hashValue = 23 * hashValue + arg1.hashCode();
+			hashValue = 23 * hashValue + arg2.hashCode();
 		}
 		return hashValue;
 	}
-	
+
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
@@ -119,16 +124,21 @@ public class AST2 extends AST1 {
 	public IExpr set(int location, IExpr object) {
 		hashValue = 0;
 		IExpr result;
-		if (location == 0) {
+		switch (location) {
+		case 0:
 			result = arg0;
 			arg0 = object;
 			return result;
-		} else if (location == 1) {
+		case 1:
 			result = arg1;
 			arg1 = object;
 			return result;
+		case 2:
+			result = arg2;
+			arg2 = object;
+			return result;
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
 
 	/**
@@ -151,6 +161,7 @@ public class AST2 extends AST1 {
 		Object[] result = new Object[SIZE];
 		result[0] = arg0;
 		result[1] = arg1;
+		result[2] = arg2;
 		return result;
 	}
 

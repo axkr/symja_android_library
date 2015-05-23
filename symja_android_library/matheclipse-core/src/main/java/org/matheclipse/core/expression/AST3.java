@@ -5,7 +5,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 2 arguments</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 3 arguments</b>.
  * </p>
  * 
  * <p>
@@ -28,9 +28,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * @see AST
  */
 public class AST3 extends AST2 {
-	private final static int SIZE = 3;
+	private final static int SIZE = 4;
 
-	IExpr arg2;
+	IExpr arg3;
 
 	/**
 	 * Constructs a new instance
@@ -38,23 +38,23 @@ public class AST3 extends AST2 {
 	public AST3() {
 	}
 
-	public AST3(IExpr arg0, IExpr arg1, IExpr arg2) {
+	public AST3(IExpr arg0, IExpr arg1, IExpr arg2, IExpr arg3) {
 		this.arg0 = arg0;
 		this.arg1 = arg1;
 		this.arg2 = arg2;
+		this.arg3 = arg3;
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
-	 * returns <code>y</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg2() {
-		return arg2;
+	public IExpr arg3() {
+		return arg3;
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class AST3 extends AST2 {
 	 */
 	@Override
 	public IAST clone() {
-		return new AST(arg0, arg1, arg2);
+		return new AST(arg0, arg1, arg2, arg3);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class AST3 extends AST2 {
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
+			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2()) && arg3.equals(list.arg3());
 		}
 		return false;
 	}
@@ -95,16 +95,19 @@ public class AST3 extends AST2 {
 			return arg1;
 		case 2:
 			return arg2;
+		case 3:
+			return arg3;
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
-	
+
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
 			hashValue = 391 + arg0.hashCode();
 			hashValue = 23 * hashValue + arg1.hashCode();
 			hashValue = 23 * hashValue + arg2.hashCode();
+			hashValue = 23 * hashValue + arg3.hashCode();
 		}
 		return hashValue;
 	}
@@ -137,6 +140,10 @@ public class AST3 extends AST2 {
 			result = arg2;
 			arg2 = object;
 			return result;
+		case 3:
+			result = arg3;
+			arg3 = object;
+			return result;
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
@@ -162,6 +169,7 @@ public class AST3 extends AST2 {
 		result[0] = arg0;
 		result[1] = arg1;
 		result[2] = arg2;
+		result[3] = arg3;
 		return result;
 	}
 

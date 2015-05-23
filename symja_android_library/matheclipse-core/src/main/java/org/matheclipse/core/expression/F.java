@@ -1450,7 +1450,7 @@ public class F {
 	 * 
 	 */
 	public final static IAST headAST1(final IExpr head) {
-		return new AST1(head);
+		return new AST0(head);
 	}
 
 	/**
@@ -1517,7 +1517,7 @@ public class F {
 	 * @return
 	 */
 	public final static IAST binaryAST3(final IExpr head, final IExpr a0, final IExpr a1) {
-		return new AST3(head, a0, a1);
+		return new AST2(head, a0, a1);
 	}
 
 	public static IAST Binomial(final IExpr a0, final IExpr a1) {
@@ -3833,7 +3833,7 @@ public class F {
 	}
 
 	public final static IAST ternaryAST4(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
-		return new AST4(head, a0, a1, a2);
+		return new AST3(head, a0, a1, a2);
 	}
 
 	public static IAST Throw(final IExpr a) {
@@ -3925,7 +3925,7 @@ public class F {
 	 * @return
 	 */
 	public final static IAST zeroAST1(final IExpr head) {
-		return new AST1(head);
+		return new AST0(head);
 	}
 
 	/**
@@ -3947,7 +3947,7 @@ public class F {
 	 * @return
 	 */
 	public final static IAST unaryAST2(final IExpr head, final IExpr a0) {
-		return new AST2(head, a0);
+		return new AST1(head, a0);
 	}
 
 	public static IAST Unequal(final IExpr a0, final IExpr a1) {
