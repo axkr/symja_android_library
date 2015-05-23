@@ -3918,6 +3918,17 @@ public class F {
 	}
 
 	/**
+	 * Create a function with 0 argument without evaluation.
+	 * 
+	 * @param head
+	 * @param a0
+	 * @return
+	 */
+	public final static IAST zeroAST1(final IExpr head) {
+		return new AST1(head);
+	}
+
+	/**
 	 * Create a function with 1 argument without evaluation.
 	 * 
 	 * @param head

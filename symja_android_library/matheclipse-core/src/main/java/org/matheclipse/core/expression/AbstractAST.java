@@ -236,6 +236,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return F.And(this, that);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IAST appendClone(IExpr expr) {
+		IAST ast = clone();
+		ast.add(expr);
+		return ast;
+	}
+
 	@Override
 	public IAST apply(final IExpr head) {
 		return setAtClone(0, head);
@@ -267,69 +275,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		final IAST ast = F.ast(head());
 		addAll(leaves);
 		return ast;
-	}
-
-	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
-	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public final IExpr arg1() {
-		return get(1);
-	}
-
-	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
-	 * returns <code>y</code>.
-	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public final IExpr arg2() {
-		return get(2);
-	}
-
-	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
-	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public final IExpr arg3() {
-		return get(3);
-	}
-
-	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
-	 * 
-	 * @return the fourth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public final IExpr arg4() {
-		return get(4);
-	}
-
-	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns
-	 * <code>e</code>.
-	 * 
-	 * @return the fifth argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
-	public final IExpr arg5() {
-		return get(5);
 	}
 
 	/** {@inheritDoc} */
@@ -561,7 +506,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			if (obj == this) {
 				return true;
 			}
-			AbstractAST list = (AbstractAST) obj;
+			IAST list = (IAST) obj;
 			if (size() != list.size()) {
 				return false;
 			}
@@ -898,11 +843,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 		}
 		return hashValue;
-	}
-
-	@Override
-	public final IExpr head() {
-		return get(0);
 	}
 
 	/** {@inheritDoc} */

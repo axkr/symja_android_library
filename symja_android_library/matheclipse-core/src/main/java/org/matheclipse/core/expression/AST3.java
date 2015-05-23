@@ -45,6 +45,19 @@ public class AST3 extends AST2 {
 	}
 
 	/**
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
+	 * returns <code>y</code>.
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg2() {
+		return arg2;
+	}
+
+	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
@@ -53,6 +66,24 @@ public class AST3 extends AST2 {
 	@Override
 	public IAST clone() {
 		return new AST(arg0, arg1, arg2);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof AbstractAST) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (obj == this) {
+				return true;
+			}
+			IAST list = (IAST) obj;
+			if (list.size() != SIZE) {
+				return false;
+			}
+			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
+		}
+		return false;
 	}
 
 	@Override
@@ -66,6 +97,16 @@ public class AST3 extends AST2 {
 			return arg2;
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
+	}
+	
+	@Override
+	public int hashCode() {
+		if (hashValue == 0) {
+			hashValue = 391 + arg0.hashCode();
+			hashValue = 23 * hashValue + arg1.hashCode();
+			hashValue = 23 * hashValue + arg2.hashCode();
+		}
+		return hashValue;
 	}
 
 	/**

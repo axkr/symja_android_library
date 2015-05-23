@@ -14,6 +14,7 @@ import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.AST1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -39,21 +40,20 @@ public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "Algebraics", "Booleans", "ComplexInfinity", "Catalan", "Complexes", "Degree",
-			"EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
-			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "Modulus", "Null", "NumericFunction",
-			"OneIdentity", "Orderless", "Pi", "Primes", "Rationals", "Real", "Reals", "Slot", "SlotSequence", "String", "Symbol",
-			"True" };
+			"EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest", "Indeterminate",
+			"Infinity", "Integer", "Integers", "Khinchin", "Listable", "Modulus", "Null", "NumericFunction", "OneIdentity",
+			"Orderless", "Pi", "Primes", "Rationals", "Real", "Reals", "Slot", "SlotSequence", "String", "Symbol", "True" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "Alternatives", "Apart", "AppellF1", "Append",
 			"AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin",
-			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "BernoulliB",
-			"Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "Break", "Cancel", "CartesianProduct",
-			"Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT", "ChessboardDistance", "Chop",
-			"Clear", "ClearAll", "Coefficient", "CoefficientList", "Collect", "Complement", "Complex", "ComplexExpand",
-			"ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose",
-			"ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral", "CoshIntegral", "Cot",
-			"Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete",
-			"DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
+			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes",
+			"BernoulliB", "Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "Break", "Cancel",
+			"CartesianProduct", "Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT",
+			"ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList", "Collect", "Complement",
+			"Complex", "ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate",
+			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral",
+			"CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition",
+			"Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
 			"Dimensions", "DirectedInfinity", "Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible", "Divisors",
 			"Do", "Dot", "Drop", "Eigenvalues", "Eigenvectors", "Element", "Eliminate", "EllipticE", "EllipticF", "EllipticPi",
 			"Equal", "Equivalent", "Erf", "Erfc", "Erfi", "EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Exp", "Expand",
@@ -66,9 +66,9 @@ public class AST2Expr {
 			"HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner",
 			"Insert", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "JacobiMatrix", "JacobiSymbol",
-			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform","LegendreP",
-			"Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve", "List",
-			"ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral", "LowerCaseQ", "LUDecomposition",
+			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform",
+			"LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve",
+			"List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral", "LowerCaseQ", "LUDecomposition",
 			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ",
 			"MatrixRank", "Max", "Mean", "Median", "MemberQ", "Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most",
 			"Multinomial", "Nand", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform",
@@ -79,11 +79,11 @@ public class AST2Expr {
 			"PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position",
 			"Positive", "PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend",
 			"PrependTo", "Prime", "PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient",
-			"RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Refine", "ReplaceAll",
-			"ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "RootOf",
-			"Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec",
-			"Sech", "Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin",
-			"Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt",
+			"RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Refine",
+			"ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals",
+			"RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan",
+			"Sec", "Sech", "Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify",
+			"Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt",
 			"SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake",
 			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "Switch",
 			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread", "Through", "Throw",
@@ -129,19 +129,19 @@ public class AST2Expr {
 			PREDEFINED_SYMBOLS_MAP.put(str, str);
 		}
 		for (String str : SYMBOL_STRINGS) {
-			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
+			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
 		}
 		for (String str : FUNCTION_STRINGS) {
-			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(), str);
+			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
-				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(), ALIASES_SYMBOLS[i]);
+				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_SYMBOLS[i]);
 			}
 		}
 		if (Config.RUBI_CONVERT_SYMBOLS) {
 			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
-				PREDEFINED_SYMBOLS_MAP.put(ALIASES_STRINGS[i].toLowerCase(), ALIASES_STRINGS[i]);
+				PREDEFINED_SYMBOLS_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_STRINGS[i]);
 			}
 		}
 		if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -205,19 +205,34 @@ public class AST2Expr {
 		if (node == null) {
 			return null;
 		}
-		// if (node instanceof Pattern2Node) {
-		// throw new
-		// UnsupportedOperationException("'__' pattern-matching expression not implemented");
-		// }
 		if (node instanceof Pattern3Node) {
 			throw new UnsupportedOperationException("'___' pattern-matching expression not implemented");
 		}
 		if (node instanceof FunctionNode) {
 			final FunctionNode functionNode = (FunctionNode) node;
-			final IAST ast = F.ast(convert(functionNode.get(0)), functionNode.size(), false);
-			for (int i = 1; i < functionNode.size(); i++) {
-				ast.add(convert(functionNode.get(i)));
+			int size = functionNode.size();
+			IAST ast;
+			switch (size) {
+			case 1:
+				ast = F.zeroAST1(convert(functionNode.get(0)));
+				break;
+			case 2:
+				ast = F.unaryAST2(convert(functionNode.get(0)), convert(functionNode.get(1)));
+				break;
+			case 3:
+				ast = F.binaryAST3(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)));
+				break;
+			case 4:
+				ast = F.ternaryAST4(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)),
+						convert(functionNode.get(3)));
+				break;
+			default:
+				ast = F.ast(convert(functionNode.get(0)), functionNode.size(), false);
+				for (int i = 1; i < functionNode.size(); i++) {
+					ast.add(convert(functionNode.get(i)));
+				}
 			}
+
 			IExpr head = ast.head();
 			if (ast.isAST(F.N, 3)) {
 				try {

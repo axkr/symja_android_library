@@ -46,6 +46,18 @@ public class AST4 extends AST3 {
 	}
 
 	/**
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
+	 * 
+	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg3() {
+		return arg3;
+	}
+
+	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
@@ -54,6 +66,24 @@ public class AST4 extends AST3 {
 	@Override
 	public IAST clone() {
 		return new AST(arg0, arg1, arg2, arg3);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof AbstractAST) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (obj == this) {
+				return true;
+			}
+			IAST list = (IAST) obj;
+			if (list.size() != SIZE) {
+				return false;
+			}
+			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2()) && arg3.equals(list.arg3());
+		}
+		return false;
 	}
 
 	@Override
@@ -69,6 +99,17 @@ public class AST4 extends AST3 {
 			return arg3;
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
+	}
+
+	@Override
+	public int hashCode() {
+		if (hashValue == 0) {
+			hashValue = 391 + arg0.hashCode();
+			hashValue = 23 * hashValue + arg1.hashCode();
+			hashValue = 23 * hashValue + arg2.hashCode();
+			hashValue = 23 * hashValue + arg3.hashCode();
+		}
+		return hashValue;
 	}
 
 	/**

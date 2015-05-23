@@ -311,14 +311,6 @@ public class AST extends HMArrayList implements Externalizable {
 		return new AST(eArr);
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IAST appendClone(IExpr expr) {
-		IAST ast = clone();
-		ast.add(expr);
-		return ast;
-	}
-
 	// private void writeObject(ObjectOutputStream stream) throws IOException {
 	// int size = size();
 	// IExpr temp;

@@ -45,6 +45,18 @@ public class AST2 extends AST1 {
 	}
 
 	/**
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
+	 * get(1) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
+	 * 
+	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	public IExpr arg1() {
+		return arg1;
+	}
+
+	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
@@ -53,6 +65,24 @@ public class AST2 extends AST1 {
 	@Override
 	public IAST clone() {
 		return new AST(arg0, arg1);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof AbstractAST) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (obj == this) {
+				return true;
+			}
+			IAST list = (IAST) obj;
+			if (list.size() != SIZE) {
+				return false;
+			}
+			return arg0.equals(list.head()) && arg1.equals(list.arg1());
+		}
+		return false;
 	}
 
 	@Override
@@ -65,6 +95,15 @@ public class AST2 extends AST1 {
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
 	}
 
+	@Override
+	public int hashCode() {
+		if (hashValue == 0) {
+			hashValue = 391 + arg0.hashCode();
+			hashValue = 23 * hashValue + arg1.hashCode();
+		}
+		return hashValue;
+	}
+	
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
