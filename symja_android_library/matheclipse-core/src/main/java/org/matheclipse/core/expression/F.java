@@ -1298,7 +1298,7 @@ public class F {
 
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
-		return unaryAST2(Abs, a0);
+		return unaryAST1(Abs, a0);
 	}
 
 	public static IExpr and(IExpr a, Integer i) {
@@ -1330,76 +1330,76 @@ public class F {
 	}
 
 	public static IAST Apart(final IExpr a0) {
-		return unaryAST2(Apart, a0);
+		return unaryAST1(Apart, a0);
 	}
 
 	public static IAST Apart(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Apart, a0, a1);
+		return binaryAST2(Apart, a0, a1);
 	}
 
 	public static IAST Append(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Append, a0, a1);
+		return binaryAST2(Append, a0, a1);
 	}
 
 	public static IAST Apply(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Apply, a0, a1);
+		return binaryAST2(Apply, a0, a1);
 	}
 
 	public static IAST ArcCos(final IExpr a0) {
-		return unaryAST2(ArcCos, a0);
+		return unaryAST1(ArcCos, a0);
 	}
 
 	public static IAST ArcCosh(final IExpr a0) {
-		return unaryAST2(ArcCosh, a0);
+		return unaryAST1(ArcCosh, a0);
 	}
 
 	public static IAST ArcCot(final IExpr a0) {
-		return unaryAST2(ArcCot, a0);
+		return unaryAST1(ArcCot, a0);
 	}
 
 	public static IAST ArcCoth(final IExpr a0) {
-		return unaryAST2(ArcCoth, a0);
+		return unaryAST1(ArcCoth, a0);
 	}
 
 	public static IAST ArcCsc(final IExpr a0) {
-		return unaryAST2(ArcCsc, a0);
+		return unaryAST1(ArcCsc, a0);
 	}
 
 	public static IAST ArcCsch(final IExpr a0) {
-		return unaryAST2(ArcCsch, a0);
+		return unaryAST1(ArcCsch, a0);
 	}
 
 	public static IAST ArcSec(final IExpr a0) {
-		return unaryAST2(ArcSec, a0);
+		return unaryAST1(ArcSec, a0);
 	}
 
 	public static IAST ArcSech(final IExpr a0) {
-		return unaryAST2(ArcSech, a0);
+		return unaryAST1(ArcSech, a0);
 	}
 
 	public static IAST ArcSin(final IExpr a0) {
 
-		return unaryAST2(ArcSin, a0);
+		return unaryAST1(ArcSin, a0);
 	}
 
 	public static IAST ArcSinh(final IExpr a0) {
-		return unaryAST2(ArcSinh, a0);
+		return unaryAST1(ArcSinh, a0);
 	}
 
 	public static IAST ArcTan(final IExpr a0) {
-		return unaryAST2(ArcTan, a0);
+		return unaryAST1(ArcTan, a0);
 	}
 
 	public static IAST ArcTan(final IExpr a0, final IExpr a1) {
-		return binaryAST3(ArcTan, a0, a1);
+		return binaryAST2(ArcTan, a0, a1);
 	}
 
 	public static IAST ArcTanh(final IExpr a0) {
-		return unaryAST2(ArcTanh, a0);
+		return unaryAST1(ArcTanh, a0);
 	}
 
 	public static IAST Arg(final IExpr a0) {
-		return unaryAST2(Arg, a0);
+		return unaryAST1(Arg, a0);
 	}
 
 	/**
@@ -1449,7 +1449,7 @@ public class F {
 	 *            <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
-	public final static IAST headAST1(final IExpr head) {
+	public final static IAST headAST0(final IExpr head) {
 		return new AST0(head);
 	}
 
@@ -1489,11 +1489,11 @@ public class F {
 	}
 
 	public static IAST AtomQ(final IExpr a) {
-		return unaryAST2(AtomQ, a);
+		return unaryAST1(AtomQ, a);
 	}
 
 	public static IAST BernoulliB(final IExpr a0) {
-		return unaryAST2($s("BernoulliB"), a0);
+		return unaryAST1($s("BernoulliB"), a0);
 	}
 
 	/**
@@ -1509,24 +1509,24 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 2 arguments without evaluation.
+	 * Create a function with 2 arguments as a <code>AST2</code> immutable object without evaluation.
 	 * 
 	 * @param head
 	 * @param a0
 	 * @param a1
 	 * @return
 	 */
-	public final static IAST binaryAST3(final IExpr head, final IExpr a0, final IExpr a1) {
+	public final static IAST binaryAST2(final IExpr head, final IExpr a0, final IExpr a1) {
 		return new AST2(head, a0, a1);
 	}
 
 	public static IAST Binomial(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3($s("Binomial"), a0, a1);
+		return binaryAST2($s("Binomial"), a0, a1);
 	}
 
 	public static IAST Block(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Block, a0, a1);
+		return binaryAST2(Block, a0, a1);
 	}
 
 	/**
@@ -1540,11 +1540,11 @@ public class F {
 	}
 
 	public static IAST Break() {
-		return headAST1(Break);
+		return headAST0(Break);
 	}
 
 	public static IAST Cancel(final IExpr a) {
-		return unaryAST2(Cancel, a);
+		return unaryAST1(Cancel, a);
 	}
 
 	/**
@@ -1580,7 +1580,7 @@ public class F {
 	}
 
 	public static IAST Catch(final IExpr a) {
-		return unaryAST2(Catch, a);
+		return unaryAST1(Catch, a);
 	}
 
 	/**
@@ -1617,7 +1617,7 @@ public class F {
 	}
 
 	public static IAST Ceiling(final IExpr a0) {
-		return unaryAST2(Ceiling, a0);
+		return unaryAST1(Ceiling, a0);
 	}
 
 	public static IAST Clear(final IExpr... a) {
@@ -1629,15 +1629,15 @@ public class F {
 	}
 
 	public static IAST Coefficient(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Coefficient, a0, a1, a2);
+		return ternaryAST3(Coefficient, a0, a1, a2);
 	}
 
 	public static IAST CoefficientList(final IExpr a0, final IExpr a1) {
-		return binaryAST3(CoefficientList, a0, a1);
+		return binaryAST2(CoefficientList, a0, a1);
 	}
 
 	public static IAST Collect(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Collect, a0, a1);
+		return binaryAST2(Collect, a0, a1);
 	}
 
 	public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
@@ -1830,7 +1830,7 @@ public class F {
 	}
 
 	public static IAST Chop(final IExpr a0) {
-		return unaryAST2(Chop, a0);
+		return unaryAST1(Chop, a0);
 	}
 
 	/**
@@ -1841,7 +1841,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST Complex(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Complex, a0, a1);
+		return binaryAST2(Complex, a0, a1);
 	}
 
 	public static IAST CompoundExpression(final IExpr... a) {
@@ -1849,51 +1849,51 @@ public class F {
 	}
 
 	public static IAST Condition(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Condition, a0, a1);
+		return binaryAST2(Condition, a0, a1);
 	}
 
 	public static IAST Conjugate(final IExpr a0) {
-		return unaryAST2(Conjugate, a0);
+		return unaryAST1(Conjugate, a0);
 	}
 
 	public static IAST Continue() {
-		return headAST1(Continue);
+		return headAST0(Continue);
 	}
 
 	public static IAST CoprimeQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(CoprimeQ, a0, a1);
+		return binaryAST2(CoprimeQ, a0, a1);
 	}
 
 	public static IAST Cos(final IExpr a0) {
-		return unaryAST2(Cos, a0);
+		return unaryAST1(Cos, a0);
 	}
 
 	public static IAST Cosh(final IExpr a0) {
-		return unaryAST2(Cosh, a0);
+		return unaryAST1(Cosh, a0);
 	}
 
 	public static IAST Cot(final IExpr a0) {
-		return unaryAST2(Cot, a0);
+		return unaryAST1(Cot, a0);
 	}
 
 	public static IAST Coth(final IExpr a0) {
-		return unaryAST2(Coth, a0);
+		return unaryAST1(Coth, a0);
 	}
 
 	public static IAST Count(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Count, a0, a1, a2);
+		return ternaryAST3(Count, a0, a1, a2);
 	}
 
 	public static IAST Cross(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Cross, a0, a1);
+		return binaryAST2(Cross, a0, a1);
 	}
 
 	public static IAST Csc(final IExpr a0) {
-		return unaryAST2(Csc, a0);
+		return unaryAST1(Csc, a0);
 	}
 
 	public static IAST Csch(final IExpr a0) {
-		return unaryAST2(Csch, a0);
+		return unaryAST1(Csch, a0);
 	}
 
 	public static IAST D() {
@@ -1901,19 +1901,19 @@ public class F {
 	}
 
 	public static IAST D(final IExpr a0, final IExpr a1) {
-		return binaryAST3(D, a0, a1);
+		return binaryAST2(D, a0, a1);
 	}
 
 	public static IAST Decrement(final IExpr a) {
-		return unaryAST2(Decrement, a);
+		return unaryAST1(Decrement, a);
 	}
 
 	public static IAST Defer(final IExpr a0) {
-		return unaryAST2(Defer, a0);
+		return unaryAST1(Defer, a0);
 	}
 
 	public static IAST Delete(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Delete, a0, a1);
+		return binaryAST2(Delete, a0, a1);
 	}
 
 	public static IAST DeleteCases(final IExpr... a) {
@@ -1922,40 +1922,40 @@ public class F {
 
 	public static IAST Denominator(final IExpr a0) {
 
-		return unaryAST2(Denominator, a0);
+		return unaryAST1(Denominator, a0);
 	}
 
 	public static IAST Depth(final IExpr a0) {
 
-		return unaryAST2(Depth, a0);
+		return unaryAST1(Depth, a0);
 	}
 
 	public static IAST Derivative(final IExpr a0) {
-		return unaryAST2($s("Derivative"), a0);
+		return unaryAST1($s("Derivative"), a0);
 	}
 
 	public static IAST Det(final IExpr a0) {
-		return unaryAST2(Det, a0);
+		return unaryAST1(Det, a0);
 	}
 
 	public static IAST DirectedInfinity(final IExpr a0) {
-		return unaryAST2(DirectedInfinity, a0);
+		return unaryAST1(DirectedInfinity, a0);
 	}
 
 	public static IAST Discriminant(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Discriminant, a0, a1);
+		return binaryAST2(Discriminant, a0, a1);
 	}
 
 	public static IAST Distribute(final IExpr a) {
-		return unaryAST2(Distribute, a);
+		return unaryAST1(Distribute, a);
 	}
 
 	public static IAST Distribute(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Distribute, a0, a1);
+		return binaryAST2(Distribute, a0, a1);
 	}
 
 	public static IAST Distribute(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Distribute, a0, a1, a2);
+		return ternaryAST3(Distribute, a0, a1, a2);
 	}
 
 	public static IExpr div(IExpr a, Integer i) {
@@ -1984,15 +1984,15 @@ public class F {
 	 * @return
 	 */
 	public static IAST Divide(final IExpr a0, final IExpr a1) {
-		return binary(Times, a0, binaryAST3(Power, a1, CN1));
+		return binary(Times, a0, binaryAST2(Power, a1, CN1));
 	}
 
 	public static IAST Divisible(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Divisible, a0, a1);
+		return binaryAST2(Divisible, a0, a1);
 	}
 
 	public static IAST Do(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Do, a0, a1);
+		return binaryAST2(Do, a0, a1);
 	}
 
 	public static IAST Dot(final IExpr... a) {
@@ -2004,11 +2004,11 @@ public class F {
 	}
 
 	public static IAST Drop(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Drop, a0, a1);
+		return binaryAST2(Drop, a0, a1);
 	}
 
 	public static IAST Element(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Element, a0, a1);
+		return binaryAST2(Element, a0, a1);
 	}
 
 	public static IAST Equal(final IExpr... a) {
@@ -2068,7 +2068,7 @@ public class F {
 	}
 
 	public static IAST Erf(final IExpr a) {
-		return unaryAST2(Erf, a);
+		return unaryAST1(Erf, a);
 	}
 
 	/**
@@ -2333,72 +2333,72 @@ public class F {
 	}
 
 	public static IAST EvenQ(final IExpr a) {
-		return unaryAST2(EvenQ, a);
+		return unaryAST1(EvenQ, a);
 	}
 
 	public static IAST Exp(final IExpr a0) {
-		return binaryAST3(Power, E, a0);
+		return binaryAST2(Power, E, a0);
 	}
 
 	public static IAST Expand(final IExpr a0) {
-		return unaryAST2(Expand, a0);
+		return unaryAST1(Expand, a0);
 	}
 
 	public static IAST Expand(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Expand, a0, a1);
+		return binaryAST2(Expand, a0, a1);
 	}
 
 	public static IAST ExpandAll(final IExpr a0) {
-		return unaryAST2(ExpandAll, a0);
+		return unaryAST1(ExpandAll, a0);
 	}
 
 	public static IAST Exponent(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Exponent, a0, a1);
+		return binaryAST2(Exponent, a0, a1);
 	}
 
 	public static IAST Exponent(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Exponent, a0, a1, a2);
+		return ternaryAST3(Exponent, a0, a1, a2);
 	}
 
 	public static IAST Extract(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Extract, a0, a1);
+		return binaryAST2(Extract, a0, a1);
 	}
 
 	public static IAST Factor(final IExpr a0) {
-		return unaryAST2(Factor, a0);
+		return unaryAST1(Factor, a0);
 	}
 
 	public static IAST Factorial(final IExpr a0) {
-		return unaryAST2(Factorial, a0);
+		return unaryAST1(Factorial, a0);
 	}
 
 	public static IAST FactorInteger(final IExpr a0) {
-		return unaryAST2(FactorInteger, a0);
+		return unaryAST1(FactorInteger, a0);
 	}
 
 	public static IAST FactorSquareFree(final IExpr a) {
-		return unaryAST2(FactorSquareFree, a);
+		return unaryAST1(FactorSquareFree, a);
 	}
 
 	public static IAST FactorSquareFreeList(final IExpr a) {
-		return unaryAST2(FactorSquareFreeList, a);
+		return unaryAST1(FactorSquareFreeList, a);
 	}
 
 	public static IAST Fibonacci(final IExpr a0) {
-		return unaryAST2(Fibonacci, a0);
+		return unaryAST1(Fibonacci, a0);
 	}
 
 	public static IAST First(final IExpr a0) {
-		return unaryAST2(First, a0);
+		return unaryAST1(First, a0);
 	}
 
 	public static IAST Flatten(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Flatten, a0, a1);
+		return binaryAST2(Flatten, a0, a1);
 	}
 
 	public static IAST Floor(final IExpr a0) {
-		return unaryAST2(Floor, a0);
+		return unaryAST1(Floor, a0);
 	}
 
 	/**
@@ -2463,20 +2463,20 @@ public class F {
 	}
 
 	public static IAST FractionalPart(final IExpr a) {
-		return unaryAST2(FractionalPart, a);
+		return unaryAST1(FractionalPart, a);
 	}
 
 	public static IAST FreeQ(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(FreeQ, a0, a1);
+		return binaryAST2(FreeQ, a0, a1);
 	}
 
 	public static IAST FullForm(final IExpr a0) {
-		return unaryAST2(FullForm, a0);
+		return unaryAST1(FullForm, a0);
 	}
 
 	public static IAST FullSimplify(final IExpr a) {
-		return unaryAST2(FullSimplify, a);
+		return unaryAST1(FullSimplify, a);
 	}
 
 	public static IAST Function(final IExpr a0) {
@@ -2484,16 +2484,16 @@ public class F {
 	}
 
 	public static IAST Gamma(final IExpr a0) {
-		return unaryAST2(Gamma, a0);
+		return unaryAST1(Gamma, a0);
 	}
 
 	public static IAST Gamma(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Gamma, a0, a1);
+		return binaryAST2(Gamma, a0, a1);
 	}
 
 	public static IAST GCD(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(GCD, a0, a1);
+		return binaryAST2(GCD, a0, a1);
 	}
 
 	/**
@@ -2520,57 +2520,57 @@ public class F {
 		if (a0.isSignedNumber() && a1.isSignedNumber()) {
 			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? True : False;
 		}
-		return binaryAST3(Greater, a0, a1);
+		return binaryAST2(Greater, a0, a1);
 	}
 
 	public static IExpr GreaterEqual(final IExpr a0, final IExpr a1) {
 		if (a0.isSignedNumber() && a1.isSignedNumber()) {
 			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? False : True;
 		}
-		return binaryAST3(GreaterEqual, a0, a1);
+		return binaryAST2(GreaterEqual, a0, a1);
 	}
 
 	public static IAST HarmonicNumber(final IExpr a) {
-		return unaryAST2(HarmonicNumber, a);
+		return unaryAST1(HarmonicNumber, a);
 	}
 
 	public static IAST HarmonicNumber(final IExpr a0, final IExpr a1) {
-		return binaryAST3(HarmonicNumber, a0, a1);
+		return binaryAST2(HarmonicNumber, a0, a1);
 	}
 
 	public static IAST Head(final IExpr a) {
-		return unaryAST2(Head, a);
+		return unaryAST1(Head, a);
 	}
 
 	public static IAST Hold(final IExpr a0) {
-		return unaryAST2(Hold, a0);
+		return unaryAST1(Hold, a0);
 	}
 
 	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
-		return binaryAST3(HurwitzZeta, a0, a1);
+		return binaryAST2(HurwitzZeta, a0, a1);
 	}
 
 	public static IAST Identity(final IExpr a0) {
-		return unaryAST2(Identity, a0);
+		return unaryAST1(Identity, a0);
 	}
 
 	public static IAST If(final IExpr a0, final IExpr a1) {
-		return binaryAST3(If, a0, a1);
+		return binaryAST2(If, a0, a1);
 	}
 
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(If, a0, a1, a2);
+		return ternaryAST3(If, a0, a1, a2);
 	}
 
 	public static IExpr Im(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {
 			return ((INumber) a0).getIm();
 		}
-		return unaryAST2(Im, a0);
+		return unaryAST1(Im, a0);
 	}
 
 	public static IAST Increment(final IExpr a) {
-		return unaryAST2(Increment, a);
+		return unaryAST1(Increment, a);
 	}
 
 	/**
@@ -2735,33 +2735,33 @@ public class F {
 	}
 
 	public static IAST Insert(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Insert, a0, a1, a2);
+		return ternaryAST3(Insert, a0, a1, a2);
 	}
 
 	public static IAST IntegerPart(final IExpr a0) {
-		return unaryAST2(IntegerPart, a0);
+		return unaryAST1(IntegerPart, a0);
 	}
 
 	public static IAST IntegerQ(final IExpr a) {
-		return unaryAST2(IntegerQ, a);
+		return unaryAST1(IntegerQ, a);
 	}
 
 	public static IAST Integrate(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Integrate, a0, a1);
+		return binaryAST2(Integrate, a0, a1);
 	}
 
 	public static IAST Inverse(final IExpr a0) {
 
-		return unaryAST2(Inverse, a0);
+		return unaryAST1(Inverse, a0);
 	}
 
 	public static IAST InverseErf(final IExpr a0) {
-		return unaryAST2(InverseErf, a0);
+		return unaryAST1(InverseErf, a0);
 	}
 
 	public static IAST InverseFunction(final IExpr a) {
-		return unaryAST2(InverseFunction, a);
+		return unaryAST1(InverseFunction, a);
 	}
 
 	/**
@@ -2837,19 +2837,19 @@ public class F {
 	}
 
 	public static IAST Join(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Join, a0, a1);
+		return binaryAST2(Join, a0, a1);
 	}
 
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(LaplaceTransform, a0, a1, a2);
+		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}
 
 	public static IAST Last(final IExpr a0) {
-		return unaryAST2(Last, a0);
+		return unaryAST1(Last, a0);
 	}
 
 	public static IAST LCM(final IExpr a0, final IExpr a1) {
-		return binaryAST3(LCM, a0, a1);
+		return binaryAST2(LCM, a0, a1);
 	}
 
 	// public static IAST KOrderlessPartitions(final IExpr a0) {
@@ -2868,30 +2868,30 @@ public class F {
 	// }
 	//
 	public static IAST LeafCount(final IExpr a0) {
-		return unaryAST2(LeafCount, a0);
+		return unaryAST1(LeafCount, a0);
 	}
 
 	public static IAST Length(final IExpr a) {
-		return unaryAST2(Length, a);
+		return unaryAST1(Length, a);
 	}
 
 	public static IExpr Less(final IExpr a0, final IExpr a1) {
 		if (a0.isSignedNumber() && a1.isSignedNumber()) {
 			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? True : False;
 		}
-		return binaryAST3(Less, a0, a1);
+		return binaryAST2(Less, a0, a1);
 	}
 
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
 		if (a0.isSignedNumber() && a1.isSignedNumber()) {
 			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? False : True;
 		}
-		return binaryAST3(LessEqual, a0, a1);
+		return binaryAST2(LessEqual, a0, a1);
 	}
 
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Limit, a0, a1);
+		return binaryAST2(Limit, a0, a1);
 	}
 
 	public static IAST Line() {
@@ -2899,7 +2899,7 @@ public class F {
 	}
 
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
-		return binaryAST3(LinearSolve, a0, a1);
+		return binaryAST2(LinearSolve, a0, a1);
 	}
 
 	public static IAST List() {
@@ -2939,7 +2939,7 @@ public class F {
 	}
 
 	public static IAST ListQ(final IExpr a) {
-		return unaryAST2(ListQ, a);
+		return unaryAST1(ListQ, a);
 	}
 
 	/**
@@ -2977,35 +2977,35 @@ public class F {
 
 	public static IAST Log(final IExpr a0) {
 
-		return unaryAST2(Log, a0);
+		return unaryAST1(Log, a0);
 	}
 
 	public static IAST Log(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Log, a0, a1);
+		return binaryAST2(Log, a0, a1);
 	}
 
 	public static IAST Map(final IExpr a0) {
 
-		return unaryAST2(Map, a0);
+		return unaryAST1(Map, a0);
 	}
 
 	public static IAST Map(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Map, a0, a1);
+		return binaryAST2(Map, a0, a1);
 	}
 
 	public static IAST MapAll(final IExpr a0) {
 
-		return unaryAST2(MapAll, a0);
+		return unaryAST1(MapAll, a0);
 	}
 
 	public static IAST MatchQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(MatchQ, a0, a1);
+		return binaryAST2(MatchQ, a0, a1);
 	}
 
 	public static IAST MatrixPower(final IExpr a0) {
 
-		return unaryAST2(MatrixPower, a0);
+		return unaryAST1(MatrixPower, a0);
 	}
 
 	public static IAST Max() {
@@ -3013,15 +3013,15 @@ public class F {
 	}
 
 	public static IAST Max(final IExpr a0) {
-		return unaryAST2(Max, a0);
+		return unaryAST1(Max, a0);
 	}
 
 	public static IAST Max(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Max, a0, a1);
+		return binaryAST2(Max, a0, a1);
 	}
 
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(MemberQ, a0, a1);
+		return binaryAST2(MemberQ, a0, a1);
 	}
 
 	public static ISymbol method(final String symbolName, final String className, final String methodName) {
@@ -3037,11 +3037,11 @@ public class F {
 	}
 
 	public static IAST Min(final IExpr a0) {
-		return unaryAST2(Min, a0);
+		return unaryAST1(Min, a0);
 	}
 
 	public static IAST Min(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Min, a0, a1);
+		return binaryAST2(Min, a0, a1);
 	}
 
 	public static IExpr minus(IExpr a, Integer i) {
@@ -3077,11 +3077,11 @@ public class F {
 	}
 
 	public static IExpr Mod(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Mod, a0, a1);
+		return binaryAST2(Mod, a0, a1);
 	}
 
 	public static IAST Module(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Module, a0, a1);
+		return binaryAST2(Module, a0, a1);
 	}
 
 	public static IExpr multiply(IExpr a, Integer i) {
@@ -3108,7 +3108,7 @@ public class F {
 	 */
 	public static IAST N(final IExpr a0) {
 
-		return unaryAST2(N, a0);
+		return unaryAST1(N, a0);
 	}
 
 	/**
@@ -3134,7 +3134,7 @@ public class F {
 	}
 
 	public static IAST Negative(final IExpr a0) {
-		return unaryAST2(Negative, a0);
+		return unaryAST1(Negative, a0);
 	}
 
 	/**
@@ -3152,7 +3152,7 @@ public class F {
 	}
 
 	public static IAST Not(final IExpr a) {
-		return unaryAST2(Not, a);
+		return unaryAST1(Not, a);
 	}
 
 	/**
@@ -3204,24 +3204,24 @@ public class F {
 
 	public static IAST NumberQ(final IExpr a0) {
 
-		return unaryAST2(NumberQ, a0);
+		return unaryAST1(NumberQ, a0);
 	}
 
 	public static IAST Numerator(final IExpr a0) {
-		return unaryAST2(Numerator, a0);
+		return unaryAST1(Numerator, a0);
 	}
 
 	public static IAST NumericQ(final IExpr a0) {
-		return unaryAST2(NumericQ, a0);
+		return unaryAST1(NumericQ, a0);
 	}
 
 	public static IAST OddQ(final IExpr a) {
-		return unaryAST2(OddQ, a);
+		return unaryAST1(OddQ, a);
 	}
 
 	public static IAST Options(final IExpr a0) {
 
-		return unaryAST2(Options, a0);
+		return unaryAST1(Options, a0);
 	}
 
 	public static IExpr or(IExpr a, Integer i) {
@@ -3249,11 +3249,11 @@ public class F {
 	}
 
 	public static IAST Order(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Order, a0, a1);
+		return binaryAST2(Order, a0, a1);
 	}
 
 	public static IAST OrderedQ(final IExpr a) {
-		return unaryAST2(OrderedQ, a);
+		return unaryAST1(OrderedQ, a);
 	}
 
 	public static IAST Part() {
@@ -3322,19 +3322,19 @@ public class F {
 	}
 
 	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(PolynomialQ, a0, a1);
+		return binaryAST2(PolynomialQ, a0, a1);
 	}
 
 	public static IAST PolynomialQuotient(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(PolynomialQuotient, a0, a1, a2);
+		return ternaryAST3(PolynomialQuotient, a0, a1, a2);
 	}
 
 	public static IAST PolynomialRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(PolynomialRemainder, a0, a1, a2);
+		return ternaryAST3(PolynomialRemainder, a0, a1, a2);
 	}
 
 	public static IAST PolynomialQuotientRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(PolynomialQuotientRemainder, a0, a1, a2);
+		return ternaryAST3(PolynomialQuotientRemainder, a0, a1, a2);
 	}
 
 	/**
@@ -3347,15 +3347,15 @@ public class F {
 	// }
 
 	public static IAST Position(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Position, a0, a1);
+		return binaryAST2(Position, a0, a1);
 	}
 
 	public static IAST Positive(final IExpr a0) {
-		return unaryAST2(Positive, a0);
+		return unaryAST1(Positive, a0);
 	}
 
 	public static IAST PossibleZeroQ(final IExpr a0) {
-		return unaryAST2(PossibleZeroQ, a0);
+		return unaryAST1(PossibleZeroQ, a0);
 	}
 
 	public static IAST Power() {
@@ -3363,7 +3363,7 @@ public class F {
 	}
 
 	public static IAST Power(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Power, a0, a1);
+		return binaryAST2(Power, a0, a1);
 	}
 
 	public static IExpr Power(final IExpr a0, final long exp) {
@@ -3378,12 +3378,12 @@ public class F {
 				return C1;
 			}
 		}
-		return binaryAST3(Power, a0, integer(exp));
+		return binaryAST2(Power, a0, integer(exp));
 	}
 
 	public static IAST PowerExpand(final IExpr a0) {
 
-		return unaryAST2(PowerExpand, a0);
+		return unaryAST1(PowerExpand, a0);
 	}
 
 	/**
@@ -3412,12 +3412,12 @@ public class F {
 
 	public static IAST Prepend(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Prepend, a0, a1);
+		return binaryAST2(Prepend, a0, a1);
 	}
 
 	public static IAST PrimeQ(final IExpr a0) {
 
-		return unaryAST2(PrimeQ, a0);
+		return unaryAST1(PrimeQ, a0);
 	}
 
 	public static IAST Print(final IExpr... a) {
@@ -3426,11 +3426,11 @@ public class F {
 
 	public static IAST Product(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Product, a0, a1);
+		return binaryAST2(Product, a0, a1);
 	}
 
 	public static IAST ProductLog(final IExpr a0) {
-		return unaryAST2(ProductLog, a0);
+		return unaryAST1(ProductLog, a0);
 	}
 
 	/**
@@ -3482,38 +3482,38 @@ public class F {
 	}
 
 	public static IAST Quiet(final IExpr a0) {
-		return unaryAST2(Quiet, a0);
+		return unaryAST1(Quiet, a0);
 	}
 
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Quotient, a0, a1);
+		return binaryAST2(Quotient, a0, a1);
 	}
 
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Rational, a0, a1);
+		return binaryAST2(Rational, a0, a1);
 	}
 
 	public static IExpr Re(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {
 			return ((INumber) a0).getRe();
 		}
-		return unaryAST2(Re, a0);
+		return unaryAST1(Re, a0);
 	}
 
 	public static IAST Reap(final IExpr a) {
-		return unaryAST2(Reap, a);
+		return unaryAST1(Reap, a);
 	}
 
 	public static IAST Refine(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Refine, a0, a1);
+		return binaryAST2(Refine, a0, a1);
 	}
 
 	public static IAST ReplaceAll(final IExpr a0, final IExpr a1) {
-		return binaryAST3(ReplaceAll, a0, a1);
+		return binaryAST2(ReplaceAll, a0, a1);
 	}
 
 	public static IAST ReplacePart(final IExpr a0, final IExpr a1) {
-		return binaryAST3(ReplacePart, a0, a1);
+		return binaryAST2(ReplacePart, a0, a1);
 	}
 
 	/**
@@ -3524,55 +3524,55 @@ public class F {
 	 * @return
 	 */
 	public static IAST ReplacePart(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(ReplacePart, a0, a1, a2);
+		return ternaryAST3(ReplacePart, a0, a1, a2);
 	}
 
 	public static IAST Rest(final IExpr a0) {
-		return unaryAST2(Rest, a0);
+		return unaryAST1(Rest, a0);
 	}
 
 	public static IAST Resultant(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Resultant, a0, a1, a2);
+		return ternaryAST3(Resultant, a0, a1, a2);
 	}
 
 	public static IAST Return(final IExpr a) {
-		return unaryAST2(Return, a);
+		return unaryAST1(Return, a);
 	}
 
 	public static IAST Reverse(final IExpr a) {
-		return unaryAST2(Reverse, a);
+		return unaryAST1(Reverse, a);
 	}
 
 	public static IAST Roots(final IExpr a0) {
-		return unaryAST2(Roots, a0);
+		return unaryAST1(Roots, a0);
 	}
 
 	public static IAST Round(final IExpr a0) {
-		return unaryAST2(Round, a0);
+		return unaryAST1(Round, a0);
 	}
 
 	public static IAST Rule(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Rule, a0, a1);
+		return binaryAST2(Rule, a0, a1);
 	}
 
 	public static IAST RuleDelayed(final IExpr a0, final IExpr a1) {
-		return binaryAST3(RuleDelayed, a0, a1);
+		return binaryAST2(RuleDelayed, a0, a1);
 	}
 
 	public static IAST SameQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(SameQ, a0, a1);
+		return binaryAST2(SameQ, a0, a1);
 	}
 
 	public static IAST Scan(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Scan, a0, a1);
+		return binaryAST2(Scan, a0, a1);
 	}
 
 	public static IAST Sec(final IExpr a0) {
-		return unaryAST2(Sec, a0);
+		return unaryAST1(Sec, a0);
 	}
 
 	public static IAST Sech(final IExpr a0) {
-		return unaryAST2(Sech, a0);
+		return unaryAST1(Sech, a0);
 	}
 
 	public final static IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
@@ -3581,7 +3581,7 @@ public class F {
 	}
 
 	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(Select, a0, a1, a2);
+		return ternaryAST3(Select, a0, a1, a2);
 	}
 
 	public static IAST Sequence() {
@@ -3597,15 +3597,15 @@ public class F {
 	}
 
 	public static IAST SetAttributes(final IExpr a0) {
-		return unaryAST2(SetAttributes, a0);
+		return unaryAST1(SetAttributes, a0);
 	}
 
 	public static IAST SetAttributes(final IExpr a0, final IExpr a1) {
-		return binaryAST3(SetAttributes, a0, a1);
+		return binaryAST2(SetAttributes, a0, a1);
 	}
 
 	public static IAST Set(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Set, a0, a1);
+		return binaryAST2(Set, a0, a1);
 	}
 
 	/**
@@ -3628,7 +3628,7 @@ public class F {
 	}
 
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
-		return binaryAST3(SetDelayed, a0, a1);
+		return binaryAST2(SetDelayed, a0, a1);
 	}
 
 	/**
@@ -3655,48 +3655,48 @@ public class F {
 	}
 
 	public static IAST Sign(final IExpr a) {
-		return unaryAST2(Sign, a);
+		return unaryAST1(Sign, a);
 	}
 
 	public static IAST SignCmp(final IExpr a0) {
-		return unaryAST2(SignCmp, a0);
+		return unaryAST1(SignCmp, a0);
 	}
 
 	public static IAST Simplify(final IExpr a0) {
-		return unaryAST2($s("Simplify"), a0);
+		return unaryAST1($s("Simplify"), a0);
 	}
 
 	public static IAST Sin(final IExpr a0) {
-		return unaryAST2(Sin, a0);
+		return unaryAST1(Sin, a0);
 	}
 
 	public static IAST Sinc(final IExpr a0) {
-		return unaryAST2(Sinc, a0);
+		return unaryAST1(Sinc, a0);
 	}
 
 	public static IAST Sinh(final IExpr a0) {
 
-		return unaryAST2(Sinh, a0);
+		return unaryAST1(Sinh, a0);
 	}
 
 	public static IAST Slot(final IExpr a0) {
-		return unaryAST2(Slot, a0);
+		return unaryAST1(Slot, a0);
 	}
 
 	public static IAST Slot(final int i) {
-		return unaryAST2(Slot, integer(i));
+		return unaryAST1(Slot, integer(i));
 	}
 
 	public static IAST Solve(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Solve, a0, a1);
+		return binaryAST2(Solve, a0, a1);
 	}
 
 	public static IAST Sort(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Sort, a0, a1);
+		return binaryAST2(Sort, a0, a1);
 	}
 
 	public static IAST Sow(final IExpr a) {
-		return unaryAST2(Sow, a);
+		return unaryAST1(Sow, a);
 	}
 
 	/**
@@ -3707,7 +3707,7 @@ public class F {
 	 */
 	public static IAST Sqr(final IExpr x) {
 
-		return binaryAST3(Power, x, C2);
+		return binaryAST2(Power, x, C2);
 	}
 
 	/**
@@ -3717,11 +3717,11 @@ public class F {
 	 * @return
 	 */
 	public static IAST Sqrt(final IExpr x) {
-		return binaryAST3(Power, x, C1D2);
+		return binaryAST2(Power, x, C1D2);
 	}
 
 	public static IAST StringJoin(final IExpr a) {
-		return unaryAST2(StringJoin, a);
+		return unaryAST1(StringJoin, a);
 	}
 
 	/**
@@ -3788,7 +3788,7 @@ public class F {
 	}
 
 	public static IAST Subfactorial(final IExpr a0) {
-		return unaryAST2(Subfactorial, a0);
+		return unaryAST1(Subfactorial, a0);
 	}
 
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
@@ -3802,7 +3802,7 @@ public class F {
 
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
 
-		return binaryAST3(Sum, a0, a1);
+		return binaryAST2(Sum, a0, a1);
 	}
 
 	public static IAST SurfaceGraphics() {
@@ -3811,41 +3811,50 @@ public class F {
 	}
 
 	public static IAST Take(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Take, a0, a1);
+		return binaryAST2(Take, a0, a1);
 	}
 
 	public static IAST Tan(final IExpr a0) {
 
-		return unaryAST2(Tan, a0);
+		return unaryAST1(Tan, a0);
 	}
 
 	public static IAST Tanh(final IExpr a0) {
 
-		return unaryAST2(Tanh, a0);
+		return unaryAST1(Tanh, a0);
 	}
 
 	public static IAST Taylor(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Taylor, a0, a1);
+		return binaryAST2(Taylor, a0, a1);
 	}
 
 	public final static IAST ternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST(new IExpr[] { head, a0, a1, a2 });
 	}
 
-	public final static IAST ternaryAST4(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
+	/**
+	 * Create a function with 3 arguments as a <code>AST3</code> immutable object without evaluation.
+	 * 
+	 * @param head
+	 * @param a0
+	 * @param a1
+	 * @param a2
+	 * @return
+	 */
+	public final static IAST ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(head, a0, a1, a2);
 	}
 
 	public static IAST Throw(final IExpr a) {
-		return unaryAST2(Throw, a);
+		return unaryAST1(Throw, a);
 	}
 
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1) {
-		return binaryAST3(TimeConstrained, a0, a1);
+		return binaryAST2(TimeConstrained, a0, a1);
 	}
 
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(TimeConstrained, a0, a1, a2);
+		return ternaryAST3(TimeConstrained, a0, a1, a2);
 	}
 
 	public static IAST Times() {
@@ -3890,42 +3899,31 @@ public class F {
 	}
 
 	public static IAST Together(final IExpr a0) {
-		return unaryAST2(Together, a0);
+		return unaryAST1(Together, a0);
 	}
 
 	public static IAST Tr(final IExpr a0) {
-		return unaryAST2(Tr, a0);
+		return unaryAST1(Tr, a0);
 	}
 
 	public static IAST Trace(final IExpr a0) {
-		return unaryAST2(Trace, a0);
+		return unaryAST1(Trace, a0);
 	}
 
 	public static IAST Transpose(final IExpr a0) {
-		return unaryAST2(Transpose, a0);
+		return unaryAST1(Transpose, a0);
 	}
 
 	public static IAST TrigExpand(final IExpr a0) {
-		return unaryAST2(TrigExpand, a0);
+		return unaryAST1(TrigExpand, a0);
 	}
 
 	public static IAST TrigReduce(final IExpr v) {
-		return unaryAST2(TrigReduce, v);
+		return unaryAST1(TrigReduce, v);
 	}
 
 	public static IAST TrigToExp(final IExpr a0) {
-		return unaryAST2(TrigToExp, a0);
-	}
-
-	/**
-	 * Create a function with 0 argument without evaluation.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @return
-	 */
-	public final static IAST zeroAST1(final IExpr head) {
-		return new AST0(head);
+		return unaryAST1(TrigToExp, a0);
 	}
 
 	/**
@@ -3940,13 +3938,13 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 1 argument without evaluation.
+	 * Create a function with 1 argument as a <code>AST1</code> immutable object without evaluation.
 	 * 
 	 * @param head
 	 * @param a0
 	 * @return
 	 */
-	public final static IAST unaryAST2(final IExpr head, final IExpr a0) {
+	public final static IAST unaryAST1(final IExpr head, final IExpr a0) {
 		return new AST1(head, a0);
 	}
 
@@ -3955,27 +3953,27 @@ public class F {
 	}
 
 	public static IAST Unevaluated(final IExpr a0) {
-		return unaryAST2(Unevaluated, a0);
+		return unaryAST1(Unevaluated, a0);
 	}
 
 	public static IAST Unique(final IExpr a0) {
-		return unaryAST2(Unique, a0);
+		return unaryAST1(Unique, a0);
 	}
 
 	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
-		return binaryAST3(UnsameQ, a0, a1);
+		return binaryAST2(UnsameQ, a0, a1);
 	}
 
 	public static IAST UpSet(final IExpr a0, final IExpr a1) {
-		return binaryAST3(UpSet, a0, a1);
+		return binaryAST2(UpSet, a0, a1);
 	}
 
 	public static IAST UpSetDelayed(final IExpr a0, final IExpr a1) {
-		return binaryAST3(UpSetDelayed, a0, a1);
+		return binaryAST2(UpSetDelayed, a0, a1);
 	}
 
 	public static IAST While(final IExpr a0, final IExpr a1) {
-		return binaryAST3(While, a0, a1);
+		return binaryAST2(While, a0, a1);
 	}
 
 	/**
@@ -4068,31 +4066,31 @@ public class F {
 	}
 
 	public static IAST CosIntegral(final IExpr a) {
-		return unaryAST2(CosIntegral, a);
+		return unaryAST1(CosIntegral, a);
 	}
 
 	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
-		return binaryAST3(EllipticE, a0, a1);
+		return binaryAST2(EllipticE, a0, a1);
 	}
 
 	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
-		return binaryAST3(EllipticF, a0, a1);
+		return binaryAST2(EllipticF, a0, a1);
 	}
 
 	public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(EllipticPi, a0, a1, a2);
+		return ternaryAST3(EllipticPi, a0, a1, a2);
 	}
 
 	public static IAST FresnelC(final IExpr a) {
-		return unaryAST2(FresnelC, a);
+		return unaryAST1(FresnelC, a);
 	}
 
 	public static IAST FresnelS(final IExpr a) {
-		return unaryAST2(FresnelS, a);
+		return unaryAST1(FresnelS, a);
 	}
 
 	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST4(HypergeometricPFQ, a0, a1, a2);
+		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
 	}
 
 	public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -4100,51 +4098,51 @@ public class F {
 	}
 
 	public static IAST SinIntegral(final IExpr a) {
-		return unaryAST2(SinIntegral, a);
+		return unaryAST1(SinIntegral, a);
 	}
 
 	public static IAST CoshIntegral(final IExpr a) {
-		return unaryAST2(CoshIntegral, a);
+		return unaryAST1(CoshIntegral, a);
 	}
 
 	public static IAST SinhIntegral(final IExpr a) {
-		return unaryAST2(SinhIntegral, a);
+		return unaryAST1(SinhIntegral, a);
 	}
 
 	public static IAST Erfi(final IExpr a) {
-		return unaryAST2(Erfi, a);
+		return unaryAST1(Erfi, a);
 	}
 
 	public static IAST ExpIntegralEi(final IExpr a) {
-		return unaryAST2(ExpIntegralEi, a);
+		return unaryAST1(ExpIntegralEi, a);
 	}
 
 	public static IAST LogIntegral(final IExpr a) {
-		return unaryAST2(LogIntegral, a);
+		return unaryAST1(LogIntegral, a);
 	}
 
 	public static IAST PolyLog(final IExpr a0, final IExpr a1) {
-		return binaryAST3(PolyLog, a0, a1);
+		return binaryAST2(PolyLog, a0, a1);
 	}
 
 	public static IAST Erfc(final IExpr a) {
-		return unaryAST2(Erfc, a);
+		return unaryAST1(Erfc, a);
 	}
 
 	public static IAST LogGamma(final IExpr a0) {
-		return unaryAST2(LogGamma, a0);
+		return unaryAST1(LogGamma, a0);
 	}
 
 	public static IAST Zeta(final IExpr a0, final IExpr a1) {
-		return binaryAST3(Zeta, a0, a1);
+		return binaryAST2(Zeta, a0, a1);
 	}
 
 	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
-		return binaryAST3(PolyGamma, a0, a1);
+		return binaryAST2(PolyGamma, a0, a1);
 	}
 
 	public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
-		return binaryAST3(ExpIntegralE, a0, a1);
+		return binaryAST2(ExpIntegralE, a0, a1);
 	}
 
 	/**

@@ -214,16 +214,16 @@ public class AST2Expr {
 			IAST ast;
 			switch (size) {
 			case 1:
-				ast = F.zeroAST1(convert(functionNode.get(0)));
+				ast = F.headAST0(convert(functionNode.get(0)));
 				break;
 			case 2:
-				ast = F.unaryAST2(convert(functionNode.get(0)), convert(functionNode.get(1)));
+				ast = F.unaryAST1(convert(functionNode.get(0)), convert(functionNode.get(1)));
 				break;
 			case 3:
-				ast = F.binaryAST3(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)));
+				ast = F.binaryAST2(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)));
 				break;
 			case 4:
-				ast = F.ternaryAST4(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)),
+				ast = F.ternaryAST3(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)),
 						convert(functionNode.get(3)));
 				break;
 			default:
