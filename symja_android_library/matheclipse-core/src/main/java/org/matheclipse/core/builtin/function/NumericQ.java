@@ -21,7 +21,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	/**
 	 * Constructor for the unary predicate
 	 */
-//	public final static NumericQ CONST = new NumericQ();
+	// public final static NumericQ CONST = new NumericQ();
 
 	public NumericQ() {
 	}
@@ -52,6 +52,8 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	 * @param arg1
 	 *            an expression
 	 * @return a signed number if possible, otherwise return <code>null</code>
+	 * 
+	 * @deprecated use {@link IExpr#evalSignedNumber()} instead
 	 */
 	public static ISignedNumber getSignedNumberNumericQ(IExpr arg1) {
 		if (arg1.isSignedNumber()) {
@@ -76,6 +78,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	 * @param arg1
 	 *            an expression
 	 * @return a number if possible
+	 * @deprecated use {@link IExpr#evalNumber()} instead
 	 */
 	public static INumber getNumberNumericQ(IExpr arg1) {
 		if (arg1.isNumber()) {

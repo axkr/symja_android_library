@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Round;
 
-import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -47,7 +46,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 
 		try {
 			IExpr arg1 = F.eval(ast.arg1());
-			ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
 			if (signedNumber != null) {
 				return signedNumber.round();
 			}

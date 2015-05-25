@@ -104,7 +104,7 @@ public class Expr2LP {
 						variable = (ISymbol) temp;
 						continue;
 					}
-					ISignedNumber num = NumericQ.getSignedNumberNumericQ(temp);
+					ISignedNumber num = temp.evalSignedNumber();
 					if (num != null) {
 						value *= num.doubleValue();
 						continue;
@@ -132,7 +132,8 @@ public class Expr2LP {
 			}
 			throw new WrongArgumentType(expr, "Conversion from expression to linear programming expression failed");
 		}
-		ISignedNumber num = NumericQ.getSignedNumberNumericQ(expr);
+		
+		ISignedNumber num = expr.evalSignedNumber();
 		if (num != null) {
 			return num;
 		}

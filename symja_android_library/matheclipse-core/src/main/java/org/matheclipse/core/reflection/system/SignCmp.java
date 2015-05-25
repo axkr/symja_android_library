@@ -25,7 +25,7 @@ public class SignCmp implements IFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		INumber number = NumericQ.getNumberNumericQ(arg1);
+		INumber number = arg1.evalNumber();
 		if (number != null) {
 			final int signum = number.complexSign();
 			return F.integer(signum);

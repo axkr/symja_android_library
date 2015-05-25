@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
@@ -541,6 +542,50 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 
 		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public double evalDouble() {
+		ISignedNumber signedNumber = evalSignedNumber();
+		if (signedNumber != null) {
+			return signedNumber.doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public Complex evalComplex() {
+		INumber number = evalNumber();
+		if (number != null) {
+			return number.complexNumValue().complexValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public INumber evalNumber() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isNumber()) {
+				return (INumber) result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber evalSignedNumber() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isSignedNumber()) {
+				return (ISignedNumber) result;
+			}
+		}
+		return null;
 	}
 
 	@Override

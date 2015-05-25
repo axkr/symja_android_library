@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
 
@@ -20,7 +21,7 @@ public interface INumber extends IExpr {
 	public ApcomplexNum apcomplexNumValue(long precision);
 
 	/**
-	 * Get a <code>ComplexNum</code> number wrapped into an <code>ApcomplexNum</code> object.
+	 * Get a <code>ComplexNum</code> number bject.
 	 * 
 	 * @return
 	 */

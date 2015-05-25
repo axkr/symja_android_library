@@ -4,7 +4,9 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,11 +24,19 @@ public class InterpolatingFunction implements IFunctionEvaluator {
 			final IAST function = (IAST) ast.head();
 			if (ast.size() == 2 && ast.arg1() instanceof INum) {
 				if (function.size() == 2) {
-					int[] dims = function.arg1().isMatrix();
-					if (dims != null && dims[1] == 2) {
-						RealMatrix matrix = Convert.list2RealMatrix((IAST) function.arg1());
-						double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
-						return F.num(interpolatedY);
+					try {
+						int[] dims = function.arg1().isMatrix();
+						if (dims != null && dims[1] == 2) {
+							RealMatrix matrix = Convert.list2RealMatrix((IAST) function.arg1());
+							double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
+							return F.num(interpolatedY);
+						}
+					} catch (final WrongArgumentType e) {
+						// WrongArgumentType occurs in list2RealMatrix(),
+						// if the matrix elements aren't pure numerical values
+						if (Config.SHOW_STACKTRACE) {
+							e.printStackTrace();
+						}
 					}
 				}
 				return null;

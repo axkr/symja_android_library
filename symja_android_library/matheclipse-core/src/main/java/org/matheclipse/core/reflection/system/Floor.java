@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Ceiling;
 import static org.matheclipse.core.expression.F.Negate;
 
-import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -66,7 +65,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public IExpr evalFloor(IExpr arg1) {
-		ISignedNumber signedNumber = NumericQ.getSignedNumberNumericQ(arg1);
+		ISignedNumber signedNumber = arg1.evalSignedNumber();
 		if (signedNumber != null) {
 			return signedNumber.floor();
 		}

@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -26,6 +27,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.DownRulesData;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -284,6 +287,50 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return fDownRulesData.evalDownRule(ee, expression);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public double evalDouble() {
+		ISignedNumber signedNumber = evalSignedNumber();
+		if (signedNumber != null) {
+			return signedNumber.doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public Complex evalComplex() {
+		INumber number = evalNumber();
+		if (number != null) {
+			return number.complexNumValue().complexValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public INumber evalNumber() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isNumber()) {
+				return (INumber) result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber evalSignedNumber() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isSignedNumber()) {
+				return (ISignedNumber) result;
+			}
+		}
+		return null;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {

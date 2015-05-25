@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.math3.Field;
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -152,6 +152,35 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	public IExpr divide(IExpr that);
 
+	/**
+	 * Evaluate the expression to a Java <code>double</code> value. If the conversion to a double value is not possible, the method
+	 * throws a <code>WrongArgumentType</code> exception.
+	 * 
+	 * @return this expression converted to a Java <code>double</code> value.
+	 */
+	public double evalDouble();
+	
+	/**
+	 * Evaluate the expression to a <code>INumber</code> value.
+	 * 
+	 * @return <code>null</code> if the conversion is not possible.
+	 */
+	public Complex evalComplex();
+	
+	/**
+	 * Evaluate the expression to a <code>INumber</code> value.
+	 * 
+	 * @return <code>null</code> if the conversion is not possible.
+	 */
+	public INumber evalNumber();
+	
+	/**
+	 * Evaluate the expression to a <code>ISignedNumber</code> value.
+	 * 
+	 * @return <code>null</code> if the conversion is not possible.
+	 */
+	public ISignedNumber evalSignedNumber();
+	
 	/**
 	 * Evaluate an expression
 	 * 

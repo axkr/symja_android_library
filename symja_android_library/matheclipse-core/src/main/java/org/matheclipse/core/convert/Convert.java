@@ -14,7 +14,6 @@ import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -48,7 +47,7 @@ public class Convert {
 	 * 
 	 * @param listMatrix
 	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
-	 * @throws ClassCastException
+	 * @throws WrongArgumentType
 	 *             if not all elements are convertable to a <code>double</code> value.
 	 * @throws IndexOutOfBoundsException
 	 */
@@ -67,19 +66,20 @@ public class Convert {
 			double[][] array = new double[0][0];
 			return new Array2DRowRealMatrix(array);
 		}
-		final int rowSize = listMatrix.size() - 1;
-		final int colSize = currInRow.size() - 1;
+		// final int rowSize = listMatrix.size() - 1;
+		// final int colSize = currInRow.size() - 1;
 
-		final double[][] elements = new double[rowSize][colSize];
-		for (int i = 1; i < rowSize + 1; i++) {
-			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List) {
-				return null;
-			}
-			for (int j = 1; j < colSize + 1; j++) {
-				elements[i - 1][j - 1] = ((ISignedNumber) currInRow.get(j)).doubleValue();
-			}
-		}
+		final double[][] elements = Expr2Object.toDoubleMatrix(listMatrix);
+		// final double[][] elements = new double[rowSize][colSize];
+		// for (int i = 1; i < rowSize + 1; i++) {
+		// currInRow = (IAST) listMatrix.get(i);
+		// if (currInRow.head() != F.List) {
+		// return null;
+		// }
+		// for (int j = 1; j < colSize + 1; j++) {
+		// elements[i - 1][j - 1] = ((ISignedNumber) currInRow.get(j)).doubleValue();
+		// }
+		// }
 		return new Array2DRowRealMatrix(elements);
 	}
 
@@ -109,21 +109,27 @@ public class Convert {
 		return out;
 	}
 
+	/**
+	 * Returns a RealVector if possible.
+	 * 
+	 * @param listVector
+	 * @return a RealVector or <code>null</code> if the given list is no matrix.
+	 * @throws WrongArgumentType
+	 *             if not all elements are convertable to a <code>double</code> value.
+	 * @throws IndexOutOfBoundsException
+	 */
 	public static RealVector list2RealVector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
-		if (listVector == null) {
-			return null;
-		}
 		final Object header = listVector.head();
 		if (header != F.List) {
 			return null;
 		}
 
-		final int rowSize = listVector.size() - 1;
-
-		final double[] elements = new double[rowSize];
-		for (int i = 0; i < rowSize; i++) {
-			elements[i] = ((ISignedNumber) listVector.get(i + 1)).doubleValue();
-		}
+		// final int rowSize = listVector.size() - 1;
+		// final double[] elements = new double[rowSize];
+		// for (int i = 0; i < rowSize; i++) {
+		// elements[i] = ((ISignedNumber) listVector.get(i + 1)).doubleValue();
+		// }
+		final double[] elements = Expr2Object.toDoubleVector(listVector);
 		return new ArrayRealVector(elements);
 	}
 

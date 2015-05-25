@@ -46,7 +46,7 @@ public class Sign implements IFunctionEvaluator {
 			return F.C1;
 		}
 
-		INumber number = NumericQ.getNumberNumericQ(arg1);
+		INumber number = arg1.evalNumber();
 		if (number != null) {
 			return numberSign(number);
 		}

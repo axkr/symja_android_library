@@ -1,11 +1,12 @@
 package org.matheclipse.core.eval.interfaces;
- 
+
 import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -57,7 +58,9 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			matrix = realMatrixEval(matrix);
 
 			return Convert.realMatrix2List(matrix);
-		} catch (final ClassCastException e) {
+		} catch (final WrongArgumentType e) {
+			// WrongArgumentType occurs in list2RealMatrix(),
+			// if the matrix elements aren't pure numerical values
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}

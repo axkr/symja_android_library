@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -122,7 +124,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public int compareTo(IExpr expr) {
 		int x = hierarchy();
 		int y = expr.hierarchy();
-		return (x < y) ? -1 : ((x == y) ? 0 : 1); 
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
 	@Override
@@ -150,6 +152,42 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	@Override
 	public IExpr[] egcd(IExpr b) {
 		throw new UnsupportedOperationException(toString());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public double evalDouble() {
+		if (isSignedNumber()) {
+			return ((ISignedNumber) this).doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public Complex evalComplex() {
+		if (isNumber()) {
+			return ((INumber) this).complexNumValue().complexValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public INumber evalNumber() {
+		if (isNumber()) {
+			return (INumber) this;
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber evalSignedNumber() {
+		if (isSignedNumber()) {
+			return (ISignedNumber) this;
+		}
+		return null;
 	}
 
 	@Override
@@ -349,13 +387,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public boolean isExpanded() {
 		return true;
 	}
-	 
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAllExpanded() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPlusTimesPower() {

@@ -6,15 +6,14 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia:
- * Singular value decomposition</a>
+ * See <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia: Singular value decomposition</a>
  */
 public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
@@ -46,7 +45,9 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 			result.add(vMatrixAST);
 			return result;
 
-		} catch (final ClassCastException e) {
+		} catch (final WrongArgumentType e) {
+			// WrongArgumentType occurs in list2RealMatrix(),
+			// if the matrix elements aren't pure numerical values
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}

@@ -6,6 +6,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -60,8 +61,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			}
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);
-		} catch (final ClassCastException e) {
-			// ClassCastException occurs in list2RealMatrix(),
+		} catch (final WrongArgumentType e) {
+			// WrongArgumentType occurs in list2RealMatrix(),
 			// if the matrix elements aren't pure numerical values
 			FieldMatrix fieldMatrix = Convert.list2Matrix(list);
 			return matrixEval(fieldMatrix);

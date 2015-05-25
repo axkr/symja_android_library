@@ -17,9 +17,11 @@ import com.google.common.math.DoubleMath;
 public class Expr2Object {
 	public static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
 		double[] result = new double[ast.size() - 1];
+		ISignedNumber signedNumber;
 		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isSignedNumber()) {
-				result[i - 1] = ((ISignedNumber) ast.get(i)).doubleValue();
+			signedNumber = ast.get(i).evalSignedNumber();
+			if (signedNumber != null) {
+				result[i - 1] = signedNumber.doubleValue();
 			} else {
 				throw new WrongArgumentType(ast, ast.get(i), i, "Conversion into a vector of double values not possible!");
 			}
@@ -27,17 +29,25 @@ public class Expr2Object {
 		return result;
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @return <code>null</code> if ast is no matrix
+	 * @throws WrongArgumentType
+	 */
 	public static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
 		int[] dim = ast.isMatrix();
 		if (dim == null) {
-			return new double[0][0];
+			return null;
 		}
 		double[][] result = new double[dim[0]][dim[1]];
+		ISignedNumber signedNumber;
 		for (int i = 1; i <= dim[0]; i++) {
 			IAST row = (IAST) ast.get(i);
-			for (int j = 1; i <= dim[1]; j++) {
-				if (row.get(j).isSignedNumber()) {
-					result[i - 1][j - 1] = ((ISignedNumber) row.get(j)).doubleValue();
+			for (int j = 1; j <= dim[1]; j++) { 
+				signedNumber = row.get(j).evalSignedNumber();
+				if (signedNumber != null) {
+					result[i - 1][j - 1] = signedNumber.doubleValue();
 				} else {
 					throw new WrongArgumentType(ast, ast.get(i), i, "Conversion into a matrix of double values not possible!");
 				}
