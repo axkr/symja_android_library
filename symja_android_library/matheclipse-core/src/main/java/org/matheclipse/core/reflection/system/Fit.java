@@ -4,6 +4,7 @@ import org.apache.commons.math3.fitting.AbstractCurveFitter;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -45,25 +46,27 @@ public class Fit extends AbstractFunctionEvaluator {
 
 		if (ast.arg2().isSignedNumber() && ast.arg3().isSymbol()) {
 			int degree = ((ISignedNumber) ast.arg2()).toInt();
+			double[] initialGuess = new double[degree];
+			for (int i = 0; i < degree; i++) {
+				initialGuess[i] = 1.0;
+			}
 			AbstractCurveFitter fitter = PolynomialCurveFitter.create(degree);
-			int[] im = ast.arg1().isMatrix();
+			int[] isMatrix = ast.arg1().isMatrix();
 			WeightedObservedPoints obs = new WeightedObservedPoints();
 
-			if (im != null && im[1] == 2) {
-				IAST matrix = (IAST) ast.arg1();
-				IAST row;
-				for (int i = 1; i < matrix.size(); i++) {
-					row = matrix.getAST(i);
-					obs.add(1.0, ((ISignedNumber) row.arg1()).doubleValue(), ((ISignedNumber) row.arg2()).doubleValue());
+			if (isMatrix != null && isMatrix[1] == 2) {
+				final double[][] elements = Expr2Object.toDoubleMatrix((IAST) ast.arg1());
+				for (int i = 0; i < elements.length; i++) {
+					obs.add(1.0, elements[i][0], elements[i][1]);
 				}
 			} else {
 				int rowSize = ast.arg1().isVector();
 				if (rowSize < 0) {
 					return null;
 				}
-				IAST vector = (IAST) ast.arg1();
-				for (int i = 1; i < vector.size(); i++) {
-					obs.add(1.0, i, ((ISignedNumber) vector.get(i)).doubleValue());
+				final double[] elements = Expr2Object.toDoubleVector((IAST) ast.arg1());
+				for (int i = 0; i < elements.length; i++) {
+					obs.add(1.0, i + 1, elements[i]);
 				}
 			}
 			return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
