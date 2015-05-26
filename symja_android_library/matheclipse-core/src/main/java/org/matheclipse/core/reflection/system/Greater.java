@@ -20,7 +20,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to <code>x &gt; 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> will be simplified to <code>x &gt; 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
