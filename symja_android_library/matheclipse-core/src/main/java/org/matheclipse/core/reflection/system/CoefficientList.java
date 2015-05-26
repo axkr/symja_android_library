@@ -38,11 +38,11 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the coefficient list of a univariate polynomial
+	 * Get the coefficient list of a univariate polynomial.
 	 * 
-	 * @param polynomial
+	 * @param polynomial 
 	 * @param variable
-	 * @return
+	 * @return <code>null</code> if the list couldn't be evaluated.
 	 */
 	public static double[] coefficientList(IExpr polynomial, final ISymbol variable) throws JASConversionException {
 		Polynomial poly = new Polynomial(polynomial, (ISymbol) variable);
@@ -54,19 +54,12 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 		int degree = list.size() - 2;
 		double[] result = new double[degree + 1];
 		for (int i = 1; i < list.size(); i++) {
-			IExpr temp = list.get(i);
-			if (temp.isSignedNumber()) {
-				result[i - 1] = ((ISignedNumber) temp).doubleValue();
-				continue;
+			ISignedNumber temp = list.get(i).evalSignedNumber();
+			if (temp != null) {
+				result[i - 1] = temp.doubleValue();
+			} else {
+				return null;
 			}
-			if (temp.isNumericFunction()) {
-				temp = F.eval(temp);
-				if (temp.isSignedNumber()) {
-					result[i - 1] = ((ISignedNumber) temp).doubleValue();
-					continue;
-				}
-			}
-			return null;
 		}
 		return result;
 	}
