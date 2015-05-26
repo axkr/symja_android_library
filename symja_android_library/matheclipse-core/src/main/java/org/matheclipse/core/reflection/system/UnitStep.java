@@ -30,22 +30,12 @@ public class UnitStep implements INumeric, IFunctionEvaluator {
 		int size = ast.size();
 		if (size > 1) {
 			for (int i = 1; i < size; i++) {
-				IExpr temp = ast.get(i);
-				if (temp.isSignedNumber()) {
-					if (((ISignedNumber) temp).complexSign() < 0) {
+				ISignedNumber temp = ast.get(i).evalSignedNumber();
+				if (temp!=null) {
+					if (temp.complexSign() < 0) {
 						return F.C0;
 					} else {
 						continue;
-					}
-				}
-				if (temp.isNumericFunction()) {
-					IExpr num = F.evaln(temp);
-					if (num.isSignedNumber()) {
-						if (((ISignedNumber) num).complexSign() < 0) {
-							return F.C0;
-						} else {
-							continue;
-						}
 					}
 				}
 				return null;

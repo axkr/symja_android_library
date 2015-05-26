@@ -72,23 +72,22 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 							} else if (arg3D.length == 1) {
 								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
 							}
-						} else if (arg3.get(i).isSignedNumber()) {
-							constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, ((ISignedNumber) arg3.get(i))
-									.doubleValue()));
 						} else {
-							throw new WrongArgumentType(arg3, arg3.get(i), i, "Numeric vector or number expected!");
+							ISignedNumber sn = arg3.get(i).evalSignedNumber();
+							if (sn != null) {
+								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
+							} else {
+								throw new WrongArgumentType(arg3, arg3.get(i), i, "Numeric vector or number expected!");
+							}
 						}
-
 					} else {
 						throw new WrongArgumentType(ast, ast.get(i), i, "Numeric vector expected!");
 					}
 				}
 				SimplexSolver solver = new SimplexSolver();
-//				PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
-		        PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
-		                                                  GoalType.MINIMIZE,
-		                                                  new NonNegativeConstraint(true),
-		                                                  PivotSelectionRule.BLAND);
+				// PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
+				PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints), GoalType.MINIMIZE,
+						new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
 				double[] values = solution.getPointRef();
 				return F.List(values);
 			}

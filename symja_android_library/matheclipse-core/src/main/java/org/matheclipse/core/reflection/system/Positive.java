@@ -15,15 +15,12 @@ public class Positive implements IFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
-		
-		IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
-			if (((ISignedNumber) ast.arg1()).isPositive()) {
-				return F.True;
-			}
-			return F.False;
+
+		ISignedNumber arg1 = ast.arg1().evalSignedNumber();
+		if (arg1 != null) {
+			return F.bool(arg1.isPositive());
 		}
-		if (arg1.isNumber()) {
+		if (ast.arg1().isNumber()) {
 			return F.False;
 		}
 		return null;

@@ -47,19 +47,23 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		if ((ast.arg2().isList())) {
 			IAST list = (IAST) ast.arg2();
 			IExpr function = ast.arg1();
-			if (list.size() == 4 && list.arg1().isSymbol() && list.arg2().isSignedNumber() && list.arg3().isSignedNumber()) {
-				if (function.isAST(F.Equal, 3)) {
-					function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
-				}
-				try {
-					return Num.valueOf(integrate(method.getSymbolName(), list, function));
-				} catch (ConvergenceException e) {
-					throw new WrappedException(e);
-				} catch (Exception e) {
-					throw new WrappedException(e);
-					// if (Config.SHOW_STACKTRACE) {
-					// e.printStackTrace();
-					// }
+			if (list.size() == 4 && list.arg1().isSymbol()) {
+				ISignedNumber min = list.arg2().evalSignedNumber();
+				ISignedNumber max = list.arg3().evalSignedNumber();
+				if (min != null && max != null) {
+					if (function.isAST(F.Equal, 3)) {
+						function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
+					}
+					try {
+						return Num.valueOf(integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(), function));
+					} catch (ConvergenceException e) {
+						throw new WrappedException(e);
+					} catch (Exception e) {
+						throw new WrappedException(e);
+						// if (Config.SHOW_STACKTRACE) {
+						// e.printStackTrace();
+						// }
+					}
 				}
 			}
 
@@ -80,12 +84,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	 * @return
 	 * @throws ConvergenceException
 	 */
-	public static double integrate(String method, IAST list, IExpr function) throws ConvergenceException {
+	public static double integrate(String method, IAST list, double min, double max, IExpr function) throws ConvergenceException {
 		GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
 		ISymbol xVar = (ISymbol) list.arg1();
-		ISignedNumber min = (ISignedNumber) list.arg2();
-		ISignedNumber max = (ISignedNumber) list.arg3();
+		// ISignedNumber min = (ISignedNumber) list.arg2();
+		// ISignedNumber max = (ISignedNumber) list.arg3();
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
@@ -103,10 +107,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			integrator = new TrapezoidIntegrator();
 		} else {
 			// default: LegendreGauss
-			GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
+			GaussIntegrator integ = factory.legendre(7, min, max);
 			return integ.integrate(f);
 		}
-		return integrator.integrate(10000, f, min.doubleValue(), max.doubleValue());
+		return integrator.integrate(10000, f, min, max);
 
 	}
 

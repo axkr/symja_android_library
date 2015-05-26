@@ -110,7 +110,7 @@ public class MathUtils {
 		list.add(var);
 		list.add(F.num(a));
 		list.add(F.num(b));
-		return NIntegrate.integrate("LegendreGauss", list, function);
+		return NIntegrate.integrate("LegendreGauss", list, a, b, function);
 	}
 
 	/**

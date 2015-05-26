@@ -63,23 +63,23 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		if ((ast.arg2().isList())) {
 			IAST list = (IAST) ast.arg2();
 			IExpr function = ast.arg1();
-			if (list.size() >= 3 && list.arg1().isSymbol() && list.arg2().isSignedNumber()) {
+			if (list.size() >= 3 && list.arg1().isSymbol()) {
 				if (function.isAST(F.Equal, 3)) {
 					function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
 				}
-				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, function))));
+				ISignedNumber min = list.arg2().evalSignedNumber();
+				ISignedNumber max = null;
+				if (list.size() > 3) {
+					max = list.arg3().evalSignedNumber();
+				}
+				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, min, max, function))));
 			}
 		}
 		return null;
 	}
 
-	private double findRoot(ISymbol method, int maxIterations, IAST list, IExpr function) {
+	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function) {
 		ISymbol xVar = (ISymbol) list.arg1();
-		ISignedNumber min = (ISignedNumber) list.arg2();
-		ISignedNumber max = null;
-		if (list.size() > 3 && list.arg3() instanceof ISignedNumber) {
-			max = (ISignedNumber) list.arg3();
-		}
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
@@ -102,7 +102,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			solver = new IllinoisSolver();
 		} else if (method.isSymbolName("Pegasus")) {
 			solver = new PegasusSolver();
-		} else { 
+		} else {
 			// default: NewtonSolver
 			DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
 			BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
