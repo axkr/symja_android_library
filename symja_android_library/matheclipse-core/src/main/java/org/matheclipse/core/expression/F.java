@@ -616,6 +616,8 @@ public class F {
 			: "RootIntervals");
 	public final static ISymbol Roots = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "roots" : "Roots");
 	public final static ISymbol Round = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "round" : "Round");
+	public final static ISymbol RowReduce = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rowreduce" : "RowReduce");
+	
 	public final static ISymbol SameQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sameq" : "SameQ");
 	public final static ISymbol Scan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "scan" : "Scan");
 	public final static ISymbol Sec = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
@@ -3551,6 +3553,10 @@ public class F {
 		return unaryAST1(Round, a0);
 	}
 
+	public static IAST RowReduce(final IExpr a0) {
+		return unaryAST1(RowReduce, a0);
+	}
+	
 	public static IAST Rule(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Rule, a0, a1);
 	}

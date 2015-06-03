@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -579,21 +581,11 @@ public class Solve extends AbstractFunctionEvaluator {
 		try {
 			IAST resultList = F.List();
 			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector);
-
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
-				IExpr temp = F.eval(F.LinearSolve(matrix, vector));
-				if (temp.isASTSizeGE(F.List, 2)) {
-					IAST rootsList = (IAST) temp;
-					IAST list = F.List();
-					for (int j = 1; j < vars.size(); j++) {
-						IAST rule = F.Rule(vars.get(j), rootsList.get(j));
-						list.add(rule);
-					}
-					resultList.add(list);
-				} else {
-					return null;
-				}
+				// IExpr temp = F.eval(F.RowReduce(augmentedMatrix));
+				FieldMatrix augmentedMatrix = Convert.list2Matrix(matrix, vector);
+				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList);
 			}
 
 			return resultList;

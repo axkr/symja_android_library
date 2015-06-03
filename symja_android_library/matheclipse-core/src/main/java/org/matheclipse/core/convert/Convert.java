@@ -206,8 +206,7 @@ public class Convert {
 		if (listMatrix == null) {
 			return null;
 		}
-		final Object header = listMatrix.head();
-		if (header != F.List) {
+		if (!listMatrix.isList()) {
 			return null;
 		}
 
@@ -229,6 +228,50 @@ public class Convert {
 			for (int j = 1; j < colSize + 1; j++) {
 				elements[i - 1][j - 1] = currInRow.get(j);
 			}
+		}
+		return new Array2DRowFieldMatrix(elements);
+	}
+
+	/**
+	 * Return the augmented FiledMatrix <code>listMatrix | listVector</code>
+	 * 
+	 * @param listMatrix
+	 * @param listVector
+	 * @return
+	 * @throws ClassCastException
+	 * @throws IndexOutOfBoundsException
+	 */
+	public static FieldMatrix list2Matrix(final IAST listMatrix, final IAST listVector) throws ClassCastException,
+			IndexOutOfBoundsException {
+		if (listMatrix == null || listVector == null) {
+			return null;
+		}
+		if (!listMatrix.isList() || !listVector.isList()) {
+			return null;
+		}
+		if (listMatrix.size() != listVector.size()) {
+			return null;
+		}
+
+		IAST currInRow = (IAST) listMatrix.get(1);
+		if (currInRow.size() == 1) {
+			// special case 0-Matrix
+			IExpr[][] array = new IExpr[0][0];
+			return new Array2DRowFieldMatrix(array);
+		}
+		final int rowSize = listMatrix.size() - 1;
+		final int colSize = currInRow.size() - 1;
+
+		final IExpr[][] elements = new IExpr[rowSize][colSize+1];
+		for (int i = 1; i < rowSize + 1; i++) {
+			currInRow = (IAST) listMatrix.get(i);
+			if (currInRow.head() != F.List) {
+				return null;
+			}
+			for (int j = 1; j < colSize + 1; j++) {
+				elements[i - 1][j - 1] = currInRow.get(j);
+			}
+			elements[i - 1][colSize] = listVector.get(i);
 		}
 		return new Array2DRowFieldMatrix(elements);
 	}

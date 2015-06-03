@@ -1,14 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.FieldDecompositionSolver;
-import org.matheclipse.commons.math.linear.FieldLUDecomposition;
 import org.matheclipse.commons.math.linear.FieldMatrix;
-import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -26,18 +22,9 @@ public class LinearSolve extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		FieldMatrix aMatrix;
-		FieldVector bVector;
 		try {
-
-			aMatrix = Convert.list2Matrix((IAST) ast.arg1());
-			bVector = Convert.list2Vector((IAST) ast.arg2());
-			final FieldLUDecomposition lu = new FieldLUDecomposition(aMatrix);
-
-			FieldDecompositionSolver fds = lu.getSolver();
-			FieldVector xVector = fds.solve(bVector);
-			return F.eval(F.Together(Convert.vector2List(xVector)));
-
+			FieldMatrix augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
+			return RowReduce.rowReduced2List(augmentedMatrix);
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

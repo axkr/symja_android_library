@@ -41,7 +41,7 @@ public class FieldReducedRowEchelonForm {
 	private final FieldMatrix rowReducedMatrix;
 	private FieldMatrix nullSpaceCache;
 	private int matrixRankCache;
- 
+
 	/**
 	 * Number of rows.
 	 */
@@ -61,6 +61,25 @@ public class FieldReducedRowEchelonForm {
 	 * @see #rowReduce()
 	 */
 	public FieldReducedRowEchelonForm(FieldMatrix matrix) {
+		this.originalMatrix = matrix;
+		this.rowReducedMatrix = matrix.copy();
+		this.numRows = matrix.getRowDimension();
+		this.numCols = matrix.getColumnDimension();
+		this.matrixRankCache = -1;
+		this.nullSpaceCache = null;
+		rowReduce();
+	}
+
+	/**
+	 * Constructor which creates row reduced echelon matrix from the given augmented <code>matrix</code> and column-vector
+	 * <code>b</code>.
+	 * 
+	 * @param matrix
+	 *            matrix which will be transformed to a row reduced echelon matrix.
+	 * 
+	 * @see #rowReduce()
+	 */
+	public FieldReducedRowEchelonForm(FieldMatrix matrix, FieldVector b) {
 		this.originalMatrix = matrix;
 		this.rowReducedMatrix = matrix.copy();
 		this.numRows = matrix.getRowDimension();
@@ -363,8 +382,8 @@ public class FieldReducedRowEchelonForm {
 		EvalEngine engine = EvalEngine.get();
 		IEvalStepListener listener = engine.getStepListener();
 		if (listener != null) {
-			listener.add(Convert.matrix2List(originalMatrix), Convert.matrix2List(rowReducedMatrix),
-					engine.getRecursionCounter(), -1, "ReducedRowEchelonForm");
+			listener.add(Convert.matrix2List(originalMatrix), Convert.matrix2List(rowReducedMatrix), engine.getRecursionCounter(),
+					-1, "ReducedRowEchelonForm");
 		}
 		return rowReducedMatrix;
 	}
