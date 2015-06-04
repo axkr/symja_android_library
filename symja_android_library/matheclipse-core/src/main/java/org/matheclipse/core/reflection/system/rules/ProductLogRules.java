@@ -15,6 +15,8 @@ public interface ProductLogRules {
       Times(CC(0L,1L,1L,2L),Pi)),
     ISet(ProductLog(Negate(Power(E,-1))),
       CN1),
+    ISet(ProductLog(E),
+      C1),
     ISet(ProductLog(CInfinity),
       CInfinity),
     ISet(ProductLog(CNInfinity),
@@ -24,6 +26,8 @@ public interface ProductLogRules {
     ISet(ProductLog(DirectedInfinity(CNI)),
       CInfinity),
     ISet(ProductLog(CComplexInfinity),
-      CInfinity)
+      CInfinity),
+    ISetDelayed(Times(Power(E,ProductLog(x_)),ProductLog(x_)),
+      x)
   );
 }
