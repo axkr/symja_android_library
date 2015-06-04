@@ -155,9 +155,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return fComplex.add(that);
 	}
 
-	/**
-	 * @return
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IComplexNum conjugate() {
 		return newInstance(fComplex.conjugate());

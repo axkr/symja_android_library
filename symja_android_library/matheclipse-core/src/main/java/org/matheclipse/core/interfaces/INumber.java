@@ -12,6 +12,13 @@ import org.matheclipse.core.expression.ComplexNum;
 public interface INumber extends IExpr {
 
 	/**
+	 * Conjugate this (complex-) number.
+	 * 
+	 * @return the conjugate complex number
+	 */
+	public INumber conjugate();
+	
+	/**
 	 * Get a <code>Apcomplex</code> number wrapped into an <code>ApcomplexNum</code> object.
 	 * 
 	 * @param precision

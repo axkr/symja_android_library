@@ -7,7 +7,6 @@ import org.apache.commons.math3.fraction.BigFraction;
  * 
  */
 public interface IComplex extends IBigNumber {
-	public IComplex conjugate();
 
 	public IComplex add(IComplex val);
 

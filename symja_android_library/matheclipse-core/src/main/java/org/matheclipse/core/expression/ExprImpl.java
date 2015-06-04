@@ -137,6 +137,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		}
 	}
 
+	public INumber conjugate() {
+		if (isSignedNumber()) {
+			return ((INumber) this);
+		}
+		return null;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr divide(IExpr that) {

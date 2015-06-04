@@ -121,6 +121,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return c;
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	public IComplex conjugate() {
 		return ComplexSym.valueOf(_real, _imaginary.negate());
 	}
