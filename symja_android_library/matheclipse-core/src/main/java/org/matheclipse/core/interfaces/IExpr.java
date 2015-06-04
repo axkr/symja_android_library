@@ -159,28 +159,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
 	public double evalDouble();
-	
+
 	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	public Complex evalComplex();
-	
+
 	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	public INumber evalNumber();
-	
+
 	/**
 	 * Evaluate the expression to a <code>ISignedNumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	public ISignedNumber evalSignedNumber();
-	
+
 	/**
 	 * Evaluate an expression
 	 * 
@@ -378,7 +378,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isAtom();
 
 	/**
-	 * Test if this expression is a symbolic complex number
+	 * Test if this expression is a symbolic complex number (i.e. <code>instanceof IComplex</code>)
 	 * 
 	 */
 	public boolean isComplex();
@@ -390,7 +390,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isComplexInfinity();
 
 	/**
-	 * Test if this expression is a numeric complex number
+	 * Test if this expression is a numeric complex number (i.e. <code>instanceof IComplexNum</code>)
 	 * 
 	 */
 	public boolean isComplexNumeric();
