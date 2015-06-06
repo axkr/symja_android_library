@@ -105,7 +105,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		int size = variableList.size() - 1;
 		int rows = rowReduced.getRowDimension();
 		int cols = rowReduced.getColumnDimension();
-		IExpr lastVarCoefficient = rowReduced.getEntry(size - 1, size - 1);
+		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		IAST list = F.List();
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
@@ -114,18 +114,20 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			}
 		}
 		IAST rule;
-		for (int j = 1; j < variableList.size(); j++) {
-			IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
-			if (!diagonal.isZero()) {
-				IAST plus = F.Plus();
-				plus.add(rowReduced.getEntry(j - 1, cols - 1));
-				for (int i = j; i < cols - 1; i++) {
-					if (!rowReduced.getEntry(j - 1, i).isZero()) {
-						plus.add(F.Times(rowReduced.getEntry(j - 1, i).negate(), variableList.get(i + 1)));
+		for (int j = 1; j < rows + 1; j++) {
+			if (j < size + 1) {
+				IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
+				if (!diagonal.isZero()) {
+					IAST plus = F.Plus();
+					plus.add(rowReduced.getEntry(j - 1, cols - 1));
+					for (int i = j; i < cols - 1; i++) {
+						if (!rowReduced.getEntry(j - 1, i).isZero()) {
+							plus.add(F.Times(rowReduced.getEntry(j - 1, i).negate(), variableList.get(i + 1)));
+						}
 					}
+					rule = F.Rule(variableList.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
+					list.add(rule);
 				}
-				rule = F.Rule(variableList.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
-				list.add(rule);
 			}
 		}
 		resultList.add(list);
