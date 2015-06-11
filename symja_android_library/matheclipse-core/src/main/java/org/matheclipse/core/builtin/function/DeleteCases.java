@@ -20,49 +20,6 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 	public DeleteCases() {
 	}
 
-	// private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
-	// protected final PatternMatcher matcher;
-	// protected IAST resultCollection;
-	//
-	// public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection) {
-	// this.matcher = matcher;
-	// this.resultCollection = resultCollection;
-	// }
-	//
-	// @Override
-	// public IExpr apply(final IExpr arg) {
-	// if (arg.isAST()) {
-	// IAST ast = (IAST) arg;
-	// IAST[] results = ast.filter(matcher);
-	// resultCollection.addAll(results[1]);
-	// // ast.filter(resultCollection, matcher);
-	// }
-	// return null;
-	// }
-	//
-	// }
-
-	// private static class CasesRulesFunctor implements Function<IExpr, IExpr> {
-	// protected final Function<IExpr, IExpr> function;
-	// protected IAST resultCollection;
-	//
-	// public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection) {
-	// this.function = function;
-	// this.resultCollection = resultCollection;
-	// }
-	//
-	// @Override
-	// public IExpr apply(final IExpr arg) {
-	// if (arg.isAST()) {
-	// IAST ast = (IAST) arg;
-	// IAST[] results = ast.filter(function);
-	// resultCollection.addAll(results[1]);
-	// }
-	// return null;
-	// }
-	//
-	// }
-
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
@@ -75,7 +32,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 				Validate.checkSize(ast, 3);
 
 			} else {
-				return deleteCases((IAST) ast.arg1(), ast.arg2());
+				return deleteCases((IAST) arg1, ast.arg2());
 			}
 		}
 		return null;

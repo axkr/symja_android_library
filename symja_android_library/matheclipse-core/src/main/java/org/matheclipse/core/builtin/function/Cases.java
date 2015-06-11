@@ -71,17 +71,17 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 					Function<IExpr, IExpr> function = Functors.rules((IAST) ast.arg2());
 					CasesRulesFunctor crf = new CasesRulesFunctor(function, result);
 					VisitorLevelSpecification level = new VisitorLevelSpecification(crf, ast.arg3(), false);
-					ast.arg1().accept(level);
+					arg1.accept(level);
 					return result;
 				}
 
 				final PatternMatcher matcher = new PatternMatcher(ast.arg2());
 				CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result);
 				VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, ast.arg3(), false);
-				ast.arg1().accept(level);
+				arg1.accept(level);
 				return result;
 			} else {
-				return cases((IAST) ast.arg1(), ast.arg2());
+				return cases((IAST) arg1, ast.arg2());
 			}
 		}
 		return null;
