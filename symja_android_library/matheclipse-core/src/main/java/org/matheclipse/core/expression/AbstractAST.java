@@ -31,6 +31,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
@@ -1340,6 +1342,49 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public boolean isFreeAt(int position, final IExpr pattern) {
 		return get(position).isFree(pattern, true);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeOfPatterns() {
+		if ((getEvalFlags() & IAST.CONTAINS_NO_PATTERN) == IAST.CONTAINS_NO_PATTERN) {
+			return true;
+		}
+		if ((getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR) != IAST.NO_FLAG) {
+			return false;
+		}
+		boolean isFreeOfPatterns = true;
+		for (int i = 0; i < size(); i++) {
+			// all elements including head element
+			IExpr temp = get(i);
+			if (temp.isAST() && !temp.isFreeOfPatterns()) {
+				isFreeOfPatterns = false;
+				addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+				continue;
+			} else if (temp instanceof IPatternObject) {
+				if (temp.isPattern()) {
+					IPattern pat = (IPattern) temp;
+					if (pat.isPatternDefault()) {
+						// the ast contains a pattern with default value (i.e. "x_.")
+						isFreeOfPatterns = false;
+						addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
+					} else {
+						// the ast contains a pattern without default value (i.e. "x_")
+						isFreeOfPatterns = false;
+						addEvalFlags(IAST.CONTAINS_PATTERN);
+					}
+
+				} else if (temp.isPatternSequence()) {
+					// the ast contains a pattern sequence (i.e. "x__")
+					isFreeOfPatterns = false;
+					addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+				}
+			}
+		}
+		if (isFreeOfPatterns) {
+			addEvalFlags(IAST.CONTAINS_NO_PATTERN);
+		}
+		return isFreeOfPatterns;
 	}
 
 	/**

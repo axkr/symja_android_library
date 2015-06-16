@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -10,24 +11,53 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
+import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.base.Function;
 
 public class Cases extends AbstractCoreFunctionEvaluator {
+	/**
+	 * StopException will be thrown, if maximum number of Cases results are reached
+	 *
+	 */
+	@SuppressWarnings("serial")
+	private static class StopException extends MathException {
+		public StopException() {
+			super("Stop Cases() evaluation");
+		}
+	}
+
 	private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
 		protected final PatternMatcher matcher;
 		protected IAST resultCollection;
+		final int maximumResults;
+		private int resultsCounter;
 
-		public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection) {
+		/**
+		 * 
+		 * @param matcher
+		 *            the pattern-matcher
+		 * @param resultCollection
+		 * @param maximumResults
+		 *            maximum number of results. -1 for for no limitation
+		 */
+		public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection, int maximumResults) {
 			this.matcher = matcher;
 			this.resultCollection = resultCollection;
+			this.maximumResults = maximumResults;
+			this.resultsCounter = 0;
 		}
 
 		@Override
-		public IExpr apply(final IExpr arg) {
-			if (arg.isAST()) {
-				IAST ast = (IAST) arg;
-				ast.filter(resultCollection, matcher);
+		public IExpr apply(final IExpr arg) throws StopException {
+			if (matcher.apply(arg)) {
+				resultCollection.add(arg);
+				if (maximumResults >= 0) {
+					resultsCounter++;
+					if (resultsCounter >= maximumResults) {
+						throw new StopException();
+					}
+				}
 			}
 			return null;
 		}
@@ -37,18 +67,34 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 	private static class CasesRulesFunctor implements Function<IExpr, IExpr> {
 		protected final Function<IExpr, IExpr> function;
 		protected IAST resultCollection;
+		final int maximumResults;
+		private int resultsCounter;
 
-		public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection) {
+		/**
+		 * 
+		 * @param function
+		 *            the funtion which should determine the results
+		 * @param resultCollection
+		 * @param maximumResults
+		 *            maximum number of results. -1 for for no limitation
+		 */
+		public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection, int maximumResults) {
 			this.function = function;
 			this.resultCollection = resultCollection;
+			this.maximumResults = maximumResults;
 		}
 
 		@Override
-		public IExpr apply(final IExpr arg) {
-			if (arg.isAST()) {
-				IAST ast = (IAST) arg;
-				IAST[] results = ast.filter(function);
-				resultCollection.addAll(results[0]);
+		public IExpr apply(final IExpr arg) throws StopException {
+			IExpr temp = function.apply(arg);
+			if (temp != null) {
+				resultCollection.add(temp);
+				if (maximumResults >= 0) {
+					resultsCounter++;
+					if (resultsCounter >= maximumResults) {
+						throw new StopException();
+					}
+				}
 			}
 			return null;
 		}
@@ -60,28 +106,42 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 3, 4);
+		Validate.checkRange(ast, 3, 5);
 		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
-			if (ast.size() == 4) {
-
+			final IExpr arg2 = engine.evalPattern(ast.arg2());
+			if (ast.size() == 4 || ast.size() == 5) {
+				final IExpr arg3 = engine.evaluate(ast.arg3());
+				int maximumResults = -1;
+				if (ast.size() == 5) {
+					maximumResults = Validate.checkIntType(ast, 4);
+				}
 				IAST result = F.List();
-				if (ast.arg2().isRuleAST()) {
-					Function<IExpr, IExpr> function = Functors.rules((IAST) ast.arg2());
-					CasesRulesFunctor crf = new CasesRulesFunctor(function, result);
-					VisitorLevelSpecification level = new VisitorLevelSpecification(crf, ast.arg3(), false);
-					arg1.accept(level);
+				if (arg2.isRuleAST()) {
+					try {
+						Function<IExpr, IExpr> function = Functors.rules((IAST) arg2);
+						CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
+						VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3 , false);
+						arg1.accept(level);
+
+					} catch (StopException se) {
+						// reached maximum number of results
+					}
 					return result;
 				}
 
-				final PatternMatcher matcher = new PatternMatcher(ast.arg2());
-				CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result);
-				VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, ast.arg3(), false);
-				arg1.accept(level);
+				try {
+					final PatternMatcher matcher = new PatternMatcher(arg2);
+					CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result, maximumResults);
+					VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false);
+					arg1.accept(level);
+				} catch (StopException se) {
+					// reached maximum number of results
+				}
 				return result;
 			} else {
-				return cases((IAST) arg1, ast.arg2());
+				return cases((IAST) arg1, arg2);
 			}
 		}
 		return null;

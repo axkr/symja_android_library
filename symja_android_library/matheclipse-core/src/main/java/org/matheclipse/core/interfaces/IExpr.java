@@ -518,6 +518,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isFree(Predicate<IExpr> predicate, boolean heads);
 
 	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, are no pattern
+	 * objects.
+	 * 
+	 * @return <code>true</code> if the expression contains no <code>IPatternObject</code>.
+	 */
+	public boolean isFreeOfPatterns();
+
+	/**
 	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, aren't ASTs with a
 	 * head which match the given pattern.
 	 * 

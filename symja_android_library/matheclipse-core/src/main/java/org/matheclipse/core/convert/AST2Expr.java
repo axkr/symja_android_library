@@ -14,7 +14,6 @@ import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.AST0;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -96,33 +95,19 @@ public class AST2Expr {
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
-	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "ComplexInfinity", "Diff",
-			"EvalF", "Infinity", "Int", "Ln", "Trunc", "NthRoot", "Root" };
-
-	private final static IExpr[] ALIASES_SYMBOLS = { F.ArcCos, F.ArcSin, F.ArcTan, F.ArcCosh, F.ArcSinh, F.ArcTanh,
-			F.CComplexInfinity, F.D, F.N, F.CInfinity, F.Integrate, F.Log, F.IntegerPart, F.Surd, F.Surd };
+	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff", "EvalF", "Int",
+			"Ln", "Trunc", "NthRoot", "Root" };
+	private final static String[] ALIASES_SUBSTITUTES = { "ArcCos", "ArcSin", "ArcTan", "ArcCosh", "ArcSinh", "ArcTanh", "D", "N",
+			"Integrate", "Log", "IntegerPart", "Surd", "Surd" };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
 	 */
-	public static final Map<String, IExpr> PREDEFINED_ALIASES_MAP = new HashMap<String, IExpr>(97);
+	public static final Map<String, String> PREDEFINED_ALIASES_MAP = new HashMap<String, String>(97);
 
-	// public static final String LIST_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List";
-	// public static final String POWER_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power";
-	// public static final String PLUS_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus";
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
-	// public static final String FALSE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False";
 	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
 
-	// public static final String PART_STRING =
-	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part";
-	// public static final String SLOT_STRING =
-	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot";
-	// public static final String HOLD_STRING =
-	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold";
-	// public static final String DIRECTEDINFINITY_STRING =
-	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity"
-	// : "DirectedInfinity";
 	static {
 		for (String str : UPPERCASE_SYMBOL_STRINGS) {
 			// these constants must be written in upper case characters
@@ -136,7 +121,7 @@ public class AST2Expr {
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			for (int i = 0; i < ALIASES_STRINGS.length; i++) {
-				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_SYMBOLS[i]);
+				PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH), ALIASES_SUBSTITUTES[i]); // YMBOLS[i]);
 			}
 		}
 		if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -354,9 +339,9 @@ public class AST2Expr {
 				// special - convert on input
 				return F.CComplexInfinity;
 			}
-			IExpr temp = PREDEFINED_ALIASES_MAP.get(lowercaseStr);
+			String temp = PREDEFINED_ALIASES_MAP.get(lowercaseStr);
 			if (temp != null) {
-				return temp;
+				return F.$s(temp);
 			}
 			return F.$s(lowercaseStr);
 		} else {

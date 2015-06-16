@@ -67,6 +67,11 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public final int CONTAINS_DEFAULT_PATTERN = 0x0004;
 
 	/**
+	 * The list or the lists subexpressions contain no pattern object.
+	 */
+	public final int CONTAINS_NO_PATTERN = 0x0008;
+	
+	/**
 	 * One of the arguments of the list or sublists contains a pattern object. Combination of
 	 * <code>CONTAINS_PATTERN, CONTAINS_PATTERN_SEQUENCE, CONTAINS_DEFAULT_PATTERN</code>
 	 */

@@ -29,6 +29,8 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.reflection.system.Plus;
 import org.matheclipse.core.reflection.system.Times;
 import org.matheclipse.parser.client.Parser;
@@ -943,13 +945,28 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Transform the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless for the
-	 * left-hand-side of a Set[] or SetDelayed[] expression
+	 * Evaluate the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless to create
+	 * pattern-matching expressions directly or for the left-hand-side of a <code>Set[]</code>, <code>SetDelayed[]</code>,
+	 * <code>UpSet[]</code> or <code>UpSetDelayed[]</code> expression
 	 * 
 	 * @param ast
-	 * @return
+	 * @return <code>ast</code> if no evaluation was executed.
 	 */
 	public IExpr evalSetAttributes(IAST ast) {
+		return evalSetAttributes(ast, false);
+	}
+
+	/**
+	 * Evaluate the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless to create
+	 * pattern-matching expressions directly or for the left-hand-side of a <code>Set[]</code>, <code>SetDelayed[]</code>,
+	 * <code>UpSet[]</code> or <code>UpSetDelayed[]</code> expression
+	 * 
+	 * @param ast
+	 * @param noEvaluation
+	 *            (sub-)expressions which contain no patterns should not be evaluated
+	 * @return <code>ast</code> if no evaluation was executed.
+	 */
+	public IExpr evalSetAttributes(IAST ast, boolean noEvaluation) {
 		boolean evalLHSMode = fEvalLHSMode;
 		try {
 			fEvalLHSMode = true;
@@ -958,7 +975,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return ast;
 			}
 
-			IExpr result = evalSetAttributesRecursive(ast, false);
+			IExpr result = evalSetAttributesRecursive(ast, noEvaluation, false, 0);
 			if (result != null) {
 				return result;
 			}
@@ -968,7 +985,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	private IExpr evalSetAttributesRecursive(IAST ast, boolean evalNumericFunction) {
+	private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation, boolean evalNumericFunction, int level) {
 		final ISymbol symbol = ast.topHead();
 		// call so that attributes may be set in AbstractFunctionEvaluator#setUp() method
 		symbol.getEvaluator();
@@ -984,7 +1001,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if (astSize > 1 && ast.arg1().isAST()) {
 					IExpr expr = ast.arg1();
 					if (expr.isAST()) {
-						resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList);
+						resultList = evalSetAttributeArg(ast, 1, (IAST) expr, resultList, noEvaluation, level);
 					}
 				}
 			}
@@ -993,7 +1010,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				for (int i = 2; i < astSize; i++) {
 					IExpr expr = ast.get(i);
 					if (expr.isAST()) {
-						resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList);
+						resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList, noEvaluation, level);
 					}
 				}
 			}
@@ -1014,14 +1031,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					IAST result;
 					if ((result = EvalAttributes.flatten(resultList)) != null) {
 						resultList = result;
-						IExpr expr = evalSetOrderless(resultList, attr);
+						IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
 						if (expr != null) {
 							return expr;
 						}
 						return resultList;
 					}
 				}
-				IExpr expr = evalSetOrderless(resultList, attr);
+				IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
 				if (expr != null) {
 					return expr;
 				}
@@ -1034,19 +1051,19 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			IAST result;
 			if ((result = EvalAttributes.flatten(ast)) != null) {
 				resultList = result;
-				IExpr expr = evalSetOrderless(ast, attr);
+				IExpr expr = evalSetOrderless(ast, attr, noEvaluation, level);
 				if (expr != null) {
 					return expr;
 				}
 				return resultList;
 			}
 		}
-		return evalSetOrderless(ast, attr);
+		return evalSetOrderless(ast, attr, noEvaluation, level);
 	}
 
-	private IAST evalSetAttributeArg(IAST ast, int i, IAST argI, IAST resultList) {
+	private IAST evalSetAttributeArg(IAST ast, int i, IAST argI, IAST resultList, boolean noEvaluation, int level) {
 		IExpr expr;
-		expr = evalSetAttributesRecursive(argI, true);
+		expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
 		if (expr != null) {
 			if (resultList == null) {
 				resultList = ast.setAtClone(i, expr);
@@ -1074,30 +1091,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return resultList;
 	}
 
-	private IExpr evalSetOrderless(IAST ast, final int attr) {
+	private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvalAttributes.sort(ast);
-			if (ast.isTimes()) {
-				return Times.CONST.evaluate(ast);
-				// if (ast.arg2().isNumber() && ast.arg1().isNumber()) {
-				// IExpr expr = Times.evalTimesNumbers(ast);
-				// if (expr != null) {
-				// return expr;
-				// }
-				// } else if (ast.size() == 3 && ast.arg2().isDirectedInfinity()) {
-				// IExpr expr = Times.eInfinity((IAST) ast.arg2(), ast.arg1());
-				// if (expr != null) {
-				// return expr;
-				// }
-				// }
-				// } else if (ast.isPlus() && ast.arg2().isNumber() && ast.arg1().isNumber()) {
-			} else if (ast.isPlus()) {
-				return Plus.CONST.evaluate(ast);
-				// IExpr expr = Plus.evalPlusNumbers(ast);
-				// if (expr != null) {
-				// return expr;
-				// }
+			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
+				if (ast.isPlus()) {
+					return Plus.CONST.evaluate(ast);
+				}
+				if (ast.isTimes()) {
+					return Times.CONST.evaluate(ast);
+				}
 			}
+		}
+		if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
+			return evaluate(ast);
 		}
 
 		return null;
@@ -1239,17 +1246,61 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public final IExpr evaluate(final IExpr expr) {
 		boolean numericMode = fNumericMode;
-		// StackContext.enter();
 		try {
 			return evalWithoutNumericReset(expr);
-			// if (fTraceMode) {
-			// fTraceList = StackContext.outerCopy(fTraceList);
-			// }
-			// return StackContext.outerCopy(temp);
+
 		} finally {
 			fNumericMode = numericMode;
-			// StackContext.exit();
 		}
+	}
+
+	/**
+	 * <p>
+	 * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation reset the numeric mode to the
+	 * value stored before the evaluation starts. If evaluation is not possible return the input object.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> if this method catches exception <code>org.matheclipse.parser.client.math.MathException</code>, it returns the
+	 * input expression.
+	 * </p>
+	 * 
+	 * @param expr
+	 *            the object which should be evaluated
+	 * @return the evaluated object
+	 */
+	public final IExpr evalPattern(final IExpr expr) {
+		boolean numericMode = fNumericMode;
+		try {
+			if (expr.isFreeOfPatterns()) {
+				return evalWithoutNumericReset(expr);
+			}
+			if (expr.isAST()) {
+				IExpr temp = evalSetAttributes((IAST) expr);
+				if (temp != null) {
+					return temp;
+				}
+			}
+			return expr;
+		} catch (MathException ce) {
+			return expr;
+		} finally {
+			fNumericMode = numericMode;
+		}
+	}
+
+	/**
+	 * <p>
+	 * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation reset the numeric mode to the
+	 * value stored before the evaluation starts. If evaluation is not possible return the input object.
+	 * </p>
+	 * 
+	 * @param expr
+	 *            the object which should be evaluated
+	 * @return an <code>IPatterMatcher</code> cretaed from the given expression.
+	 */
+	public final IPatternMatcher evalPatternMatcher(final IExpr expr) {
+		IExpr temp = evalPattern(expr);
+		return new PatternMatcher(temp);
 	}
 
 	/**

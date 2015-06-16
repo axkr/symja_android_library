@@ -189,6 +189,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Attributes());
 	public final static ISymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array",
 			new org.matheclipse.core.builtin.function.Array());
+	public final static ISymbol ArrayQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ",
+			new org.matheclipse.core.builtin.function.ArrayQ());
 	public final static ISymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ",
 			new org.matheclipse.core.builtin.function.AtomQ());
 	public final static ISymbol Blank = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "blank" : "Blank",
@@ -207,6 +209,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Clear());
 	public final static ISymbol ClearAll = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearall" : "ClearAll",
 			new org.matheclipse.core.builtin.function.ClearAll());
+	public final static ISymbol Collect = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect",
+			new org.matheclipse.core.builtin.function.Collect());
 	public final static ISymbol Complex = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex",
 			new org.matheclipse.core.builtin.function.Complex());
 	public final static ISymbol CompoundExpression = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression"
@@ -215,6 +219,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Condition());
 	public final static ISymbol Continue = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continue" : "Continue",
 			new org.matheclipse.core.builtin.function.Continue());
+	public final static ISymbol Count = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count",
+			new org.matheclipse.core.builtin.function.Count());
 	public final static ISymbol Defer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "defer" : "Defer",
 			new org.matheclipse.core.builtin.function.Defer());
 	public final static ISymbol Definition = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "definition" : "Definition",
@@ -235,6 +241,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Element());
 	public final static ISymbol EvenQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ",
 			new org.matheclipse.core.builtin.function.EvenQ());
+	public final static ISymbol Exponent = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent",
+			new org.matheclipse.core.builtin.function.Exponent());
 	public final static ISymbol First = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First",
 			new org.matheclipse.core.builtin.function.First());
 	public final static ISymbol FixedPoint = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint",
@@ -277,6 +285,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Length());
 	public final static ISymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ",
 			new org.matheclipse.core.builtin.function.ListQ());
+	public final static ISymbol MatchQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ",
+			new org.matheclipse.core.builtin.function.MatchQ());
 	public final static ISymbol MathMLForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm",
 			new org.matheclipse.core.builtin.function.MathMLForm());
 	public final static ISymbol MemberQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
@@ -396,7 +406,6 @@ public class F {
 	public final static ISymbol Coefficient = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficient" : "Coefficient");
 	public final static ISymbol CoefficientList = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficientlist"
 			: "CoefficientList");
-	public final static ISymbol Collect = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect");
 	public final static ISymbol Complement = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complement" : "Complement");
 	public final static ISymbol ComposeList = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composelist" : "ComposeList");
 	public final static ISymbol Conjugate = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugate" : "Conjugate");
@@ -411,7 +420,6 @@ public class F {
 	public final static ISymbol Cosh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosh" : "Cosh");
 	public final static ISymbol Cot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cot" : "Cot");
 	public final static ISymbol Coth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coth" : "Coth");
-	public final static ISymbol Count = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count");
 	public final static ISymbol Cross = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cross" : "Cross");
 	public final static ISymbol Csc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
 	public final static ISymbol Csch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
@@ -447,7 +455,6 @@ public class F {
 	public final static ISymbol Exp = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exp" : "Exp");
 	public final static ISymbol Expand = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expand" : "Expand");
 	public final static ISymbol ExpandAll = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expandall" : "ExpandAll");
-	public final static ISymbol Exponent = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent");
 	public final static ISymbol ExtendedGCD = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "extendedgcd" : "ExtendedGCD");
 	public final static ISymbol Extract = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "extract" : "Extract");
 	public final static ISymbol Factor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factor" : "Factor");
@@ -535,7 +542,6 @@ public class F {
 	public final static ISymbol Map = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "map" : "Map");
 	public final static ISymbol MapAll = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mapall" : "MapAll");
 	public final static ISymbol MapThread = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mapthread" : "MapThread");
-	public final static ISymbol MatchQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
 	public final static ISymbol MatrixPower = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixpower" : "MatrixPower");
 	public final static ISymbol MatrixQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixq" : "MatrixQ");
 	public final static ISymbol Max = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "max" : "Max");
@@ -4336,7 +4342,8 @@ public class F {
 			ArcTanh,
 			Arg,
 			Array,
-			// ArrayDepth, ArrayQ,
+			// ArrayDepth, 
+			ArrayQ,
 			Assumptions,
 			AtomQ,
 			Attributes,
@@ -4425,7 +4432,8 @@ public class F {
 			Erfi,
 			EuclidianDistance,
 			// EulerE,
-			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract, Factor,
+			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, 
+			Exponent, ExtendedGCD, Extract, Factor,
 			Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten, Fibonacci,
 			FindRoot, First, Fit, FixedPoint, Floor, Fold, FoldList, For, FractionalPart, FreeQ, FresnelC, FresnelS,
 			FrobeniusSolve,

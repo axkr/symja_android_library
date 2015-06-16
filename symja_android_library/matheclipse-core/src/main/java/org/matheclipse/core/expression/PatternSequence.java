@@ -337,6 +337,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeOfPatterns() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
 	public final boolean isPatternExpr() {
 		return true;
 	}

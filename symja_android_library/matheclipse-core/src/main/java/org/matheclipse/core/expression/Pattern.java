@@ -26,19 +26,15 @@ import com.google.common.base.Predicate;
  */
 public class Pattern extends ExprImpl implements IPattern {
 
-	private static final long serialVersionUID = 7617138748475243L;
-
-	private static Pattern NULL_PATTERN = new Pattern(null);
-
-	/**
-	 * 
-	 */
-	public static IPattern valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
-		return new Pattern(symbol, check, def);
-		// p.fSymbol = symbol;
-		// p.fCondition = check;
-		// p.fDefault = def;
-		// return p;
+	public static IPattern valueOf(final ISymbol symbol) {
+		if (symbol == null) {
+			return NULL_PATTERN;
+		}
+		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
+		if (value != null) {
+			return value;
+		}
+		return new Pattern(symbol);
 	}
 
 	/**
@@ -53,16 +49,20 @@ public class Pattern extends ExprImpl implements IPattern {
 		// return p;
 	}
 
-	public static IPattern valueOf(final ISymbol symbol) {
-		if (symbol == null) {
-			return NULL_PATTERN;
-		}
-		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
-		if (value != null) {
-			return value;
-		}
-		return new Pattern(symbol);
+	/**
+	 * 
+	 */
+	public static IPattern valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
+		return new Pattern(symbol, check, def);
+		// p.fSymbol = symbol;
+		// p.fCondition = check;
+		// p.fDefault = def;
+		// return p;
 	}
+
+	private static final long serialVersionUID = 7617138748475243L;
+
+	private static Pattern NULL_PATTERN = new Pattern(null);
 
 	/**
 	 * The expression which should check this pattern
@@ -114,6 +114,75 @@ public class Pattern extends ExprImpl implements IPattern {
 		fDefault = def;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public <T> T accept(IVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean accept(IVisitorBoolean visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
+	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 */
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof Pattern) {
+			Pattern pat = ((Pattern) expr);
+			int cp;
+			if (fSymbol == null) {
+				if (pat.fSymbol == null) {
+					cp = -1;
+				} else {
+					cp = 0;
+				}
+			} else if (pat.fSymbol == null) {
+				cp = 1;
+			} else {
+				cp = fSymbol.compareTo(pat.fSymbol);
+			}
+			if (cp != 0) {
+				return cp;
+			}
+			if (fDefault != pat.fDefault) {
+				return fDefault ? 1 : -1;
+			}
+			if (fCondition == null) {
+				if (pat.fCondition != null) {
+					return -1;
+				}
+				return 0;
+			} else {
+				if (pat.fCondition == null) {
+					return 1;
+				} else {
+					return fCondition.compareTo(pat.fCondition);
+				}
+			}
+
+		}
+		return super.compareTo(expr);
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -127,7 +196,17 @@ public class Pattern extends ExprImpl implements IPattern {
 			if (fDefault != pattern.fDefault) {
 				return false;
 			}
-			if (fSymbol.equals(pattern.fSymbol)) {
+			if (fSymbol == null) {
+				if (pattern.fSymbol != null) {
+					return false;
+				}
+			}
+			if (pattern.fSymbol == null) {
+				if (fSymbol != null) {
+					return false;
+				}
+			}
+			if (fSymbol == pattern.fSymbol || fSymbol.equals(pattern.fSymbol)) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
 					return fCondition.equals(pattern.fCondition);
 				}
@@ -135,6 +214,51 @@ public class Pattern extends ExprImpl implements IPattern {
 			}
 		}
 		return false;
+	}
+
+	public String fullFormString() {
+		StringBuffer buf = new StringBuffer();
+		if (fSymbol == null) {
+			buf.append("Blank");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
+			if (fCondition != null) {
+				buf.append(fCondition.fullFormString());
+			}
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append(')');
+			} else {
+				buf.append(']');
+			}
+		} else {
+			buf.append("Pattern");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
+			buf.append(fSymbol.toString());
+			buf.append(", ");
+			buf.append("Blank");
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append('(');
+			} else {
+				buf.append('[');
+			}
+			if (fCondition != null) {
+				buf.append(fCondition.fullFormString());
+			}
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				buf.append("))");
+			} else {
+				buf.append("]]");
+			}
+		}
+
+		return buf.toString();
 	}
 
 	public IExpr getCondition() {
@@ -161,6 +285,10 @@ public class Pattern extends ExprImpl implements IPattern {
 	@Override
 	public int hashCode() {
 		return (fSymbol == null) ? 199 : 19 + fSymbol.hashCode();
+	}
+
+	public ISymbol head() {
+		return F.PatternHead;
 	}
 
 	/*
@@ -244,129 +372,19 @@ public class Pattern extends ExprImpl implements IPattern {
 		return buffer.toString();
 	}
 
-	@Override
-	public String toString() {
-		final StringBuffer buffer = new StringBuffer();
-		if (fSymbol == null) {
-			buffer.append('_');
-			if (fDefault) {
-				buffer.append('.');
-			}
-			if (fCondition != null) {
-				buffer.append(fCondition.toString());
-			}
-		} else {
-			if (fCondition == null) {
-				buffer.append(fSymbol.toString());
-				buffer.append('_');
-				if (fDefault) {
-					buffer.append('.');
-				}
-			} else {
-				buffer.append(fSymbol.toString());
-				buffer.append('_');
-				if (fDefault) {
-					buffer.append('.');
-				}
-				buffer.append(fCondition.toString());
-			}
-		}
-		return buffer.toString();
-	}
-
-	public String fullFormString() {
-		StringBuffer buf = new StringBuffer();
-		if (fSymbol == null) {
-			buf.append("Blank");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			if (fCondition != null) {
-				buf.append(fCondition.fullFormString());
-			}
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append(')');
-			} else {
-				buf.append(']');
-			}
-		} else {
-			buf.append("Pattern");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			buf.append(fSymbol.toString());
-			buf.append(", ");
-			buf.append("Blank");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			if (fCondition != null) {
-				buf.append(fCondition.fullFormString());
-			}
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append("))");
-			} else {
-				buf.append("]]");
-			}
-		}
-
-		return buf.toString();
+	public boolean isBlank() {
+		return (fSymbol == null);
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Groovy operator overloading
 	 */
-	public int compareTo(final IExpr expr) {
-		if (expr instanceof Pattern) {
-			Pattern pat = ((Pattern) expr);
-			int cp;
-			if (fSymbol == null) {
-				if (pat.fSymbol == null) {
-					cp = -1;
-				} else {
-					cp = 0;
-				}
-			} else if (pat.fSymbol == null) {
-				cp = 1;
-			} else {
-				cp = fSymbol.compareTo(pat.fSymbol);
-			}
-			if (cp != 0) {
-				return cp;
-			}
-			if (fDefault != pat.fDefault) {
-				return fDefault ? 1 : -1;
-			}
-			if (fCondition == null) {
-				if (pat.fCondition != null) {
-					return -1;
-				}
-				return 0;
-			} else {
-				if (pat.fCondition == null) {
-					return 1;
-				} else {
-					return fCondition.compareTo(pat.fCondition);
-				}
-			}
-
+	public boolean isCase(IExpr that) {
+		final IPatternMatcher matcher = new PatternMatcher(this);
+		if (matcher.apply(that)) {
+			return true;
 		}
-		return super.compareTo(expr);
-	}
-
-	public ISymbol head() {
-		return F.PatternHead;
-	}
-
-	public boolean isBlank() {
-		return (fSymbol == null);
+		return false;
 	}
 
 	public boolean isConditionMatched(final IExpr expr) {
@@ -390,36 +408,15 @@ public class Pattern extends ExprImpl implements IPattern {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
+	public boolean isFreeOfPatterns(){
+		return false;
 	}
 
 	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
+	final public boolean isPattern() {
+		return true;
 	}
 
 	/**
@@ -432,24 +429,43 @@ public class Pattern extends ExprImpl implements IPattern {
 	}
 
 	/** {@inheritDoc} */
-	final public boolean isPattern() {
-		return true;
-	}
-
-	/** {@inheritDoc} */
 	public final boolean isPatternExpr() {
 		return true;
 	}
 
-	/**
-	 * Groovy operator overloading
-	 */
-	public boolean isCase(IExpr that) {
-		final IPatternMatcher matcher = new PatternMatcher(this);
-		if (matcher.apply(that)) {
-			return true;
+	@Override
+		public String toString() {
+			final StringBuffer buffer = new StringBuffer();
+			if (fSymbol == null) {
+				buffer.append('_');
+				if (fDefault) {
+					buffer.append('.');
+				}
+				if (fCondition != null) {
+					buffer.append(fCondition.toString());
+				}
+			} else {
+				if (fCondition == null) {
+					buffer.append(fSymbol.toString());
+					buffer.append('_');
+					if (fDefault) {
+						buffer.append('.');
+					}
+				} else {
+					buffer.append(fSymbol.toString());
+					buffer.append('_');
+					if (fDefault) {
+						buffer.append('.');
+					}
+					buffer.append(fCondition.toString());
+				}
+			}
+			return buffer.toString();
 		}
-		return false;
+		
+	@Override
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
+		return null;
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

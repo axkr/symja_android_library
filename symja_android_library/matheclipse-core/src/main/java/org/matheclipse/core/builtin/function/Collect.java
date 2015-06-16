@@ -1,9 +1,10 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -25,15 +26,15 @@ public class Collect extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		try {
-			if (!ast.get(2).isList()) {
-				IExpr arg1 = F.evalExpandAll(ast.arg1());
-				IExpr arg2 = ast.arg2();
+			final EvalEngine engine = EvalEngine.get();
+			final IExpr arg1 = F.evalExpandAll(ast.arg1());
+			final IExpr arg2 = engine.evalPattern(ast.arg2());
+			if (!arg2.isList()) {
 				return collectSingleVariable(arg1, arg2, F.List(), 1);
 			}
-			IExpr arg1 = F.evalExpandAll(ast.arg1());
-			IAST list = (IAST) ast.get(2);
+			IAST list = (IAST) arg2;
 			if (list.size() > 1) {
-				return collectSingleVariable(arg1, list.arg1(), (IAST) ast.arg2(), 2);
+				return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2);
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {

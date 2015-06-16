@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -15,8 +16,9 @@ public class FreeQ extends AbstractCoreFunctionEvaluator {
 
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
-		IExpr arg1 = F.eval(ast.arg1());
-		IExpr arg2 = F.eval(ast.arg2());
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr arg1 = engine.evaluate(ast.arg1());
+		final IExpr arg2 = engine.evalPattern(ast.arg2());
 		final IPatternMatcher matcher = new PatternMatcher(arg2);
 		if (matcher.isRuleWithoutPatterns()) {
 			// special for FreeQ(), don't implemented in MemberQ()!

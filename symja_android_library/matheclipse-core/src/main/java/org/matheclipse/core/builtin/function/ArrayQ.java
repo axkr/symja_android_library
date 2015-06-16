@@ -1,5 +1,6 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -7,6 +8,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 import com.google.common.base.Predicate;
@@ -22,15 +24,18 @@ public class ArrayQ implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 4);
 
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr arg1 = engine.evaluate(ast.arg1());
 		Predicate<IExpr> pred = null;
 		if ((ast.size() >= 4)) {
-			pred = Predicates.isTrue(ast.arg3());
+			final IExpr arg3 = engine.evaluate(ast.arg3());
+			pred = Predicates.isTrue(arg3);
 		}
-		int depth = determineDepth(ast.arg1(), 0, pred);
+		int depth = determineDepth(arg1, 0, pred);
 		if (depth >= 0) {
 			if ((ast.size() >= 3)) {
 				// Match the depth with the second argumnt
-				final PatternMatcher matcher = new PatternMatcher(ast.arg2());
+				final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
 				if (!matcher.apply(F.integer(depth))) {
 					return F.False;
 				}

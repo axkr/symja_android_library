@@ -1,5 +1,6 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -23,41 +24,37 @@ import com.google.common.base.Function;
  * 
  */
 public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
-	private final Function<IExpr, IExpr> fFunction;
+	protected final Function<IExpr, IExpr> fFunction;
 
-	private int fFromLevel;
+	protected int fFromLevel;
 
-	private int fToLevel;
+	protected int fToLevel;
 
-	private int fFromDepth;
+	protected int fFromDepth;
 
-	private int fToDepth;
+	protected int fToDepth;
 
-	private final boolean fIncludeHeads;
+	protected final boolean fIncludeHeads;
 
-	private int fCurrentLevel;
+	protected int fCurrentLevel;
 
-	private int fCurrentDepth;
+	protected int fCurrentDepth;
 
 	/**
 	 * Create a LevelSpecification from an IInteger or IAST list-object.<br>
 	 * <br>
 	 * 
-	 * An <code>expr</code> is interpreted as a <i>level specification</i> for
-	 * the allowed levels in an AST.<br>
-	 * If <code>expr</code> is a non-negative IInteger iValue set Level
-	 * {1,iValue};<br>
+	 * An <code>expr</code> is interpreted as a <i>level specification</i> for the allowed levels in an AST.<br>
+	 * If <code>expr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
 	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0};<br>
-	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value,
-	 * i1Value};<br>
+	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value, i1Value};<br>
 	 * 
 	 * @param function
 	 *            the function which should be applied for an element
 	 * @param expr
 	 *            the given <i>level specification</i>
 	 * @param includeHeads
-	 *            set to <code>true</code>, if the header of an AST expression
-	 *            should be included
+	 *            set to <code>true</code>, if the header of an AST expression should be included
 	 * @throws MathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 * @see
@@ -73,11 +70,11 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 
 			if (value.isNegative()) {
 				fFromDepth = Integer.MIN_VALUE;
-				fToDepth = value.getBigNumerator().intValue();
+				fToDepth = Validate.checkIntType(value, Integer.MIN_VALUE);// value.getBigNumerator().intValue();
 				fFromLevel = 1;
 				fToLevel = Integer.MAX_VALUE;
 			} else {
-				fToLevel = value.getBigNumerator().intValue();
+				fToLevel = Validate.checkIntType(value, Integer.MIN_VALUE);// value.getBigNumerator().intValue();
 				fFromLevel = 1;
 				fFromDepth = Integer.MIN_VALUE;
 				fToDepth = -1;
@@ -92,16 +89,16 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 					final IInteger i = (IInteger) lst.arg1();
 
 					if (i.isNegative()) {
-						fFromDepth = i.getBigNumerator().intValue();
-						fToDepth = i.getBigNumerator().intValue();
+						fFromDepth = Validate.checkIntType(i, Integer.MIN_VALUE);// i.getBigNumerator().intValue();
+						fToDepth = Validate.checkIntType(i, Integer.MIN_VALUE);// i.getBigNumerator().intValue();
 						fFromLevel = 0;
 						fToLevel = Integer.MAX_VALUE;
 						if (fToDepth < fFromDepth) {
 							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						}
 					} else {
-						fToLevel = i.getBigNumerator().intValue();
-						fFromLevel = i.getBigNumerator().intValue();
+						fToLevel = Validate.checkIntType(i, Integer.MIN_VALUE);// i.getBigNumerator().intValue();
+						fFromLevel = Validate.checkIntType(i, Integer.MIN_VALUE); // i.getBigNumerator().intValue();
 						fFromDepth = Integer.MIN_VALUE;
 						fToDepth = -1;
 						if (fToLevel < fFromLevel) {
@@ -116,22 +113,22 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 						final IInteger i0 = (IInteger) lst.arg1();
 						final IInteger i1 = (IInteger) lst.arg2();
 						if (i0.isNegative() && i1.isNegative()) {
-							fFromDepth = i0.getBigNumerator().intValue();
-							fToDepth = i1.getBigNumerator().intValue();
+							fFromDepth = Validate.checkIntType(i0, Integer.MIN_VALUE);// i0.getBigNumerator().intValue();
+							fToDepth = Validate.checkIntType(i1, Integer.MIN_VALUE); // i1.getBigNumerator().intValue();
 							fFromLevel = 0;
 							fToLevel = Integer.MAX_VALUE;
 						} else if (i0.isNegative()) {
 							throw new MathException("Invalid Level specification: " + levelExpr.toString());
 						} else if (i1.isNegative()) {
 							fFromDepth = Integer.MIN_VALUE;
-							fToDepth = i1.getBigNumerator().intValue();
-							fFromLevel = i0.getBigNumerator().intValue();
+							fToDepth = Validate.checkIntType(i1, Integer.MIN_VALUE);// i1.getBigNumerator().intValue();
+							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);// i0.getBigNumerator().intValue();
 							fToLevel = Integer.MAX_VALUE;
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = i0.getBigNumerator().intValue();
-							fToLevel = i1.getBigNumerator().intValue();
+							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);// i0.getBigNumerator().intValue();
+							fToLevel = Validate.checkIntType(i1, Integer.MIN_VALUE);// i1.getBigNumerator().intValue();
 						}
 						return;
 					} else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
@@ -141,7 +138,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 						} else {
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = -1;
-							fFromLevel = i0.getBigNumerator().intValue();
+							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);// i0.getBigNumerator().intValue();
 							fToLevel = Integer.MAX_VALUE;
 						}
 						return;
@@ -159,25 +156,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		throw new MathException("Invalid Level specification: " + levelExpr.toString());
 	}
 
-	// public AbstractVisitorLevel(final Function<IExpr, IExpr> function,
-	// LevelSpec spec) {
-	// super();
-	// this.fFunction = function;
-	// this.fFromLevel = spec.getFromLevel();
-	// this.fToLevel = spec.getToLevel();
-	// this.fFromDepth = spec.getFromDepth();
-	// this.fToDepth = spec.getToDepth();
-	// this.fIncludeHeads = spec.isIncludeHeads();
-	// this.fCurrentLevel = 0;
-	// // System.out.println(this.fromLevel);
-	// // System.out.println(this.toLevel);
-	// // System.out.println(this.fromDepth);
-	// // System.out.println(this.toDepth);
-	// }
-
 	/**
-	 * Define a level specification for all elements on level <code>level</code>
-	 * .
+	 * Define a level specification for all elements on level <code>level</code> .
 	 * 
 	 * @param level
 	 */

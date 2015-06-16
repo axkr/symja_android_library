@@ -1,8 +1,9 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -24,13 +25,17 @@ public class Exponent extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr form = ast.arg2();
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr form = engine.evalPattern(ast.arg2());
 		if (form.isList()) {
 			return ((IAST) form).mapAt(ast, 2);
 		}
 		ISymbol sym = F.Max;
 		if (ast.size() == 4) {
-			sym = Validate.checkSymbolType(ast, 3);
+			final IExpr arg3 = engine.evaluate(ast.arg3());
+			if (arg3.isSymbol()) {
+				sym = (ISymbol) arg3;
+			}
 		}
 		Set<IExpr> collector = new TreeSet<IExpr>();
 

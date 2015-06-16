@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -29,9 +30,10 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr arg1 = F.eval(ast.arg1());
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
-			IExpr arg2 = F.eval(ast.arg2());
+			final IExpr arg2 = engine.evalPattern(ast.arg2());
 			if (ast.size() == 3) {
 				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
 				return position((IAST) arg1, arg2, level);
@@ -50,7 +52,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 					}
 					return null;
 				}
-				IExpr arg3 = F.eval(ast.arg3());
+				final IExpr arg3 = engine.evaluate(ast.arg3());
 				final LevelSpec level = new LevelSpecification(arg3, true);
 				return position((IAST) arg1, arg2, level);
 			}

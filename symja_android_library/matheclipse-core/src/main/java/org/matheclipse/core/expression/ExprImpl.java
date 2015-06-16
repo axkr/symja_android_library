@@ -458,6 +458,12 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isFreeOfPatterns(){
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isFunction() {
 		return false;
 	}

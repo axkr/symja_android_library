@@ -1,5 +1,6 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -28,8 +29,8 @@ public class Count implements IFunctionEvaluator {
 			return counter;
 		}
 
-		public CountFunctor(final IExpr pattern) {
-			this.matcher = new PatternMatcher(pattern);
+		public CountFunctor(final IPatternMatcher patternMatcher) {
+			this.matcher = patternMatcher; //new PatternMatcher(pattern);
 			counter = 0;
 		}
 
@@ -49,14 +50,18 @@ public class Count implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
+		final EvalEngine engine = EvalEngine.get();
+		final IExpr arg1 = engine.evaluate(ast.arg1());
+		
 		final VisitorLevelSpecification level;
-		CountFunctor mf = new CountFunctor(ast.arg2());
+		CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
 		if (ast.size() == 4) {
-			level = new VisitorLevelSpecification(mf, ast.arg3(), false);
+			final IExpr arg3 = engine.evaluate(ast.arg3());
+			level = new VisitorLevelSpecification(mf, arg3, false);
 		} else {
 			level = new VisitorLevelSpecification(mf, 1);
 		}
-		ast.arg1().accept(level);
+		arg1.accept(level);
 		return F.integer(mf.getCounter());
 	}
 
@@ -65,7 +70,6 @@ public class Count implements IFunctionEvaluator {
 	}
 
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDREST);
 	}
 
 }
