@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 

@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
@@ -130,9 +129,9 @@ ISetDelayed(Int(Times(Power(Plus(a_DEFAULT,Times(b_DEFAULT,ArcCot(Times(c_DEFAUL
     Condition(Times(CN1,Power(d,p),Power(c,-1),Subst(Int(Times(Power(Plus(a,Times(b,x)),n),Power(Power(Sin(x),Times(C2,Plus(p,C1))),-1)),x),x,ArcCot(Times(c,x)))),And(And(And(FreeQ(List(a,b,c,d,e,n),x),ZeroQ(Plus(e,Times(CN1,Sqr(c),d)))),NegativeIntegerQ(Times(C2,Plus(p,C1)))),IntegerQ(p)))),
 ISetDelayed(Int(Times(Power(Plus(a_DEFAULT,Times(b_DEFAULT,ArcCot(Times(c_DEFAULT,x_)))),n_DEFAULT),Power(Plus(d_,Times(e_DEFAULT,Sqr(x_))),p_)),x_Symbol),
     Condition(Times(CN1,Power(d,Plus(p,C1D2)),x,Sqrt(Times(Plus(C1,Times(Sqr(c),Sqr(x))),Power(Times(Sqr(c),Sqr(x)),-1))),Power(Plus(d,Times(e,Sqr(x))),CN1D2),Subst(Int(Times(Power(Plus(a,Times(b,x)),n),Power(Power(Sin(x),Times(C2,Plus(p,C1))),-1)),x),x,ArcCot(Times(c,x)))),And(And(And(FreeQ(List(a,b,c,d,e,n),x),ZeroQ(Plus(e,Times(CN1,Sqr(c),d)))),NegativeIntegerQ(Times(C2,Plus(p,C1)))),Not(IntegerQ(p))))),
-ISetDelayed(Int(Times(ArcTan(Times(c_DEFAULT,x_)),Power(Plus(d_DEFAULT,Times(e_DEFAULT,Sqr(x_))),-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(Plus(d_DEFAULT,Times(e_DEFAULT,Sqr(x_))),-1),ArcTan(Times(c_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Times(C1D2,CI,Int(Times(Log(Plus(C1,Times(CN1,CI,c,x))),Power(Plus(d,Times(e,Sqr(x))),-1)),x)),Times(CN1,C1D2,CI,Int(Times(Log(Plus(C1,Times(CI,c,x))),Power(Plus(d,Times(e,Sqr(x))),-1)),x))),FreeQ(List(c,d,e),x))),
-ISetDelayed(Int(Times(ArcCot(Times(c_DEFAULT,x_)),Power(Plus(d_DEFAULT,Times(e_DEFAULT,Sqr(x_))),-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(Plus(d_DEFAULT,Times(e_DEFAULT,Sqr(x_))),-1),ArcCot(Times(c_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Times(C1D2,CI,Int(Times(Log(Plus(C1,Times(CN1,CI,Power(Times(c,x),-1)))),Power(Plus(d,Times(e,Sqr(x))),-1)),x)),Times(CN1,C1D2,CI,Int(Times(Log(Plus(C1,Times(CI,Power(Times(c,x),-1)))),Power(Plus(d,Times(e,Sqr(x))),-1)),x))),FreeQ(List(c,d,e),x)))
   );
 }

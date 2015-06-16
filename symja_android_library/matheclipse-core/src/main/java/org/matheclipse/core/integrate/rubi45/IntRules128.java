@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
@@ -20,17 +19,17 @@ ISetDelayed(Int(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Times(Plus(a,Times(b,x)),Erfc(Plus(a,Times(b,x))),Power(b,-1)),Negate(Power(Times(b,Sqrt(Pi),Power(E,Sqr(Plus(a,Times(b,x))))),-1))),FreeQ(List(a,b),x))),
 ISetDelayed(Int(Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Times(Plus(a,Times(b,x)),Erfi(Plus(a,Times(b,x))),Power(b,-1)),Times(CN1,Power(E,Sqr(Plus(a,Times(b,x)))),Power(Times(b,Sqrt(Pi)),-1))),FreeQ(List(a,b),x))),
-ISetDelayed(Int(Times(Erf(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,-1),Erf(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Times(C2,b,x,Power(Pi,CN1D2),HypergeometricPFQ(List(C1D2,C1D2),List(QQ(3L,2L),QQ(3L,2L)),Times(CN1,Sqr(b),Sqr(x)))),FreeQ(b,x))),
-ISetDelayed(Int(Times(Erfc(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,-1),Erfc(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Log(x),Negate(Int(Times(Erf(Times(b,x)),Power(x,-1)),x))),FreeQ(b,x))),
-ISetDelayed(Int(Times(Erfi(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,-1),Erfi(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Times(C2,b,x,Power(Pi,CN1D2),HypergeometricPFQ(List(C1D2,C1D2),List(QQ(3L,2L),QQ(3L,2L)),Times(Sqr(b),Sqr(x)))),FreeQ(b,x))),
-ISetDelayed(Int(Times(Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Power(x_,m_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(x,Plus(m,C1)),Erf(Plus(a,Times(b,x))),Power(Plus(m,C1),-1)),Times(CN1,C2,b,Power(Times(Sqrt(Pi),Plus(m,C1)),-1),Int(Times(Power(x,Plus(m,C1)),Power(Power(E,Sqr(Plus(a,Times(b,x)))),-1)),x))),And(FreeQ(List(a,b,m),x),NonzeroQ(Plus(m,C1))))),
-ISetDelayed(Int(Times(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Power(x_,m_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(x,Plus(m,C1)),Erfc(Plus(a,Times(b,x))),Power(Plus(m,C1),-1)),Times(C2,b,Power(Times(Sqrt(Pi),Plus(m,C1)),-1),Int(Times(Power(x,Plus(m,C1)),Power(Power(E,Sqr(Plus(a,Times(b,x)))),-1)),x))),And(FreeQ(List(a,b,m),x),NonzeroQ(Plus(m,C1))))),
-ISetDelayed(Int(Times(Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Power(x_,m_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(x,Plus(m,C1)),Erfi(Plus(a,Times(b,x))),Power(Plus(m,C1),-1)),Times(CN1,C2,b,Power(Times(Sqrt(Pi),Plus(m,C1)),-1),Int(Times(Power(x,Plus(m,C1)),Power(E,Sqr(Plus(a,Times(b,x))))),x))),And(FreeQ(List(a,b,m),x),NonzeroQ(Plus(m,C1))))),
 ISetDelayed(Int(Times(x_,Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(E,Plus(c,Times(d,Sqr(x)))),Erf(Plus(a,Times(b,x))),Power(Times(C2,d),-1)),Times(CN1,b,Power(Times(d,Sqrt(Pi)),-1),Int(Power(E,Plus(Negate(Sqr(a)),c,Times(CN1,C2,a,b,x),Times(CN1,Plus(Sqr(b),Negate(d)),Sqr(x)))),x))),FreeQ(List(a,b,c,d),x))),
@@ -44,11 +43,11 @@ ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_
     Condition(Plus(Times(Power(x,Plus(m,Negate(C1))),Power(E,Plus(c,Times(d,Sqr(x)))),Erfc(Plus(a,Times(b,x))),Power(Times(C2,d),-1)),Times(b,Power(Times(d,Sqrt(Pi)),-1),Int(Times(Power(x,Plus(m,Negate(C1))),Power(E,Plus(Negate(Sqr(a)),c,Times(CN1,C2,a,b,x),Times(CN1,Plus(Sqr(b),Negate(d)),Sqr(x))))),x)),Times(CN1,Plus(m,Negate(C1)),Power(Times(C2,d),-1),Int(Times(Power(x,Plus(m,Negate(C2))),Power(E,Plus(c,Times(d,Sqr(x)))),Erfc(Plus(a,Times(b,x)))),x))),And(And(FreeQ(List(a,b,c,d),x),IntegerQ(m)),Greater(m,C1)))),
 ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_,m_),Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(x,Plus(m,Negate(C1))),Power(E,Plus(c,Times(d,Sqr(x)))),Erfi(Plus(a,Times(b,x))),Power(Times(C2,d),-1)),Times(CN1,b,Power(Times(d,Sqrt(Pi)),-1),Int(Times(Power(x,Plus(m,Negate(C1))),Power(E,Plus(Sqr(a),c,Times(C2,a,b,x),Times(Plus(Sqr(b),d),Sqr(x))))),x)),Times(CN1,Plus(m,Negate(C1)),Power(Times(C2,d),-1),Int(Times(Power(x,Plus(m,Negate(C2))),Power(E,Plus(c,Times(d,Sqr(x)))),Erfi(Plus(a,Times(b,x)))),x))),And(And(FreeQ(List(a,b,c,d),x),IntegerQ(m)),Greater(m,C1)))),
-ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Erf(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_,-1),Erf(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Times(C2,b,Power(E,c),x,Power(Pi,CN1D2),HypergeometricPFQ(List(C1D2,C1),List(QQ(3L,2L),QQ(3L,2L)),Times(d,Sqr(x)))),And(FreeQ(b,x),ZeroQ(Plus(d,Negate(Sqr(b))))))),
-ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Erfc(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_,-1),Erfc(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Plus(Int(Times(Power(E,Plus(c,Times(d,Sqr(x)))),Power(x,-1)),x),Negate(Int(Times(Power(E,Plus(c,Times(d,Sqr(x)))),Erf(Times(b,x)),Power(x,-1)),x))),And(FreeQ(b,x),ZeroQ(Plus(d,Negate(Sqr(b))))))),
-ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Erfi(Times(b_DEFAULT,x_)),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_,-1),Erfi(Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Times(C2,b,Power(E,c),x,Power(Pi,CN1D2),HypergeometricPFQ(List(C1D2,C1),List(QQ(3L,2L),QQ(3L,2L)),Times(d,Sqr(x)))),And(FreeQ(b,x),ZeroQ(Plus(d,Sqr(b)))))),
 ISetDelayed(Int(Times(Power(E,Plus(c_DEFAULT,Times(d_DEFAULT,Sqr(x_)))),Power(x_,m_),Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(Power(x,Plus(m,C1)),Power(E,Plus(c,Times(d,Sqr(x)))),Erf(Plus(a,Times(b,x))),Power(Plus(m,C1),-1)),Times(CN1,C2,b,Power(Times(Plus(m,C1),Sqrt(Pi)),-1),Int(Times(Power(x,Plus(m,C1)),Power(E,Plus(Negate(Sqr(a)),c,Times(CN1,C2,a,b,x),Times(CN1,Plus(Sqr(b),Negate(d)),Sqr(x))))),x)),Times(CN1,C2,d,Power(Plus(m,C1),-1),Int(Times(Power(x,Plus(m,C2)),Power(E,Plus(c,Times(d,Sqr(x)))),Erf(Plus(a,Times(b,x)))),x))),And(And(FreeQ(List(a,b,c,d),x),IntegerQ(m)),Less(m,CN1)))),

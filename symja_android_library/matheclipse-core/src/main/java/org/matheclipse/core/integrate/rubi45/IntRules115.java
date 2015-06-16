@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
@@ -90,13 +89,13 @@ ISetDelayed(Int(Power(ArcSec(Plus(a_,Times(b_DEFAULT,x_))),n_),x_Symbol),
     Condition(Times(Power(b,-1),Subst(Int(Times(Power(x,n),Sec(x),Tan(x)),x),x,ArcSec(Plus(a,Times(b,x))))),FreeQ(List(a,b,n),x))),
 ISetDelayed(Int(Power(ArcCsc(Plus(a_,Times(b_DEFAULT,x_))),n_),x_Symbol),
     Condition(Times(CN1,Power(b,-1),Subst(Int(Times(Power(x,n),Csc(x),Cot(x)),x),x,ArcCsc(Plus(a,Times(b,x))))),FreeQ(List(a,b,n),x))),
-ISetDelayed(Int(Times(ArcSec(Plus(a_,Times(b_DEFAULT,x_))),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,-1),ArcSec(Plus(a_,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(ArcSec(Plus(a,Times(b,x))),Log(Plus(C1,Times(CN1,Plus(C1,Negate(Sqrt(Plus(C1,Negate(Sqr(a)))))),Power(E,Times(CI,ArcSec(Plus(a,Times(b,x))))),Power(a,-1))))),Times(ArcSec(Plus(a,Times(b,x))),Log(Plus(C1,Times(CN1,Plus(C1,Sqrt(Plus(C1,Negate(Sqr(a))))),Power(E,Times(CI,ArcSec(Plus(a,Times(b,x))))),Power(a,-1))))),Times(CN1,ArcSec(Plus(a,Times(b,x))),Log(Plus(C1,Power(E,Times(C2,CI,ArcSec(Plus(a,Times(b,x)))))))),Times(CN1,CI,PolyLog(C2,Times(Plus(C1,Negate(Sqrt(Plus(C1,Negate(Sqr(a)))))),Power(E,Times(CI,ArcSec(Plus(a,Times(b,x))))),Power(a,-1)))),Times(CN1,CI,PolyLog(C2,Times(Plus(C1,Sqrt(Plus(C1,Negate(Sqr(a))))),Power(E,Times(CI,ArcSec(Plus(a,Times(b,x))))),Power(a,-1)))),Times(C1D2,CI,PolyLog(C2,Negate(Power(E,Times(C2,CI,ArcSec(Plus(a,Times(b,x))))))))),FreeQ(List(a,b),x))),
-ISetDelayed(Int(Times(ArcCsc(Plus(a_,Times(b_DEFAULT,x_))),Power(x_,-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,-1),ArcCsc(Plus(a_,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(CI,Sqr(ArcCsc(Plus(a,Times(b,x))))),Times(ArcCsc(Plus(a,Times(b,x))),Log(Plus(C1,Times(CN1,CI,Plus(C1,Negate(Sqrt(Plus(C1,Negate(Sqr(a)))))),Power(Times(Power(E,Times(CI,ArcCsc(Plus(a,Times(b,x))))),a),-1))))),Times(ArcCsc(Plus(a,Times(b,x))),Log(Plus(C1,Times(CN1,CI,Plus(C1,Sqrt(Plus(C1,Negate(Sqr(a))))),Power(Times(Power(E,Times(CI,ArcCsc(Plus(a,Times(b,x))))),a),-1))))),Times(CN1,ArcCsc(Plus(a,Times(b,x))),Log(Plus(C1,Negate(Power(E,Times(C2,CI,ArcCsc(Plus(a,Times(b,x))))))))),Times(CI,PolyLog(C2,Times(CI,Plus(C1,Negate(Sqrt(Plus(C1,Negate(Sqr(a)))))),Power(Times(Power(E,Times(CI,ArcCsc(Plus(a,Times(b,x))))),a),-1)))),Times(CI,PolyLog(C2,Times(CI,Plus(C1,Sqrt(Plus(C1,Negate(Sqr(a))))),Power(Times(Power(E,Times(CI,ArcCsc(Plus(a,Times(b,x))))),a),-1)))),Times(C1D2,CI,PolyLog(C2,Power(E,Times(C2,CI,ArcCsc(Plus(a,Times(b,x)))))))),FreeQ(List(a,b),x))),
-ISetDelayed(Int(Times(ArcSec(Plus(a_,Times(b_DEFAULT,x_))),Power(x_,m_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,m_DEFAULT),ArcSec(Plus(a_,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(CN1,Plus(Power(Negate(a),Plus(m,C1)),Times(CN1,Power(b,Plus(m,C1)),Power(x,Plus(m,C1)))),ArcSec(Plus(a,Times(b,x))),Power(Times(Power(b,Plus(m,C1)),Plus(m,C1)),-1)),Times(CN1,Power(Times(Power(b,Plus(m,C1)),Plus(m,C1)),-1),Subst(Int(Times(Plus(Power(Times(CN1,a,x),Plus(m,C1)),Negate(Power(Plus(C1,Times(CN1,a,x)),Plus(m,C1)))),Power(Times(Power(x,Plus(m,C1)),Sqrt(Plus(C1,Negate(Sqr(x))))),-1)),x),x,Power(Plus(a,Times(b,x)),-1)))),And(And(FreeQ(List(a,b,m),x),IntegerQ(m)),NonzeroQ(Plus(m,C1))))),
-ISetDelayed(Int(Times(ArcCsc(Plus(a_,Times(b_DEFAULT,x_))),Power(x_,m_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(x_,m_DEFAULT),ArcCsc(Plus(a_,Times(b_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(CN1,Plus(Power(Negate(a),Plus(m,C1)),Times(CN1,Power(b,Plus(m,C1)),Power(x,Plus(m,C1)))),ArcCsc(Plus(a,Times(b,x))),Power(Times(Power(b,Plus(m,C1)),Plus(m,C1)),-1)),Times(Power(Times(Power(b,Plus(m,C1)),Plus(m,C1)),-1),Subst(Int(Times(Plus(Power(Times(CN1,a,x),Plus(m,C1)),Negate(Power(Plus(C1,Times(CN1,a,x)),Plus(m,C1)))),Power(Times(Power(x,Plus(m,C1)),Sqrt(Plus(C1,Negate(Sqr(x))))),-1)),x),x,Power(Plus(a,Times(b,x)),-1)))),And(And(FreeQ(List(a,b,m),x),IntegerQ(m)),NonzeroQ(Plus(m,C1))))),
 ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(ArcSec(Plus(a_,Times(b_DEFAULT,x_))),n_)),x_Symbol),
     Condition(Times(Power(Power(b,Plus(m,C1)),-1),Subst(Int(Times(Power(x,n),Power(Plus(Negate(a),Sec(x)),m),Sec(x),Tan(x)),x),x,ArcSec(Plus(a,Times(b,x))))),And(FreeQ(List(a,b,n),x),PositiveIntegerQ(m)))),

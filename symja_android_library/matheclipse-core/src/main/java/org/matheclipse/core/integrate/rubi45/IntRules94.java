@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
@@ -16,7 +15,7 @@ public class IntRules94 {
   public static IAST RULES = List( 
 ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Sin(Plus(d_DEFAULT,Times(e_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(b,c,Log(FSymbol),Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Sin(Plus(d,Times(e,x))),Power(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1)),Times(CN1,e,Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Cos(Plus(d,Times(e,x))),Power(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1))),And(FreeQ(List(FSymbol,a,b,c,d,e),x),NonzeroQ(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))))))),
-ISetDelayed(Int(Times(Cos(Plus(d_DEFAULT,Times(e_DEFAULT,x_))),Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_))))),x_Symbol),
+ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Cos(Plus(d_DEFAULT,Times(e_DEFAULT,x_)))),x_Symbol),
     Condition(Plus(Times(b,c,Log(FSymbol),Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Cos(Plus(d,Times(e,x))),Power(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1)),Times(e,Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Sin(Plus(d,Times(e,x))),Power(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1))),And(FreeQ(List(FSymbol,a,b,c,d,e),x),NonzeroQ(Plus(Sqr(e),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))))))),
 ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(Sin(Plus(d_DEFAULT,Times(e_DEFAULT,x_))),n_)),x_Symbol),
     Condition(Plus(Times(b,c,Log(FSymbol),Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Sin(Plus(d,Times(e,x))),n),Power(Plus(Times(Sqr(e),Sqr(n)),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1)),Times(CN1,e,n,Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Cos(Plus(d,Times(e,x))),Power(Sin(Plus(d,Times(e,x))),Plus(n,Negate(C1))),Power(Plus(Times(Sqr(e),Sqr(n)),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1)),Times(n,Plus(n,Negate(C1)),Sqr(e),Power(Plus(Times(Sqr(e),Sqr(n)),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))),-1),Int(Times(Power(FSymbol,Times(c,Plus(a,Times(b,x)))),Power(Sin(Plus(d,Times(e,x))),Plus(n,Negate(C2)))),x))),And(And(And(FreeQ(List(FSymbol,a,b,c,d,e),x),NonzeroQ(Plus(Times(Sqr(e),Sqr(n)),Times(Sqr(b),Sqr(c),Sqr(Log(FSymbol)))))),RationalQ(n)),Greater(n,C1)))),

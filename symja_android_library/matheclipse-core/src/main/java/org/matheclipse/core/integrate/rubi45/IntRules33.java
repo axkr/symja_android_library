@@ -4,7 +4,6 @@ package org.matheclipse.core.integrate.rubi45;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctions.*;
-
 import org.matheclipse.core.interfaces.IAST;
 
 /** 
@@ -30,7 +29,7 @@ ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_
     Condition(Times(Power(Negate(e),Plus(m,Negate(C1D2))),Power(FSymbol,Times(c,Plus(a,Times(CN1,b,d,Power(e,-1))))),Sqrt(Plus(d,Times(e,x))),Power(Times(Power(b,Plus(m,C1D2)),Power(c,Plus(m,C1D2)),Power(Log(FSymbol),Plus(m,C1D2)),Sqrt(Times(CN1,b,c,Log(FSymbol),Power(e,-1),Plus(d,Times(e,x))))),-1),Gamma(Plus(m,C1),Times(CN1,b,c,Log(FSymbol),Power(e,-1),Plus(d,Times(e,x))))),And(FreeQ(List(FSymbol,a,b,c,d,e),x),PositiveIntegerQ(Plus(m,C1D2))))),
 ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_)),x_Symbol),
     Condition(Times(Power(Negate(e),Plus(m,C1D2)),Power(FSymbol,Times(c,Plus(a,Times(CN1,b,d,Power(e,-1))))),Sqrt(Times(CN1,b,c,Log(FSymbol),Power(e,-1),Plus(d,Times(e,x)))),Power(Times(Power(b,Plus(m,QQ(3L,2L))),Power(c,Plus(m,QQ(3L,2L))),Power(Log(FSymbol),Plus(m,QQ(3L,2L))),Sqrt(Plus(d,Times(e,x)))),-1),Gamma(Plus(m,C1),Times(CN1,b,c,Log(FSymbol),Power(e,-1),Plus(d,Times(e,x))))),And(FreeQ(List(FSymbol,a,b,c,d,e),x),NegativeIntegerQ(Plus(m,Negate(C1D2)))))),
-ISetDelayed(Int(Times(Power(E,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_)),x_Symbol),
+ISetDelayed(Int(Times(Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_),Power(E,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_))))),x_Symbol),
     Condition(Times(Power(E,Times(c,Plus(a,Times(CN1,b,d,Power(e,-1))))),Power(Plus(d,Times(e,x)),m),Power(Times(b,c,Power(Times(CN1,b,c,Power(e,-1),Plus(d,Times(e,x))),m)),-1),Gamma(Plus(m,C1),Times(CN1,b,c,Power(e,-1),Plus(d,Times(e,x))))),And(FreeQ(List(a,b,c,d,e,m),x),Not(SumSimplerQ(m,C1))))),
 ISetDelayed(Int(Times(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_)),x_Symbol),
     Condition(Times(CN1,Power(FSymbol,Times(c,Plus(a,Times(CN1,b,d,Power(e,-1))))),Power(Plus(d,Times(e,x)),Plus(m,C1)),Power(Times(e,Power(Times(CN1,b,c,Log(FSymbol),Plus(d,Times(e,x)),Power(e,-1)),Plus(m,C1))),-1),Gamma(Plus(m,C1),Times(CN1,b,c,Log(FSymbol),Plus(d,Times(e,x)),Power(e,-1)))),FreeQ(List(FSymbol,a,b,c,d,e,m),x))),
