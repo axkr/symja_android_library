@@ -32,14 +32,15 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
-import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -1806,8 +1807,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public boolean isPolynomial(IAST variables) {
 		if (isPlus() || isTimes() || isPower()) {
 			IExpr expr = F.evalExpandAll(this);
-			Polynomial poly = new Polynomial(expr, variables, null, false);
-			return poly.isPolynomial(expr);
+			ExprPolynomialRing ring = new ExprPolynomialRing(variables);
+			return ring.isPolynomial(expr);
 		}
 		return false;
 	}
@@ -1818,12 +1819,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	public boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
-		if (isPlus() || isTimes() || isPower()) {
-			IExpr expr = F.evalExpandAll(this);
-			Polynomial poly = new Polynomial(expr, variables, null, true);
-			if (poly.isPolynomial()) {
-				return poly.maximumDegree() <= maxDegree;
+		try {
+			if (isPlus() || isTimes() || isPower()) {
+				IExpr expr = F.evalExpandAll(this);
+				ExprPolynomialRing ring = new ExprPolynomialRing(variables);
+				ExprPolynomial poly = ring.create(expr);
+				return poly.degree() <= maxDegree;
 			}
+		} catch (Exception ex) {
+			//
 		}
 		return false;
 	}

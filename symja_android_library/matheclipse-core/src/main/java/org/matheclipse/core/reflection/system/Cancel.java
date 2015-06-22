@@ -12,7 +12,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Predicate;
@@ -123,31 +125,35 @@ public class Cancel extends AbstractFunctionEvaluator {
 				return null;
 			}
 
-			Polynomial pol1 = new Polynomial(poly1, eVar.getVarList(), false);
-			Polynomial pol2 = new Polynomial(poly2, eVar.getVarList(), false);
-			if (pol1.createPolynomial(poly1, true, false) && pol2.createPolynomial(poly2, true, false)) {
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				JASIExpr jas = new JASIExpr(r.toList(), true);
-				GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-				GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+			IAST vars = eVar.getVarList();
+			ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+			ExprPolynomial pol1 = ring.create(poly1);
+			ExprPolynomial pol2 = ring.create(poly2);
+			// Polynomial pol1 = new Polynomial(poly1, eVar.getVarList(), false);
+			// Polynomial pol2 = new Polynomial(poly2, eVar.getVarList(), false);
+			// if (pol1.createPolynomial(poly1, true, false) && pol2.createPolynomial(poly2, true, false)) {
+			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			JASIExpr jas = new JASIExpr(r.toList(), true);
+			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+			GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
-				GreatestCommonDivisor<IExpr> engine;
-				engine = GCDFactory.getImplementation(new ExprRingFactory());
-				GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
-				IExpr[] result = new IExpr[3];
-				if (gcd.isONE()) {
-					result[0] = jas.exprPoly2Expr(gcd);
-					result[1] = jas.exprPoly2Expr(p1);
-					result[2] = jas.exprPoly2Expr(p2);
-				} else {
-					result[0] = F.C1;
-					result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
-					result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));
-				}
-				return result;
+			GreatestCommonDivisor<IExpr> engine;
+			engine = GCDFactory.getImplementation(new ExprRingFactory());
+			GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
+			IExpr[] result = new IExpr[3];
+			if (gcd.isONE()) {
+				result[0] = jas.exprPoly2Expr(gcd);
+				result[1] = jas.exprPoly2Expr(p1);
+				result[2] = jas.exprPoly2Expr(p2);
+			} else {
+				result[0] = F.C1;
+				result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
+				result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));
 			}
+			return result;
+			// }
 		} catch (Exception e) {
-			if (Config.SHOW_STACKTRACE) {
+			if (Config.DEBUG) {
 				e.printStackTrace();
 			}
 		}

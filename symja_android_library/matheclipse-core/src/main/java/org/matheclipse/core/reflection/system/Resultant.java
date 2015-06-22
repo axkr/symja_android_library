@@ -3,11 +3,13 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -26,16 +28,18 @@ public class Resultant extends AbstractFunctionEvaluator {
 		ISymbol x = (ISymbol) arg3;
 		IExpr a = F.evalExpandAll(ast.arg1());
 		IExpr b = F.evalExpandAll(ast.arg2());
-		Polynomial aPolynomial = new Polynomial(a, x, false);
-		if (!aPolynomial.createPolynomial(a, true, false)) {
+		ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
+		try {
+			ExprPolynomial aPolynomial = ring.create(a);
+		} catch (Exception ex) {
 			throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
 		}
-		Polynomial bPolynomial = new Polynomial(b, x, false);
-		if (!bPolynomial.createPolynomial(b, true, false)) {
+		try {
+			ExprPolynomial bPolynomial = ring.create(b);
+			return F.Together(resultant(a, b, x));
+		} catch (Exception ex) {
 			throw new WrongArgumentType(ast, b, 2, "Polynomial expected!");
-
 		}
-		return F.Together(resultant(a, b, x));
 	}
 
 	public IExpr resultant(IExpr a, IExpr b, ISymbol x) {
@@ -54,8 +58,7 @@ public class Resultant extends AbstractFunctionEvaluator {
 		if (!r.isZero()) {
 			rExp = F.eval(F.Exponent(r, x));
 		}
-		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
-				resultant(b, r, x));
+		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)), resultant(b, r, x));
 	}
 
 	// public static IExpr resultant(IAST result, IAST resultListDiff) {

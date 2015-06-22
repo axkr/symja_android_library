@@ -19,6 +19,8 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 */
 	private static final long serialVersionUID = -6146597389011632638L;
 
+	public final static ExprRingFactory CONST = new ExprRingFactory();
+	
 	public ExprRingFactory() {
 		super();
 	}
@@ -70,7 +72,6 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 
 	@Override
 	public IExpr copy(IExpr c) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -87,7 +88,6 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 
 	@Override
 	public boolean isFinite() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

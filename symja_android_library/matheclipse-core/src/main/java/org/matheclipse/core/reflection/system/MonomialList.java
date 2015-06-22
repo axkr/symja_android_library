@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.Comparator;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -8,24 +7,24 @@ import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.ExponentArray;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
-import edu.jas.poly.TermOrder;
 
 /**
  * Get the list of monomials of a polynomial expression.
@@ -53,15 +52,16 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			eVar = new VariablesSet(symbolList);
 			eVar.appendToList(vars);
 		}
-		int termOrder = TermOrder.INVLEX;
-		Comparator<ExponentArray> comparator = ExponentArray.lexicographic();
+		int termOrder = ExprTermOrder.INVLEX;
+
+		// Comparator<ExponentArray> comparator = ExponentArray.lexicographic();
 		try {
 			if (ast.size() > 3) {
 				if (ast.arg3() instanceof IStringX) {
 					String orderStr = ast.arg3().toString();
 					if (orderStr.equals("DegreeLexicographic")) {
-						termOrder = TermOrder.LEX;
-						comparator = ExponentArray.degreeLexicographic();
+						termOrder = ExprTermOrder.IGRLEX;
+						// comparator = ExponentArray.degreeLexicographic();
 					} else {
 						return null;
 					}
@@ -75,16 +75,13 @@ public class MonomialList extends AbstractFunctionEvaluator {
 					}
 				}
 			}
-			Polynomial poly = new Polynomial(expr, vars, comparator);
-			if (poly.isPolynomial()) {
-				return poly.monomialList();
-			}
-			throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
-			// return monomialList(expr, eVar.getArrayList(), termOrder);
-		} catch (JASConversionException jce) {
+			ExprPolynomialRing ring = new ExprPolynomialRing(vars, new ExprTermOrder(termOrder));
+			ExprPolynomial poly = ring.create(expr);
+			return poly.monomialList();
+		} catch (Exception ex) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {
-				jce.printStackTrace();
+				ex.printStackTrace();
 			}
 		}
 		return null;

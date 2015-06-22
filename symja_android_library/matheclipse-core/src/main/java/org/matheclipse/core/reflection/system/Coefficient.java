@@ -1,14 +1,19 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExpVectorLong;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -39,7 +44,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 		IAST listOfVariables = null;
 		// array of corresponding exponents for the list of variables
 		long[] exponents = null;
-		
+
 		if (arg2.isTimes()) {
 			// Times(x, y^a,...)
 			IAST arg2AST = (IAST) arg2;
@@ -84,16 +89,20 @@ public class Coefficient extends AbstractFunctionEvaluator {
 					exponents[i] *= n;
 				}
 			}
+			ExpVectorLong expArr = new ExpVectorLong(exponents);
 			IExpr expr = F.evalExpandAll(ast.arg1());
-			Polynomial poly = new Polynomial(expr, listOfVariables);
-			if (poly.isPolynomial()) {
-				return poly.coefficient(exponents);
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1);
+			ExprPolynomial poly = ring.create(expr, true);
+			// Polynomial poly = new Polynomial(expr, listOfVariables);
+			// if (poly.isPolynomial()) {
+			return poly.coefficient(expArr);
+			// }
+		} catch (Exception ae) {
+			if (Config.DEBUG) {
+				ae.printStackTrace();
 			}
 			return F.C0;
-		} catch (ArithmeticException ae) {
-
 		}
-		return null;
 	}
 
 	@Override

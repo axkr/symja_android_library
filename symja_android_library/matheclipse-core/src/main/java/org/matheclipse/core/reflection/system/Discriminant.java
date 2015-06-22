@@ -14,11 +14,14 @@ import static org.matheclipse.core.expression.F.integer;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -169,35 +172,38 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {
 			return null;
-		}
+		} 
 		IExpr expr = F.evalExpandAll(ast.arg1());
-		Polynomial poly = new Polynomial(expr, (ISymbol) arg2);
-		if (!poly.isPolynomial()){
-		    throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
-		}
-		long n = poly.maximumDegree();
-		if (n >= 2L && n <= 5L) {
-		    IAST result = poly.coefficientList();
-			IAST rules = F.List();
-			for (int i = 1; i < result.size(); i++) {
-				rules.add(F.Rule(vars[i - 1], result.get(i)));
-			}
-			switch ((int) n) {
-			case 2:
+		try {
+			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(arg2));
+		    ExprPolynomial poly = ring.create(expr);
+		
+		    long n = poly.degree();
+		    if (n >= 2L && n <= 5L) {
+		      IAST result = poly.coefficientList();
+			  IAST rules = F.List();
+			  for (int i = 1; i < result.size(); i++) {
+				  rules.add(F.Rule(vars[i - 1], result.get(i)));
+			  }
+			  switch ((int) n) {
+			  case 2:
 				return QUADRATIC.replaceAll(rules);
-			case 3:
+			  case 3:
 				return CUBIC.replaceAll(rules);
-			case 4:
+			  case 4:
 				return QUARTIC.replaceAll(rules);
-			case 5:
+			  case 5:
 				return QUINTIC.replaceAll(rules);
-			}
+			  }
+		    }
+		    IExpr fN = poly.leadingBaseCoefficient();//coefficient(n);
+	        ExprPolynomial polyDiff = poly.derivative();
+		    // see: http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
+	        return F.Divide(F.Times(F.Power(F.CN1, (n*(n-1)/2)),F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
+		}catch(Exception ex){
+			throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 		}
-		IExpr fN = poly.coefficient(n);
-	    Polynomial polyDiff = poly.derivative();
-		// see: http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
-	    return F.Divide(F.Times(F.Power(F.CN1, (n*(n-1)/2)),F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
-	}
+		}
 
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {

@@ -6,12 +6,15 @@ import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 
 import edu.jas.poly.GenPolynomial;
 
@@ -43,11 +46,16 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 
 	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables, boolean numericFunction) {
 		IExpr expr = F.evalExpandAll(polnomialExpr);
-		Polynomial poly = new Polynomial(expr, variables, null, false);
-		if (poly.createPolynomial(expr, true, true)) {
+		int termOrder = ExprTermOrder.LEX;
+		ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1, new ExprTermOrder(termOrder),
+				true);
+		try {
+			ExprPolynomial poly = ring.create(expr);
 			ASTRange r = new ASTRange(variables, 1);
 			JASIExpr jas = new JASIExpr(r.toList(), numericFunction);
 			return jas.expr2IExprJAS(poly);
+		} catch (Exception ex) {
+
 		}
 		return null;
 	}

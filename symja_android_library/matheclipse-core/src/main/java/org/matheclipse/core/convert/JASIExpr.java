@@ -14,8 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.ExponentArray;
-import org.matheclipse.core.polynomials.Polynomial;
+import org.matheclipse.core.polynomials.ExpVectorLong;
 
 import com.google.common.base.Predicates;
 
@@ -167,15 +166,12 @@ public class JASIExpr {
 		}
 	}
 
-	public GenPolynomial<IExpr> expr2IExprJAS(final Polynomial exprPoly) {
+	public GenPolynomial<IExpr> expr2IExprJAS(final org.matheclipse.core.polynomials.ExprPolynomial exprPoly) {
 		GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(fPolyFactory);// fPolyFactory.getZERO();
-		SortedMap<ExponentArray, org.matheclipse.core.polynomials.Monomial> monoms = exprPoly.getMonomials();
-		for (org.matheclipse.core.polynomials.Monomial monom : monoms.values()) {
-			long[] arr = monom.getExponents().getExponents();
-			IExpr coeff = monom.getCoefficient();
-			if (!coeff.isZero()) {
-				result.doPutToMap(ExpVector.create(arr), monom.getCoefficient());
-			}
+		SortedMap<org.matheclipse.core.polynomials.ExpVectorLong, IExpr> monoms = exprPoly.getMap();
+		for (ExpVectorLong expArray : monoms.keySet()) {
+			long[] arr = expArray.getVal();
+			result.doPutToMap(ExpVector.create(arr),monoms.get(expArray));
 		}
 		return result;
 	}
