@@ -4,11 +4,11 @@
 
 Features:
 * arbitrary precision integers, rational and complex numbers
-* differentiation, integration
-* polynomials
-* pattern matching
-* linear algebra
-
+* differentiation, integration, polynomial and linear algebra functions...
+* a general purpose Term Rewriting System and Pattern Matching engine
+* use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java.
+* see the "Getting started with Symja" document on the Wiki pages
+  
 Online demo: 
 * http://symjaweb.appspot.com/
 
