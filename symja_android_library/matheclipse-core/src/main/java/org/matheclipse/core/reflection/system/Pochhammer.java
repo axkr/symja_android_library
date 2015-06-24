@@ -24,15 +24,15 @@ public class Pochhammer extends AbstractArg2 {
 	}
 
 	@Override
-	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		if (o0.isRational() && o1.isInteger()) {
-			BigFraction bf = ((IRational) o0).getFraction();
-			BigFraction ph = pochhammer(bf, ((IInteger) o1).getBigNumerator());
+	public IExpr e2ObjArg(final IExpr a, final IExpr n) {
+		if (a.isRational() && n.isInteger()) {
+			BigFraction bf = ((IRational) a).getFraction();
+			BigFraction ph = pochhammer(bf, ((IInteger) n).getBigNumerator());
 			if (ph != null) {
 				return F.fraction(ph);
 			}
 		}
-		return null;
+		return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
 	}
 
 	/**

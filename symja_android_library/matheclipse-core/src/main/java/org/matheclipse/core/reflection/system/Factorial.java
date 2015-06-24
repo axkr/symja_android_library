@@ -25,13 +25,13 @@ public class Factorial extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		double d = org.apache.commons.math3.special.Gamma.logGamma(arg1 + 1.0);
-		return F.num(Math.exp(d));
+		double d = org.apache.commons.math3.special.Gamma.gamma(arg1 + 1.0);
+		return F.num(d);
 	}
 
-	public static BigInteger factorial(final BigInteger biggi) {
+	public static BigInteger factorial(final BigInteger x) {
 		try {
-			int ni = NumberUtil.toInt(biggi);
+			int ni = NumberUtil.toInt(x);
 			BigInteger result;
 			if (ni < 0) {
 				result = BigIntegerMath.factorial(-1 * ni);
@@ -49,14 +49,14 @@ public class Factorial extends AbstractTrigArg1 {
 		}
 
 		BigInteger result = BigInteger.ONE;
-		if (biggi.compareTo(BigInteger.ZERO) == -1) {
+		if (x.compareTo(BigInteger.ZERO) == -1) {
 			result = BigInteger.valueOf(-1);
 
-			for (BigInteger i = BigInteger.valueOf(-2); i.compareTo(biggi) >= 0; i = i.add(BigInteger.valueOf(-1))) {
+			for (BigInteger i = BigInteger.valueOf(-2); i.compareTo(x) >= 0; i = i.add(BigInteger.valueOf(-1))) {
 				result = result.multiply(i);
 			}
 		} else {
-			for (BigInteger i = BigInteger.valueOf(2); i.compareTo(biggi) <= 0; i = i.add(BigInteger.ONE)) {
+			for (BigInteger i = BigInteger.valueOf(2); i.compareTo(x) <= 0; i = i.add(BigInteger.ONE)) {
 				result = result.multiply(i);
 			}
 		}

@@ -2381,6 +2381,10 @@ public class F {
 		return unaryAST1(Factorial, a0);
 	}
 
+	public static IAST Factorial2(final IExpr a0) {
+		return unaryAST1(Factorial2, a0);
+	}
+	
 	public static IAST FactorInteger(final IExpr a0) {
 		return unaryAST1(FactorInteger, a0);
 	}
