@@ -50,12 +50,17 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	/**
 	 * Table for constant symbols
 	 */
-	public final Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+	public final static Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+
+	/**
+	 * Table for constant expressions
+	 */
+	public final static Hashtable<IExpr, String> CONSTANT_EXPRS = new Hashtable<IExpr, String>(199);
 
 	/**
 	 * Description of the Field
 	 */
-	public final Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
+	public final static Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
 
 	private int plusPrec;
 
@@ -224,6 +229,14 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	public void convert(final StringBuffer buf, final Object o, final int precedence) {
+		if (o instanceof IExpr) {
+			IExpr expr = (IExpr) o;
+			String str = CONSTANT_EXPRS.get(expr);
+			if (str != null) {
+				buf.append(str);
+				return;
+			}
+		}
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			IConverter converter = null;
@@ -343,46 +356,73 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 		// timesPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
 
-		operTab.put("Condition", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Condition").getPrecedence(),"\\text{/;}"));
-		operTab.put("Unset", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unset").getPrecedence(),"\\text{=.}"));
-		operTab.put("UpSetDelayed", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSetDelayed").getPrecedence(),"\\text{^:=}"));
-		operTab.put("UpSet", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSet").getPrecedence(),"\\text{^=}"));
-		operTab.put("NonCommutativeMultiply", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("NonCommutativeMultiply").getPrecedence(),"\\text{**}"));
-		operTab.put("PreDecrement", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreDecrement").getPrecedence(),"\\text{--}"));
-		operTab.put("ReplaceRepeated", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceRepeated").getPrecedence(),"\\text{//.}"));
-		operTab.put("MapAll", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("MapAll").getPrecedence(),"\\text{//@}"));
-		operTab.put("AddTo", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("AddTo").getPrecedence(),"\\text{+=}"));
-		operTab.put("Greater", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Greater").getPrecedence()," > "));
-		operTab.put("GreaterEqual", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("GreaterEqual").getPrecedence(),"\\geq "));
-		operTab.put("SubtractFrom", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("SubtractFrom").getPrecedence(),"\\text{-=}"));
-		operTab.put("Subtract", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Subtract").getPrecedence()," - "));
-		operTab.put("CompoundExpression", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(),";"));
-		operTab.put("DivideBy", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("DivideBy").getPrecedence(),"\\text{/=}"));
-		operTab.put("StringJoin", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("StringJoin").getPrecedence(),"\\text{<>}"));
-		operTab.put("UnsameQ", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UnsameQ").getPrecedence(),"\\text{=!=}"));
-		operTab.put("Decrement", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Decrement").getPrecedence(),"\\text{--}"));
-		operTab.put("LessEqual", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(),"\\leq "));
-		operTab.put("Colon", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Colon").getPrecedence(),"\\text{:}"));
-		operTab.put("Increment", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Increment").getPrecedence(),"\\text{++}"));
-		operTab.put("Alternatives", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Alternatives").getPrecedence(),"\\text{|}"));
-		operTab.put("Equal", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence()," = "));
-		operTab.put("Divide", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Divide").getPrecedence(),"\\text{/}"));
-		operTab.put("Apply", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Apply").getPrecedence(),"\\text{@@}"));
-		operTab.put("Set", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(),"\\text{=}"));
-		operTab.put("PreMinus", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreMinus").getPrecedence(),"\\text{-}"));
-		operTab.put("Map", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Map").getPrecedence(),"\\text{/@}"));
-		operTab.put("SameQ", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("SameQ").getPrecedence(),"\\text{===}"));
-		operTab.put("Less", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence()," < "));
-		operTab.put("PreIncrement", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreIncrement").getPrecedence(),"\\text{++}"));
-		operTab.put("Unequal", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(),"\\text{!=}"));
-		operTab.put("Or", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence()," \\lor "));
-		operTab.put("PrePlus", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(),"\\text{+}"));
-		operTab.put("TimesBy", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("TimesBy").getPrecedence(),"\\text{*=}"));
-		operTab.put("And", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence()," \\land "));
-		operTab.put("Not", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Not").getPrecedence(),"\\neg "));
-		operTab.put("Factorial", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence()," ! "));
-		operTab.put("Factorial2", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence()," !! "));
-		
+		operTab.put("Condition", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Condition").getPrecedence(),
+				"\\text{/;}"));
+		operTab.put("Unset", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unset").getPrecedence(), "\\text{=.}"));
+		operTab.put("UpSetDelayed", new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSetDelayed").getPrecedence(), "\\text{^:=}"));
+		operTab.put("UpSet",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UpSet").getPrecedence(), "\\text{^=}"));
+		operTab.put("NonCommutativeMultiply",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("NonCommutativeMultiply").getPrecedence(),
+						"\\text{**}"));
+		operTab.put("PreDecrement", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreDecrement").getPrecedence(),
+				"\\text{--}"));
+		operTab.put("ReplaceRepeated", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceRepeated")
+				.getPrecedence(), "\\text{//.}"));
+		operTab.put("MapAll", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("MapAll").getPrecedence(),
+				"\\text{//@}"));
+		operTab.put("AddTo",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("AddTo").getPrecedence(), "\\text{+=}"));
+		operTab.put("Greater", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Greater").getPrecedence(), " > "));
+		operTab.put("GreaterEqual", new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("GreaterEqual").getPrecedence(), "\\geq "));
+		operTab.put("SubtractFrom", new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("SubtractFrom").getPrecedence(), "\\text{-=}"));
+		operTab.put("Subtract", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Subtract").getPrecedence(), " - "));
+		operTab.put("CompoundExpression", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression")
+				.getPrecedence(), ";"));
+		operTab.put("DivideBy", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("DivideBy").getPrecedence(),
+				"\\text{/=}"));
+		operTab.put("StringJoin", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("StringJoin").getPrecedence(),
+				"\\text{<>}"));
+		operTab.put("UnsameQ", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("UnsameQ").getPrecedence(),
+				"\\text{=!=}"));
+		operTab.put("Decrement", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Decrement").getPrecedence(),
+				"\\text{--}"));
+		operTab.put("LessEqual", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(),
+				"\\leq "));
+		operTab.put("Colon", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Colon").getPrecedence(), "\\text{:}"));
+		operTab.put("Increment", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Increment").getPrecedence(),
+				"\\text{++}"));
+		operTab.put("Alternatives", new AbstractOperator(this,
+				ASTNodeFactory.MMA_STYLE_FACTORY.get("Alternatives").getPrecedence(), "\\text{|}"));
+		operTab.put("Equal", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), " = "));
+		operTab.put("Divide", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Divide").getPrecedence(),
+				"\\text{/}"));
+		operTab.put("Apply",
+				new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Apply").getPrecedence(), "\\text{@@}"));
+		operTab.put("Set", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), "\\text{=}"));
+		operTab.put("PreMinus",
+				new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreMinus").getPrecedence(), "\\text{-}"));
+		operTab.put("Map", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Map").getPrecedence(), "\\text{/@}"));
+		operTab.put("SameQ", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("SameQ").getPrecedence(),
+				"\\text{===}"));
+		operTab.put("Less", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence(), " < "));
+		operTab.put("PreIncrement", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PreIncrement").getPrecedence(),
+				"\\text{++}"));
+		operTab.put("Unequal", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(),
+				"\\text{!=}"));
+		operTab.put("Or", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), " \\lor "));
+		operTab.put("PrePlus", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(), "\\text{+}"));
+		operTab.put("TimesBy", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("TimesBy").getPrecedence(),
+				"\\text{*=}"));
+		operTab.put("And", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence(), " \\land "));
+		operTab.put("Not", new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Not").getPrecedence(), "\\neg "));
+		operTab.put("Factorial", new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial").getPrecedence(), " ! "));
+		operTab.put("Factorial2",
+				new PostOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Factorial2").getPrecedence(), " !! "));
+
 		operTab.put("ReplaceAll", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceAll").getPrecedence(),
 				"\\text{/.}\\,"));
 		operTab.put("ReplaceRepeated", new AbstractOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("ReplaceRepeated")
@@ -406,8 +446,6 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		operTab.put("ArcTanh", new TeXFunction(this, "arctanh"));
 		operTab.put("ArcCoth", new TeXFunction(this, "arccoth"));
 		operTab.put("Log", new TeXFunction(this, "log"));
-
-		CONSTANT_SYMBOLS.put("Pi", "\\pi");
 
 		CONSTANT_SYMBOLS.put("Alpha", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("Beta", AST2Expr.TRUE_STRING);
@@ -450,7 +488,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		CONSTANT_SYMBOLS.put("mu", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("nu", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("omicron", AST2Expr.TRUE_STRING);
-		// see "Pi"
+		// see F.Pi
 		// CONSTANT_SYMBOLS.put("pi", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("theta", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("rho", AST2Expr.TRUE_STRING);
@@ -463,6 +501,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		CONSTANT_SYMBOLS.put("psi", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("zeta", AST2Expr.TRUE_STRING);
 
+		CONSTANT_EXPRS.put(F.GoldenRatio, "\\varphi");
+		CONSTANT_EXPRS.put(F.EulerGamma, "\\gamma");
+		CONSTANT_EXPRS.put(F.Pi, "\\pi");
+		CONSTANT_EXPRS.put(F.CInfinity, "\\infty");
+		CONSTANT_EXPRS.put(F.CNInfinity, "-\\infty");
 	}
 
 	@Override
