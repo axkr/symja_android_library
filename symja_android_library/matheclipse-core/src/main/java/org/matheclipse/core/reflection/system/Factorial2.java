@@ -45,29 +45,31 @@ public class Factorial2 extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (arg1.isInteger() && !arg1.isNegative()) {
-			return factorial2((IInteger) arg1);
-		}
-		try {
-			int n = ((IInteger) arg1).toInt();
-			switch (n) {
-			case -1:
-				return F.C1;
-			case -2:
-				return F.CComplexInfinity;
-			case -3:
-				return F.CN1;
-			case -4:
-				return F.CComplexInfinity;
-			case -5:
-				return F.C1D3;
-			case -6:
-				return F.CComplexInfinity;
-			case -7:
-				return F.fraction(-1, 15);
+		if (arg1.isInteger()) {
+			if (!arg1.isNegative()) {
+				return factorial2((IInteger) arg1);
 			}
-		} catch (ArithmeticException ae) {
+			try {
+				int n = ((IInteger) arg1).toInt();
+				switch (n) {
+				case -1:
+					return F.C1;
+				case -2:
+					return F.CComplexInfinity;
+				case -3:
+					return F.CN1;
+				case -4:
+					return F.CComplexInfinity;
+				case -5:
+					return F.C1D3;
+				case -6:
+					return F.CComplexInfinity;
+				case -7:
+					return F.fraction(-1, 15);
+				}
+			} catch (ArithmeticException ae) {
 
+			}
 		}
 		return null;
 	}
