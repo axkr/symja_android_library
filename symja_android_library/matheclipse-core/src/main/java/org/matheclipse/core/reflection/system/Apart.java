@@ -290,17 +290,11 @@ public class Apart extends AbstractFunctionEvaluator {
 				}
 			} else if (splitFractionalNumbers && arg.isFraction()) {
 				IFraction fr = (IFraction) arg;
-				numerator.add(fr.getNumerator());
+				if (!fr.getNumerator().isOne()) {
+					numerator.add(fr.getNumerator());
+				}
 				denominator.add(fr.getDenominator());
 				evaled = true;
-				// IInteger numer = ((IRational) arg).getNumerator();
-				// if (!numer.equals(F.C1)) {
-				// numerator.add(numer);
-				// }
-				// IInteger denom = ((IRational) arg).getDenominator();
-				// if (!denom.equals(F.C1)) {
-				// denominator.add(denom);
-				// }
 				continue;
 			}
 			numerator.add(arg);
