@@ -501,8 +501,12 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		CONSTANT_SYMBOLS.put("psi", AST2Expr.TRUE_STRING);
 		CONSTANT_SYMBOLS.put("zeta", AST2Expr.TRUE_STRING);
 
-		CONSTANT_EXPRS.put(F.GoldenRatio, "\\varphi");
+		CONSTANT_EXPRS.put(F.Catalan, "C");
+		CONSTANT_EXPRS.put(F.Degree, "{}^{\\circ}");
+		CONSTANT_EXPRS.put(F.Glaisher, "A");
+		CONSTANT_EXPRS.put(F.GoldenRatio, "\\phi");
 		CONSTANT_EXPRS.put(F.EulerGamma, "\\gamma");
+		CONSTANT_EXPRS.put(F.Khinchin, "K");
 		CONSTANT_EXPRS.put(F.Pi, "\\pi");
 		CONSTANT_EXPRS.put(F.CInfinity, "\\infty");
 		CONSTANT_EXPRS.put(F.CNInfinity, "-\\infty");

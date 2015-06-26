@@ -485,12 +485,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		ENTITY_TABLE.put("&PartialD;", "\u2202");
 		ENTITY_TABLE.put("&Product;", "\u220F");
 
-		// TODO add suitable strings
-		CONSTANT_EXPRS.put(F.GoldenRatio, "<mi>GoldenRatio</mi>");
-		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>EulerGamma</mi>");
-		// CONSTANT_EXPRS.put(F.Pi, "<mi>Pi</mi>");
-		CONSTANT_EXPRS.put(F.CInfinity, "<mi>&infin;</mi>");
-		CONSTANT_EXPRS.put(F.CNInfinity, "<mo>-</mo><mi>&infin;</mi>");
+		CONSTANT_EXPRS.put(F.GoldenRatio, "<mi>\u03C7</mi>"); // phi
+		CONSTANT_EXPRS.put(F.Pi, "<mi>\u03C0</mi>");
+		CONSTANT_EXPRS.put(F.CInfinity, "<mi>\u221e</mi>"); //&infin;
+		CONSTANT_EXPRS.put(F.CNInfinity, "<mo>-</mo><mi>\u221e</mi>");
+		CONSTANT_EXPRS.put(F.Catalan, "<mi>C</mi>");
+		CONSTANT_EXPRS.put(F.Degree, "<mi>\u00b0</mi>");
+		CONSTANT_EXPRS.put(F.Glaisher, "<mi>A</mi>"); 
+		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>\u03B3</mi>");
+		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>"); 
 
 	}
 }
