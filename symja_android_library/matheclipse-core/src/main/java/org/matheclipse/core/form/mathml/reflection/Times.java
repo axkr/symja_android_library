@@ -1,14 +1,10 @@
 package org.matheclipse.core.form.mathml.reflection;
 
-import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.form.mathml.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.reflection.system.Apart;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 public class Times extends AbstractOperator {
@@ -42,72 +38,36 @@ public class Times extends AbstractOperator {
 	 *            The math function which should be converted to MathML
 	 */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		final IAST numerator = F.Times();
-		final IAST denominator = F.Times();
-		boolean flag = false;
-		IExpr expr;
-		for (int i = 1; i < f.size(); i++) {
-			expr = f.get(i);
-			if (expr instanceof IRational) {
-				IInteger num = ((IRational) expr).getNumerator();
-				IInteger den = ((IRational) expr).getDenominator();
-				if (!NumberUtil.isOne(num)) {
-					numerator.add(num);
-				}
-				if (!NumberUtil.isOne(den)) {
-					denominator.add(den);
-				}
-				flag = true;
-				continue;
-			}
-			if ((f.get(i) instanceof IAST) && f.get(i).isPower()) {
-				// filter negative Powers:
-				final IAST p = (IAST) f.get(i);
-				if ((p.get(2) instanceof ISignedNumber) && ((ISignedNumber) p.get(2)).isNegative()) {
-					if (NumberUtil.isMinusOne(p.arg2())) {
-						// x_^(-1) ?
-						denominator.add(p.get(1));
-						flag = true;
-						continue;
-					}
-
-					denominator.add(F.Power(p.arg1(), F.Times(F.integer(-1), p.get(2))));
-					flag = true;
-					continue;
-				}
-			}
-			if (!NumberUtil.isOne(f.get(i))) {
-				numerator.add(f.get(i));
-			}
+		IExpr[] parts = Apart.getFractionalPartsTimes(f, true);
+		if (parts == null) {
+			convertMultiply(buf, f, precedence, caller);
+			return true;
 		}
-		// do the output:
-		if (denominator.size() > 1 && flag) {
+		final IExpr numerator = parts[0];
+		final IExpr denominator = parts[1];
+		if (!denominator.isOne()) {
 			if (caller == PLUS_CALL) {
 				fFactory.tag(buf, "mo", "+");
 			}
 			fFactory.tagStart(buf, "mfrac");
 			// insert numerator in buffer:
-			if (numerator.size() > 1) {
-				if (numerator.size() == 2) {
-					fFactory.convert(buf, numerator.get(1), 0);
-				} else {
-					fFactory.convert(buf, numerator, fPrecedence);
-				}
-
+			if (!numerator.isTimes()) {
+				fFactory.convert(buf, numerator, fPrecedence);
 			} else {
-				fFactory.tag(buf, "mn", "1");
+				convertMultiply(buf, (IAST) numerator, precedence, NO_SPECIAL_CALL);
 			}
-			if (denominator.size() == 2) {
-				fFactory.convert(buf, denominator.get(1), 0);
+			if (!denominator.isTimes()) {
+				fFactory.convert(buf, denominator, 0);
 			} else {
-				fFactory.convert(buf, denominator, fPrecedence);
+				convertMultiply(buf, (IAST) denominator, precedence, NO_SPECIAL_CALL);
 			}
 			fFactory.tagEnd(buf, "mfrac");
 		} else {
-			if (numerator.size() <= 2) {
+			// if (numerator.size() <= 2) {
+			if (!numerator.isTimes()) {
 				convertMultiply(buf, f, precedence, caller);
 			} else {
-				convertMultiply(buf, numerator, precedence, caller);
+				convertMultiply(buf, (IAST) numerator, precedence, caller);
 			}
 		}
 

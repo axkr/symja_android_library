@@ -6,6 +6,7 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -46,6 +47,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 * Table for constant symbols
 	 */
 	public final static Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+
+	/**
+	 * Table for constant expressions
+	 */
+	public final static Hashtable<IExpr, String> CONSTANT_EXPRS = new Hashtable<IExpr, String>(199);
 
 	/**
 	 * Description of the Field
@@ -247,6 +253,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convert(final StringBuffer buf, final IExpr o, final int precedence) {
+		String str = CONSTANT_EXPRS.get(o);
+		if (str != null) {
+			buf.append(str);
+			return;
+		}
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			final ISymbol symbol = f.topHead();
@@ -411,8 +422,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		// CONSTANT_SYMBOLS.put("I", "\u2148"); // IMaginaryI
 		CONSTANT_SYMBOLS.put("HEllipsis", new Operator("&hellip;"));
 		// greek Symbols:
-		CONSTANT_SYMBOLS.put("Pi", "\u03A0");
-		CONSTANT_SYMBOLS.put("pi", "\u03C0");
+		// CONSTANT_SYMBOLS.put("Pi", "\u03A0");
+		// CONSTANT_SYMBOLS.put("pi", "\u03C0");
 		CONSTANT_SYMBOLS.put("Alpha", "\u0391");
 		CONSTANT_SYMBOLS.put("Beta", "\u0392");
 		CONSTANT_SYMBOLS.put("Gamma", "\u0393");
@@ -473,6 +484,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		ENTITY_TABLE.put("&Integral;", "\u222B");
 		ENTITY_TABLE.put("&PartialD;", "\u2202");
 		ENTITY_TABLE.put("&Product;", "\u220F");
+
+		// TODO add suitable strings
+		CONSTANT_EXPRS.put(F.GoldenRatio, "<mi>GoldenRatio</mi>");
+		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>EulerGamma</mi>");
+		// CONSTANT_EXPRS.put(F.Pi, "<mi>Pi</mi>");
+		CONSTANT_EXPRS.put(F.CInfinity, "<mi>&infin;</mi>");
+		CONSTANT_EXPRS.put(F.CNInfinity, "<mo>-</mo><mi>&infin;</mi>");
 
 	}
 }
