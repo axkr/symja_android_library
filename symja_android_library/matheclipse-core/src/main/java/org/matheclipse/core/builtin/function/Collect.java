@@ -83,7 +83,7 @@ public class Collect extends AbstractFunctionEvaluator {
 			addPowerFactor(expr, F.C1, map);
 			return;
 		} else if (isPowerMatched(expr, matcher)) {
-			addPowerFactor((IAST) expr, F.C1, map);
+			addPowerFactor(expr, F.C1, map);
 			return;
 		} else if (expr.isPlus()) {
 			IAST plusAST = (IAST) expr;

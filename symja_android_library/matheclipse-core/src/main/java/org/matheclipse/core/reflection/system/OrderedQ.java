@@ -24,6 +24,7 @@ public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAS
 		return F.bool(apply(((IAST) ast.arg1())));
 	}
 
+	@Override
 	public boolean apply(IAST ast) {
 		return ast.args().compareAdjacent(new IsLEOrdered<IExpr>());
 	}

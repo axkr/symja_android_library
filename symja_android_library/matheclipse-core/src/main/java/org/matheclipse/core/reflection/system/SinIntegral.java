@@ -22,6 +22,7 @@ public class SinIntegral extends AbstractTrigArg1 implements INumeric {
 		return F.num(de.lab4inf.math.functions.SineIntegral.si(arg1));
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

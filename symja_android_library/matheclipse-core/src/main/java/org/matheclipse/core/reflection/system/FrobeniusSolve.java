@@ -20,6 +20,7 @@ public class FrobeniusSolve implements IFunctionEvaluator {
 	public FrobeniusSolve() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
@@ -64,10 +65,12 @@ public class FrobeniusSolve implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 
 	}

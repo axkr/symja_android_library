@@ -13,6 +13,7 @@ public class Max extends AbstractFunctionEvaluator {
 	public Max() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1);
 

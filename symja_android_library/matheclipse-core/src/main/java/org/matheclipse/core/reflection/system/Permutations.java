@@ -131,20 +131,24 @@ public class Permutations extends AbstractFunctionEvaluator {
 			return null;
 		}
 
+		@Override
 		public int[] next() {
 			System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
 			fResultIndex = nextBeforehand();
 			return fCopiedResultIndex;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fResultIndex != null;
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Iterator<int[]> iterator() {
 			return this;
 		}
@@ -178,6 +182,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>null</code> if no further index array could be generated
 		 */
+		@Override
 		public IAST next() {
 			int[] permutationsIndex = fIterable.next();
 			if (permutationsIndex == null) {
@@ -190,14 +195,17 @@ public class Permutations extends AbstractFunctionEvaluator {
 			return temp;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fIterable.hasNext();
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Iterator<IAST> iterator() {
 			return this;
 		}

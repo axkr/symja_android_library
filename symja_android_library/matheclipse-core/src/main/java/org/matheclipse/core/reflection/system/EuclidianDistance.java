@@ -15,6 +15,7 @@ public class EuclidianDistance implements IFunctionEvaluator {
 	public EuclidianDistance() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		IExpr arg1 = ast.arg1();
@@ -39,10 +40,12 @@ public class EuclidianDistance implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 
 	}

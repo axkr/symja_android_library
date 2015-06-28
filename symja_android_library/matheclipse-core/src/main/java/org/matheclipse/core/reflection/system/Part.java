@@ -14,6 +14,7 @@ public class Part implements IFunctionEvaluator {
 	public Part() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
 			// if (ast.arg1() == F.Null) {
@@ -90,10 +91,12 @@ public class Part implements IFunctionEvaluator {
 		return ast.get(position);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
 	}

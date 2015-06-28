@@ -28,6 +28,7 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 	public Sinc() {
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
@@ -63,8 +64,8 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		if (arg1.equals(Apfloat.ZERO)) {
-			return F.num(Apfloat.ONE);
+		if (arg1.equals(Apcomplex.ZERO)) {
+			return F.num(Apcomplex.ONE);
 		}
 		return F.num(ApfloatMath.sin(arg1).divide(arg1));
 	}

@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -32,6 +30,7 @@ public class PrimeQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 		return F.bool(apply(ast.arg1()));
 	}
 
+	@Override
 	public boolean apply(final IExpr obj) {
 		try {
 			return ((IInteger) obj).isProbablePrime();

@@ -16,6 +16,7 @@ public class DirectedInfinity implements IFunctionEvaluator {
 	public DirectedInfinity() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1, 2);
 
@@ -41,6 +42,7 @@ public class DirectedInfinity implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
@@ -90,6 +92,7 @@ public class DirectedInfinity implements IFunctionEvaluator {
 		return inf;
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		// don't set ISymbol.NUMERICFUNCTION);
 		symbol.setAttributes(ISymbol.HOLDALL);

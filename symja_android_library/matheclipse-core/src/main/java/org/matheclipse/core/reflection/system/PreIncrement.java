@@ -15,10 +15,12 @@ public class PreIncrement extends PreDecrement {
 
 	}
 	
+	@Override
 	protected Function<IExpr, IExpr> getFunction() {
 		return new IncrementFunction();
 	}
 
+	@Override
 	protected ISymbol getFunctionSymbol() {
 		return F.PreIncrement;
 	}

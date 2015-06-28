@@ -16,11 +16,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 import org.matheclipse.core.basic.Config;

@@ -15,10 +15,12 @@ public class Increment extends Decrement {
 
 	}
 
+	@Override
 	protected Function<IExpr, IExpr> getFunction() {
 		return new IncrementFunction();
 	}
 
+	@Override
 	protected ISymbol getFunctionSymbol() {
 		return F.Increment;
 	}

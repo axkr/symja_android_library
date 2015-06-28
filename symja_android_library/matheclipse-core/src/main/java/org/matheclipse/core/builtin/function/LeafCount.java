@@ -45,6 +45,7 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 			return 3;
 		}
 
+		@Override
 		public long visit(IAST list) {
 			long sum = 0;
 			for (int i = fHeadOffset; i < list.size(); i++) {

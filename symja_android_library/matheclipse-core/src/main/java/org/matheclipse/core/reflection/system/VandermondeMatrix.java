@@ -7,7 +7,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -34,6 +33,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 			indexArray[1] = len0;
 
 			final IIndexFunction<IExpr> function = new IIndexFunction<IExpr>() {
+				@Override
 				public IExpr evaluate(int[] index) {
 					return Power(lst.get(index[0] + 1), IntegerSym.valueOf(index[1]));
 				}

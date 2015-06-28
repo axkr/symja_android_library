@@ -67,9 +67,9 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		if (arg1.equals(Apfloat.ZERO)) {
+		if (arg1.equals(Apcomplex.ZERO)) {
 			// I*Pi / 2
-			return F.complexNum(new Apcomplex(Apfloat.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
+			return F.complexNum(new Apcomplex(Apcomplex.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
 		}
 		return F.num(ApfloatMath.atanh(arg1.inverse()));
 	}

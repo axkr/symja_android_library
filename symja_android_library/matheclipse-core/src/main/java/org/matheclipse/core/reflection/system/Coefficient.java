@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExpVectorLong;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**

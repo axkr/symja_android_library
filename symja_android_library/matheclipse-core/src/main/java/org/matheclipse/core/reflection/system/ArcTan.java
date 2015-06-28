@@ -59,6 +59,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 		return ComplexUtils.atan((ComplexNum) c);
 	}
 
+	@Override
 	public IExpr e2DblArg(final INum d0, final INum d1) {
 		return F.num(Math.atan2(d0.getRealPart(), d1.getRealPart()));
 	}
@@ -73,6 +74,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 		return F.complexNum(ApcomplexMath.atan(arg1));
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1 && size != 2) {
 			throw new UnsupportedOperationException();

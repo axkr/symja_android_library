@@ -35,6 +35,7 @@ public class LowerCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final IExpr obj) {
 		final String str = obj.toString();
 		char ch;

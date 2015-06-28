@@ -41,6 +41,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 			first = true;
 		}
 
+		@Override
 		public int[] next() {
 			if (bin-- == 0) {
 				return null;
@@ -72,14 +73,17 @@ public class Subsets extends AbstractFunctionEvaluator {
 			return bin;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return true;
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Iterator<int[]> iterator() {
 			return this;
 		}
@@ -114,6 +118,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>null</code> if no further index array could be generated
 		 */
+		@Override
 		public IAST next() {
 			int j[] = fIterable.next();
 			if (j == null) {
@@ -128,14 +133,17 @@ public class Subsets extends AbstractFunctionEvaluator {
 			return temp;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fIterable.hasNext();
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Iterator<IAST> iterator() {
 			return this;
 		}

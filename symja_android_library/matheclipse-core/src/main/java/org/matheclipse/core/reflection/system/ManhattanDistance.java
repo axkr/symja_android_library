@@ -17,6 +17,7 @@ public class ManhattanDistance implements IFunctionEvaluator {
 	public ManhattanDistance() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() != 3) {
 			throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
@@ -43,10 +44,12 @@ public class ManhattanDistance implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 
 	}

@@ -34,6 +34,7 @@ public class ListQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	public void setUp(final ISymbol symbol) {
 	}
 
+	@Override
 	public boolean apply(final IExpr expr) {
 		return expr.isList();
 	}

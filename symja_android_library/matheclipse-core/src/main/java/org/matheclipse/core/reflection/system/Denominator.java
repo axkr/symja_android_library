@@ -24,6 +24,7 @@ public class Denominator implements IFunctionEvaluator {
 	public Denominator() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -38,10 +39,12 @@ public class Denominator implements IFunctionEvaluator {
 		return parts[1];
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}

@@ -68,6 +68,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	public void setUp(final ISymbol symbol) {
 	}
 
+	@Override
 	public boolean apply(final IExpr firstArg, final IExpr secondArg) {
 		IAST list;
 		if (secondArg.isList()) {

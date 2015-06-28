@@ -16,6 +16,7 @@ public class JavaForm implements IFunctionEvaluator {
 	public JavaForm() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
@@ -38,10 +39,12 @@ public class JavaForm implements IFunctionEvaluator {
 		return arg1.internalFormString(strictJava, 0);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 		// symbol.setAttributes(ISymbol.HOLDALL);
 	}

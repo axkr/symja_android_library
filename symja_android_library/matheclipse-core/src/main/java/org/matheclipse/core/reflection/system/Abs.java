@@ -30,6 +30,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	}
 
 	private final class AbsTimesFunction implements Function<IExpr, IExpr> {
+		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isNumber()) {
 				return ((INumber) expr).eabs();
@@ -49,6 +50,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 			this.symbol = symbol;
 		}
 
+		@Override
 		public IExpr apply(double value) {
 			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
 				double result = Math.abs(value);
@@ -63,6 +65,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	public Abs() {
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
@@ -70,6 +73,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		return Math.abs(stack[top]);
 	}
 
+	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isIndeterminate()) {
 			return F.Indeterminate;
@@ -103,6 +107,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		return null;
 	}
 
+	@Override
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(Math.abs(arg1));
 	}

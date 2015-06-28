@@ -19,6 +19,7 @@ public class TeXForm extends AbstractFunctionEvaluator {
 	public TeXForm() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -30,6 +31,7 @@ public class TeXForm extends AbstractFunctionEvaluator {
 		return F.stringx(stw.toString());
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

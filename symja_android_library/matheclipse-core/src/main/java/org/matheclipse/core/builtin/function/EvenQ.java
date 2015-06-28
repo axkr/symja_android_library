@@ -40,6 +40,7 @@ public class EvenQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final IExpr expr) {
 		return (expr.isInteger()) && ((IInteger) expr).isEven();
 	}

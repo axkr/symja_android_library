@@ -9,8 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcher;
-
 import com.google.common.base.Predicate;
 
 /**
@@ -21,6 +19,7 @@ public class ArrayQ implements IFunctionEvaluator {
 	public ArrayQ() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 4);
 
@@ -106,10 +105,12 @@ public class ArrayQ implements IFunctionEvaluator {
 		return resultDepth;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 	}
 

@@ -12,6 +12,7 @@ public class CompoundExpression extends AbstractCoreFunctionEvaluator {
 	public CompoundExpression() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() > 1) {
 			final EvalEngine engine = EvalEngine.get();
@@ -24,10 +25,12 @@ public class CompoundExpression extends AbstractCoreFunctionEvaluator {
 		return F.Null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

@@ -81,7 +81,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	public static IAST getUnaryInverseFunction(IAST ast) {
 		IExpr expr = ast.head();
 		if (expr.isSymbol()) {
-			ISymbol inverseSymbol = UNARY_INVERSE_FUNCTIONS.get((ISymbol) expr);
+			ISymbol inverseSymbol = UNARY_INVERSE_FUNCTIONS.get(expr);
 			if (inverseSymbol != null) {
 				return F.ast(inverseSymbol);
 			}
@@ -89,6 +89,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDALL);
 	}

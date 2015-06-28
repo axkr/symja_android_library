@@ -32,6 +32,7 @@ public class DigitQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final IExpr obj) {
 		final String str = obj.toString();
 		char ch;

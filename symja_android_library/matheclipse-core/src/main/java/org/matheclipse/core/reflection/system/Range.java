@@ -19,7 +19,8 @@ public class Range implements IFunctionEvaluator {
   public Range() {
   }
 
-  public IExpr evaluate(final IAST ast) {
+  @Override
+public IExpr evaluate(final IAST ast) {
     return evaluateTable(ast, List());
   }
 
@@ -41,11 +42,13 @@ public class Range implements IFunctionEvaluator {
     return null;
   }
 
-  public IExpr numericEval(final IAST functionList) {
+  @Override
+public IExpr numericEval(final IAST functionList) {
     return evaluate(functionList);
   }
 
-  public void setUp(final ISymbol symbol) {
+  @Override
+public void setUp(final ISymbol symbol) {
     symbol.setAttributes(ISymbol.HOLDALL);
   }
 }

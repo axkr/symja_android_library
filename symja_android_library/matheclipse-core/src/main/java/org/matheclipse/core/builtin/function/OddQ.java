@@ -41,6 +41,7 @@ public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IEx
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final IExpr expr) {
 		return expr.isInteger() && ((IntegerSym) expr).isOdd();
 	}

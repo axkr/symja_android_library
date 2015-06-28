@@ -179,7 +179,7 @@ public class Together extends AbstractFunctionEvaluator {
 				if (result != null) {
 					IExpr temp = F.eval(result);
 					if (temp.isTimes() || temp.isPower()) {
-						IExpr temp2 = Cancel.cancelPowerTimes((IAST) temp);
+						IExpr temp2 = Cancel.cancelPowerTimes(temp);
 						if (temp2 != null) {
 							return temp2;
 						}

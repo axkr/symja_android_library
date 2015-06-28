@@ -72,6 +72,7 @@ public class TrigReduce implements IFunctionEvaluator {
 		}
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -92,10 +93,12 @@ public class TrigReduce implements IFunctionEvaluator {
 		return result;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]", "Cos[y_]", "Sin[x+y]/2+Sin[x-y]/2");
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),

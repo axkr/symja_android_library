@@ -14,6 +14,7 @@ public class ReplaceRepeated implements IFunctionEvaluator {
 	public ReplaceRepeated() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		try {
 			Validate.checkSize(ast, 3);
@@ -36,10 +37,12 @@ public class ReplaceRepeated implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 	}
 

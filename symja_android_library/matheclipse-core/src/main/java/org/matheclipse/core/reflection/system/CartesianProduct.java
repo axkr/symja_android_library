@@ -66,6 +66,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 		 * 
 		 * @return true if the iteration has more tuples, else false.
 		 */
+		@Override
 		public synchronized boolean hasNext() {
 			return !empty;
 		}
@@ -75,6 +76,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 		 * 
 		 * @return next tuple.
 		 */
+		@Override
 		public synchronized IAST next() {
 			if (empty) {
 				throw new RuntimeException("invalid call of next()");
@@ -112,6 +114,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 		 * 
 		 * @throws UnsupportedOperationException
 		 */
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("cannnot remove tuples");
 		}
@@ -155,6 +158,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 		 * 
 		 * @return an iterator.
 		 */
+		@Override
 		public Iterator<IAST> iterator() {
 			return new CartesianProductIterator(comps, fEmptyResultList);
 		}

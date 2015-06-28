@@ -14,6 +14,7 @@ public class FreeQ extends AbstractCoreFunctionEvaluator {
 	public FreeQ() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final EvalEngine engine = EvalEngine.get();

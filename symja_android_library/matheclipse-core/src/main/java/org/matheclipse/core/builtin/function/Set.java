@@ -19,6 +19,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 	public Set() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final IExpr leftHandSide = ast.arg1();
@@ -40,6 +41,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 		return (IExpr) result[1];
 	}
 
+	@Override
 	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 
 		final EvalEngine engine = EvalEngine.get();
@@ -80,10 +82,12 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 		throw new RuleCreationError(leftHandSide);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

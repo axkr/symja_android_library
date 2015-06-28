@@ -19,6 +19,7 @@ public class Trace implements IFunctionEvaluator {
 	public Trace() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
@@ -35,10 +36,12 @@ public class Trace implements IFunctionEvaluator {
 		return holdList;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

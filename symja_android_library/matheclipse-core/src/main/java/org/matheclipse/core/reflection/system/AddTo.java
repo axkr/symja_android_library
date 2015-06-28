@@ -52,7 +52,7 @@ public class AddTo extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		ISymbol sym = Validate.checkSymbolType(ast, 1);
 		IExpr arg2 = F.eval(ast.arg2());
-		IExpr[] results = ((ISymbol) sym).reassignSymbolValue(getFunction(F.eval(arg2)), getFunctionSymbol());
+		IExpr[] results = sym.reassignSymbolValue(getFunction(F.eval(arg2)), getFunctionSymbol());
 		if (results != null) {
 			return results[1];
 		} 

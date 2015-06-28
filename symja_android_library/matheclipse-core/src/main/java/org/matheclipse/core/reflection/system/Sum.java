@@ -52,7 +52,7 @@ public class Sum extends Table implements SumRules {
 
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
-			arg1 = F.expand((IAST) arg1, false, false);
+			arg1 = F.expand(arg1, false, false);
 			if (arg1 == null) {
 				arg1 = ast.arg1();
 			}
@@ -169,7 +169,7 @@ public class Sum extends Table implements SumRules {
 	 * @return
 	 */
 	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list) {
-		final ISymbol var = (ISymbol) iterator.getVariable();
+		final ISymbol var = iterator.getVariable();
 		IExpr arg1 = expr;
 		final IExpr from = iterator.getStart();
 		final IExpr to = iterator.getMaxCount();

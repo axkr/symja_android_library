@@ -9,7 +9,6 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -147,7 +146,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				for (int i = 0; i < exp.length(); i++) {
 					lExp = exp.getVal(i);
 					if (lExp != 0) {
-						variable = (ISymbol) variablesList.get(i);
+						variable = variablesList.get(i);
 						monomTimes.add(F.Power(variable, F.integer(lExp)));
 					}
 				}

@@ -15,6 +15,7 @@ public class SquaredEuclidianDistance implements IFunctionEvaluator {
 	public SquaredEuclidianDistance() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST functionList) {
 		if (functionList.size() != 3) {
 			throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
@@ -41,10 +42,12 @@ public class SquaredEuclidianDistance implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 
 	}

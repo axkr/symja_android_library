@@ -31,6 +31,7 @@ public class ValueQ extends AbstractCoreFunctionEvaluator implements Predicate<I
 		return F.bool(apply(ast.arg1()));
 	}
 
+	@Override
 	public boolean apply(final IExpr expr) {
 		return expr.isValue();
 	}

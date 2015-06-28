@@ -55,6 +55,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	 * 
 	 * @deprecated use {@link IExpr#evalSignedNumber()} instead
 	 */
+	@Deprecated
 	public static ISignedNumber getSignedNumberNumericQ(IExpr arg1) {
 		if (arg1.isSignedNumber()) {
 			return (ISignedNumber) arg1;
@@ -80,6 +81,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	 * @return a number if possible
 	 * @deprecated use {@link IExpr#evalNumber()} instead
 	 */
+	@Deprecated
 	public static INumber getNumberNumericQ(IExpr arg1) {
 		if (arg1.isNumber()) {
 			return (INumber) arg1;

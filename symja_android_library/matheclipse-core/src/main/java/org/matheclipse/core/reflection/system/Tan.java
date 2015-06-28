@@ -106,6 +106,7 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 		return F.complexNum(ApcomplexMath.tan(arg1));
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

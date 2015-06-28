@@ -54,7 +54,7 @@ public class Product extends Table {
 
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
-			arg1 = F.expand((IAST) arg1, false, false);
+			arg1 = F.expand(arg1, false, false);
 			if (arg1 == null) {
 				arg1 = ast.arg1();
 			}
@@ -153,10 +153,12 @@ public class Product extends Table {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

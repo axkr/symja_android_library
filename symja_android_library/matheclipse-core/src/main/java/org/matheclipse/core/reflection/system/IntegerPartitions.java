@@ -122,20 +122,24 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 			return fPartititionsIndex;
 		}
 
+		@Override
 		public int[] next() {
 			System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
 			fResultIndex = nextBeforehand();
 			return fCopiedResultIndex;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fResultIndex != null;
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
 		public Iterator<int[]> iterator() {
 			return this;
 		}

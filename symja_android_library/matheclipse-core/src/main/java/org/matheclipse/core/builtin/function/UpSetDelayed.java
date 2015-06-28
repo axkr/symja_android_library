@@ -17,6 +17,7 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 	public UpSetDelayed() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		final IExpr leftHandSide = ast.arg1();
@@ -27,6 +28,7 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 		return F.Null;
 	}
 
+	@Override
 	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
 		final Object[] result = new Object[2];
 		final EvalEngine engine = EvalEngine.get();
@@ -70,10 +72,12 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 		// throw new RuleCreationError(leftHandSide);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

@@ -37,22 +37,27 @@ public class ConstantArray implements IFunctionEvaluator {
 			fTo = from + length - 1;
 		}
 
+		@Override
 		public boolean setUp() {
 			return true;
 		}
 
+		@Override
 		public void tearDown() {
 			fCurrent = fFrom;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fCurrent <= fTo;
 		}
 
+		@Override
 		public IExpr next() {
 			return F.integer(fCurrent++);
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -62,6 +67,7 @@ public class ConstantArray implements IFunctionEvaluator {
 	public ConstantArray() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		return evaluateArray(ast, List());
 	}
@@ -115,10 +121,12 @@ public class ConstantArray implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

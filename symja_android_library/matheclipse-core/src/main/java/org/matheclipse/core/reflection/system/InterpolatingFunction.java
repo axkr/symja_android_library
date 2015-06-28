@@ -19,6 +19,7 @@ public class InterpolatingFunction implements IFunctionEvaluator {
 	public InterpolatingFunction() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.head().isAST()) {
 			final IAST function = (IAST) ast.head();
@@ -60,10 +61,12 @@ public class InterpolatingFunction implements IFunctionEvaluator {
 		return interpolatedY;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

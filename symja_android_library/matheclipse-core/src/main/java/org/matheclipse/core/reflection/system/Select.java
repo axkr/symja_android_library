@@ -12,6 +12,7 @@ public class Select implements IFunctionEvaluator {
 	public Select() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 		
@@ -29,10 +30,12 @@ public class Select implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 	}
 

@@ -105,6 +105,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		return c0.add(F.complex(i1, F.C0));
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		double result = 0;
 		for (int i = top - size + 1; i < top + 1; i++) {

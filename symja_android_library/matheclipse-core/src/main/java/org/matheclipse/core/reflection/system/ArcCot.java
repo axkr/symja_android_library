@@ -56,7 +56,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		if (arg1.equals(Apfloat.ZERO)) {
+		if (arg1.equals(Apcomplex.ZERO)) {
 			// Pi / 2
 			return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
 		}

@@ -31,6 +31,7 @@ public class Im implements IFunctionEvaluator {
 	public Im() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -127,10 +128,12 @@ public class Im implements IFunctionEvaluator {
 				Sin(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}

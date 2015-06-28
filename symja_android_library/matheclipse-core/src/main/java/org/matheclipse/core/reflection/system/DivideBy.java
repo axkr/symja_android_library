@@ -30,6 +30,7 @@ public class DivideBy extends AddTo {
 		return new DivideByFunction(value);
 	}
 
+	@Override
 	protected ISymbol getFunctionSymbol() {
 		return F.DivideBy;
 	}

@@ -16,6 +16,7 @@ import org.matheclipse.core.polynomials.HornerScheme;
  * 
  * @deprecated use HornerForm
  */
+@Deprecated
 public class Horner extends AbstractFunctionEvaluator {
 
 	@Deprecated

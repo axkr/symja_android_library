@@ -18,6 +18,7 @@ public class FromContinuedFraction implements IFunctionEvaluator {
 	public FromContinuedFraction() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2); 
 		if ( !ast.arg1().isList()) {
@@ -35,10 +36,12 @@ public class FromContinuedFraction implements IFunctionEvaluator {
 		return result;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 	}
 

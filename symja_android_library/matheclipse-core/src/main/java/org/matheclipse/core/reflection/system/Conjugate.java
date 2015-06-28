@@ -19,6 +19,7 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 	public Conjugate() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -87,14 +88,17 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

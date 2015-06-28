@@ -49,6 +49,7 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 		return null;
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

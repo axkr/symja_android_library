@@ -127,41 +127,49 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			return false;
 		}
 
+		@Override
 		public boolean visit(IInteger element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IFraction element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IComplex element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(INum element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IComplexNum element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IPattern element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IPatternSequence element) {
 			fNodeCounter++;
 			return false;
 		}
 
+		@Override
 		public boolean visit(IStringX element) {
 			fNodeCounter++;
 			return false;

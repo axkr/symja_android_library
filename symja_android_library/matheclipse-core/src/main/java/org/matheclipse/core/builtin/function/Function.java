@@ -17,6 +17,7 @@ public class Function implements IFunctionEvaluator {
 	public Function() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.head().isAST()) {
 
@@ -55,10 +56,12 @@ public class Function implements IFunctionEvaluator {
 		return (result == null) ? expr : result;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

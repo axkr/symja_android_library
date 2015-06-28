@@ -68,6 +68,7 @@ public class InterpolatingPolynomial implements IFunctionEvaluator {
 		return a;
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
@@ -115,10 +116,12 @@ public class InterpolatingPolynomial implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

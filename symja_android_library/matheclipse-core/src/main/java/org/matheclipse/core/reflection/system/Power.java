@@ -376,6 +376,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		return null;
 	}
 
+	@Override
 	public IExpr e2FraArg(IFraction f0, IFraction f1) {
 		if (f0.getNumerator().isZero()) {
 			return F.C0;
@@ -530,6 +531,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		return c0.pow(i1.getBigNumerator().intValue());
 	}
 
+	@Override
 	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
 		if (i1.equals(F.C1D2) && c0.getRealPart().equals(BigFraction.ZERO)) {
 			// square root of pure imaginary number
@@ -560,6 +562,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		super.setUp(symbol);
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 2) {
 			throw new UnsupportedOperationException();

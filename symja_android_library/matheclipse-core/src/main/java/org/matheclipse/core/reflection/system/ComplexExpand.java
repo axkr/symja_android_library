@@ -120,6 +120,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 		}
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1, 2);
 		IExpr arg1 = ast.arg1();
@@ -139,10 +140,12 @@ public class ComplexExpand implements IFunctionEvaluator {
 		return arg1.accept(tteVisitor);
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}

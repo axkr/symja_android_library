@@ -24,6 +24,7 @@ public class ContinuedFraction implements IFunctionEvaluator {
 	public ContinuedFraction() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 
@@ -73,10 +74,12 @@ public class ContinuedFraction implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
 	}

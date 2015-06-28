@@ -39,6 +39,7 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final String str) {
 		try {
 			final Parser fParser = new Parser();

@@ -34,6 +34,7 @@ public class NumberQ extends AbstractCoreFunctionEvaluator implements Predicate<
 		return F.bool(arg1.isNumber());
 	}
 
+	@Override
 	public boolean apply(final IExpr expr) {
 		return expr.isNumber();
 	}

@@ -14,6 +14,7 @@ public class ReplacePart implements IFunctionEvaluator {
 	public ReplacePart() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 4);
 
@@ -56,10 +57,12 @@ public class ReplacePart implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 	}
 }

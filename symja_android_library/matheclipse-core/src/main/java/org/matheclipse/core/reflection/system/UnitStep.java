@@ -26,6 +26,7 @@ public class UnitStep implements INumeric, IFunctionEvaluator {
 		return 1.0;
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		int size = ast.size();
 		if (size > 1) {
@@ -44,10 +45,12 @@ public class UnitStep implements INumeric, IFunctionEvaluator {
 		return F.C1;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE);
 	}

@@ -14,21 +14,24 @@ public class Hold implements IFunctionEvaluator {
   /* (non-Javadoc)
    * @see org.matheclipse.core.eval.interfaces.IFunctionEvaluator#evaluate(org.matheclipse.core.eval.EvalEngine, org.matheclipse.parser.interfaces.IAST)
    */
-  public IExpr evaluate(final IAST functionList) {
+  @Override
+public IExpr evaluate(final IAST functionList) {
     return null;
   }
 
   /* (non-Javadoc)
    * @see org.matheclipse.core.eval.interfaces.IFunctionEvaluator#numericEval(org.matheclipse.core.eval.EvalEngine, org.matheclipse.parser.interfaces.IAST)
    */
-  public IExpr numericEval(final IAST functionList) {
+  @Override
+public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
   }
 
   /* (non-Javadoc)
    * @see org.matheclipse.parser.interfaces.IEvaluator#setUp(org.matheclipse.parser.interfaces.ISymbol)
    */
-  public void setUp(final ISymbol symbol) {
+  @Override
+public void setUp(final ISymbol symbol) {
     symbol.setAttributes(ISymbol.HOLDALL);
   }
 

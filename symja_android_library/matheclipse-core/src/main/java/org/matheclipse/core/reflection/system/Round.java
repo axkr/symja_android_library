@@ -23,6 +23,7 @@ import com.google.common.base.Function;
 public class Round extends AbstractFunctionEvaluator implements INumeric {
 
 	private final class RoundPlusFunction implements Function<IExpr, IExpr> {
+		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isInteger()) {
 				return expr;
@@ -34,6 +35,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 	public Round() {
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
@@ -41,6 +43,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		return Math.round(stack[top]);
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -74,10 +77,12 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);

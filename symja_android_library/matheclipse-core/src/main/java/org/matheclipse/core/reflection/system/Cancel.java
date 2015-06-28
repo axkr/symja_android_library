@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Predicate;
@@ -34,6 +33,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	 */
 	private final static class PolynomialPredicate implements Predicate<IExpr> {
 
+		@Override
 		public boolean apply(IExpr expr) {
 			return expr.isPolynomial(F.List());
 		}

@@ -79,6 +79,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * @param variableList
 	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
+	@Deprecated
 	public static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
 		try {
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);

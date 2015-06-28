@@ -34,6 +34,7 @@ public class TrigExpand implements IFunctionEvaluator {
 	public TrigExpand() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -104,10 +105,12 @@ public class TrigExpand implements IFunctionEvaluator {
 		return result;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}

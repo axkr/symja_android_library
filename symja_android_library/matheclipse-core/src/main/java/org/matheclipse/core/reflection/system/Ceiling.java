@@ -25,6 +25,7 @@ import com.google.common.base.Function;
 public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 
 	private final class CeilingPlusFunction implements Function<IExpr, IExpr> {
+		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isInteger()) {
 				return expr;
@@ -36,6 +37,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 	public Ceiling() {
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
@@ -43,6 +45,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		return Math.ceil(stack[top]);
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 
@@ -88,10 +91,12 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL |ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);

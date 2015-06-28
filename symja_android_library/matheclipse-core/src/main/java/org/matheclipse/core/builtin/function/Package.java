@@ -28,6 +28,7 @@ public class Package implements IFunctionEvaluator {
 	public Package() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 4);
 
@@ -136,7 +137,7 @@ public class Package implements IFunctionEvaluator {
 		if (expr.isAST()) {
 			result = convertSymbolsInList((IAST) expr, convertedSymbols);
 		} else if (expr.isSymbol()) {
-			ISymbol toSymbol = convertedSymbols.get((ISymbol) expr);
+			ISymbol toSymbol = convertedSymbols.get(expr);
 			if (toSymbol != null) {
 				result = toSymbol;
 			}
@@ -170,10 +171,12 @@ public class Package implements IFunctionEvaluator {
 		return result;
 	}
 
+	@Override
 	public IExpr numericEval(IAST functionList) {
 		return null;
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

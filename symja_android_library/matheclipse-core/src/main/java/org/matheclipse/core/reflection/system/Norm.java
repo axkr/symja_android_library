@@ -17,6 +17,7 @@ public class Norm implements IFunctionEvaluator {
 	public Norm() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
 		IExpr arg1 = ast.arg1();
@@ -36,10 +37,12 @@ public class Norm implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		return evaluate(ast);
 	}
 
+	@Override
 	public void setUp(ISymbol symbol) {
 
 	}

@@ -90,6 +90,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 		return bernoulli[n];
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}

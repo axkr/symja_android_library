@@ -37,6 +37,7 @@ public class AtomQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
+	@Override
 	public boolean apply(final IExpr obj) {
 		return obj.isAtom();
 	}

@@ -13,6 +13,7 @@ public class Min extends AbstractFunctionEvaluator {
 	public Min() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1);
 

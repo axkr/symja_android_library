@@ -13,6 +13,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 	public GeometricMean() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 2);
 		IAST arg1 = Validate.checkASTType(ast, 1);
@@ -22,6 +23,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST ast) {
 		Validate.checkSize(ast, 2);
 

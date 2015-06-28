@@ -51,6 +51,7 @@ public class Take extends AbstractFunctionEvaluator {
 		return resultList;
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.NHOLDREST);
 	}

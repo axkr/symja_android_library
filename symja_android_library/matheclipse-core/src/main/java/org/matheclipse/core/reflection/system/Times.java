@@ -370,6 +370,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		super.setUp(symbol);
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		double result = 1;
 		for (int i = top - size + 1; i < top + 1; i++) {

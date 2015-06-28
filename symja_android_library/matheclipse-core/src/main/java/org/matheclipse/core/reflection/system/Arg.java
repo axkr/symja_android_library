@@ -133,6 +133,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 	 *            a double complex number
 	 * @return
 	 */
+	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return num(Math.atan2(arg1.getImaginary(), arg1.getReal()));
 	}
@@ -147,6 +148,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 		return F.num(ApcomplexMath.arg(arg1));
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

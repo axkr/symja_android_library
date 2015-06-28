@@ -43,6 +43,7 @@ public class Chop extends AbstractCoreFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
 	}

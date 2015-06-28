@@ -68,6 +68,7 @@ public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
 		return F.complexNum(ApcomplexMath.cosh(arg1).inverse());
 	}
 	
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

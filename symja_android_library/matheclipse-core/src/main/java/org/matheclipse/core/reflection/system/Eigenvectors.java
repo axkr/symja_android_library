@@ -30,6 +30,7 @@ public class Eigenvectors extends AbstractMatrix1Expr {
 		return numericEval(ast);
 	}
 
+	@Override
 	public IAST realMatrixEval(RealMatrix matrix) {
 		try {
 			IAST list = F.List();

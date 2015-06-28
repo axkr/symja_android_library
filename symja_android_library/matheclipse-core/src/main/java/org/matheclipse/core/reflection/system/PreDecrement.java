@@ -15,6 +15,7 @@ public class PreDecrement extends Decrement {
 		return calculatedResult;
 	}
 
+	@Override
 	protected ISymbol getFunctionSymbol() {
 		return F.PreDecrement;
 	}

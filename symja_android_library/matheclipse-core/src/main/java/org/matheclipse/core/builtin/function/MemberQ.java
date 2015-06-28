@@ -14,6 +14,7 @@ public class MemberQ extends AbstractCoreFunctionEvaluator {
 	public MemberQ() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 3, 5);
 

@@ -14,6 +14,7 @@ public class Log2 extends AbstractArg1 implements INumeric {
 		return F.Log(F.C2,o); 
 	}
 
+	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();

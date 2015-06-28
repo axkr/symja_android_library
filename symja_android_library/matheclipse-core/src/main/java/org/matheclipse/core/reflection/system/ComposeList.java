@@ -15,6 +15,7 @@ public class ComposeList implements IFunctionEvaluator {
 	public ComposeList() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast) {
 		return evaluateComposeList(ast, List());
 	}
@@ -33,10 +34,12 @@ public class ComposeList implements IFunctionEvaluator {
 		return null;
 	}
 
+	@Override
 	public IExpr numericEval(final IAST functionList) {
 		return evaluate(functionList);
 	}
 
+	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}
