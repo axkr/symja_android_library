@@ -8,8 +8,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Set the attributes for a symbol
- * 
+ * Get the list of attributes of a given symbol.
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
+ * </p>
+ *
  */
 public class Attributes extends AbstractCoreFunctionEvaluator {
 

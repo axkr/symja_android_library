@@ -8,6 +8,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block">Block</a>
+ * </p>
+ *
+ */
 public class Block extends AbstractCoreFunctionEvaluator {
 	public Block() {
 	}

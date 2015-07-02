@@ -12,6 +12,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
  * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And</a>
+ * </p>
  */
 public class And extends AbstractFunctionEvaluator {
 	public And() {

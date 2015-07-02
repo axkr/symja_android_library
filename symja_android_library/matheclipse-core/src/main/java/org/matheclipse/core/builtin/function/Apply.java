@@ -13,6 +13,13 @@ import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.base.Function;
 
+/**
+ * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply">Apply</a>
+ * </p>
+ *
+ */
 public class Apply extends AbstractCoreFunctionEvaluator {
 
 	public Apply() {

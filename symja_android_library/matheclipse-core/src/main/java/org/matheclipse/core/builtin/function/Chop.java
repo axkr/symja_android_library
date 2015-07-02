@@ -10,6 +10,11 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/** 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Chop">Chop</a>
+ * </p>
+ */
 public class Chop extends AbstractCoreFunctionEvaluator {
 	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
 	public Chop() {

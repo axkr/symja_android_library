@@ -18,6 +18,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Array structure generator
+ * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
+ * </p>
+ *
  */
 public class Array  extends AbstractCoreFunctionEvaluator {
 

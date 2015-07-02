@@ -14,6 +14,11 @@ import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.base.Function;
 
+/** 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">Cases</a>
+ * </p>
+ */
 public class Cases extends AbstractCoreFunctionEvaluator {
 	/**
 	 * StopException will be thrown, if maximum number of Cases results are reached

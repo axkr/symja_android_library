@@ -13,6 +13,10 @@ import com.google.common.base.Predicate;
 
 /**
  * ArrayQ tests whether an expression is a full array.
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ArrayQ">ArrayQ</a>
+ * </p>
+ *
  */
 public class ArrayQ implements IFunctionEvaluator {
 

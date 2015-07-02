@@ -9,7 +9,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
+ * <p>
  * Return the internal Java form of this expression. The Java form is useful for generating Symja programming expressions.
+ * </p>
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
+ * </p>
  */
 public class JavaForm implements IFunctionEvaluator {
 

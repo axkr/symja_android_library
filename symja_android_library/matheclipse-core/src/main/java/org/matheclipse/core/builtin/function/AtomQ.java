@@ -11,7 +11,10 @@ import com.google.common.base.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is an atomic object (i.e. no AST instance)
- * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AtomQ">AtomQ</a>
+ * </p>
+ *
  */
 public class AtomQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 	/**

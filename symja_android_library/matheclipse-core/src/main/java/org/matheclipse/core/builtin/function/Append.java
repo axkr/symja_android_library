@@ -6,6 +6,13 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+ * </p>
+ *
+ */
 public class Append extends AbstractCoreFunctionEvaluator {
 
 	public Append() {

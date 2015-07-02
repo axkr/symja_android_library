@@ -9,6 +9,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
+/**
+ * 
+ * <p>
+ * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+ * </p>
+ *
+ */
 public class AppendTo extends AbstractCoreFunctionEvaluator {
 
 	class AppendToFunction implements Function<IExpr, IExpr> {
