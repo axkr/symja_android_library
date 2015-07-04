@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.GenPolynomial;
@@ -61,8 +62,8 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 
 					IAST resultList = F.List();
 					for (GenPolynomial<BigRational> p : opl.list) {
-						// System.out.println(p);
-						resultList.add(jas.poly2Expr(p, null));
+						// convert rational to integer coefficients and add polynomial to result list
+						resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 					}
 					return resultList;
 				}
