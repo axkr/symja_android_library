@@ -41,11 +41,13 @@ public class Apart extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
+		
+		final IExpr arg1 = ast.arg1();
 		IAST variableList = null;
 		if (ast.size() == 3) {
 			variableList = Validate.checkSymbolOrSymbolList(ast, 2);
 		} else {
-			VariablesSet eVar = new VariablesSet(ast.arg1());
+			VariablesSet eVar = new VariablesSet(arg1);
 			if (!eVar.isSize(1)) {
 				// partial fraction only possible for univariate polynomials
 				return null;
@@ -53,9 +55,8 @@ public class Apart extends AbstractFunctionEvaluator {
 			variableList = eVar.getVarList();
 		}
 
-		final IExpr arg = ast.arg1();
-		if (arg.isTimes() || arg.isPower()) {
-			IExpr[] parts = Apart.getFractionalParts(ast.arg1());
+		if (arg1.isTimes() || arg1.isPower()) {
+			IExpr[] parts = Apart.getFractionalParts(arg1);
 			if (parts != null) {
 				IAST plusResult = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
 						(ISymbol) variableList.arg1());
@@ -64,7 +65,7 @@ public class Apart extends AbstractFunctionEvaluator {
 				}
 			}
 		} else {
-			return ast.arg1();
+			return arg1;
 		}
 
 		return null;
