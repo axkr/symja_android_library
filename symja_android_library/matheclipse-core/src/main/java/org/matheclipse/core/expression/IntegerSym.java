@@ -476,7 +476,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		}
 		return super.plus(that);
 	}
-
+	
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof IntegerSym) {

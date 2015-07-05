@@ -32,7 +32,7 @@ public class ExprFieldElement implements FieldElement<ExprFieldElement>, Compara
 		if (val.isAtom() && a.val.isAtom()) {
 			return new ExprFieldElement(val.plus(a.val));
 		}
-		return new ExprFieldElement(F.evalExpandAll(F.Plus(val, a.val)));
+		return new ExprFieldElement(F.evalExpandAll(val.plus(a.val)));
 	}
 
 	@Override

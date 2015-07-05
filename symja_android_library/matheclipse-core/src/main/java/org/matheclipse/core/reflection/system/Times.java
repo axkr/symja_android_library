@@ -97,7 +97,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			if (o0.isNumber()) {
 				return o0.times(o0);
 			}
-			return F.Power(o0, F.C2);
+			return o0.power(F.C2);
 		}
 
 		if (o0.isDirectedInfinity()) {
@@ -116,7 +116,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				if (f1.arg2().isNumber()) {
 					if (s0.equals(f1.arg1())) {
 						// x*x^(b) => x ^ (1+b)
-						return Power(s0, Plus(F.C1, f1.arg2()));
+						return s0.power(f1.arg2().inc());
 					}
 				}
 			}
@@ -126,14 +126,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			final IAST f0 = (IAST) o0;
 			// if (f0.arg2().isNumber()) {
 			if (f0.equalsAt(1, o1)) {
-				return Power(o1, Plus(F.C1, f0.arg2()));
+				return o1.power(f0.arg2().inc());
 			}
 			// }
 			if (o1.isPower()) {
 				final IAST f1 = (IAST) o1;
 				if (f0.arg2().isNumber()) {
 					// if (f0.equalsAt(1, o1)) {
-					// return Power(o1, Plus(F.C1, f0.arg2()));
+					// return Power(o1, f0.arg2().inc());
 					// }
 
 					// if (o1.isPower()) {
@@ -142,18 +142,18 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					if (f1.arg2().isNumber()) {
 						if (f0.equalsAt(1, f1.arg1())) {
 							// x^(a)*x^(b) => x ^(a+b)
-							return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
+							return f0.arg1().power(f0.arg2().plus(f1.arg2()));
 						}
 						if (f0.equalsAt(2, f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()
 								&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
 							// a^(c)*b^(c) => (a*b) ^c
-							return Power(Times(f0.arg1(), f1.arg1()), f0.arg2());
+							return f0.arg1().times(f1.arg1()).power(f0.arg2());
 						}
 					}
 				}
 				if (f0.arg1().equals(f1.arg1())) {
 					// x^(a)*x^(b) => x ^(a+b)
-					return Power(f0.arg1(), Plus(f0.arg2(), f1.arg2()));
+					return f0.arg1().power(f0.arg2().plus(f1.arg2()));
 				}
 			}
 		}
@@ -162,7 +162,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			final IAST f1 = (IAST) o1;
 
 			if (f1.equalsAt(1, o0)) {
-				return Power(o0, Plus(F.C1, f1.arg2()));
+				return o0.power(f1.arg2().inc());
 			}
 		}
 

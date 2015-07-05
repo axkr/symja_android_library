@@ -506,6 +506,15 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		}
 		return this instanceof IInteger;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalResult() {
+		if (AbstractAssumptions.assumeRational(this)) {
+			return true;
+		}
+		return this instanceof IRational;
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -921,14 +930,28 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		return times(F.CN1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr plus(final IExpr that) {
 		return F.eval(F.Plus(this, that));
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return plus(F.C1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return plus(F.CN1);
 	}
 
 	/** {@inheritDoc} */

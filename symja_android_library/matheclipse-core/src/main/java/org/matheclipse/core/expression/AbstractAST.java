@@ -1437,9 +1437,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			if (arg1().isIntegerResult()) {
 				return true;
 			}
-			if (AbstractAssumptions.assumeInteger(arg1())) {
-				return true;
-			}
 			return false;
 		}
 		if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
@@ -1449,7 +1446,31 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				if (get(i).isIntegerResult()) {
 					continue;
 				}
-				if (AbstractAssumptions.assumeInteger(get(i))) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRationalResult() {
+		ISymbol symbol = topHead();
+		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
+			return true;
+		}
+		if (isPower() && arg2().isInteger() && arg2().isPositive()) {
+			if (arg1().isRationalResult()) {
+				return true;
+			}
+			return false;
+		}
+		if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
+			// TODO add more functions
+			// check if all arguments are &quot;rational functions&quot;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isRationalResult()) {
 					continue;
 				}
 				return false;
@@ -2354,6 +2375,19 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return F.eval(F.Plus(this, that));
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return plus(F.C1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return plus(F.CN1);
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public final IExpr power(final IExpr that) {
 		return F.Power(this, that);
