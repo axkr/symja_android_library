@@ -78,7 +78,7 @@ public class AST2Expr {
 			"PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position",
 			"Positive", "PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend",
 			"PrependTo", "Prime", "PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient",
-			"RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Refine",
+			"RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine",
 			"ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals",
 			"RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan",
 			"Sec", "Sech", "Select", "Sequence", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify",
