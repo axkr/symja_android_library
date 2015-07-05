@@ -62,21 +62,26 @@ public final class Validate {
 		return checkLongType(arg2);
 	}
 
-	public static long checkLongType(IExpr arg2) {
+	/**
+	 * Check the argument, if it's a Java {@code long} value in the range [0, Long.MAX_VALUE]
+	 * 
+	 * @throws WrongArgumentType
+	 */
+	public static long checkLongType(IExpr expr) {
 		long exponent = 0;
 		try {
 			// the following may throw ArithmeticException
-			if (arg2 instanceof IInteger) {
-				exponent = ((IInteger) arg2).toLong();
+			if (expr instanceof IInteger) {
+				exponent = ((IInteger) expr).toLong();
 				return exponent;
-			} else if (arg2 instanceof INum) {
-				exponent = ((INum) arg2).toLong();
+			} else if (expr instanceof INum) {
+				exponent = ((INum) expr).toLong();
 				return exponent;
 			}
 		} catch (ArithmeticException ae) {
 			//
 		}
-		throw new WrongArgumentType(arg2, "Trying to convert the argument into a Java long exponent: " + arg2);
+		throw new WrongArgumentType(expr, "Trying to convert the argument into a Java long number: " + expr);
 	}
 
 	/**
