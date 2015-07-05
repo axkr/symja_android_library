@@ -199,8 +199,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (fxExpanded.isAST()) {
 						if (fxExpanded.isPlus()) {
 							if (fxExpanded != fx) {
-								IExpr polyQ = F.eval(F.PolynomialQ(fxExpanded, x));
-								if (polyQ.isTrue()) {
+								if (fxExpanded.isPolynomial(x)) {
 									if (arg1.isTimes()) {
 										result = integrateByRubiRules(ast);
 										if (result != null) {
@@ -276,9 +275,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 									IExpr[] parts = Apart.getFractionalParts(arg1);
 									if (parts != null) {
 										// try Rubi rules first
-										// System.out.println(parts[0]);
-										// System.out.println(parts[1]);
-										if (parts[0].isPolynomialOfMaxDegree(x, 3L)) {// || parts[0].equals(x)) {
+										if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
 											result = integrateByRubiRules(ast);
 											if (result != null) {
 												return result;
@@ -286,20 +283,21 @@ public class Integrate extends AbstractFunctionEvaluator {
 											calledRubi = true;
 										}
 
-										IAST apartPlus = Apart.partialFractionDecompositionRational(
+										IExpr apartPlus = Apart.partialFractionDecompositionRational(
 												new PartialFractionIntegrateGenerator(x), parts, x);
 
-										if (apartPlus != null && apartPlus.size() > 1) {
-											if (apartPlus.size() == 2) {
-												if (ast.equals(apartPlus.arg1())) {
-													return returnIntegrate(ast, evaled);
-												}
-												return apartPlus.arg1();
-											}
+										if (apartPlus != null && !apartPlus.isAST(F.Integrate)) {
 											if (ast.equals(apartPlus)) {
 												return returnIntegrate(ast, evaled);
 											}
 											return apartPlus;
+										}
+										if (parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
+											result = integrateByRubiRules(ast);
+											if (result != null) {
+												return result;
+											}
+											calledRubi = true;
 										}
 										if (arg1AST.isTimes()) {
 											result = integratePolynomialByParts(ast, arg1AST, x);
@@ -886,7 +884,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		}
 
 		// INT_FUNCTIONS.add(F.Times);
-		INT_FUNCTIONS.add(F.Power);
+		// INT_FUNCTIONS.add(F.Power);
 
 		INT_FUNCTIONS.add(F.Cos);
 		INT_FUNCTIONS.add(F.Cot);
@@ -1111,6 +1109,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		if (Config.LOAD_SERIALIZED_RULES) {
 			initSerializedRules(symbol);
 		}
+		// hack for TimeConstrained time limit:
+		F.ISet(F.$s("§timelimit"), F.integer(12));
 	}
 
 	/**

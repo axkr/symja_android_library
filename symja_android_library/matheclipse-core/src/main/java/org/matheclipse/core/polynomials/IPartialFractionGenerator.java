@@ -1,7 +1,7 @@
 package org.matheclipse.core.polynomials;
 
 import org.matheclipse.core.convert.JASConvert;
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
@@ -20,7 +20,7 @@ public interface IPartialFractionGenerator {
 	 * 
 	 * @return
 	 */
-	public abstract IAST getResult();
+	public abstract IExpr getResult();
 
 	/**
 	 * Add the non-fractional part of the partial fraction decomposition.

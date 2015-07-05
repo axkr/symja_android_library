@@ -199,13 +199,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				}
 			}
 
-			IAST plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
+			IExpr plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
 					new PartialFractionGenerator(), parts, symbol);
-			if (plusResult != null) {
+			if (plusResult != null && plusResult.isPlus()) {
 				// OneIdentity if plusResult.size() == 2
-				if (plusResult.size() > 2) {
-					return mapLimit(plusResult, rule);
-				}
+				// if (plusResult.size() > 2) {
+				return mapLimit((IAST) plusResult, rule);
+				// }
 			}
 
 			if (denominator.isOne()) {

@@ -46,8 +46,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	@Override
-	public IAST getResult() {
-		return result;
+	public IExpr getResult() {
+		return result.getOneIdentity(F.C0);
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 					isQuadratic(Di_1, denom);
 					IFraction p = F.fraction(denom[1].numerator(), denom[1].denominator());
 					IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
-					if (A.isZero()) {
+					if (A.isZero() && !p.isZero()) {
 						// JavaForm[B*Log[p*x+q]/p]
 						temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
 					} else {

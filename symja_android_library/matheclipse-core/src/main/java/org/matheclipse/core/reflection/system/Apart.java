@@ -58,10 +58,10 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (arg1.isTimes() || arg1.isPower()) {
 			IExpr[] parts = Apart.getFractionalParts(arg1);
 			if (parts != null) {
-				IAST plusResult = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+				IExpr result = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
 						(ISymbol) variableList.arg1());
-				if (plusResult != null) {
-					return plusResult.getOneIdentity(F.C0);
+				if (result != null) {
+					return result;
 				}
 			}
 		} else {
@@ -151,7 +151,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * @param variableList
 	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 	 */
-	public static IAST partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
+	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
 		try {
 			IAST variableList = F.List(x);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);

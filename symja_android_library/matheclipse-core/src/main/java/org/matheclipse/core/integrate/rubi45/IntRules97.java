@@ -25,10 +25,6 @@ ISetDelayed(Int(Power(Sinh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_),x_
     Condition(Int(ExpandTrigReduce(Power(Sinh(Plus(a,Times(b,Power(x,n)))),p),x),x),And(And(FreeQ(List(a,b,n),x),IntegerQ(p)),Greater(p,C1)))),
 ISetDelayed(Int(Power(Cosh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_),x_Symbol),
     Condition(Int(ExpandTrigReduce(Power(Cosh(Plus(a,Times(b,Power(x,n)))),p),x),x),And(And(FreeQ(List(a,b,n),x),IntegerQ(p)),Greater(p,C1)))),
-ISetDelayed(Int(Power(Sinh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT),x_Symbol),
-    Condition($(Defer($s("Int")),Power(Sinh(Plus(a,Times(b,Power(x,n)))),p),x),FreeQ(List(a,b,n,p),x))),
-ISetDelayed(Int(Power(Cosh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT),x_Symbol),
-    Condition($(Defer($s("Int")),Power(Cosh(Plus(a,Times(b,Power(x,n)))),p),x),FreeQ(List(a,b,n,p),x))),
 ISetDelayed(Int(Power(Sinh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(u_,n_)))),p_DEFAULT),x_Symbol),
     Condition(Times(Power(Coefficient(u,x,C1),-1),Subst(Int(Power(Sinh(Plus(a,Times(b,Power(x,n)))),p),x),x,u)),And(And(FreeQ(List(a,b,n,p),x),LinearQ(u,x)),NonzeroQ(Plus(u,Negate(x)))))),
 ISetDelayed(Int(Power(Cosh(Plus(a_DEFAULT,Times(b_DEFAULT,Power(u_,n_)))),p_DEFAULT),x_Symbol),
@@ -128,10 +124,6 @@ ISetDelayed(Int(Csch(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),x_Symbol),
 ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Sech(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT)),x_Symbol),
     Condition(Times(Power(n,-1),Subst(Int(Times(Power(x,Plus(Simplify(Times(Plus(m,C1),Power(n,-1))),Negate(C1))),Power(Sech(Plus(a,Times(b,x))),p)),x),x,Power(x,n))),And(FreeQ(List(a,b,m,n,p),x),PositiveIntegerQ(Simplify(Times(Plus(m,C1),Power(n,-1))))))),
 ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Csch(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT)),x_Symbol),
-    Condition(Times(Power(n,-1),Subst(Int(Times(Power(x,Plus(Simplify(Times(Plus(m,C1),Power(n,-1))),Negate(C1))),Power(Csch(Plus(a,Times(b,x))),p)),x),x,Power(x,n))),And(FreeQ(List(a,b,m,n,p),x),PositiveIntegerQ(Simplify(Times(Plus(m,C1),Power(n,-1))))))),
-ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Sech(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT)),x_Symbol),
-    Condition($(Defer($s("Int")),Times(Power(x,m),Power(Sech(Plus(a,Times(b,Power(x,n)))),p)),x),FreeQ(List(a,b,m,n,p),x))),
-ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Csch(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,n_)))),p_DEFAULT)),x_Symbol),
-    Condition($(Defer($s("Int")),Times(Power(x,m),Power(Csch(Plus(a,Times(b,Power(x,n)))),p)),x),FreeQ(List(a,b,m,n,p),x)))
+    Condition(Times(Power(n,-1),Subst(Int(Times(Power(x,Plus(Simplify(Times(Plus(m,C1),Power(n,-1))),Negate(C1))),Power(Csch(Plus(a,Times(b,x))),p)),x),x,Power(x,n))),And(FreeQ(List(a,b,m,n,p),x),PositiveIntegerQ(Simplify(Times(Plus(m,C1),Power(n,-1)))))))
   );
 }
