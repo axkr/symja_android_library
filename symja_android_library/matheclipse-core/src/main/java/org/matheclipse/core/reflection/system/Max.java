@@ -17,17 +17,20 @@ public class Max extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 1);
 
-		if (ast.size()==1){
+		if (ast.size() == 1) {
 			return F.CNInfinity;
 		}
 		IAST list = ast;
 		IAST resultList = list.copyHead();
+		boolean evaled = false;
 		if (EvalAttributes.flatten(F.List, list, resultList)) {
 			list = resultList;
+			evaled = true;
 		}
 		// IExpr max = F.Times(F.CN1, ExprFactory.Infinity);
 		IExpr max1;
 		IExpr max2;
+
 		max1 = list.arg1();
 		IAST f = list.copyHead();
 		COMPARE_RESULT comp;
@@ -40,6 +43,7 @@ public class Max extends AbstractFunctionEvaluator {
 
 			if (comp == COMPARE_RESULT.TRUE) {
 				max1 = max2;
+				evaled = true;
 			} else {
 				if (comp == COMPARE_RESULT.UNDEFINED) {
 					// undetermined
@@ -54,7 +58,7 @@ public class Max extends AbstractFunctionEvaluator {
 		}
 		if (f.size() > 1) {
 			f.add(1, max1);
-			if (f.equals(list)) {
+			if (!evaled) {
 				return null;
 			}
 			return f;
