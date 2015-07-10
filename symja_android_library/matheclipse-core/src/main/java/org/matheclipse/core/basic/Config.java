@@ -83,7 +83,7 @@ public class Config {
 	/**
 	 * If set to true the <code>Integrate</code> initialization Rules will be read from ressource <code>/ser/integrate.ser</code>
 	 */
-	public static boolean LOAD_SERIALIZED_RULES = false;
+	// public static boolean LOAD_SERIALIZED_RULES = false;
 
 	/**
 	 * <code>true</code> if the engine is started by a servlet<br/>

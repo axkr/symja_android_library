@@ -13,6 +13,8 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class IntRules34 { 
   public static IAST RULES = List( 
+ISetDelayed(Int(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_)))),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
+    Condition($(AbortRubi($s("Int")),Times(Power(Plus(d,Times(e,x)),m),Power(FSymbol,Plus(a,Times(b,x),Times(c,Sqr(x))))),x),FreeQ(List(FSymbol,a,b,c,d,e,m),x))),
 ISetDelayed(Int(Times(Power(F_,v_),Power(u_,m_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(ExpandToSum(u,x),m),Power(FSymbol,ExpandToSum(v,x))),x),And(And(And(FreeQ(List(FSymbol,m),x),LinearQ(u,x)),QuadraticQ(v,x)),Not(And(LinearMatchQ(u,x),QuadraticMatchQ(v,x)))))),
 ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),n_)),x_Symbol),

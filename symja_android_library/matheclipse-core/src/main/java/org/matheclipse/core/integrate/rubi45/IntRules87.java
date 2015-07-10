@@ -120,6 +120,8 @@ ISetDelayed(Int(Times(u_DEFAULT,Power(Times(Power(v_,m_DEFAULT),Power(w_,n_DEFAU
 ISetDelayed(Int(u_,x_Symbol),
     Condition(Module(List(Set(v,ExpandTrig(u,x))),Condition(Int(v,x),SumQ(v))),Not(InertTrigFreeQ(u)))),
 ISetDelayed(Int(u_,x_Symbol),
-    Condition(Module(List(Set(w,Block(List(Set($s("§showsteps"),False),Set($s("§stepcounter"),Null)),Int(SubstFor(Power(Plus(C1,Times(Sqr(FreeFactors(Tan(Times(C1D2,FunctionOfTrig(u,x))),x)),Sqr(x))),-1),Times(Tan(Times(C1D2,FunctionOfTrig(u,x))),Power(FreeFactors(Tan(Times(C1D2,FunctionOfTrig(u,x))),x),-1)),u,x),x)))),Condition(Module(List(Set(v,FunctionOfTrig(u,x)),d),CompoundExpression(Set(d,FreeFactors(Tan(Times(C1D2,v)),x)),Dist(Times(C2,d,Power(Coefficient(v,x,C1),-1)),Subst(Int(SubstFor(Power(Plus(C1,Times(Sqr(d),Sqr(x))),-1),Times(Tan(Times(C1D2,v)),Power(d,-1)),u,x),x),x,Times(Tan(Times(C1D2,v)),Power(d,-1))),x))),FreeQ(w,$s("Int")))),And(InverseFunctionFreeQ(u,x),NotFalseQ(FunctionOfTrig(u,x)))))
+    Condition(Module(List(Set(w,Block(List(Set($s("§showsteps"),False),Set($s("§stepcounter"),Null)),Int(SubstFor(Power(Plus(C1,Times(Sqr(FreeFactors(Tan(Times(C1D2,FunctionOfTrig(u,x))),x)),Sqr(x))),-1),Times(Tan(Times(C1D2,FunctionOfTrig(u,x))),Power(FreeFactors(Tan(Times(C1D2,FunctionOfTrig(u,x))),x),-1)),u,x),x)))),Condition(Module(List(Set(v,FunctionOfTrig(u,x)),d),CompoundExpression(Set(d,FreeFactors(Tan(Times(C1D2,v)),x)),Dist(Times(C2,d,Power(Coefficient(v,x,C1),-1)),Subst(Int(SubstFor(Power(Plus(C1,Times(Sqr(d),Sqr(x))),-1),Times(Tan(Times(C1D2,v)),Power(d,-1)),u,x),x),x,Times(Tan(Times(C1D2,v)),Power(d,-1))),x))),FreeQ(w,$s("Int")))),And(InverseFunctionFreeQ(u,x),NotFalseQ(FunctionOfTrig(u,x))))),
+ISetDelayed(Int(u_,x_Symbol),
+    Condition(Module(List(Set(v,ActivateTrig(u))),$(AbortRubi($s("Int")),v,x)),Not(InertTrigFreeQ(u))))
   );
 }

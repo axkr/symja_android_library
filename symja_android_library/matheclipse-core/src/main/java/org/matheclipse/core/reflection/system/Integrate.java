@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -766,11 +767,15 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 */
 	private static IExpr integrateByRubiRules(IAST ast) {
 		ISymbol head = ast.arg1().topHead();
-
-		// Issue #91
-		if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION || INT_RUBI_FUNCTIONS.contains(head)
-				|| head.getSymbolName().startsWith("§") || head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
-			return F.Integrate.evalDownRule(EvalEngine.get(), ast);
+		try {
+			// Issue #91
+			if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION || INT_RUBI_FUNCTIONS.contains(head)
+					|| head.getSymbolName().startsWith("§")
+					|| head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
+				return F.Integrate.evalDownRule(EvalEngine.get(), ast);
+			}
+		} catch (AbortException ae) {
+			return null;
 		}
 		// System.out.println(ast.toString());
 		return null;
@@ -878,10 +883,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// long start = System.currentTimeMillis();
 
 		IAST ast = null;
-		if (!Config.LOAD_SERIALIZED_RULES) {
-			ast = F.ast(F.List, 10000, false);
-			getRuleASTRubi45(ast);
-		}
+		// if (!Config.LOAD_SERIALIZED_RULES) {
+		ast = F.ast(F.List, 10000, false);
+		getRuleASTRubi45(ast);
+		// }
 
 		// INT_FUNCTIONS.add(F.Times);
 		// INT_FUNCTIONS.add(F.Power);
@@ -1106,9 +1111,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 		symbol.setAttributes(ISymbol.HOLDALL);
 		super.setUp(symbol);
 
-		if (Config.LOAD_SERIALIZED_RULES) {
-			initSerializedRules(symbol);
-		}
+		// if (Config.LOAD_SERIALIZED_RULES) {
+		// initSerializedRules(symbol);
+		// }
 		// hack for TimeConstrained time limit:
 		F.ISet(F.$s("§timelimit"), F.integer(12));
 	}

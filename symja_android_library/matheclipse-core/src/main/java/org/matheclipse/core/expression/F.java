@@ -2585,6 +2585,7 @@ public class F {
 	public static IAST Increment(final IExpr a) {
 		return unaryAST1(Increment, a);
 	}
+	
 
 	/**
 	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in
@@ -2610,7 +2611,7 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
-	private static ISymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
+	public static ISymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
 		ISymbol temp = new Symbol(symbolName, evaluator);
 		evaluator.setUp(temp);
 		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
