@@ -10,7 +10,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
+ * <p>
  * VectorAngle(arg1, arg2) calculates the angle between vectors arg1 and arg2.
+ * </p>
+ * 
+ * See: <a href="https://en.wikipedia.org/wiki/Angle#Dot_product_and_generalisation">Wikipedia - Angle - Dot product and
+ * generalisation</a>
  */
 public class VectorAngle implements IFunctionEvaluator {
 
