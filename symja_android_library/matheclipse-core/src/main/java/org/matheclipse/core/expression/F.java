@@ -3167,6 +3167,10 @@ public class F {
 		return AST.newInstance(intialArgumentsCapacity, head);
 	}
 
+	public static IAST Norm(final IExpr a) {
+		return unaryAST1(Norm, a);
+	}
+	
 	public static IAST Not(final IExpr a) {
 		return unaryAST1(Not, a);
 	}
