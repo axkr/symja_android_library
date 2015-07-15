@@ -371,6 +371,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Unevaluated());
 	public final static ISymbol Unique = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unique" : "Unique",
 			new org.matheclipse.core.builtin.function.Unique());
+	public final static ISymbol Unset = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unset" : "Unset",
+			new org.matheclipse.core.builtin.function.Unset());
 	public final static ISymbol UpSet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet",
 			new org.matheclipse.core.builtin.function.UpSet());
 	public final static ISymbol UpSetDelayed = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed"
@@ -3982,6 +3984,10 @@ public class F {
 		return binaryAST2(UnsameQ, a0, a1);
 	}
 
+	public static IAST Unset(final IExpr a0) {
+		return unaryAST1(Unset, a0);
+	}
+	
 	public static IAST UpSet(final IExpr a0, final IExpr a1) {
 		return binaryAST2(UpSet, a0, a1);
 	}

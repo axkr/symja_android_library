@@ -258,26 +258,28 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (comp == 0) {
 			if (obj instanceof PatternMatcherAndEvaluator) {
 				PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
-				if (fRightHandSide.isCondition()) {
-					if (pm.fRightHandSide.isCondition()) {
-						if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
-							return 0;
+				if (fRightHandSide != null) {
+					if (fRightHandSide.isCondition()) {
+						if (pm.fRightHandSide.isCondition()) {
+							if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
+								return 0;
+							}
+							return 1;
 						}
+						return -1;
+					} else if (pm.fRightHandSide.isCondition()) {
+						return 1;
+					} else if (fRightHandSide.isModule()) {
+						if (pm.fRightHandSide.isModule()) {
+							if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
+								return 0;
+							}
+							return 1;
+						}
+						return -1;
+					} else if (pm.fRightHandSide.isModule()) {
 						return 1;
 					}
-					return -1;
-				} else if (pm.fRightHandSide.isCondition()) {
-					return 1;
-				} else if (fRightHandSide.isModule()) {
-					if (pm.fRightHandSide.isModule()) {
-						if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap, pm.fPatternMap)) {
-							return 0;
-						}
-						return 1;
-					}
-					return -1;
-				} else if (pm.fRightHandSide.isModule()) {
-					return 1;
 				}
 				return 0;
 			}

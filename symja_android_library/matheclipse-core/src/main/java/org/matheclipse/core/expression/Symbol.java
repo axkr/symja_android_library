@@ -330,7 +330,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		return null;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
@@ -429,6 +429,20 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return fDownRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
+	@Override
+	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode) {
+		if (!packageMode) {
+			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+				throw new RuleCreationError(leftHandSide);
+			}
+
+			EvalEngine.get().addModifiedVariable(this);
+		}
+		if (fDownRulesData != null) {
+			fDownRulesData.removeRule(setSymbol, equalRule, leftHandSide);
+		}
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
@@ -522,7 +536,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 						if (cp != 0) {
 							return cp;
 						}
-						// "x^1"  compared to "x^arg2()"
+						// "x^1" compared to "x^arg2()"
 						return F.C1.compareTo(((IAST) lastTimes).arg2());
 					}
 					if (lastTimes.isSymbol()) {

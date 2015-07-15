@@ -305,6 +305,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IPatternMatcher putUpRule(final RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide, final int priority);
 
+	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode);
+
 	/**
 	 * Evaluate the given expression for the &quot;down value&quot; rules associated with this symbol
 	 * 

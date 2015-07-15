@@ -132,7 +132,7 @@ public class DownRulesData implements Serializable {
 				}
 			}
 		} catch (CloneNotSupportedException cnse) {
-			cnse.printStackTrace();  
+			cnse.printStackTrace();
 		}
 		return null;
 	}
@@ -141,7 +141,7 @@ public class DownRulesData implements Serializable {
 			boolean showSteps) throws CloneNotSupportedException {
 		IExpr result;
 		IPatternMatcher pmEvaluator;
-		
+
 		// TODO Performance hotspot
 		Set<IPatternMatcher> nset = multiMap.get(hash);
 		for (IPatternMatcher patternEvaluator : nset) {
@@ -438,6 +438,51 @@ public class DownRulesData implements Serializable {
 		return definitionList;
 	}
 
+	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide) {
+		if (equalRule) {
+			if (fEqualDownRules != null) {
+				fEqualDownRules.remove(leftHandSide);
+				return;
+			}
+		}
+
+		final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, null);
+		if (pmEvaluator.isRuleWithoutPatterns()) {
+			if (fEqualDownRules != null) {
+				fEqualDownRules.remove(leftHandSide);
+				return;
+			}
+		}
+
+		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
+			if (fSimplePatternDownRules != null) {
+				final Integer hash = Integer.valueOf(((IAST) leftHandSide).patternHashCode());
+				if (fSimplePatternDownRules.containsEntry(hash, pmEvaluator)) {
+					fSimplePatternDownRules.remove(hash, pmEvaluator);
+				}
+			}
+			return;
+		} else {
+			if (headerSymbols.size() > 0) {
+				if (fSimpleOrderlesPatternDownRules != null) {
+					for (ISymbol head : headerSymbols) {
+						final Integer hash = Integer.valueOf(head.hashCode());
+						if (fSimpleOrderlesPatternDownRules.containsEntry(hash, pmEvaluator)) {
+							fSimpleOrderlesPatternDownRules.remove(hash, pmEvaluator);
+						}
+					}
+				}
+				return;
+			}
+
+			if (fPatternDownRules != null) {
+				fPatternDownRules.remove(pmEvaluator);
+				return;
+			}
+		}  
+	}
+	
 	@Override
 	public String toString() {
 		StringWriter buf = new StringWriter();
