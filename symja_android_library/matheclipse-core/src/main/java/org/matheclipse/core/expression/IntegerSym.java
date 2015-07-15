@@ -476,7 +476,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		}
 		return super.plus(that);
 	}
-	
+
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof IntegerSym) {
@@ -672,6 +672,27 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		// }
 		// }
 		return result;
+	}
+
+	/**
+	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
+	 * 
+	 * @return the exponent
+	 */
+	public IExpr exponent(IInteger base) {
+		IntegerSym b = this;
+		if (sign() < 0) {
+			b = (IntegerSym) b.negate();
+		} else if (b.isZero()) {
+			return F.CInfinity;
+		} else if (b.isOne()) {
+			return F.C0;
+		}
+		if (b.equals(base)) {
+			return F.C1;
+		}
+		BigInteger rest = Primality.countExponent(b.fInteger, base.getBigNumerator());
+		return valueOf(rest);
 	}
 
 	/** {@inheritDoc} */

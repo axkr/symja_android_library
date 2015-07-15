@@ -14,12 +14,21 @@ public interface IInteger extends IRational {
 
 	public IInteger add(IInteger val);
 
+	/**
+	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
+	 * @param base
+	 *            an integer greater than 1
+	 * 
+	 * @return the exponent
+	 */
+	public IExpr exponent(IInteger base);
+
 	public boolean isEven();
 
 	public boolean isOdd();
 
 	public boolean isProbablePrime();
-	
+
 	public boolean isProbablePrime(int certainty);
 
 	/**

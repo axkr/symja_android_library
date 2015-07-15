@@ -21,7 +21,6 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Map;
 
-
 import com.google.common.math.BigIntegerMath;
 
 /**
@@ -307,7 +306,7 @@ public class Primality {
 	 * @param val
 	 *            a BigInteger value which should be factored by all primes less equal than 1021
 	 * @param map
-	 *            a map which counts the prime integer factors less equal than 1021
+	 *            a map which counts the prime integer factors less equal than 32749
 	 * @return the rest factor or zero, if the number could be factored completely into primes less equal then 1021
 	 */
 	public static BigInteger countPrimes32749(final BigInteger val, Map<Integer, Integer> map) {
@@ -315,7 +314,7 @@ public class Primality {
 		BigInteger result = val;
 		BigInteger sqrt = BigIntegerMath.sqrt(result, RoundingMode.DOWN);
 		Integer count;
-		for (int i = 0; i < primes.length; i++) { 
+		for (int i = 0; i < primes.length; i++) {
 			if (sqrt.compareTo(BIprimes[i]) < 0) {
 				break;
 			}
@@ -328,7 +327,7 @@ public class Primality {
 					map.put(primes[i], count + 1);
 				}
 				result = divRem[0];// quotient
-				sqrt = BigIntegerMath.sqrt(result, RoundingMode.DOWN); 
+				sqrt = BigIntegerMath.sqrt(result, RoundingMode.DOWN);
 				if (sqrt.compareTo(BIprimes[i]) < 0) {
 					break;
 				}
@@ -361,6 +360,31 @@ public class Primality {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Get the highest exponent of base (greater than 1) that divides val.
+	 * 
+	 * @param val
+	 *            a BigInteger value
+	 * @param base
+	 *            a base greater than 1
+	 * @return the exponent, which is the highest exponent of base that divides val.
+	 */
+	public static BigInteger countExponent(final BigInteger val, final BigInteger base) {
+		BigInteger[] divRem;
+		BigInteger result = val;
+		BigInteger count = BigInteger.ZERO;
+		divRem = result.divideAndRemainder(base);
+		while (divRem[1].equals(BigInteger.ZERO)) {
+			count = count.add(BigInteger.ONE);
+			result = divRem[0];// quotient
+			if (result.equals(BigInteger.ZERO)) {
+				break;
+			}
+			divRem = result.divideAndRemainder(base);
+		}
+		return count;
 	}
 
 	public static void pollardRhoFactors(final BigInteger val, Map<BigInteger, Integer> map) {

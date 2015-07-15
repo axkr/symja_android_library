@@ -63,7 +63,7 @@ public class AST2Expr {
 			"Gamma", "GCD", "GeometricMean", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis",
 			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
 			"HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner",
-			"Insert", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
+			"Insert", "IntegerExponent", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "JacobiMatrix", "JacobiSymbol",
 			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform",
 			"LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve",
