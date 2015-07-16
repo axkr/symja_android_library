@@ -8,13 +8,6 @@ package org.matheclipse.core.interfaces;
 public interface IPattern extends IPatternObject, IExpr {
 
 	/**
-	 * Get the additional patterns condition expression
-	 * 
-	 * @return may return null;
-	 */
-	public IExpr getCondition();
-
-	/**
 	 * Return <code>true</code>, if the expression fullfills the patterns
 	 * additional condition
 	 * 

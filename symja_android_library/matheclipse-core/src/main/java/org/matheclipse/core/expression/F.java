@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.apfloat.Apcomplex;
@@ -626,7 +628,7 @@ public class F {
 	public final static ISymbol Roots = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "roots" : "Roots");
 	public final static ISymbol Round = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "round" : "Round");
 	public final static ISymbol RowReduce = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rowreduce" : "RowReduce");
-	
+
 	public final static ISymbol SameQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sameq" : "SameQ");
 	public final static ISymbol Scan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "scan" : "Scan");
 	public final static ISymbol Sec = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
@@ -1081,12 +1083,32 @@ public class F {
 	}
 
 	/**
-	 * Create a pattern for pattern-matching and term rewriting
+	 * Create a <code>Blank[]</code> pattern object for pattern-matching and term rewriting
+	 * 
+	 * @return IPattern
+	 */
+	public static IPattern $b() {
+		return org.matheclipse.core.expression.Blank.valueOf();
+	}
+
+	/**
+	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
+	 * 
+	 * @param check
+	 *            additional condition which should be checked in pattern-matching
+	 * @return IPattern
+	 */
+	public static IPattern $b(final IExpr condition) {
+		return org.matheclipse.core.expression.Blank.valueOf(condition);
+	}
+
+	/**
+	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
 	 * @return IPattern
 	 */
-	public static IPattern $p(final ISymbol symbol) {
+	public static IPattern $p(@Nonnull final ISymbol symbol) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol);
 	}
 
@@ -2387,7 +2409,7 @@ public class F {
 	public static IAST Factorial2(final IExpr a0) {
 		return unaryAST1(Factorial2, a0);
 	}
-	
+
 	public static IAST FactorInteger(final IExpr a0) {
 		return unaryAST1(FactorInteger, a0);
 	}
@@ -2587,7 +2609,6 @@ public class F {
 	public static IAST Increment(final IExpr a) {
 		return unaryAST1(Increment, a);
 	}
-	
 
 	/**
 	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in
@@ -2620,17 +2641,7 @@ public class F {
 		return temp;
 	}
 
-	// public static IAST Partition(final IExpr a0) {
-	//
-	// return unaryAST2(Partition, a0);
-	// }
-	//
-	// public static IAST Permutations(final IExpr a0) {
-	//
-	// return unaryAST2(Permutations, a0);
-	// }
-
-	public static IPattern initPredefinedPattern(final ISymbol symbol) {
+	public static IPattern initPredefinedPattern(@Nonnull final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);
 		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
 		return temp;
@@ -3170,7 +3181,7 @@ public class F {
 	public static IAST Norm(final IExpr a) {
 		return unaryAST1(Norm, a);
 	}
-	
+
 	public static IAST Not(final IExpr a) {
 		return unaryAST1(Not, a);
 	}
@@ -3574,7 +3585,7 @@ public class F {
 	public static IAST RowReduce(final IExpr a0) {
 		return unaryAST1(RowReduce, a0);
 	}
-	
+
 	public static IAST Rule(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Rule, a0, a1);
 	}
@@ -3991,7 +4002,7 @@ public class F {
 	public static IAST Unset(final IExpr a0) {
 		return unaryAST1(Unset, a0);
 	}
-	
+
 	public static IAST UpSet(final IExpr a0, final IExpr a1) {
 		return binaryAST2(UpSet, a0, a1);
 	}
@@ -4243,8 +4254,7 @@ public class F {
 			GSymbol,
 			// start pattern
 			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_, B_, C_, F_,
-			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol,
-			e_Symbol,
+			G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol,
 			f_Symbol,
 			g_Symbol,
 			h_Symbol,
@@ -4358,7 +4368,7 @@ public class F {
 			ArcTanh,
 			Arg,
 			Array,
-			// ArrayDepth, 
+			// ArrayDepth,
 			ArrayQ,
 			Assumptions,
 			AtomQ,
@@ -4448,8 +4458,7 @@ public class F {
 			Erfi,
 			EuclidianDistance,
 			// EulerE,
-			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, 
-			Exponent, ExtendedGCD, Extract, Factor,
+			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract, Factor,
 			Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten, Fibonacci,
 			FindRoot, First, Fit, FixedPoint, Floor, Fold, FoldList, For, FractionalPart, FreeQ, FresnelC, FresnelS,
 			FrobeniusSolve,

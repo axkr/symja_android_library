@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -82,6 +83,15 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	private PatternSequence() {
 	}
 
+	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
+		patternMap.addPattern(patternIndexMap, this);
+		// the ast contains a pattern sequence (i.e. "x__")
+		int[] result = new int[2];
+		result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
+		result[1] = 1;
+		return result;
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -99,10 +109,64 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return false;
 	}
 
+	/**
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
+	 * 
+	 * @param patternExpr2
+	 * @param pm1
+	 * @param pm2
+	 * @return
+	 */
+	public boolean equivalent(final IPatternObject patternExpr2, final PatternMap pm1, PatternMap pm2) {
+		if (this == patternExpr2) {
+			return true;
+		}
+		if (patternExpr2 instanceof PatternSequence) {
+			// test if the pattern indices are equal
+			final IPatternSequence p2 = (IPatternSequence) patternExpr2;
+			if (getIndex(pm1) != p2.getIndex(pm2)) {
+				return false;
+			}
+			// test if the "check" expressions are equal
+			final Object o1 = getCondition();
+			final Object o2 = p2.getCondition();
+			if ((o1 == null) || (o2 == null)) {
+				return o1 == o2;
+			}
+			return o1.equals(o2);
+		}
+		return false;
+	}
+
+	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
+		IAST sequence = F.Sequence(expr);
+		return matchPatternSequence(sequence, patternMap);
+	}
+
+	public boolean matchPatternSequence(final IAST sequence, PatternMap patternMap) {
+		if (!isConditionMatchedSequence(sequence)) {
+			return false;
+		}
+
+		IExpr value = patternMap.getValue(this);
+		if (value != null) {
+			return sequence.equals(value);
+		}
+		patternMap.setValue(this, sequence);
+		return true;
+	}
+	
 	public IExpr getCondition() {
 		return fCondition;
 	}
 
+	@Override
+	public int getEvalFlags() { 
+		// the ast contains a pattern sequence (i.e. "x__")
+		return IAST.CONTAINS_PATTERN_SEQUENCE;
+	}
+	
 	/**
 	 * @return
 	 */
@@ -122,10 +186,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 
 	@Override
 	public int hashCode() {
-		if (fSymbol == null) {
-			return 203;
-		}
-		return 17 + fSymbol.hashCode();
+		return (fSymbol == null) ? 203 : 17 + fSymbol.hashCode();
 	}
 
 	/** {@inheritDoc} */
@@ -263,7 +324,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	public boolean isBlank() {
-		return (fSymbol == null);
+		return false;
 	}
 
 	public boolean isConditionMatchedSequence(final IAST sequence) {

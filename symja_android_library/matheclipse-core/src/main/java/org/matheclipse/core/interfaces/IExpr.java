@@ -72,8 +72,10 @@ import edu.jas.structure.GcdRingElem;
  */
 public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable {
 
-	public final static int ASTID = 512;
+	public final static int ASTID = 1024;
 
+	public final static int BLANKID = 256;
+	
 	public final static int COMPLEXID = 32;
 
 	public final static int DOUBLECOMPLEXID = 4;
@@ -84,9 +86,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int INTEGERID = 8;
 
-	public final static int METHODSYMBOLID = 1024;
+	public final static int METHODSYMBOLID = 2048;
 
-	public final static int PATTERNID = 256;
+	public final static int PATTERNID = 512;
 
 	public final static int STRINGID = 64;
 
@@ -807,7 +809,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isOrderlessAST();
 
 	/**
-	 * Test if this expression is a pattern object
+	 * Test if this expression is a <code>Blank[]</code> object
+	 * 
+	 */
+	public boolean isBlank();
+	
+	/**
+	 * Test if this expression is a <code>Pattern[symbol]</code> object
 	 * 
 	 */
 	public boolean isPattern();

@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.patternmatching.PatternMap;
+
 /**
  * Interface for pattern sequence objects (i.e. x__)
  */
@@ -12,6 +14,8 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 */
 	public IExpr getCondition();
 
+	public boolean matchPatternSequence(final IAST sequence, PatternMap patternMap);
+	
 	/**
 	 * Return <code>true</code>, if all of the elements in the <code>sequence</code> fulfill the pattern sequences additional
 	 * condition

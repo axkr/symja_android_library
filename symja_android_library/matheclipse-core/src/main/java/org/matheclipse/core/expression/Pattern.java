@@ -1,35 +1,27 @@
 package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
-import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.visit.IVisitor;
-import org.matheclipse.core.visit.IVisitorBoolean;
-import org.matheclipse.core.visit.IVisitorInt;
-import org.matheclipse.core.visit.IVisitorLong;
-
-import com.google.common.base.Predicate;
 
 /**
- * A concrete pattern implementation (i.e. x_)
- * 
+ * A pattern with assigned &quot;pattern name&quot; (i.e. <code>x_</code>)
+ *  
  */
-public class Pattern extends ExprImpl implements IPattern {
+public class Pattern extends Blank {
 
-	public static IPattern valueOf(final ISymbol symbol) {
-		if (symbol == null) {
-			return NULL_PATTERN;
-		}
+	public static IPattern valueOf(@Nonnull final ISymbol symbol) {
 		IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
 		if (value != null) {
 			return value;
@@ -42,45 +34,18 @@ public class Pattern extends ExprImpl implements IPattern {
 	 * @param numerator
 	 * @return
 	 */
-	public static IPattern valueOf(final ISymbol symbol, final IExpr check) {
+	public static IPattern valueOf(@Nonnull final ISymbol symbol, final IExpr check) {
 		return new Pattern(symbol, check);
-		// p.fSymbol = symbol;
-		// p.fCondition = check;
-		// return p;
 	}
 
 	/**
 	 * 
 	 */
-	public static IPattern valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
+	public static IPattern valueOf(@Nonnull final ISymbol symbol, final IExpr check, final boolean def) {
 		return new Pattern(symbol, check, def);
-		// p.fSymbol = symbol;
-		// p.fCondition = check;
-		// p.fDefault = def;
-		// return p;
 	}
 
 	private static final long serialVersionUID = 7617138748475243L;
-
-	private static Pattern NULL_PATTERN = new Pattern(null);
-
-	/**
-	 * The expression which should check this pattern
-	 */
-	final IExpr fCondition;
-
-	/**
-	 * Index for the pattern-matcher
-	 * 
-	 * @see org.matheclipse.core.patternmatching.PatternMatcher
-	 */
-	// int fIndex = -1;
-
-	/**
-	 * The hash value of this object computed in the constructor.
-	 * 
-	 */
-	// final int fHashValue;
 
 	/**
 	 * The associated symbol for this pattern
@@ -92,93 +57,53 @@ public class Pattern extends ExprImpl implements IPattern {
 	 */
 	final boolean fDefault;
 
-	private Pattern() {
-		this(null, null, false);
-	}
-
 	/** package private */
-	Pattern(final ISymbol symbol) {
+	Pattern(@Nonnull final ISymbol symbol) {
 		this(symbol, null, false);
 	}
 
 	/** package private */
-	Pattern(final ISymbol symbol, IExpr condition) {
+	Pattern(@Nonnull final ISymbol symbol, IExpr condition) {
 		this(symbol, condition, false);
 	}
 
 	/** package private */
-	public Pattern(final ISymbol symbol, IExpr condition, boolean def) {
-		// fHashValue = (symbol == null) ? 199 : 19 + symbol.hashCode();
+	public Pattern(@Nonnull final ISymbol symbol, IExpr condition, boolean def) {
+		super(condition);
 		fSymbol = symbol;
-		fCondition = condition;
 		fDefault = def;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
+	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
+		patternMap.addPattern(patternIndexMap, this);
+		int[] result = new int[2];
+		if (isPatternDefault()) {
+			// the ast contains a pattern with default value (i.e. "x_.")
+			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
+			result[1] = 2;
+		} else {
+			// the ast contains a pattern without default value (i.e. "x_")
+			result[0] = IAST.CONTAINS_PATTERN;
+			result[1] = 5;
+		}
+		return result;
 	}
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof Pattern) {
 			Pattern pat = ((Pattern) expr);
-			int cp;
-			if (fSymbol == null) {
-				if (pat.fSymbol == null) {
-					cp = -1;
-				} else {
-					cp = 0;
-				}
-			} else if (pat.fSymbol == null) {
-				cp = 1;
-			} else {
-				cp = fSymbol.compareTo(pat.fSymbol);
-			}
+			int cp = fSymbol.compareTo(pat.fSymbol);
 			if (cp != 0) {
 				return cp;
 			}
 			if (fDefault != pat.fDefault) {
 				return fDefault ? 1 : -1;
 			}
-			if (fCondition == null) {
-				if (pat.fCondition != null) {
-					return -1;
-				}
-				return 0;
-			} else {
-				if (pat.fCondition == null) {
-					return 1;
-				} else {
-					return fCondition.compareTo(pat.fCondition);
-				}
-			}
-
 		}
 		return super.compareTo(expr);
 	}
@@ -196,78 +121,87 @@ public class Pattern extends ExprImpl implements IPattern {
 			if (fDefault != pattern.fDefault) {
 				return false;
 			}
-			if (fSymbol == null) {
-				if (pattern.fSymbol != null) {
-					return false;
-				}
-			}
-			if (pattern.fSymbol == null) {
-				if (fSymbol != null) {
-					return false;
-				}
-			}
 			if (fSymbol == pattern.fSymbol || fSymbol.equals(pattern.fSymbol)) {
-				if ((fCondition != null) && (pattern.fCondition != null)) {
-					return fCondition.equals(pattern.fCondition);
-				}
-				return fCondition == pattern.fCondition;
+				return super.equals(obj);
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
+	 * 
+	 * @param patternObject
+	 * @param pm1
+	 * @param pm2
+	 * @return
+	 */
+	public boolean equivalent(final IPatternObject patternObject, final PatternMap pm1, PatternMap pm2) {
+		if (this == patternObject) {
+			return true;
+		}
+		if (patternObject instanceof Pattern) {
+			// test if the pattern indices are equal
+			final IPattern p2 = (IPattern) patternObject;
+			if (getIndex(pm1) != p2.getIndex(pm2)) {
+				return false;
+			}
+			// test if the "check" expressions are equal
+			final IExpr o1 = getCondition();
+			final IExpr o2 = p2.getCondition();
+			if ((o1 == null) || (o2 == null)) {
+				return o1 == o2;
+			}
+			return o1.equals(o2);
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
+		if (!isConditionMatched(expr)) {
+			return false;
+		}
+
+		IExpr value = patternMap.getValue(this);
+		if (value != null) {
+			return expr.equals(value);
+		}
+		patternMap.setValue(this, expr);
+		return true;
+	}
+
 	public String fullFormString() {
 		StringBuffer buf = new StringBuffer();
-		if (fSymbol == null) {
-			buf.append("Blank");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			if (fCondition != null) {
-				buf.append(fCondition.fullFormString());
-			}
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append(')');
-			} else {
-				buf.append(']');
-			}
+		buf.append("Pattern");
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append('(');
 		} else {
-			buf.append("Pattern");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			buf.append(fSymbol.toString());
-			buf.append(", ");
-			buf.append("Blank");
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append('(');
-			} else {
-				buf.append('[');
-			}
-			if (fCondition != null) {
-				buf.append(fCondition.fullFormString());
-			}
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				buf.append("))");
-			} else {
-				buf.append("]]");
-			}
+			buf.append('[');
+		}
+		buf.append(fSymbol.toString());
+		buf.append(", ");
+		buf.append("Blank");
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append('(');
+		} else {
+			buf.append('[');
+		}
+		if (fCondition != null) {
+			buf.append(fCondition.fullFormString());
+		}
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append("))");
+		} else {
+			buf.append("]]");
 		}
 
 		return buf.toString();
 	}
 
-	public IExpr getCondition() {
-		return fCondition;
-	}
-
-	/**
-	 * @return
-	 */
+	@Override
 	public int getIndex(PatternMap pm) {
 		if (pm != null) {
 			return pm.get(fSymbol);
@@ -275,27 +209,21 @@ public class Pattern extends ExprImpl implements IPattern {
 		return -1;
 	}
 
-	/**
-	 * @return
-	 */
+	@Override
 	public ISymbol getSymbol() {
 		return fSymbol;
 	}
 
 	@Override
 	public int hashCode() {
-		return (fSymbol == null) ? 199 : 19 + fSymbol.hashCode();
+		return 19 + fSymbol.hashCode();
 	}
 
 	public ISymbol head() {
 		return F.PatternHead;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.interfaces.IExpr#hierarchy()
-	 */
+	@Override
 	public int hierarchy() {
 		return PATTERNID;
 	}
@@ -304,76 +232,66 @@ public class Pattern extends ExprImpl implements IPattern {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("$p(");
-		if (fSymbol == null) {
-			buffer.append("(ISymbol)null");
-			if (fCondition != null) {
-				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
-			}
-			if (fDefault) {
-				if (fCondition == null) {
-					buffer.append(",null");
+		String symbolStr = fSymbol.toString();
+		char ch = symbolStr.charAt(0);
+		if (symbolStr.length() == 1) {
+			if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')) {
+				if (!fDefault) {
+					if (fCondition == null) {
+						return symbolStr + "_";
+					} else if (fCondition == F.SymbolHead) {
+						return symbolStr + "_Symbol";
+					}
+				} else {
+					if (fCondition == null) {
+						return symbolStr + "_DEFAULT";
+					}
 				}
-				buffer.append(",true");
 			}
-		} else {
-			String symbolStr = fSymbol.toString();
-			char ch = symbolStr.charAt(0);
-			if (symbolStr.length() == 1) {
-				if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')) {
+		}
+		if (Config.RUBI_CONVERT_SYMBOLS) {
+			if (ch == '§' && symbolStr.length() == 2) {
+				char ch2 = symbolStr.charAt(1);
+				if ('a' <= ch2 && ch2 <= 'z') {
 					if (!fDefault) {
 						if (fCondition == null) {
-							return symbolStr + "_";
-						} else if (fCondition == F.SymbolHead) {
-							return symbolStr + "_Symbol";
+							return "p" + ch2 + "_";
 						}
 					} else {
 						if (fCondition == null) {
-							return symbolStr + "_DEFAULT";
+							return "p" + ch2 + "_DEFAULT";
 						}
 					}
 				}
-			}
-			if (Config.RUBI_CONVERT_SYMBOLS) {
-				if (ch == '§' && symbolStr.length() == 2) {
-					char ch2 = symbolStr.charAt(1);
-					if ('a' <= ch2 && ch2 <= 'z') {
-						if (!fDefault) {
-							if (fCondition == null) {
-								return "p" + ch2 + "_";
-							}
-						} else {
-							if (fCondition == null) {
-								return "p" + ch2 + "_DEFAULT";
-							}
-						}
-					}
-				}
-			}
-
-			if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
-				buffer.append(symbolStr);
-			} else {
-				buffer.append("\"" + symbolStr + "\"");
-			}
-			if (fCondition != null) {
-				if (fCondition == F.IntegerHead) {
-					buffer.append(", IntegerHead");
-				} else if (fCondition == F.SymbolHead) {
-					buffer.append(", SymbolHead");
-				} else {
-					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
-				}
-			}
-			if (fDefault) {
-				buffer.append(",true");
 			}
 		}
+
+		if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
+			buffer.append(symbolStr);
+		} else {
+			buffer.append("\"" + symbolStr + "\"");
+		}
+		if (fCondition != null) {
+			if (fCondition == F.IntegerHead) {
+				buffer.append(", IntegerHead");
+			} else if (fCondition == F.SymbolHead) {
+				buffer.append(", SymbolHead");
+			} else {
+				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+			}
+		}
+		if (fDefault) {
+			buffer.append(",true");
+		}
+
 		buffer.append(')');
 		return buffer.toString();
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	public boolean isBlank() {
-		return (fSymbol == null);
+		return false;
 	}
 
 	/**
@@ -387,30 +305,9 @@ public class Pattern extends ExprImpl implements IPattern {
 		return false;
 	}
 
-	public boolean isConditionMatched(final IExpr expr) {
-		if (fCondition == null) {
-			return true;
-		}
-		if (expr.head().equals(fCondition)) {
-			return true;
-		}
-		EvalEngine engine = EvalEngine.get();
-		boolean traceMode = false;
-		try {
-			traceMode = engine.isTraceMode();
-			engine.setTraceMode(false);
-			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			return matcher.apply(expr);
-		} finally {
-			if (traceMode) {
-				engine.setTraceMode(true);
-			}
-		}
-	}
-
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeOfPatterns(){
+	public boolean isFreeOfPatterns() {
 		return false;
 	}
 
@@ -428,44 +325,24 @@ public class Pattern extends ExprImpl implements IPattern {
 		return fDefault;
 	}
 
-	/** {@inheritDoc} */
-	public final boolean isPatternExpr() {
-		return true;
-	}
-
 	@Override
-		public String toString() {
-			final StringBuffer buffer = new StringBuffer();
-			if (fSymbol == null) {
-				buffer.append('_');
-				if (fDefault) {
-					buffer.append('.');
-				}
-				if (fCondition != null) {
-					buffer.append(fCondition.toString());
-				}
-			} else {
-				if (fCondition == null) {
-					buffer.append(fSymbol.toString());
-					buffer.append('_');
-					if (fDefault) {
-						buffer.append('.');
-					}
-				} else {
-					buffer.append(fSymbol.toString());
-					buffer.append('_');
-					if (fDefault) {
-						buffer.append('.');
-					}
-					buffer.append(fCondition.toString());
-				}
+	public String toString() {
+		final StringBuffer buffer = new StringBuffer();
+		if (fCondition == null) {
+			buffer.append(fSymbol.toString());
+			buffer.append('_');
+			if (fDefault) {
+				buffer.append('.');
 			}
-			return buffer.toString();
+		} else {
+			buffer.append(fSymbol.toString());
+			buffer.append('_');
+			if (fDefault) {
+				buffer.append('.');
+			}
+			buffer.append(fCondition.toString());
 		}
-		
-	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return null;
+		return buffer.toString();
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

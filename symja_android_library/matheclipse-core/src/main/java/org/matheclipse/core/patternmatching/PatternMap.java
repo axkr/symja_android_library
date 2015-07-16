@@ -77,7 +77,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * @param pattern
 	 * @param patternIndexMap
 	 */
-	protected void addPattern(Map<ISymbol, Integer> patternIndexMap, IPatternObject pattern) {
+	public void addPattern(Map<ISymbol, Integer> patternIndexMap, IPatternObject pattern) {
 		fRuleWithoutPattern = false;
 		ISymbol sym = pattern.getSymbol();
 		if (sym != null) {
@@ -176,38 +176,23 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * @param patternIndexMap
 	 * @param lhsPatternExpr
 	 *            the (left-hand-side) expression which could contain pattern objects.
-	 * @param treeLevel TODO
+	 * @param treeLevel
+	 *            TODO
 	 */
 	private int determinePatternsRecursive(Map<ISymbol, Integer> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
 		final IAST ast = lhsPatternExpr;
 		int listEvalFlags = IAST.NO_FLAG;
-		for (int i = 0; i < ast.size(); i++) { 
+		for (int i = 0; i < ast.size(); i++) {
 			IExpr temp = ast.get(i);
 			if (temp.isAST()) {
-				listEvalFlags |= determinePatternsRecursive(patternIndexMap, (IAST) temp, treeLevel+1);
+				listEvalFlags |= determinePatternsRecursive(patternIndexMap, (IAST) temp, treeLevel + 1);
 				fPriority -= 11;
 			} else if (temp instanceof IPatternObject) {
-				if (temp.isPattern()) {
-					IPattern pat = (IPattern) temp;
-					addPattern(patternIndexMap, pat);
-					if (pat.isPatternDefault()) {
-						// the ast contains a pattern with default value (i.e. "x_.")
-						listEvalFlags |= IAST.CONTAINS_DEFAULT_PATTERN;
-						fPriority -= 2;
-					} else {
-						// the ast contains a pattern without default value (i.e. "x_")
-						listEvalFlags |= IAST.CONTAINS_PATTERN;
-						fPriority -= 5;
-					}
-
-				} else if (temp.isPatternSequence()) {
-					addPattern(patternIndexMap, (IPatternSequence) temp);
-					// the ast contains a pattern sequence (i.e. "x__")
-					listEvalFlags |= IAST.CONTAINS_PATTERN_SEQUENCE;
-					fPriority -= 1;
-				}  
+				int[] result = ((IPatternObject) temp).addPattern(this, patternIndexMap);
+				listEvalFlags |= result[0];
+				fPriority -= result[1];
 			} else {
-				fPriority -= (50-treeLevel);
+				fPriority -= (50 - treeLevel);
 			}
 		}
 		ast.setEvalFlags(listEvalFlags);
@@ -266,7 +251,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * @param pExpr
 	 * @return <code>null</code> if no matched expression exists
 	 */
-	protected IExpr getValue(IPatternObject pattern) {
+	public IExpr getValue(IPatternObject pattern) {
 		int indx = get(pattern.getSymbol());
 		return indx >= 0 ? fPatternValuesArray[indx] : null;
 	}
@@ -332,7 +317,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
-	protected void setValue(IPatternObject pattern, IExpr expr) {
+	public void setValue(IPatternObject pattern, IExpr expr) {
 		int indx = get(pattern.getSymbol());
 		if (indx >= 0) {
 			fPatternValuesArray[indx] = expr;

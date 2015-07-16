@@ -88,10 +88,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					fStack.add(new Entry(patternExpr, evalExpr));
 					return true;
 				}
-				if (patternExpr.isPattern()) {
-					return matchPattern((IPattern) patternExpr, evalExpr);
-				} else if (patternExpr.isPatternSequence()) {
-					return matchPatternSequence((IPatternSequence) patternExpr, F.Sequence(evalExpr));
+				if (patternExpr instanceof IPatternObject) {
+					return ((IPatternObject) patternExpr).matchPattern(evalExpr, fPatternMap);
 				}
 				throw new UnsupportedOperationException("Object doesn't support pattern-matching");
 			}
@@ -269,7 +267,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	public PatternMatcher(final IExpr patternExpr) {
 		super(patternExpr);
 		this.fPriority = PatternMap.DEFAULT_RULE_PRIORITY;
-		this.fLhsPatternExpr = patternExpr;
 		this.fPatternCondition = null;
 		if (patternExpr.isCondition()) {
 			this.fLhsPatternExpr = ((IAST) patternExpr).get(1);
@@ -374,39 +371,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 			return false;
 		}
-		if (patternExpr1.isPattern()) {
-			if (patternExpr2.isPattern()) {
-				// test if the pattern indices are equal
-				final IPattern p1 = (IPattern) patternExpr1;
-				final IPattern p2 = (IPattern) patternExpr2;
-				if (p1.getIndex(pm1) != p2.getIndex(pm2)) {
-					return false;
-				}
-				// test if the "check" expressions are equal
-				final IExpr o1 = p1.getCondition();
-				final IExpr o2 = p2.getCondition();
-				if ((o1 == null) || (o2 == null)) {
-					return o1 == o2;
-				}
-				return o1.equals(o2);
-			}
-			return false;
-		}
-		if (patternExpr1.isPatternSequence()) {
-			if (patternExpr2.isPatternSequence()) {
-				// test if the pattern indices are equal
-				final IPatternSequence p1 = (IPatternSequence) patternExpr1;
-				final IPatternSequence p2 = (IPatternSequence) patternExpr2;
-				if (p1.getIndex(pm1) != p2.getIndex(pm2)) {
-					return false;
-				}
-				// test if the "check" expressions are equal
-				final Object o1 = p1.getCondition();
-				final Object o2 = p2.getCondition();
-				if ((o1 == null) || (o2 == null)) {
-					return o1 == o2;
-				}
-				return o1.equals(o2);
+		if (patternExpr1 instanceof IPatternObject) {
+			if (patternExpr2 instanceof IPatternObject) {
+				return ((IPatternObject) patternExpr1).equivalent((IPatternObject) patternExpr2, pm1, pm2);
 			}
 			return false;
 		}
@@ -523,11 +490,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 			}
 		} else if (lhsPatternExpr instanceof IPatternObject) {
-			if (lhsPatternExpr.isPattern()) {
-				matched = matchPattern((IPattern) lhsPatternExpr, lhsEvalExpr);
-			} else if (lhsPatternExpr.isPatternSequence()) {
-				matched = matchPatternSequence((IPatternSequence) lhsPatternExpr, F.Sequence(lhsEvalExpr));
-			}
+			matched = ((IPatternObject) lhsPatternExpr).matchPattern(lhsEvalExpr, fPatternMap);
 		} else {
 			matched = lhsPatternExpr.equals(lhsEvalExpr);
 		}
@@ -554,7 +517,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			if (lhsPatternAST.get(i).isPatternDefault()) {
 				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				if (positionDefaultValue != null) {
-					if (!matchPattern((IPattern) lhsPatternAST.get(i), positionDefaultValue)) {
+					if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(positionDefaultValue, fPatternMap)) {
 						return null;
 					}
 					defaultValueMatched = true;
@@ -562,7 +525,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				} else {
 					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
 					if (commonDefaultValue != null) {
-						if (!matchPattern((IPattern) lhsPatternAST.get(i), commonDefaultValue)) {
+						if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(commonDefaultValue, fPatternMap)) {
 							return null;
 						}
 						defaultValueMatched = true;
@@ -648,7 +611,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
 							seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
-							if (matchPatternSequence((IPatternSequence) lhsPatternAST.get(lastPosition), seq)) {
+							if (((IPatternSequence) lhsPatternAST.get(lastPosition)).matchPatternSequence(seq, fPatternMap)) {
 								return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
 										stackMatcher);
 							}
@@ -805,32 +768,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	protected void logConditionFalse(final IExpr lhsEvalAST, final IExpr lhsPatternAST, IExpr rhsAST) {
 		// System.out.println("\nCONDITION false: " + lhsEvalAST.toString() + "\n   >>> " + lhsPatternAST.toString() + "   :=   "
 		// + rhsAST.toString());
-	}
-
-	private boolean matchPattern(final IPattern pattern, final IExpr expr) {
-		if (!pattern.isConditionMatched(expr)) {
-			return false;
-		}
-
-		IExpr value = fPatternMap.getValue(pattern);
-		if (value != null) {
-			return expr.equals(value);
-		}
-		fPatternMap.setValue(pattern, expr);
-		return true;
-	}
-
-	private boolean matchPatternSequence(final IPatternSequence pattern, final IAST sequence) {
-		if (!pattern.isConditionMatchedSequence(sequence)) {
-			return false;
-		}
-
-		IExpr value = fPatternMap.getValue(pattern);
-		if (value != null) {
-			return sequence.equals(value);
-		}
-		fPatternMap.setValue(pattern, sequence);
-		return true;
 	}
 
 	@Override

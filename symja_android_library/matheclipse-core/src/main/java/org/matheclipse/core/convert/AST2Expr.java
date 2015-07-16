@@ -285,10 +285,15 @@ public class AST2Expr {
 		// because of inheritance check Pattern2Node before PatternNode
 		if (node instanceof Pattern2Node) {
 			final Pattern2Node p2n = (Pattern2Node) node;
-			return F.$ps((ISymbol) convert(p2n.getSymbol()), convert(p2n.getConstraint()), p2n.isDefault());
+			SymbolNode sn= p2n.getSymbol();
+			return F.$ps((ISymbol) convert(sn), convert(p2n.getConstraint()), p2n.isDefault());
 		}
 		if (node instanceof PatternNode) {
 			final PatternNode pn = (PatternNode) node;
+			SymbolNode sn= pn.getSymbol();
+			if (sn==null) {
+				return F.$b( convert(pn.getConstraint())); // TODO , p2n.isDefault());
+			}
 			return F.$p((ISymbol) convert(pn.getSymbol()), convert(pn.getConstraint()), pn.isDefault());
 		}
 

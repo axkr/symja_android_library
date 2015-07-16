@@ -22,10 +22,10 @@ public class Blank extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() == 1) {
-			return F.$p((ISymbol) null);
+			return F.$b();
 		}
 		if (ast.size() == 2) {
-			return F.$p((ISymbol) null, ast.arg1());
+			return F.$b(ast.arg1());
 		}
 		return null;
 	}

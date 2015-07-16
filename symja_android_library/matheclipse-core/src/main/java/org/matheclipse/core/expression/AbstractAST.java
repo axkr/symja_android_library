@@ -40,7 +40,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -1201,6 +1200,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isBlank() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isComplex() {
 		return false;
 	}
@@ -1363,23 +1368,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 				continue;
 			} else if (temp instanceof IPatternObject) {
-				if (temp.isPattern()) {
-					IPattern pat = (IPattern) temp;
-					if (pat.isPatternDefault()) {
-						// the ast contains a pattern with default value (i.e. "x_.")
-						isFreeOfPatterns = false;
-						addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
-					} else {
-						// the ast contains a pattern without default value (i.e. "x_")
-						isFreeOfPatterns = false;
-						addEvalFlags(IAST.CONTAINS_PATTERN);
-					}
-
-				} else if (temp.isPatternSequence()) {
-					// the ast contains a pattern sequence (i.e. "x__")
-					isFreeOfPatterns = false;
-					addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
-				}
+				isFreeOfPatterns = false;
+				addEvalFlags(getEvalFlags());
 			}
 		}
 		if (isFreeOfPatterns) {

@@ -334,6 +334,12 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public boolean isAtom() {
 		return true;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isBlank() {
+		return false;
+	}
 
 	/** {@inheritDoc} */
 	@Override
