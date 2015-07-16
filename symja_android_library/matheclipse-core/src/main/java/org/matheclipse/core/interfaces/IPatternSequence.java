@@ -14,6 +14,16 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 */
 	public IExpr getCondition();
 
+	/**
+	 * Check if this pattern sequence object matches the given <code>sequence</code>.
+	 * 
+	 * @param sequence
+	 *            the sequence which should be matched.
+	 * @param patternMap
+	 *            a map from a pattern to a possibly found value during pattern-matching.
+	 * 
+	 * @return
+	 */
 	public boolean matchPatternSequence(final IAST sequence, PatternMap patternMap);
 	
 	/**
@@ -24,13 +34,6 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 * @return
 	 */
 	public boolean isConditionMatchedSequence(IAST sequence);
-
-	/**
-	 * Return <code>true</code>, if the expression is a blank sequence pattern
-	 * 
-	 * @return
-	 */
-	public boolean isBlank();
 
 	/**
 	 * Return <code>true</code>, if the expression is a pattern sequence with an associated default value,

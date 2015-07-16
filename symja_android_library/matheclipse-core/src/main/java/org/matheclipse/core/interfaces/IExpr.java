@@ -821,7 +821,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isPattern();
 
 	/**
-	 * Return <code>true</code>, if the expression is a pattern with an associated default value (for examle <code>0</code> is the
+	 * Return <code>true</code>, if the expression is a pattern object with an associated default value (for example <code>0</code> is the
 	 * default value for the addition expression <code>x_+y_.</code>)
 	 * 
 	 * @return

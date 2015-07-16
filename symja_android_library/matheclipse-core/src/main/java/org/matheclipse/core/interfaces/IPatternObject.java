@@ -67,7 +67,7 @@ public interface IPatternObject {
 	 * Check if this pattern object matches the given <code>expr</code>.
 	 * 
 	 * @param expr
-	 *            the expression whch should be matched.
+	 *            the expression which should be matched.
 	 * @param patternMap
 	 *            a map from a pattern to a possibly found value during pattern-matching.
 	 * 

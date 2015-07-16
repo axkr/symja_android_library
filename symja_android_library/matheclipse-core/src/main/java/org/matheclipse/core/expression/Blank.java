@@ -12,7 +12,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -36,6 +38,11 @@ public class Blank extends ExprImpl implements IPattern {
 	 */
 	protected final IExpr fCondition;
 
+	/**
+	 * Use default value, if no matching expression was found
+	 */
+	final boolean fDefault;
+
 	private static Blank NULL_PATTERN = new Blank();
 
 	public static IPattern valueOf() {
@@ -51,10 +58,15 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	public Blank(final IExpr condition) {
+		this(condition, false);
+	}
+	
+	public Blank(final IExpr condition, boolean def) {
 		super();
 		this.fCondition = condition;
+		this.fDefault = def;
 	}
-
+	
 	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
@@ -201,9 +213,33 @@ public class Blank extends ExprImpl implements IPattern {
 		return true;
 	}
 
+	/**
+	 * Groovy operator overloading
+	 */
+	public boolean isCase(IExpr that) {
+		final IPatternMatcher matcher = new PatternMatcher(this);
+		if (matcher.apply(that)) {
+			return true;
+		}
+		return false;
+	}
+	
 	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternDefault() {
+		return fDefault;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isPatternExpr() {
 		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFreeOfPatterns() {
+		return false;
 	}
 	
 	@Override

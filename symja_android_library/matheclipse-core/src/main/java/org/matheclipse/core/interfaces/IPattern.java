@@ -16,13 +16,4 @@ public interface IPattern extends IPatternObject, IExpr {
 	 */
 	public boolean isConditionMatched(IExpr expr);
 
-	/**
-	 * Return <code>true</code>, if the expression is a blank pattern
-	 * 
-	 * @return
-	 */
-	public boolean isBlank();
-
-	/** {@inheritDoc} */
-	public boolean isPatternDefault();
 }

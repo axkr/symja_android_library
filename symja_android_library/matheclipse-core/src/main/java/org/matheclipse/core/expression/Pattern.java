@@ -52,11 +52,6 @@ public class Pattern extends Blank {
 	 */
 	final ISymbol fSymbol;
 
-	/**
-	 * Use default value, if no matching expression was found
-	 */
-	final boolean fDefault;
-
 	/** package private */
 	Pattern(@Nonnull final ISymbol symbol) {
 		this(symbol, null, false);
@@ -69,9 +64,8 @@ public class Pattern extends Blank {
 
 	/** package private */
 	public Pattern(@Nonnull final ISymbol symbol, IExpr condition, boolean def) {
-		super(condition);
+		super(condition, def);
 		fSymbol = symbol;
-		fDefault = def;
 	}
 
 	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
@@ -294,35 +288,9 @@ public class Pattern extends Blank {
 		return false;
 	}
 
-	/**
-	 * Groovy operator overloading
-	 */
-	public boolean isCase(IExpr that) {
-		final IPatternMatcher matcher = new PatternMatcher(this);
-		if (matcher.apply(that)) {
-			return true;
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFreeOfPatterns() {
-		return false;
-	}
-
 	/** {@inheritDoc} */
 	final public boolean isPattern() {
 		return true;
-	}
-
-	/**
-	 * Use default value, if not matching was found.
-	 * 
-	 * @return
-	 */
-	public boolean isPatternDefault() {
-		return fDefault;
 	}
 
 	@Override
