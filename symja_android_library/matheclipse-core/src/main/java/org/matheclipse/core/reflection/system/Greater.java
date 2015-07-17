@@ -85,8 +85,8 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	/**
 	 * Create the result for a <code>simplifyCompare()</code> step.
 	 * 
-	 * @param lhsAST
-	 *            left-hand-side of the comparator expression
+	 * @param oneIdentityLHS
+	 *            left-hand-side of the comparator expression which must have <code>OneIdentity</code> property.
 	 * @param rhs
 	 *            right-hand-side of the comparator expression
 	 * @param useOppositeHeader
@@ -97,13 +97,17 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 *            opposite of the symbol of the comparator operator for which the comparison was started
 	 * @return
 	 */
-	private IAST createComparatorResult(IAST lhsAST, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
+	private IAST createComparatorResult(IAST oneIdentityLHS, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
 			ISymbol oppositeHead) {
-		IAST lhsClone = lhsAST.removeAtClone(1);
+		IAST lhsClone = oneIdentityLHS.removeAtClone(1);
+		IExpr lhsExpr = lhsClone;
+		if (lhsClone.size() == 2) {
+			lhsExpr = lhsClone.arg1();
+		}
 		if (useOppositeHeader) {
-			return F.binary(oppositeHead, lhsClone, rhs);
+			return F.binary(oppositeHead, lhsExpr, rhs);
 		} else {
-			return F.binary(originalHead, lhsClone, rhs);
+			return F.binary(originalHead, lhsExpr, rhs);
 		}
 	}
 

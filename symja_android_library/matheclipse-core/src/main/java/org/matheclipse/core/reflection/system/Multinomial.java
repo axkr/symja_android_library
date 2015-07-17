@@ -14,9 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Returns the multinomial coefficient.
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Multinomial
- * coefficient</a>
+ * See <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Multinomial coefficient</a>
  */
 public class Multinomial extends AbstractFunctionEvaluator {
 	public Multinomial() {
@@ -24,8 +22,14 @@ public class Multinomial extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
-		Validate.checkRange(ast, 3);
+		Validate.checkRange(ast, 2);
 
+		if (ast.size() == 2) {
+			return F.C1;
+		}
+		if (ast.size() == 3) {
+			return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg1());
+		}
 		for (int i = 1; i < ast.size(); i++) {
 			if (!(ast.get(i).isInteger())) {
 				return null;
@@ -57,9 +61,9 @@ public class Multinomial extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param indices
-	 *          the non-negative coefficients
+	 *            the non-negative coefficients
 	 * @param n
-	 *          the sum of the non-negative coefficients
+	 *            the sum of the non-negative coefficients
 	 * @return
 	 */
 	public static BigInteger multinomial(final int[] indices, final int n) {
@@ -75,6 +79,6 @@ public class Multinomial extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL);
+		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 }

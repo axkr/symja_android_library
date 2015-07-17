@@ -63,24 +63,25 @@ public class Binomial extends AbstractArg2 {
 	}
 
 	@Override
-	public IExpr e2ObjArg(final IExpr nObj, final IExpr kObj) {
-		if (kObj.isInteger()) {
-			if (nObj.isInteger()) {
+	public IExpr e2ObjArg(final IExpr n, final IExpr k) {
+		if (k.isInteger()) {
+			if (n.isInteger()) {
+				// use e2IntArg() method
 				return null;
 			}
-			IInteger ii = (IInteger) kObj;
-			if (ii.isOne()) {
-				return nObj;
+			IInteger ki = (IInteger) k;
+			if (ki.isOne()) {
+				return n;
 			}
-			if (ii.isZero()) {
+			if (ki.isZero()) {
 				return F.C1;
 			}
-			if (ii.isLessThan(F.C10) && ii.isGreaterThan(F.C1)) {
-				int k = ii.intValue();
+			if (ki.isLessThan(F.C10) && ki.isGreaterThan(F.C1)) {
+				int kInt = ki.intValue();
 				IAST ast = F.Times();
 				IAST temp;
-				IExpr nTemp = nObj;
-				for (int i = 1; i <= k; i++) {
+				IExpr nTemp = n;
+				for (int i = 1; i <= kInt; i++) {
 					temp = F.Divide(nTemp, F.integer(i));
 					ast.add(temp);
 					nTemp = F.eval(F.Subtract(nTemp, F.C1));
@@ -88,12 +89,17 @@ public class Binomial extends AbstractArg2 {
 				return ast;
 			}
 		}
-		if (nObj.equals(kObj)) {
+		if (n.equals(k)) {
 			return F.C1;
 		}
-		IExpr nMinus1 = F.eval(F.Subtract(nObj, F.C1));
-		if (nMinus1.equals(kObj)) {
-			return nObj;
+		IExpr nMinus1 = F.eval(F.Subtract(n, F.C1));
+		if (nMinus1.equals(k)) {
+			return n;
+		}
+		IExpr boole = F.eval(F.Greater(F.Times(F.C2, k), n));
+		if (boole.isTrue()) {
+			// case k*2 > n : Binomial[n, k] -> Binomial[n, n-k]
+			return F.Binomial(n, F.Subtract(n, k));
 		}
 		return null;
 	}
