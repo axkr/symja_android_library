@@ -22,22 +22,13 @@ import org.matheclipse.parser.client.SyntaxError;
  * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates to the <code>evaluate()</code>
  * 
  */
-public abstract class AbstractFunctionEvaluator implements IFunctionEvaluator {
-
-	/** {@inheritDoc} */
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
+public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	public IAST getRuleAST() {
 		return null;
 	}
 
-	/**
-	 * Evaluate built-in rules and define Attributes for a function.
-	 * 
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		IAST ruleList;

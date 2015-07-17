@@ -71,9 +71,9 @@ public class AST2Expr {
 			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ",
 			"MatrixRank", "Max", "Mean", "Median", "MemberQ", "Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most",
 			"Multinomial", "Nand", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform",
-			"NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Norm", "Not", "NRoots",
-			"NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ", "Out",
-			"Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations",
+			"NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not",
+			"NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ",
+			"Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "Permutations",
 			"Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD",
 			"PolynomialLCM", "PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position",
 			"Positive", "PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend",
@@ -88,8 +88,8 @@ public class AST2Expr {
 			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread", "Through", "Throw",
 			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr",
 			"Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union",
-			"Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix",
-			"Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
+			"Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
+			"VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
@@ -285,14 +285,14 @@ public class AST2Expr {
 		// because of inheritance check Pattern2Node before PatternNode
 		if (node instanceof Pattern2Node) {
 			final Pattern2Node p2n = (Pattern2Node) node;
-			SymbolNode sn= p2n.getSymbol();
+			SymbolNode sn = p2n.getSymbol();
 			return F.$ps((ISymbol) convert(sn), convert(p2n.getConstraint()), p2n.isDefault());
 		}
 		if (node instanceof PatternNode) {
 			final PatternNode pn = (PatternNode) node;
-			SymbolNode sn= pn.getSymbol();
-			if (sn==null) {
-				return F.$b( convert(pn.getConstraint())); // TODO , p2n.isDefault());
+			SymbolNode sn = pn.getSymbol();
+			if (sn == null) {
+				return F.$b(convert(pn.getConstraint())); // TODO , p2n.isDefault());
 			}
 			return F.$p((ISymbol) convert(pn.getSymbol()), convert(pn.getConstraint()), pn.isDefault());
 		}

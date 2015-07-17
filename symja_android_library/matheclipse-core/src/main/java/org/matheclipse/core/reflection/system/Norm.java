@@ -1,18 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Norm of a given argument
  */
-public class Norm implements IFunctionEvaluator {
+public class Norm extends AbstractEvaluator {
 
 	public Norm() {
 	}
@@ -55,16 +54,6 @@ public class Norm implements IFunctionEvaluator {
 			return F.Abs(arg1);
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
-	@Override
-	public void setUp(ISymbol symbol) {
-
 	}
 
 }
