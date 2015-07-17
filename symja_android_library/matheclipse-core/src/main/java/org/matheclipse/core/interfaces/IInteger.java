@@ -15,7 +15,23 @@ public interface IInteger extends IRational {
 	public IInteger add(IInteger val);
 
 	/**
+	 * Returns an <code>IInteger</code> whose value is <code>(-1) * this</code>.
+	 * 
+	 * @return
+	 */
+	public IInteger negate();
+
+	/**
+	 * Returns an array of two IIntegers containing (this / that) followed by (this % that).
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IInteger[] divideAndRemainder(final IInteger that);
+
+	/**
 	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
+	 * 
 	 * @param base
 	 *            an integer greater than 1
 	 * 

@@ -1109,7 +1109,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Returns an <code>IExpr</code> whose value is <code>(-1) * this</code>. Calculates <code>F.eval(F.Times(F.CN1, this))</code>
 	 * in the common case and uses a specialized implementation for derived number classes.
 	 * 
-	 * @param that
 	 * @return
 	 * @see #negative()
 	 */

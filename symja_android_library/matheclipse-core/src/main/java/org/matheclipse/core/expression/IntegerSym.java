@@ -444,11 +444,9 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		return fInteger.multiply(BigInteger.valueOf(val));
 	}
 
-	/**
-	 * @return
-	 */
+	 
 	@Override
-	public ISignedNumber negate() {
+	public IntegerSym negate() {
 		return newInstance(fInteger.negate());
 	}
 
@@ -894,10 +892,10 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		return fInteger.compareTo(that.fInteger);
 	}
 
-	public IntegerSym[] divideAndRemainder(final IntegerSym that) {
-
+	/** {@inheritDoc} */
+	public IInteger[] divideAndRemainder(final IInteger that) {
 		final IntegerSym[] res = new IntegerSym[2];
-		BigInteger[] largeRes = fInteger.divideAndRemainder(that.fInteger);
+		BigInteger[] largeRes = fInteger.divideAndRemainder(that.getBigNumerator());
 		res[0] = newInstance(largeRes[0]);
 		res[1] = newInstance(largeRes[1]);
 
@@ -993,8 +991,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 				return (IntegerSym) ((IntegerSym) negate()).nthRoot(n).negate();
 			}
 		} else {
-			IntegerSym result;
-			IntegerSym temp = this;
+			IInteger result;
+			IInteger temp = this;
 			do {
 				result = temp;
 				temp = divideAndRemainder(temp.pow(n - 1))[0].add(temp.multiply(IntegerSym.valueOf(n - 1))).divideAndRemainder(

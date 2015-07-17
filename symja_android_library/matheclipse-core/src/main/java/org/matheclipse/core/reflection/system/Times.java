@@ -3,9 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.$p;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.y;
 
@@ -158,11 +156,36 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 		}
 
-		if (o1.isPower() && (((IAST) o1).arg2().isInteger())) {
-			final IAST f1 = (IAST) o1;
+		if (o1.isPower()) {
+			final IAST power1 = (IAST) o1;
+			if (power1.arg2().isInteger()) {
+				if (power1.equalsAt(1, o0)) {
+					return o0.power(power1.arg2().inc());
+				}
+			} else if (power1.arg1().isInteger() && power1.arg2().isFraction()) {
+				if (o0.isFraction()) {
+					// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 
-			if (f1.equalsAt(1, o0)) {
-				return o0.power(f1.arg2().inc());
+					// TODO implementation for complexx numbers instead of fractions
+					IFraction f0 = (IFraction) o0;
+					IInteger pArg1 = (IInteger) power1.arg1();
+					IFraction pArg2 = (IFraction) power1.arg2();
+					if (pArg1.isPositive()) {
+						if (pArg2.isPositive()) {
+							IInteger denominatorF0 = (IInteger) f0.getDenominator();
+							IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
+							if (res[1].isZero()) {
+								return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
+							}
+						} else {
+							IInteger numeratorF0 = (IInteger) f0.getNumerator();
+							IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
+							if (res[1].isZero()) {
+								return F.Times(F.fraction(res[0], f0.getDenominator()), F.Power(pArg1, pArg2.negate()));
+							}
+						}
+					}
+				}
 			}
 		}
 
