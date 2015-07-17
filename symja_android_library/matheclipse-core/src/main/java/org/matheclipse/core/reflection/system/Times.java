@@ -166,7 +166,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				if (o0.isFraction()) {
 					// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 
-					// TODO implementation for complexx numbers instead of fractions
+					// TODO implementation for complex numbers instead of fractions
 					IFraction f0 = (IFraction) o0;
 					IInteger pArg1 = (IInteger) power1.arg1();
 					IFraction pArg2 = (IFraction) power1.arg2();
