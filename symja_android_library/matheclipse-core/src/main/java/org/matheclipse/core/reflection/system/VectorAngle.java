@@ -1,10 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.ArcCos;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Dot;
+import static org.matheclipse.core.expression.F.Norm;
+import static org.matheclipse.core.expression.F.Times;
+
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-
-import static org.matheclipse.core.expression.F.*;
-
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -17,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * See: <a href="https://en.wikipedia.org/wiki/Angle#Dot_product_and_generalisation">Wikipedia - Angle - Dot product and
  * generalisation</a>
  */
-public class VectorAngle implements IFunctionEvaluator {
+public class VectorAngle extends AbstractFunctionEvaluator {
 
 	public VectorAngle() {
 	}
@@ -34,16 +37,6 @@ public class VectorAngle implements IFunctionEvaluator {
 			return ArcCos(Divide(Dot(arg1, arg2), Times(Norm(arg1), Norm(arg2))));
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
-	@Override
-	public void setUp(ISymbol symbol) {
-
 	}
 
 }
