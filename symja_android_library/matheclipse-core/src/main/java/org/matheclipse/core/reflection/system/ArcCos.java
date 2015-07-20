@@ -46,7 +46,12 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.acos(arg1));
+		double val = Math.acos(arg1);
+		if (Double.isNaN(val)) {
+			return F.complexNum(Complex.valueOf(arg1).acos());
+		}
+		return F.num(val);
+
 	}
 
 	@Override

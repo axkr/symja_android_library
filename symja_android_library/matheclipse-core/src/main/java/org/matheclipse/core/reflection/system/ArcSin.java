@@ -37,7 +37,7 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
-			return Negate( ArcSin(negExpr));
+			return Negate(ArcSin(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart != null) {
@@ -48,24 +48,28 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.asin(arg1));
+		double val = Math.asin(arg1);
+		if (Double.isNaN(val)) {
+			return F.complexNum(Complex.valueOf(arg1).asin());
+		}
+		return F.num(val);
 	}
 
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.asin());
 	}
-	
+
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.asin(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.asin(arg1));
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
