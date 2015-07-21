@@ -40,6 +40,8 @@ public class ASTNodeFactory implements IParserFactory {
 
 	public final static int TIMES_PRECEDENCE = 3800;
 
+	public final static int DIVIDE_PRECEDENCE = 4500;
+	
 	public final static int POWER_PRECEDENCE = 5700;
 
 	static final String[] HEADER_STRINGS = { "MapAll", "TimesBy", "Plus", "UpSet", "CompoundExpression", "Map", "Unset", "Apply",

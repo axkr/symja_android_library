@@ -26,7 +26,7 @@ public class Plus extends AbstractOperator {
 			expr = f.get(i);
 
 			if ((i > 1) && (expr instanceof IAST) && expr.isTimes()) {
-				timesConverter.convert(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
+				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
 			} else {
 				if (i > 1) {
 					if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {

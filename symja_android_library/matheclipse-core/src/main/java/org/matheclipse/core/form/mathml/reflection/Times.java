@@ -26,58 +26,70 @@ public class Times extends AbstractOperator {
 	 */
 	@Override
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		return convert(buf, f, precedence, NO_SPECIAL_CALL);
+		return convertTimesFraction(buf, f, precedence, NO_SPECIAL_CALL);
 	}
 
 	/**
-	 * Converts a given function into the corresponding MathML output
+	 * Try to split a given <code>Times[...]</code> function into nominator and denominator and add the corresponding MathML output
 	 * 
 	 * @param buf
 	 *            StringBuffer for MathML output
 	 * @param f
-	 *            The math function which should be converted to MathML
+	 *            The function which should be converted to MathML
+	 * @precedence
+	 * @caller
 	 */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr[] parts = Apart.getFractionalPartsTimes(f, true);
+	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
+		IExpr[] parts = Apart.getFractionalPartsTimes(f, false, true, false);
 		if (parts == null) {
-			convertMultiply(buf, f, precedence, caller);
+			convertTimesOperator(buf, f, precedence, caller);
 			return true;
 		}
 		final IExpr numerator = parts[0];
 		final IExpr denominator = parts[1];
 		if (!denominator.isOne()) {
+			// found a fraction expression
 			if (caller == PLUS_CALL) {
 				fFactory.tag(buf, "mo", "+");
 			}
 			fFactory.tagStart(buf, "mfrac");
 			// insert numerator in buffer:
-			if (!numerator.isTimes()) {
+			if (numerator.isTimes()) {
+				convertTimesOperator(buf, (IAST) numerator, precedence, NO_SPECIAL_CALL);
+			} else {
 				fFactory.convert(buf, numerator, fPrecedence);
-			} else {
-				convertMultiply(buf, (IAST) numerator, precedence, NO_SPECIAL_CALL);
 			}
-			if (!denominator.isTimes()) {
-				fFactory.convert(buf, denominator, 0);
+			if (denominator.isTimes()) {
+				convertTimesOperator(buf, (IAST) denominator, precedence, NO_SPECIAL_CALL);
 			} else {
-				convertMultiply(buf, (IAST) denominator, precedence, NO_SPECIAL_CALL);
+				fFactory.convert(buf, denominator, 0);
 			}
 			fFactory.tagEnd(buf, "mfrac");
 		} else {
 			// if (numerator.size() <= 2) {
-			if (!numerator.isTimes()) {
-				convertMultiply(buf, f, precedence, caller);
+			if (numerator.isTimes()) {
+				convertTimesOperator(buf, (IAST) numerator, precedence, caller);
 			} else {
-				convertMultiply(buf, (IAST) numerator, precedence, caller);
+				convertTimesOperator(buf, f, precedence, caller);
 			}
 		}
 
 		return true;
 	}
 
-	private boolean convertMultiply(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		int size = f.size();
+	/**
+	 * Converts a given <code>Times[...]</code> function into the corresponding MathML output.
+	 * 
+	 * @param buf
+	 * @param timesAST
+	 * @param precedence
+	 * @param caller
+	 * @return
+	 */
+	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence, final int caller) {
+		int size = timesAST.size();
 		if (size > 1) {
-			IExpr arg1 = f.arg1();
+			IExpr arg1 = timesAST.arg1();
 			if (arg1.isMinusOne()) {
 				if (size == 2) {
 					fFactory.tagStart(buf, fFirstTag);
@@ -87,7 +99,7 @@ public class Times extends AbstractOperator {
 					if (caller == PLUS_CALL) {
 						fFactory.tag(buf, "mo", "-");
 						if (size == 3) {
-							fFactory.convert(buf, f.arg2(), fPrecedence);
+							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
 						}
 						fFactory.tagStart(buf, fFirstTag);
@@ -105,7 +117,7 @@ public class Times extends AbstractOperator {
 				} else {
 					if (caller == PLUS_CALL) {
 						if (size == 3) {
-							fFactory.convert(buf, f.arg2(), fPrecedence);
+							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
 						}
 						fFactory.tagStart(buf, fFirstTag);
@@ -119,7 +131,7 @@ public class Times extends AbstractOperator {
 					if ((arg1 instanceof ISignedNumber) && (((ISignedNumber) arg1).isNegative())) {
 						fFactory.tag(buf, "mo", "-");
 						fFactory.tagStart(buf, fFirstTag);
-						arg1 = ((ISignedNumber) arg1).negate();
+						arg1 = ((ISignedNumber) arg1).opposite();
 					} else {
 						fFactory.tag(buf, "mo", "+");
 						fFactory.tagStart(buf, fFirstTag);
@@ -136,8 +148,8 @@ public class Times extends AbstractOperator {
 		}
 
 		for (int i = 2; i < size; i++) {
-			fFactory.convert(buf, f.get(i), fPrecedence);
-			if ((i < f.size() - 1) && (fOperator.compareTo("") != 0)) {
+			fFactory.convert(buf, timesAST.get(i), fPrecedence);
+			if ((i < timesAST.size() - 1) && (fOperator.compareTo("") != 0)) {
 				fFactory.tag(buf, "mo", fOperator);
 			}
 		}

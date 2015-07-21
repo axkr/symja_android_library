@@ -19,30 +19,32 @@ public class Times extends AbstractOperator {
 	}
 
 	/**
-	 * Converts a given function into the corresponding MathML output
+	 * Converts a given function into the corresponding TeX output
 	 * 
 	 * @param buf
 	 *            StringBuffer for MathML output
 	 * @param f
-	 *            The math function which should be converted to MathML
+	 *            The math function which should be converted to TeX
 	 */
 	@Override
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		return convert(buf, f, precedence, NO_SPECIAL_CALL);
+		return convertTimesFraction(buf, f, precedence, NO_SPECIAL_CALL);
 	}
 
 	/**
-	 * Converts a given function into the corresponding MathML output
+	 * Try to split a given <code>Times[...]</code> function into nominator and denominator and add the corresponding TeX output
 	 * 
 	 * @param buf
-	 *            StringBuffer for MathML output
+	 *            StringBuffer for TeX output
 	 * @param f
-	 *            The math function which should be converted to MathML
+	 *            The math function which should be converted to TeX
+	 * @precedence
+	 * @caller
 	 */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr[] parts = Apart.getFractionalPartsTimes(f, true);
+	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
+		IExpr[] parts = Apart.getFractionalPartsTimes(f, false, true, false);
 		if (parts == null) {
-			convertMultiply(buf, f, precedence, caller);
+			convertTimesOperator(buf, f, precedence, caller);
 			return true;
 		}
 		final IExpr numerator = parts[0];
@@ -54,21 +56,21 @@ public class Times extends AbstractOperator {
 			buf.append("\\frac{");
 			// insert numerator in buffer:
 			if (numerator.isTimes()) {
-				convertMultiply(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
+				convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
 				fFactory.convert(buf, numerator, precedence);
 			}
 			buf.append("}{");
 			// insert denominator in buffer:
 			if (denominator.isTimes()) {
-				convertMultiply(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
+				convertTimesOperator(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
 				fFactory.convert(buf, denominator, precedence);
 			}
 			buf.append('}');
 		} else {
 			if (numerator.isTimes()) {
-				convertMultiply(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
+				convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
 			} else {
 				fFactory.convert(buf, numerator, precedence);
 			}
@@ -77,18 +79,18 @@ public class Times extends AbstractOperator {
 		return true;
 	}
 
-	private boolean convertMultiply(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		int size = f.size();
+	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence, final int caller) {
+		int size = timesAST.size();
 		String texTimesOperator = "\\,";
 		if (size > 2) {
-			if (f.arg1().isNumber() && f.arg2().isNumber()) {
+			if (timesAST.arg1().isNumber() && timesAST.arg2().isNumber()) {
 				// Issue #67: if we have 2 or more numbers we use the \cdot operator
-				/// see http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+				// / see http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
 				texTimesOperator = "\\cdot ";
 			}
 		}
 		if (size > 1) {
-			IExpr arg1 = f.arg1();
+			IExpr arg1 = timesAST.arg1();
 			if (arg1.isMinusOne()) {
 				if (size == 2) {
 					precedenceOpen(buf, precedence);
@@ -97,7 +99,7 @@ public class Times extends AbstractOperator {
 					if (caller == PLUS_CALL) {
 						buf.append("-");
 						if (size == 3) {
-							fFactory.convert(buf, f.arg2(), fPrecedence);
+							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
 						}
 					} else {
@@ -113,7 +115,7 @@ public class Times extends AbstractOperator {
 					if (caller == PLUS_CALL) {
 						if (size == 3) {
 							buf.append("+");
-							fFactory.convert(buf, f.arg2(), fPrecedence);
+							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
 						}
 					} else {
@@ -124,7 +126,7 @@ public class Times extends AbstractOperator {
 				if (caller == PLUS_CALL) {
 					if ((arg1.isSignedNumber()) && (((ISignedNumber) arg1).isNegative())) {
 						buf.append(" - ");
-						arg1 = ((ISignedNumber) arg1).negate();
+						arg1 = ((ISignedNumber) arg1).opposite();
 					} else {
 						buf.append("+");
 					}
@@ -139,8 +141,8 @@ public class Times extends AbstractOperator {
 		}
 
 		for (int i = 2; i < size; i++) {
-			fFactory.convert(buf, f.get(i), fPrecedence);
-			if ((i < f.size() - 1) && (fOperator.compareTo("") != 0)) {
+			fFactory.convert(buf, timesAST.get(i), fPrecedence);
+			if ((i < timesAST.size() - 1) && (fOperator.compareTo("") != 0)) {
 				buf.append(texTimesOperator);
 			}
 		}

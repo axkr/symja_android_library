@@ -51,7 +51,7 @@ public class Expand extends AbstractFunctionEvaluator {
 			} else if (ast.isTimes()) {
 				// (a+b)*(c+d)...
 
-				IExpr[] temp = Apart.getFractionalPartsTimes(ast, false);
+				IExpr[] temp = Apart.getFractionalPartsTimes(ast, false, false, true);
 				if (temp == null) {
 					return setExpanded(expandTimes(ast));
 				}

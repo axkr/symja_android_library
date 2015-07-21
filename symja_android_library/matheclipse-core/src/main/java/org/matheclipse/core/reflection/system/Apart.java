@@ -41,7 +41,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkRange(ast, 2, 3);
-		
+
 		final IExpr arg1 = ast.arg1();
 		IAST variableList = null;
 		if (ast.size() == 3) {
@@ -230,7 +230,7 @@ public class Apart extends AbstractFunctionEvaluator {
 	public static IExpr[] getFractionalParts(final IExpr arg) {
 		IExpr[] parts = null;
 		if (arg.isTimes()) {
-			parts = Apart.getFractionalPartsTimes((IAST) arg, true);
+			parts = Apart.getFractionalPartsTimes((IAST) arg, false, true, true);
 		} else if (arg.isPower()) {
 			parts = new IExpr[2];
 			IExpr denom = getFractionalPartsPower((IAST) arg);
@@ -259,23 +259,31 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * 
 	 * @param timesAST
 	 *            a times expression (a*b*c....)
+	 * @param splitNumeratorOne
+	 *            split a fractional number into numerator and denominator, only if the numerator is 1, if <code>true</code>, ignore
+	 *            <code>splitFractionalNumbers</code> parameter.
 	 * @param splitFractionalNumbers
-	 *            TODO
-	 * @return the numerator and denominator expression
+	 *            split a fractional number into numerator and denominator
+	 * @param useDenominatorForm
+	 *            try to find a denminator form (Example: Csc[x] gives Sin[x])
+	 * @return the numerator and denominator expression and an optional fractional number (maybe <code>null</code>), if
+	 *         splitNumeratorOne is <code>true</code>.
 	 */
-	public static IExpr[] getFractionalPartsTimes(final IAST timesAST, boolean splitFractionalNumbers) {
-		IExpr[] result = new IExpr[2];
-
+	public static IExpr[] getFractionalPartsTimes(final IAST timesAST, boolean splitNumeratorOne, boolean splitFractionalNumbers,
+			boolean useDenominatorForm) {
+		IExpr[] result = new IExpr[3];
+		result[2] = null;
 		IAST numerator = F.Times();
 		IAST denominator = F.Times();
 		IExpr arg;
 		IAST argAST;
 		boolean evaled = false;
+		boolean splitFractionEvaled = false;
 		for (int i = 1; i < timesAST.size(); i++) {
 			arg = timesAST.get(i);
 			if (arg.isAST()) {
 				argAST = (IAST) arg;
-				if (argAST.size() == 2) {
+				if (useDenominatorForm && argAST.size() == 2) {
 					IAST denomForm = Denominator.getDenominatorForm(argAST);
 					if (denomForm != null) {
 						denominator.add(denomForm);
@@ -290,14 +298,31 @@ public class Apart extends AbstractFunctionEvaluator {
 						continue;
 					}
 				}
-			} else if (splitFractionalNumbers && arg.isFraction()) {
-				IFraction fr = (IFraction) arg;
-				if (!fr.getNumerator().isOne()) {
-					numerator.add(fr.getNumerator());
+			} else if (i == 1 && arg.isFraction()) {
+				if (splitNumeratorOne) {
+					IFraction fr = (IFraction) arg;
+					if (fr.getNumerator().isOne()) {
+						denominator.add(fr.getDenominator());
+						splitFractionEvaled = true;
+						continue;
+					}
+					if (fr.getNumerator().isMinusOne()) {
+						numerator.add(fr.getNumerator());
+						denominator.add(fr.getDenominator());
+						splitFractionEvaled = true;
+						continue;
+					}
+					result[2] = fr;
+					continue;
+				} else if (splitFractionalNumbers) {
+					IFraction fr = (IFraction) arg;
+					if (!fr.getNumerator().isOne()) {
+						numerator.add(fr.getNumerator());
+					}
+					denominator.add(fr.getDenominator());
+					evaled = true;
+					continue;
 				}
-				denominator.add(fr.getDenominator());
-				evaled = true;
-				continue;
 			}
 			numerator.add(arg);
 		}
@@ -305,6 +330,17 @@ public class Apart extends AbstractFunctionEvaluator {
 			result[0] = numerator.getOneIdentity(F.C1);
 			result[1] = denominator.getOneIdentity(F.C1);
 			return result;
+		}
+		if (splitFractionEvaled) {
+			result[0] = numerator.getOneIdentity(F.C1);
+			if (!result[0].isTimes() && !result[0].isPlus()) {
+				result[1] = denominator.getOneIdentity(F.C1);
+				return result;
+			}
+			if (result[0].isTimes() && ((IAST) result[0]).size() == 3 && ((IAST) result[0]).arg1().isMinusOne()) {
+				result[1] = denominator.getOneIdentity(F.C1);
+				return result;
+			}
 		}
 		return null;
 	}

@@ -182,7 +182,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	public static IExpr timesLimit(final IAST arg1, ISymbol symbol, IExpr limit, int direction, IAST rule) {
-		IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false);
+		IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false, false, true);
 		if (parts != null) {
 
 			IExpr numerator = parts[0];
@@ -240,7 +240,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
-			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false);
+			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false, false, true);
 			if (parts != null) {
 				if (!parts[1].isOne()) { // denominator != 1
 					temp = numeratorDenominatorLimit(parts[0], parts[1], x, F.C0, F.Rule(x, F.C0), direction);

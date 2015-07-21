@@ -32,7 +32,7 @@ public class Plus extends AbstractOperator {
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);
 			if ((i < size) && (expr instanceof IAST) && ((IAST) expr).head().equals(F.Times)) {
-				timesConverter.convert(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
+				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
 			} else {
 				if (i < size) {
 					if ((expr instanceof ISignedNumber) && (((ISignedNumber) expr).isNegative())) {

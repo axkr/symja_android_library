@@ -1203,7 +1203,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public boolean isBlank() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isComplex() {
