@@ -264,6 +264,12 @@ public class StringX extends ExprImpl implements IStringX {
 		return fString.equalsIgnoreCase(anotherString);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public String fullFormString() {
+		return "\"" + fString + "\"";
+	}
+
 	/**
 	 * @return
 	 */
