@@ -488,7 +488,7 @@ public class FractionSym extends ExprImpl implements IFraction {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertFraction(sb, fRational, Integer.MIN_VALUE);
+			OutputFormFactory.get().convertFraction(sb, fRational, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 		}

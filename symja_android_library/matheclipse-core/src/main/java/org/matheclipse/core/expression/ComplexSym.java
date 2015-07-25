@@ -330,7 +330,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE);
+			OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 		}

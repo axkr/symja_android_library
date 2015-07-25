@@ -1127,7 +1127,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertInteger(sb, this, Integer.MIN_VALUE);
+			OutputFormFactory.get().convertInteger(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 		}
