@@ -173,7 +173,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Check assumptions for thie comparison operator. Will be overridden in <code>GreaterEqual, Less, LessEqual</code>.
+	 * Check assumptions for the comparison operator. Will be overridden in <code>GreaterEqual, Less, LessEqual</code>.
 	 * 
 	 * @param arg1
 	 *            the left-hand-side of the comparison
