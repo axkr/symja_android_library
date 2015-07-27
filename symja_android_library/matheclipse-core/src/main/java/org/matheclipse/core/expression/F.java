@@ -128,6 +128,8 @@ public class F {
 	public final static ISymbol False = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False");
 	public final static ISymbol Alternatives = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "alternatives"
 			: "Alternatives");
+
+	public final static ISymbol Direction = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "direction" : "Direction");
 	public final static ISymbol List = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
 	public final static ISymbol True = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
 	public final static ISymbol Null = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "null" : "Null");
@@ -150,6 +152,7 @@ public class F {
 	public final static ISymbol NHoldAll = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdall" : "NHoldAll");
 	public final static ISymbol Line = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "line" : "Line");
 	public final static ISymbol BoxRatios = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boxratios" : "BoxRatios");
+	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
 	public final static ISymbol MeshRange = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meshrange" : "MeshRange");
 	public final static ISymbol PlotRange = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plotrange" : "PlotRange");
 	public final static ISymbol AxesStyle = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "axesstyle" : "AxesStyle");
@@ -4076,10 +4079,8 @@ public class F {
 		}
 		return arg;
 	}
-
+ 
 	public final static ISymbol HoldForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdForm" : "HoldForm");
-	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
-
 	public final static ISymbol AppellF1 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
 	public final static ISymbol CosIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
 	public final static ISymbol EllipticE = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
