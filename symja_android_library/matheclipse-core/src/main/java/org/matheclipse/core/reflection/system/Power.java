@@ -101,112 +101,76 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Indeterminate;
 			}
 
-			if (arg1.isOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
+			if (arg1.isOne() || arg1.isMinusOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
 				return F.Indeterminate;
 			}
+			IAST directedInfinity = (IAST) arg2;
 			if (arg1.isZero()) {
-				if (arg2.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
 					// 0 ^ Inf
 					return F.C0;
 				}
-				if (arg2.isNegativeInfinity()) {
+				if (directedInfinity.isNegativeInfinity()) {
 					// 0 ^ (-Inf)
 					return F.CComplexInfinity;
 				}
 				return F.Indeterminate;
 			}
 			if (arg1.isInfinity()) {
-				if (arg2.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
 					// Inf ^ Inf
 					return F.CComplexInfinity;
 				}
-				if (arg2.isNegativeInfinity()) {
+				if (directedInfinity.isNegativeInfinity()) {
 					// Inf ^ (-Inf)
 					return F.C0;
 				}
 				return F.Indeterminate;
 			}
 			if (arg1.isNegativeInfinity()) {
-				if (arg2.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
 					// (-Inf) ^ Inf
 					return F.CComplexInfinity;
 				}
-				if (arg2.isNegativeInfinity()) {
+				if (directedInfinity.isNegativeInfinity()) {
 					// (-Inf) ^ (-Inf)
 					return F.C0;
 				}
 				return F.Indeterminate;
 			}
 			if (arg1.isComplexInfinity()) {
-				if (arg2.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
 					// ComplexInfinity ^ Inf
 					return F.CComplexInfinity;
 				}
-				if (arg2.isNegativeInfinity()) {
+				if (directedInfinity.isNegativeInfinity()) {
 					// ComplexInfinity ^ (-Inf)
 					return F.C0;
 				}
 				return F.Indeterminate;
 			}
 			if (arg1.isDirectedInfinity()) {
-				if (arg2.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
 					return F.CComplexInfinity;
 				}
-				if (arg2.isNegativeInfinity()) {
+				if (directedInfinity.isNegativeInfinity()) {
 					return F.C0;
 				}
 				return F.Indeterminate;
 			}
-			// if (arg1.isPositive()) {
-			// if (arg2.isInfinity()) {
-			// return F.CInfinity;
-			// }
-			// if (arg2.isNegativeInfinity()) {
-			// return F.C0;
-			// }
-			// }
 
-			// ------------------------------
-			// IExpr a1 = arg1;
-			// if (arg1.isNegative()) {
-			// a1 = ((ISignedNumber) a1).negate();
-			// }
-			if (arg1.isPositive()) {
-				IExpr a1 = arg1;
-				if (!a1.isSignedNumber()) {
-					a1 = F.evaln(arg1);
+			if (arg1.isNumber()) {
+				IExpr temp = e2NumberDirectedInfinity((INumber) arg1, directedInfinity);
+				if (temp != null) {
+					return temp;
 				}
-				if (a1.isSignedNumber()) {
-					if (arg2.isInfinity()) {
-						if (((ISignedNumber) a1).isGreaterThan(F.C1)) {
-							// x^Infinity && x>1
-							return F.CInfinity;
-						}
-					} else {
-						if (((ISignedNumber) a1).isLessThan(F.C1)) {
-							// x^(-Infinity) && x<1
-							return F.CInfinity;
-						}
+			} else {
+				IExpr a1 = F.evaln(arg1);
+				if (a1.isNumber()) {
+					IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
+					if (temp != null) {
+						return temp;
 					}
-				}
-				int comp = ((INumber) a1).compareAbsValueToOne();
-				switch (comp) {
-				case -1:
-					// Abs(x) < 1
-					if (arg2.isInfinity()) {
-						// x^Infinity
-						return F.C0;
-					}
-					// x^ -Infinity
-					return F.CComplexInfinity;
-				case 1:
-					// Abs(x) > 1
-					if (arg2.isInfinity()) {
-						// x^Infinity
-						return F.CComplexInfinity;
-					}
-					// x^ -Infinity
-					return F.C0;
 				}
 			}
 		}
@@ -372,6 +336,51 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					return F.Power(astArg1.arg1(), F.Times(arg2, astArg1.arg2()));
 				}
 			}
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param arg1
+	 *            a number
+	 * @param arg2
+	 *            must be a <code>DirectedInfinity[...]</code> expression
+	 * @return
+	 */
+	private IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
+		int comp = arg1.compareAbsValueToOne();
+		switch (comp) {
+		case 1:
+			// Abs(arg1) > 1
+			if (arg2.isInfinity()) {
+				// arg1 ^ Inf
+				if (arg1.isSignedNumber() && arg1.isPositive()) {
+					return F.CInfinity;
+				}
+				// complex or negative numbers
+				return F.CComplexInfinity;
+			}
+			if (arg2.isNegativeInfinity()) {
+				// arg1 ^ (-Inf)
+				return F.C0;
+			}
+			break;
+		case -1:
+			// Abs(arg1) < 1
+			if (arg2.isInfinity()) {
+				// arg1 ^ Inf
+				return F.C0;
+			}
+			if (arg2.isNegativeInfinity()) {
+				// arg1 ^ (-Inf)
+				if (arg1.isSignedNumber() && arg1.isPositive()) {
+					return F.CInfinity;
+				}
+				// complex or negative numbers
+				return F.CComplexInfinity;
+			}
+			break;
 		}
 		return null;
 	}
