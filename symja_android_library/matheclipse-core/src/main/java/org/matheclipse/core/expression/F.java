@@ -638,7 +638,9 @@ public class F {
 	public final static ISymbol Sec = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
 	public final static ISymbol Sech = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sech" : "Sech");
 	public final static ISymbol Select = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
-
+	public final static ISymbol Series = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "series" : "Series");
+	public final static ISymbol SeriesData = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "seriesdata" : "SeriesData");
+	
 	public final static ISymbol Sign = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sign" : "Sign");
 	public final static ISymbol SignCmp = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");
 	public final static ISymbol Simplify = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "simplify" : "Simplify");
@@ -3640,6 +3642,14 @@ public class F {
 		return ast(a, Sequence);
 	}
 
+	public static IAST Series(final IExpr... a) {
+		return ast(a, Series);
+	}
+	
+	public static IAST SeriesData(final IExpr... a) {
+		return ast(a, SeriesData);
+	}
+	
 	public static IAST SetAttributes(final IExpr a0) {
 		return unaryAST1(SetAttributes, a0);
 	}
