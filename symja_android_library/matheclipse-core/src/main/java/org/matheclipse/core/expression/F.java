@@ -35,6 +35,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2829,6 +2830,11 @@ public class F {
 	public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
 		long l = ii.toLong();
 		return isZero(value - l, Config.DOUBLE_TOLERANCE);
+	}
+	
+	public static boolean isNumEqualRational(double value, IRational rational) throws ArithmeticException {
+		double d = rational.doubleValue();
+		return isZero(value - d, Config.DOUBLE_TOLERANCE);
 	}
 
 	public static boolean isNumIntValue(double value, int i) {
