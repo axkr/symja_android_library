@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -15,10 +16,39 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import com.google.common.base.Predicate;
+
 /**
  * Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions).
  */
 public class Solve extends AbstractFunctionEvaluator {
+
+	/**
+	 * Check an expression, if it's an allowed object.
+	 *
+	 */
+	private final class IsWrongSolveExpression implements Predicate<IExpr> {
+		IExpr wrongExpr;
+
+		public IsWrongSolveExpression() {
+
+		}
+
+		@Override
+		public boolean apply(IExpr input) {
+			if (input.isDirectedInfinity()) {
+				// input is representing a DirectedInfinity() object
+				wrongExpr = input;
+				return true;
+			}
+			return false;
+		}
+
+		public IExpr getWrongExpr() {
+			return wrongExpr;
+		}
+	}
+
 	/**
 	 * Analyze an expression, if it has linear, polynomial or other form.
 	 * 
@@ -570,8 +600,14 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		ExprAnalyzer exprAnalyzer;
 		ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
+		IsWrongSolveExpression predicate = new IsWrongSolveExpression();
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
+			if (expr.isMember(predicate, true)) {
+				EvalEngine.get()
+						.printMessage("Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
+				return null;
+			}
 			exprAnalyzer = new ExprAnalyzer(expr, vars);
 			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
