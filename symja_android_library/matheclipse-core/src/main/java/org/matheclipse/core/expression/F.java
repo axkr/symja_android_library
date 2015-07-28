@@ -1969,8 +1969,9 @@ public class F {
 		return unaryAST1(Depth, a0);
 	}
 
-	public static IAST Derivative(final IExpr a0) {
-		return unaryAST1($s("Derivative"), a0);
+	public static IAST Derivative(final IExpr... a) {
+		return ast(a, Derivative);
+//		return unaryAST1($s("Derivative"), a0);
 	}
 
 	public static IAST Det(final IExpr a0) {
