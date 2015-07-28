@@ -565,7 +565,7 @@ public class OutputFormFactory {
 		IExpr arg2 = list.arg2();
 		if (arg2.isNumber()) {
 			INumber exp = (INumber) arg2;
-			if (exp.equals(F.C1D2)) {
+			if (exp.isNumEqualRational(F.C1D2)) {
 				append(buf, "Sqrt(");
 				convert(buf, list.arg1(), 0);
 				append(buf, ")");
@@ -696,15 +696,22 @@ public class OutputFormFactory {
 	public void convert(final Appendable buf, final IExpr o, final int precedence) throws IOException {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
+			IExpr header = list.head();
+			if (!header.isSymbol()) {
+				// print expressions like: f(#1, y)& [x]
+				convert(buf, header);
+				convertFunctionArgs(buf, list);
+				return;
+			}
 			ISymbol head = list.topHead();
-			String header = head.getSymbolName();
+			String headerStr = head.getSymbolName();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(header);
+				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
 				if (str != null) {
-					header = str;
+					headerStr = str;
 				}
 			}
-			final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(header);
+			final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
 			if (operator != null) {
 				if ((operator instanceof PrefixOperator) && (list.size() == 2)) {
 					convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
@@ -798,7 +805,7 @@ public class OutputFormFactory {
 		if (o instanceof IPatternObject) {
 			convertPattern(buf, (IPatternObject) o);
 			return;
-		} 
+		}
 		convertString(buf, o.toString());
 	}
 
@@ -862,6 +869,17 @@ public class OutputFormFactory {
 		}
 	}
 
+	public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {
+		append(buf, "[");
+		for (int i = 1; i < list.size(); i++) {
+			convert(buf, list.get(i));
+			if (i < list.size() - 1) {
+				append(buf, ",");
+			}
+		}
+		append(buf, "]");
+	}
+
 	/**
 	 * Write a function into the given <code>Appendable</code>.
 	 * 
@@ -871,7 +889,7 @@ public class OutputFormFactory {
 	 */
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
 		IExpr head = function.head();
-		convert(buf, function.head());
+		convert(buf, head);
 		if (head.isAST()) {
 			append(buf, "[");
 		} else if (fRelaxedSyntax) {
