@@ -1707,6 +1707,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isNumeric() {
 		return false;
 	}

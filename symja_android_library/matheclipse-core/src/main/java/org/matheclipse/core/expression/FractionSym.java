@@ -179,6 +179,12 @@ public class FractionSym extends ExprImpl implements IFraction {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		return equals(value);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPositive() {
 		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == 1);
 	}

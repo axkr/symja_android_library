@@ -59,10 +59,16 @@ public class Num extends ExprImpl implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return F.isNumEqualInteger(fDouble, ii);
+	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
+		return F.isNumEqualInteger(fDouble, value);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		return F.isNumEqualRational(fDouble, value);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {

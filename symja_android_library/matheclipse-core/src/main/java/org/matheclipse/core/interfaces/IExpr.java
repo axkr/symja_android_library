@@ -75,7 +75,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int ASTID = 1024;
 
 	public final static int BLANKID = 256;
-	
+
 	public final static int COMPLEXID = 32;
 
 	public final static int DOUBLECOMPLEXID = 4;
@@ -401,6 +401,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 */
 	public boolean isAtom();
+
+	/**
+	 * Test if this expression is a <code>Blank[]</code> object
+	 * 
+	 */
+	public boolean isBlank();
 
 	/**
 	 * Test if this expression is a symbolic complex number (i.e. <code>instanceof IComplex</code>)
@@ -741,11 +747,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Check if this expression equals an <code>IInteger</code> value. The value of an <code>INum</code> or the value of an
-	 * <code>IInteger</code> object can be an <code>IInteger</code> value.
+	 * <code>IInteger</code> object can be equal to <code>value</code>.
 	 * 
+	 * @param value
 	 * @return
 	 */
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException;
+	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException;
+	
+	/**
+	 * Check if this expression equals an <code>IRational</code> value. The value of an <code>IInteger</code>, <code>IFraction</code> or the value of an
+	 * <code>INum</code> object can be equal to <code>value</code>.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException;
 
 	/**
 	 * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type <code>IComplexNum</code>.
@@ -809,20 +825,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isOrderlessAST();
 
 	/**
-	 * Test if this expression is a <code>Blank[]</code> object
-	 * 
-	 */
-	public boolean isBlank();
-	
-	/**
 	 * Test if this expression is a <code>Pattern[symbol]</code> object
 	 * 
 	 */
 	public boolean isPattern();
 
 	/**
-	 * Return <code>true</code>, if the expression is a pattern object with an associated default value (for example <code>0</code> is the
-	 * default value for the addition expression <code>x_+y_.</code>)
+	 * Return <code>true</code>, if the expression is a pattern object with an associated default value (for example <code>0</code>
+	 * is the default value for the addition expression <code>x_+y_.</code>)
 	 * 
 	 * @return
 	 */

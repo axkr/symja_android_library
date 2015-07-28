@@ -361,8 +361,14 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return equals(ii);
+	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
+		return equals(value);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		return equals(value);
 	}
 
 	/** {@inheritDoc} */
@@ -580,6 +586,12 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		return fInteger.toByteArray();
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public BigInteger getBigDenominator() {
+		return BigInteger.ONE;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public BigInteger getBigNumerator() {

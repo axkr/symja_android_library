@@ -637,10 +637,16 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumeric() {

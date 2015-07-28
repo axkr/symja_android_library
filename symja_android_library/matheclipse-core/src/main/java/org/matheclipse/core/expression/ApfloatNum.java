@@ -85,7 +85,15 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return fApfloat.frac().equals(new Apint(ii.getBigNumerator()));
+		return fApfloat.truncate().equals(new Apint(ii.getBigNumerator())) && fApfloat.frac().equals(Apint.ZERO);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+		long precision = fApfloat.precision();
+		return fApfloat.equals(new Apfloat(value.getBigNumerator(), precision).divide(new Apfloat(value.getBigDenominator(),
+				precision)));
 	}
 
 	/** {@inheritDoc} */

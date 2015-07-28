@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import java.math.BigInteger;
+
 import org.apache.commons.math3.fraction.BigFraction;
 
 /**
@@ -20,7 +22,20 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * </pre>
 	 */
 	public IAST factorInteger();
+	/**
+	 * Returns the denominator of this fraction.
+	 * 
+	 * @return denominator
+	 */
+	public BigInteger getBigDenominator();
 
+	/**
+	 * Returns the numerator of this fraction.
+	 * 
+	 * @return denominator
+	 */
+	public BigInteger getBigNumerator();
+	
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
