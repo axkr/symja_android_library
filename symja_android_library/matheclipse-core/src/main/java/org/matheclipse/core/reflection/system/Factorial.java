@@ -29,6 +29,14 @@ public class Factorial extends AbstractTrigArg1 {
 		return F.num(d);
 	}
 
+	public static IInteger factorial(final IInteger biggi) {
+		BigInteger bi = factorial(biggi.getBigNumerator());
+		if (bi != null) {
+			return F.integer(bi);  
+		}
+		return null;
+	}
+
 	public static BigInteger factorial(final BigInteger x) {
 		try {
 			int ni = NumberUtil.toInt(x);

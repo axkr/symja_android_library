@@ -699,6 +699,32 @@ public class OutputFormFactory {
 			IExpr header = list.head();
 			if (!header.isSymbol()) {
 				// print expressions like: f(#1, y)& [x]
+
+				IAST[] derivStruct = list.isDerivative();
+				if (derivStruct != null) {
+					IAST a1Head = derivStruct[0];
+					IAST headAST = derivStruct[1];
+					if (a1Head.size() == 2 && a1Head.arg1().isInteger() && headAST.size() == 2 && headAST.arg1().isSymbol()) {
+						try {
+							int n = ((IInteger) a1Head.arg1()).toInt();
+							// IExpr arg1 = listArg1.arg1();
+							if (n == 1 || n == 2) {
+								ISymbol f = (ISymbol) headAST.arg1();
+								convertSymbol(buf, f);
+								if (n == 1) {
+									append(buf, "'");
+								} else if (n == 2) {
+									append(buf, "''");
+								}
+								convertArgs(buf, f, list);
+								return;
+							}
+						} catch (ArithmeticException ae) {
+
+						}
+					}
+				}
+
 				convert(buf, header);
 				convertFunctionArgs(buf, list);
 				return;
@@ -894,6 +920,10 @@ public class OutputFormFactory {
 	public void convertAST(final Appendable buf, final IAST function) throws IOException {
 		IExpr head = function.head();
 		convert(buf, head);
+		convertArgs(buf, head, function);
+	}
+
+	public void convertArgs(final Appendable buf, IExpr head, final IAST function) throws IOException {
 		if (head.isAST()) {
 			append(buf, "[");
 		} else if (fRelaxedSyntax) {

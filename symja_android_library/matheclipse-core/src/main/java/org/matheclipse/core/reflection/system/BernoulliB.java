@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
@@ -39,6 +40,20 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 					return F.fraction(bernoulli);
 				}
 			}
+		}
+		return null;
+	}
+
+	/**
+	 * Compute the Bernoulli number of the first kind.
+	 * 
+	 * @param biggi
+	 * @return
+	 */
+	public static IFraction bernoulliNumber(final IInteger biggi) {
+		BigFraction bf = bernoulliNumber(biggi.getBigNumerator());
+		if (bf != null) {
+			return F.fraction(bf);
 		}
 		return null;
 	}

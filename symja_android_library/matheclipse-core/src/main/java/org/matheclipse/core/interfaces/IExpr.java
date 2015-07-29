@@ -454,6 +454,25 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public boolean isCosh();
 
 	/**
+	 * <p>
+	 * Test if this expression is a <code>Derivative[number,...][symbol][arg]</code> or <code>Derivative[number,...][symbol]</code>
+	 * expression and return the corresponding <code>IAST</code> structures.
+	 * <ul>
+	 * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number,...]</code> AST part.</li>
+	 * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]</code> AST part.</li>
+	 * <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg]</code> AST part, if available.</li>
+	 * </ul>
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code>, if no argument is available.
+	 * </p>
+	 * 
+	 * @return <code>null</code> if the expression is not a <code>Derivative[number,...][symbol][arg]</code> or
+	 *         <code>Derivative[number,...][symbol]</code> expression.
+	 */
+	public IAST[] isDerivative();
+
+	/**
 	 * Test if this expression is representing a DirectedInfinity (i.e. <code>Infinity->DirectedInfinity[1]</code>,
 	 * <code>-Infinity->DirectedInfinity[-1]</code>, <code>ComplexInfinity->DirectedInfinity[]</code>)
 	 * 
@@ -753,10 +772,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException;
-	
+
 	/**
-	 * Check if this expression equals an <code>IRational</code> value. The value of an <code>IInteger</code>, <code>IFraction</code> or the value of an
-	 * <code>INum</code> object can be equal to <code>value</code>.
+	 * Check if this expression equals an <code>IRational</code> value. The value of an <code>IInteger</code>,
+	 * <code>IFraction</code> or the value of an <code>INum</code> object can be equal to <code>value</code>.
 	 * 
 	 * @param value
 	 * @return
@@ -1206,7 +1225,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public IExpr replaceRepeated(final IAST astRules);
 
-	public IExpr replaceSlots(final IAST astSlots);
+	/**
+	 * <p>
+	 * Replace all occurrences of Slot[&lt;index&gt;] expressions with the expression at the appropriate <code>index</code> in the
+	 * given <code>slotsList</code>.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
+	 * </p>
+	 * 
+	 * @param slotsList
+	 *            the values for the slots.
+	 * @return <code>null</code> if no substitution occurred.
+	 */
+	public IExpr replaceSlots(final IAST slotsList);
 
 	/**
 	 * Signum functionality is used in JAS toString() method, don't use it as math signum function.

@@ -7,6 +7,8 @@ import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Differentiation of a function. See <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
@@ -29,14 +31,39 @@ public class D extends AbstractFunctionEvaluator {
 	 * @param header
 	 * @return
 	 */
-	private IExpr getDerivativeArg1(IExpr x, final IExpr arg1, final IExpr header) {
-		IExpr der = F.evalNull(F.Derivative, header);
-		if (der != null) {
-			// we've found a derivative for a function of the form f[x_]
-			IExpr derivative = F.eval(F.$(der, arg1));
-			return F.Times(derivative, F.D(arg1, x));
+	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head) {
+		if (head.isSymbol()) {
+			ISymbol header = (ISymbol) head;
+			IExpr der = Derivative.derivative(1, header);
+			if (der != null) {
+				// we've found a derivative for a function of the form f[x_]
+				IExpr derivative = F.eval(F.$(der, a1));
+				return F.Times(F.D(a1, x), derivative);
+			}
+			IAST fDerivParam = createDerivative(1, header, a1);
+			if (x.equals(a1)) {
+				return fDerivParam;
+			}
+			return F.Times(F.D(a1, x), fDerivParam);
 		}
 		return null;
+	}
+
+	/**
+	 * Create <code>Derivative[n][header][arg1]</code>
+	 * 
+	 * @param n
+	 * @param header
+	 * @param arg1
+	 * @return
+	 */
+	public IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
+		IAST deriv = F.Derivative(F.integer(n));
+		IAST fDeriv = F.ast(deriv);
+		fDeriv.add(header);
+		IAST fDerivParam = F.ast(fDeriv);
+		fDerivParam.add(arg1);
+		return fDerivParam;
 	}
 
 	@Override
@@ -162,6 +189,27 @@ public class D extends AbstractFunctionEvaluator {
 				// return F.C0;
 				// }
 			} else if (listArg1.size() == 2) {
+				IAST[] derivStruct = listArg1.isDerivative();
+				if (derivStruct != null && derivStruct[2] != null) {
+					IAST headAST = derivStruct[1];
+					IAST a1Head = derivStruct[0];
+					if (a1Head.size() == 2 && a1Head.arg1().isInteger()) {
+						try {
+							int n = ((IInteger) a1Head.arg1()).toInt();
+							IExpr arg1 = listArg1.arg1();
+							if (n > 0) {
+								IAST fDerivParam = createDerivative(n + 1, headAST.arg1(), arg1);
+								if (x.equals(arg1)) {
+									return fDerivParam;
+								}
+								return F.Times(F.D(arg1, x), fDerivParam);
+							}
+						} catch (ArithmeticException ae) {
+
+						}
+					}
+					return null;
+				}
 				return getDerivativeArg1(x, listArg1.arg1(), header);
 			}
 

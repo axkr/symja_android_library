@@ -108,6 +108,17 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expr) {
+		return getNormalizedNegativeExpression(expr, true);
+	}
+
+	/**
+	 * Check if the expression is canonical negative.
+	 * 
+	 * @param checkTimesPlus
+	 *            check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
+	 */
+	public static IExpr getNormalizedNegativeExpression(final IExpr expr, boolean checkTimesPlus) {
 		IAST result;
 		if (expr.isNumber()) {
 			if (((INumber) expr).complexSign() < 0) {
@@ -115,7 +126,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			}
 		}
 		if (expr.isAST()) {
-			if (expr.isTimes()) {
+			if (checkTimesPlus && expr.isTimes()) {
 				IAST timesAST = ((IAST) expr);
 				IExpr arg1 = timesAST.arg1();
 				if (arg1.isNumber()) {
@@ -142,7 +153,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					// return result;
 					// }
 				}
-			} else if (expr.isPlus()) {
+			} else if (checkTimesPlus && expr.isPlus()) {
 				IAST plusAST = ((IAST) expr);
 				IExpr arg1 = plusAST.arg1();
 				if (arg1.isNumber()) {
@@ -162,7 +173,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					}
 					return result;
 				} else if (arg1.isTimes()) {
-					IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
+					IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
 					if (arg1Negated != null) {
 						int positiveElementsCounter = 0;
 						result = plusAST.clone();
@@ -172,14 +183,14 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 							if (!temp.isTimes() && !temp.isPower()) {
 								return null;
 							}
-							arg1Negated = getNormalizedNegativeExpression(temp);
+							arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
 							if (arg1Negated != null) {
 								result.set(i, arg1Negated);
 							} else {
 								positiveElementsCounter++;
 								if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
 									// number of positive elements is greater than number of negative elements
-									return null;  
+									return null;
 								}
 								result.set(i, temp.negate());
 							}
@@ -264,31 +275,31 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * @param symbol
 	 */
 	public static void initSerializedRules(final ISymbol symbol) {
-			EvalEngine engine = EvalEngine.get();
-			boolean oldPackageMode = engine.isPackageMode();
-			boolean oldTraceMode = engine.isTraceMode();
-			try {
-				engine.setPackageMode(true);
-				engine.setTraceMode(false);
+		EvalEngine engine = EvalEngine.get();
+		boolean oldPackageMode = engine.isPackageMode();
+		boolean oldTraceMode = engine.isTraceMode();
+		try {
+			engine.setPackageMode(true);
+			engine.setTraceMode(false);
 
-				InputStream in = AbstractFunctionEvaluator.class.getResourceAsStream("/ser/" + symbol.getSymbolName().toLowerCase(Locale.ENGLISH)
-						+ ".ser");
-				ObjectInputStream ois = new ObjectInputStream(in);
-				// InputStream in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
-				// read files with BufferedInputStream to improve performance
-				// ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(in));
-				symbol.readRules(ois);
-				ois.close();
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				engine.setPackageMode(oldPackageMode);
-				engine.setTraceMode(oldTraceMode);
-			}
+			InputStream in = AbstractFunctionEvaluator.class.getResourceAsStream("/ser/"
+					+ symbol.getSymbolName().toLowerCase(Locale.ENGLISH) + ".ser");
+			ObjectInputStream ois = new ObjectInputStream(in);
+			// InputStream in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+			// read files with BufferedInputStream to improve performance
+			// ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(in));
+			symbol.readRules(ois);
+			ois.close();
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			engine.setPackageMode(oldPackageMode);
+			engine.setTraceMode(oldTraceMode);
+		}
 	}
-	
+
 }

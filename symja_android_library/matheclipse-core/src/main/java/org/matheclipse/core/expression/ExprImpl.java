@@ -334,7 +334,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public boolean isAtom() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isBlank() {
@@ -381,6 +381,12 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	@Override
 	public final boolean isCosh() {
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST[] isDerivative() {
+		return null;
 	}
 
 	/** {@inheritDoc} */
@@ -464,10 +470,10 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeOfPatterns(){
+	public boolean isFreeOfPatterns() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFunction() {
@@ -512,7 +518,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		}
 		return this instanceof IInteger;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isRationalResult() {
@@ -646,7 +652,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumeric() {
@@ -953,7 +959,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public IExpr plus(final IExpr that) {
 		return F.eval(F.Plus(this, that));
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr inc() {

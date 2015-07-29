@@ -1248,6 +1248,29 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public IAST[] isDerivative() {
+		if (head().isAST()) {
+			IAST headAST = (IAST) head();
+			if (headAST.isAST(F.Derivative, 2)) {
+				IAST[] result = new IAST[3];
+				result[0] = headAST;
+				result[1] = this;
+				return result;
+			}
+
+			if (headAST.head().isAST(F.Derivative, 2)) {
+				IAST[] result = new IAST[3];
+				result[0] = (IAST) headAST.head();
+				result[1] = headAST;
+				result[2] = this;
+				return result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isDirectedInfinity() {
 		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
 	}
@@ -1710,7 +1733,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isNumeric() {
