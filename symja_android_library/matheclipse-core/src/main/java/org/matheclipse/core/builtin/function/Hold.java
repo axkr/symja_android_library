@@ -11,13 +11,13 @@ public class Hold implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
+	public IExpr evaluate(final IAST ast) {
 		return null;
 	}
  
 	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
+	public IExpr numericEval(final IAST ast) {
+		return evaluate(ast);
 	}
  
 	@Override

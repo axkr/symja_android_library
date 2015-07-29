@@ -272,6 +272,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Head());
 	public final static ISymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
 			new org.matheclipse.core.builtin.function.Hold());
+	public final static ISymbol HoldForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm",
+			new org.matheclipse.core.builtin.function.HoldForm());
 	public final static ISymbol Identity = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity",
 			new org.matheclipse.core.builtin.function.Identity());
 	public final static ISymbol If = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If",
@@ -4094,7 +4096,6 @@ public class F {
 		return arg;
 	}
  
-	public final static ISymbol HoldForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdForm" : "HoldForm");
 	public final static ISymbol AppellF1 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
 	public final static ISymbol CosIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
 	public final static ISymbol EllipticE = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
