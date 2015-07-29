@@ -5,9 +5,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Hold implements IFunctionEvaluator {
+public class HoldForm implements IFunctionEvaluator {
 
-	public Hold() {
+	public HoldForm() {
 	}
 
 	@Override
