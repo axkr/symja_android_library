@@ -36,8 +36,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		@Override
 		public boolean apply(IExpr input) {
-			if (input.isDirectedInfinity()) {
-				// input is representing a DirectedInfinity() object
+			if (input.isDirectedInfinity() || input.isIndeterminate()) {
+				// input is representing a DirectedInfinity() or Indeterminate object
 				wrongExpr = input;
 				return true;
 			}
