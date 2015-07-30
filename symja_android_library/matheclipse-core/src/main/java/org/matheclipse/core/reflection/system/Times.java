@@ -107,59 +107,47 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return temp;
 		}
 
-		if (o0.isSymbol()) {
-			final ISymbol s0 = (ISymbol) o0;
-			if (o1.isPower()) {
-				final IAST f1 = (IAST) o1;
-				if (f1.arg2().isNumber()) {
-					if (s0.equals(f1.arg1())) {
-						// x*x^(b) => x ^ (1+b)
-						return s0.power(f1.arg2().inc());
-					}
+		if (o0.isPower()) {
+			// (x^a) * b
+			final IAST power0 = (IAST) o0;
+			if (power0.equalsAt(1, o1)) {
+				// (x^a) * x
+				if (power0.arg2().isInteger()) {
+					return o1.power(power0.arg2().inc());
+				} else if (!power0.arg2().isNumber()) {
+					return o1.power(power0.arg2().inc());
 				}
 			}
-		}
-
-		if (o0.isPower()) {
-			final IAST f0 = (IAST) o0;
-			// if (f0.arg2().isNumber()) {
-			if (f0.equalsAt(1, o1)) {
-				return o1.power(f0.arg2().inc());
-			}
-			// }
+			 
 			if (o1.isPower()) {
 				final IAST f1 = (IAST) o1;
-				if (f0.arg2().isNumber()) {
-					// if (f0.equalsAt(1, o1)) {
-					// return Power(o1, f0.arg2().inc());
-					// }
-
-					// if (o1.isPower()) {
-					// final IAST f1 = (IAST) o1;
+				if (power0.arg2().isNumber()) {
 
 					if (f1.arg2().isNumber()) {
-						if (f0.equalsAt(1, f1.arg1())) {
+						if (power0.equalsAt(1, f1.arg1())) {
 							// x^(a)*x^(b) => x ^(a+b)
-							return f0.arg1().power(f0.arg2().plus(f1.arg2()));
+							return power0.arg1().power(power0.arg2().plus(f1.arg2()));
 						}
-						if (f0.equalsAt(2, f1.arg2()) && f0.arg1().isPositive() && f1.arg1().isPositive()
-								&& f0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
+						if (power0.equalsAt(2, f1.arg2()) && power0.arg1().isPositive() && f1.arg1().isPositive()
+								&& power0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
 							// a^(c)*b^(c) => (a*b) ^c
-							return f0.arg1().times(f1.arg1()).power(f0.arg2());
+							return power0.arg1().times(f1.arg1()).power(power0.arg2());
 						}
 					}
 				}
-				if (f0.arg1().equals(f1.arg1())) {
+				if (power0.arg1().equals(f1.arg1())) {
 					// x^(a)*x^(b) => x ^(a+b)
-					return f0.arg1().power(f0.arg2().plus(f1.arg2()));
+					return power0.arg1().power(power0.arg2().plus(f1.arg2()));
 				}
 			}
 		}
 
 		if (o1.isPower()) {
 			final IAST power1 = (IAST) o1;
-			if (power1.arg2().isInteger()) {
-				if (power1.equalsAt(1, o0)) {
+			if (power1.equalsAt(1, o0)) {
+				if (power1.arg2().isInteger()) {
+					return o0.power(power1.arg2().inc());
+				} else if (!power1.arg2().isNumber()) {
 					return o0.power(power1.arg2().inc());
 				}
 			} else if (power1.arg1().isInteger() && power1.arg2().isFraction()) {
@@ -234,42 +222,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (inf.size() == 2) {
 			if (o1.isNumber() || o1.isSymbol()) {
 				if (inf.size() == 2) {
-					return DirectedInfinity.timesInf(inf, o1);
-					// return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), F.Divide(o1, o1.abs()))));
+					return DirectedInfinity.timesInf(inf, o1); 
 				}
 
 			}
 			if (o1.isDirectedInfinity() && ((IAST) o1).size() == 2) {
 				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
 			}
-		}
-		// if (inf.equals(F.CInfinity)) {
-		// if (o1.equals(F.CInfinity)) {
-		// return F.CInfinity;
-		// } else if (o1.equals(F.CNInfinity)) {
-		// return F.CNInfinity;
-		// } else if (o1.isSignedNumber()) {
-		// if (((ISignedNumber) o1).isNegative()) {
-		// return F.CNInfinity;
-		// } else {
-		// return F.CInfinity;
-		// }
-		// } else if (o1.isComplex()) {
-		// return F.$(F.DirectedInfinity, o1);
-		// }
-		// } else if (inf.equals(F.CNInfinity)) {
-		// if (o1.equals(F.CInfinity)) {
-		// return F.CNInfinity;
-		// } else if (o1.equals(F.CNInfinity)) {
-		// return F.CInfinity;
-		// } else if (o1.isSignedNumber()) {
-		// if (((ISignedNumber) o1).isNegative()) {
-		// return F.CInfinity;
-		// } else {
-		// return F.CNInfinity;
-		// }
-		// }
-		// }
+		} 
 		return null;
 	}
 
@@ -359,29 +319,6 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		return null;
 	}
-
-	// public static IExpr evalTimesNumbers(IAST ast) {
-	// IAST result = F.Times();
-	// IExpr num;
-	// if (!ast.arg1().isNumber()) {
-	// return null;
-	// }
-	// if (!ast.arg2().isNumber()) {
-	// return null;
-	// }
-	// num = ast.arg1().times(ast.arg2());
-	// result.add(num);
-	// for (int i = 3; i < ast.size(); i++) {
-	// if (num.isNumber() && ast.get(i).isNumber()) {
-	// num = num.times(ast.get(i));
-	// } else {
-	// result.addAll(ast, i, ast.size());
-	// result.set(1, num);
-	// return result;
-	// }
-	// }
-	// return num;
-	// }
 
 	@Override
 	public void setUp(final ISymbol symbol) {
