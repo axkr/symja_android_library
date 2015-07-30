@@ -86,4 +86,12 @@ public interface DerivativeRules {
     Rule(Sin,
       Function(Sin(Plus(Slot1,Times(C1D2,Pi,Slot2)))))
   );
+  final public static IAST RULES4 = List(
+    Rule(List(Power,C1,C0),
+      Function(Times(Power(Slot1,Plus(CN1,Slot2)),Slot2))),
+    Rule(List(Power,C0,C1),
+      Function(Times(Log(Slot1),Power(Slot1,Slot2)))),
+    Rule(List(Power,C1,C1),
+      Function(Plus(Power(Slot1,Plus(CN1,Slot2)),Times(Log(Slot1),Power(Slot1,Plus(CN1,Slot2)),Slot2))))
+  );
 }

@@ -32,6 +32,11 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 */
 	private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new HashMap<ISymbol, IExpr>(197);
 
+	/**
+	 * Mapped symbol to value for Derivative[&lt;n&gt;, &lt;m&gt;][&lt;symbol&gt;]
+	 */
+	private static Map<IAST, IExpr> DERIVATIVE_N_M_MAP = new HashMap<IAST, IExpr>(197);
+
 	static {
 		for (int i = 1; i < RULES1.size(); i++) {
 			IAST rule = (IAST) RULES1.get(i);
@@ -48,6 +53,11 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 			// Derivative[n][symbol]
 			DERIVATIVE_N_MAP.put((ISymbol) rule.arg1(), rule.arg2());
 		}
+		for (int i = 1; i < RULES4.size(); i++) {
+			IAST rule = (IAST) RULES4.get(i);
+			// Derivative[n][symbol]
+			DERIVATIVE_N_M_MAP.put((IAST) rule.arg1(), rule.arg2());
+		}
 	}
 
 	public Derivative() {
@@ -55,24 +65,46 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 
 	@Override
 	public IExpr evaluate(IAST ast) {
-		if (ast.size() == 2 && ast.head().isAST(F.Derivative, 2)) {
-			IAST head = (IAST) ast.head();
-			IAST function = null;
-			if (head.arg1().isInteger()) {
-				try {
-					int n = ((IInteger) head.arg1()).toInt();
-					IExpr arg1 = ast.arg1();
-					if (n > 0) {
-						if (arg1.isSymbol()) {
-							ISymbol symbol = (ISymbol) arg1;
-							return derivative(n, symbol);
-						}  
-					}
-				} catch (ArithmeticException ae) {
+		if (ast.size() == 2) {
+			if (ast.head().isAST(F.Derivative, 2)) {
+				// Derivative(n)
+				IAST head = (IAST) ast.head();
+				if (head.arg1().isInteger()) {
+					try {
+						int n = ((IInteger) head.arg1()).toInt();
+						IExpr arg1 = ast.arg1();
+						if (n > 0) {
+							if (arg1.isSymbol()) {
+								ISymbol symbol = (ISymbol) arg1;
+								return derivative(n, symbol);
+							}
+						}
+					} catch (ArithmeticException ae) {
 
+					}
 				}
+				return null;
 			}
-			return function;
+			if (ast.head().isAST(F.Derivative, 3)) {
+				// Derivative(n, m)
+				IAST head = (IAST) ast.head();
+				if (head.arg1().isInteger() && head.arg2().isInteger()) {
+					try {
+						int n = ((IInteger) head.arg1()).toInt();
+						int m = ((IInteger) head.arg2()).toInt();
+						IExpr arg1 = ast.arg1();
+						if (n >= 0 && m >= 0) {
+							if (arg1.isSymbol()) {
+								ISymbol symbol = (ISymbol) arg1;
+								return derivative(n, m, symbol);
+							}
+						}
+					} catch (ArithmeticException ae) {
+
+					}
+				}
+				return null;
+			}
 		}
 		return null;
 	}
@@ -81,7 +113,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * Get the n-th derivative (<code>Derivative[n][symbol]</code>) if possible. Otherwise return <code>null</code>
 	 * 
 	 * @param n
-	 *            <code>n>0</code>
+	 *            differentiating <code>n</code> times with respect to the 1. argument
 	 * @param symbol
 	 *            the function symbol which should be searched in the look-up table.
 	 * @return <code>null</code> if no entry was found
@@ -112,6 +144,22 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Get the (n, m)-th derivative (<code>Derivative[n, m][symbol]</code>) if possible. Otherwise return <code>null</code>
+	 * 
+	 * @param n
+	 *            differentiating <code>n</code> times with respect to the 1. argument
+	 * @param m
+	 *            differentiating <code>m</code> times with respect to the 2. argument
+	 * @param symbol
+	 *            the function symbol which should be searched in the look-up table.
+	 * @return <code>null</code> if no entry was found
+	 */
+	public static IExpr derivative(int n, int m, ISymbol symbol) {
+		IAST listKey = F.List(symbol, F.integer(n), F.integer(m));
+		return DERIVATIVE_N_M_MAP.get(listKey);
 	}
 
 	@Override
