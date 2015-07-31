@@ -949,6 +949,14 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/** {@inheritDoc} */
+	public IExpr optional(final IExpr that) {
+		if (that != null) {
+			return that;
+		}
+		return this;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public IExpr or(final IExpr that) {
 		return F.Or(this, that);

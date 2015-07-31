@@ -2349,6 +2349,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return negate();
 	}
 
+	/** {@inheritDoc} */
+	public IExpr optional(final IExpr that) {
+		if (that != null) {
+			return that;
+		}
+		return this;
+	}
+	
 	@Override
 	public IExpr or(final IExpr that) {
 		return F.Or(this, that);

@@ -1143,6 +1143,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public IExpr opposite();
 
+	/**
+	 * Return <code>that</code> if <code>that!=null</code> or <code>this</code> in all other cases.
+	 * 
+	 * @param that
+	 * @return <code>that</code> if <code>that!=null</code> or <code>this</code> in all other cases.
+	 */
+	public IExpr optional(final IExpr that);
+
 	public IExpr or(final IExpr that);
 
 	/**
