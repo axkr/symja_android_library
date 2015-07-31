@@ -974,12 +974,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// already flattened or sorted
 				return ast;
 			}
-
-			IExpr result = evalSetAttributesRecursive(ast, noEvaluation, false, 0);
-			if (result != null) {
-				return result;
-			}
-			return ast;
+			return ast.optional(evalSetAttributesRecursive(ast, noEvaluation, false, 0));
 		} finally {
 			fEvalLHSMode = evalLHSMode;
 		}
@@ -1030,12 +1025,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					// associative
 					IAST result;
 					if ((result = EvalAttributes.flatten(resultList)) != null) {
-						resultList = result;
-						IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
-						if (expr != null) {
-							return expr;
-						}
-						return resultList;
+						return result.optional(evalSetOrderless(result, attr, noEvaluation, level)); 
 					}
 				}
 				IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
@@ -1050,12 +1040,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			// associative
 			IAST result;
 			if ((result = EvalAttributes.flatten(ast)) != null) {
-				resultList = result;
-				IExpr expr = evalSetOrderless(ast, attr, noEvaluation, level);
-				if (expr != null) {
-					return expr;
-				}
-				return resultList;
+				return result.optional(evalSetOrderless(result, attr, noEvaluation, level));  
 			}
 		}
 		return evalSetOrderless(ast, attr, noEvaluation, level);
@@ -1275,10 +1260,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return evalWithoutNumericReset(expr);
 			}
 			if (expr.isAST()) {
-				IExpr temp = evalSetAttributes((IAST) expr);
-				if (temp != null) {
-					return temp;
-				}
+				return expr.optional(evalSetAttributes((IAST) expr));
 			}
 			return expr;
 		} catch (MathException ce) {
@@ -1584,9 +1566,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *             if a parsing error occurs
 	 */
 	final public IExpr parse(String expression) {
-			final Parser parser = new Parser(fRelaxedSyntax);
-			final ASTNode node = parser.parse(expression);
-			return AST2Expr.CONST_LC.convert(node, this);
+		final Parser parser = new Parser(fRelaxedSyntax);
+		final ASTNode node = parser.parse(expression);
+		return AST2Expr.CONST_LC.convert(node, this);
 	}
 
 	/**
