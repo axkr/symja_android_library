@@ -156,7 +156,11 @@ public class Together extends AbstractFunctionEvaluator {
 			IAST result = null;
 			result = togetherForEach(ast, result);
 			if (result != null) {
-				return togetherPlus(result);
+				IExpr temp = togetherPlus(result);
+				if (temp == null) {
+					return result;
+				}
+				return temp;
 			}
 			return togetherPlus(ast);
 		} else if (ast.isTimes() || ast.isPower()) {
