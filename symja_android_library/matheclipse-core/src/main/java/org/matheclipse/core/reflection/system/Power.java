@@ -266,7 +266,12 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 					}
 				} else {
-					IExpr o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+					IExpr o1negExpr = null;
+					if (arg2.isInteger() && ((IInteger) arg2).isEven()) {
+						o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1, true);
+					} else {
+						o1negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1, false);
+					}
 					if (o1negExpr != null) {
 						if (arg2.isMinusOne()) {
 							return Times(CN1, Power(o1negExpr, CN1));
