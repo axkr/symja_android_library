@@ -70,72 +70,66 @@ public class Together extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private static IAST togetherPlus(IAST plusAST) {
+	private static IExpr togetherPlus(IAST plusAST) {
 		if (plusAST.size() <= 2) {
 			return null;
 		}
-		IAST ni;
-		IExpr temp;
-		IAST numer = F.ast(F.Plus, plusAST.size(), false);
-		IAST denom = F.ast(F.Times, plusAST.size(), false);
-
-		IExpr[] parts;
+		IAST numerator = F.ast(F.Plus, plusAST.size(), false);
+		IAST denominator = F.ast(F.Times, plusAST.size(), false);
 		boolean evaled = false;
+		IExpr temp;
+		IExpr[] fractionalParts;
 		for (int i = 1; i < plusAST.size(); i++) {
-			parts = Apart.getFractionalPartsRational(plusAST.get(i));
-			if (parts != null) {
-				numer.add(i, parts[0]);
-				temp = parts[1];
+			fractionalParts = Apart.getFractionalPartsRational(plusAST.get(i));
+			if (fractionalParts != null) {
+				numerator.add(i, fractionalParts[0]);
+				temp = fractionalParts[1];
 				if (!temp.isOne()) {
 					evaled = true;
 				}
-				denom.add(i, temp);
+				denominator.add(i, temp);
 			} else {
-				numer.add(i, plusAST.get(i));
-				denom.add(i, F.C1);
+				numerator.add(i, plusAST.get(i));
+				denominator.add(i, F.C1);
 			}
 		}
 		if (!evaled) {
 			return null;
 		}
+		IAST ni;
 		for (int i = 1; i < plusAST.size(); i++) {
-			ni = F.Times(numer.get(i));
+			ni = F.Times(numerator.get(i));
 			for (int j = 1; j < plusAST.size(); j++) {
 				if (i == j) {
 					continue;
 				}
-				temp = denom.get(j);
+				temp = denominator.get(j);
 				if (!temp.isOne()) {
 					ni.add(temp);
 				}
 			}
-			numer.set(i, ni.getOneIdentity(F.C1));
+			numerator.set(i, ni.getOneIdentity(F.C1));
 		}
 		int i = 1;
-		while (denom.size() > i) {
-			if (denom.get(i).isOne()) {
-				denom.remove(i);
+		while (denominator.size() > i) {
+			if (denominator.get(i).isOne()) {
+				denominator.remove(i);
 				continue;
 			}
 			i++;
 		}
-		if (denom.size() == 1) {
+		if (denominator.size() == 1) {
 			return null;
 		}
 
-		IExpr exprNumerator = F.evalExpand(numer.getOneIdentity(F.C0));
-		IExpr exprDenominator = F.evalExpand(denom.getOneIdentity(F.C1));
+		IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
+		IExpr exprDenominator = F.evalExpand(denominator.getOneIdentity(F.C1));
 
 		if (!exprDenominator.isOne()) {
 			try {
 				IExpr[] result = Cancel.cancelGCD(exprNumerator, exprDenominator);
 				if (result != null) {
-					IExpr pInv;
-					if (result[2].isNumber()) {
-						pInv = result[2].inverse();
-					} else {
-						pInv = F.Power(result[2], F.CN1);
-					}
+					IExpr pInv = result[2].inverse();
 					if (result[0].isOne()) {
 						return F.Times(pInv, result[1]);
 					}
@@ -147,8 +141,9 @@ public class Together extends AbstractFunctionEvaluator {
 					jce.printStackTrace();
 				}
 			}
+			return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
 		}
-		return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
+		return exprNumerator;
 	}
 
 	private static IExpr togetherPlusTimesPower(final IAST ast) {
@@ -156,11 +151,7 @@ public class Together extends AbstractFunctionEvaluator {
 			IAST result = null;
 			result = togetherForEach(ast, result);
 			if (result != null) {
-				IExpr temp = togetherPlus(result);
-				if (temp == null) {
-					return result;
-				}
-				return temp;
+				return result.optional(togetherPlus(result));
 			}
 			return togetherPlus(ast);
 		} else if (ast.isTimes() || ast.isPower()) {
@@ -183,10 +174,7 @@ public class Together extends AbstractFunctionEvaluator {
 				if (result != null) {
 					IExpr temp = F.eval(result);
 					if (temp.isTimes() || temp.isPower()) {
-						IExpr temp2 = Cancel.cancelPowerTimes(temp);
-						if (temp2 != null) {
-							return temp2;
-						}
+						return temp.optional(Cancel.cancelPowerTimes(temp));
 					}
 					return temp;
 				}
@@ -213,10 +201,7 @@ public class Together extends AbstractFunctionEvaluator {
 			return arg1;
 		}
 		if (arg1.isPlusTimesPower()) {
-			IExpr temp = togetherNull((IAST) arg1);
-			if (temp != null) {
-				return temp;
-			}
+			return arg1.optional(togetherNull((IAST) arg1));
 		}
 		return arg1;
 	}

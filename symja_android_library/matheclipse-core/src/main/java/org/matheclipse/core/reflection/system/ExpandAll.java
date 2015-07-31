@@ -21,10 +21,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			patt = ast.arg2();
 		}
 		if (arg1.isAST()) {
-			IExpr temp = expandAll((IAST) arg1, patt, true, false);
-			if (temp != null) {
-				return temp;
-			}
+			return arg1.optional(expandAll((IAST) arg1, patt, true, false));
 		}
 		return arg1;
 	}

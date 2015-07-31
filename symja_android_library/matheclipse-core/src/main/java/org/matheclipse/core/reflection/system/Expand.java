@@ -190,13 +190,11 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		private IExpr expandTimes(final IAST timesAST) {
 			IExpr result = timesAST.arg1();
-			IExpr temp;
+
 			if (result.isPower()) {
-				temp = expandPowerNull((IAST) result);
-				if (temp != null) {
-					result = temp;
-				}
+				result = result.optional(expandPowerNull((IAST) result));
 			}
+			IExpr temp;
 			for (int i = 2; i < timesAST.size(); i++) {
 				temp = timesAST.get(i);
 				if (temp.isPower()) {
@@ -269,11 +267,8 @@ public class Expand extends AbstractFunctionEvaluator {
 		public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
 			IExpr arg = TimesOp.times(expr1, expr2);
 			if (arg.isAST()) {
-				IExpr res = expandAST((IAST) arg);
-				if (res != null) {
-					result.add(res);
-					return;
-				}
+				result.add(arg.optional(expandAST((IAST) arg)));
+				return;
 			}
 			result.add(arg);
 		}
@@ -380,14 +375,12 @@ public class Expand extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {
+			IAST arg1 = (IAST) ast.arg1();
 			IExpr patt = null;
 			if (ast.size() > 2) {
 				patt = ast.arg2();
 			}
-			IExpr temp = expand((IAST) ast.arg1(), patt, false, true);
-			if (temp != null) {
-				return temp;
-			}
+			return arg1.optional(expand(arg1, patt, false, true));
 		}
 
 		return ast.arg1();
