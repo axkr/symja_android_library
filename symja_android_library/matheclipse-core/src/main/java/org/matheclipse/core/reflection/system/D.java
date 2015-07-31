@@ -19,12 +19,8 @@ public class D extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Search for one of the <code>Derivative[..]</code> rules from the <code>System.mep</code> file read at startup time.
+	 * Search for one of the <code>Derivative[..]</code> rules.
 	 * 
-	 * Examples for rules from the <code>System.mep</code> file:<br/>
-	 * <code>Derivative[Cos]=(-1)*Sin[#]&</code><br/>
-	 * <code>Derivative[Sin]=Cos[#]&</code><br/>
-	 * <code>Derivative[Tan]=Cos[#]^(-2)&</code><br/>
 	 * 
 	 * @param x
 	 * @param arg1
@@ -50,6 +46,50 @@ public class D extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Search for one of the <code>Derivative[..]</code> rules.
+	 * 
+	 * 
+	 * @param x
+	 * @param a1
+	 * @param a2
+	 * @param header
+	 * @return
+	 */
+	private IExpr getDerivativeArg2(IExpr x, final IExpr a1, final IExpr a2, final IExpr head) {
+		if (head.isSymbol()) {
+			int n = 1;
+			int m = 1;
+			ISymbol header = (ISymbol) head;
+			if (a1.isFree(x)) {
+				n = 0;
+			}
+			if (a2.isFree(x)) {
+				m = 0;
+			}
+			IExpr der = Derivative.derivative(n, m, header);
+			if (der != null) {
+				// we've found a derivative for a function of the form f[x_, y_]
+				IExpr derivative = F.eval(F.$(der, a1, a2));
+				IAST times = F.Times();
+				if (n == 1) {
+					times.add(F.D(a1, x));
+				}
+				if (m == 1) {
+					times.add(F.D(a2, x));
+				}
+				times.add(derivative);
+				return times;
+			}
+			IAST fDerivParam = createDerivative(n, m, header, a1, a2);
+			if (x.equals(a1)) {
+				return fDerivParam;
+			}
+			return F.Times(F.D(a1, x), fDerivParam);
+		}
+		return null;
+	}
+
+	/**
 	 * Create <code>Derivative[n][header][arg1]</code>
 	 * 
 	 * @param n
@@ -57,12 +97,22 @@ public class D extends AbstractFunctionEvaluator {
 	 * @param arg1
 	 * @return
 	 */
-	public IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
+	private IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
 		IAST deriv = F.Derivative(F.integer(n));
 		IAST fDeriv = F.ast(deriv);
 		fDeriv.add(header);
 		IAST fDerivParam = F.ast(fDeriv);
 		fDerivParam.add(arg1);
+		return fDerivParam;
+	}
+
+	private IAST createDerivative(final int n, final int m, final IExpr header, final IExpr arg1, final IExpr arg2) {
+		IAST deriv = F.Derivative(F.integer(n), F.integer(m));
+		IAST fDeriv = F.ast(deriv);
+		fDeriv.add(header);
+		IAST fDerivParam = F.ast(fDeriv);
+		fDerivParam.add(arg1);
+		fDerivParam.add(arg2);
 		return fDerivParam;
 	}
 
@@ -129,45 +179,35 @@ public class D extends AbstractFunctionEvaluator {
 				return listArg1.mapAt(F.D(F.Null, x), 1);
 			} else if (listArg1.isTimes()) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-			} else if (listArg1.isPower()) {
-				if (listArg1.isFreeAt(2, x)) {
-					// D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
-					final IAST timesList = F.Times();
-					timesList.add(listArg1.arg2());
-					final IAST powerList = F.Power();
-					powerList.add(listArg1.arg1());
-					final IAST plusList = F.Plus();
-					plusList.add(listArg1.arg2());
-					plusList.add(F.CN1);
-					powerList.add(plusList);
-					timesList.add(powerList);
-					timesList.add(F.D(listArg1.arg1(), ast.arg2()));
-					return timesList;
-				} else {
-					// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
-					final IAST resultList = F.Times();
-					final IExpr f = listArg1.arg1();
-					final IExpr g = listArg1.arg2();
-					final IExpr y = ast.arg2();
+			} else if (listArg1.isPower() && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
+				// if (listArg1.isFreeAt(2, x)) {
+				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
+				//
+				// // D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
+				// final IAST timesList = F.Times();
+				// timesList.add(listArg1.arg2());
+				// final IAST powerList = F.Power();
+				// powerList.add(listArg1.arg1());
+				// final IAST plusList = F.Plus();
+				// plusList.add(listArg1.arg2());
+				// plusList.add(F.CN1);
+				// powerList.add(plusList);
+				// timesList.add(powerList);
+				// timesList.add(F.D(listArg1.arg1(), ast.arg2()));
+				// return timesList;
+				// } else {
+				
 
-					IAST powerList = F.Power();
-					powerList.add(f);
-					powerList.add(g);
-					resultList.add(powerList);
+				final IExpr f = listArg1.arg1();
+				final IExpr g = listArg1.arg2();
+				final IExpr y = ast.arg2();
 
-					final IAST plusList = F.Plus();
-					IAST timesList = F.Times();
-					timesList.add(g);
-					timesList.add(F.D(f, y));
-					timesList.add(F.Power(f, F.CN1));
-					plusList.add(timesList);
-
-					timesList = F.Times(F.Log(f), F.D(g, y));
-					plusList.add(timesList);
-
-					resultList.add(plusList);
-					return resultList;
-				}
+				// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
+				final IAST resultList = F.Times();
+				resultList.add(F.Power(f, g));
+				resultList.add(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
+				return resultList;
+				// }
 			} else if ((header == F.Log) && (listArg1.size() == 3)) {
 				if (listArg1.isFreeAt(1, x)) {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
@@ -211,6 +251,8 @@ public class D extends AbstractFunctionEvaluator {
 					return null;
 				}
 				return getDerivativeArg1(x, listArg1.arg1(), header);
+			} else if (listArg1.size() == 3) {
+				return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
 			}
 
 		}
