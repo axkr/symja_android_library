@@ -88,10 +88,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		}
 
 		if (ast.size() > 2) {
-			IAST temp = evaluateHashs(ast);
-			if (temp != null) {
-				return temp;
-			}
+			return evaluateHashs(ast); 
 		}
 		return null;
 	}
