@@ -2356,7 +2356,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 		return this;
 	}
-	
+
 	@Override
 	public IExpr or(final IExpr that) {
 		return F.Or(this, that);
@@ -2417,11 +2417,21 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr power(final IExpr that) {
+		if (that.isZero()) {
+			if (!this.isZero()) {
+				return F.C1;
+			}
+		} else if (that.isOne()) {
+			return this;
+		}
 		return F.Power(this, that);
 	}
 
 	@Override
 	public final IExpr power(final long n) {
+		if (n == 0L) {
+			return F.C1;
+		}
 		if (n == 1L) {
 			return this;
 		}

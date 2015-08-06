@@ -358,15 +358,14 @@ public class OutputFormFactory {
 		if (operPrecedence < precedence) {
 			append(buf, "(");
 		}
-		String operatorStr = oper.getOperatorString();
 
 		IExpr plusArg;
 		int size = plusAST.size();
 		if (size > 0) {
-			convertPlusArgument(buf, plusAST.arg1(), operatorStr, operPrecedence, size, NO_PLUS_CALL);
+			convertPlusArgument(buf, plusAST.arg1(), NO_PLUS_CALL);
 			for (int i = 2; i < size; i++) {
 				plusArg = plusAST.get(i);
-				convertPlusArgument(buf, plusArg, operatorStr, operPrecedence, size, PLUS_CALL);
+				convertPlusArgument(buf, plusArg, PLUS_CALL);
 			}
 		}
 		if (operPrecedence < precedence) {
@@ -374,8 +373,7 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertPlusArgument(final Appendable buf, IExpr plusArg, String operatorStr, final int precedence, int size,
-			boolean caller) throws IOException {
+	public void convertPlusArgument(final Appendable buf, IExpr plusArg, boolean caller) throws IOException {
 		if (plusArg.isTimes()) {
 			final IAST timesAST = (IAST) plusArg;
 			// IExpr arg1 = timesAST.arg1();
@@ -387,7 +385,7 @@ public class OutputFormFactory {
 				convert(buf, plusArg);
 			} else {
 				if (caller == PLUS_CALL) {
-					append(buf, operatorStr);
+					append(buf, "+");
 				}
 				convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
 			}
@@ -786,6 +784,11 @@ public class OutputFormFactory {
 				convert(buf, list.get(1));
 				return;
 			}
+			if (head.equals(F.SeriesData) && (list.size() == 7)) {
+				if (convertSeriesData(buf, list, precedence)) {
+					return;
+				}
+			}
 			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity)) {
 				if (list.size() == 1) {
 					append(buf, "ComplexInfinity");
@@ -897,6 +900,93 @@ public class OutputFormFactory {
 		if (!(arg1 instanceof IAST)) {
 			append(buf, ")");
 		}
+	}
+
+	/**
+	 * Convert a <code>SeriesData[...]</code> expression.
+	 * 
+	 * @param buf
+	 * @param seriesData  <code>SeriesData[x, x0, list, nmin, nmax, den]</code> expression
+	 * @throws IOException
+	 */
+	public boolean convertSeriesData(final Appendable buf, final IAST seriesData, final int precedence) throws IOException {
+		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
+		StringBuilder tempBuffer = new StringBuilder();
+		if (operPrecedence < precedence) {
+			append(tempBuffer, "(");
+		}
+
+		try {
+			IExpr plusArg;
+			// SeriesData[x, x0, list, nmin, nmax, den]
+			IExpr x = seriesData.arg1();
+			IExpr x0 = seriesData.arg2();
+			IAST list = (IAST) seriesData.arg3();
+			long nmin = ((IInteger) seriesData.arg4()).toLong();
+			long nmax = ((IInteger) seriesData.arg5()).toLong();
+			long den = ((IInteger) seriesData.get(6)).toLong();
+			int size = list.size();
+			boolean call = NO_PLUS_CALL;
+			if (size > 0) {
+				INumber exp = F.fraction(nmin, den).normalize();
+				IExpr pow = x.subtract(x0).power(exp);
+				call = convertSeriesDataArg(tempBuffer, list.arg1(), pow, call);
+				for (int i = 2; i < size; i++) {
+					exp = F.fraction(nmin + i - 1, den).normalize();
+					pow = x.subtract(x0).power(exp);
+					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
+				}
+				plusArg = F.Power(F.O(x), F.fraction(nmax, den).normalize());
+				if (!plusArg.isZero()) {
+					convertPlusArgument(tempBuffer, plusArg, call);
+					call = PLUS_CALL;
+				}
+			} else {
+				return false;
+			}
+		} catch (Exception ex) {
+			return false;
+		}
+		if (operPrecedence < precedence) {
+			append(tempBuffer, ")");
+		}
+		buf.append(tempBuffer);
+		return true;
+
+	}
+
+	/**
+	 * Convert a factor of a <code>SeriesData</code> object.
+	 * 
+	 * @param buf
+	 * @param coefficient
+	 *            the coefficient expression of the factor
+	 * @param pow
+	 *            the power expression of the factor
+	 * @param call
+	 * @param operPrecedence
+	 * @return the current call status
+	 * @throws IOException
+	 */
+	private boolean convertSeriesDataArg(StringBuilder buf, IExpr coefficient, IExpr pow, boolean call)
+			throws IOException {
+		IExpr plusArg;
+		if (coefficient.isZero()) {
+			plusArg = F.C0;
+		} else if (coefficient.isOne()) {
+			plusArg = pow;
+		} else {
+			if (pow.isOne()) {
+				plusArg = coefficient;
+			} else {
+				plusArg = F.binary(F.Times, coefficient, pow);
+			}
+		}
+		if (!plusArg.isZero()) {
+			convertPlusArgument(buf, plusArg, call);
+			call = PLUS_CALL;
+		}
+		return call;
 	}
 
 	public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {

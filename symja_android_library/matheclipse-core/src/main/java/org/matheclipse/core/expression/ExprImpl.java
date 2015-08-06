@@ -983,6 +983,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr power(final IExpr that) {
+		if (that.isZero()) {
+			if (!this.isZero()) {
+				return F.C1;
+			}
+		} else if (that.isOne()) {
+			return this;
+		}
 		if (this.isNumber() && that.isNumber()) {
 			return F.eval(F.Power(this, that));
 		}
@@ -992,7 +999,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr power(final long n) {
-		if (this.isNumber()) {
+		if (n == 0L) {
+			if (!this.isZero()) {
+				return F.C1;
+			}
+		} else if (n == 1L) {
+			return this;
+		} else if (this.isNumber()) {
 			long exp = n;
 			if (n < 0) {
 				exp *= -1;

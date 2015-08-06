@@ -576,6 +576,7 @@ public class F {
 	public final static ISymbol NRoots = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nroots" : "NRoots");
 	public final static ISymbol NSolve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nsolve" : "NSolve");
 	public final static ISymbol Numerator = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numerator" : "Numerator");
+	public final static ISymbol O = initFinalSymbol("O");
 	public final static ISymbol Order = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "order" : "Order");
 	public final static ISymbol OrderedQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
 	public final static ISymbol Out = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "out" : "Out");
@@ -642,7 +643,7 @@ public class F {
 	public final static ISymbol Select = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
 	public final static ISymbol Series = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "series" : "Series");
 	public final static ISymbol SeriesData = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "seriesdata" : "SeriesData");
-	
+
 	public final static ISymbol Sign = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sign" : "Sign");
 	public final static ISymbol SignCmp = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");
 	public final static ISymbol Simplify = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "simplify" : "Simplify");
@@ -943,17 +944,27 @@ public class F {
 	public final static INum CD1 = Num.valueOf(1.0);
 
 	/**
-	 * Represents <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity(1)</code>)
+	 * Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST CInfinity;
 
 	/**
-	 * Represents <code>-Infinity</code> (i.e. <code>-Infinity->DirectedInfinity(-1)</code>)
+	 * Represents <code>-Infinity</code> (i.e. <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
 	 */
 	public static IAST CNInfinity;
 
 	/**
-	 * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity->DirectedInfinity()</code>)
+	 * Represents <code>I*Infinity</code> (i.e. <code>I*Infinity-&gt;DirectedInfinity(I)</code>)
+	 */
+	public static IAST CIInfinity;
+
+	/**
+	 * Represents <code>-I*Infinity</code> (i.e. <code>-I*Infinity-&gt;DirectedInfinity(-I)</code>)
+	 */
+	public static IAST CNIInfinity;
+
+	/**
+	 * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity-&gt;DirectedInfinity()</code>)
 	 */
 	public static IAST CComplexInfinity;
 
@@ -2594,7 +2605,7 @@ public class F {
 	public static IAST HoldForm(final IExpr a0) {
 		return unaryAST1(HoldForm, a0);
 	}
-	
+
 	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(HurwitzZeta, a0, a1);
 	}
@@ -2842,7 +2853,7 @@ public class F {
 		long l = ii.toLong();
 		return isZero(value - l, Config.DOUBLE_TOLERANCE);
 	}
-	
+
 	public static boolean isNumEqualRational(double value, IRational rational) throws ArithmeticException {
 		double d = rational.doubleValue();
 		return isZero(value - d, Config.DOUBLE_TOLERANCE);
@@ -3263,6 +3274,10 @@ public class F {
 		return unaryAST1(NumericQ, a0);
 	}
 
+	public static IAST O(final IExpr a0) {
+		return unaryAST1(O, a0);
+	}
+	
 	public static IAST OddQ(final IExpr a) {
 		return unaryAST1(OddQ, a);
 	}
@@ -3480,6 +3495,10 @@ public class F {
 	public static IAST ProductLog(final IExpr a0) {
 		return unaryAST1(ProductLog, a0);
 	}
+	
+	public static IAST ProductLog(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ProductLog, a0, a1);
+	}
 
 	/**
 	 * Create a "fractional" number
@@ -3651,11 +3670,11 @@ public class F {
 	public static IAST Series(final IExpr... a) {
 		return ast(a, Series);
 	}
-	
+
 	public static IAST SeriesData(final IExpr... a) {
 		return ast(a, SeriesData);
 	}
-	
+
 	public static IAST SetAttributes(final IExpr a0) {
 		return unaryAST1(SetAttributes, a0);
 	}
@@ -4095,7 +4114,7 @@ public class F {
 		}
 		return arg;
 	}
- 
+
 	public final static ISymbol AppellF1 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
 	public final static ISymbol CosIntegral = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
 	public final static ISymbol EllipticE = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
@@ -4196,6 +4215,10 @@ public class F {
 
 	public static IAST Zeta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Zeta, a0, a1);
+	}
+
+	public static IAST PolyGamma(final IExpr a0) {
+		return unaryAST1(PolyGamma, a0);
 	}
 
 	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
@@ -4662,6 +4685,8 @@ public class F {
 
 			CInfinity = $(DirectedInfinity, C1);
 			CNInfinity = $(DirectedInfinity, CN1);
+			CIInfinity = $(DirectedInfinity, CI);
+			CNIInfinity = $(DirectedInfinity, CNI);
 			CComplexInfinity = $(DirectedInfinity);
 
 			CSqrt2 = $(Power, C2, C1D2);
