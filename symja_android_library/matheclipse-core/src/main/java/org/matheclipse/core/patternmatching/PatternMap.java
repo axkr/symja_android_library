@@ -154,7 +154,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	protected int determinePatterns(final IExpr lhsPatternExpr) {
 		fPriority = DEFAULT_RULE_PRIORITY;
 		if (lhsPatternExpr instanceof IAST) {
-			Map<ISymbol, Integer> patternIndexMap = new TreeMap<ISymbol, Integer>();
+			Map<ISymbol, Integer> patternIndexMap = new IdentityHashMap<ISymbol, Integer>();
 			determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, 1);
 			this.fSymbolsArray = new ISymbol[fPatternCounter];
 			this.fPatternValuesArray = new IExpr[fPatternCounter];

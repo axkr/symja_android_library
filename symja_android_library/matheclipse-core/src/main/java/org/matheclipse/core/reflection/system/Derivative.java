@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -20,17 +21,17 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	/**
 	 * Mapped symbol to value for Derivative[1][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_1_MAP = new HashMap<ISymbol, IExpr>(197);
+	private static Map<ISymbol, IExpr> DERIVATIVE_1_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
 
 	/**
 	 * Mapped symbol to value for Derivative[2][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_2_MAP = new HashMap<ISymbol, IExpr>(97);
+	private static Map<ISymbol, IExpr> DERIVATIVE_2_MAP = new IdentityHashMap<ISymbol, IExpr>(97);
 
 	/**
 	 * Mapped symbol to value for Derivative[&lt;n&gt;][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new HashMap<ISymbol, IExpr>(197);
+	private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
 
 	/**
 	 * Mapped symbol to value for Derivative[&lt;n&gt;, &lt;m&gt;][&lt;symbol&gt;]

@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +14,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * Evaluate math expressions to <code>IExpr</code> results..
+ * Evaluate math expressions to <code>IExpr</code> results.
  * 
  */
 public class ExprEvaluator {
@@ -45,7 +45,7 @@ public class ExprEvaluator {
 	 *            the number of last entries of the calculations which should be stored.
 	 */
 	public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
-		fVariableMap = new HashMap<ISymbol, IExpr>();
+		fVariableMap = new IdentityHashMap<ISymbol, IExpr>();
 		fVariables = new ArrayList<ISymbol>();
 		engine = new EvalEngine(true, outListDisabled);
 		if (!outListDisabled) {
