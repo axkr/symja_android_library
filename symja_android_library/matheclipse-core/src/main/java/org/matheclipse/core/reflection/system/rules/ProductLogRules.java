@@ -17,6 +17,10 @@ public interface ProductLogRules {
       CN1),
     ISet(ProductLog(E),
       C1),
+    ISet(ProductLog(CN1,Times(CN1D2,Pi)),
+      Times(CC(0L,1L,-1L,2L),Pi)),
+    ISet(ProductLog(CN1,Negate(Power(E,-1))),
+      CN1),
     ISet(ProductLog(CInfinity),
       CInfinity),
     ISet(ProductLog(CNInfinity),
@@ -28,6 +32,10 @@ public interface ProductLogRules {
     ISet(ProductLog(CComplexInfinity),
       CInfinity),
     ISetDelayed(Times(Power(E,ProductLog(x_)),ProductLog(x_)),
-      x)
+      x),
+    ISetDelayed(ProductLog(C0,x_),
+      ProductLog(x)),
+    ISetDelayed(ProductLog($p(n,NumberQ),C0),
+      Condition(Negate(CInfinity),Unequal(n,C0)))
   );
 }
