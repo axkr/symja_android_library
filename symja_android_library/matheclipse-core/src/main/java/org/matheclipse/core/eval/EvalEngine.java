@@ -1572,25 +1572,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Parse the given <code>expression</code> string into a list of <code>IExpr</code> without evaluation.
-	 * 
-	 * @param expression
-	 *            an expression in package notation
-	 * @return
-	 * @throws org.matheclipse.parser.client.SyntaxError
-	 *             if a parsing error occurs
-	 */
-	final public List<IExpr> parsePackage(String expression) {
-		final Parser parser = new Parser(fRelaxedSyntax, true);
-		final List<ASTNode> listOfNodes = parser.parsePackage(expression);
-		List<IExpr> result = new ArrayList<IExpr>(listOfNodes.size());
-		for (int i = 0; i < listOfNodes.size(); i++) {
-			result.add(AST2Expr.CONST.convert(listOfNodes.get(i), this));
-		}
-		return result;
-	}
-
-	/**
 	 * Parse the given <code>expression String</code> into an <code>ASTNode</code> without evaluation.
 	 * 
 	 * @param astString
