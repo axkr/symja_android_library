@@ -22,11 +22,11 @@
     </path>
 
 
-    <target name="clean">
+    <target name="clean" description="Delete the &quot;/build/..&quot; target subdirectory">
         <delete dir="${build.dir}"/>
     </target>
 
-    <target name="compile" depends="clean">
+    <target name="compile" description="Compile the Symja Java sources to subdirectory &quot;/build/classes&quot;" depends="clean">
         <mkdir dir="${classes.dir}"/>
         <copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
         <copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
@@ -44,11 +44,11 @@
     </target>
 
     <!-- Generate javadocs for current project into ${doc.dir} -->
-    <target name="doc" depends="compile" description="generate documentation">
+    <target name="doc" depends="compile" description="Generate Javadoc documentation in subdirectory &quot;/build/javadoc&quot;">
         <javadoc sourcepath="${src.dir}" encoding="utf-8" packagenames="org.matheclipse.core.*,org.matheclipse.parser.*" destdir="${doc.dir}"/>
     </target>
   
-	<target name="jar" depends="doc">
+	<target name="jar" description="Create full &quot;/build/jar/symja-YYYY-MM-DD.jar&quot; file for download" depends="doc">
 		<mkdir dir="${jar.dir}"/>
 <!--		<unjar src="lib/jsr305.jar" dest="${classes.dir}">
 		  <patternset>
@@ -84,9 +84,7 @@
 		</jar>
 	</target>
 
-<target name="clean-build" depends="clean,jar"/>
-
-<target name="proguard" depends="jar">
+    <target name="proguard" description="Deprecated use task &quot;proguard-library&quot; instead"  depends="jar">
 	         <taskdef resource="proguard/ant/task.properties"
 	                  classpath="toolslib/proguard.jar" />
 	         <proguard printmapping="proguard.map"
@@ -319,7 +317,7 @@
 	          
 </target>
 	
-<target name="proguard-library" depends="jar">
+<target name="proguard-library" description="Create shrinked and obfuscated &quot;/build/jar/symja-lib-YYYY-MM-DD.jar&quot; file for download with &quot;/toolslib/proguard.jar&quot;"  depends="jar">
 	         <taskdef resource="proguard/ant/task.properties"
 	                  classpath="toolslib/proguard.jar" />
 <proguard printmapping="proguard.map"
@@ -457,7 +455,7 @@
 </proguard>
 </target>
 
-<target name="main" depends="clean,jar"/>
+<target name="main" description="Run ANT targets clean and jar"  depends="clean,jar"/>
 
 </project>
 
