@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.exception.Validate;

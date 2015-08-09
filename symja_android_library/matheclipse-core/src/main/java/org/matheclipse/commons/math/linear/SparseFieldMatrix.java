@@ -58,7 +58,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 	 * @param columnDimension
 	 *            Number of columns in the new matrix.
 	 *
-	 * @throws org.apache.commons.math3.exception.NotStrictlyPositiveException
+	 * @throws org.apache.commons.math4.exception.NotStrictlyPositiveException
 	 *             if row or column dimension is not positive.
 	 */
 	public SparseFieldMatrix(final int rowDimension, final int columnDimension) {

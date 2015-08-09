@@ -1,13 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.integration.RombergIntegrator;
-import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
-import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
-import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
-import org.apache.commons.math3.analysis.integration.gauss.GaussIntegrator;
-import org.apache.commons.math3.analysis.integration.gauss.GaussIntegratorFactory;
-import org.apache.commons.math3.exception.ConvergenceException;
+import org.apache.commons.math4.analysis.UnivariateFunction;
+import org.apache.commons.math4.analysis.integration.RombergIntegrator;
+import org.apache.commons.math4.analysis.integration.SimpsonIntegrator;
+import org.apache.commons.math4.analysis.integration.TrapezoidIntegrator;
+import org.apache.commons.math4.analysis.integration.UnivariateIntegrator;
+import org.apache.commons.math4.analysis.integration.gauss.GaussIntegrator;
+import org.apache.commons.math4.analysis.integration.gauss.GaussIntegratorFactory;
+import org.apache.commons.math4.exception.ConvergenceException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;

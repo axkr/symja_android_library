@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math4.stat.StatUtils;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

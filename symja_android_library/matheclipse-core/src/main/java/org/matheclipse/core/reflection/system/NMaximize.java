@@ -2,12 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.List;
 
-import org.apache.commons.math3.optim.linear.LinearConstraint;
-import org.apache.commons.math3.optim.linear.LinearConstraintSet;
-import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optim.linear.NonNegativeConstraint;
-import org.apache.commons.math3.optim.linear.PivotSelectionRule;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math4.optim.linear.LinearConstraint;
+import org.apache.commons.math4.optim.linear.LinearConstraintSet;
+import org.apache.commons.math4.optim.linear.LinearObjectiveFunction;
+import org.apache.commons.math4.optim.linear.NonNegativeConstraint;
+import org.apache.commons.math4.optim.linear.PivotSelectionRule;
+import org.apache.commons.math4.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.interfaces.IAST;

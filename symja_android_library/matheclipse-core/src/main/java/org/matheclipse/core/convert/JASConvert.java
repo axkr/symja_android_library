@@ -657,7 +657,7 @@ public class JASConvert<C extends RingElem<C>> {
 		return F.chopNumber(F.complexNum(red, imd), epsilon);
 	}
 
-	public static INumber jas2Numeric(org.apache.commons.math3.complex.Complex c, double epsilon) {
+	public static INumber jas2Numeric(org.apache.commons.math4.complex.Complex c, double epsilon) {
 		double red = c.getReal();
 		double imd = c.getImaginary();
 		return F.chopNumber(F.complexNum(red, imd), epsilon);

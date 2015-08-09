@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
 

@@ -38,7 +38,7 @@ public class Gamma extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		double gamma = org.apache.commons.math3.special.Gamma.gamma(arg1);
+		double gamma = org.apache.commons.math4.special.Gamma.gamma(arg1);
 		return F.num(gamma);
 	}
 

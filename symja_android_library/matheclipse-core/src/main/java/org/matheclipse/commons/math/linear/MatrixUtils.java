@@ -19,14 +19,14 @@ package org.matheclipse.commons.math.linear;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.NoDataException;
-import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.NumberIsTooSmallException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.exception.ZeroException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
+import org.apache.commons.math4.exception.DimensionMismatchException;
+import org.apache.commons.math4.exception.NoDataException;
+import org.apache.commons.math4.exception.NullArgumentException;
+import org.apache.commons.math4.exception.NumberIsTooSmallException;
+import org.apache.commons.math4.exception.OutOfRangeException;
+import org.apache.commons.math4.exception.ZeroException;
+import org.apache.commons.math4.exception.util.LocalizedFormats;
+import org.apache.commons.math4.linear.MatrixDimensionMismatchException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -84,7 +84,7 @@ public class MatrixUtils {
 	 * @param data
 	 *            input array
 	 * @return a matrix containing the values of the array.
-	 * @throws org.apache.commons.math3.exception.DimensionMismatchException
+	 * @throws org.apache.commons.math4.exception.DimensionMismatchException
 	 *             if {@code data} is not rectangular (not all rows have the same length).
 	 * @throws NoDataException
 	 *             if a row or column is empty.

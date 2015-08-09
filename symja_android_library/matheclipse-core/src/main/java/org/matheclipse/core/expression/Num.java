@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math4.util.MathUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;

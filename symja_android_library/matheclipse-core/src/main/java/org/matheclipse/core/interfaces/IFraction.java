@@ -2,7 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.fraction.BigFraction;
 
 /**
  * interface for "fractional" numbers

@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;

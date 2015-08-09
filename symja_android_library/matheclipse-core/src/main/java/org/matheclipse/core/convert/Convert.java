@@ -2,11 +2,11 @@ package org.matheclipse.core.convert;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math4.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math4.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.linear.ArrayRealVector;
+import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
 import org.matheclipse.commons.math.linear.ArrayFieldVector;
 import org.matheclipse.commons.math.linear.FieldMatrix;

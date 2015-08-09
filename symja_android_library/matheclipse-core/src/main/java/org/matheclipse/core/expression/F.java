@@ -12,8 +12,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;

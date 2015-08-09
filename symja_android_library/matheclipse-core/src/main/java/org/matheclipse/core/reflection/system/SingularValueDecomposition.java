@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.exception.Validate;
@@ -30,7 +30,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2RealMatrix(list);
-			final org.apache.commons.math3.linear.SingularValueDecomposition svd = new org.apache.commons.math3.linear.SingularValueDecomposition(
+			final org.apache.commons.math4.linear.SingularValueDecomposition svd = new org.apache.commons.math4.linear.SingularValueDecomposition(
 					matrix);
 			final RealMatrix uMatrix = svd.getU();
 			final RealMatrix sMatrix = svd.getS();

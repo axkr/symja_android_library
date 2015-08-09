@@ -10,8 +10,8 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

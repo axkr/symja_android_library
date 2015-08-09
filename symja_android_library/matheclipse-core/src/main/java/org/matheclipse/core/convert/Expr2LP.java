@@ -2,9 +2,9 @@ package org.matheclipse.core.convert;
 
 import java.util.List;
 
-import org.apache.commons.math3.optim.linear.LinearConstraint;
-import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optim.linear.Relationship;
+import org.apache.commons.math4.optim.linear.LinearConstraint;
+import org.apache.commons.math4.optim.linear.LinearObjectiveFunction;
+import org.apache.commons.math4.optim.linear.Relationship;
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Convert a given Symja expression into linear programming objects from the <code>org.apache.commons.math3.optim.linear</code>
+ * Convert a given Symja expression into linear programming objects from the <code>org.apache.commons.math4.optim.linear</code>
  * package.
  * 
  */

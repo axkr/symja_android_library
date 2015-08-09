@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;

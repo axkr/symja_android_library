@@ -19,8 +19,8 @@ package org.matheclipse.core.polynomials;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.fraction.BigFraction;
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math4.util.FastMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

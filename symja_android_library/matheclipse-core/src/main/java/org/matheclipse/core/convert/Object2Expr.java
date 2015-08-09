@@ -117,8 +117,8 @@ public class Object2Expr {
 			}
 			return list;
 		}
-		if (obj instanceof org.apache.commons.math3.complex.Complex[]) {
-			return AST.newInstance(F.List, (org.apache.commons.math3.complex.Complex[]) obj);
+		if (obj instanceof org.apache.commons.math4.complex.Complex[]) {
+			return AST.newInstance(F.List, (org.apache.commons.math4.complex.Complex[]) obj);
 		}
 		if (obj instanceof boolean[]) {
 			final IAST list = List();
@@ -135,7 +135,7 @@ public class Object2Expr {
 		return F.stringx(obj.toString());
 	}
 
-	public static IAST convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {
+	public static IAST convertComplex(org.apache.commons.math4.complex.Complex[] array) throws ConversionException {
 		return AST.newInstance(F.List, array);
 	}
 }

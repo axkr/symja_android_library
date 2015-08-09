@@ -1,12 +1,12 @@
 package org.matheclipse.core.stat.descriptive;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.NotPositiveException;
-import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
+import org.apache.commons.math4.exception.DimensionMismatchException;
+import org.apache.commons.math4.exception.MathIllegalArgumentException;
+import org.apache.commons.math4.exception.NotPositiveException;
+import org.apache.commons.math4.exception.NullArgumentException;
+import org.apache.commons.math4.exception.NumberIsTooLargeException;
+import org.apache.commons.math4.exception.util.LocalizedFormats;
+import org.apache.commons.math4.stat.descriptive.StorelessUnivariateStatistic;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -42,7 +42,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 * @param values
 	 *          input array
 	 * @return the value of the statistic applied to the input array
-	 * @see org.apache.commons.math3.stat.descriptive.UnivariateStatistic#evaluate(double[])
+	 * @see org.apache.commons.math4.stat.descriptive.UnivariateStatistic#evaluate(double[])
 	 */
 	public IExpr evaluate(final IAST values) {
 		if (values == null) {
@@ -76,7 +76,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 * @param length
 	 *          the number of elements to include
 	 * @return the value of the statistic applied to the included array entries
-	 * @see org.apache.commons.math3.stat.descriptive.UnivariateStatistic#evaluate(double[],
+	 * @see org.apache.commons.math4.stat.descriptive.UnivariateStatistic#evaluate(double[],
 	 *      int, int)
 	 */
 	public IExpr evaluate(final IAST values, final int begin, final int length) {
@@ -115,7 +115,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 *          values to add
 	 * @throws IllegalArgumentException
 	 *           if values is null
-	 * @see org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic#incrementAll(double[])
+	 * @see org.apache.commons.math4.stat.descriptive.StorelessUnivariateStatistic#incrementAll(double[])
 	 */
 	public void incrementAll(IAST values) {
 		if (values == null) {
@@ -139,7 +139,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 *          number of array elements to add
 	 * @throws IllegalArgumentException
 	 *           if values is null
-	 * @see org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic#incrementAll(double[],
+	 * @see org.apache.commons.math4.stat.descriptive.StorelessUnivariateStatistic#incrementAll(double[],
 	 *      int, int)
 	 */
 	public void incrementAll(IAST values, int begin, int length) {

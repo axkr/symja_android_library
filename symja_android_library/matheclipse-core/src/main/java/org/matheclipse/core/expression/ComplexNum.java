@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
@@ -17,7 +17,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to represent a
+ * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math4.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
 public class ComplexNum extends ExprImpl implements IComplexNum {

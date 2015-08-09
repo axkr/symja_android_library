@@ -1,6 +1,6 @@
 package org.matheclipse.core.generic;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math4.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.EvalDouble;

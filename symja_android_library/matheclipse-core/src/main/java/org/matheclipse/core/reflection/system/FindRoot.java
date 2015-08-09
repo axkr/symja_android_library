@@ -1,15 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BisectionSolver;
-import org.apache.commons.math3.analysis.solvers.BrentSolver;
-import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
-import org.apache.commons.math3.analysis.solvers.MullerSolver;
-import org.apache.commons.math3.analysis.solvers.PegasusSolver;
-import org.apache.commons.math3.analysis.solvers.RegulaFalsiSolver;
-import org.apache.commons.math3.analysis.solvers.RiddersSolver;
-import org.apache.commons.math3.analysis.solvers.SecantSolver;
+import org.apache.commons.math4.analysis.UnivariateFunction;
+import org.apache.commons.math4.analysis.solvers.BaseAbstractUnivariateSolver;
+import org.apache.commons.math4.analysis.solvers.BisectionSolver;
+import org.apache.commons.math4.analysis.solvers.BrentSolver;
+import org.apache.commons.math4.analysis.solvers.IllinoisSolver;
+import org.apache.commons.math4.analysis.solvers.MullerSolver;
+import org.apache.commons.math4.analysis.solvers.PegasusSolver;
+import org.apache.commons.math4.analysis.solvers.RegulaFalsiSolver;
+import org.apache.commons.math4.analysis.solvers.RiddersSolver;
+import org.apache.commons.math4.analysis.solvers.SecantSolver;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.NewtonSolver;
 import org.matheclipse.core.basic.Config;

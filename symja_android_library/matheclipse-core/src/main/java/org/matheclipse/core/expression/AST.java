@@ -287,7 +287,7 @@ public class AST extends HMArrayList implements Externalizable {
 		return new AST(eArr);
 	}
 
-	public static AST newInstance(final ISymbol symbol, final org.apache.commons.math3.complex.Complex... arr) {
+	public static AST newInstance(final ISymbol symbol, final org.apache.commons.math4.complex.Complex... arr) {
 		IExpr[] eArr = new IExpr[arr.length + 1];
 		eArr[0] = symbol;
 		for (int i = 1; i <= arr.length; i++) {

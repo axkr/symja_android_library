@@ -1,11 +1,11 @@
 package org.matheclipse.core.expression;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
-import org.apache.commons.math3.linear.ArrayFieldVector;
-import org.apache.commons.math3.linear.BlockFieldMatrix;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.FieldVector;
+import org.apache.commons.math4.Field;
+import org.apache.commons.math4.FieldElement;
+import org.apache.commons.math4.linear.ArrayFieldVector;
+import org.apache.commons.math4.linear.BlockFieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldVector;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;

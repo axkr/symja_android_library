@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.fraction.BigFraction;
 
 /**
  * An expression representing a complex number

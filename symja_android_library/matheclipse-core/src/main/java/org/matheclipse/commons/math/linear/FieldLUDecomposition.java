@@ -17,10 +17,10 @@
 
 package org.matheclipse.commons.math.linear;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.NonSquareMatrixException;
-import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math4.exception.DimensionMismatchException;
+import org.apache.commons.math4.linear.DecompositionSolver;
+import org.apache.commons.math4.linear.NonSquareMatrixException;
+import org.apache.commons.math4.linear.SingularMatrixException;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

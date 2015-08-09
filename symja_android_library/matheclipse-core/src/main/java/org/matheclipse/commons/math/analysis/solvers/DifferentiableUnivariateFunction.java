@@ -16,7 +16,7 @@
  */
 package org.matheclipse.commons.math.analysis.solvers;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math4.analysis.UnivariateFunction;
 
 /**
  * Extension of {@link UnivariateFunction} representing a differentiable univariate real function.

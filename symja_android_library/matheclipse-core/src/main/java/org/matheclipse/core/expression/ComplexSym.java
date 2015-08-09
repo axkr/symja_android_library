@@ -2,7 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 
-import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math4.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;

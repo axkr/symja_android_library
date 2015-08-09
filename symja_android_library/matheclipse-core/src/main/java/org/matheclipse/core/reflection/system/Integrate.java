@@ -19,7 +19,6 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;

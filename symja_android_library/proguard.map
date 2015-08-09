@@ -17662,6 +17662,11 @@ org.matheclipse.core.builtin.function.Hold -> org.matheclipse.core.builtin.funct
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+org.matheclipse.core.builtin.function.HoldForm -> org.matheclipse.core.builtin.function.HoldForm:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.builtin.function.Identity -> org.matheclipse.core.builtin.function.Identity:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -17924,6 +17929,15 @@ org.matheclipse.core.builtin.function.Unique -> org.matheclipse.core.builtin.fun
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+org.matheclipse.core.builtin.function.Unset -> org.matheclipse.core.builtin.function.Unset:
+    org.matheclipse.core.builtin.function.Unset CONST -> CONST
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    void removePatternMatcher(org.matheclipse.core.interfaces.IExpr,boolean) -> removePatternMatcher
+    void removeRule(org.matheclipse.core.interfaces.IExpr,boolean) -> removeRule
+    org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+    void <clinit>() -> <clinit>
 org.matheclipse.core.builtin.function.UpSet -> org.matheclipse.core.builtin.function.UpSet:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -18752,15 +18766,20 @@ org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator -> org.mathec
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator -> org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator:
+org.matheclipse.core.eval.interfaces.AbstractEvaluator -> org.matheclipse.core.eval.interfaces.AbstractEvaluator:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator -> org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator:
+    void <init>() -> <init>
     org.matheclipse.core.interfaces.IAST getRuleAST() -> getRuleAST
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     void createRuleFromMethod(org.matheclipse.core.interfaces.ISymbol,java.lang.String,java.lang.String) -> createRuleFromMethod
     boolean isNegativeExpression(org.matheclipse.core.interfaces.IExpr) -> isNegativeExpression
     org.matheclipse.core.interfaces.IExpr getNormalizedNegativeExpression(org.matheclipse.core.interfaces.IExpr) -> getNormalizedNegativeExpression
+    org.matheclipse.core.interfaces.IExpr getNormalizedNegativeExpression(org.matheclipse.core.interfaces.IExpr,boolean) -> getNormalizedNegativeExpression
     org.matheclipse.core.interfaces.IExpr[] getPeriodicParts(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> getPeriodicParts
     org.matheclipse.core.interfaces.IExpr getPureImaginaryPart(org.matheclipse.core.interfaces.IExpr) -> getPureImaginaryPart
     void initSerializedRules(org.matheclipse.core.interfaces.ISymbol) -> initSerializedRules
@@ -19286,6 +19305,7 @@ org.matheclipse.core.expression.AbstractAST -> org.matheclipse.core.expression.A
     boolean isAST(java.lang.String,int) -> isAST
     boolean isASTSizeGE(org.matheclipse.core.interfaces.IExpr,int) -> isASTSizeGE
     boolean isAtom() -> isAtom
+    boolean isBlank() -> isBlank
     boolean isComplex() -> isComplex
     boolean isComplexInfinity() -> isComplexInfinity
     boolean isComplexNumeric() -> isComplexNumeric
@@ -19293,6 +19313,7 @@ org.matheclipse.core.expression.AbstractAST -> org.matheclipse.core.expression.A
     boolean isConstant() -> isConstant
     boolean isCos() -> isCos
     boolean isCosh() -> isCosh
+    org.matheclipse.core.interfaces.IAST[] isDerivative() -> isDerivative
     boolean isDirectedInfinity() -> isDirectedInfinity
     boolean isE() -> isE
     boolean isEmpty() -> isEmpty
@@ -19334,6 +19355,7 @@ org.matheclipse.core.expression.AbstractAST -> org.matheclipse.core.expression.A
     boolean isNot() -> isNot
     boolean isNumber() -> isNumber
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumeric() -> isNumeric
     boolean isNumericFunction() -> isNumericFunction
     boolean isNumericMode() -> isNumericMode
@@ -19401,6 +19423,7 @@ org.matheclipse.core.expression.AbstractAST -> org.matheclipse.core.expression.A
     org.matheclipse.core.interfaces.IExpr negate() -> negate
     org.matheclipse.core.interfaces.IExpr negative() -> negative
     org.matheclipse.core.interfaces.IExpr opposite() -> opposite
+    org.matheclipse.core.interfaces.IExpr optional(org.matheclipse.core.interfaces.IExpr) -> optional
     org.matheclipse.core.interfaces.IExpr or(org.matheclipse.core.interfaces.IExpr) -> or
     int patternHashCode() -> patternHashCode
     org.matheclipse.core.interfaces.IExpr plus(org.matheclipse.core.interfaces.IExpr) -> plus
@@ -19559,6 +19582,7 @@ org.matheclipse.core.expression.ApfloatNum -> org.matheclipse.core.expression.Ap
     void <init>(org.apfloat.Apfloat) -> <init>
     int hierarchy() -> hierarchy
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumIntValue() -> isNumIntValue
     boolean isNegative() -> isNegative
     boolean isPositive() -> isPositive
@@ -19632,6 +19656,47 @@ org.matheclipse.core.expression.ApfloatNum -> org.matheclipse.core.expression.Ap
     org.matheclipse.core.interfaces.INumber ceil() -> ceil
     org.matheclipse.core.interfaces.INumber opposite() -> opposite
     org.matheclipse.core.interfaces.IExpr eabs() -> eabs
+org.matheclipse.core.expression.Blank -> org.matheclipse.core.expression.Blank:
+    long serialVersionUID -> serialVersionUID
+    org.matheclipse.core.interfaces.IExpr fCondition -> fCondition
+    boolean fDefault -> fDefault
+    org.matheclipse.core.expression.Blank NULL_PATTERN -> a
+    org.matheclipse.core.interfaces.IPattern valueOf() -> valueOf
+    org.matheclipse.core.interfaces.IPattern valueOf(org.matheclipse.core.interfaces.IExpr) -> valueOf
+    void <init>() -> <init>
+    void <init>(org.matheclipse.core.interfaces.IExpr) -> <init>
+    void <init>(org.matheclipse.core.interfaces.IExpr,boolean) -> <init>
+    int[] addPattern(org.matheclipse.core.patternmatching.PatternMap,java.util.Map) -> addPattern
+    java.lang.Object accept(org.matheclipse.core.visit.IVisitor) -> accept
+    boolean accept(org.matheclipse.core.visit.IVisitorBoolean) -> accept
+    int accept(org.matheclipse.core.visit.IVisitorInt) -> accept
+    long accept(org.matheclipse.core.visit.IVisitorLong) -> accept
+    int compareTo(org.matheclipse.core.interfaces.IExpr) -> compareTo
+    boolean equivalent(org.matheclipse.core.interfaces.IPatternObject,org.matheclipse.core.patternmatching.PatternMap,org.matheclipse.core.patternmatching.PatternMap) -> equivalent
+    boolean equals(java.lang.Object) -> equals
+    boolean matchPattern(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.patternmatching.PatternMap) -> matchPattern
+    org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
+    int getIndex(org.matheclipse.core.patternmatching.PatternMap) -> getIndex
+    int getEvalFlags() -> getEvalFlags
+    org.matheclipse.core.interfaces.ISymbol getSymbol() -> getSymbol
+    int hashCode() -> hashCode
+    org.matheclipse.core.interfaces.ISymbol head() -> head
+    int hierarchy() -> hierarchy
+    boolean isBlank() -> isBlank
+    boolean isCase(org.matheclipse.core.interfaces.IExpr) -> isCase
+    boolean isPatternDefault() -> isPatternDefault
+    boolean isPatternExpr() -> isPatternExpr
+    boolean isFreeOfPatterns() -> isFreeOfPatterns
+    boolean isConditionMatched(org.matheclipse.core.interfaces.IExpr) -> isConditionMatched
+    java.lang.String internalFormString(boolean,int) -> internalFormString
+    java.lang.String fullFormString() -> fullFormString
+    java.lang.String toString() -> toString
+    org.matheclipse.core.interfaces.IExpr variables2Slots(java.util.Map,java.util.List) -> variables2Slots
+    java.lang.Object writeReplace() -> writeReplace
+    org.matheclipse.core.interfaces.IExpr head() -> head
+    int compareTo(java.lang.Object) -> compareTo
+    int compareTo(edu.jas.structure.Element) -> compareTo
+    void <clinit>() -> <clinit>
 org.matheclipse.core.expression.ComplexNum -> org.matheclipse.core.expression.ComplexNum:
     long serialVersionUID -> serialVersionUID
     org.matheclipse.core.expression.ComplexNum I -> I
@@ -19881,6 +19946,7 @@ org.matheclipse.core.expression.ExprImpl -> org.matheclipse.core.expression.Expr
     boolean isAST(java.lang.String,int) -> isAST
     boolean isASTSizeGE(org.matheclipse.core.interfaces.IExpr,int) -> isASTSizeGE
     boolean isAtom() -> isAtom
+    boolean isBlank() -> isBlank
     boolean isComplex() -> isComplex
     boolean isComplexInfinity() -> isComplexInfinity
     boolean isComplexNumeric() -> isComplexNumeric
@@ -19888,6 +19954,7 @@ org.matheclipse.core.expression.ExprImpl -> org.matheclipse.core.expression.Expr
     boolean isConstant() -> isConstant
     boolean isCos() -> isCos
     boolean isCosh() -> isCosh
+    org.matheclipse.core.interfaces.IAST[] isDerivative() -> isDerivative
     boolean isDirectedInfinity() -> isDirectedInfinity
     boolean isE() -> isE
     boolean isExpanded() -> isExpanded
@@ -19929,6 +19996,7 @@ org.matheclipse.core.expression.ExprImpl -> org.matheclipse.core.expression.Expr
     boolean isNot() -> isNot
     boolean isNumber() -> isNumber
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumeric() -> isNumeric
     boolean isNumericFunction() -> isNumericFunction
     boolean isNumericMode() -> isNumericMode
@@ -19978,6 +20046,7 @@ org.matheclipse.core.expression.ExprImpl -> org.matheclipse.core.expression.Expr
     org.matheclipse.core.interfaces.IExpr negate() -> negate
     org.matheclipse.core.interfaces.IExpr negative() -> negative
     org.matheclipse.core.interfaces.IExpr opposite() -> opposite
+    org.matheclipse.core.interfaces.IExpr optional(org.matheclipse.core.interfaces.IExpr) -> optional
     org.matheclipse.core.interfaces.IExpr or(org.matheclipse.core.interfaces.IExpr) -> or
     org.matheclipse.core.interfaces.IExpr plus(org.matheclipse.core.interfaces.IExpr) -> plus
     org.matheclipse.core.interfaces.IExpr inc() -> inc
@@ -20080,6 +20149,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol Reals -> Reals
     org.matheclipse.core.interfaces.ISymbol False -> False
     org.matheclipse.core.interfaces.ISymbol Alternatives -> Alternatives
+    org.matheclipse.core.interfaces.ISymbol Direction -> Direction
     org.matheclipse.core.interfaces.ISymbol List -> List
     org.matheclipse.core.interfaces.ISymbol True -> True
     org.matheclipse.core.interfaces.ISymbol Null -> Null
@@ -20099,6 +20169,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol NHoldAll -> NHoldAll
     org.matheclipse.core.interfaces.ISymbol Line -> Line
     org.matheclipse.core.interfaces.ISymbol BoxRatios -> BoxRatios
+    org.matheclipse.core.interfaces.ISymbol Modulus -> Modulus
     org.matheclipse.core.interfaces.ISymbol MeshRange -> MeshRange
     org.matheclipse.core.interfaces.ISymbol PlotRange -> PlotRange
     org.matheclipse.core.interfaces.ISymbol AxesStyle -> AxesStyle
@@ -20170,6 +20241,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol Function -> A
     org.matheclipse.core.interfaces.ISymbol Head -> Head
     org.matheclipse.core.interfaces.ISymbol Hold -> Hold
+    org.matheclipse.core.interfaces.ISymbol HoldForm -> HoldForm
     org.matheclipse.core.interfaces.ISymbol Identity -> Identity
     org.matheclipse.core.interfaces.ISymbol If -> If
     org.matheclipse.core.interfaces.ISymbol Implies -> Implies
@@ -20223,6 +20295,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol Trace -> Trace
     org.matheclipse.core.interfaces.ISymbol Unevaluated -> Unevaluated
     org.matheclipse.core.interfaces.ISymbol Unique -> Unique
+    org.matheclipse.core.interfaces.ISymbol Unset -> Unset
     org.matheclipse.core.interfaces.ISymbol UpSet -> UpSet
     org.matheclipse.core.interfaces.ISymbol UpSetDelayed -> UpSetDelayed
     org.matheclipse.core.interfaces.ISymbol ValueQ -> ValueQ
@@ -20370,6 +20443,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol NRoots -> NRoots
     org.matheclipse.core.interfaces.ISymbol NSolve -> NSolve
     org.matheclipse.core.interfaces.ISymbol Numerator -> Numerator
+    org.matheclipse.core.interfaces.ISymbol O -> O
     org.matheclipse.core.interfaces.ISymbol Order -> Order
     org.matheclipse.core.interfaces.ISymbol OrderedQ -> OrderedQ
     org.matheclipse.core.interfaces.ISymbol Out -> Out
@@ -20419,6 +20493,8 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.ISymbol Sec -> Sec
     org.matheclipse.core.interfaces.ISymbol Sech -> Sech
     org.matheclipse.core.interfaces.ISymbol Select -> Select
+    org.matheclipse.core.interfaces.ISymbol Series -> Series
+    org.matheclipse.core.interfaces.ISymbol SeriesData -> SeriesData
     org.matheclipse.core.interfaces.ISymbol Sign -> Sign
     org.matheclipse.core.interfaces.ISymbol SignCmp -> SignCmp
     org.matheclipse.core.interfaces.ISymbol Simplify -> Simplify
@@ -20618,6 +20694,8 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.INum CD1 -> CD1
     org.matheclipse.core.interfaces.IAST CInfinity -> CInfinity
     org.matheclipse.core.interfaces.IAST CNInfinity -> CNInfinity
+    org.matheclipse.core.interfaces.IAST CIInfinity -> CIInfinity
+    org.matheclipse.core.interfaces.IAST CNIInfinity -> CNIInfinity
     org.matheclipse.core.interfaces.IAST CComplexInfinity -> CComplexInfinity
     org.matheclipse.core.interfaces.IAST CSqrt2 -> CSqrt2
     org.matheclipse.core.interfaces.IAST CSqrt3 -> CSqrt3
@@ -20643,8 +20721,6 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.expression.IntegerSym CN8 -> CN8
     org.matheclipse.core.expression.IntegerSym CN9 -> CN9
     org.matheclipse.core.expression.IntegerSym CN10 -> CN10
-    org.matheclipse.core.interfaces.ISymbol HoldForm -> HoldForm
-    org.matheclipse.core.interfaces.ISymbol Modulus -> Modulus
     org.matheclipse.core.interfaces.ISymbol AppellF1 -> AppellF1
     org.matheclipse.core.interfaces.ISymbol CosIntegral -> CosIntegral
     org.matheclipse.core.interfaces.ISymbol EllipticE -> EllipticE
@@ -20668,6 +20744,8 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IExpr[] GLOBAL_IDS -> GLOBAL_IDS
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IAST $(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr[]) -> $
+    org.matheclipse.core.interfaces.IPattern $b() -> $b
+    org.matheclipse.core.interfaces.IPattern $b(org.matheclipse.core.interfaces.IExpr) -> $b
     org.matheclipse.core.interfaces.IPattern $p(org.matheclipse.core.interfaces.ISymbol) -> $p
     org.matheclipse.core.interfaces.IPattern $p(org.matheclipse.core.interfaces.ISymbol,boolean) -> $p
     org.matheclipse.core.interfaces.IPattern $p(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr) -> $p
@@ -20775,7 +20853,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST DeleteCases(org.matheclipse.core.interfaces.IExpr[]) -> DeleteCases
     org.matheclipse.core.interfaces.IAST Denominator(org.matheclipse.core.interfaces.IExpr) -> Denominator
     org.matheclipse.core.interfaces.IAST Depth(org.matheclipse.core.interfaces.IExpr) -> Depth
-    org.matheclipse.core.interfaces.IAST Derivative(org.matheclipse.core.interfaces.IExpr) -> Derivative
+    org.matheclipse.core.interfaces.IAST Derivative(org.matheclipse.core.interfaces.IExpr[]) -> Derivative
     org.matheclipse.core.interfaces.IAST Det(org.matheclipse.core.interfaces.IExpr) -> Det
     org.matheclipse.core.interfaces.IAST DirectedInfinity(org.matheclipse.core.interfaces.IExpr) -> DirectedInfinity
     org.matheclipse.core.interfaces.IAST Discriminant(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> Discriminant
@@ -20856,6 +20934,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST HarmonicNumber(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> HarmonicNumber
     org.matheclipse.core.interfaces.IAST Head(org.matheclipse.core.interfaces.IExpr) -> Head
     org.matheclipse.core.interfaces.IAST Hold(org.matheclipse.core.interfaces.IExpr) -> Hold
+    org.matheclipse.core.interfaces.IAST HoldForm(org.matheclipse.core.interfaces.IExpr) -> HoldForm
     org.matheclipse.core.interfaces.IAST HurwitzZeta(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> HurwitzZeta
     org.matheclipse.core.interfaces.IAST Identity(org.matheclipse.core.interfaces.IExpr) -> Identity
     org.matheclipse.core.interfaces.IAST If(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> If
@@ -20879,6 +20958,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST InverseErf(org.matheclipse.core.interfaces.IExpr) -> InverseErf
     org.matheclipse.core.interfaces.IAST InverseFunction(org.matheclipse.core.interfaces.IExpr) -> InverseFunction
     boolean isNumEqualInteger(double,org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(double,org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumIntValue(double,int) -> isNumIntValue
     boolean isNumIntValue(double) -> isNumIntValue
     boolean isNumIntValue(double,double) -> isNumIntValue
@@ -20938,6 +21018,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IExpr Negate(org.matheclipse.core.interfaces.IExpr) -> Negate
     org.matheclipse.core.interfaces.IAST Negative(org.matheclipse.core.interfaces.IExpr) -> Negative
     org.matheclipse.core.interfaces.IAST newInstance(int,org.matheclipse.core.interfaces.IExpr) -> newInstance
+    org.matheclipse.core.interfaces.IAST Norm(org.matheclipse.core.interfaces.IExpr) -> Norm
     org.matheclipse.core.interfaces.IAST Not(org.matheclipse.core.interfaces.IExpr) -> Not
     org.matheclipse.core.interfaces.INum num(double) -> num
     org.matheclipse.core.interfaces.INum num(org.matheclipse.core.interfaces.IFraction) -> num
@@ -20947,6 +21028,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST NumberQ(org.matheclipse.core.interfaces.IExpr) -> NumberQ
     org.matheclipse.core.interfaces.IAST Numerator(org.matheclipse.core.interfaces.IExpr) -> Numerator
     org.matheclipse.core.interfaces.IAST NumericQ(org.matheclipse.core.interfaces.IExpr) -> NumericQ
+    org.matheclipse.core.interfaces.IAST O(org.matheclipse.core.interfaces.IExpr) -> O
     org.matheclipse.core.interfaces.IAST OddQ(org.matheclipse.core.interfaces.IExpr) -> OddQ
     org.matheclipse.core.interfaces.IAST Options(org.matheclipse.core.interfaces.IExpr) -> Options
     org.matheclipse.core.interfaces.IExpr or(org.matheclipse.core.interfaces.IExpr,java.lang.Integer) -> or
@@ -20985,6 +21067,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST Print(org.matheclipse.core.interfaces.IExpr[]) -> Print
     org.matheclipse.core.interfaces.IAST Product(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> Product
     org.matheclipse.core.interfaces.IAST ProductLog(org.matheclipse.core.interfaces.IExpr) -> ProductLog
+    org.matheclipse.core.interfaces.IAST ProductLog(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> ProductLog
     org.matheclipse.core.interfaces.IFraction QQ(org.apache.commons.math3.fraction.BigFraction) -> QQ
     org.matheclipse.core.interfaces.IFraction QQ(org.matheclipse.core.interfaces.IInteger,org.matheclipse.core.interfaces.IInteger) -> QQ
     org.matheclipse.core.interfaces.IFraction QQ(long,long) -> QQ
@@ -21017,6 +21100,8 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST Sequence() -> Sequence
     org.matheclipse.core.interfaces.IAST Sequence(org.matheclipse.core.interfaces.IExpr) -> Sequence
     org.matheclipse.core.interfaces.IAST Sequence(org.matheclipse.core.interfaces.IExpr[]) -> Sequence
+    org.matheclipse.core.interfaces.IAST Series(org.matheclipse.core.interfaces.IExpr[]) -> Series
+    org.matheclipse.core.interfaces.IAST SeriesData(org.matheclipse.core.interfaces.IExpr[]) -> SeriesData
     org.matheclipse.core.interfaces.IAST SetAttributes(org.matheclipse.core.interfaces.IExpr) -> SetAttributes
     org.matheclipse.core.interfaces.IAST SetAttributes(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> SetAttributes
     org.matheclipse.core.interfaces.IAST Set(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> Set
@@ -21074,6 +21159,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST Unevaluated(org.matheclipse.core.interfaces.IExpr) -> Unevaluated
     org.matheclipse.core.interfaces.IAST Unique(org.matheclipse.core.interfaces.IExpr) -> Unique
     org.matheclipse.core.interfaces.IAST UnsameQ(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> UnsameQ
+    org.matheclipse.core.interfaces.IAST Unset(org.matheclipse.core.interfaces.IExpr) -> Unset
     org.matheclipse.core.interfaces.IAST UpSet(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> UpSet
     org.matheclipse.core.interfaces.IAST UpSetDelayed(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> UpSetDelayed
     org.matheclipse.core.interfaces.IAST While(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> While
@@ -21100,6 +21186,7 @@ org.matheclipse.core.expression.F -> org.matheclipse.core.expression.F:
     org.matheclipse.core.interfaces.IAST Erfc(org.matheclipse.core.interfaces.IExpr) -> Erfc
     org.matheclipse.core.interfaces.IAST LogGamma(org.matheclipse.core.interfaces.IExpr) -> LogGamma
     org.matheclipse.core.interfaces.IAST Zeta(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> Zeta
+    org.matheclipse.core.interfaces.IAST PolyGamma(org.matheclipse.core.interfaces.IExpr) -> PolyGamma
     org.matheclipse.core.interfaces.IAST PolyGamma(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> PolyGamma
     org.matheclipse.core.interfaces.IAST ExpIntegralE(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> ExpIntegralE
     void <clinit>() -> <clinit>
@@ -21131,6 +21218,7 @@ org.matheclipse.core.expression.FractionSym -> org.matheclipse.core.expression.F
     org.matheclipse.core.interfaces.IFraction add(org.matheclipse.core.interfaces.IFraction) -> add
     org.matheclipse.core.interfaces.IFraction multiply(org.matheclipse.core.interfaces.IFraction) -> multiply
     boolean isNegative() -> isNegative
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isPositive() -> isPositive
     boolean isRationalValue(org.matheclipse.core.interfaces.IRational) -> isRationalValue
     org.matheclipse.core.expression.FractionSym eabs() -> eabs
@@ -21289,6 +21377,7 @@ org.matheclipse.core.expression.IntegerSym -> org.matheclipse.core.expression.In
     boolean isLargerThan(java.math.BigInteger) -> isLargerThan
     boolean isNegative() -> isNegative
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumIntValue() -> isNumIntValue
     boolean isPositive() -> isPositive
     boolean isProbablePrime() -> isProbablePrime
@@ -21302,7 +21391,7 @@ org.matheclipse.core.expression.IntegerSym -> org.matheclipse.core.expression.In
     org.matheclipse.core.expression.IntegerSym mod(org.matheclipse.core.expression.IntegerSym) -> mod
     org.matheclipse.core.expression.IntegerSym multiply(org.matheclipse.core.expression.IntegerSym) -> multiply
     java.math.BigInteger multiply(long) -> multiply
-    org.matheclipse.core.interfaces.ISignedNumber negate() -> negate
+    org.matheclipse.core.expression.IntegerSym negate() -> negate
     org.matheclipse.core.interfaces.ISignedNumber opposite() -> opposite
     org.matheclipse.core.interfaces.IExpr plus(org.matheclipse.core.interfaces.IExpr) -> plus
     org.matheclipse.core.interfaces.ISignedNumber divideBy(org.matheclipse.core.interfaces.ISignedNumber) -> divideBy
@@ -21315,11 +21404,13 @@ org.matheclipse.core.expression.IntegerSym -> org.matheclipse.core.expression.In
     org.matheclipse.core.interfaces.IInteger subtract(org.matheclipse.core.interfaces.IInteger) -> subtract
     org.matheclipse.core.interfaces.IExpr times(org.matheclipse.core.interfaces.IExpr) -> times
     byte[] toByteArray() -> toByteArray
+    java.math.BigInteger getBigDenominator() -> getBigDenominator
     java.math.BigInteger getBigNumerator() -> getBigNumerator
     org.matheclipse.core.interfaces.IInteger getNumerator() -> getNumerator
     org.matheclipse.core.interfaces.IInteger getDenominator() -> getDenominator
     org.apache.commons.math3.fraction.BigFraction getFraction() -> getFraction
     org.matheclipse.core.interfaces.IAST factorize(org.matheclipse.core.interfaces.IAST) -> factorize
+    org.matheclipse.core.interfaces.IExpr exponent(org.matheclipse.core.interfaces.IInteger) -> exponent
     org.matheclipse.core.interfaces.IAST factorInteger() -> factorInteger
     org.matheclipse.core.interfaces.IAST divisors() -> divisors
     org.matheclipse.core.interfaces.IInteger eulerPhi() -> eulerPhi
@@ -21327,7 +21418,7 @@ org.matheclipse.core.expression.IntegerSym -> org.matheclipse.core.expression.In
     org.matheclipse.core.expression.IntegerSym jacobiSymbol(org.matheclipse.core.expression.IntegerSym) -> jacobiSymbol
     org.matheclipse.core.interfaces.IInteger[] primitiveRoots() -> primitiveRoots
     int compareTo(org.matheclipse.core.expression.IntegerSym) -> compareTo
-    org.matheclipse.core.expression.IntegerSym[] divideAndRemainder(org.matheclipse.core.expression.IntegerSym) -> divideAndRemainder
+    org.matheclipse.core.interfaces.IInteger[] divideAndRemainder(org.matheclipse.core.interfaces.IInteger) -> divideAndRemainder
     org.matheclipse.core.expression.IntegerSym remainder(org.matheclipse.core.expression.IntegerSym) -> remainder
     org.matheclipse.core.interfaces.IExpr remainder(org.matheclipse.core.interfaces.IExpr) -> remainder
     boolean isEven() -> isEven
@@ -21379,6 +21470,8 @@ org.matheclipse.core.expression.IntegerSym -> org.matheclipse.core.expression.In
     edu.jas.structure.MonoidElem inverse() -> inverse
     edu.jas.structure.MonoidElem remainder(edu.jas.structure.MonoidElem) -> remainder
     org.matheclipse.core.interfaces.IInteger pow(int) -> pow
+    org.matheclipse.core.interfaces.IInteger negate() -> negate
+    org.matheclipse.core.interfaces.ISignedNumber negate() -> negate
     org.matheclipse.core.interfaces.INumber floor() -> floor
     org.matheclipse.core.interfaces.INumber ceil() -> ceil
     org.matheclipse.core.interfaces.INumber opposite() -> opposite
@@ -21424,6 +21517,7 @@ org.matheclipse.core.expression.Num -> org.matheclipse.core.expression.Num:
     void <init>(double) -> <init>
     int hierarchy() -> hierarchy
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumIntValue() -> isNumIntValue
     boolean isNegative() -> isNegative
     boolean isPositive() -> isPositive
@@ -21542,25 +21636,19 @@ org.matheclipse.core.expression.NumberUtil -> org.matheclipse.core.expression.Nu
     void <clinit>() -> <clinit>
 org.matheclipse.core.expression.Pattern -> org.matheclipse.core.expression.Pattern:
     long serialVersionUID -> serialVersionUID
-    org.matheclipse.core.expression.Pattern NULL_PATTERN -> a
-    org.matheclipse.core.interfaces.IExpr fCondition -> fCondition
     org.matheclipse.core.interfaces.ISymbol fSymbol -> fSymbol
-    boolean fDefault -> fDefault
     org.matheclipse.core.interfaces.IPattern valueOf(org.matheclipse.core.interfaces.ISymbol) -> valueOf
     org.matheclipse.core.interfaces.IPattern valueOf(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr) -> valueOf
     org.matheclipse.core.interfaces.IPattern valueOf(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,boolean) -> valueOf
-    void <init>() -> <init>
     void <init>(org.matheclipse.core.interfaces.ISymbol) -> <init>
     void <init>(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr) -> <init>
     void <init>(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,boolean) -> <init>
-    java.lang.Object accept(org.matheclipse.core.visit.IVisitor) -> accept
-    boolean accept(org.matheclipse.core.visit.IVisitorBoolean) -> accept
-    int accept(org.matheclipse.core.visit.IVisitorInt) -> accept
-    long accept(org.matheclipse.core.visit.IVisitorLong) -> accept
+    int[] addPattern(org.matheclipse.core.patternmatching.PatternMap,java.util.Map) -> addPattern
     int compareTo(org.matheclipse.core.interfaces.IExpr) -> compareTo
     boolean equals(java.lang.Object) -> equals
+    boolean equivalent(org.matheclipse.core.interfaces.IPatternObject,org.matheclipse.core.patternmatching.PatternMap,org.matheclipse.core.patternmatching.PatternMap) -> equivalent
+    boolean matchPattern(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.patternmatching.PatternMap) -> matchPattern
     java.lang.String fullFormString() -> fullFormString
-    org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
     int getIndex(org.matheclipse.core.patternmatching.PatternMap) -> getIndex
     org.matheclipse.core.interfaces.ISymbol getSymbol() -> getSymbol
     int hashCode() -> hashCode
@@ -21568,19 +21656,12 @@ org.matheclipse.core.expression.Pattern -> org.matheclipse.core.expression.Patte
     int hierarchy() -> hierarchy
     java.lang.String internalFormString(boolean,int) -> internalFormString
     boolean isBlank() -> isBlank
-    boolean isCase(org.matheclipse.core.interfaces.IExpr) -> isCase
-    boolean isConditionMatched(org.matheclipse.core.interfaces.IExpr) -> isConditionMatched
-    boolean isFreeOfPatterns() -> isFreeOfPatterns
     boolean isPattern() -> isPattern
-    boolean isPatternDefault() -> isPatternDefault
-    boolean isPatternExpr() -> isPatternExpr
     java.lang.String toString() -> toString
-    org.matheclipse.core.interfaces.IExpr variables2Slots(java.util.Map,java.util.List) -> variables2Slots
     java.lang.Object writeReplace() -> writeReplace
     org.matheclipse.core.interfaces.IExpr head() -> head
     int compareTo(java.lang.Object) -> compareTo
     int compareTo(edu.jas.structure.Element) -> compareTo
-    void <clinit>() -> <clinit>
 org.matheclipse.core.expression.PatternSequence -> org.matheclipse.core.expression.PatternSequence:
     long serialVersionUID -> serialVersionUID
     org.matheclipse.core.interfaces.IExpr fCondition -> fCondition
@@ -21590,8 +21671,13 @@ org.matheclipse.core.expression.PatternSequence -> org.matheclipse.core.expressi
     org.matheclipse.core.expression.PatternSequence valueOf(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr) -> valueOf
     org.matheclipse.core.expression.PatternSequence valueOf(org.matheclipse.core.interfaces.ISymbol) -> valueOf
     void <init>() -> <init>
+    int[] addPattern(org.matheclipse.core.patternmatching.PatternMap,java.util.Map) -> addPattern
     boolean equals(java.lang.Object) -> equals
+    boolean equivalent(org.matheclipse.core.interfaces.IPatternObject,org.matheclipse.core.patternmatching.PatternMap,org.matheclipse.core.patternmatching.PatternMap) -> equivalent
+    boolean matchPattern(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.patternmatching.PatternMap) -> matchPattern
+    boolean matchPatternSequence(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.patternmatching.PatternMap) -> matchPatternSequence
     org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
+    int getEvalFlags() -> getEvalFlags
     int getIndex(org.matheclipse.core.patternmatching.PatternMap) -> getIndex
     org.matheclipse.core.interfaces.ISymbol getSymbol() -> getSymbol
     int hashCode() -> hashCode
@@ -21624,6 +21710,7 @@ org.matheclipse.core.expression.Primality -> org.matheclipse.core.expression.Pri
     void <init>() -> <init>
     java.math.BigInteger countPrimes1021(java.math.BigInteger,java.util.Map) -> countPrimes1021
     java.math.BigInteger countPrimes32749(java.math.BigInteger,java.util.Map) -> countPrimes32749
+    java.math.BigInteger countExponent(java.math.BigInteger,java.math.BigInteger) -> countExponent
     void pollardRhoFactors(java.math.BigInteger,java.util.Map) -> pollardRhoFactors
     void <clinit>() -> <clinit>
 org.matheclipse.core.expression.StringX -> org.matheclipse.core.expression.StringX:
@@ -21652,6 +21739,7 @@ org.matheclipse.core.expression.StringX -> org.matheclipse.core.expression.Strin
     boolean endsWith(java.lang.String) -> endsWith
     boolean equals(java.lang.Object) -> equals
     boolean equalsIgnoreCase(java.lang.String) -> equalsIgnoreCase
+    java.lang.String fullFormString() -> fullFormString
     byte[] getBytes() -> getBytes
     byte[] getBytes(java.lang.String) -> getBytes
     void getChars(int,int,char[],int) -> getChars
@@ -21735,6 +21823,7 @@ org.matheclipse.core.expression.Symbol -> org.matheclipse.core.expression.Symbol
     boolean isString(java.lang.String) -> isString
     org.matheclipse.core.patternmatching.IPatternMatcher putDownRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,boolean) -> putDownRule
     org.matheclipse.core.patternmatching.IPatternMatcher putDownRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,int,boolean) -> putDownRule
+    void removeRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IExpr,boolean) -> removeRule
     org.matheclipse.core.patternmatching.PatternMatcher putDownRule(org.matheclipse.core.patternmatching.PatternMatcherAndInvoker) -> putDownRule
     org.matheclipse.core.patternmatching.IPatternMatcher putUpRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr) -> putUpRule
     org.matheclipse.core.patternmatching.IPatternMatcher putUpRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr,int) -> putUpRule
@@ -21987,11 +22076,13 @@ org.matheclipse.core.form.mathml.reflection.Times -> org.matheclipse.core.form.m
     int PLUS_CALL -> PLUS_CALL
     void <init>() -> <init>
     boolean convert(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int) -> convert
-    boolean convert(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> convert
-    boolean convertMultiply(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> a
+    boolean convertTimesFraction(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> convertTimesFraction
+    boolean convertTimesOperator(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> a
 org.matheclipse.core.form.output.IConverter -> org.matheclipse.core.form.output.IConverter:
     boolean convert(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST) -> convert
 org.matheclipse.core.form.output.OutputFormFactory -> org.matheclipse.core.form.output.OutputFormFactory:
+    boolean NO_PLUS_CALL -> NO_PLUS_CALL
+    boolean PLUS_CALL -> PLUS_CALL
     boolean fRelaxedSyntax -> a
     boolean fPlusReversed -> b
     boolean fIgnoreNewLine -> c
@@ -22001,28 +22092,35 @@ org.matheclipse.core.form.output.OutputFormFactory -> org.matheclipse.core.form.
     org.matheclipse.core.form.output.OutputFormFactory get(boolean) -> get
     org.matheclipse.core.form.output.OutputFormFactory get(boolean,boolean) -> get
     org.matheclipse.core.form.output.OutputFormFactory get() -> get
-    void convertDouble(java.lang.Appendable,org.matheclipse.core.interfaces.INum,int) -> convertDouble
+    void convertDouble(java.lang.Appendable,org.matheclipse.core.interfaces.INum,int,boolean) -> convertDouble
     void convertDoubleValue(java.lang.Appendable,java.lang.String,int,boolean) -> a
-    void convertDoubleComplex(java.lang.Appendable,org.matheclipse.core.interfaces.IComplexNum,int) -> convertDoubleComplex
-    void convertApcomplex(java.lang.Appendable,org.apfloat.Apcomplex,int) -> convertApcomplex
-    void convertInteger(java.lang.Appendable,org.matheclipse.core.interfaces.IInteger,int) -> convertInteger
-    void convertFraction(java.lang.Appendable,org.apache.commons.math3.fraction.BigFraction,int) -> convertFraction
-    void convertComplex(java.lang.Appendable,org.matheclipse.core.interfaces.IComplex,int) -> convertComplex
+    void convertDoubleComplex(java.lang.Appendable,org.matheclipse.core.interfaces.IComplexNum,int,boolean) -> convertDoubleComplex
+    void convertApcomplex(java.lang.Appendable,org.apfloat.Apcomplex,int,boolean) -> convertApcomplex
+    void convertInteger(java.lang.Appendable,org.matheclipse.core.interfaces.IInteger,int,boolean) -> convertInteger
+    void convertFraction(java.lang.Appendable,org.apache.commons.math3.fraction.BigFraction,int,boolean) -> convertFraction
+    void convertComplex(java.lang.Appendable,org.matheclipse.core.interfaces.IComplex,int,boolean) -> convertComplex
     void convertString(java.lang.Appendable,java.lang.String) -> convertString
     void convertSymbol(java.lang.Appendable,org.matheclipse.core.interfaces.ISymbol) -> convertSymbol
     void convertPattern(java.lang.Appendable,org.matheclipse.core.interfaces.IPatternObject) -> convertPattern
     void convertHead(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr) -> convertHead
-    void convertPlusArgument(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr,java.lang.String,int,int,int) -> convertPlusArgument
-    void convertBinaryOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.InfixOperator,int) -> convertBinaryOperator
+    void convertPlusArgument(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr,boolean) -> convertPlusArgument
+    void convertTimesFraction(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.InfixOperator,int,boolean) -> a
+    void convertTimesOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.InfixOperator,int,boolean) -> b
+    void convertPowerOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.InfixOperator,int) -> convertPowerOperator
+    void convertInfixOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.InfixOperator,int) -> convertInfixOperator
     void convertPrefixOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.PrefixOperator,int) -> convertPrefixOperator
     void convertPostfixOperator(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,org.matheclipse.parser.client.operator.PostfixOperator,int) -> convertPostfixOperator
     void convert(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr) -> convert
-    void convertNumber(java.lang.Appendable,org.matheclipse.core.interfaces.INumber,int) -> convertNumber
+    void convertNumber(java.lang.Appendable,org.matheclipse.core.interfaces.INumber,int,boolean) -> convertNumber
     void convert(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr,int) -> convert
     void convertSlot(java.lang.Appendable,org.matheclipse.core.interfaces.IAST) -> convertSlot
     void convertList(java.lang.Appendable,org.matheclipse.core.interfaces.IAST) -> convertList
     void convertPart(java.lang.Appendable,org.matheclipse.core.interfaces.IAST) -> convertPart
+    boolean convertSeriesData(java.lang.Appendable,org.matheclipse.core.interfaces.IAST,int) -> convertSeriesData
+    boolean convertSeriesDataArg(java.lang.StringBuilder,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,boolean) -> a
+    void convertFunctionArgs(java.lang.Appendable,org.matheclipse.core.interfaces.IAST) -> convertFunctionArgs
     void convertAST(java.lang.Appendable,org.matheclipse.core.interfaces.IAST) -> convertAST
+    void convertArgs(java.lang.Appendable,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST) -> convertArgs
     void newLine(java.lang.Appendable) -> a
     void append(java.lang.Appendable,java.lang.String) -> a
     void append(java.lang.Appendable,char) -> a
@@ -22189,8 +22287,8 @@ org.matheclipse.core.form.tex.reflection.Times -> org.matheclipse.core.form.tex.
     org.matheclipse.core.form.tex.reflection.Times CONST -> CONST
     void <init>() -> <init>
     boolean convert(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int) -> convert
-    boolean convert(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> convert
-    boolean convertMultiply(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> a
+    boolean convertTimesFraction(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> convertTimesFraction
+    boolean convertTimesOperator(java.lang.StringBuffer,org.matheclipse.core.interfaces.IAST,int,int) -> a
     void <clinit>() -> <clinit>
 org.matheclipse.core.form.tex.reflection.Zeta -> org.matheclipse.core.form.tex.reflection.Zeta:
     void <init>() -> <init>
@@ -23653,6 +23751,7 @@ org.matheclipse.core.interfaces.IEvaluator -> org.matheclipse.core.interfaces.IE
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.interfaces.IExpr -> org.matheclipse.core.interfaces.IExpr:
     int ASTID -> ASTID
+    int BLANKID -> BLANKID
     int COMPLEXID -> COMPLEXID
     int DOUBLECOMPLEXID -> DOUBLECOMPLEXID
     int DOUBLEID -> DOUBLEID
@@ -23702,6 +23801,7 @@ org.matheclipse.core.interfaces.IExpr -> org.matheclipse.core.interfaces.IExpr:
     boolean isAST(java.lang.String,int) -> isAST
     boolean isASTSizeGE(org.matheclipse.core.interfaces.IExpr,int) -> isASTSizeGE
     boolean isAtom() -> isAtom
+    boolean isBlank() -> isBlank
     boolean isComplex() -> isComplex
     boolean isComplexInfinity() -> isComplexInfinity
     boolean isComplexNumeric() -> isComplexNumeric
@@ -23709,6 +23809,7 @@ org.matheclipse.core.interfaces.IExpr -> org.matheclipse.core.interfaces.IExpr:
     boolean isConstant() -> isConstant
     boolean isCos() -> isCos
     boolean isCosh() -> isCosh
+    org.matheclipse.core.interfaces.IAST[] isDerivative() -> isDerivative
     boolean isDirectedInfinity() -> isDirectedInfinity
     boolean isE() -> isE
     boolean isExpanded() -> isExpanded
@@ -23745,6 +23846,7 @@ org.matheclipse.core.interfaces.IExpr -> org.matheclipse.core.interfaces.IExpr:
     boolean isNot() -> isNot
     boolean isNumber() -> isNumber
     boolean isNumEqualInteger(org.matheclipse.core.interfaces.IInteger) -> isNumEqualInteger
+    boolean isNumEqualRational(org.matheclipse.core.interfaces.IRational) -> isNumEqualRational
     boolean isNumeric() -> isNumeric
     boolean isNumericFunction() -> isNumericFunction
     boolean isNumericMode() -> isNumericMode
@@ -23796,6 +23898,7 @@ org.matheclipse.core.interfaces.IExpr -> org.matheclipse.core.interfaces.IExpr:
     org.matheclipse.core.interfaces.IExpr multiply(org.matheclipse.core.interfaces.IExpr) -> multiply
     org.matheclipse.core.interfaces.IExpr negative() -> negative
     org.matheclipse.core.interfaces.IExpr opposite() -> opposite
+    org.matheclipse.core.interfaces.IExpr optional(org.matheclipse.core.interfaces.IExpr) -> optional
     org.matheclipse.core.interfaces.IExpr or(org.matheclipse.core.interfaces.IExpr) -> or
     org.matheclipse.core.interfaces.IExpr plus(org.matheclipse.core.interfaces.IExpr) -> plus
     org.matheclipse.core.interfaces.IExpr power(org.matheclipse.core.interfaces.IExpr) -> power
@@ -23823,6 +23926,9 @@ org.matheclipse.core.interfaces.IFraction -> org.matheclipse.core.interfaces.IFr
 org.matheclipse.core.interfaces.IInteger -> org.matheclipse.core.interfaces.IInteger:
     int PRIME_CERTAINTY -> PRIME_CERTAINTY
     org.matheclipse.core.interfaces.IInteger add(org.matheclipse.core.interfaces.IInteger) -> add
+    org.matheclipse.core.interfaces.IInteger negate() -> negate
+    org.matheclipse.core.interfaces.IInteger[] divideAndRemainder(org.matheclipse.core.interfaces.IInteger) -> divideAndRemainder
+    org.matheclipse.core.interfaces.IExpr exponent(org.matheclipse.core.interfaces.IInteger) -> exponent
     boolean isEven() -> isEven
     boolean isOdd() -> isOdd
     boolean isProbablePrime() -> isProbablePrime
@@ -23865,22 +23971,25 @@ org.matheclipse.core.interfaces.INumber -> org.matheclipse.core.interfaces.INumb
     org.matheclipse.core.interfaces.INumber ceil() -> ceil
     org.matheclipse.core.interfaces.INumber floor() -> floor
 org.matheclipse.core.interfaces.IPattern -> org.matheclipse.core.interfaces.IPattern:
-    org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
     boolean isConditionMatched(org.matheclipse.core.interfaces.IExpr) -> isConditionMatched
-    boolean isBlank() -> isBlank
-    boolean isPatternDefault() -> isPatternDefault
 org.matheclipse.core.interfaces.IPatternObject -> org.matheclipse.core.interfaces.IPatternObject:
-    org.matheclipse.core.interfaces.ISymbol getSymbol() -> getSymbol
-    int getIndex(org.matheclipse.core.patternmatching.PatternMap) -> getIndex
+    int[] addPattern(org.matheclipse.core.patternmatching.PatternMap,java.util.Map) -> addPattern
+    boolean equivalent(org.matheclipse.core.interfaces.IPatternObject,org.matheclipse.core.patternmatching.PatternMap,org.matheclipse.core.patternmatching.PatternMap) -> equivalent
     org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
+    int getEvalFlags() -> getEvalFlags
+    int getIndex(org.matheclipse.core.patternmatching.PatternMap) -> getIndex
+    org.matheclipse.core.interfaces.ISymbol getSymbol() -> getSymbol
+    boolean matchPattern(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.patternmatching.PatternMap) -> matchPattern
 org.matheclipse.core.interfaces.IPatternSequence -> org.matheclipse.core.interfaces.IPatternSequence:
     org.matheclipse.core.interfaces.IExpr getCondition() -> getCondition
+    boolean matchPatternSequence(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.patternmatching.PatternMap) -> matchPatternSequence
     boolean isConditionMatchedSequence(org.matheclipse.core.interfaces.IAST) -> isConditionMatchedSequence
-    boolean isBlank() -> isBlank
     boolean isDefault() -> isDefault
 org.matheclipse.core.interfaces.IRational -> org.matheclipse.core.interfaces.IRational:
     org.matheclipse.core.interfaces.IRational abs() -> abs
     org.matheclipse.core.interfaces.IAST factorInteger() -> factorInteger
+    java.math.BigInteger getBigDenominator() -> getBigDenominator
+    java.math.BigInteger getBigNumerator() -> getBigNumerator
     org.matheclipse.core.interfaces.IInteger getDenominator() -> getDenominator
     org.apache.commons.math3.fraction.BigFraction getFraction() -> getFraction
     org.matheclipse.core.interfaces.IInteger getNumerator() -> getNumerator
@@ -23942,6 +24051,7 @@ org.matheclipse.core.interfaces.ISymbol -> org.matheclipse.core.interfaces.ISymb
     org.matheclipse.core.patternmatching.IPatternMatcher putDownRule(org.matheclipse.core.patternmatching.PatternMatcherAndInvoker) -> putDownRule
     org.matheclipse.core.patternmatching.IPatternMatcher putUpRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr) -> putUpRule
     org.matheclipse.core.patternmatching.IPatternMatcher putUpRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr,int) -> putUpRule
+    void removeRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IExpr,boolean) -> removeRule
     org.matheclipse.core.interfaces.IExpr evalDownRule(org.matheclipse.core.interfaces.IEvaluationEngine,org.matheclipse.core.interfaces.IExpr) -> evalDownRule
     org.matheclipse.core.interfaces.IExpr evalUpRule(org.matheclipse.core.interfaces.IEvaluationEngine,org.matheclipse.core.interfaces.IExpr) -> evalUpRule
     org.matheclipse.core.interfaces.IExpr getDefaultValue() -> getDefaultValue
@@ -24004,6 +24114,7 @@ org.matheclipse.core.patternmatching.DownRulesData -> org.matheclipse.core.patte
     com.google.common.collect.TreeMultimap getSimplePatternDownRules() -> a
     com.google.common.collect.TreeMultimap getSimpleOrderlessPatternDownRules() -> b
     java.util.List definition() -> definition
+    void removeRule(org.matheclipse.core.interfaces.ISymbol$RuleType,boolean,org.matheclipse.core.interfaces.IExpr) -> removeRule
     java.lang.String toString() -> toString
 org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor -> org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor:
     int[] multiset -> multiset
@@ -24131,8 +24242,6 @@ org.matheclipse.core.patternmatching.PatternMatcher -> org.matheclipse.core.patt
     boolean matchASTSequence(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,int,org.matheclipse.core.patternmatching.PatternMatcher$StackMatcher) -> a
     org.matheclipse.core.interfaces.IExpr evalAST(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.patternmatching.PatternMatcher$StackMatcher) -> evalAST
     void logConditionFalse(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> logConditionFalse
-    boolean matchPattern(org.matheclipse.core.interfaces.IPattern,org.matheclipse.core.interfaces.IExpr) -> a
-    boolean matchPatternSequence(org.matheclipse.core.interfaces.IPatternSequence,org.matheclipse.core.interfaces.IAST) -> a
     org.matheclipse.core.interfaces.IExpr eval(org.matheclipse.core.interfaces.IExpr) -> eval
     boolean equals(java.lang.Object) -> equals
     int hashCode() -> hashCode
@@ -24147,8 +24256,6 @@ org.matheclipse.core.patternmatching.PatternMatcher -> org.matheclipse.core.patt
     void readExternal(java.io.ObjectInput) -> readExternal
     boolean apply(java.lang.Object) -> apply
     int compareTo(java.lang.Object) -> compareTo
-    boolean access$000(org.matheclipse.core.patternmatching.PatternMatcher,org.matheclipse.core.interfaces.IPattern,org.matheclipse.core.interfaces.IExpr) -> access$000
-    boolean access$100(org.matheclipse.core.patternmatching.PatternMatcher,org.matheclipse.core.interfaces.IPatternSequence,org.matheclipse.core.interfaces.IAST) -> access$100
 org.matheclipse.core.patternmatching.PatternMatcher$Entry -> nf:
     org.matheclipse.core.interfaces.IExpr fPatternExpr -> a
     org.matheclipse.core.interfaces.IExpr fEvalExpr -> b
@@ -25060,7 +25167,7 @@ org.matheclipse.core.reflection.system.Apart -> org.matheclipse.core.reflection.
     org.matheclipse.core.interfaces.IExpr partialFractionDecompositionRational(org.matheclipse.core.polynomials.IPartialFractionGenerator,org.matheclipse.core.interfaces.IExpr[],org.matheclipse.core.interfaces.ISymbol) -> partialFractionDecompositionRational
     org.matheclipse.core.interfaces.IExpr[] getFractionalPartsRational(org.matheclipse.core.interfaces.IExpr) -> getFractionalPartsRational
     org.matheclipse.core.interfaces.IExpr[] getFractionalParts(org.matheclipse.core.interfaces.IExpr) -> getFractionalParts
-    org.matheclipse.core.interfaces.IExpr[] getFractionalPartsTimes(org.matheclipse.core.interfaces.IAST,boolean) -> getFractionalPartsTimes
+    org.matheclipse.core.interfaces.IExpr[] getFractionalPartsTimes(org.matheclipse.core.interfaces.IAST,boolean,boolean,boolean) -> getFractionalPartsTimes
     org.matheclipse.core.interfaces.IExpr getFractionalPartsPower(org.matheclipse.core.interfaces.IAST) -> getFractionalPartsPower
 org.matheclipse.core.reflection.system.ArcCos -> org.matheclipse.core.reflection.system.ArcCos:
     org.matheclipse.core.interfaces.IAST getRuleAST() -> getRuleAST
@@ -25168,6 +25275,7 @@ org.matheclipse.core.reflection.system.ArrayDepth -> org.matheclipse.core.reflec
 org.matheclipse.core.reflection.system.BernoulliB -> org.matheclipse.core.reflection.system.BernoulliB:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    org.matheclipse.core.interfaces.IFraction bernoulliNumber(org.matheclipse.core.interfaces.IInteger) -> bernoulliNumber
     org.apache.commons.math3.fraction.BigFraction bernoulliNumber(java.math.BigInteger) -> bernoulliNumber
     org.apache.commons.math3.fraction.BigFraction bernoulliNumber(int) -> bernoulliNumber
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
@@ -25365,7 +25473,7 @@ org.matheclipse.core.reflection.system.Coth -> org.matheclipse.core.reflection.s
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.reflection.system.Cross -> org.matheclipse.core.reflection.system.Cross:
     void <init>() -> <init>
-    org.matheclipse.core.interfaces.IExpr e2ObjArg(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> e2ObjArg
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.Csc -> org.matheclipse.core.reflection.system.Csc:
     org.matheclipse.core.interfaces.IAST getRuleAST() -> getRuleAST
     void <init>() -> <init>
@@ -25391,6 +25499,7 @@ org.matheclipse.core.reflection.system.Curl -> org.matheclipse.core.reflection.s
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.D -> org.matheclipse.core.reflection.system.D:
     void <init>() -> <init>
+    org.matheclipse.core.interfaces.IAST createDerivative(int,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> a
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.Decrement -> org.matheclipse.core.reflection.system.Decrement:
     void <init>() -> <init>
@@ -25419,10 +25528,16 @@ org.matheclipse.core.reflection.system.Denominator -> org.matheclipse.core.refle
     org.matheclipse.core.interfaces.IAST getDenominatorForm(org.matheclipse.core.interfaces.IAST) -> getDenominatorForm
     void <clinit>() -> <clinit>
 org.matheclipse.core.reflection.system.Derivative -> org.matheclipse.core.reflection.system.Derivative:
-    org.matheclipse.core.interfaces.IAST getRuleAST() -> getRuleAST
+    java.util.Map DERIVATIVE_1_MAP -> a
+    java.util.Map DERIVATIVE_2_MAP -> b
+    java.util.Map DERIVATIVE_N_MAP -> c
+    java.util.Map DERIVATIVE_N_M_MAP -> d
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    org.matheclipse.core.interfaces.IExpr derivative(int,org.matheclipse.core.interfaces.ISymbol) -> derivative
+    org.matheclipse.core.interfaces.IExpr derivative(int,int,org.matheclipse.core.interfaces.ISymbol) -> derivative
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+    void <clinit>() -> <clinit>
 org.matheclipse.core.reflection.system.Det -> org.matheclipse.core.reflection.system.Det:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr matrixEval(org.matheclipse.commons.math.linear.FieldMatrix) -> matrixEval
@@ -25620,6 +25735,7 @@ org.matheclipse.core.reflection.system.FactorTerms -> org.matheclipse.core.refle
 org.matheclipse.core.reflection.system.Factorial -> org.matheclipse.core.reflection.system.Factorial:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr e1DblArg(double) -> e1DblArg
+    org.matheclipse.core.interfaces.IInteger factorial(org.matheclipse.core.interfaces.IInteger) -> factorial
     java.math.BigInteger factorial(java.math.BigInteger) -> factorial
     org.matheclipse.core.interfaces.IExpr evaluateArg1(org.matheclipse.core.interfaces.IExpr) -> evaluateArg1
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
@@ -25733,6 +25849,10 @@ org.matheclipse.core.reflection.system.HarmonicNumber -> org.matheclipse.core.re
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
     org.apache.commons.math3.fraction.BigFraction harmonicNumber(int) -> harmonicNumber
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+org.matheclipse.core.reflection.system.Haversine -> org.matheclipse.core.reflection.system.Haversine:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.reflection.system.HermiteH -> org.matheclipse.core.reflection.system.HermiteH:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -25781,6 +25901,10 @@ org.matheclipse.core.reflection.system.Inner$InnerAlgorithm -> nE:
     void <init>(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr) -> <init>
     org.matheclipse.core.interfaces.IAST recursion(java.util.ArrayList,java.util.ArrayList,java.util.List,java.util.List) -> a
     void <init>(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr,byte) -> <init>
+org.matheclipse.core.reflection.system.IntegerExponent -> org.matheclipse.core.reflection.system.IntegerExponent:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.reflection.system.IntegerPart -> org.matheclipse.core.reflection.system.IntegerPart:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -25860,6 +25984,10 @@ org.matheclipse.core.reflection.system.InverseFunction -> org.matheclipse.core.r
     org.matheclipse.core.interfaces.IAST getUnaryInverseFunction(org.matheclipse.core.interfaces.IAST) -> getUnaryInverseFunction
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
     void <clinit>() -> <clinit>
+org.matheclipse.core.reflection.system.InverseHaversine -> org.matheclipse.core.reflection.system.InverseHaversine:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
+    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
 org.matheclipse.core.reflection.system.JacobiMatrix -> org.matheclipse.core.reflection.system.JacobiMatrix:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -25941,15 +26069,24 @@ org.matheclipse.core.reflection.system.Level -> org.matheclipse.core.reflection.
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.Limit -> org.matheclipse.core.reflection.system.Limit:
-    org.matheclipse.core.interfaces.IExpr lHospitalesRule(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,int) -> a
-    org.matheclipse.core.interfaces.IExpr evalLimit(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,int,boolean) -> evalLimit
-    org.matheclipse.core.interfaces.IExpr plusLimit(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST) -> plusLimit
-    org.matheclipse.core.interfaces.IExpr timesLimit(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,int,org.matheclipse.core.interfaces.IAST) -> timesLimit
+    int DIRECTION_FROM_LARGER_VALUES -> DIRECTION_FROM_LARGER_VALUES
+    int DIRECTION_AUTOMATIC -> DIRECTION_AUTOMATIC
+    int DIRECTION_FROM_SMALLER_VALUES -> DIRECTION_FROM_SMALLER_VALUES
+    org.matheclipse.core.interfaces.IExpr evalLimitQuiet(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.reflection.system.Limit$LimitData) -> a
+    org.matheclipse.core.interfaces.IExpr evalLimit(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.reflection.system.Limit$LimitData,boolean) -> a
+    org.matheclipse.core.interfaces.IExpr lHospitalesRule(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.reflection.system.Limit$LimitData) -> a
     org.matheclipse.core.interfaces.IExpr mapLimit(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST) -> a
-    org.matheclipse.core.interfaces.IExpr numeratorDenominatorLimit(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,int) -> b
+    org.matheclipse.core.interfaces.IExpr numeratorDenominatorLimit(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.reflection.system.Limit$LimitData) -> b
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     org.matheclipse.core.interfaces.IAST getRuleAST() -> getRuleAST
+org.matheclipse.core.reflection.system.Limit$LimitData -> nG:
+    org.matheclipse.core.interfaces.ISymbol symbol -> a
+    org.matheclipse.core.interfaces.IExpr limitValue -> a
+    org.matheclipse.core.interfaces.IAST rule -> a
+    int direction -> a
+    void <init>(org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IAST,int) -> <init>
+    java.lang.Object clone() -> clone
 org.matheclipse.core.reflection.system.LinearProgramming -> org.matheclipse.core.reflection.system.LinearProgramming:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -25970,7 +26107,7 @@ org.matheclipse.core.reflection.system.Log -> org.matheclipse.core.reflection.sy
     double evalReal(double[],int,int) -> evalReal
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
     org.matheclipse.core.interfaces.IExpr e1ObjArg(org.matheclipse.core.interfaces.IExpr) -> e1ObjArg
-org.matheclipse.core.reflection.system.Log$1 -> nG:
+org.matheclipse.core.reflection.system.Log$1 -> nH:
     void <init>() -> <init>
     java.lang.Object apply(java.lang.Object,java.lang.Object) -> apply
 org.matheclipse.core.reflection.system.Log10 -> org.matheclipse.core.reflection.system.Log10:
@@ -26001,7 +26138,7 @@ org.matheclipse.core.reflection.system.MapAll -> org.matheclipse.core.reflection
 org.matheclipse.core.reflection.system.MapThread -> org.matheclipse.core.reflection.system.MapThread:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.reflection.system.MapThread$UnaryMapThread -> nH:
+org.matheclipse.core.reflection.system.MapThread$UnaryMapThread -> nI:
     org.matheclipse.core.interfaces.IExpr fConstant -> a
     void <init>(org.matheclipse.core.interfaces.IExpr) -> <init>
     java.lang.Object apply(java.lang.Object) -> apply
@@ -26085,7 +26222,7 @@ org.matheclipse.core.reflection.system.NSolve -> org.matheclipse.core.reflection
     org.matheclipse.core.interfaces.IAST analyzeSublist(java.util.ArrayList,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST) -> a
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.reflection.system.NSolve$ExprAnalyzer -> nI:
+org.matheclipse.core.reflection.system.NSolve$ExprAnalyzer -> nJ:
     int equationType -> a
     org.matheclipse.core.interfaces.IExpr expr -> a
     org.matheclipse.core.interfaces.IExpr numer -> b
@@ -26127,8 +26264,9 @@ org.matheclipse.core.reflection.system.NonNegative -> org.matheclipse.core.refle
 org.matheclipse.core.reflection.system.Norm -> org.matheclipse.core.reflection.system.Norm:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-    org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
-    void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+org.matheclipse.core.reflection.system.Normalize -> org.matheclipse.core.reflection.system.Normalize:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.Not -> org.matheclipse.core.reflection.system.Not:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr e1ObjArg(org.matheclipse.core.interfaces.IExpr) -> e1ObjArg
@@ -26158,7 +26296,7 @@ org.matheclipse.core.reflection.system.Out -> org.matheclipse.core.reflection.sy
 org.matheclipse.core.reflection.system.Outer -> org.matheclipse.core.reflection.system.Outer:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.reflection.system.Outer$OuterAlgorithm -> nJ:
+org.matheclipse.core.reflection.system.Outer$OuterAlgorithm -> nK:
     org.matheclipse.core.interfaces.IAST ast -> a
     org.matheclipse.core.interfaces.IExpr f -> a
     org.matheclipse.core.interfaces.IExpr head -> b
@@ -26297,6 +26435,7 @@ org.matheclipse.core.reflection.system.Power -> org.matheclipse.core.reflection.
     org.matheclipse.core.interfaces.IExpr e2DblArg(org.matheclipse.core.interfaces.INum,org.matheclipse.core.interfaces.INum) -> e2DblArg
     org.matheclipse.core.interfaces.IExpr e2IntArg(org.matheclipse.core.interfaces.IInteger,org.matheclipse.core.interfaces.IInteger) -> e2IntArg
     org.matheclipse.core.interfaces.IExpr e2ObjArg(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> e2ObjArg
+    org.matheclipse.core.interfaces.IExpr e2NumberDirectedInfinity(org.matheclipse.core.interfaces.INumber,org.matheclipse.core.interfaces.IAST) -> a
     org.matheclipse.core.interfaces.IExpr e2FraArg(org.matheclipse.core.interfaces.IFraction,org.matheclipse.core.interfaces.IFraction) -> e2FraArg
     org.matheclipse.core.interfaces.IInteger[] calculateRoot(org.matheclipse.core.interfaces.IInteger,org.matheclipse.core.interfaces.IInteger) -> a
     org.matheclipse.core.interfaces.IExpr eComIntArg(org.matheclipse.core.interfaces.IComplex,org.matheclipse.core.interfaces.IInteger) -> eComIntArg
@@ -26309,7 +26448,7 @@ org.matheclipse.core.reflection.system.PowerExpand -> org.matheclipse.core.refle
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     org.matheclipse.core.interfaces.IExpr powerExpand(org.matheclipse.core.interfaces.IAST,boolean) -> powerExpand
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
-org.matheclipse.core.reflection.system.PowerExpand$PowerExpandVisitor -> nK:
+org.matheclipse.core.reflection.system.PowerExpand$PowerExpandVisitor -> nL:
     boolean assumptions -> a
     void <init>(boolean) -> <init>
     org.matheclipse.core.interfaces.IExpr visit2(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> visit2
@@ -26327,7 +26466,7 @@ org.matheclipse.core.reflection.system.PreIncrement -> org.matheclipse.core.refl
     void <init>() -> <init>
     com.google.common.base.Function getFunction() -> getFunction
     org.matheclipse.core.interfaces.ISymbol getFunctionSymbol() -> getFunctionSymbol
-org.matheclipse.core.reflection.system.PreIncrement$IncrementFunction -> nL:
+org.matheclipse.core.reflection.system.PreIncrement$IncrementFunction -> nM:
     void <init>(org.matheclipse.core.reflection.system.PreIncrement) -> <init>
     java.lang.Object apply(java.lang.Object) -> apply
 org.matheclipse.core.reflection.system.Prime -> org.matheclipse.core.reflection.system.Prime:
@@ -26393,30 +26532,6 @@ org.matheclipse.core.reflection.system.Re -> org.matheclipse.core.reflection.sys
     org.matheclipse.core.interfaces.IExpr rePowerComplex(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> a
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
-org.matheclipse.core.reflection.system.Reduce -> org.matheclipse.core.reflection.system.Reduce:
-    org.matheclipse.core.interfaces.IExpr extractVariable(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,com.google.common.base.Predicate,org.matheclipse.core.interfaces.ISymbol) -> extractVariable
-    void <init>() -> <init>
-    org.matheclipse.core.interfaces.IAST eliminateOneVariable(java.util.ArrayList,org.matheclipse.core.interfaces.ISymbol) -> eliminateOneVariable
-    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.reflection.system.Reduce$VariableCounterVisitor -> nM:
-    int fVariableCounter -> a
-    int fNodeCounter -> b
-    int fMaxVariableDepth -> c
-    int fCurrentDepth -> d
-    org.matheclipse.core.interfaces.IExpr fVariable -> a
-    org.matheclipse.core.interfaces.IAST fExpr -> a
-    void <init>(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IExpr) -> <init>
-    boolean visit(org.matheclipse.core.interfaces.IAST) -> visit
-    boolean visit(org.matheclipse.core.interfaces.ISymbol) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IInteger) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IFraction) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IComplex) -> visit
-    boolean visit(org.matheclipse.core.interfaces.INum) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IComplexNum) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IPattern) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IPatternSequence) -> visit
-    boolean visit(org.matheclipse.core.interfaces.IStringX) -> visit
-    int compareTo(java.lang.Object) -> compareTo
 org.matheclipse.core.reflection.system.ReplaceAll -> org.matheclipse.core.reflection.system.ReplaceAll:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -26590,6 +26705,10 @@ org.matheclipse.core.reflection.system.Solve$ExprAnalyzer -> nP:
     void getTimesArgumentEquationType(org.matheclipse.core.interfaces.IExpr) -> b
     void reset() -> b
     int compareTo(java.lang.Object) -> compareTo
+org.matheclipse.core.reflection.system.Solve$IsWrongSolveExpression -> nQ:
+    org.matheclipse.core.interfaces.IExpr wrongExpr -> a
+    void <init>(org.matheclipse.core.reflection.system.Solve) -> <init>
+    boolean apply(java.lang.Object) -> apply
 org.matheclipse.core.reflection.system.Solve$NoSolution -> org.matheclipse.core.reflection.system.Solve$NoSolution:
     int NO_SOLUTION_FOUND -> NO_SOLUTION_FOUND
     int WRONG_SOLUTION -> WRONG_SOLUTION
@@ -26668,7 +26787,7 @@ org.matheclipse.core.reflection.system.Subsets$KSubsetsList -> org.matheclipse.c
 org.matheclipse.core.reflection.system.SubtractFrom -> org.matheclipse.core.reflection.system.SubtractFrom:
     void <init>() -> <init>
     com.google.common.base.Function getFunction(org.matheclipse.core.interfaces.IExpr) -> getFunction
-org.matheclipse.core.reflection.system.SubtractFrom$SubtractFromFunction -> nQ:
+org.matheclipse.core.reflection.system.SubtractFrom$SubtractFromFunction -> nR:
     org.matheclipse.core.interfaces.IExpr value -> a
     void <init>(org.matheclipse.core.reflection.system.SubtractFrom,org.matheclipse.core.interfaces.IExpr) -> <init>
     java.lang.Object apply(java.lang.Object) -> apply
@@ -26681,11 +26800,11 @@ org.matheclipse.core.reflection.system.Sum -> org.matheclipse.core.reflection.sy
     org.matheclipse.core.interfaces.IExpr sumPower(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.ISymbol,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> sumPower
     org.matheclipse.core.interfaces.IExpr sumPowerFormula(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IInteger) -> sumPowerFormula
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
-org.matheclipse.core.reflection.system.Sum$1 -> nR:
+org.matheclipse.core.reflection.system.Sum$1 -> nS:
     org.matheclipse.core.interfaces.ISymbol val$var -> a
     void <init>(org.matheclipse.core.reflection.system.Sum,org.matheclipse.core.interfaces.ISymbol) -> <init>
     boolean apply(java.lang.Object) -> apply
-org.matheclipse.core.reflection.system.Sum$2 -> nS:
+org.matheclipse.core.reflection.system.Sum$2 -> nT:
     org.matheclipse.core.interfaces.ISymbol val$var -> a
     void <init>(org.matheclipse.core.reflection.system.Sum,org.matheclipse.core.interfaces.ISymbol) -> <init>
     boolean apply(java.lang.Object) -> apply
@@ -26771,7 +26890,7 @@ org.matheclipse.core.reflection.system.Times -> org.matheclipse.core.reflection.
 org.matheclipse.core.reflection.system.TimesBy -> org.matheclipse.core.reflection.system.TimesBy:
     void <init>() -> <init>
     com.google.common.base.Function getFunction(org.matheclipse.core.interfaces.IExpr) -> getFunction
-org.matheclipse.core.reflection.system.TimesBy$TimesByFunction -> nT:
+org.matheclipse.core.reflection.system.TimesBy$TimesByFunction -> nU:
     org.matheclipse.core.interfaces.IExpr value -> a
     void <init>(org.matheclipse.core.reflection.system.TimesBy,org.matheclipse.core.interfaces.IExpr) -> <init>
     java.lang.Object apply(java.lang.Object) -> apply
@@ -26798,8 +26917,8 @@ org.matheclipse.core.reflection.system.Together -> org.matheclipse.core.reflecti
     org.matheclipse.core.interfaces.IExpr together(org.matheclipse.core.interfaces.IAST) -> together
     org.matheclipse.core.interfaces.IAST togetherForEach(org.matheclipse.core.interfaces.IAST,org.matheclipse.core.interfaces.IAST) -> a
     org.matheclipse.core.interfaces.IExpr togetherNull(org.matheclipse.core.interfaces.IAST) -> a
-    org.matheclipse.core.interfaces.IAST togetherPlus(org.matheclipse.core.interfaces.IAST) -> a
-    org.matheclipse.core.interfaces.IExpr togetherPlusTimesPower(org.matheclipse.core.interfaces.IAST) -> b
+    org.matheclipse.core.interfaces.IExpr togetherPlus(org.matheclipse.core.interfaces.IAST) -> b
+    org.matheclipse.core.interfaces.IExpr togetherPlusTimesPower(org.matheclipse.core.interfaces.IAST) -> c
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
@@ -26832,7 +26951,7 @@ org.matheclipse.core.reflection.system.TrigReduce -> org.matheclipse.core.reflec
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
     org.matheclipse.core.patternmatching.HashedOrderlessMatcher access$000() -> a
     void <clinit>() -> <clinit>
-org.matheclipse.core.reflection.system.TrigReduce$TrigReduceVisitor -> nU:
+org.matheclipse.core.reflection.system.TrigReduce$TrigReduceVisitor -> nV:
     void <init>(org.matheclipse.core.reflection.system.TrigReduce) -> <init>
     org.matheclipse.core.interfaces.IExpr visit(org.matheclipse.core.interfaces.IAST) -> visit
     java.lang.Object visit(org.matheclipse.core.interfaces.IAST) -> visit
@@ -26841,7 +26960,7 @@ org.matheclipse.core.reflection.system.TrigToExp -> org.matheclipse.core.reflect
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     org.matheclipse.core.interfaces.IExpr numericEval(org.matheclipse.core.interfaces.IAST) -> numericEval
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
-org.matheclipse.core.reflection.system.TrigToExp$TrigToExpVisitor -> nV:
+org.matheclipse.core.reflection.system.TrigToExp$TrigToExpVisitor -> nW:
     void <init>(org.matheclipse.core.reflection.system.TrigToExp) -> <init>
     org.matheclipse.core.interfaces.IExpr visit2(org.matheclipse.core.interfaces.IExpr,org.matheclipse.core.interfaces.IExpr) -> visit2
 org.matheclipse.core.reflection.system.TrueQ -> org.matheclipse.core.reflection.system.TrueQ:
@@ -26881,7 +27000,7 @@ org.matheclipse.core.reflection.system.UpperCaseQ -> org.matheclipse.core.reflec
 org.matheclipse.core.reflection.system.VandermondeMatrix -> org.matheclipse.core.reflection.system.VandermondeMatrix:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
-org.matheclipse.core.reflection.system.VandermondeMatrix$1 -> nW:
+org.matheclipse.core.reflection.system.VandermondeMatrix$1 -> nX:
     org.matheclipse.core.interfaces.IAST val$lst -> a
     void <init>(org.matheclipse.core.reflection.system.VandermondeMatrix,org.matheclipse.core.interfaces.IAST) -> <init>
     java.lang.Object evaluate(int[]) -> evaluate
@@ -26889,6 +27008,9 @@ org.matheclipse.core.reflection.system.Variables -> org.matheclipse.core.reflect
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
     void setUp(org.matheclipse.core.interfaces.ISymbol) -> setUp
+org.matheclipse.core.reflection.system.VectorAngle -> org.matheclipse.core.reflection.system.VectorAngle:
+    void <init>() -> <init>
+    org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
 org.matheclipse.core.reflection.system.VectorQ -> org.matheclipse.core.reflection.system.VectorQ:
     void <init>() -> <init>
     org.matheclipse.core.interfaces.IExpr evaluate(org.matheclipse.core.interfaces.IAST) -> evaluate
@@ -26955,7 +27077,10 @@ org.matheclipse.core.reflection.system.rules.CschRules -> org.matheclipse.core.r
     org.matheclipse.core.interfaces.IAST RULES -> RULES
     void <clinit>() -> <clinit>
 org.matheclipse.core.reflection.system.rules.DerivativeRules -> org.matheclipse.core.reflection.system.rules.DerivativeRules:
-    org.matheclipse.core.interfaces.IAST RULES -> RULES
+    org.matheclipse.core.interfaces.IAST RULES1 -> RULES1
+    org.matheclipse.core.interfaces.IAST RULES2 -> RULES2
+    org.matheclipse.core.interfaces.IAST RULES3 -> RULES3
+    org.matheclipse.core.interfaces.IAST RULES4 -> RULES4
     void <clinit>() -> <clinit>
 org.matheclipse.core.reflection.system.rules.LimitRules -> org.matheclipse.core.reflection.system.rules.LimitRules:
     org.matheclipse.core.interfaces.IAST RULES -> RULES
@@ -27628,75 +27753,75 @@ org.matheclipse.parser.client.eval.ComplexEvalVisitor -> org.matheclipse.parser.
     java.lang.Object getVariable(java.lang.String) -> getVariable
     void defineVariable(java.lang.String,java.lang.Object) -> defineVariable
     void <clinit>() -> <clinit>
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$1 -> nX:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$1 -> nY:
     void <init>() -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$10 -> nY:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$10 -> nZ:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$11 -> nZ:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$11 -> oa:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$12 -> oa:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$12 -> ob:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$13 -> ob:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$13 -> oc:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$14 -> oc:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$14 -> od:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$15 -> od:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$15 -> oe:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$16 -> oe:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$16 -> of:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$17 -> of:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$17 -> og:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$2 -> og:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$2 -> oh:
     void <init>() -> <init>
     boolean evaluate(boolean) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$3 -> oh:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$3 -> oi:
     void <init>() -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$4 -> oi:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$4 -> oj:
     void <init>() -> <init>
     boolean evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$5 -> oj:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$5 -> ok:
     void <init>() -> <init>
     boolean evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$6 -> ok:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$6 -> ol:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate() -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$7 -> ol:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$7 -> om:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$8 -> om:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$8 -> on:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$9 -> on:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$9 -> oo:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$ArcTanFunction -> oo:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$ArcTanFunction -> op:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$CompoundExpressionFunction -> op:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$CompoundExpressionFunction -> oq:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.eval.api.IEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$LogFunction -> oq:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$LogFunction -> or:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex) -> evaluate
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$PlusFunction -> or:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$PlusFunction -> os:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.eval.api.IEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$SetFunction -> os:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$SetFunction -> ot:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.eval.api.IEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.ComplexEvalVisitor$TimesFunction -> ot:
+org.matheclipse.parser.client.eval.ComplexEvalVisitor$TimesFunction -> ou:
     void <init>() -> <init>
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.math.Complex,org.matheclipse.parser.client.math.Complex) -> evaluate
     org.matheclipse.parser.client.math.Complex evaluate(org.matheclipse.parser.client.eval.api.IEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
@@ -27762,108 +27887,108 @@ org.matheclipse.parser.client.eval.DoubleEvaluator -> org.matheclipse.parser.cli
     void getVariables(java.lang.String,java.util.Set,boolean) -> getVariables
     void getVariables(org.matheclipse.parser.client.ast.ASTNode,java.util.Set) -> getVariables
     void <clinit>() -> <clinit>
-org.matheclipse.parser.client.eval.DoubleEvaluator$1 -> ou:
+org.matheclipse.parser.client.eval.DoubleEvaluator$1 -> ov:
     void <init>() -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$10 -> ov:
+org.matheclipse.parser.client.eval.DoubleEvaluator$10 -> ow:
     void <init>() -> <init>
     double evaluate() -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$11 -> ow:
+org.matheclipse.parser.client.eval.DoubleEvaluator$11 -> ox:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$12 -> ox:
+org.matheclipse.parser.client.eval.DoubleEvaluator$12 -> oy:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$13 -> oy:
+org.matheclipse.parser.client.eval.DoubleEvaluator$13 -> oz:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$14 -> oz:
+org.matheclipse.parser.client.eval.DoubleEvaluator$14 -> oA:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$15 -> oA:
+org.matheclipse.parser.client.eval.DoubleEvaluator$15 -> oB:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$16 -> oB:
+org.matheclipse.parser.client.eval.DoubleEvaluator$16 -> oC:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$17 -> oC:
+org.matheclipse.parser.client.eval.DoubleEvaluator$17 -> oD:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$18 -> oD:
+org.matheclipse.parser.client.eval.DoubleEvaluator$18 -> oE:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$19 -> oE:
+org.matheclipse.parser.client.eval.DoubleEvaluator$19 -> oF:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$2 -> oF:
+org.matheclipse.parser.client.eval.DoubleEvaluator$2 -> oG:
     void <init>() -> <init>
     boolean evaluate(boolean) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$20 -> oG:
+org.matheclipse.parser.client.eval.DoubleEvaluator$20 -> oH:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$21 -> oH:
+org.matheclipse.parser.client.eval.DoubleEvaluator$21 -> oI:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$22 -> oI:
+org.matheclipse.parser.client.eval.DoubleEvaluator$22 -> oJ:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$23 -> oJ:
+org.matheclipse.parser.client.eval.DoubleEvaluator$23 -> oK:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$24 -> oK:
+org.matheclipse.parser.client.eval.DoubleEvaluator$24 -> oL:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$25 -> oL:
+org.matheclipse.parser.client.eval.DoubleEvaluator$25 -> oM:
     void <init>() -> <init>
     double evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$3 -> oM:
+org.matheclipse.parser.client.eval.DoubleEvaluator$3 -> oN:
     void <init>() -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$4 -> oN:
+org.matheclipse.parser.client.eval.DoubleEvaluator$4 -> oO:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$5 -> oO:
+org.matheclipse.parser.client.eval.DoubleEvaluator$5 -> oP:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$6 -> oP:
+org.matheclipse.parser.client.eval.DoubleEvaluator$6 -> oQ:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$7 -> oQ:
+org.matheclipse.parser.client.eval.DoubleEvaluator$7 -> oR:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$8 -> oR:
+org.matheclipse.parser.client.eval.DoubleEvaluator$8 -> oS:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$9 -> oS:
+org.matheclipse.parser.client.eval.DoubleEvaluator$9 -> oT:
     void <init>() -> <init>
     boolean evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$ArcTanFunction -> oT:
+org.matheclipse.parser.client.eval.DoubleEvaluator$ArcTanFunction -> oU:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
     double evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$CompoundExpressionFunction -> oU:
+org.matheclipse.parser.client.eval.DoubleEvaluator$CompoundExpressionFunction -> oV:
     void <init>() -> <init>
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$LogFunction -> oV:
+org.matheclipse.parser.client.eval.DoubleEvaluator$LogFunction -> oW:
     void <init>() -> <init>
     double evaluate(double) -> evaluate
     double evaluate(double,double) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$MaxFunction -> oW:
+org.matheclipse.parser.client.eval.DoubleEvaluator$MaxFunction -> oX:
     void <init>() -> <init>
     double evaluate(double,double) -> evaluate
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$MinFunction -> oX:
+org.matheclipse.parser.client.eval.DoubleEvaluator$MinFunction -> oY:
     void <init>() -> <init>
     double evaluate(double,double) -> evaluate
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$PlusFunction -> oY:
+org.matheclipse.parser.client.eval.DoubleEvaluator$PlusFunction -> oZ:
     void <init>() -> <init>
     double evaluate(double,double) -> evaluate
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$SetFunction -> oZ:
+org.matheclipse.parser.client.eval.DoubleEvaluator$SetFunction -> pa:
     void <init>() -> <init>
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.DoubleEvaluator$TimesFunction -> pa:
+org.matheclipse.parser.client.eval.DoubleEvaluator$TimesFunction -> pb:
     void <init>() -> <init>
     double evaluate(double,double) -> evaluate
     double evaluate(org.matheclipse.parser.client.eval.DoubleEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
@@ -27998,103 +28123,103 @@ org.matheclipse.parser.client.eval.dfp.DfpEvaluator -> org.matheclipse.parser.cl
     void getVariables(java.lang.String,java.util.Set,boolean) -> getVariables
     void getVariables(org.matheclipse.parser.client.ast.ASTNode,java.util.Set) -> getVariables
     org.apache.commons.math3.dfp.DfpField access$000(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> a
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$1 -> pb:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$1 -> pc:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$10 -> pc:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$10 -> pd:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$11 -> pd:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$11 -> pe:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$12 -> pe:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$12 -> pf:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$13 -> pf:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$13 -> pg:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$14 -> pg:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$14 -> ph:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$15 -> ph:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$15 -> pi:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$16 -> pi:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$16 -> pj:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$17 -> pj:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$17 -> pk:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$18 -> pk:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$18 -> pl:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$19 -> pl:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$19 -> pm:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$2 -> pm:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$2 -> pn:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(boolean) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$20 -> pn:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$20 -> po:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$21 -> po:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$21 -> pp:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$22 -> pp:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$22 -> pq:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$23 -> pq:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$23 -> pr:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$3 -> pr:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$3 -> ps:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(boolean,boolean) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$4 -> ps:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$4 -> pt:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$5 -> pt:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$5 -> pu:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$6 -> pu:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$6 -> pv:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$7 -> pv:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$7 -> pw:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$8 -> pw:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$8 -> px:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$9 -> px:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$9 -> py:
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     boolean evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$ArcTanFunction -> py:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$ArcTanFunction -> pz:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$CompoundExpressionFunction -> pz:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$CompoundExpressionFunction -> pA:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.matheclipse.parser.client.eval.dfp.DfpEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$LogFunction -> pA:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$LogFunction -> pB:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp) -> evaluate
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$MaxFunction -> pB:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$MaxFunction -> pC:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
     org.apache.commons.math3.dfp.Dfp evaluate(org.matheclipse.parser.client.eval.dfp.DfpEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$MinFunction -> pC:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$MinFunction -> pD:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
     org.apache.commons.math3.dfp.Dfp evaluate(org.matheclipse.parser.client.eval.dfp.DfpEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$PlusFunction -> pD:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$PlusFunction -> pE:
     org.matheclipse.parser.client.eval.dfp.DfpEvaluator this$0 -> a
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
     org.apache.commons.math3.dfp.Dfp evaluate(org.matheclipse.parser.client.eval.dfp.DfpEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$SetFunction -> pE:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$SetFunction -> pF:
     void <init>() -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.matheclipse.parser.client.eval.dfp.DfpEvaluator,org.matheclipse.parser.client.ast.FunctionNode) -> evaluate
-org.matheclipse.parser.client.eval.dfp.DfpEvaluator$TimesFunction -> pF:
+org.matheclipse.parser.client.eval.dfp.DfpEvaluator$TimesFunction -> pG:
     org.matheclipse.parser.client.eval.dfp.DfpEvaluator this$0 -> a
     void <init>(org.matheclipse.parser.client.eval.dfp.DfpEvaluator) -> <init>
     org.apache.commons.math3.dfp.Dfp evaluate(org.apache.commons.math3.dfp.Dfp,org.apache.commons.math3.dfp.Dfp) -> evaluate
@@ -28234,6 +28359,7 @@ org.matheclipse.parser.client.math.MathUtils -> org.matheclipse.parser.client.ma
 org.matheclipse.parser.client.operator.ASTNodeFactory -> org.matheclipse.parser.client.operator.ASTNodeFactory:
     int PLUS_PRECEDENCE -> PLUS_PRECEDENCE
     int TIMES_PRECEDENCE -> TIMES_PRECEDENCE
+    int DIVIDE_PRECEDENCE -> DIVIDE_PRECEDENCE
     int POWER_PRECEDENCE -> POWER_PRECEDENCE
     java.lang.String[] HEADER_STRINGS -> a
     java.lang.String[] OPERATOR_STRINGS -> b
