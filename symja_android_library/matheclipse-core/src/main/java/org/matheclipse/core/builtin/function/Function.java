@@ -1,11 +1,11 @@
 package org.matheclipse.core.builtin.function;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -34,7 +34,7 @@ public class Function implements IFunctionEvaluator {
 				if (symbolSlots.size() > ast.size()) {
 					throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
 				}
-				final IExpr result = function.get(2).replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)));
+				final IExpr result = function.arg2().replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)));
 				return (result == null) ? function.arg2() : result;
 			}
 
@@ -43,8 +43,13 @@ public class Function implements IFunctionEvaluator {
 	}
 
 	private Map<IExpr, IExpr> getRulesMap(final IAST symbolSlots, final IAST ast) {
-		final Map<IExpr, IExpr> rulesMap = new HashMap<IExpr, IExpr>();
-		int size = symbolSlots.size();
+		int size = symbolSlots.size() - 1;
+		final Map<IExpr, IExpr> rulesMap;
+		if (size <= 5) {
+			rulesMap = new OpenFixedSizeMap<IExpr, IExpr>(size * 3 - 1);
+		} else {
+			rulesMap = new HashMap<IExpr, IExpr>();
+		}
 		for (int i = 1; i < size; i++) {
 			rulesMap.put(symbolSlots.get(i), ast.get(i));
 		}

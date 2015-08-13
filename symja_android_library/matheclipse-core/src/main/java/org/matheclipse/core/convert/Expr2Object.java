@@ -1,9 +1,8 @@
 package org.matheclipse.core.convert;
 
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.apache.commons.math4.util.OpenIntToDoubleHashMap;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -44,7 +43,7 @@ public class Expr2Object {
 		ISignedNumber signedNumber;
 		for (int i = 1; i <= dim[0]; i++) {
 			IAST row = (IAST) ast.get(i);
-			for (int j = 1; j <= dim[1]; j++) { 
+			for (int j = 1; j <= dim[1]; j++) {
 				signedNumber = row.get(j).evalSignedNumber();
 				if (signedNumber != null) {
 					result[i - 1][j - 1] = signedNumber.doubleValue();
@@ -57,23 +56,26 @@ public class Expr2Object {
 	}
 
 	public static double[] toPolynomial(IExpr expr, ISymbol sym) {
-		Map<Integer, Double> map = toPolynomialMap(expr, sym);
+		OpenIntToDoubleHashMap map = toPolynomialMap(expr, sym);
 		if (map == null) {
 			return null;
 		}
 		int max = 5;
 		int k;
-		for (Map.Entry<Integer, Double> entry : map.entrySet()) {
-			k = entry.getKey();
+
+		for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext();) {
+			iterator.advance();
+			k = iterator.key();
 			if (k > max) {
 				max = k;
 			}
 		}
 		double[] array = new double[max + 1];
-		for (Map.Entry<Integer, Double> entry : map.entrySet()) {
-			k = entry.getKey();
+		for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext();) {
+			iterator.advance();
+			k = iterator.key();
 			if (k <= 4) {
-				array[k] = entry.getValue();
+				array[k] = iterator.value();
 			} else {
 				return null;
 			}
@@ -98,9 +100,9 @@ public class Expr2Object {
 	 * @param sym
 	 * @return <code>null</code> if the expression couldn't be converted to a polynomial.
 	 */
-	public static Map<Integer, Double> toPolynomialMap(IExpr expr, ISymbol sym) {
+	public static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, ISymbol sym) {
 		try {
-			Map<Integer, Double> map = new HashMap<Integer, Double>();
+			OpenIntToDoubleHashMap map = new OpenIntToDoubleHashMap();
 			if (expr.isPlus()) {
 				IAST plus = (IAST) expr;
 				for (int i = 1; i < plus.size(); i++) {
@@ -189,13 +191,12 @@ public class Expr2Object {
 		return null;
 	}
 
-	private static void addCoefficient(Map<Integer, Double> map, double v, int k) {
-		Integer key = Integer.valueOf(k);
-		Double value = map.get(key);
-		if (value == null) {
-			map.put(Integer.valueOf(k), Double.valueOf(v));
+	private static void addCoefficient(OpenIntToDoubleHashMap map, double v, int k) {
+		double value = map.get(k);
+		if (Double.isNaN(value)) {
+			map.put(k, v);
 		} else {
-			map.put(Integer.valueOf(k), Double.valueOf(value.doubleValue() + v));
+			map.put(k, value + v);
 		}
 	}
 }

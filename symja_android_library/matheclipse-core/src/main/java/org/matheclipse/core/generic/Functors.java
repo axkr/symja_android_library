@@ -11,9 +11,10 @@ import javax.annotation.Nonnull;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr; 
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
@@ -415,11 +416,18 @@ public class Functors {
 	 * @throws WrongArgumentType
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules) throws WrongArgumentType {
-		Map<IExpr, IExpr> equalRules = new HashMap<IExpr, IExpr>();
+		final Map<IExpr, IExpr> equalRules;
+		
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
 		if (astRules.isList()) {
 			// assuming multiple rules in a list
 			IAST rule;
+			int size = astRules.size()-1;
+			if (size <= 5) {
+				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(size*3-1);
+			} else {
+				equalRules = new HashMap<IExpr, IExpr>( );
+			}
 
 			for (final IExpr expr : astRules) {
 				if (expr.isRuleAST()) {
@@ -431,6 +439,7 @@ public class Functors {
 			}
 		} else {
 			if (astRules.isRuleAST()) {
+				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
 				addRuleToCollection(equalRules, matchers, astRules);
 			} else {
 				throw new WrongArgumentType(astRules, astRules, -1, "Rule expression (x->y) expected: ");

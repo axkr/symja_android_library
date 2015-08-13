@@ -31,22 +31,19 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * This class implements the {@link FieldVector} interface with a {@link OpenIntToFieldHashMap} backing store.
+ * This class implements the {@link FieldVector} interface with a {@link OpenIntToIExpr} backing store.
  * <p>
  * Caveat: This implementation assumes that, for any {@code x}, the equality {@code x * 0d == 0d} holds. But it is is not true for
  * {@code NaN}. Moreover, zero entries will lose their sign. Some operations (that involve {@code NaN} and/or infinities) may thus
  * give incorrect results.
  * </p>
  * 
- * @param <T>
- *            the type of the field elements
- * @since 2.0
  */
 public class SparseFieldVector implements FieldVector, Serializable {
 	/** Serialization identifier. */
 	private static final long serialVersionUID = 7841233292190413362L;
 	/** Entries of the vector. */
-	private final OpenIntToFieldHashMap entries;
+	private final OpenIntToIExpr entries;
 	/** Dimension of the vector. */
 	private final int virtualSize;
 
@@ -72,7 +69,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 */
 	public SparseFieldVector(int dimension) {
 		virtualSize = dimension;
-		entries = new OpenIntToFieldHashMap();
+		entries = new OpenIntToIExpr();
 	}
 
 	/**
@@ -85,7 +82,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 */
 	protected SparseFieldVector(SparseFieldVector v, int resize) {
 		virtualSize = v.getDimension() + resize;
-		entries = new OpenIntToFieldHashMap(v.entries);
+		entries = new OpenIntToIExpr(v.entries);
 	}
 
 	/**
@@ -100,7 +97,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 */
 	public SparseFieldVector(Field<IExpr> field, int dimension, int expectedSize) {
 		virtualSize = dimension;
-		entries = new OpenIntToFieldHashMap( expectedSize);
+		entries = new OpenIntToIExpr( expectedSize);
 	}
 
 	/**
@@ -116,7 +113,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public SparseFieldVector(Field<IExpr> field, IExpr[] values) throws NullArgumentException {
 		MathUtils.checkNotNull(values);
 		virtualSize = values.length;
-		entries = new OpenIntToFieldHashMap();
+		entries = new OpenIntToIExpr();
 		for (int key = 0; key < values.length; key++) {
 			IExpr value = values[key];
 			entries.put(key, value);
@@ -131,7 +128,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 */
 	public SparseFieldVector(SparseFieldVector v) {
 		virtualSize = v.getDimension();
-		entries = new OpenIntToFieldHashMap(v.getEntries());
+		entries = new OpenIntToIExpr(v.getEntries());
 	}
 
 	/**
@@ -139,7 +136,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 *
 	 * @return the entries of this instance
 	 */
-	private OpenIntToFieldHashMap getEntries() {
+	private OpenIntToIExpr getEntries() {
 		return entries;
 	}
 
@@ -155,7 +152,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public FieldVector add(SparseFieldVector v) throws DimensionMismatchException {
 		checkVectorDimensions(v.getDimension());
 		SparseFieldVector res = (SparseFieldVector) copy();
-		OpenIntToFieldHashMap.Iterator iter = v.getEntries().iterator();
+		OpenIntToIExpr.Iterator iter = v.getEntries().iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			int key = iter.key();
@@ -179,7 +176,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	 */
 	public FieldVector append(SparseFieldVector v) {
 		SparseFieldVector res = new SparseFieldVector(this, v.getDimension());
-		OpenIntToFieldHashMap.Iterator iter = v.entries.iterator();
+		OpenIntToIExpr.Iterator iter = v.entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			res.setEntry(iter.key() + virtualSize, iter.value());
@@ -223,7 +220,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public IExpr dotProduct(FieldVector v) throws DimensionMismatchException {
 		checkVectorDimensions(v.getDimension());
 		IExpr res = F.C0;
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			res = res.plus(v.getEntry(iter.key()).times(iter.value()));
@@ -235,7 +232,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public FieldVector ebeDivide(FieldVector v) throws DimensionMismatchException, MathArithmeticException {
 		checkVectorDimensions(v.getDimension());
 		SparseFieldVector res = new SparseFieldVector(this);
-		OpenIntToFieldHashMap.Iterator iter = res.entries.iterator();
+		OpenIntToIExpr.Iterator iter = res.entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			res.setEntry(iter.key(), iter.value().divide(v.getEntry(iter.key())));
@@ -247,7 +244,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public FieldVector ebeMultiply(FieldVector v) throws DimensionMismatchException {
 		checkVectorDimensions(v.getDimension());
 		SparseFieldVector res = new SparseFieldVector(this);
-		OpenIntToFieldHashMap.Iterator iter = res.entries.iterator();
+		OpenIntToIExpr.Iterator iter = res.entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			res.setEntry(iter.key(), iter.value().times(v.getEntry(iter.key())));
@@ -290,7 +287,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		checkIndex(index + n - 1);
 		SparseFieldVector res = new SparseFieldVector(null, n);
 		int end = index + n;
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			int key = iter.key();
@@ -321,7 +318,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 
 	/** {@inheritDoc} */
 	public FieldVector mapDivideToSelf(IExpr d) throws NullArgumentException, MathArithmeticException {
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			entries.put(iter.key(), iter.value().divide(d));
@@ -349,7 +346,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 
 	/** {@inheritDoc} */
 	public FieldVector mapMultiplyToSelf(IExpr d) throws NullArgumentException {
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			entries.put(iter.key(), iter.value().times(d));
@@ -377,10 +374,10 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public FieldMatrix outerProduct(SparseFieldVector v) {
 		final int n = v.getDimension();
 		SparseFieldMatrix res = new SparseFieldMatrix(virtualSize, n);
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
-			OpenIntToFieldHashMap.Iterator iter2 = v.entries.iterator();
+			OpenIntToIExpr.Iterator iter2 = v.entries.iterator();
 			while (iter2.hasNext()) {
 				iter2.advance();
 				res.setEntry(iter.key(), iter2.key(), iter.value().times(iter2.value()));
@@ -396,7 +393,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		} else {
 			final int n = v.getDimension();
 			FieldMatrix res = new SparseFieldMatrix(virtualSize, n);
-			OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+			OpenIntToIExpr.Iterator iter = entries.iterator();
 			while (iter.hasNext()) {
 				iter.advance();
 				int row = iter.key();
@@ -462,7 +459,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	public SparseFieldVector subtract(SparseFieldVector v) throws DimensionMismatchException {
 		checkVectorDimensions(v.getDimension());
 		SparseFieldVector res = (SparseFieldVector) copy();
-		OpenIntToFieldHashMap.Iterator iter = v.getEntries().iterator();
+		OpenIntToIExpr.Iterator iter = v.getEntries().iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			int key = iter.key();
@@ -497,7 +494,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 	/** {@inheritDoc} */
 	public IExpr[] toArray() {
 		IExpr[] res = MathArrays.buildArray(virtualSize);
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			res[iter.key()] = iter.value();
@@ -740,7 +737,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + virtualSize;
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			int temp = iter.value().hashCode();
@@ -769,7 +766,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 			return false;
 		}
 
-		OpenIntToFieldHashMap.Iterator iter = entries.iterator();
+		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
 			iter.advance();
 			IExpr test = other.getEntry(iter.key());

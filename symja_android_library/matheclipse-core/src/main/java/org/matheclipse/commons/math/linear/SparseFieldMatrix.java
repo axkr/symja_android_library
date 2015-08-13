@@ -27,14 +27,11 @@ import org.matheclipse.core.interfaces.IExpr;
  * give incorrect results.
  * </p>
  * 
- * @param <T>
- *            the type of the field elements
- * @since 2.0
  */
 public class SparseFieldMatrix extends AbstractFieldMatrix {
 
 	/** Storage for (sparse) matrix elements. */
-	private final OpenIntToFieldHashMap entries;
+	private final OpenIntToIExpr entries;
 	/** Row dimension. */
 	private final int rows;
 	/** Column dimension. */
@@ -47,7 +44,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 		super();
 		rows = 0;
 		columns = 0;
-		entries = new OpenIntToFieldHashMap();
+		entries = new OpenIntToIExpr();
 	}
 
 	/**
@@ -65,7 +62,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 		super(rowDimension, columnDimension);
 		this.rows = rowDimension;
 		this.columns = columnDimension;
-		entries = new OpenIntToFieldHashMap();
+		entries = new OpenIntToIExpr();
 	}
 
 	/**
@@ -78,7 +75,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 		super(other.getRowDimension(), other.getColumnDimension());
 		rows = other.getRowDimension();
 		columns = other.getColumnDimension();
-		entries = new OpenIntToFieldHashMap(other.entries);
+		entries = new OpenIntToIExpr(other.entries);
 	}
 
 	/**
@@ -91,7 +88,7 @@ public class SparseFieldMatrix extends AbstractFieldMatrix {
 		super(other.getRowDimension(), other.getColumnDimension());
 		rows = other.getRowDimension();
 		columns = other.getColumnDimension();
-		entries = new OpenIntToFieldHashMap();
+		entries = new OpenIntToIExpr();
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {
 				setEntry(i, j, other.getEntry(i, j));
