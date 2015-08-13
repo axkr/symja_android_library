@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Open addressed map from K to V. The map can contain up to <code>tableSize</code> key/value entries. Otherwise a // *
  * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not implemented and
- * // * throws a <code>java.lang.IllegalStateException</code> exception.
+ * throws a <code>java.lang.IllegalStateException</code> exception.
  *
  * <p>
  * This class is not synchronized.
@@ -41,6 +41,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 	public OpenFixedSizeMap(int tableSize) {
 		table = new Object[tableSize << 1];
 	}
+
 	public Object clone() {
 		OpenFixedSizeMap<K, V> result = null;
 		try {
