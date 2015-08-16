@@ -163,11 +163,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			if (fLhsPatternExpr.equals(lhsEvalExpr)) {
 				IExpr result = fRightHandSide;
 				try {
-					IExpr temp = F.eval(result);
-					if (temp != null) {
-						return temp;
-					}
-					return result;
+					return result.optional(F.eval(result));
 				} catch (final ConditionException e) {
 					logConditionFalse(lhsEvalExpr, fLhsPatternExpr, fRightHandSide);
 					return null;

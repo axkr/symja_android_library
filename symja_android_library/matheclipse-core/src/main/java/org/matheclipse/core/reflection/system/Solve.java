@@ -137,10 +137,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			IExpr temp0 = result.getOneIdentity(F.C1);
 			if (temp0.isAST()) {
-				IExpr temp = rewriteInverseFunction((IAST) temp0, F.C0);
-				if (temp != null) {
-					return temp;
-				}
+				return temp0.optional( rewriteInverseFunction((IAST) temp0, F.C0) );
 			}
 			return temp0;
 		}

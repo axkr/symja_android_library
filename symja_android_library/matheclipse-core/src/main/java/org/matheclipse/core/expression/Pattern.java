@@ -314,11 +314,6 @@ public class Pattern extends Blank {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
-		if (temp != null) {
-			return temp;
-		}
-		// System.out.println(toString());
-		return this;
+		return optional( F.GLOBAL_IDS_MAP.get(this) );
 	}
 }

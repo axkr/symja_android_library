@@ -145,10 +145,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (size > 2) {
-			IAST temp = evaluateHashs(ast);
-			if (temp != null) {
-				return temp;
-			}
+			return evaluateHashs(ast);
 		}
 		return null;
 	}

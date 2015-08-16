@@ -24,7 +24,7 @@ import com.google.common.base.Predicate;
 
 /**
  * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>&quot;)
- *  
+ * 
  */
 public class Blank extends ExprImpl implements IPattern {
 
@@ -60,13 +60,13 @@ public class Blank extends ExprImpl implements IPattern {
 	public Blank(final IExpr condition) {
 		this(condition, false);
 	}
-	
+
 	public Blank(final IExpr condition, boolean def) {
 		super();
 		this.fCondition = condition;
 		this.fDefault = def;
 	}
-	
+
 	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
@@ -81,7 +81,7 @@ public class Blank extends ExprImpl implements IPattern {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -177,7 +177,7 @@ public class Blank extends ExprImpl implements IPattern {
 	public int getIndex(PatternMap pm) {
 		return -1;
 	}
- 
+
 	@Override
 	public int getEvalFlags() {
 		if (isPatternDefault()) {
@@ -187,7 +187,7 @@ public class Blank extends ExprImpl implements IPattern {
 		// the ast contains a pattern without default value (i.e. "x_")
 		return IAST.CONTAINS_PATTERN;
 	}
-	
+
 	@Override
 	public ISymbol getSymbol() {
 		return null;
@@ -223,25 +223,25 @@ public class Blank extends ExprImpl implements IPattern {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPatternDefault() {
 		return fDefault;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isPatternExpr() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFreeOfPatterns() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isConditionMatched(final IExpr expr) {
 		if (fCondition == null) {
@@ -310,11 +310,6 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
-		if (temp != null) {
-			return temp;
-		}
-		// System.out.println(toString());
-		return this;
+		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
 }

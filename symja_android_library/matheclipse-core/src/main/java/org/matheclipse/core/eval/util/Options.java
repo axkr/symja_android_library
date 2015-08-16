@@ -78,7 +78,7 @@ public class Options {
 	public boolean isOption(final String optionString) {
 		IExpr temp = getOption(optionString);
 		if (temp != null) {
-			return temp.equals(F.True);
+			return temp.isTrue();
 		}
 		return false;
 	}

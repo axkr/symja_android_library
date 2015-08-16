@@ -332,11 +332,7 @@ public class AST extends HMArrayList implements Externalizable {
 	// }
 	// }
 	private Object writeReplace() throws ObjectStreamException {
-		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
-		if (temp != null) {
-			return temp;
-		}
-		return this;
+		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
 
 	@Override

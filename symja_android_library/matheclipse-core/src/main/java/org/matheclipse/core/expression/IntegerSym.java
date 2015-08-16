@@ -364,7 +364,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	public boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
 		return equals(value);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
@@ -450,7 +450,6 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		return fInteger.multiply(BigInteger.valueOf(val));
 	}
 
-	 
 	@Override
 	public IntegerSym negate() {
 		return newInstance(fInteger.negate());
@@ -591,7 +590,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	public BigInteger getBigDenominator() {
 		return BigInteger.ONE;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public BigInteger getBigNumerator() {
@@ -1266,11 +1265,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		ExprID temp = F.GLOBAL_IDS_MAP.get(this);
-		if (temp != null) {
-			return temp;
-		}
-		return this;
+		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
 
 	@Override
