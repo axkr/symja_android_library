@@ -3,6 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.util.List;
 
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,20 +12,18 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-import com.google.common.collect.ArrayListMultimap;
-
 /**
  * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
  * 
  * @see HashedPatternRules
  */
 public class HashedOrderlessMatcher {
-	private ArrayListMultimap<Integer, AbstractHashedPatternRules> fHashRuleMap;
-	private ArrayListMultimap<Integer, AbstractHashedPatternRules> fPatternHashRuleMap;
+	private OpenIntToList<AbstractHashedPatternRules> fHashRuleMap;
+	private OpenIntToList<AbstractHashedPatternRules> fPatternHashRuleMap;
 
 	public HashedOrderlessMatcher() {
-		this.fHashRuleMap = ArrayListMultimap.create();
-		this.fPatternHashRuleMap = ArrayListMultimap.create();
+		this.fHashRuleMap = new OpenIntToList<AbstractHashedPatternRules>();
+		this.fPatternHashRuleMap = new OpenIntToList<AbstractHashedPatternRules>();
 	}
 
 	/**
@@ -153,7 +152,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	private static IAST evaluateHashedValues(final IAST orderlessAST,
-			ArrayListMultimap<Integer, AbstractHashedPatternRules> hashRuleMap, int[] hashValues) {
+			OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues) {
 		boolean evaled = false;
 		IAST result = orderlessAST.copyHead();
 		for (int i = 0; i < hashValues.length-1; i++) {
