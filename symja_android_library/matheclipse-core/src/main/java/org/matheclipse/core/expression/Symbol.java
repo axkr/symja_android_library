@@ -30,13 +30,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.DownRulesData;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
-import org.matheclipse.core.patternmatching.UpRulesData;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -71,12 +70,12 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
-	private transient DownRulesData fDownRulesData;
+	private transient RulesData fRulesData;
 
 	/**
 	 * The pattern matching &quot;up value&quot; rules associated with this symbol.
 	 */
-	private transient UpRulesData fUpRulesData;
+	// private transient UpRulesData fUpRulesData;
 
 	/**
 	 * {@inheritDoc}
@@ -96,8 +95,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			}
 
 		} else {
-			if (fDownRulesData != null) {
-				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
 				if (pme != null) {
 					symbolValue = pme.getRHS();
 					if (symbolValue != null) {
@@ -124,8 +123,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (hasLocalVariableStack()) {
 			return get() != null;
 		} else {
-			if (fDownRulesData != null) {
-				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
 				if (pme != null) {
 					return pme.getRHS() != null;
 				}
@@ -142,8 +141,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (hasLocalVariableStack()) {
 			return get();
 		} else {
-			if (fDownRulesData != null) {
-				PatternMatcherEquals pme = fDownRulesData.getEqualDownRules().get(this);
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
 				if (pme != null) {
 					return pme.getRHS();
 				}
@@ -216,8 +215,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 				throw new RuleCreationError(null);
 			}
 		}
-		if (fDownRulesData != null) {
-			fDownRulesData.clear();
+		if (fRulesData != null) {
+			fRulesData.clear();
 		}
 	}
 
@@ -280,11 +279,11 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
-		if (fDownRulesData == null) {
+		if (fRulesData == null) {
 			return null;
 		}
 		// System.out.println(toString());
-		return fDownRulesData.evalDownRule(ee, expression);
+		return fRulesData.evalDownRule(ee, expression);
 	}
 
 	/** {@inheritDoc} */
@@ -334,10 +333,10 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
-		if (fUpRulesData == null) {
+		if (fRulesData == null) {
 			return null;
 		}
-		return fUpRulesData.evalUpRule(ee, expression);
+		return fRulesData.evalUpRule(ee, expression);
 	}
 
 	/** {@inheritDoc} */
@@ -423,10 +422,10 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 			EvalEngine.get().addModifiedVariable(this);
 		}
-		if (fDownRulesData == null) {
-			fDownRulesData = new DownRulesData();
+		if (fRulesData == null) {
+			fRulesData = new RulesData();
 		}
-		return fDownRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
+		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
 	@Override
@@ -438,18 +437,18 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 			EvalEngine.get().addModifiedVariable(this);
 		}
-		if (fDownRulesData != null) {
-			fDownRulesData.removeRule(setSymbol, equalRule, leftHandSide);
+		if (fRulesData != null) {
+			fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
 		}
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
-		if (fDownRulesData == null) {
-			fDownRulesData = new DownRulesData();
+		if (fRulesData == null) {
+			fRulesData = new RulesData();
 		}
-		return fDownRulesData.putDownRule(pmEvaluator);
+		return fRulesData.putDownRule(pmEvaluator);
 	}
 
 	/** {@inheritDoc} */
@@ -470,10 +469,10 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 			engine.addModifiedVariable(this);
 		}
-		if (fUpRulesData == null) {
-			fUpRulesData = new UpRulesData();
+		if (fRulesData == null) {
+			fRulesData = new RulesData();
 		}
-		return fUpRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
+		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
 	/** {@inheritDoc} */
@@ -755,13 +754,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public List<IAST> definition() {
 		ArrayList<IAST> result = new ArrayList<IAST>();
-		if (fDownRulesData != null) {
-			result.addAll(fDownRulesData.definition());
+		if (fRulesData != null) {
+			result.addAll(fRulesData.definition());
 		}
-		if (fUpRulesData == null) {
-			return result;
-		}
-		result.addAll(fUpRulesData.definition());
 		return result;
 	}
 
@@ -878,15 +873,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
-			fDownRulesData = new DownRulesData();
-			fDownRulesData = (DownRulesData) stream.readObject();
+			fRulesData = new RulesData();
+			fRulesData = (RulesData) stream.readObject();
 			// fDownRulesData.readSymbol(stream);
-		}
-		boolean hasUpRulesData = stream.readBoolean();
-		if (hasUpRulesData) {
-			fUpRulesData = new UpRulesData();
-			fUpRulesData = (UpRulesData) stream.readObject();
-			// fUpRulesData.readSymbol(stream);
 		}
 	}
 
@@ -898,17 +887,11 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (!containsRules()) {
 			return false;
 		}
-		if (fDownRulesData == null) {
+		if (fRulesData == null) {
 			stream.writeBoolean(false);
 		} else {
 			stream.writeBoolean(true);
-			stream.writeObject(fDownRulesData);
-		}
-		if (fUpRulesData == null) {
-			stream.writeBoolean(false);
-		} else {
-			stream.writeBoolean(true);
-			stream.writeObject(fUpRulesData);
+			stream.writeObject(fRulesData);
 		}
 		return true;
 	}
@@ -916,7 +899,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean containsRules() {
-		return fDownRulesData != null || fUpRulesData != null;
+		return fRulesData != null;
 	}
 
 	/**

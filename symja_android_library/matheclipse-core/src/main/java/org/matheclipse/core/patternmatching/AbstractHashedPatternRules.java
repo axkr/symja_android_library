@@ -8,7 +8,7 @@ public abstract class AbstractHashedPatternRules {
 	protected int hash1;
 	protected int hash2;
 	protected int hashSum;
-	protected DownRulesData fRulesData = null;
+	protected RulesData fRulesData = null;
 	protected final IExpr fLHSPattern1;
 	protected final IExpr fLHSPattern2;
 
