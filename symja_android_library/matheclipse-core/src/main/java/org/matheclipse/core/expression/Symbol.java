@@ -415,6 +415,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			final IExpr rightHandSide, final int priority, boolean packageMode) {
+		EvalEngine evalEngine = EvalEngine.get();
 		if (!packageMode) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
 				throw new RuleCreationError(leftHandSide);
@@ -423,7 +424,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData();
+			fRulesData = new RulesData(evalEngine.getContext());
 		}
 		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
@@ -446,7 +447,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		if (fRulesData == null) {
-			fRulesData = new RulesData();
+			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
 		return fRulesData.putDownRule(pmEvaluator);
 	}
@@ -470,7 +471,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			engine.addModifiedVariable(this);
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData();
+			fRulesData = new RulesData(engine.getContext());
 		}
 		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
@@ -873,9 +874,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
-			fRulesData = new RulesData();
+			fRulesData = new RulesData(EvalEngine.get().getContext());
 			fRulesData = (RulesData) stream.readObject();
-			// fDownRulesData.readSymbol(stream);
 		}
 	}
 

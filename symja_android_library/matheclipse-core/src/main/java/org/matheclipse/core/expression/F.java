@@ -67,9 +67,11 @@ public class F {
 	public final static Map<String, IPattern> PREDEFINED_PATTERN_MAP = new HashMap<String, IPattern>(61);
 
 	/**
-	 * The map for predefined symbols
+	 * The map for predefined (context &quot;Global&quot;) symbols
 	 */
 	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
+
+	public final static Map<String, ISymbol> HIDDEN_SYMBOLS_MAP = new HashMap<String, ISymbol>(197);
 
 	public static ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
 		@Override
@@ -713,38 +715,38 @@ public class F {
 	public final static ISymbol VectorQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
 	public final static ISymbol Xor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "xor" : "Xor");
 
-	public final static ISymbol a = initFinalSymbol("a");
-	public final static ISymbol b = initFinalSymbol("b");
-	public final static ISymbol c = initFinalSymbol("c");
-	public final static ISymbol d = initFinalSymbol("d");
-	public final static ISymbol e = initFinalSymbol("e");
-	public final static ISymbol f = initFinalSymbol("f");
-	public final static ISymbol g = initFinalSymbol("g");
-	public final static ISymbol h = initFinalSymbol("h");
-	public final static ISymbol i = initFinalSymbol("i");
-	public final static ISymbol j = initFinalSymbol("j");
-	public final static ISymbol k = initFinalSymbol("k");
-	public final static ISymbol l = initFinalSymbol("l");
-	public final static ISymbol m = initFinalSymbol("m");
-	public final static ISymbol n = initFinalSymbol("n");
-	public final static ISymbol o = initFinalSymbol("o");
-	public final static ISymbol p = initFinalSymbol("p");
-	public final static ISymbol q = initFinalSymbol("q");
-	public final static ISymbol r = initFinalSymbol("r");
-	public final static ISymbol s = initFinalSymbol("s");
-	public final static ISymbol t = initFinalSymbol("t");
-	public final static ISymbol u = initFinalSymbol("u");
-	public final static ISymbol v = initFinalSymbol("v");
-	public final static ISymbol w = initFinalSymbol("w");
-	public final static ISymbol x = initFinalSymbol("x");
-	public final static ISymbol y = initFinalSymbol("y");
-	public final static ISymbol z = initFinalSymbol("z");
+	public final static ISymbol a = initFinalHiddenSymbol("a");
+	public final static ISymbol b = initFinalHiddenSymbol("b");
+	public final static ISymbol c = initFinalHiddenSymbol("c");
+	public final static ISymbol d = initFinalHiddenSymbol("d");
+	public final static ISymbol e = initFinalHiddenSymbol("e");
+	public final static ISymbol f = initFinalHiddenSymbol("f");
+	public final static ISymbol g = initFinalHiddenSymbol("g");
+	public final static ISymbol h = initFinalHiddenSymbol("h");
+	public final static ISymbol i = initFinalHiddenSymbol("i");
+	public final static ISymbol j = initFinalHiddenSymbol("j");
+	public final static ISymbol k = initFinalHiddenSymbol("k");
+	public final static ISymbol l = initFinalHiddenSymbol("l");
+	public final static ISymbol m = initFinalHiddenSymbol("m");
+	public final static ISymbol n = initFinalHiddenSymbol("n");
+	public final static ISymbol o = initFinalHiddenSymbol("o");
+	public final static ISymbol p = initFinalHiddenSymbol("p");
+	public final static ISymbol q = initFinalHiddenSymbol("q");
+	public final static ISymbol r = initFinalHiddenSymbol("r");
+	public final static ISymbol s = initFinalHiddenSymbol("s");
+	public final static ISymbol t = initFinalHiddenSymbol("t");
+	public final static ISymbol u = initFinalHiddenSymbol("u");
+	public final static ISymbol v = initFinalHiddenSymbol("v");
+	public final static ISymbol w = initFinalHiddenSymbol("w");
+	public final static ISymbol x = initFinalHiddenSymbol("x");
+	public final static ISymbol y = initFinalHiddenSymbol("y");
+	public final static ISymbol z = initFinalHiddenSymbol("z");
 
-	public final static ISymbol ASymbol = initFinalSymbol("A");
-	public final static ISymbol BSymbol = initFinalSymbol("B");
-	public final static ISymbol CSymbol = initFinalSymbol("C");
-	public final static ISymbol FSymbol = initFinalSymbol("F");
-	public final static ISymbol GSymbol = initFinalSymbol("G");
+	public final static ISymbol ASymbol = initFinalHiddenSymbol("A");
+	public final static ISymbol BSymbol = initFinalHiddenSymbol("B");
+	public final static ISymbol CSymbol = initFinalHiddenSymbol("C");
+	public final static ISymbol FSymbol = initFinalHiddenSymbol("F");
+	public final static ISymbol GSymbol = initFinalHiddenSymbol("G");
 
 	public final static IPattern a_ = initPredefinedPattern(a);
 	public final static IPattern b_ = initPredefinedPattern(b);
@@ -1280,16 +1282,27 @@ public class F {
 	}
 
 	/**
-	 * Get a global symbol which is retrieved from the global symbols map or created or retrieved from the thread local variables
-	 * map.
+	 * Get or create a global symbol which is retrieved from the global symbols map or created or retrieved from the thread local
+	 * variables map.
 	 * 
 	 * @param symbolName
+	 *            the name of the symbol
 	 * @return
 	 */
 	public static ISymbol $s(final String symbolName) {
 		return $s(symbolName, true);
 	}
 
+	/**
+	 * Get or create a global symbol which is retrieved from the global symbols map or created or retrieved from the thread local
+	 * variables map.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param setEval
+	 *            if <code>true</code> determine and assign the built-in evaluator object to the symbol.
+	 * @return
+	 */
 	public static ISymbol $s(final String symbolName, boolean setEval) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -1304,11 +1317,12 @@ public class F {
 			return symbol;
 		}
 		EvalEngine engine = EvalEngine.get();
-		symbol = engine.getUserVariable(name);
-		if (symbol != null) {
-			return symbol;
-		}
 		if (Config.SERVER_MODE) {
+			symbol = HIDDEN_SYMBOLS_MAP.get(name);
+			// symbol = engine.getUserVariable(name);
+			if (symbol != null) {
+				return symbol;
+			}
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
 					// second try, because the symbol may now be added to
@@ -1331,13 +1345,18 @@ public class F {
 				}
 			}
 			symbol = new Symbol(name);
-			engine.putUserVariable(name, symbol);
+			// engine.putUserVariable(name, symbol);
+			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			if (name.charAt(0) == '$') {
 				SYMBOL_OBSERVER.createUserSymbol(symbol);
 			}
 		} else {
+			symbol = HIDDEN_SYMBOLS_MAP.get(name);
+			if (symbol != null) {
+				return symbol;
+			}
 			symbol = new Symbol(name);
-			PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			if (!setEval) {
 				symbol.setEvaluator(Symbol.DUMMY_EVALUATOR);
 			} else {
@@ -1346,6 +1365,19 @@ public class F {
 		}
 
 		return symbol;
+	}
+
+	/**
+	 * Get or create a symbol which is retrieved from the eval engines context path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol retrieveSymbol(final String symbolName) {
+		EvalEngine engine = EvalEngine.get();
+		ContextPath contextPath = engine.getContextPath();
+		return contextPath.getSymbol(symbolName);
 	}
 
 	// --- generated source codes:
@@ -2641,7 +2673,7 @@ public class F {
 	 */
 	public static ISymbol initFinalSymbol(final String symbolName) {
 		ISymbol temp = new Symbol(symbolName);
-		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
+		Context.GLOBAL.put(symbolName, temp);
 		return temp;
 	}
 
@@ -2654,10 +2686,25 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
+	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
+		ISymbol temp = new Symbol(symbolName);
+		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
+		return temp;
+	}
+	
+	/**
+	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in
+	 * the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use it as associated
+	 * class name in package org.matheclipse.core.reflection.system.
+	 * 
+	 * @param symbolName
+	 *            the predefined symbol name in upper-case form
+	 * @return
+	 */
 	public static ISymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
 		ISymbol temp = new Symbol(symbolName, evaluator);
 		evaluator.setUp(temp);
-		PREDEFINED_SYMBOLS_MAP.put(symbolName, temp);
+		Context.GLOBAL.put(symbolName, temp);
 		return temp;
 	}
 
@@ -3274,7 +3321,7 @@ public class F {
 	public static IAST O(final IExpr a0) {
 		return unaryAST1(O, a0);
 	}
-	
+
 	public static IAST OddQ(final IExpr a) {
 		return unaryAST1(OddQ, a);
 	}
@@ -3453,7 +3500,7 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol predefinedSymbol(final String symbolName) {
-		ISymbol temp = PREDEFINED_SYMBOLS_MAP.get(symbolName);
+		ISymbol temp = Context.GLOBAL.get(symbolName);
 		if (temp != null) {
 			return temp;
 		}
@@ -3466,7 +3513,7 @@ public class F {
 			}
 		}
 		temp = new Symbol(lcSymbolName);
-		PREDEFINED_SYMBOLS_MAP.put(lcSymbolName, temp);
+		Context.GLOBAL.put(lcSymbolName, temp);
 		return temp;
 	}
 
@@ -3492,7 +3539,7 @@ public class F {
 	public static IAST ProductLog(final IExpr a0) {
 		return unaryAST1(ProductLog, a0);
 	}
-	
+
 	public static IAST ProductLog(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ProductLog, a0, a1);
 	}
@@ -4741,4 +4788,5 @@ public class F {
 		}
 
 	}
+
 }

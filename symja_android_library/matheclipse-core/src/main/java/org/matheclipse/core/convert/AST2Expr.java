@@ -327,7 +327,7 @@ public class AST2Expr {
 			return F.num(Double.parseDouble(node.getString()));
 		}
 
-		return F.$s(node.toString());
+		return F.retrieveSymbol(node.toString());
 	}
 
 	public IExpr convertSymbol(final String nodeStr) {
@@ -337,7 +337,7 @@ public class AST2Expr {
 					// special - convert on input
 					return F.CI;
 				}
-				return F.$s(nodeStr);
+				return F.retrieveSymbol(nodeStr);
 			}
 			String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
 			if (lowercaseStr.equals("infinity")) {
@@ -349,9 +349,9 @@ public class AST2Expr {
 			}
 			String temp = PREDEFINED_ALIASES_MAP.get(lowercaseStr);
 			if (temp != null) {
-				return F.$s(temp);
+				return F.retrieveSymbol(temp);
 			}
-			return F.$s(lowercaseStr);
+			return F.retrieveSymbol(lowercaseStr);
 		} else {
 			String lowercaseStr = nodeStr;
 			if (fLowercaseEnabled) {
@@ -378,7 +378,7 @@ public class AST2Expr {
 				// special - convert on input
 				return F.CInfinity;
 			}
-			return F.$s(lowercaseStr);
+			return F.retrieveSymbol(lowercaseStr);
 		}
 	}
 

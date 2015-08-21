@@ -13,6 +13,7 @@ import java.util.TreeSet;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
@@ -34,8 +35,10 @@ public class RulesData implements Serializable {
 	private TreeSet<IPatternMatcher> fPatternDownRules;
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private TreeMultimap<Integer, IPatternMatcher> fSimplePatternUpRules;
+	final private Context context;
 
-	public RulesData() {
+	public RulesData(Context context) {
+		this.context=context;
 		clear();
 	}
 

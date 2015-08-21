@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -120,7 +121,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 */
 	public RulesData getRulesData() {
 		if (fRulesData == null) {
-			fRulesData = new RulesData();
+			fRulesData = new RulesData(Context.GLOBAL);
 			if (fCondition != null) {
 				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
 			} else {
