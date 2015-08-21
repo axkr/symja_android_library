@@ -23,7 +23,7 @@ public class ReplacePart implements IFunctionEvaluator {
 				if (ast.arg3().isList()) {
 					IExpr result = ast.arg1();
 					for (IExpr subList : (IAST) ast.arg3()) {
-						IExpr expr = result.replacePart(F.Rule(subList, ast.get(2)));
+						IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()));
 						if (expr != null) {
 							result = expr;
 						}

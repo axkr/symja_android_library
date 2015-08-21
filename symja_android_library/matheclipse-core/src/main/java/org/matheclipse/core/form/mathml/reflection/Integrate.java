@@ -20,7 +20,7 @@ public class Integrate extends AbstractConverter {
 	// public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 	// if (f.size() == 3) {
 	// fFactory.tagStart(buf, "mrow");
-	// final Object obj = f.get(2);
+	// final Object obj = f.arg2();
 	// IAST list = null;
 	// if (obj instanceof IAST) {
 	// list = (IAST) obj;
@@ -38,14 +38,14 @@ public class Integrate extends AbstractConverter {
 	// }
 	//
 	// fFactory.tagStart(buf, "mrow");
-	// fFactory.convert(buf, f.get(1), 0);
+	// fFactory.convert(buf, f.arg1(), 0);
 	// fFactory.tagStart(buf, "mrow");
 	// // &dd; &#x2146;
 	// fFactory.tag(buf, "mo", "&#x2146;");
 	// if (list != null) {
-	// fFactory.convert(buf, list.get(1), 0);
+	// fFactory.convert(buf, list.arg1(), 0);
 	// } else {
-	// fFactory.convert(buf, f.get(2), 0);
+	// fFactory.convert(buf, f.arg2(), 0);
 	// }
 	// fFactory.tagEnd(buf, "mrow");
 	// fFactory.tagEnd(buf, "mrow");

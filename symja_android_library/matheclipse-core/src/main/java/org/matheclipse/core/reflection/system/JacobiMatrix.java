@@ -25,7 +25,7 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 			if (ast.arg2().isSymbol()) {
 				variables = F.List();
 			} else if (ast.arg2().isVector() >= 0) {
-				variables = (IAST) ast.get(2);
+				variables = (IAST) ast.arg2();
 			}
 			if (variables != null) {
 				IAST vector = (IAST) ast.arg1();

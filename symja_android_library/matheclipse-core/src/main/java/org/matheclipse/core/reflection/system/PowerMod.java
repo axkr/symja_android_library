@@ -29,7 +29,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 			}
 		}
 		try {
-			BigInteger bigResult = powerMod(((IInteger) ast.arg1()).getBigNumerator(), ((IInteger) ast.get(2)).getBigNumerator(),
+			BigInteger bigResult = powerMod(((IInteger) ast.arg1()).getBigNumerator(), ((IInteger) ast.arg2()).getBigNumerator(),
 					((IInteger) ast.arg3()).getBigNumerator());
 			return F.integer(bigResult);
 		} catch (ArithmeticException ae) {

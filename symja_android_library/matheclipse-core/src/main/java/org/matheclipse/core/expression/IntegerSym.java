@@ -794,7 +794,7 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 		IntegerSym max = IntegerSym.valueOf(1);
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
-			IntegerSym c = (IntegerSym) element.get(2);
+			IntegerSym c = (IntegerSym) element.arg2();
 			if (c.compareTo(max) > 0) {
 				max = c;
 			}

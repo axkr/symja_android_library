@@ -43,13 +43,13 @@ public class Scan extends Map {
 				Function<IExpr, IExpr> sf = Functors.scan(arg1, result);
 				VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads);
 
-				ast.get(2).accept(level);
+				ast.arg2().accept(level);
 				for (int i = 1; i < result.size(); i++) {
 					F.eval(result.get(i));
 				}
 
 			} else {
-				if (ast.get(2).isAST()) {
+				if (ast.arg2().isAST()) {
 					F.eval(((IAST) ast.arg2()).map(Functors.append(arg1)));
 				} else {
 					F.eval(ast.arg2());

@@ -37,7 +37,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 				}
 				return true;
 			}
-			if (ast.isPower() && (ast.get(2).isInteger())) {
+			if (ast.isPower() && (ast.arg2().isInteger())) {
 				// check the arguments
 				return ast.arg1().accept(this);
 			}
@@ -205,7 +205,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 								if (reduced != null) {
 									return reduced;
 								}
-							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus() && ((IAST) temp).get(2).isMinusOne()) {
+							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus() && ((IAST) temp).arg2().isMinusOne()) {
 								// <number> * Power[Plus[...], -1 ]
 								reduced = tryExpandAll(ast, ((IAST) temp).arg1(), number.inverse(), i);
 								if (reduced != null) {

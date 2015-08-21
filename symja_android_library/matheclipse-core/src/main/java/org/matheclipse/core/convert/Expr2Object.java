@@ -113,7 +113,7 @@ public class Expr2Object {
 						for (int j = 1; j < times.size(); j++) {
 							if (times.get(j).isPower()) {
 								IAST power = (IAST) times.get(j);
-								if (power.get(1).equals(sym)) {
+								if (power.arg1().equals(sym)) {
 									if (exp != (-1)) {
 										return null;
 									}
@@ -153,7 +153,7 @@ public class Expr2Object {
 						continue;
 					} else if (plus.get(i).isPower()) {
 						IAST power = (IAST) plus.get(i);
-						if (power.get(1).equals(sym)) {
+						if (power.arg1().equals(sym)) {
 							IExpr res = F.evaln(power.arg2());
 							if (!(res instanceof INum)) {
 								return null;

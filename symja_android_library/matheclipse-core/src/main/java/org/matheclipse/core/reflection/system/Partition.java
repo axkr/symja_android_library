@@ -25,7 +25,7 @@ public class Partition extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		if (ast.arg1().isAST()) {
-			if (ast.get(2).isInteger()) {
+			if (ast.arg2().isInteger()) {
 				final IAST f = (IAST) ast.arg1();
 				final int n = ((IInteger) ast.arg2()).getBigNumerator().intValue();
 				final IAST result = F.ast(f.head());

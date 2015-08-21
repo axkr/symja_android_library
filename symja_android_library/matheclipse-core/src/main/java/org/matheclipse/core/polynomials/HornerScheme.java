@@ -129,16 +129,16 @@ public class HornerScheme {
 						return;
 					} else if (term.get(i).isAST(F.Power, 3)) {
 						IAST pow = (IAST) term.get(i);
-						if (pow.get(1).equals(sym) && pow.get(2) instanceof ISignedNumber) {
+						if (pow.arg1().equals(sym) && pow.arg2() instanceof ISignedNumber) {
 							IAST temp = F.ast(term, F.Times, false, i, i + 1);
-							addToMap((ISignedNumber) pow.get(2), temp);
+							addToMap((ISignedNumber) pow.arg2(), temp);
 							return;
 						}
 					}
 				}
 			} else if (term.isAST(F.Power, 3)) {
-				if (term.get(1).equals(sym) && term.get(2) instanceof ISignedNumber) {
-					addToMap((ISignedNumber) term.get(2), F.C1);
+				if (term.arg1().equals(sym) && term.arg2() instanceof ISignedNumber) {
+					addToMap((ISignedNumber) term.arg2(), F.C1);
 					return;
 				}
 			}
@@ -160,16 +160,16 @@ public class HornerScheme {
 						return;
 					} else if (term.get(i).isAST(F.Power, 3)) {
 						IAST pow = (IAST) term.get(i);
-						if (pow.get(1).equals(sym) && pow.get(2).isSignedNumber()) {
+						if (pow.arg1().equals(sym) && pow.arg2().isSignedNumber()) {
 							IAST temp = F.ast(term, F.Times, false, i, i + 1);
-							addToMap((ISignedNumber) pow.get(2), temp);
+							addToMap((ISignedNumber) pow.arg2(), temp);
 							return;
 						}
 					}
 				}
 			} else if (term.isAST(F.Power, 3)) {
-				if (term.get(1).equals(sym) && term.get(2).isSignedNumber()) {
-					addToMap((ISignedNumber) term.get(2), F.CD1);
+				if (term.arg1().equals(sym) && term.arg2().isSignedNumber()) {
+					addToMap((ISignedNumber) term.arg2(), F.CD1);
 					return;
 				}
 			}

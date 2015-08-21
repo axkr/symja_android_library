@@ -163,7 +163,7 @@ public class Collect extends AbstractFunctionEvaluator {
 	}
 
 	public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
-		return poly.isPower() && ((IAST) poly).get(2).isNumber() && matcher.apply(((IAST) poly).arg1());
+		return poly.isPower() && ((IAST) poly).arg2().isNumber() && matcher.apply(((IAST) poly).arg1());
 	}
 
 	@Override

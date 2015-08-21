@@ -24,7 +24,7 @@ public class Not extends AbstractConverter {
     fFactory.tagStart(buf, "mrow");
     // &not;  &#x00AC;
     fFactory.tag(buf, "mo", "&#x00AC;");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     fFactory.tagEnd(buf, "mrow");
     return true;
   }

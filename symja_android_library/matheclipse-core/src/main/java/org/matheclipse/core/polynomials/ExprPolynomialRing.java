@@ -319,7 +319,7 @@ public class ExprPolynomialRing {
 			ExprPolynomial result = getZero();
 			ExprPolynomial p = getZero();
 			if (ast.isPlus()) {
-				IExpr expr = ast.get(1);
+				IExpr expr = ast.arg1();
 				result = create(expr, coefficient);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = ast.get(i);

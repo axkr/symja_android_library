@@ -109,7 +109,7 @@ public class QuarticSolver {
 				}
 				return true;
 			} else if (ast.isPower()) {
-				final IExpr temp = ast.get(1);
+				final IExpr temp = ast.arg1();
 				if (x.equals(temp)) {
 					int exponent = -1;
 					try {

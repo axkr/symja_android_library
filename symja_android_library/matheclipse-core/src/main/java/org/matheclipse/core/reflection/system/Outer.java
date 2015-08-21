@@ -66,6 +66,6 @@ public class Outer extends AbstractFunctionEvaluator {
 			}
 		}
 		OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-		return algorithm.outer(3, ast.get(2), F.ast(F.List, ast.size() - 1, false));
+		return algorithm.outer(3, ast.arg2(), F.ast(F.List, ast.size() - 1, false));
 	}
 }

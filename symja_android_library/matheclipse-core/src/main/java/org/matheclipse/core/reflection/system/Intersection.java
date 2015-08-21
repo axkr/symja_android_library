@@ -21,10 +21,10 @@ public class Intersection extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		
-		if (!ast.arg1().isAtom() && !ast.get(2).isAtom()) {
+		if (!ast.arg1().isAtom() && !ast.arg2().isAtom()) {
 			final IAST result = F.List();
 			((IAST) ast.arg1()).args().intersection(result,
-					((IAST) ast.get(2)).args());
+					((IAST) ast.arg2()).args());
 			return result.args().sort(ExprComparator.CONS);
 		}
 		return null;

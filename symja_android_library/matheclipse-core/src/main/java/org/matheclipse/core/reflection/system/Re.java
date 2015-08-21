@@ -92,15 +92,15 @@ public class Re implements IFunctionEvaluator {
 			if (astPower.arg1().isRealResult()) {
 				// test for x^(a+I*b)
 				IExpr x = astPower.arg1();
-				if (astPower.get(2).isNumber()) {
+				if (astPower.arg2().isNumber()) {
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-					IExpr a = ((INumber) astPower.get(2)).getRe();
-					IExpr b = ((INumber) astPower.get(2)).getIm();
+					IExpr a = ((INumber) astPower.arg2()).getRe();
+					IExpr b = ((INumber) astPower.arg2()).getIm();
 					return rePowerComplex(x, a, b);
 				}
 				// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-				IExpr a = F.eval(F.Re(astPower.get(2)));
-				IExpr b = F.eval(F.Im(astPower.get(2)));
+				IExpr a = F.eval(F.Re(astPower.arg2()));
+				IExpr b = F.eval(F.Im(astPower.arg2()));
 				return rePowerComplex(x, a, b);
 			}
 		}

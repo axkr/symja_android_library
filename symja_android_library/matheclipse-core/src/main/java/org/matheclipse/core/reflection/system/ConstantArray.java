@@ -77,11 +77,11 @@ public class ConstantArray implements IFunctionEvaluator {
 			if ((ast.size() >= 3) && (ast.size() <= 5)) {
 				int indx1, indx2;
 				final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
-				if ((ast.size() == 3) && (ast.get(2).isInteger())) {
+				if ((ast.size() == 3) && (ast.arg2().isInteger())) {
 					indx1 = Validate.checkIntType(ast, 2);
 					iterList.add(new ArrayIterator(indx1));
-				} else if ((ast.size() == 3) && ast.get(2).isList()) {
-					final IAST dimIter = (IAST) ast.get(2);
+				} else if ((ast.size() == 3) && ast.arg2().isList()) {
+					final IAST dimIter = (IAST) ast.arg2();
 					for (int i = 1; i < dimIter.size(); i++) {
 						indx1 = Validate.checkIntType(dimIter, i);
 						iterList.add(new ArrayIterator(indx1));
@@ -92,7 +92,7 @@ public class ConstantArray implements IFunctionEvaluator {
 						indx2 = Validate.checkIntType(ast, 2);
 						iterList.add(new ArrayIterator(indx1, indx2));
 					} else if (ast.arg2().isList() && ast.arg3().isList()) {
-						final IAST dimIter = (IAST) ast.get(2); // dimensions
+						final IAST dimIter = (IAST) ast.arg2(); // dimensions
 						final IAST originIter = (IAST) ast.arg3(); // origins
 						for (int i = 1; i < dimIter.size(); i++) {
 							indx1 = Validate.checkIntType(originIter, i);

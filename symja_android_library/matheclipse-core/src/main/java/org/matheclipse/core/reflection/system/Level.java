@@ -42,7 +42,7 @@ public class Level extends AbstractFunctionEvaluator {
 				resultList = F.ast(ast.get(lastIndex));
 			}
 
-			final VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.collect(resultList), ast.get(2), heads);
+			final VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.collect(resultList), ast.arg2(), heads);
 			arg1.accept(level);
 
 			return resultList;

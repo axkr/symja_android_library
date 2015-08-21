@@ -98,7 +98,7 @@ public class Options {
 					if (fCurrentOptionsList.get(i).isAST()) {
 						rule = (IAST) fCurrentOptionsList.get(i);
 						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
-							return rule.get(2);
+							return rule.arg2();
 						}
 					}
 				}
@@ -112,7 +112,7 @@ public class Options {
 					if (fDefaultOptionsList.get(i).isAST()) {
 						rule = (IAST) fDefaultOptionsList.get(i);
 						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
-							return rule.get(2);
+							return rule.arg2();
 						}
 					}
 				}
@@ -131,7 +131,7 @@ public class Options {
 					if (fCurrentOptionsList.get(i).isAST()) {
 						rule = (IAST) fCurrentOptionsList.get(i);
 						if (rule.isRuleAST() && rule.arg1().equals(option)) {
-							return rule.get(2);
+							return rule.arg2();
 						}
 					}
 				}
@@ -145,7 +145,7 @@ public class Options {
 					if (fDefaultOptionsList.get(i).isAST()) {
 						rule = (IAST) fDefaultOptionsList.get(i);
 						if (rule.isRuleAST() && rule.arg1().equals(option)) {
-							return rule.get(2);
+							return rule.arg2();
 						}
 					}
 				}

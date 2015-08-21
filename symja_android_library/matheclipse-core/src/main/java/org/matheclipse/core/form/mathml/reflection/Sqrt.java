@@ -21,7 +21,7 @@ public class Sqrt extends AbstractConverter {
       return false;
     }
     fFactory.tagStart(buf, "msqrt");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     fFactory.tagEnd(buf, "msqrt");
     return true;
   }

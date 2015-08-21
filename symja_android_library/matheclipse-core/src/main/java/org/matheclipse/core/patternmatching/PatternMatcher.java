@@ -269,8 +269,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		this.fPriority = PatternMap.DEFAULT_RULE_PRIORITY;
 		this.fPatternCondition = null;
 		if (patternExpr.isCondition()) {
-			this.fLhsPatternExpr = ((IAST) patternExpr).get(1);
-			this.fPatternCondition = ((IAST) patternExpr).get(2);
+			this.fLhsPatternExpr = ((IAST) patternExpr).arg1();
+			this.fPatternCondition = ((IAST) patternExpr).arg2();
 		}
 		this.fPatternMap = new PatternMap();
 		init(fLhsPatternExpr);
@@ -555,7 +555,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 			if (lhsPatternAST.size() == 2) {
 				// TODO check for OneIdentity?
-				return matchExpr(lhsPatternAST.get(1), lhsEvalAST, stackMatcher);
+				return matchExpr(lhsPatternAST.arg1(), lhsEvalAST, stackMatcher);
 			}
 			for (int i = 1; i < lhsPatternAST.size(); i++) {
 				if (!(lhsPatternAST.get(i) instanceof IPatternObject)) {

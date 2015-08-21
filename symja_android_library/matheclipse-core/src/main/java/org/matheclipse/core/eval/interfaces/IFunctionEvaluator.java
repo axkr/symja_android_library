@@ -13,7 +13,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 	/**
 	 * Symbolic evaluation of a function. <code>ast.get(0)</code> (or alternatively <code>ast.head()</code>) contains the
 	 * <i>head</i> (i.e. the function symbol) of this abstract syntax tree (AST). <br />
-	 * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument of the
+	 * From <code>ast.arg1()</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument of the
 	 * function (alternatively you get the first to fifth argument with the methods <code>arg1()</code>, <code>arg2()</code>,...
 	 * <code>arg5()</code>).<br />
 	 * If necessary use the methods from the <code>Validate</code> class to check the number or types of arguments in the evaluate
@@ -35,7 +35,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 	/**
 	 * Numeric evaluation of a function. <code>ast.get(0)</code> (or alternatively <code>ast.head()</code>) contains the <i>head</i>
 	 * (i.e. the function symbol) of this abstract syntax tree (AST). <br />
-	 * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument of the
+	 * From <code>ast.arg1()</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first to n-th argument of the
 	 * function (alternatively you get the first to fifth argument with the methods <code>arg1()</code>, <code>arg2()</code>,...
 	 * <code>arg5()</code>).<br />
 	 * If necessary use the methods from the <code>Validate</code> class to check the number or types of arguments in the evaluate

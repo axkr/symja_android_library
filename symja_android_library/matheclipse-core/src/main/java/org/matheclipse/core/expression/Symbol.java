@@ -524,9 +524,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 							return cp;
 						}
 						if (EvalEngine.get().isNumericMode()) {
-							return F.CD1.compareTo(ast.get(2));
+							return F.CD1.compareTo(ast.arg2());
 						}
-						return F.C1.compareTo(ast.get(2));
+						return F.C1.compareTo(ast.arg2());
 					}
 				} else if (ast.isTimes()) {
 					// compare with the last ast element:

@@ -131,7 +131,7 @@ public class EvalAttributes {
 				break;
 			case 4:
 				// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
-				if (ast.get(1).compareTo(ast.arg2()) > 0) {
+				if (ast.arg1().compareTo(ast.arg2()) > 0) {
 					// swap arguments
 					temp = ast.arg2();
 					ast.set(2, ast.arg1());
@@ -140,9 +140,9 @@ public class EvalAttributes {
 				if (ast.arg2().compareTo(ast.arg3()) > 0) {
 					// swap arguments
 					temp = ast.arg3();
-					ast.set(3, ast.get(2));
+					ast.set(3, ast.arg2());
 					ast.set(2, temp);
-					if (ast.get(1).compareTo(ast.arg2()) > 0) {
+					if (ast.arg1().compareTo(ast.arg2()) > 0) {
 						// swap arguments
 						temp = ast.arg2();
 						ast.set(2, ast.arg1());

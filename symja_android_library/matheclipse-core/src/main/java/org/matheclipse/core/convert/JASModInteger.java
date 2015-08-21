@@ -147,7 +147,7 @@ public class JASModInteger {
 			GenPolynomial<ModLong> result = fPolyFactory.getZERO();
 			GenPolynomial<ModLong> p = fPolyFactory.getZERO();
 			if (ast.isPlus()) {
-				IExpr expr = ast.get(1);
+				IExpr expr = ast.arg1();
 				result = expr2Poly(expr, numeric2Rational);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = ast.get(i);
@@ -156,7 +156,7 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isTimes()) {
-				IExpr expr = ast.get(1);
+				IExpr expr = ast.arg1();
 				result = expr2Poly(expr, numeric2Rational);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = ast.get(i);
@@ -165,7 +165,7 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.get(1);
+				final IExpr expr = ast.arg1();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(expr)) {
 						int exponent = -1;
@@ -228,7 +228,7 @@ public class JASModInteger {
 			GenPolynomial<ModLong> result = fPolyFactory.getZERO();
 			GenPolynomial<ModLong> p = fPolyFactory.getZERO();
 			if (ast.isPlus()) {
-				IExpr expr = ast.get(1);
+				IExpr expr = ast.arg1();
 				result = expr2IExprPoly(expr);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = ast.get(i);
@@ -237,7 +237,7 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isTimes()) {
-				IExpr expr = ast.get(1);
+				IExpr expr = ast.arg1();
 				result = expr2IExprPoly(expr);
 				for (int i = 2; i < ast.size(); i++) {
 					expr = ast.get(i);
@@ -246,7 +246,7 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.get(1);
+				final IExpr expr = ast.arg1();
 				for (int i = 0; i < fVariables.size(); i++) {
 					if (fVariables.get(i).equals(expr)) {
 						int exponent = -1;

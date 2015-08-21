@@ -772,16 +772,16 @@ public class OutputFormFactory {
 				convertPart(buf, list);
 				return;
 			}
-			if (head.equals(F.Slot) && (list.size() == 2) && (list.get(1) instanceof IInteger)) {
+			if (head.equals(F.Slot) && (list.size() == 2) && (list.arg1() instanceof IInteger)) {
 				convertSlot(buf, list);
 				return;
 			}
 			if (head.equals(F.Hold) && (list.size() == 2)) {
-				convert(buf, list.get(1));
+				convert(buf, list.arg1());
 				return;
 			}
 			if (head.equals(F.HoldForm) && (list.size() == 2)) {
-				convert(buf, list.get(1));
+				convert(buf, list.arg1());
 				return;
 			}
 			if (head.equals(F.SeriesData) && (list.size() == 7)) {
@@ -844,7 +844,7 @@ public class OutputFormFactory {
 
 	public void convertSlot(final Appendable buf, final IAST list) throws IOException {
 		try {
-			final int slot = ((ISignedNumber) list.get(1)).toInt();
+			final int slot = ((ISignedNumber) list.arg1()).toInt();
 			append(buf, "#" + slot);
 		} catch (final ArithmeticException e) {
 			// add message to evaluation problemReporter
@@ -860,7 +860,7 @@ public class OutputFormFactory {
 		append(buf, "{");
 		final int listSize = list.size();
 		if (listSize > 1) {
-			convert(buf, list.get(1));
+			convert(buf, list.arg1());
 		}
 		for (int i = 2; i < listSize; i++) {
 			append(buf, ",");
@@ -882,11 +882,11 @@ public class OutputFormFactory {
 	 * @throws IOException
 	 */
 	public void convertPart(final Appendable buf, final IAST list) throws IOException {
-		IExpr arg1 = list.get(1);
+		IExpr arg1 = list.arg1();
 		if (!(arg1 instanceof IAST)) {
 			append(buf, "(");
 		}
-		convert(buf, list.get(1));
+		convert(buf, arg1);
 		append(buf, "[[");
 
 		for (int i = 2; i < list.size(); i++) {
@@ -1023,7 +1023,7 @@ public class OutputFormFactory {
 		}
 		final int functionSize = function.size();
 		if (functionSize > 1) {
-			convert(buf, function.get(1));
+			convert(buf, function.arg1());
 		}
 		for (int i = 2; i < functionSize; i++) {
 			append(buf, ",");

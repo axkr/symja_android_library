@@ -462,14 +462,14 @@ public class Functors {
 	};
 
 	private static void addRuleToCollection(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers, IAST rule) {
-		if (rule.get(1).isFree(PATTERNQ_PREDICATE, true)) {
-			if (rule.get(1).isOrderlessAST() || rule.get(1).isFlatAST()) {
-				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.get(1), rule.get(2)));
+		if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
+			if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
+				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
 				return;
 			}
-			equalRules.put(rule.get(1), rule.get(2));
+			equalRules.put(rule.arg1(), rule.arg2());
 		} else {
-			matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.get(1), rule.get(2)));
+			matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
 		}
 	}
 

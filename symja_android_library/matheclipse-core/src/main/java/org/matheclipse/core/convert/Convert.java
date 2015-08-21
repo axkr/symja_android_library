@@ -60,7 +60,7 @@ public class Convert {
 			return null;
 		}
 
-		IAST currInRow = (IAST) listMatrix.get(1);
+		IAST currInRow = (IAST) listMatrix.arg1();
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			double[][] array = new double[0][0];
@@ -210,7 +210,7 @@ public class Convert {
 			return null;
 		}
 
-		IAST currInRow = (IAST) listMatrix.get(1);
+		IAST currInRow = (IAST) listMatrix.arg1();
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
@@ -253,7 +253,7 @@ public class Convert {
 			return null;
 		}
 
-		IAST currInRow = (IAST) listMatrix.get(1);
+		IAST currInRow = (IAST) listMatrix.arg1();
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
@@ -371,7 +371,7 @@ public class Convert {
 	// Polynomial<IExpr> result = null;
 	// Polynomial<IExpr> p = null;
 	// if (ast.isASTSizeGE(F.Plus, 2)) {
-	// IExpr expr = ast.get(1);
+	// IExpr expr = ast.arg1();
 	// result = expr2Polynomial(expr, variables);
 	// for (int i = 2; i < ast.size(); i++) {
 	// checkCanceled();
@@ -381,7 +381,7 @@ public class Convert {
 	// }
 	// return result;
 	// } else if (ast.isASTSizeGE(F.Times, 2)) {
-	// IExpr expr = ast.get(1);
+	// IExpr expr = ast.arg1();
 	// result = expr2Polynomial(expr, variables);
 	// for (int i = 2; i < ast.size(); i++) {
 	// checkCanceled();
@@ -391,7 +391,7 @@ public class Convert {
 	// }
 	// return result;
 	// } else if (ast.isAST(F.Power, 3)) {
-	// final IExpr expr = ast.get(1);
+	// final IExpr expr = ast.arg1();
 	// for (int i = 0; i < variables.size(); i++) {
 	// checkCanceled();
 	// if (variables.get(i).equals(expr)) {

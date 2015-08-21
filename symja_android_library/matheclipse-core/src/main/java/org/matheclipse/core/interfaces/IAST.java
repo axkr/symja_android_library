@@ -569,7 +569,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * argument of this AST:
 	 * 
 	 * <pre>
-	 * plusAST.map(Functors.replace1st(F.D(null, dAST.get(2))));
+	 * plusAST.map(Functors.replace1st(F.D(null, dAST.arg2())));
 	 * </pre>
 	 * 
 	 * @param functor

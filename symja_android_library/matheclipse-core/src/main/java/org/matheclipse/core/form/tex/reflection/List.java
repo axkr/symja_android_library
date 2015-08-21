@@ -72,7 +72,7 @@ public class List extends AbstractConverter {
 		} else {
 			buf.append("\\{");
 			if (ast.size() > 1) {
-				fFactory.convert(buf, ast.get(1), 0);
+				fFactory.convert(buf, ast.arg1(), 0);
 				for (int i = 2; i < ast.size(); i++) {
 					buf.append(',');
 					fFactory.convert(buf, ast.get(i), 0);

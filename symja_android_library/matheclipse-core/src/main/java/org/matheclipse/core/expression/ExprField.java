@@ -81,7 +81,7 @@ public class ExprField implements Field<ExprFieldElement> {
 			return null;
 		}
 
-		IAST currInRow = (IAST) listMatrix.get(1);
+		IAST currInRow = (IAST) listMatrix.arg1();
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			ExprFieldElement[][] array = new ExprFieldElement[0][0];

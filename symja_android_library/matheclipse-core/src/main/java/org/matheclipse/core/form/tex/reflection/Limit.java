@@ -10,21 +10,21 @@ public class Limit extends AbstractConverter {
 
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		if (f.size() == 3 && f.get(2).isRuleAST()) {
+		if (f.size() == 3 && f.arg2().isRuleAST()) {
 			final IAST rule = (IAST) f.arg2();
 			buf.append("\\lim_{");
 			fFactory.convertSubExpr(buf, rule.arg1(), 0);
 			buf.append("\\to ");
 			fFactory.convertSubExpr(buf, rule.arg2(), 0);
 			buf.append(" }\\,");
-			fFactory.convertSubExpr(buf, f.get(1), 0);
+			fFactory.convertSubExpr(buf, f.arg1(), 0);
 
 			// buf.append("\\mathop {\\lim }\\limits_{");
-			// fFactory.convert(buf, rule.get(1), 0);
+			// fFactory.convert(buf, rule.arg1(), 0);
 			// buf.append(" \\to ");
-			// fFactory.convert(buf, rule.get(2), 0);
+			// fFactory.convert(buf, rule.arg2(), 0);
 			// buf.append('}');
-			// fFactory.convert(buf, f.get(1), 0);
+			// fFactory.convert(buf, f.arg1(), 0);
 			return true;
 		}
 		return false;

@@ -504,7 +504,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (rule.isFreeAt(2, symbol)) {
 			limit = rule.arg2();
 		} else {
-			throw new WrongArgumentType(ast, ast.get(2), 2, "Limit: limit value contains variable symbol for rule definition!");
+			throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: limit value contains variable symbol for rule definition!");
 		}
 		LimitData data = new LimitData(symbol, limit, rule, direction);
 		return evalLimit(ast.arg1(), data, true);

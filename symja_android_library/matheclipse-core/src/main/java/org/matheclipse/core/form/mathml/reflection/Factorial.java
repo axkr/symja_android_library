@@ -21,7 +21,7 @@ public class Factorial extends AbstractConverter {
       return false;
     }
     fFactory.tagStart(buf, "mrow");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     fFactory.tag(buf, "mo", "!");
     fFactory.tagEnd(buf, "mrow");
     return true;

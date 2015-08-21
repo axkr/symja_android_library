@@ -23,7 +23,7 @@ public class Order extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		final int cp = ast.arg1().compareTo(ast.get(2));
+		final int cp = ast.arg1().compareTo(ast.arg2());
 		if (cp < 0) {
 			return F.C1;
 		} else if (cp > 0) {

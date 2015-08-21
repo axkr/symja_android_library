@@ -25,11 +25,11 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 
 		IAST variableList = F.List();
 		if (ast.size() == 3) {
-			if (ast.get(2).isSymbol()) {
-				ISymbol variable = (ISymbol) ast.get(2);
+			if (ast.arg2().isSymbol()) {
+				ISymbol variable = (ISymbol) ast.arg2();
 				variableList = F.List(variable);
-			} else if (ast.get(2).isList()) {
-				variableList = (IAST) ast.get(2);
+			} else if (ast.arg2().isList()) {
+				variableList = (IAST) ast.arg2();
 			} else {
 				return null;
 			}

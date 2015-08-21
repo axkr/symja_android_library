@@ -37,8 +37,8 @@ public class Tuples extends AbstractFunctionEvaluator {
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
-		} else if (ast.size() == 3 && arg1.isAST() && ast.get(2).isInteger()) {
-			IExpr arg2 = ast.get(2);
+		} else if (ast.size() == 3 && arg1.isAST() && ast.arg2().isInteger()) {
+			IExpr arg2 = ast.arg2();
 			try {
 				int k = ((IInteger) arg2).toInt();
 				IAST result = F.List();

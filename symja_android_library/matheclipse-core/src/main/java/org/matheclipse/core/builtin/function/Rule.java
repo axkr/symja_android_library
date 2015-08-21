@@ -28,7 +28,7 @@ public class Rule extends AbstractFunctionEvaluator {
 			if (leftHandSide.equals(ast.arg1())) {
 				return null;
 			}
-			return Rule(leftHandSide, ast.get(2));
+			return Rule(leftHandSide, ast.arg2());
 		}
 
 		return Rule(leftHandSide, arg2);

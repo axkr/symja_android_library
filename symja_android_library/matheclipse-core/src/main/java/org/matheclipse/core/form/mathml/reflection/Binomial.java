@@ -22,8 +22,8 @@ public class Binomial extends AbstractConverter {
     fFactory.tagStart(buf, "mrow");
     fFactory.tag(buf, "mo", "(");
     fFactory.tagStart(buf, "mfrac", "linethickness=\"0\"");
-    fFactory.convert(buf, f.get(1), 0);
-    fFactory.convert(buf, f.get(2), 0); 
+    fFactory.convert(buf, f.arg1(), 0);
+    fFactory.convert(buf, f.arg2(), 0); 
     fFactory.tagEnd(buf, "mfrac");
     fFactory.tag(buf, "mo", ")");
     fFactory.tagEnd(buf, "mrow");

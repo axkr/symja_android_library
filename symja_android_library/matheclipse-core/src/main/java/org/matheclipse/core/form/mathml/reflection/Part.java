@@ -20,12 +20,12 @@ public class Part extends AbstractConverter {
       return false;
     }
     fFactory.tagStart(buf, "mrow");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     // &LeftDoubleBracket;   &#x301A;
     fFactory.tag(buf, "mo", "&#x301A;");
     if (f.size() > 2) {
       fFactory.tagStart(buf, "mrow");
-      fFactory.convert(buf, f.get(2), 0);
+      fFactory.convert(buf, f.arg2(), 0);
       for (int i = 3; i < f.size(); i++) {
 				fFactory.tag(buf, "mo", ",");
         fFactory.convert(buf, f.get(i), 0);

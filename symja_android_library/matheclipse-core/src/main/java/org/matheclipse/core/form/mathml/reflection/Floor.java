@@ -22,7 +22,7 @@ public class Floor extends AbstractConverter {
     fFactory.tagStart(buf, "mrow");
     // &LeftFloor; &x0230A;
     fFactory.tag(buf, "mo", "&#x230A;");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     // &RightFloor; &#0230B;
     fFactory.tag(buf, "mo", "&#230B;");
     fFactory.tagEnd(buf, "mrow");

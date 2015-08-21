@@ -22,7 +22,7 @@ public class Ceiling extends AbstractConverter {
     fFactory.tagStart(buf, "mrow");
     // LeftCeiling &#002308;
     fFactory.tag(buf, "mo", "&#x2308;");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     // RightCeiling &#x02309;
     fFactory.tag(buf, "mo", "&#x2309;");
     fFactory.tagEnd(buf, "mrow");

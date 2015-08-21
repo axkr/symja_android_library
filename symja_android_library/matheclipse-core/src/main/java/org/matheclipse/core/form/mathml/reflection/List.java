@@ -20,7 +20,7 @@ public class List extends AbstractConverter {
     fFactory.tag(buf, "mo", "{");
     if (f.size() > 1) {
       fFactory.tagStart(buf, "mrow");
-      fFactory.convert(buf, f.get(1), 0);
+      fFactory.convert(buf, f.arg1(), 0);
       for (int i = 2; i < f.size(); i++) {
 				fFactory.tag(buf, "mo", ",");
         fFactory.convert(buf, f.get(i), 0);

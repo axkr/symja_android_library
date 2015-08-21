@@ -71,9 +71,9 @@ class QuineMcCluskyTerm {
 			if (varVals[0] == NIL) {
 				// return F.True;
 			} else if (varVals[0] == (byte) 0) {
-				return F.Not(variables.get(1));
+				return F.Not(variables.arg1());
 			} else if (varVals[0] == (byte) 1) {
-				return variables.get(1);
+				return variables.arg1();
 			} else {
 				throw new BooleanFunctionConversionException();
 			}
@@ -94,7 +94,7 @@ class QuineMcCluskyTerm {
 			return F.False;
 		}
 		if (result.size() == 2) {
-			return result.get(1);
+			return result.arg1();
 		}
 		return result;
 	}

@@ -15,9 +15,9 @@ public class Binomial extends AbstractConverter {
       return false;
     }
     buf.append('{');
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     buf.append("\\choose ");
-    fFactory.convert(buf, f.get(2), 0); 
+    fFactory.convert(buf, f.arg2(), 0); 
     buf.append('}');
     return true;
   }

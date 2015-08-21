@@ -18,7 +18,7 @@ public class ReplaceRepeated implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		try {
 			Validate.checkSize(ast, 3);
-			if (ast.get(2).isListOfLists()) {
+			if (ast.arg2().isListOfLists()) {
 				IAST result = F.List();
 				for (IExpr subList : (IAST) ast.arg2()) {
 					result.add(ast.arg1().replaceRepeated((IAST) subList));

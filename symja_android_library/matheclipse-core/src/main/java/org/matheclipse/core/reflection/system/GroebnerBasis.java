@@ -30,11 +30,11 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				if (lst.arg1().isVector() < 0) {
 					return null;
 				}
-				if (lst.get(2).isVector() < 0) {
+				if (lst.arg2().isVector() < 0) {
 					return null;
 				}
 				if (lst.size() == 3) {
-					IAST vars = (IAST) lst.get(2);
+					IAST vars = (IAST) lst.arg2();
 					if (vars.size() <= 1) {
 						return null;
 					}

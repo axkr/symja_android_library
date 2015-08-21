@@ -18,7 +18,7 @@ public class ReplaceAll implements IFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 		try {
-			if (ast.get(2).isListOfLists()) {
+			if (ast.arg2().isListOfLists()) {
 				IAST result = F.List();
 				for (IExpr subList : (IAST) ast.arg2()) {
 					result.add(F.subst(ast.arg1(), (IAST) subList));

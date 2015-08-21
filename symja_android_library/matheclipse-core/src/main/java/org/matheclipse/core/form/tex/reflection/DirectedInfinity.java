@@ -11,10 +11,10 @@ public class DirectedInfinity extends AbstractConverter {
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		if (f.size() == 2) {
-			if (f.get(1).isOne()) {
+			if (f.arg1().isOne()) {
 				buf.append("\\infty");
 				return true;
-			} else if (f.get(1).isMinusOne()) {
+			} else if (f.arg1().isMinusOne()) {
 				buf.append("- \\infty");
 				return true;
 			}

@@ -16,7 +16,7 @@ public class StringTake extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast) {
 		Validate.checkSize(ast, 3);
 
-		if (ast.arg1() instanceof IStringX && ast.get(2).isInteger()) {
+		if (ast.arg1() instanceof IStringX && ast.arg2().isInteger()) {
 			String s = ast.arg1().toString();
 			final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			if (n >= 0) {

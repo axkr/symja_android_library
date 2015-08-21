@@ -16,7 +16,7 @@ public class Sqrt extends AbstractConverter {
       return false;
     }
     buf.append("\\sqrt{");
-    fFactory.convert(buf, f.get(1), 0);
+    fFactory.convert(buf, f.arg1(), 0);
     buf.append('}');
     return true;  
   }

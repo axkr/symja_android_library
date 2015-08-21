@@ -72,7 +72,7 @@ public class QuineMcCluskyFormula {
 			return F.True;
 		}
 		if (result.size() == 2) {
-			return result.get(1);
+			return result.arg1();
 		}
 		return result;
 	}
