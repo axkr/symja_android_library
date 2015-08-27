@@ -263,7 +263,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	transient PrintStream fOutPrintStream = null;
 
-	transient final ContextPath fContextPath;
+	transient ContextPath fContextPath;
 
 	protected int fRecursionLimit;
 
@@ -389,7 +389,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		init();
 		fContextPath = new ContextPath();
-		
+
 		// set this EvalEngine to the thread local
 		set(this);
 	}
@@ -1354,7 +1354,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	public Context getContext() {
-		return Context.GLOBAL;
+		return Context.SYSTEM;
 	}
 
 	public ContextPath getContextPath() {
@@ -1551,9 +1551,31 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	final public IExpr parse(String expression) {
 		final Parser parser = new Parser(fRelaxedSyntax);
 		final ASTNode node = parser.parse(expression);
-		return AST2Expr.CONST_LC.convert(node, this);
+		if (fRelaxedSyntax) {
+			return AST2Expr.CONST_LC.convert(node, this);
+		}
+		return AST2Expr.CONST.convert(node, this);
 	}
 
+	/**
+	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
+	 * 
+	 * @param astString
+	 *            an expression in math formula notation
+	 * 
+	 * @return
+	 * @throws org.matheclipse.parser.client.SyntaxError
+	 *             if a parsing error occurs
+	 */
+	// final public IAST parsePackage(String expression) {
+	// final Parser parser = new Parser(fRelaxedSyntax);
+	// final List<ASTNode> node = parser.parsePackage(expression);
+	// IAST list = F.List();
+	// for (int i = 0; i < node.size(); i++) {
+	// list.add(AST2Expr.CONST_LC.convert(node.get(i), this));
+	// }
+	// return list;
+	// }
 	/**
 	 * Parse the given <code>expression String</code> into an <code>ASTNode</code> without evaluation.
 	 * 
@@ -1634,6 +1656,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public void setAssumptions(IAssumptions assumptions) {
 		this.fAssumptions = assumptions;
+	}
+
+	public void setContextPath(ContextPath fContextPath) {
+		this.fContextPath = fContextPath;
 	}
 
 	public void setIterationLimit(final int i) {

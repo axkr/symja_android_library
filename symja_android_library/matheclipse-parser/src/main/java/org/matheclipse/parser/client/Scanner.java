@@ -28,6 +28,12 @@ public class Scanner {
 	protected String fInputString;
 
 	protected char fLastChar;
+
+	/**
+	 * Recursion depth for brackets.
+	 */
+	protected int fRecursionDepth;
+
 	/**
 	 * Current input character
 	 */
@@ -168,7 +174,9 @@ public class Scanner {
 	final static public int TT_BLANK_OPTIONAL = 145;
 
 	final static public int TT_DERIVATIVE = 146;
-
+	
+	final static public int TT_NEWLINE = 150;
+	
 	// ----------------optimized identifier managment------------------
 	static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d", string_e = "e", string_f = "f",
 			string_g = "g", string_h = "h", string_i = "i", string_j = "j", string_k = "k", string_l = "l", string_m = "m",
@@ -184,6 +192,8 @@ public class Scanner {
 
 	protected IParserFactory fFactory;
 
+	protected final boolean fPackageMode;
+
 	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
 
 	static {
@@ -194,7 +204,8 @@ public class Scanner {
 	 * Initialize Scanner without a math-expression
 	 * 
 	 */
-	public Scanner() {
+	public Scanner(boolean packageMode) {
+		fPackageMode = packageMode;
 		initializeNullScanner();
 	}
 
@@ -285,6 +296,16 @@ public class Scanner {
 	/**
 	 * Get the next token from the input string
 	 */
+	protected boolean isWhitespace() {
+		if (fInputString.length() > fCurrentPosition) {
+			return Character.isWhitespace(fInputString.charAt(fCurrentPosition));
+		}
+		return false;
+	}
+
+	/**
+	 * Get the next token from the input string
+	 */
 	protected void getNextToken() throws SyntaxError {
 
 		while (fInputString.length() > fCurrentPosition) {
@@ -302,6 +323,10 @@ public class Scanner {
 				if (fCurrentChar == '\n') {
 					rowCount++;
 					fCurrentColumnStartPosition = fCurrentPosition;
+					if (fPackageMode && fRecursionDepth == 0) {
+						fToken = TT_NEWLINE;
+						return;
+					}
 					continue; // while loop
 				}
 				if (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
@@ -455,6 +480,11 @@ public class Scanner {
 					fCurrentPosition++;
 					fCurrentPosition++;
 					level++;
+					continue;
+				} else if (fInputString.charAt(fCurrentPosition) == '\n') {
+					fCurrentPosition++;
+					rowCount++;
+					fCurrentColumnStartPosition = fCurrentPosition;
 					continue;
 				}
 				fCurrentPosition++;
@@ -727,6 +757,26 @@ public class Scanner {
 				}
 				while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
 					getChar();
+				}
+			} else {
+				if (fCurrentChar == '*') {
+					int lastPosition = fCurrentPosition;
+					getChar();
+					if (fCurrentChar == '^') {
+						getChar();
+						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+							getChar();
+						}
+						if (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+							while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+								getChar();
+							}
+						} else {
+							fCurrentPosition = lastPosition;
+						}
+					} else {
+						fCurrentPosition = lastPosition;
+					}
 				}
 			}
 		}

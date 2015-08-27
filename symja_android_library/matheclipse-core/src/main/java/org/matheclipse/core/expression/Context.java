@@ -8,7 +8,7 @@ import java.util.Set;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Context {
-	public final static Context GLOBAL = new Context("Global", F.PREDEFINED_SYMBOLS_MAP);
+	public final static Context SYSTEM = new Context("System", F.PREDEFINED_SYMBOLS_MAP);
 
 	final String contextName;
 

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.Blank;
 import org.matheclipse.core.builtin.function.Complex;
@@ -49,50 +51,50 @@ public class AST2Expr {
 			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin",
 			"BeginPackage", "BernoulliB", "Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "Break",
 			"Cancel", "CartesianProduct", "Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT",
-			"ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList", "Collect", "Complement",
-			"Complex", "ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate",
-			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral",
-			"CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition",
-			"Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
-			"Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible",
-			"Divisors", "Do", "Dot", "Drop", "Eigenvalues", "Eigenvectors", "Element", "Eliminate", "EllipticE", "EllipticF",
-			"EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "EuclidianDistance", "EulerE",
-			"EulerPhi", "EvenQ", "Exp", "Expand", "ExpandAll", "ExpIntegralE", "ExpIntegralEi", "Exponent", "ExtendedGCD",
-			"Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList",
-			"FactorTerms", "Flatten", "Fibonacci", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For",
-			"FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
-			"FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D",
-			"Greater", "GreaterEqual", "GroebnerBasis", "Haversine", "HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold",
-			"HoldForm", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
-			"IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner", "Insert", "IntegerExponent", "IntegerPart",
-			"IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction", "InterpolatingPolynomial", "Intersection",
-			"Inverse", "InverseErf", "InverseFunction", "InverseHaversine", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join",
-			"KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform", "LegendreP",
-			"Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming", "LinearSolve", "List",
-			"ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral", "LowerCaseQ", "LUDecomposition",
-			"ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ",
-			"MatrixRank", "Max", "Mean", "Median", "MemberQ", "MessageName", "Min", "Mod", "Module", "MoebiusMu", "MonomialList",
-			"Most", "Multinomial", "Nand", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
-			"NFourierTransform", "NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor",
-			"Normalize", "Norm", "Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options",
-			"Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition",
-			"Pattern", "Permutations", "Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog",
-			"PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
-			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power", "PowerExpand",
-			"PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime", "PrimeQ", "PrimitiveRoots", "Print",
-			"Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal", "RandomSample", "Range", "Rational",
-			"Rationalize", "Re", "Reap", "Reduce", "Refine", "ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant",
-			"Return", "Reverse", "Riffle", "RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round",
-			"RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set",
-			"SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition",
-			"Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ",
-			"StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript",
-			"Subsets", "SubtractFrom", "Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh",
-			"Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
-			"Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp",
-			"TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset",
-			"UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which",
-			"While", "Xor", "Zeta" };
+			"ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList", "Colon", "Collect", "Complement",
+			"Compile", "Complex", "ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition",
+			"Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",
+			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer",
+			"Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det",
+			"DiagonalMatrix", "DigitQ", "Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence",
+			"DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop", "Eigenvalues", "Eigenvectors", "Element", "Eliminate",
+			"EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
+			"EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Exp", "Expand", "ExpandAll", "ExpIntegralE", "ExpIntegralEi",
+			"Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree",
+			"FactorSquareFreeList", "FactorTerms", "Flatten", "Fibonacci", "FindRoot", "First", "Fit", "FixedPoint", "Floor",
+			"Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
+			"FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Get", "Graphics",
+			"Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "Haversine", "HarmonicNumber", "Head",
+			"HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricPFQ",
+			"Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner", "Insert",
+			"IntegerExponent", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
+			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "InverseHaversine",
+			"JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount",
+			"LaguerreL", "LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line",
+			"LinearProgramming", "LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand",
+			"LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ",
+			"MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MessageName",
+			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Nand", "Negative", "Nest", "NestList",
+			"NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NMaximize", "NMinimize",
+			"NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not", "NRoots", "NSolve", "NullSpace", "NumberQ",
+			"Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft",
+			"PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "PatternTest", "Permutations", "Piecewise", "Plot",
+			"Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM",
+			"PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
+			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime",
+			"PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal",
+			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated", "RepeatedNull",
+			"ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals",
+			"RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan",
+			"Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Show", "Sign",
+			"SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve",
+			"Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
+			"StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum",
+			"Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm", "Thread",
+			"Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToString",
+			"Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples",
+			"Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet",
+			"UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
@@ -193,9 +195,7 @@ public class AST2Expr {
 		if (node == null) {
 			return null;
 		}
-		if (node instanceof Pattern3Node) {
-			throw new UnsupportedOperationException("'___' pattern-matching expression not implemented");
-		}
+
 		if (node instanceof FunctionNode) {
 			final FunctionNode functionNode = (FunctionNode) node;
 			int size = functionNode.size();
@@ -285,11 +285,16 @@ public class AST2Expr {
 			String nodeStr = node.getString();
 			return convertSymbol(nodeStr);
 		}
-		// because of inheritance check Pattern2Node before PatternNode
+		// because of inheritance: check Pattern3Node before Pattern2Node before PatternNode
+		if (node instanceof Pattern3Node) {
+			final Pattern3Node p3n = (Pattern3Node) node;
+			SymbolNode sn = p3n.getSymbol();
+			return F.$ps((ISymbol) convert(sn), convert(p3n.getConstraint()), p3n.isDefault(), true);
+		}
 		if (node instanceof Pattern2Node) {
 			final Pattern2Node p2n = (Pattern2Node) node;
 			SymbolNode sn = p2n.getSymbol();
-			return F.$ps((ISymbol) convert(sn), convert(p2n.getConstraint()), p2n.isDefault());
+			return F.$ps((ISymbol) convert(sn), convert(p2n.getConstraint()), p2n.isDefault(), false);
 		}
 		if (node instanceof PatternNode) {
 			final PatternNode pn = (PatternNode) node;
@@ -321,10 +326,28 @@ public class AST2Expr {
 			return F.stringx(node.getString());
 		}
 		if (node instanceof FloatNode) {
-			if (EvalEngine.isApfloat(fPrecision)) {
-				return F.num(new Apfloat(node.getString(), fPrecision));
+			String nStr = node.getString();
+			String floatStr = nStr;
+			int index = nStr.indexOf("*^");
+			int exponent = 1;
+			if (index > 0) {
+				floatStr = nStr.substring(0, index);
+				exponent = Integer.parseInt(nStr.substring(index + 2));
 			}
-			return F.num(Double.parseDouble(node.getString()));
+			if (EvalEngine.isApfloat(fPrecision)) {
+				Apfloat apfloatValue = new Apfloat(floatStr, fPrecision);
+				if (exponent != 1) {
+					// value * 10 ^ exponent
+					return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apint(10), new Apint(exponent))));
+				}
+				return F.num(apfloatValue);
+			}
+			double doubleValue = Double.parseDouble(floatStr);
+			if (exponent != 1) {
+				// value * 10 ^ exponent
+				return F.num(doubleValue * Math.pow(10, exponent));
+			}
+			return F.num(doubleValue);
 		}
 
 		return F.retrieveSymbol(node.toString());

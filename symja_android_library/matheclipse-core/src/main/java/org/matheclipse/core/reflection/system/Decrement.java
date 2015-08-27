@@ -22,12 +22,15 @@ public class Decrement extends AbstractArg1 {
 	}
 
 	@Override
-	public IExpr e1ObjArg(final IExpr o0) {
-		final ISymbol sym = Validate.checkAssignedVariable(o0);
-		IExpr[] results = sym.reassignSymbolValue(getFunction(), getFunctionSymbol());
-		if (results != null) {
-			return getResult(results[0], results[1]);
-		}
+	public IExpr e1ObjArg(final IExpr expr) {
+		if (expr.isSymbol() && ((ISymbol) expr).hasAssignedSymbolValue()) {
+			final ISymbol sym = (ISymbol) expr;
+			IExpr[] results = sym.reassignSymbolValue(getFunction(), getFunctionSymbol());
+			if (results != null) {
+				return getResult(results[0], results[1]);
+			}
+			return null;
+		} 
 		return null;
 	}
 

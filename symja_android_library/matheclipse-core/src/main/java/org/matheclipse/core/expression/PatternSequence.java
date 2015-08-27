@@ -32,13 +32,16 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	private static final long serialVersionUID = 2773651826316158627L;
 
 	/**
+	 * @param nullAllowed
+	 *            TODO
 	 * 
 	 */
-	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def) {
+	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
 		PatternSequence p = new PatternSequence();
 		p.fSymbol = symbol;
 		p.fCondition = check;
 		p.fDefault = def;
+		p.fZeroArgsAllowed = zeroArgsAllowed;
 		return p;
 	}
 
@@ -73,6 +76,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 */
 	boolean fDefault = false;
 
+	boolean fZeroArgsAllowed = false;
+
 	/**
 	 * Index for the pattern-matcher
 	 * 
@@ -91,7 +96,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		result[1] = 1;
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -99,7 +104,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 		if (obj instanceof PatternSequence) {
 			PatternSequence pattern = (PatternSequence) obj;
-			if (fSymbol.equals(pattern.fSymbol)) {
+			if (fSymbol.equals(pattern.fSymbol) && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
 				if ((fCondition != null) && (pattern.fCondition != null)) {
 					return fCondition.equals(pattern.fCondition);
 				}
@@ -156,17 +161,17 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		patternMap.setValue(this, sequence);
 		return true;
 	}
-	
+
 	public IExpr getCondition() {
 		return fCondition;
 	}
 
 	@Override
-	public int getEvalFlags() { 
+	public int getEvalFlags() {
 		// the ast contains a pattern sequence (i.e. "x__")
 		return IAST.CONTAINS_PATTERN_SEQUENCE;
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -235,6 +240,9 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		final StringBuffer buffer = new StringBuffer();
 		if (fSymbol == null) {
 			buffer.append("__");
+			if (fZeroArgsAllowed) {
+				buffer.append('_');
+			}
 			if (fDefault) {
 				buffer.append('.');
 			}
@@ -245,12 +253,18 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 			if (fCondition == null) {
 				buffer.append(fSymbol.toString());
 				buffer.append("__");
+				if (fZeroArgsAllowed) {
+					buffer.append('_');
+				}
 				if (fDefault) {
 					buffer.append('.');
 				}
 			} else {
 				buffer.append(fSymbol.toString());
 				buffer.append("__");
+				if (fZeroArgsAllowed) {
+					buffer.append('_');
+				}
 				if (fDefault) {
 					buffer.append('.');
 				}

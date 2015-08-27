@@ -67,7 +67,7 @@ public class F {
 	public final static Map<String, IPattern> PREDEFINED_PATTERN_MAP = new HashMap<String, IPattern>(61);
 
 	/**
-	 * The map for predefined (context &quot;Global&quot;) symbols
+	 * The map for predefined (context &quot;System&quot;) symbols
 	 */
 	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
 
@@ -111,6 +111,11 @@ public class F {
 
 	public final static ISymbol Aborted = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
 	public final static ISymbol Assumptions = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "assumptions" : "Assumptions");
+	public final static ISymbol Begin = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "begin" : "Begin");
+	public final static ISymbol BeginPackage = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beginpackage"
+			: "BeginPackage");
+	public final static ISymbol End = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "end" : "End");
+	public final static ISymbol EndPackage = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "endpackage" : "EndPackage");
 	public final static ISymbol IntegerHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integer" : "Integer");
 	public final static ISymbol SymbolHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
 	public final static ISymbol RealHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "real" : "Real");
@@ -118,7 +123,11 @@ public class F {
 	public final static ISymbol BlankHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "blank" : "Blank");
 	public final static ISymbol StringHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "string" : "String");
 	public final static ISymbol MethodHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "methodhead" : "MethodHead");
-
+	public final static ISymbol PatternTest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "patterntest" : "PatternTest");
+	public final static ISymbol Colon = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "colon" : "Colon");
+	public final static ISymbol Repeated = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeated" : "Repeated");
+	public final static ISymbol RepeatedNull = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull" : "RepeatedNull");
+	
 	public final static ISymbol Algebraics = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
 	public final static ISymbol Booleans = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleans" : "Booleans");
 	public final static ISymbol Complexes = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexes" : "Complexes");
@@ -220,6 +229,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.ClearAll());
 	public final static ISymbol Collect = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect",
 			new org.matheclipse.core.builtin.function.Collect());
+	public final static ISymbol Compile = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compile" : "Compile",
+			new org.matheclipse.core.builtin.function.Compile());
 	public final static ISymbol Complex = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex",
 			new org.matheclipse.core.builtin.function.Complex());
 	public final static ISymbol CompoundExpression = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression"
@@ -270,6 +281,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.FullForm());
 	static ISymbol Function = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function",
 			new org.matheclipse.core.builtin.function.Function());
+	public final static ISymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get",
+			new org.matheclipse.core.builtin.function.Get());
 	public final static ISymbol Head = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",
 			new org.matheclipse.core.builtin.function.Head());
 	public final static ISymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
@@ -302,6 +315,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.MathMLForm());
 	public final static ISymbol MemberQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
 			new org.matheclipse.core.builtin.function.MemberQ());
+	public final static ISymbol MessageName = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName",
+			new org.matheclipse.core.builtin.function.MessageName());
 	public final static ISymbol Module = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
 			new org.matheclipse.core.builtin.function.Module());
 	public final static ISymbol N = initFinalSymbol("N", new org.matheclipse.core.builtin.function.N());
@@ -1264,10 +1279,11 @@ public class F {
 	 * @param def
 	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the pattern is used
 	 *            in.
+	 * @param zeroArgsAllowed TODO
 	 * @return IPattern
 	 */
-	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def) {
-		return PatternSequence.valueOf(symbol, check, def);
+	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
+		return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
 	}
 
 	/**
@@ -2673,7 +2689,7 @@ public class F {
 	 */
 	public static ISymbol initFinalSymbol(final String symbolName) {
 		ISymbol temp = new Symbol(symbolName);
-		Context.GLOBAL.put(symbolName, temp);
+		Context.SYSTEM.put(symbolName, temp);
 		return temp;
 	}
 
@@ -2691,7 +2707,7 @@ public class F {
 		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
-	
+
 	/**
 	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new Symbol in
 	 * the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use it as associated
@@ -2704,7 +2720,7 @@ public class F {
 	public static ISymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
 		ISymbol temp = new Symbol(symbolName, evaluator);
 		evaluator.setUp(temp);
-		Context.GLOBAL.put(symbolName, temp);
+		Context.SYSTEM.put(symbolName, temp);
 		return temp;
 	}
 
@@ -3500,7 +3516,7 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol predefinedSymbol(final String symbolName) {
-		ISymbol temp = Context.GLOBAL.get(symbolName);
+		ISymbol temp = Context.SYSTEM.get(symbolName);
 		if (temp != null) {
 			return temp;
 		}
@@ -3513,7 +3529,7 @@ public class F {
 			}
 		}
 		temp = new Symbol(lcSymbolName);
-		Context.GLOBAL.put(lcSymbolName, temp);
+		Context.SYSTEM.put(lcSymbolName, temp);
 		return temp;
 	}
 

@@ -11,8 +11,18 @@ public class ContextPath {
 	List<Context> path = new ArrayList<Context>();
 
 	public ContextPath() {
-		path.add(Context.GLOBAL);
-		path.add(new Context("System"));
+		path.add(Context.SYSTEM);
+		path.add(new Context("Global"));
+	}
+
+	public ContextPath(String contextName) {
+		path.add(Context.SYSTEM);
+		path.add(new Context(contextName));
+	}
+
+	public ContextPath(Context context) {
+		path.add(Context.SYSTEM);
+		path.add(context);
 	}
 
 	public boolean add(Context e) {

@@ -8,17 +8,17 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Locale;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 
-import org.matheclipse.core.eval.ExprEvaluator;
-
 /**
  * 
  */
-public class Console {
+public class MMAConsole {
 
 	private ExprEvaluator fEvaluator;
 
@@ -29,11 +29,13 @@ public class Console {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
+		// distinguish between lower- and uppercase identifiers
+		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(), null, false);
 		printUsage();
-		Console console;
+		MMAConsole console;
 		try {
-			console = new Console();
+			console = new MMAConsole();
 		} catch (final SyntaxError e1) {
 			e1.printStackTrace();
 			return;
@@ -71,7 +73,8 @@ public class Console {
 			try {
 				inputExpression = console.readString(System.out, ">>> ");
 				if (inputExpression != null) {
-					if ((inputExpression.length() >= 4) && inputExpression.toLowerCase().substring(0, 4).equals("exit")) {
+					if ((inputExpression.length() >= 4)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
 					}
@@ -115,8 +118,9 @@ public class Console {
 	/**
 	 * Create a console which appends each evaluation output in a history list.
 	 */
-	public Console() {
-		fEvaluator = new ExprEvaluator(false, 100);
+	public MMAConsole() {
+		EvalEngine engine = new EvalEngine(false);
+		fEvaluator = new ExprEvaluator(engine, false, 100);
 	}
 
 	/**

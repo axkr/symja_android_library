@@ -16,6 +16,7 @@
 package org.matheclipse.parser.client.operator;
 
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IParserFactory;
 
 public class InfixOperator extends Operator {
@@ -27,15 +28,13 @@ public class InfixOperator extends Operator {
 
 	public final static int LEFT_ASSOCIATIVE = 2;
 
-	public InfixOperator(final String oper, final String functionName,
-			final int precedence, final int grouping) {
+	public InfixOperator(final String oper, final String functionName, final int precedence, final int grouping) {
 		super(oper, functionName, precedence);
 		fGrouping = grouping;
 	}
 
 	/**
-	 * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE,
-	 * RIGHT_ASSOCIATIVE)
+	 * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE, RIGHT_ASSOCIATIVE)
 	 * 
 	 * @return
 	 */
@@ -43,9 +42,13 @@ public class InfixOperator extends Operator {
 		return fGrouping;
 	}
 
-	public ASTNode createFunction(final IParserFactory factory,
-			final ASTNode lhs, final ASTNode rhs) {
-		return factory.createFunction(factory.createSymbol(getFunctionName()),
-				lhs, rhs);
+	public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+		if (fOperatorString.equals("//")) {
+			//   lhs // rhs ==> rhs[lhs]
+			FunctionNode function =factory.createAST(rhs);
+			function.add(lhs);
+			return function;
+		}
+		return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
 	}
 }

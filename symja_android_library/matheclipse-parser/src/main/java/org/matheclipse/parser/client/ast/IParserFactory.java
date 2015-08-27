@@ -30,7 +30,7 @@ public interface IParserFactory {
 	 * The default set of characters, which could form an operator
 	 * 
 	 */
-	public final static String DEFAULT_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@";
+	public final static String DEFAULT_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?";
 
 	/**
 	 * The set of characters, which could form an operator

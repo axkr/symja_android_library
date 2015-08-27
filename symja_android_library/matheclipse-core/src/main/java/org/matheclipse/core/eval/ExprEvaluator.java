@@ -45,9 +45,25 @@ public class ExprEvaluator {
 	 *            the number of last entries of the calculations which should be stored.
 	 */
 	public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
-		fVariableMap = new IdentityHashMap<ISymbol, IExpr>();
-		fVariables = new ArrayList<ISymbol>();
-		engine = new EvalEngine(true, outListDisabled);
+		this(new EvalEngine(true, outListDisabled), outListDisabled, historyCapacity);
+	}
+
+	/**
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
+	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
+	 * 
+	 * @parm engine
+	 * @param outListDisabled
+	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the
+	 *            last calculations will be saved and the <code>Out()</code> function (or <code>$ans</code> variable or the
+	 *            <code>%</code> operator) will be unevaluated.
+	 * @param historyCapacity
+	 *            the number of last entries of the calculations which should be stored.
+	 */
+	public ExprEvaluator(EvalEngine engine, boolean outListDisabled, int historyCapacity) {
+		this.fVariableMap = new IdentityHashMap<ISymbol, IExpr>();
+		this.fVariables = new ArrayList<ISymbol>();
+		this.engine = engine;
 		if (!outListDisabled) {
 			engine.setOutListDisabled(outListDisabled, 100);
 		}

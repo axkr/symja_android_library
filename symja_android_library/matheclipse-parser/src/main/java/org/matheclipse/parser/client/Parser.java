@@ -41,7 +41,6 @@ public class Parser extends Scanner {
 	 * Use '('...')' as brackets for arguments
 	 */
 	private final boolean fRelaxedSyntax;
-	private final boolean fPackageMode;
 	private List<ASTNode> fNodeList = null;
 	public final static SymbolNode DERIVATIVE = new SymbolNode("Derivative");
 
@@ -75,11 +74,10 @@ public class Parser extends Scanner {
 	}
 
 	public Parser(IParserFactory factory, final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
-		super();
+		super(packageMode);
 		this.fRelaxedSyntax = relaxedSyntax;
 		this.fFactory = factory;
-		this.fPackageMode = packageMode;
-		if (this.fPackageMode) {
+		if (packageMode) {
 			fNodeList = new ArrayList<ASTNode>(256);
 		}
 	}
@@ -175,6 +173,8 @@ public class Parser extends Scanner {
 		if (fToken == TT_OPERATOR) {
 			if (fOperatorString.equals(".")) {
 				fCurrentChar = '.';
+				// fToken = TT_DIGIT;
+				// return getPart();
 				return getNumber(false);
 			}
 			final PrefixOperator prefixOperator = determinePrefixOperator();
@@ -198,13 +198,17 @@ public class Parser extends Scanner {
 
 	private ASTNode parseLookaheadOperator(final int min_precedence) {
 		ASTNode rhs = parsePrimary();
+
 		while (true) {
 			final int lookahead = fToken;
+			if (fToken == TT_NEWLINE) {
+				return rhs;
+			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
 					|| (fToken == TT_DIGIT)) {
-				if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar == '\n') {
-					return rhs;
-				}
+				// if (fPackageMode && fRecursionDepth < 1) {
+				// return rhs;
+				// }
 				// lazy evaluation of multiplication
 				InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
 				if (timesOperator.getPrecedence() > min_precedence) {
@@ -221,14 +225,29 @@ public class Parser extends Scanner {
 				}
 				InfixOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null) {
-					if (infixOperator.getPrecedence() > min_precedence) {
-						rhs = parseOperators(rhs, infixOperator.getPrecedence());
-						continue;
-					} else if ((infixOperator.getPrecedence() == min_precedence)
-							&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
+					if (infixOperator.getPrecedence() > min_precedence
+							|| ((infixOperator.getPrecedence() == min_precedence) && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
+						if (infixOperator.getOperatorString().equals(";")) {
+							if (fPackageMode && fRecursionDepth < 1) {
+								return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+							}
+						}
 						rhs = parseOperators(rhs, infixOperator.getPrecedence());
 						continue;
 					}
+
+//					if (infixOperator.getPrecedence() > min_precedence) {
+//						ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, rhs);
+//						if (compoundExpressionNull != null) {
+//							return compoundExpressionNull;
+//						}
+//						rhs = parseOperators(rhs, infixOperator.getPrecedence());
+//						continue;
+//					} else if ((infixOperator.getPrecedence() == min_precedence)
+//							&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
+//						rhs = parseOperators(rhs, infixOperator.getPrecedence());
+//						continue;
+//					}
 				} else {
 					PostfixOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {
@@ -243,6 +262,19 @@ public class Parser extends Scanner {
 			break;
 		}
 		return rhs;
+
+	}
+
+	private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode rhs) {
+		if (infixOperator.getOperatorString().equals(";")) {
+			if (fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
+				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+			}
+			if (fPackageMode && fRecursionDepth < 1) {
+				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -260,17 +292,23 @@ public class Parser extends Scanner {
 		InfixOperator infixOperator;
 		PostfixOperator postfixOperator;
 		while (true) {
+			if (fToken == TT_NEWLINE) {
+				return lhs;
+			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
-					|| (fToken == TT_DIGIT)) {
-				if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar == '\n') {
-					return lhs;
-				}
+					|| (fToken == TT_DIGIT) || (fToken == TT_SLOT) || (fToken == TT_SLOTSEQUENCE)) {
+				// if (fPackageMode && fRecursionDepth < 1) {
+				// return lhs;
+				// }
+				// if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar == '\n') {
+				// return lhs;
+				// }
 				// lazy evaluation of multiplication
 				oper = fFactory.get("Times");
 				if (oper.getPrecedence() >= min_precedence) {
 					rhs = parseLookaheadOperator(oper.getPrecedence());
 					lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
-//					lhs = parseArguments(lhs);
+					// lhs = parseArguments(lhs);
 					continue;
 				}
 			} else {
@@ -289,9 +327,17 @@ public class Parser extends Scanner {
 				if (infixOperator != null) {
 					if (infixOperator.getPrecedence() >= min_precedence) {
 						getNextToken();
+						ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
+						if (compoundExpressionNull != null) {
+							return compoundExpressionNull;
+						}
+
+						while (fToken == TT_NEWLINE) {
+							getNextToken();
+						}
 						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 						lhs = infixOperator.createFunction(fFactory, lhs, rhs);
-//						lhs = parseArguments(lhs);
+
 						continue;
 					}
 				} else {
@@ -342,8 +388,11 @@ public class Parser extends Scanner {
 		return temp;
 	}
 
-	public List<ASTNode> parseList(final String expression) throws SyntaxError {
+	public List<ASTNode> parsePackage(final String expression) throws SyntaxError {
 		initialize(expression);
+		while (fToken == TT_NEWLINE) {
+			getNextToken();
+		}
 		ASTNode temp = parseOperators(parsePrimary(), 0);
 		fNodeList.add(temp);
 		while (fToken != TT_EOF) {
@@ -355,6 +404,9 @@ public class Parser extends Scanner {
 			}
 			if (fToken == TT_ARGUMENTS_CLOSE) {
 				throwSyntaxError("Too many closing ']'; End-of-file not reached.");
+			}
+			while (fToken == TT_NEWLINE) {
+				getNextToken();
 			}
 			temp = parseOperators(parsePrimary(), 0);
 			fNodeList.add(temp);
@@ -448,8 +500,12 @@ public class Parser extends Scanner {
 			return function;
 		}
 
-		getArguments(function);
-
+		fRecursionDepth++;
+		try {
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
 		if (fToken == TT_LIST_CLOSE) {
 			getNextToken();
 
@@ -489,8 +545,12 @@ public class Parser extends Scanner {
 				return function;
 			}
 		}
-		getArguments(function);
-
+		fRecursionDepth++;
+		try {
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
 		if (fRelaxedSyntax) {
 			if (fToken == TT_PRECEDENCE_CLOSE) {
 				getNextToken();
@@ -518,6 +578,7 @@ public class Parser extends Scanner {
 			throwSyntaxError("']' expected.");
 		}
 		return null;
+
 	}
 
 	/**
@@ -525,20 +586,24 @@ public class Parser extends Scanner {
 	 * 
 	 */
 	FunctionNode getFunctionArguments(final ASTNode head) throws SyntaxError {
+
 		final FunctionNode function = fFactory.createAST(head);
-
-		getNextToken();
-
-		if (fToken == TT_ARGUMENTS_CLOSE) {
+		fRecursionDepth++;
+		try {
 			getNextToken();
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				return getFunctionArguments(function);
+
+			if (fToken == TT_ARGUMENTS_CLOSE) {
+				getNextToken();
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
 			}
-			return function;
+
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
 		}
-
-		getArguments(function);
-
 		if (fToken == TT_ARGUMENTS_CLOSE) {
 			getNextToken();
 			if (fToken == TT_ARGUMENTS_OPEN) {
@@ -549,6 +614,7 @@ public class Parser extends Scanner {
 
 		throwSyntaxError("']' expected.");
 		return null;
+
 	}
 
 	private ASTNode getFactor() throws SyntaxError {
@@ -559,39 +625,59 @@ public class Parser extends Scanner {
 
 			if (fToken == TT_BLANK) {
 				// read '_'
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern(symbol, check);
-				} else {
+				if (isWhitespace()) {
 					temp = fFactory.createPattern(symbol, null);
+					getNextToken();
+				} else {
+					getNextToken();
+					if (fToken == TT_IDENTIFIER) {
+						final ASTNode check = getSymbol();
+						temp = fFactory.createPattern(symbol, check);
+					} else {
+						temp = fFactory.createPattern(symbol, null);
+					}
 				}
 			} else if (fToken == TT_BLANK_BLANK) {
 				// read '__'
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern2(symbol, check);
-				} else {
+				if (isWhitespace()) {
 					temp = fFactory.createPattern2(symbol, null);
+					getNextToken();
+				} else {
+					getNextToken();
+					if (fToken == TT_IDENTIFIER) {
+						final ASTNode check = getSymbol();
+						temp = fFactory.createPattern2(symbol, check);
+					} else {
+						temp = fFactory.createPattern2(symbol, null);
+					}
 				}
 			} else if (fToken == TT_BLANK_BLANK_BLANK) {
 				// read '___'
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern3(symbol, check);
-				} else {
+				if (isWhitespace()) {
 					temp = fFactory.createPattern3(symbol, null);
+					getNextToken();
+				} else {
+					getNextToken();
+					if (fToken == TT_IDENTIFIER) {
+						final ASTNode check = getSymbol();
+						temp = fFactory.createPattern3(symbol, check);
+					} else {
+						temp = fFactory.createPattern3(symbol, null);
+					}
 				}
 			} else if (fToken == TT_BLANK_OPTIONAL) {
 				// read '_.'
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final ASTNode check = getSymbol();
-					temp = fFactory.createPattern(symbol, check, true);
-				} else {
+				if (isWhitespace()) {
 					temp = fFactory.createPattern(symbol, null, true);
+					getNextToken();
+				} else {
+					getNextToken();
+					if (fToken == TT_IDENTIFIER) {
+						final ASTNode check = getSymbol();
+						temp = fFactory.createPattern(symbol, check, true);
+					} else {
+						temp = fFactory.createPattern(symbol, null, true);
+					}
 				}
 			} else {
 				temp = symbol;
@@ -599,55 +685,85 @@ public class Parser extends Scanner {
 
 			return parseArguments(temp);
 		} else if (fToken == TT_BLANK) {
-			getNextToken();
-			if (fToken == TT_IDENTIFIER) {
-				final ASTNode check = getSymbol();
-				return fFactory.createPattern(null, check);
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern(null, null);
 			} else {
-				return fFactory.createPattern(null, null);
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(null, check);
+				} else {
+					temp = fFactory.createPattern(null, null);
+				}
 			}
+			return parseArguments(temp);
 		} else if (fToken == TT_BLANK_BLANK) {
 			// read '__'
-			getNextToken();
-			if (fToken == TT_IDENTIFIER) {
-				final ASTNode check = getSymbol();
-				return fFactory.createPattern2(null, check);
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern2(null, null);
 			} else {
-				return fFactory.createPattern2(null, null);
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern2(null, check);
+				} else {
+					temp = fFactory.createPattern2(null, null);
+				}
 			}
+			return parseArguments(temp);
 		} else if (fToken == TT_BLANK_BLANK_BLANK) {
 			// read '___'
-			getNextToken();
-			if (fToken == TT_IDENTIFIER) {
-				final ASTNode check = getSymbol();
-				return fFactory.createPattern3(null, check);
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern3(null, null);
 			} else {
-				return fFactory.createPattern3(null, null);
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern3(null, check);
+				} else {
+					temp = fFactory.createPattern3(null, null);
+				}
 			}
+			return parseArguments(temp);
 		} else if (fToken == TT_BLANK_OPTIONAL) {
 			// read '_.'
-			getNextToken();
-			if (fToken == TT_IDENTIFIER) {
-				final ASTNode check = getSymbol();
-				return fFactory.createPattern(null, check, true);
+			if (isWhitespace()) {
+				getNextToken();
+				temp = fFactory.createPattern(null, null, true);
 			} else {
-				return fFactory.createPattern(null, null, true);
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final ASTNode check = getSymbol();
+					temp = fFactory.createPattern(null, check, true);
+				} else {
+					temp = fFactory.createPattern(null, null, true);
+				}
 			}
+			return parseArguments(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
 		} else if (fToken == TT_PRECEDENCE_OPEN) {
-			getNextToken();
+			fRecursionDepth++;
+			try {
+				getNextToken();
 
-			temp = parseOperators(parsePrimary(), 0);
+				temp = parseOperators(parsePrimary(), 0);
 
-			if (fToken != TT_PRECEDENCE_CLOSE) {
-				throwSyntaxError("\')\' expected.");
+				if (fToken != TT_PRECEDENCE_CLOSE) {
+					throwSyntaxError("\')\' expected.");
+				}
+			} finally {
+				fRecursionDepth--;
 			}
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
 				return getTimes(temp);
 			}
 			return temp;
+
 		} else if (fToken == TT_LIST_OPEN) {
 			return getList();
 		} else if (fToken == TT_STRING) {
@@ -670,7 +786,7 @@ public class Parser extends Scanner {
 			}
 
 			out.add(fFactory.createInteger(-countPercent));
-			return out;
+			return parseArguments(out);
 		} else if (fToken == TT_SLOT) {
 
 			getNextToken();
@@ -680,7 +796,7 @@ public class Parser extends Scanner {
 			} else {
 				slot.add(fFactory.createInteger(1));
 			}
-			return slot;
+			return parseArguments(slot);
 		} else if (fToken == TT_SLOTSEQUENCE) {
 
 			getNextToken();
@@ -690,18 +806,18 @@ public class Parser extends Scanner {
 			} else {
 				slotSequencce.add(fFactory.createInteger(1));
 			}
-			return slotSequencce;
+			return parseArguments(slotSequencce);
 		}
 		switch (fToken) {
 
 		case TT_PRECEDENCE_CLOSE:
-			throwSyntaxError("Too much open ) in factor.");
+			throwSyntaxError("Too much closing ) in factor.");
 			break;
 		case TT_LIST_CLOSE:
-			throwSyntaxError("Too much open } in factor.");
+			throwSyntaxError("Too much closing } in factor.");
 			break;
 		case TT_ARGUMENTS_CLOSE:
-			throwSyntaxError("Too much open ] in factor.");
+			throwSyntaxError("Too much closing ] in factor.");
 			break;
 		}
 
@@ -731,48 +847,52 @@ public class Parser extends Scanner {
 	 */
 	private ASTNode getPart() throws SyntaxError {
 		ASTNode temp = getFactor();
-//		temp = parseArguments(temp);
 
 		if (fToken != TT_PARTOPEN) {
 			return temp;
 		}
 
-		FunctionNode function = null;
-
-		do {
-			if (function == null) {
-				function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
-			} else {
-				function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
-			}
+		fRecursionDepth++;
+		try {
+			FunctionNode function = null;
 			do {
-				getNextToken();
-
-				if (fToken == TT_PARTCLOSE) {
-					throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+				if (function == null) {
+					function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
+				} else {
+					function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
 				}
+				do {
+					getNextToken();
 
-				function.add(parseOperators(parsePrimary(), 0));
-			} while (fToken == TT_COMMA);
-
-			if (fToken == TT_ARGUMENTS_CLOSE) {
-				// scanner-step begin: (instead of getNextToken() call):
-				if (fInputString.length() > fCurrentPosition) {
-					if (fInputString.charAt(fCurrentPosition) == ']') {
-						fCurrentPosition++;
-						fToken = TT_PARTCLOSE;
+					if (fToken == TT_ARGUMENTS_CLOSE) {
+						if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == ']') {
+							throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+						}
 					}
+
+					function.add(parseOperators(parsePrimary(), 0));
+				} while (fToken == TT_COMMA);
+
+				if (fToken == TT_ARGUMENTS_CLOSE) {
+					// scanner-step begin: (instead of getNextToken() call):
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == ']') {
+							fCurrentPosition++;
+							fToken = TT_PARTCLOSE;
+						}
+					}
+					// scanner-step end
 				}
-				// scanner-step end
-			}
-			if (fToken != TT_PARTCLOSE) {
-				throwSyntaxError("']]' expected.");
-			}
-			// }
-			getNextToken();
-		} while (fToken == TT_PARTOPEN);
+				if (fToken != TT_PARTCLOSE) {
+					throwSyntaxError("']]' expected.");
+				}
+				// }
+				getNextToken();
+			} while (fToken == TT_PARTOPEN);
 
-		return parseArguments(function);
+			return parseArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
 	}
-
 }
