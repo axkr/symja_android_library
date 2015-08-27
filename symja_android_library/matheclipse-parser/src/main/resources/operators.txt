@@ -1,3 +1,7 @@
+in,::,MessageName,7400
+pre,<<,Get,7000
+in,?,PatternTest,6600
+#
 post,++,Increment,6400
 post,--,Decrement,6400
 pre,++,PreIncrement,6400
@@ -8,7 +12,7 @@ in,//@,MapAll,6100,right
 in,@@,Apply,6100,right
 #
 post,!,Factorial,6000
-post,!!,Factorial2,6000
+post,!!,Factorial2,6000  
 #
 in,<>,StringJoin,5800
 #
@@ -65,6 +69,8 @@ in,/=,DivideBy,900
 post,&,Function,800
 #
 in,:,Colon,700
+#
+in,//,//,600
 #
 in,=,Set,300,right
 in,:=,SetDelayed,300
