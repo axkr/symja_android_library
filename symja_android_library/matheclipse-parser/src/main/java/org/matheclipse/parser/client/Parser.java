@@ -236,18 +236,18 @@ public class Parser extends Scanner {
 						continue;
 					}
 
-//					if (infixOperator.getPrecedence() > min_precedence) {
-//						ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, rhs);
-//						if (compoundExpressionNull != null) {
-//							return compoundExpressionNull;
-//						}
-//						rhs = parseOperators(rhs, infixOperator.getPrecedence());
-//						continue;
-//					} else if ((infixOperator.getPrecedence() == min_precedence)
-//							&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
-//						rhs = parseOperators(rhs, infixOperator.getPrecedence());
-//						continue;
-//					}
+					// if (infixOperator.getPrecedence() > min_precedence) {
+					// ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, rhs);
+					// if (compoundExpressionNull != null) {
+					// return compoundExpressionNull;
+					// }
+					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
+					// continue;
+					// } else if ((infixOperator.getPrecedence() == min_precedence)
+					// && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
+					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
+					// continue;
+					// }
 				} else {
 					PostfixOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {
@@ -407,6 +407,9 @@ public class Parser extends Scanner {
 			}
 			while (fToken == TT_NEWLINE) {
 				getNextToken();
+			}
+			if (fToken == TT_EOF) {
+				return fNodeList;
 			}
 			temp = parseOperators(parsePrimary(), 0);
 			fNodeList.add(temp);
@@ -852,15 +855,16 @@ public class Parser extends Scanner {
 			return temp;
 		}
 
-		fRecursionDepth++;
-		try {
-			FunctionNode function = null;
-			do {
-				if (function == null) {
-					function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
-				} else {
-					function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
-				}
+		FunctionNode function = null;
+		do {
+			if (function == null) {
+				function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
+			} else {
+				function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
+			}
+
+			fRecursionDepth++;
+			try {
 				do {
 					getNextToken();
 
@@ -887,12 +891,13 @@ public class Parser extends Scanner {
 					throwSyntaxError("']]' expected.");
 				}
 				// }
-				getNextToken();
-			} while (fToken == TT_PARTOPEN);
+			} finally {
+				fRecursionDepth--;
+			}
+			getNextToken();
+		} while (fToken == TT_PARTOPEN);
 
-			return parseArguments(function);
-		} finally {
-			fRecursionDepth--;
-		}
+		return parseArguments(function);
+
 	}
 }

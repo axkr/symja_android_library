@@ -2592,8 +2592,11 @@ public class F {
 		return binaryAST2(Gamma, a0, a1);
 	}
 
+	public static IAST GCD(final IExpr a0) {
+		return unaryAST1(GCD, a0);
+	}
+	
 	public static IAST GCD(final IExpr a0, final IExpr a1) {
-
 		return binaryAST2(GCD, a0, a1);
 	}
 
