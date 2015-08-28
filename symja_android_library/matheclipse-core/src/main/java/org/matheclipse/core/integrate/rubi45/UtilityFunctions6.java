@@ -12,15 +12,15 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions6 { 
   public static IAST RULES = List( 
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,Power($($s("§csc"),v_),m_DEFAULT),Power(Plus(Times(b_DEFAULT,$($s("§cos"),v_)),Times(a_DEFAULT,$($s("§sin"),v_))),n_DEFAULT)),x_),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,Power(Plus(Times(b_DEFAULT,$($s("§cos"),v_)),Times(a_DEFAULT,$($s("§sin"),v_))),n_DEFAULT),Power($($s("§csc"),v_),m_DEFAULT)),x_),
     Condition(FixInertTrigFunction(Times(u,Power($($s("§sin"),v),Negate(m)),Power(Plus(Times(a,$($s("§sin"),v)),Times(b,$($s("§cos"),v))),n)),x),And(FreeQ(List(a,b,n),x),IntegerQ(m)))),
-ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(B_DEFAULT,$(g_,v_)),Times(C_DEFAULT,Sqr($(g_,v_)))),Power($(f_,v_),m_DEFAULT)),x_),
+ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($(g_,v_))),Times(B_DEFAULT,$(g_,v_))),Power($(f_,v_),m_DEFAULT)),x_),
     Condition(Times(Power($(g,v),Negate(m)),Plus(ASymbol,Times(BSymbol,$(g,v)),Times(CSymbol,Sqr($(g,v))))),And(And(FreeQ(List(ASymbol,BSymbol,CSymbol),x),IntegerQ(m)),Or(InertReciprocalQ(f,g),InertReciprocalQ(g,f))))),
 ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($(g_,v_)))),Power($(f_,v_),m_DEFAULT)),x_),
     Condition(Times(Power($(g,v),Negate(m)),Plus(ASymbol,Times(CSymbol,Sqr($(g,v))))),And(And(FreeQ(List(ASymbol,CSymbol),x),IntegerQ(m)),Or(InertReciprocalQ(f,g),InertReciprocalQ(g,f))))),
-ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(B_DEFAULT,$(g_,v_)),Times(C_DEFAULT,Sqr($(g_,v_)))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(g_,v_))),n_DEFAULT),Power($(f_,v_),m_DEFAULT)),x_),
+ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($(g_,v_))),Times(B_DEFAULT,$(g_,v_))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(g_,v_))),n_DEFAULT),Power($(f_,v_),m_DEFAULT)),x_),
     Condition(Times(Power($(g,v),Negate(m)),Plus(ASymbol,Times(BSymbol,$(g,v)),Times(CSymbol,Sqr($(g,v)))),Power(Plus(a,Times(b,$(g,v))),n)),And(And(FreeQ(List(a,b,ASymbol,BSymbol,CSymbol,n),x),IntegerQ(m)),Or(InertReciprocalQ(f,g),InertReciprocalQ(g,f))))),
-ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($(g_,v_)))),Power($(f_,v_),m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(g_,v_))),n_DEFAULT)),x_),
+ISetDelayed(FixInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($(g_,v_)))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(g_,v_))),n_DEFAULT),Power($(f_,v_),m_DEFAULT)),x_),
     Condition(Times(Power($(g,v),Negate(m)),Plus(ASymbol,Times(CSymbol,Sqr($(g,v)))),Power(Plus(a,Times(b,$(g,v))),n)),And(And(FreeQ(List(a,b,ASymbol,CSymbol,n),x),IntegerQ(m)),Or(InertReciprocalQ(f,g),InertReciprocalQ(g,f))))),
 ISetDelayed(FixInertTrigFunction(u_,x_),
     u),
@@ -128,6 +128,8 @@ ISetDelayed(FixIntRule(RuleDelayed($p("lhs"),$(F_,u_,$p("test"))),x_),
     Condition(ReplacePart(RuleDelayed($s("lhs"),F(u,$s("test"))),Rule(List(C2,C1),FixRhsIntRule(u,x))),SameQ(FSymbol,$s("Condition")))),
 ISetDelayed(FixIntRule(RuleDelayed($p("lhs"),u_),x_),
     ReplacePart(RuleDelayed($s("lhs"),u),Rule(List(C2),FixRhsIntRule(u,x)))),
+ISetDelayed(FixRhsIntRule(Plus(u_,v_),x_),
+    Plus(FixRhsIntRule(u,x),FixRhsIntRule(v,x))),
 ISetDelayed(FixRhsIntRule(Plus(u_,Negate(v_)),x_),
     Plus(FixRhsIntRule(u,x),Negate(FixRhsIntRule(v,x)))),
 ISetDelayed(FixRhsIntRule(Negate(u_),x_),
@@ -135,6 +137,6 @@ ISetDelayed(FixRhsIntRule(Negate(u_),x_),
 ISetDelayed(FixRhsIntRule(Times(a_,u_),x_),
     Condition(Dist(a,u,x),MemberQ(List($s("Int"),$s("Integrate::Subst")),Head(Unevaluated(u))))),
 ISetDelayed(FixRhsIntRule(u_,x_),
-    If(And(SameQ(Head(Unevaluated(u)),$s("Integrate::Dist")),Equal(Length(Unevaluated(u)),C2)),Insert(Unevaluated(u),x,C3),If(MemberQ(List($s("Int"),$s("Integrate::Subst"),Defer($s("Int")),$s("Integrate::Simp"),$s("Integrate::Dist")),Head(Unevaluated(u))),u,Simp(u,x))))
+    If(And(SameQ(Head(Unevaluated(u)),$s("Integrate::Dist")),Equal(Length(Unevaluated(u)),C2)),Insert(Unevaluated(u),x,C3),If(MemberQ(List($s("Int"),$s("Integrate::Subst"),$s("Integrate"),$s("Integrate::Simp"),$s("Integrate::Dist")),Head(Unevaluated(u))),u,Simp(u,x))))
   );
 }

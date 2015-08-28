@@ -39,7 +39,7 @@ ISetDelayed(Int(u_,x_Symbol),
     Module(List(Set(v,ExpandIntegrand(u,x))),Condition(Int(v,x),SumQ(v)))),
 ISetDelayed(Int(Times(u_DEFAULT,Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,m_DEFAULT))),p_DEFAULT),Power(Plus(c_DEFAULT,Times(d_DEFAULT,Power(x_,n_DEFAULT))),q_DEFAULT)),x_Symbol),
     Condition(Times(Power(Plus(a,Times(b,Power(x,m))),p),Power(Plus(c,Times(d,Power(x,n))),q),Power(Power(x,Times(m,p)),-1),Int(Times(u,Power(x,Times(m,p))),x)),And(And(And(And(FreeQ(List(a,b,c,d,m,n,p,q),x),ZeroQ(Plus(a,d))),ZeroQ(Plus(b,c))),ZeroQ(Plus(m,n))),ZeroQ(Plus(p,q))))),
-ISetDelayed(Int(Times(u_,Power(Plus(a_,Times(b_DEFAULT,Power(x_,n_DEFAULT)),Times(c_DEFAULT,Power(x_,j_DEFAULT))),p_)),x_Symbol),
+ISetDelayed(Int(Times(u_,Power(Plus(a_,Times(c_DEFAULT,Power(x_,j_DEFAULT)),Times(b_DEFAULT,Power(x_,n_DEFAULT))),p_)),x_Symbol),
     Condition(Times(Sqrt(Plus(a,Times(b,Power(x,n)),Times(c,Power(x,Times(C2,n))))),Power(Times(Power(Times(C4,c),Plus(p,Negate(C1D2))),Plus(b,Times(C2,c,Power(x,n)))),-1),Int(Times(u,Power(Plus(b,Times(C2,c,Power(x,n))),Times(C2,p))),x)),And(And(And(FreeQ(List(a,b,c,n,p),x),ZeroQ(Plus(j,Times(CN1,C2,n)))),ZeroQ(Plus(Sqr(b),Times(CN1,C4,a,c)))),IntegerQ(Plus(p,Negate(C1D2)))))),
 ISetDelayed(Int(u_,x_Symbol),
     Module(List(Set($s("lst"),SubstForFractionalPowerOfLinear(u,x))),Condition(Times(Part($s("lst"),C2),Part($s("lst"),C4),Subst(Int(Part($s("lst"),C1),x),x,Power(Part($s("lst"),C3),Power(Part($s("lst"),C2),-1)))),NotFalseQ($s("lst")))))

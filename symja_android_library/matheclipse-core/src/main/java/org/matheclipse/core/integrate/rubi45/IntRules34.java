@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 public class IntRules34 { 
   public static IAST RULES = List( 
 ISetDelayed(Int(Times(Power(F_,Plus(a_DEFAULT,Times(b_DEFAULT,x_),Times(c_DEFAULT,Sqr(x_)))),Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
-    Condition($(AbortRubi($s("Int")),Times(Power(Plus(d,Times(e,x)),m),Power(FSymbol,Plus(a,Times(b,x),Times(c,Sqr(x))))),x),FreeQ(List(FSymbol,a,b,c,d,e,m),x))),
+    Condition(Integrate(Times(Power(Plus(d,Times(e,x)),m),Power(FSymbol,Plus(a,Times(b,x),Times(c,Sqr(x))))),x),FreeQ(List(FSymbol,a,b,c,d,e,m),x))),
 ISetDelayed(Int(Times(Power(F_,v_),Power(u_,m_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(ExpandToSum(u,x),m),Power(FSymbol,ExpandToSum(v,x))),x),And(And(And(FreeQ(List(FSymbol,m),x),LinearQ(u,x)),QuadraticQ(v,x)),Not(And(LinearMatchQ(u,x),QuadraticMatchQ(v,x)))))),
 ISetDelayed(Int(Times(Power(x_,m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),n_)),x_Symbol),
@@ -23,9 +23,9 @@ ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plu
     Condition(Plus(Times(Power(Plus(f,Times(g,x)),Plus(m,C1)),Power(Times(a,g,Plus(m,C1)),-1)),Times(CN1,b,Power(a,-1),Int(Times(Power(Plus(f,Times(g,x)),m),Power(FSymbol,Times(e,Plus(c,Times(d,x)))),Power(Plus(a,Times(b,Power(FSymbol,Times(e,Plus(c,Times(d,x)))))),-1)),x))),And(And(FreeQ(List(FSymbol,a,b,c,d,e,f,g),x),RationalQ(m)),Greater(m,C0)))),
 ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),n_),Power(Plus(f_DEFAULT,Times(g_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
     Condition(Module(List(Set(u,Block(List(Set($s("§showsteps"),False),Set($s("§stepcounter"),Null)),Int(Power(Plus(a,Times(b,Power(FSymbol,Times(e,Plus(c,Times(d,x)))))),n),x)))),Plus(Dist(Power(Plus(f,Times(g,x)),m),u,x),Times(CN1,g,m,Int(Times(Power(Plus(f,Times(g,x)),Plus(m,Negate(C1))),u),x)))),And(And(And(FreeQ(List(FSymbol,a,b,c,d,e,f,g),x),RationalQ(m,n)),Greater(m,C0)),Less(n,CN1)))),
-ISetDelayed(Int(Times(Power(Plus(f_DEFAULT,Times(g_DEFAULT,x_)),m_DEFAULT),Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),Power(Plus(a_,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),-1),Power(Plus(f_DEFAULT,Times(g_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
     Condition(Plus(Times(Power(Plus(f,Times(g,x)),m),Log(Plus(C1,Times(b,Power(FSymbol,Times(e,Plus(c,Times(d,x)))),Power(a,-1)))),Power(Times(b,d,e,Log(FSymbol)),-1)),Times(CN1,g,m,Power(Times(b,d,e,Log(FSymbol)),-1),Int(Times(Power(Plus(f,Times(g,x)),Plus(m,Negate(C1))),Log(Plus(C1,Times(b,Power(a,-1),Power(FSymbol,Times(e,Plus(c,Times(d,x)))))))),x))),And(And(FreeQ(List(FSymbol,a,b,c,d,e,f,g),x),RationalQ(m)),GreaterEqual(m,C1)))),
-ISetDelayed(Int(Times(Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),Power(Plus(f_DEFAULT,Times(g_DEFAULT,x_)),m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),p_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))))),p_DEFAULT),Power(Plus(f_DEFAULT,Times(g_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
     Condition(Plus(Times(Power(Plus(f,Times(g,x)),m),Power(Plus(a,Times(b,Power(FSymbol,Times(e,Plus(c,Times(d,x)))))),Plus(p,C1)),Power(Times(b,d,e,Plus(p,C1),Log(FSymbol)),-1)),Times(CN1,g,m,Power(Times(b,d,e,Plus(p,C1),Log(FSymbol)),-1),Int(Times(Power(Plus(f,Times(g,x)),Plus(m,Negate(C1))),Power(Plus(a,Times(b,Power(FSymbol,Times(e,Plus(c,Times(d,x)))))),Plus(p,C1))),x))),And(FreeQ(List(FSymbol,a,b,c,d,e,f,g,m,p),x),NonzeroQ(Plus(p,C1))))),
 ISetDelayed(Int(Times(Power(F_,Times(e_DEFAULT,Plus(c_DEFAULT,Times(d_DEFAULT,x_)))),Power(x_,m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(F_,v_))),n_)),x_Symbol),
     Condition(Module(List(Set(u,Block(List(Set($s("§showsteps"),False),Set($s("§stepcounter"),Null)),Int(Times(Power(FSymbol,Times(e,Plus(c,Times(d,x)))),Power(Plus(a,Times(b,Power(FSymbol,v))),n)),x)))),Plus(Dist(Power(x,m),u,x),Times(CN1,m,Int(Times(Power(x,Plus(m,Negate(C1))),u),x)))),And(And(And(And(FreeQ(List(FSymbol,a,b,c,d,e),x),ZeroQ(Plus(Times(C2,e,Plus(c,Times(d,x))),Negate(v)))),RationalQ(m)),Greater(m,C0)),NegativeIntegerQ(n)))),
@@ -71,7 +71,7 @@ ISetDelayed(Int(Times(Power(F_,Times(g_DEFAULT,Power(Plus(d_DEFAULT,Times(e_DEFA
     Condition(Int(ExpandIntegrand(Power(FSymbol,Times(g,Power(Plus(d,Times(e,x)),n))),Power(Plus(a,Times(c,Sqr(x))),-1),x),x),FreeQ(List(FSymbol,a,c,d,e,g,n),x))),
 ISetDelayed(Int(Times(Power(F_,Times(g_DEFAULT,Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),n_DEFAULT))),Power(u_,m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_),Times(c_,Sqr(x_))),-1)),x_Symbol),
     Condition(Int(ExpandIntegrand(Power(FSymbol,Times(g,Power(Plus(d,Times(e,x)),n))),Times(Power(u,m),Power(Plus(a,Times(b,x),Times(c,Sqr(x))),-1)),x),x),And(And(FreeQ(List(FSymbol,a,b,c,d,e,g,n),x),PolynomialQ(u,x)),IntegerQ(m)))),
-ISetDelayed(Int(Times(Power(u_,m_DEFAULT),Power(F_,Times(g_DEFAULT,Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),n_DEFAULT))),Power(Plus(a_,Times(c_,Sqr(x_))),-1)),x_Symbol),
+ISetDelayed(Int(Times(Power(F_,Times(g_DEFAULT,Power(Plus(d_DEFAULT,Times(e_DEFAULT,x_)),n_DEFAULT))),Power(u_,m_DEFAULT),Power(Plus(a_,Times(c_,Sqr(x_))),-1)),x_Symbol),
     Condition(Int(ExpandIntegrand(Power(FSymbol,Times(g,Power(Plus(d,Times(e,x)),n))),Times(Power(u,m),Power(Plus(a,Times(c,Sqr(x))),-1)),x),x),And(And(FreeQ(List(FSymbol,a,c,d,e,g,n),x),PolynomialQ(u,x)),IntegerQ(m)))),
 ISetDelayed(Int(Power(F_,Times(Plus(a_DEFAULT,Times(b_DEFAULT,Power(x_,4))),Power(x_,-2))),x_Symbol),
     Condition(Plus(Times(Sqrt(Pi),Power(E,Times(C2,Sqrt(Times(CN1,a,Log(FSymbol))),Sqrt(Times(CN1,b,Log(FSymbol))))),Erf(Times(Plus(Sqrt(Times(CN1,a,Log(FSymbol))),Times(Sqrt(Times(CN1,b,Log(FSymbol))),Sqr(x))),Power(x,-1))),Power(Times(C4,Sqrt(Times(CN1,b,Log(FSymbol)))),-1)),Times(CN1,Sqrt(Pi),Power(E,Times(CN2,Sqrt(Times(CN1,a,Log(FSymbol))),Sqrt(Times(CN1,b,Log(FSymbol))))),Erf(Times(Plus(Sqrt(Times(CN1,a,Log(FSymbol))),Times(CN1,Sqrt(Times(CN1,b,Log(FSymbol))),Sqr(x))),Power(x,-1))),Power(Times(C4,Sqrt(Times(CN1,b,Log(FSymbol)))),-1))),FreeQ(List(FSymbol,a,b),x))),
@@ -93,9 +93,9 @@ ISetDelayed(Int(Times(u_DEFAULT,Power(Plus(Times(a_DEFAULT,Power(F_,v_)),Times(b
     Condition(Times(Power(Plus(Times(a,Power(FSymbol,v)),Times(b,Power(GSymbol,w))),n),Power(Times(Power(FSymbol,Times(n,v)),Power(Plus(a,Times(b,Power(E,ExpandToSum(Plus(Times(Log(GSymbol),w),Times(CN1,Log(FSymbol),v)),x)))),n)),-1),Int(Times(u,Power(FSymbol,Times(n,v)),Power(Plus(a,Times(b,Power(E,ExpandToSum(Plus(Times(Log(GSymbol),w),Times(CN1,Log(FSymbol),v)),x)))),n)),x)),And(And(FreeQ(List(FSymbol,GSymbol,a,b,n),x),Not(IntegerQ(n))),LinearQ(List(v,w),x)))),
 ISetDelayed(Int(Times(u_DEFAULT,Power(F_,v_),Power(G_,w_)),x_Symbol),
     Condition(Int(Times(u,NormalizeIntegrand(Power(E,Plus(Times(v,Log(FSymbol)),Times(w,Log(GSymbol)))),x)),x),And(FreeQ(List(FSymbol,GSymbol),x),Or(BinomialQ(Plus(v,w),x),And(PolynomialQ(Plus(v,w),x),LessEqual(Exponent(Plus(v,w),x),C2)))))),
-ISetDelayed(Int(Times(Plus(v_,w_),Power(F_,u_),y_DEFAULT),x_Symbol),
+ISetDelayed(Int(Times(y_DEFAULT,Plus(v_,w_),Power(F_,u_)),x_Symbol),
     Condition(Module(List(Set(z,Times(v,y,Power(Times(Log(FSymbol),D(u,x)),-1)))),Condition(Times(Power(FSymbol,u),z),ZeroQ(Plus(D(z,x),Times(CN1,w,y))))),FreeQ(FSymbol,x))),
-ISetDelayed(Int(Times(Power(F_,u_),Power(v_,n_DEFAULT),w_),x_Symbol),
+ISetDelayed(Int(Times(w_,Power(F_,u_),Power(v_,n_DEFAULT)),x_Symbol),
     Condition(Module(List(Set(z,Plus(Times(Log(FSymbol),v,D(u,x)),Times(Plus(n,C1),D(v,x))))),Condition(Times(Coefficient(w,x,Exponent(w,x)),Power(Coefficient(z,x,Exponent(z,x)),-1),Power(FSymbol,u),Power(v,Plus(n,C1))),And(Equal(Exponent(w,x),Exponent(z,x)),ZeroQ(Plus(Times(w,Coefficient(z,x,Exponent(z,x))),Times(CN1,z,Coefficient(w,x,Exponent(w,x)))))))),And(And(And(FreeQ(List(FSymbol,n),x),PolynomialQ(u,x)),PolynomialQ(v,x)),PolynomialQ(w,x))))
   );
 }

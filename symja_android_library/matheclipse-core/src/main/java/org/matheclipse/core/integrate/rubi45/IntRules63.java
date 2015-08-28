@@ -37,9 +37,9 @@ ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,$($s("§tan"),Plus(c_DEFAULT
     Condition(Int(Times(Power(Cos(Plus(c,Times(d,x))),Plus(m,Negate(n))),Power(Plus(Times(a,Cos(Plus(c,Times(d,x)))),Times(b,Sin(Plus(c,Times(d,x))))),n)),x),And(And(FreeQ(List(a,b,c,d),x),IntegerQ(Times(C1D2,Plus(m,Negate(C1))))),NegativeIntegerQ(n)))),
 ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,$($s("§cot"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_DEFAULT),Power($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),m_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(Sin(Plus(c,Times(d,x))),Plus(m,Negate(n))),Power(Plus(Times(a,Sin(Plus(c,Times(d,x)))),Times(b,Cos(Plus(c,Times(d,x))))),n)),x),And(And(FreeQ(List(a,b,c,d),x),IntegerQ(Times(C1D2,Plus(m,Negate(C1))))),NegativeIntegerQ(n)))),
-ISetDelayed(Int(Times(Power($($s("§cos"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),m_DEFAULT),Power($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),p_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,$($s("§tan"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,$($s("§tan"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_DEFAULT),Power($($s("§cos"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),m_DEFAULT),Power($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),p_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(Cos(Plus(c,Times(d,x))),Plus(m,Negate(n))),Power(Sin(Plus(c,Times(d,x))),p),Power(Plus(Times(a,Cos(Plus(c,Times(d,x)))),Times(b,Sin(Plus(c,Times(d,x))))),n)),x),And(FreeQ(List(a,b,c,d,m,p),x),IntegerQ(n)))),
-ISetDelayed(Int(Times(Power($($s("§cos"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),p_DEFAULT),Power($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,$($s("§cot"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_DEFAULT)),x_Symbol),
+ISetDelayed(Int(Times(Power(Plus(a_,Times(b_DEFAULT,$($s("§cot"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))))),n_DEFAULT),Power($($s("§cos"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),p_DEFAULT),Power($($s("§sin"),Plus(c_DEFAULT,Times(d_DEFAULT,x_))),m_DEFAULT)),x_Symbol),
     Condition(Int(Times(Power(Sin(Plus(c,Times(d,x))),Plus(m,Negate(n))),Power(Cos(Plus(c,Times(d,x))),p),Power(Plus(Times(a,Sin(Plus(c,Times(d,x)))),Times(b,Cos(Plus(c,Times(d,x))))),n)),x),And(FreeQ(List(a,b,c,d,m,p),x),IntegerQ(n))))
   );
 }
