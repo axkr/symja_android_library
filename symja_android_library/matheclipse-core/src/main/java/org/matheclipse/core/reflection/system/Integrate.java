@@ -33,6 +33,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
+import android.util.Config;
+
 import com.google.common.base.Predicate;
 
 import edu.jas.arith.BigInteger;
@@ -774,6 +776,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 				return F.Integrate.evalDownRule(EvalEngine.get(), ast);
 			}
 		} catch (AbortException ae) {
+			if (Config.DEBUG) {
+				ae.printStackTrace();
+			}
 			return null;
 		}
 		// System.out.println(ast.toString());

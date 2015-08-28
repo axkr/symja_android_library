@@ -17,11 +17,9 @@ public class Part implements IFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
-			// if (ast.arg1() == F.Null) {
-			// System.out.println("Part argument is null");
-			// }
-			if (ast.arg1().isAST()) {
-				return getPart(ast.getAST(1), ast, 2);
+			IExpr arg1 = ast.arg1();
+			if (arg1.isAST()) {
+				return getPart(arg1, ast, 2);
 			}
 		}
 		return null;
