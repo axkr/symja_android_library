@@ -95,14 +95,14 @@ public class Get extends AbstractFunctionEvaluator {
 				if (temp.isAST()) {
 					IAST ast = (IAST) temp;
 					IExpr head = temp.head();
-					if (head.equals(F.BeginPackage) && ast.size() >= 2 && ast.arg1() instanceof IStringX) {
-						String contextName = ast.arg1().toString();
+					if (head.equals(F.BeginPackage) && ast.size() >= 2) {
+						String contextName = Validate.checkContextName(ast, 1);
 						packageContext = new Context(contextName);
 						ISymbol endSymbol = F.EndPackage;
 						i = addContextToPath(new ContextPath(packageContext), node, i, engine, endSymbol);
 						continue;
 					} else if (head.equals(F.Begin) && ast.size() >= 2) {
-						String contextName = ast.arg1().toString();
+						String contextName = Validate.checkContextName(ast, 1);
 						ISymbol endSymbol = F.End;
 						i = addContextToPath(new ContextPath(contextName), node, i, engine, endSymbol);
 						continue;
