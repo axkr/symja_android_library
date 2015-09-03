@@ -1,49 +1,69 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
-public class Part implements IFunctionEvaluator {
+public class Part extends AbstractCoreFunctionEvaluator {
 	public Part() {
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() >= 3) {
-			IExpr arg1 = ast.arg1();
+			EvalEngine engine = EvalEngine.get();
+			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
-				return getPart(arg1, ast, 2);
+				IAST evaledAST = null;
+
+				boolean numericMode = engine.isNumericMode();
+				IExpr temp;
+				try {
+					int astSize = ast.size();
+					for (int i = 2; i < astSize; i++) {
+						temp = engine.evalLoop(ast.get(i));
+						if (temp != null) {
+							if (evaledAST == null) {
+								evaledAST = ast.clone();
+								evaledAST.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+							}
+							evaledAST.set(i, temp);
+						}
+					}
+				} finally {
+					engine.setNumericMode(numericMode);
+				}
+				if (evaledAST == null) {
+					evaledAST = ast;
+				}
+				return getPart((IAST) arg1, evaledAST, 2);
 			}
 		}
 		return null;
 	}
 
-	private IExpr getPart(final IExpr expr1, final IAST ast, int pos) {
-
-		if (!expr1.isAST()) {
-			throw new WrongArgumentType(ast, expr1, pos, "Wrong argument for Part[] function. Function or list expected.");
-		}
-		IAST arg1 = (IAST) expr1;
+	private IExpr getPart(final IAST arg1, final IAST ast, int pos) {
 		final IExpr arg2 = ast.get(pos);
 		int p1 = pos + 1;
-		IExpr temp = null;
 		if (arg2.isSignedNumber()) {
 			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
 			IExpr ires = null;
 			ires = getIndex(arg1, indx);
-
 			if (p1 < ast.size()) {
-				return getPart(ires, ast, p1);
+				if (ires.isAST()) {
+					return getPart((IAST) ires, ast, p1);
+				} else {
+					throw new WrongArgumentType(ast, arg1, pos, "Wrong argument for Part[] function. Function or list expected.");
+				}
 			}
 			return ires;
 		} else if (arg2.isList()) {
+			IExpr temp = null;
 			final IAST lst = (IAST) arg2;
 			final IAST result = F.List();
 
@@ -58,8 +78,13 @@ public class Part implements IFunctionEvaluator {
 						return null;
 					}
 					if (p1 < ast.size()) {
-						temp = getPart(ires, ast, p1);
-						result.add(temp);
+						if (ires.isAST()) {
+							temp = getPart((IAST) ires, ast, p1);
+							result.add(temp);
+						} else {
+							throw new WrongArgumentType(ast, arg1, pos,
+									"Wrong argument for Part[] function. Function or list expected.");
+						}
 					} else {
 						result.add(ires);
 					}
@@ -87,15 +112,5 @@ public class Part implements IFunctionEvaluator {
 					+ " is out of bounds."));
 		}
 		return ast.get(position);
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
-	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDREST);
 	}
 }

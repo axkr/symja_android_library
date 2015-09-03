@@ -238,6 +238,27 @@ public final class Validate {
 	}
 
 	/**
+	 * Check if the argument at the given position is a <code>IStringX</code> string object.
+	 * 
+	 * @param position
+	 *            the position which has to be a string.
+	 * @throws WrongArgumentType
+	 *             if it's not a symbol.
+	 */
+	public static String checkContextName(IAST ast, int position) {
+
+		if (ast.get(position) instanceof IStringX) {
+			IStringX strX = (IStringX) ast.get(position);
+			String contextName = strX.toString();
+			if (contextName.charAt(contextName.length() - 1) != '`') {
+				throw new WrongArgumentType(ast, ast.get(position), position, "Contextname must be prepended by a '`' character!");
+			}
+			return contextName;
+		}
+		throw new WrongArgumentType(ast, ast.get(position), position, "String expected!");
+	}
+
+	/**
 	 * Check if the argument at the given position is a single symbol or a list of symbols.
 	 * 
 	 * @param position

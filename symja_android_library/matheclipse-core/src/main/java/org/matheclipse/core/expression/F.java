@@ -126,8 +126,9 @@ public class F {
 	public final static ISymbol PatternTest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "patterntest" : "PatternTest");
 	public final static ISymbol Colon = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "colon" : "Colon");
 	public final static ISymbol Repeated = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeated" : "Repeated");
-	public final static ISymbol RepeatedNull = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull" : "RepeatedNull");
-	
+	public final static ISymbol RepeatedNull = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull"
+			: "RepeatedNull");
+
 	public final static ISymbol Algebraics = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
 	public final static ISymbol Booleans = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleans" : "Booleans");
 	public final static ISymbol Complexes = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexes" : "Complexes");
@@ -342,6 +343,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Or());
 	public final static ISymbol Package = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "package" : "Package",
 			new org.matheclipse.core.builtin.function.Package());
+	public final static ISymbol Part = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part",
+			new org.matheclipse.core.builtin.function.Part());
 	public final static ISymbol Pattern = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pattern" : "Pattern",
 			new org.matheclipse.core.builtin.function.Pattern());
 	public final static ISymbol Position = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
@@ -561,6 +564,8 @@ public class F {
 	public final static ISymbol LinearProgramming = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearprogramming"
 			: "LinearProgramming");
 	public final static ISymbol LinearSolve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearsolve" : "LinearSolve");
+	public final static ISymbol Literal = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "literal" : "Literal");
+	
 	public final static ISymbol Log = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log" : "Log");
 	public final static ISymbol LowerCaseQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lowercaseq" : "LowerCaseQ");
 	public final static ISymbol LUDecomposition = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ludecomposition"
@@ -600,7 +605,6 @@ public class F {
 	public final static ISymbol Outer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "outer" : "Outer");
 	public final static ISymbol PadLeft = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "padleft" : "PadLeft");
 	public final static ISymbol PadRight = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "padright" : "PadRight");
-	public final static ISymbol Part = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part");
 	public final static ISymbol Partition = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partition" : "Partition");
 	public final static ISymbol Permutations = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "permutations"
 			: "Permutations");
@@ -1279,7 +1283,8 @@ public class F {
 	 * @param def
 	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the pattern is used
 	 *            in.
-	 * @param zeroArgsAllowed TODO
+	 * @param zeroArgsAllowed
+	 *            if <code>true</code> 0 argument sequences are allowed for this pattern
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
@@ -1332,7 +1337,6 @@ public class F {
 		if (symbol != null) {
 			return symbol;
 		}
-		EvalEngine engine = EvalEngine.get();
 		if (Config.SERVER_MODE) {
 			symbol = HIDDEN_SYMBOLS_MAP.get(name);
 			// symbol = engine.getUserVariable(name);
@@ -2595,7 +2599,7 @@ public class F {
 	public static IAST GCD(final IExpr a0) {
 		return unaryAST1(GCD, a0);
 	}
-	
+
 	public static IAST GCD(final IExpr a0, final IExpr a1) {
 		return binaryAST2(GCD, a0, a1);
 	}
