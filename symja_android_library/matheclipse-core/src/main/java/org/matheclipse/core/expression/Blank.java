@@ -43,10 +43,10 @@ public class Blank extends ExprImpl implements IPattern {
 	 */
 	final boolean fDefault;
 
-	private static Blank NULL_PATTERN = new Blank();
+	// private static Blank NULL_PATTERN = new Blank();
 
 	public static IPattern valueOf() {
-		return NULL_PATTERN;
+		return new Blank(); // NULL_PATTERN;
 	}
 
 	public static IPattern valueOf(final IExpr condition) {
@@ -166,7 +166,7 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
-		return isConditionMatched(expr);
+		return isConditionMatched(expr, patternMap);
 	}
 
 	public IExpr getCondition() {
@@ -243,7 +243,10 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	@Override
-	public boolean isConditionMatched(final IExpr expr) {
+	public boolean isConditionMatched(final IExpr expr, PatternMap patternMap) {
+		if (!patternMap.isPatternTest(expr)) {
+			return false;
+		}
 		if (fCondition == null) {
 			return true;
 		}

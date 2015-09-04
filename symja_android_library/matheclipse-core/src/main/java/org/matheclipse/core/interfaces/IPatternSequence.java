@@ -33,7 +33,7 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 * @param sequence
 	 * @return
 	 */
-	public boolean isConditionMatchedSequence(IAST sequence);
+	public boolean isConditionMatchedSequence(IAST sequence, PatternMap patternMap);
 
 	/**
 	 * Return <code>true</code>, if the expression is a pattern sequence with an associated default value,

@@ -78,13 +78,6 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 
 	boolean fZeroArgsAllowed = false;
 
-	/**
-	 * Index for the pattern-matcher
-	 * 
-	 * @see org.matheclipse.core.patternmatching.PatternMatcher
-	 */
-	// int fIndex = -1;
-
 	private PatternSequence() {
 	}
 
@@ -150,7 +143,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	public boolean matchPatternSequence(final IAST sequence, PatternMap patternMap) {
-		if (!isConditionMatchedSequence(sequence)) {
+		if (!isConditionMatchedSequence(sequence, patternMap)) {
 			return false;
 		}
 
@@ -158,8 +151,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		if (value != null) {
 			return sequence.equals(value);
 		}
-		patternMap.setValue(this, sequence);
-		return true;
+		return patternMap.setValue(this, sequence);
 	}
 
 	public IExpr getCondition() {
@@ -341,7 +333,12 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return false;
 	}
 
-	public boolean isConditionMatchedSequence(final IAST sequence) {
+	public boolean isConditionMatchedSequence(final IAST sequence, PatternMap patternMap) {
+		for (int i = 1; i < sequence.size(); i++) {
+			if (!patternMap.isPatternTest(sequence.get(i))) {
+				return false;
+			}
+		}
 		if (fCondition == null) {
 			return true;
 		}

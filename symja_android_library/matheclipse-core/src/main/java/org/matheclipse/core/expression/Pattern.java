@@ -155,7 +155,7 @@ public class Pattern extends Blank {
 	/** {@inheritDoc} */
 	@Override
 	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
-		if (!isConditionMatched(expr)) {
+		if (!isConditionMatched(expr, patternMap)) {
 			return false;
 		}
 
@@ -163,8 +163,7 @@ public class Pattern extends Blank {
 		if (value != null) {
 			return expr.equals(value);
 		}
-		patternMap.setValue(this, expr);
-		return true;
+		return patternMap.setValue(this, expr);
 	}
 
 	public String fullFormString() {

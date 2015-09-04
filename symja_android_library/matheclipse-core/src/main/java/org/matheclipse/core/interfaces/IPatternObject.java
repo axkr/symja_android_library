@@ -8,7 +8,7 @@ import org.matheclipse.core.patternmatching.PatternMap;
  * Interface for pattern objects (i.e. _, x_, x__)
  * 
  */
-public interface IPatternObject {
+public interface IPatternObject extends IExpr {
 
 	/**
 	 * Add this pattern to the given <code>patternMap</code> and <code>patternIndexMap</code>.

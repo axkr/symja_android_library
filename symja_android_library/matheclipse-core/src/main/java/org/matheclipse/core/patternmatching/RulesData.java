@@ -38,7 +38,7 @@ public class RulesData implements Serializable {
 	final private Context context;
 
 	public RulesData(Context context) {
-		this.context=context;
+		this.context = context;
 		clear();
 	}
 
@@ -297,8 +297,8 @@ public class RulesData implements Serializable {
 		return evalDownRule(EvalEngine.get(), expression);
 	}
 
-	public IExpr evalSimpleRatternDownRule(TreeMultimap<Integer, IPatternMatcher> multiMap, final Integer hash, final IAST expression,
-			boolean showSteps) throws CloneNotSupportedException {
+	public IExpr evalSimpleRatternDownRule(TreeMultimap<Integer, IPatternMatcher> multiMap, final Integer hash,
+			final IAST expression, boolean showSteps) throws CloneNotSupportedException {
 		IExpr result;
 		IPatternMatcher pmEvaluator;
 
@@ -427,6 +427,9 @@ public class RulesData implements Serializable {
 					return true;
 				} else if (lhsAST.arg1().isAST()) {
 					IAST arg1 = (IAST) lhsAST.arg1();
+					if (arg1.isAST(F.PatternTest, 3)) {
+						return true;
+					}
 					if (arg1.isCondition()) {
 						return true;
 					}

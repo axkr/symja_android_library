@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
@@ -53,6 +52,11 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * Contains the current values of the pattern symbols. The corresponding symbol is stored in <code>fSymbolsArray</code>.
 	 */
 	private IExpr[] fPatternValuesArray;
+
+	/**
+	 * The Test from sourrounding <code>PatternTest(...,)</code> condition
+	 */
+	IExpr fPatternTest = null;
 
 	/**
 	 * The default priority when associating a new rule to a symbol. Lower values have higher priorities.
@@ -105,12 +109,18 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		// avoid Arrays.copyOf because of Android version
 		result.fPatternValuesArray = new IExpr[fPatternValuesArray.length];
 		System.arraycopy(fPatternValuesArray, 0, result.fPatternValuesArray, 0, fPatternValuesArray.length);
+		// if (fPatternTestsArray != null) {
+		// result.fPatternTestsArray = new IExpr[fPatternTestsArray.length];
+		// System.arraycopy(fPatternTestsArray, 0, result.fPatternTestsArray, 0, fPatternTestsArray.length);
+		// }
+
 		// don't clone the fSymbolsArray which is final after the
 		// #determinepatterns() method
 		result.fPriority = fPriority;
 		result.fSymbolsArray = fSymbolsArray;
 		result.fPatternCounter = fPatternCounter;
 		result.fRuleWithoutPattern = fRuleWithoutPattern;
+		result.fPatternTest = fPatternTest;
 		return result;
 	}
 
@@ -132,7 +142,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * @param patternMap
 	 */
 	protected void copyPatternValuesFromPatternMatcher(final PatternMap patternMap) {
-		ISymbol[] symbolsArray = patternMap.fSymbolsArray;
+		IExpr[] symbolsArray = patternMap.fSymbolsArray;
 		for (int i = 0; i < symbolsArray.length; i++) {
 			for (int j = 0; j < fSymbolsArray.length; j++) {
 				if (fSymbolsArray[j] == symbolsArray[i]) {
@@ -214,6 +224,10 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		return -1;
 	}
 
+	public IExpr getPatternTest() {
+		return fPatternTest;
+	}
+
 	/**
 	 * Get the priority of this PatternMap
 	 * 
@@ -227,7 +241,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		final Map<ISymbol, IExpr> rulesMap = new IdentityHashMap<ISymbol, IExpr>(fSymbolsArray.length * 2);
 		for (int i = 0; i < fSymbolsArray.length; i++) {
 			if (fPatternValuesArray[i] != null) {
-				rulesMap.put(fSymbolsArray[i], fPatternValuesArray[i]);
+				rulesMap.put((ISymbol)fSymbolsArray[i], fPatternValuesArray[i]);
 			}
 		}
 		return rulesMap;
@@ -317,11 +331,49 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
-	public void setValue(IPatternObject pattern, IExpr expr) {
+	public boolean setValue(IPattern pattern, IExpr expr) {
 		int indx = get(pattern.getSymbol());
 		if (indx >= 0) {
+			if (!isPatternTest(expr)) {
+				return false;
+			}
 			fPatternValuesArray[indx] = expr;
 		}
+		return true;
+	}
+
+	public boolean isPatternTest(IExpr expr) {
+		if (fPatternTest != null) {
+			IAST test = F.ast(fPatternTest);
+			test.add(expr);
+			if (!F.evalTrue(test)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean setValue(IPatternSequence pattern, IAST sequence) {
+		int indx = get(pattern.getSymbol());
+		if (indx >= 0) {
+			if (fPatternTest != null) {
+				IAST test = F.ast(fPatternTest);
+				test.add(null);
+				for (int i = 1; i < sequence.size(); i++) {
+					IAST testClone = test.clone();
+					testClone.set(1, sequence.get(i));
+					if (!F.evalTrue(testClone)) {
+						return false;
+					}
+				}
+			}
+			fPatternValuesArray[indx] = sequence;
+		}
+		return true;
+	}
+
+	public void setPatternTest(IExpr patternTest) {
+		fPatternTest = patternTest;
 	}
 
 	/** {@inheritDoc} */

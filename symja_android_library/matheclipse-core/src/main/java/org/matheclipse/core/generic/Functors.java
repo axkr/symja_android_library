@@ -457,7 +457,7 @@ public class Functors {
 	private static Predicate<IExpr> PATTERNQ_PREDICATE = new Predicate<IExpr>() {
 		@Override
 		public boolean apply(IExpr input) {
-			return input.isPattern() || input.isPatternSequence();
+			return input.isBlank() ||input.isPattern() || input.isPatternSequence();
 		}
 	};
 
