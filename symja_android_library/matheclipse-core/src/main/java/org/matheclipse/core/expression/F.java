@@ -116,6 +116,7 @@ public class F {
 			: "BeginPackage");
 	public final static ISymbol End = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "end" : "End");
 	public final static ISymbol EndPackage = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "endpackage" : "EndPackage");
+	public final static ISymbol Except = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "except" : "Except");
 	public final static ISymbol IntegerHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integer" : "Integer");
 	public final static ISymbol SymbolHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
 	public final static ISymbol RealHead = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "real" : "Real");

@@ -183,6 +183,9 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 */
 	private int determinePatternsRecursive(Map<IExpr, Integer> patternIndexMap, final IAST lhsPatternExpr, int treeLevel) {
 		final IAST ast = lhsPatternExpr;
+		if (lhsPatternExpr.isAST(F.Except, 2, 3)) {
+			fRuleWithoutPattern = false;
+		}
 		int listEvalFlags = IAST.NO_FLAG;
 		for (int i = 0; i < ast.size(); i++) {
 			IExpr temp = ast.get(i);

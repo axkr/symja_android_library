@@ -12,6 +12,7 @@ import org.matheclipse.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -590,6 +591,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 			return false;
 		}
+		if (lhsPatternAST.isAST(F.Except, 2, 3)) {
+			if (lhsPatternAST.size() == 3) {
+				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)&&matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, stackMatcher);
+			} else {
+				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher);
+			}
+		}
 		if (lhsEvalExpr instanceof IAST) {
 			if (!lhsPatternAST.isPatternExpr() && lhsPatternAST.equals(lhsEvalExpr)) {
 				return stackMatcher.matchRest();
@@ -635,7 +643,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 								// fPatternMap.setPatternTest(oldPatternTest);
 								// }
 							}
-							
+
 						}
 						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
 							// TODO only the special case, where the last element is

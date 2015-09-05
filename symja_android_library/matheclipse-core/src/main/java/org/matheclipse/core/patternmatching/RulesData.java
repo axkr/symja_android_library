@@ -430,6 +430,9 @@ public class RulesData implements Serializable {
 					if (arg1.isAST(F.PatternTest, 3)) {
 						return true;
 					}
+					if (arg1.isAST(F.Except, 2, 3)) {
+						return true;
+					}
 					if (arg1.isCondition()) {
 						return true;
 					}
