@@ -302,7 +302,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			try {
 				traceMode = engine.isTraceMode();
 				engine.setTraceMode(false);
-				final IExpr substConditon = fPatternMap.substitutePatternSymbols(fPatternCondition);
+				final IExpr substConditon = fPatternMap.substituteSymbols(fPatternCondition);
 				if (engine.evalTrue(substConditon)) {
 					return checkRHSCondition(engine);
 				}
@@ -459,7 +459,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		if (lhsPatternExpr.isAST()) {
 			if (lhsPatternExpr.isCondition()) {
 				// expression /; test
-				lhsPatternExpr = fPatternMap.substitutePatternSymbols(lhsPatternExpr);
+				lhsPatternExpr = fPatternMap.substituteSymbols(lhsPatternExpr);
 				if (lhsPatternExpr.isAST()) {
 					lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr);
 				}
@@ -585,13 +585,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 	protected boolean matchAST(final IAST lhsPatternAST, final IExpr lhsEvalExpr, StackMatcher stackMatcher) {
 		if (lhsPatternAST.isAST(F.PatternTest, 3)) {
-			IExpr oldPatternTest = fPatternMap.getPatternTest();
-			try {
-				fPatternMap.setPatternTest(lhsPatternAST.arg2());
-				return matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher);
-			} finally {
-				fPatternMap.setPatternTest(oldPatternTest);
+			if (matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)) {
+				return fPatternMap.isPatternTest(lhsPatternAST.arg1(), lhsPatternAST.arg2());
 			}
+			return false;
 		}
 		if (lhsEvalExpr instanceof IAST) {
 			if (!lhsPatternAST.isPatternExpr() && lhsPatternAST.equals(lhsEvalExpr)) {
@@ -618,21 +615,27 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						if (lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
 							IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
 							if (patternTest.arg1().isPatternSequence()) {
-								IExpr oldPatternTest = fPatternMap.getPatternTest();
-								try {
-									fPatternMap.setPatternTest(patternTest.arg2());
-									// TODO only the special case, where the last element is
-									// a pattern sequence, is handled here
-									IAST seq = F.Sequence();
-									seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
-									if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
-										return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
-												stackMatcher);
+								// IExpr oldPatternTest = fPatternMap.getPatternTest();
+								// try {
+								// fPatternMap.setPatternTest(patternTest.arg2());
+								// TODO only the special case, where the last element is
+								// a pattern sequence, is handled here
+								IAST seq = F.Sequence();
+								seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
+								if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
+									// return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
+									// stackMatcher);
+									if (matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
+											stackMatcher)) {
+										return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2());
 									}
-								} finally {
-									fPatternMap.setPatternTest(oldPatternTest);
+									return false;
 								}
+								// } finally {
+								// fPatternMap.setPatternTest(oldPatternTest);
+								// }
 							}
+							
 						}
 						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
 							// TODO only the special case, where the last element is
@@ -748,7 +751,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					foMatcher.filterResult(lhsResultAST);
 					try {
 
-						IExpr result = fPatternMap.substitutePatternSymbols(rhsExpr);
+						IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 						result = F.eval(result);
 						lhsResultAST.add(result);
 						return lhsResultAST;
@@ -775,7 +778,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							lhsResultAST.remove(i + 1);
 						}
 						try {
-							IExpr result = fPatternMap.substitutePatternSymbols(rhsExpr);
+							IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 							result = F.eval(result);
 							lhsResultAST.add(i + 1, result);
 							return lhsResultAST;

@@ -6,14 +6,16 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
-import org.matheclipse.core.patternmatching.PatternMatcher;
+
+import com.google.common.base.Predicate;
 
 /**
  * A pattern with assigned &quot;pattern name&quot; (i.e. <code>x_</code>)
@@ -68,7 +70,7 @@ public class Pattern extends Blank {
 		fSymbol = symbol;
 	}
 
-	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault()) {
@@ -201,7 +203,7 @@ public class Pattern extends Blank {
 		}
 		return -1;
 	}
-
+	
 	@Override
 	public ISymbol getSymbol() {
 		return fSymbol;
@@ -221,6 +223,28 @@ public class Pattern extends Blank {
 		return PATTERNID;
 	}
 
+	@Override
+	public boolean isConditionMatched(final IExpr expr, PatternMap patternMap) {
+		if (fCondition == null || expr.head().equals(fCondition)) {
+			return true;
+		}
+		EvalEngine engine = EvalEngine.get();
+		boolean traceMode = false;
+		try {
+			traceMode = engine.isTraceMode();
+			engine.setTraceMode(false);
+			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
+			if (matcher.apply(expr)) {
+				return true;
+			}
+		} finally {
+			if (traceMode) {
+				engine.setTraceMode(true);
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final StringBuffer buffer = new StringBuffer();

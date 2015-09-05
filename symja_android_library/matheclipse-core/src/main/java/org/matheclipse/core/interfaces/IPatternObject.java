@@ -19,7 +19,7 @@ public interface IPatternObject extends IExpr {
 	 *            a map from the pattern symbol to the intern array index
 	 * @return
 	 */
-	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap);
+	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap);
 
 	/**
 	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to

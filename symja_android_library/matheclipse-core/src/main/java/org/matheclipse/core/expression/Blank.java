@@ -67,7 +67,7 @@ public class Blank extends ExprImpl implements IPattern {
 		this.fDefault = def;
 	}
 
-	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault()) {
@@ -175,6 +175,9 @@ public class Blank extends ExprImpl implements IPattern {
 
 	@Override
 	public int getIndex(PatternMap pm) {
+		if (pm != null) {
+			return pm.get(this);
+		}
 		return -1;
 	}
 
@@ -244,13 +247,8 @@ public class Blank extends ExprImpl implements IPattern {
 
 	@Override
 	public boolean isConditionMatched(final IExpr expr, PatternMap patternMap) {
-		if (!patternMap.isPatternTest(expr)) {
-			return false;
-		}
-		if (fCondition == null) {
-			return true;
-		}
-		if (expr.head().equals(fCondition)) {
+		if (fCondition == null || expr.head().equals(fCondition)) {
+			patternMap.setValue(this, expr);
 			return true;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -259,12 +257,16 @@ public class Blank extends ExprImpl implements IPattern {
 			traceMode = engine.isTraceMode();
 			engine.setTraceMode(false);
 			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			return matcher.apply(expr);
+			if (matcher.apply(expr)) {
+				patternMap.setValue(this, expr);
+				return true;
+			}
 		} finally {
 			if (traceMode) {
 				engine.setTraceMode(true);
 			}
 		}
+		return false;
 	}
 
 	@Override

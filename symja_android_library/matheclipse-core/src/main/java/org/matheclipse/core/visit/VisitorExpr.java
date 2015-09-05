@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -75,6 +76,14 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @return <code>null</code>, if no evaluation is possible
+	 */
+	public IExpr visit(IPatternSequence element) {
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @return <code>null</code>, if no evaluation is possible

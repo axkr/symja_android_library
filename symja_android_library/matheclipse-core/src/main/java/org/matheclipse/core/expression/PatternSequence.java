@@ -81,7 +81,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	private PatternSequence() {
 	}
 
-	public int[] addPattern(PatternMap patternMap, Map<ISymbol, Integer> patternIndexMap) {
+	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		// the ast contains a pattern sequence (i.e. "x__")
 		int[] result = new int[2];
@@ -334,12 +334,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	public boolean isConditionMatchedSequence(final IAST sequence, PatternMap patternMap) {
-		for (int i = 1; i < sequence.size(); i++) {
-			if (!patternMap.isPatternTest(sequence.get(i))) {
-				return false;
-			}
-		}
 		if (fCondition == null) {
+			patternMap.setValue(this, sequence);
 			return true;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -359,6 +355,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 				return false;
 
 			}
+			patternMap.setValue(this, sequence);
 			return true;
 		} finally {
 			if (traceMode) {
@@ -370,8 +367,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	@Override
 	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return null;
-	}
-
+	} 
 	/**
 	 * {@inheritDoc}
 	 */

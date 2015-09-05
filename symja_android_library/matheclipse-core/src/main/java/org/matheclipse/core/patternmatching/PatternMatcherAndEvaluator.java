@@ -136,7 +136,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (!fPatternMap.isAllPatternsAssigned()) {
 			return true;
 		}
-		IExpr substConditon = fPatternMap.substitutePatternSymbols(fRightHandSide);
+		IExpr substConditon = fPatternMap.substituteSymbols(fRightHandSide);
 		if (substConditon.isCondition()) {
 			return Condition.checkCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
 		} else if (substConditon.isModule()) {
@@ -191,7 +191,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 		fPatternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, lhsEvalExpr)) {
-			IExpr result = fPatternMap.substitutePatternSymbols(fRightHandSide);
+			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
 			try {
 				result = F.eval(result);
 			} catch (final ConditionException e) {
