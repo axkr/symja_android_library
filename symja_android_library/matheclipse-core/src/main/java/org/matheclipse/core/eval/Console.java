@@ -8,12 +8,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Locale;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.Names;
 import org.matheclipse.parser.client.SyntaxError;
-
-import org.matheclipse.core.eval.ExprEvaluator;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class Console {
 			return;
 		}
 		String inputExpression = null;
+		String trimmedInput = null;
 		String outputExpression = null;
 		console.setArgs(args);
 		final File file = console.getFile();
@@ -71,9 +73,17 @@ public class Console {
 			try {
 				inputExpression = console.readString(System.out, ">>> ");
 				if (inputExpression != null) {
-					if ((inputExpression.length() >= 4) && inputExpression.toLowerCase().substring(0, 4).equals("exit")) {
+					trimmedInput = inputExpression.trim();
+					if ((inputExpression.length() >= 4) && inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
+					} else if (trimmedInput.charAt(0) == '?') {
+						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
+						System.out.println();
+						for (int i = 1; i < list.size(); i++) {
+							System.out.print(list.get(i).toString());
+						}
+						continue;
 					}
 					outputExpression = console.interpreter(inputExpression);
 					System.out.println("In [" + COUNTER + "]: " + inputExpression);
