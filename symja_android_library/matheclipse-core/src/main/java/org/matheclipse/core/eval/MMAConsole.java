@@ -83,10 +83,13 @@ public class MMAConsole {
 						System.exit(0);
 					} else if (trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
-						System.out.println();
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
+							if (i != list.size()-1){
+								System.out.print(", ");
+							}
 						}
+						System.out.println();
 						continue;
 					}
 					outputExpression = console.interpreter(inputExpression);
