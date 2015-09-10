@@ -1,5 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -53,6 +56,21 @@ public class Names extends AbstractFunctionEvaluator {
 				} else {
 					list.add(F.$s(n.getSuggestion(i).getTerm()));
 				}
+			}
+		}
+		return list;
+	}
+
+	public static List<String> getAutoCompletionList(String name) {
+		List<String> list = new ArrayList<String>();
+		if (name.length() == 0) {
+			return list;
+		}
+		SuggestTree suggestTree = AST2Expr.getSuggestTree();
+		Node n = suggestTree.getAutocompleteSuggestions(name);
+		if (n != null) {
+			for (int i = 0; i < n.listLength(); i++) {
+				list.add(n.getSuggestion(i).getTerm());
 			}
 		}
 		return list;

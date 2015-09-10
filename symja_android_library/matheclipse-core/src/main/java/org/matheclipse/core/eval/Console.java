@@ -77,7 +77,7 @@ public class Console {
 					if ((inputExpression.length() >= 4) && inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
-					} else if (trimmedInput.charAt(0) == '?') {
+					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
