@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -68,6 +69,12 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 	private IExpr conjugate(IExpr arg1) {
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).conjugate();
+		}
+		if (arg1.isConstant()) {
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			if (signedNumber != null) {
+				return arg1;
+			}
 		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
