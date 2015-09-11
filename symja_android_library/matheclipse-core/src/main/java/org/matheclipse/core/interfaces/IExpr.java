@@ -190,7 +190,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	public ISignedNumber evalSignedNumber();
-
+	
 	/**
 	 * Evaluate an expression
 	 * 

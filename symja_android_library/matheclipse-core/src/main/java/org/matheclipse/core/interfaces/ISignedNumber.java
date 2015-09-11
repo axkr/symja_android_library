@@ -124,10 +124,4 @@ public interface ISignedNumber extends INumber {
 	public ISignedNumber opposite();
 
 	public double doubleValue();
-
-	/** {@inheritDoc} */
-	public IInteger ceil() throws ArithmeticException;
-
-	/** {@inheritDoc} */
-	public IInteger floor() throws ArithmeticException;
 }

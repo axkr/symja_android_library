@@ -10,7 +10,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
@@ -65,9 +65,9 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	public IExpr evalFloor(IExpr arg1) {
-		ISignedNumber signedNumber = arg1.evalSignedNumber();
-		if (signedNumber != null) {
-			return signedNumber.floor();
+		INumber number = arg1.evalNumber();
+		if (number != null) {
+			return number.floor();
 		}
 		if (arg1.isIntegerResult()) {
 			return arg1;

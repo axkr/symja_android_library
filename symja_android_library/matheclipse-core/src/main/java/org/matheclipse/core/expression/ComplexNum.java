@@ -641,12 +641,12 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public INumber ceil() throws ArithmeticException {
-		return valueOf(Math.ceil(fComplex.getReal()), Math.ceil(fComplex.getImaginary()));
+		return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())), NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
 	}
 
 	@Override
 	public INumber floor() throws ArithmeticException {
-		return valueOf(Math.floor(fComplex.getReal()), Math.floor(fComplex.getImaginary()));
+		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())), NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
 	}
 
 }
