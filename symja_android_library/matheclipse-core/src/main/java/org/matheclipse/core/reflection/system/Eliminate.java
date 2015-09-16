@@ -194,7 +194,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			for (int i = 1; i < eqns.size(); i++) {
 				if (eqns.get(i).isAST(F.Equal, 3)) {
 					eq = (IAST) eqns.get(i);
-					equalList.add(F.Equal(F.evalExpandAll(eq.arg1()), F.evalExpandAll(eq.arg2())));
+					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()), F.evalExpandAll(eq.arg2())));
+					equalList.add(Equal.equal(eq));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
@@ -345,7 +346,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					expr = analyzerList.get(j).getExpr();
 					temp = expr.replaceAll(rule);
 					if (temp != null) {
-						temp = F.evalExpandAll(temp);
+						temp = F.expandAll(temp, true, true);
 						termsEqualZeroList.add(temp);
 					} else {
 						termsEqualZeroList.add(expr);

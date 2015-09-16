@@ -29,14 +29,14 @@ public class PossibleZeroQ extends AbstractFunctionEvaluator {
 			return expr.isZero();
 		}
 		if (expr.isAST()) {
-			expr = F.evalExpandAll(expr);
+			expr = F.expandAll(expr, true, true);
 			if (expr.isZero()) {
 				return true;
 			}
 			expr = F.eval(F.Simplify(expr));
 			if (expr.isZero()) {
 				return true;
-			}
+			} 
 		}
 		if (expr.isNumericFunction()) {
 			IExpr temp = F.evaln(expr);
