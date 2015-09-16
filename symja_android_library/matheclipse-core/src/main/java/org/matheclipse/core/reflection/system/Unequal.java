@@ -16,28 +16,29 @@ public class Unequal extends Equal {
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() > 1) {
+			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 			if (ast.size() == 3) {
-				IExpr arg1 = ast.arg1();
-				IExpr arg2 = ast.arg2();
-				IExpr temp1 = F.evalExpandAll(arg1);
-				IExpr temp2 = F.evalExpandAll(arg2);
-				IExpr difference = F.eval(F.Subtract(temp1, temp2));
-				if (difference.isNumber()) {
-					if (difference.isZero()) {
-						return F.False;
-					}
+				IExpr arg1 = F.expandAll(ast.arg1(), true, true);
+				IExpr arg2 = F.expandAll(ast.arg2(), true, true);
+
+				b = compare(arg1, arg2);
+				if (b == COMPARE_RESULT.FALSE) {
 					return F.True;
 				}
-				if (difference.isConstant()) {
-					return F.True;
+				if (b == COMPARE_RESULT.TRUE) {
+					return F.False;
 				}
+
 				IExpr result = simplifyCompare(arg1, arg2, F.Unequal);
 				if (result != null) {
 					return result;
 				}
 			}
-			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
+			
 			IAST result = ast.clone();
+			for (int i = 1; i < result.size(); i++) {
+				result.set(i, F.expandAll(result.get(i), true, true));
+			}
 			int i = 2;
 			int j;
 			while (i < result.size()) {

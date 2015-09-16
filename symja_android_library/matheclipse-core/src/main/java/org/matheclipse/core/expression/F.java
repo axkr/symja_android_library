@@ -2324,7 +2324,7 @@ public class F {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
 			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			return a.optional(org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers, false));
+			return a.optional(org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers, distributePlus));
 		}
 		return a;
 	}

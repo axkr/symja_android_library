@@ -15,6 +15,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Equal extends AbstractFunctionEvaluator implements ITernaryComparator<IExpr> {
 
+	public final static Equal CONST = new Equal();
+
 	public Equal() {
 	}
 
@@ -75,33 +77,18 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	@Override
 	public IExpr evaluate(final IAST ast) {
 		if (ast.size() > 1) {
+			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 			if (ast.size() == 3) {
-				IExpr arg1 = ast.arg1();
-				IExpr arg2 = ast.arg2();
-				IExpr temp1 = F.evalExpandAll(arg1);
-				IExpr temp2 = F.evalExpandAll(arg2);
-				IExpr difference = F.eval(F.Subtract(temp1, temp2));
-				if (difference.isNumber()) {
-					if (difference.isZero()) {
-						return F.True;
-					}
-					return F.False;
-				}
-				if (difference.isConstant()) {
-					return F.False;
-				}
-				IExpr result = simplifyCompare(arg1, arg2, F.Equal);
-				if (result != null) {
-					return result;
-				}
+				return equalNull(ast.arg1(), ast.arg2());
 			}
 
-			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
 			boolean evaled = false;
 			IAST result = ast.clone();
 			int i = 2;
 			while (i < result.size()) {
-				b = compare(result.get(i - 1), result.get(i));
+				IExpr arg1 = F.expandAll(result.get(i - 1), true, true);
+				IExpr arg2 = F.expandAll(result.get(i), true, true);
+				b = compare(arg1, arg2);
 				if (b == COMPARE_RESULT.FALSE) {
 					return F.False;
 				}
@@ -109,6 +96,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 					evaled = true;
 					result.remove(i - 1);
 				} else {
+					result.set(i - 1, arg1);
 					i++;
 				}
 			}
@@ -121,6 +109,39 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 
 		}
 		return null;
+	}
+
+	/**
+	 * Compare if the first and second argument are equal.
+	 * 
+	 * @param a1
+	 *            first argument
+	 * @param a2
+	 *            second argument
+	 * @return <code>null</code> or the simplified expression, if equality couldn't be determined.
+	 */
+	public static IExpr equalNull(final IExpr a1, final IExpr a2) {
+		COMPARE_RESULT b;
+		IExpr arg1 = F.expandAll(a1, true, true);
+		IExpr arg2 = F.expandAll(a2, true, true);
+
+		b = CONST.compare(arg1, arg2);
+		if (b == COMPARE_RESULT.FALSE) {
+			return F.False;
+		}
+		if (b == COMPARE_RESULT.TRUE) {
+			return F.True;
+		}
+
+		return CONST.simplifyCompare(arg1, arg2, F.Equal);
+	}
+	
+	public static IExpr equal(final IAST ast) {
+		IExpr temp = equalNull(ast.arg1(), ast.arg2());
+		if (temp!=null){
+			return temp;
+		}
+		return ast; 
 	}
 
 	/** {@inheritDoc} */
@@ -139,12 +160,18 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 		}
 
 		if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
+			return COMPARE_RESULT.FALSE;
+		}
 
-			if (o0.isSymbol() || o1.isSymbol()) {
-				return COMPARE_RESULT.UNDEFINED;
+		IExpr difference = F.eval(F.Subtract(o0, o1));
+		if (difference.isNumber()) {
+			if (difference.isZero()) {
+				return COMPARE_RESULT.TRUE;
 			}
-
-			return COMPARE_RESULT.TRUE;
+			return COMPARE_RESULT.FALSE;
+		}
+		if (difference.isConstant()) {
+			return COMPARE_RESULT.FALSE;
 		}
 
 		return COMPARE_RESULT.UNDEFINED;
