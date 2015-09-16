@@ -76,9 +76,8 @@ public class Collect extends AbstractFunctionEvaluator {
 			}
 
 			if (head != null) {
-				IAST simplifyAST = F.ast(head);
+				IAST simplifyAST = F.unaryAST1(head, null);
 				IExpr coefficient;
-				simplifyAST.add(null);
 				for (int i = 1; i < rest.size(); i++) {
 					simplifyAST.set(1, rest.get(i));
 					coefficient = F.eval(simplifyAST);

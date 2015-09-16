@@ -623,25 +623,17 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						if (lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
 							IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
 							if (patternTest.arg1().isPatternSequence()) {
-								// IExpr oldPatternTest = fPatternMap.getPatternTest();
-								// try {
-								// fPatternMap.setPatternTest(patternTest.arg2());
 								// TODO only the special case, where the last element is
 								// a pattern sequence, is handled here
 								IAST seq = F.Sequence();
 								seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
 								if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
-									// return matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
-									// stackMatcher);
 									if (matchAST(lhsPatternAST.copyUntil(lastPosition), lhsEvalAST.copyUntil(lastPosition),
 											stackMatcher)) {
 										return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2());
 									}
 									return false;
 								}
-								// } finally {
-								// fPatternMap.setPatternTest(oldPatternTest);
-								// }
 							}
 
 						}

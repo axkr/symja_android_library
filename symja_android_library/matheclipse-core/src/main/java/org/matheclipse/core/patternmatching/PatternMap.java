@@ -328,9 +328,8 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		if (temp == null) {
 			temp = expr;
 		}
-		IAST test = F.ast(patternTest);
+		IAST test = F.unaryAST1(patternTest, null);
 		if (temp.isSequence()) {
-			test.add(null);
 			for (int i = 1; i < ((IAST) temp).size(); i++) {
 				test.set(1, ((IAST) temp).get(i));
 				if (!F.evalTrue(test)) {
@@ -339,7 +338,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 			}
 			return true;
 		}
-		test.add(temp);
+		test.set(1, temp);
 		if (!F.evalTrue(test)) {
 			return false;
 		}
@@ -368,26 +367,11 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		}
 		int indx = get(temp);
 		if (indx >= 0) {
-			// if (fPatternTest != null) {
-			// IAST test = F.ast(fPatternTest);
-			// test.add(null);
-			// for (int i = 1; i < sequence.size(); i++) {
-			// IAST testClone = test.clone();
-			// testClone.set(1, sequence.get(i));
-			// if (!F.evalTrue(testClone)) {
-			// return false;
-			// }
-			// }
-			// }
 			fPatternValuesArray[indx] = sequence;
 			return true;
 		}
 		throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
 	}
-
-	// public void setPatternTest(IExpr patternTest) {
-	// fPatternTest = patternTest;
-	// }
 
 	/** {@inheritDoc} */
 	@Override
