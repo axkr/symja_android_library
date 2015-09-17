@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
@@ -31,6 +30,7 @@ import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -106,7 +106,7 @@ public class TrigToExp implements IFunctionEvaluator {
 						Power(Plus(Power(E, Times(CN1, x)), Power(E, x)), CN1));
 			}
 			if (result != null) {
-				return $(head, result);
+				return F.unaryAST1(head, result);
 			}
 			return null;
 		}

@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.constant;
 
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -15,9 +14,7 @@ public class Infinity extends AbstractSymbolEvaluator {
 
 	@Override
 	public IExpr evaluate(final ISymbol symbol) {
-		IAST ast = F.ast(F.DirectedInfinity);
-		ast.add(F.C1);
-		return ast;
+		return F.CInfinity;//unaryAST1(F.DirectedInfinity, F.C1);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 				final IAST list = (IAST) temp;
 				IExpr arg1 = F.eval(ast.arg1());
 				IExpr arg2 = F.eval(ast.arg2());
-				foldLeft(arg2, list, 1, list.size(), new BinaryMap(F.ast(arg1)), resultList);
+				foldLeft(arg2, list, 1, list.size(), new BinaryMap(arg1), resultList);
 				return resultList;
 			}
 		} catch (final ArithmeticException e) {

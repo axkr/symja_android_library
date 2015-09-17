@@ -63,7 +63,7 @@ public class Denominator implements IFunctionEvaluator {
 			for (int i = 0; i < Denominator.NUMERATOR_SYMBOLS.length; i++) {
 				ISymbol sym = Denominator.NUMERATOR_SYMBOLS[i];
 				if (function.head().equals(sym)) {
-					return F.$(Denominator.DENOMINATOR_SYMBOLS[i], function.arg1());
+					return F.unaryAST1(Denominator.DENOMINATOR_SYMBOLS[i], function.arg1());
 				}
 			}
 		}

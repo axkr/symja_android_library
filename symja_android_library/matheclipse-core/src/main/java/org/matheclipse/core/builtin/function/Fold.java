@@ -27,7 +27,7 @@ public class Fold extends AbstractCoreFunctionEvaluator {
 				final IAST list = (IAST) temp;
 				IExpr arg1 = F.eval(ast.arg1());
 				IExpr arg2 = F.eval(ast.arg2());
-				return list.args().foldLeft(new BinaryMap(F.ast(arg1)), arg2);
+				return list.args().foldLeft(new BinaryMap(arg1), arg2);
 			}
 		} catch (final ArithmeticException e) {
 

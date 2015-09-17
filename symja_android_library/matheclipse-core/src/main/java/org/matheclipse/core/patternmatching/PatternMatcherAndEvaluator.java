@@ -211,19 +211,18 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	public IAST getAsAST() {
-		IExpr condition;
-		ISymbol setSymbol;
-		IAST ast;
-		setSymbol = getSetSymbol();
-		ast = F.ast(setSymbol);
-		ast.add(getLHS());
-		condition = getCondition();
+		ISymbol setSymbol = getSetSymbol();
+		IExpr condition = getCondition();
 		if (condition != null) {
-			ast.add(F.Condition(getRHS(), condition));
-		} else {
-			ast.add(getRHS());
+			return F.binaryAST2(setSymbol, getLHS(), F.Condition(getRHS(), condition));
+			// ast = F.ast(setSymbol);
+			// ast.add(getLHS());
+			// ast.add(F.Condition(getRHS(), condition));
 		}
-		return ast;
+		return F.binaryAST2(setSymbol, getLHS(), getRHS());
+		// ast = F.ast(setSymbol);
+		// ast.add(getLHS());
+		// ast.add(getRHS());
 	}
 
 	/**

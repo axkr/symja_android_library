@@ -43,7 +43,7 @@ public class Vector extends ASTDelegate {
 			throw new DimensionException("Vector#plus([" + fAst.size() + "],[" + that.size() + "])");
 		}
 		IAST resultAST = createAST(fAst.size() - 1);
-		fAst.map(resultAST, that.fAst, new BinaryMap(F.Plus()));
+		fAst.map(resultAST, that.fAst, new BinaryMap(F.Plus));
 		return new Vector(resultAST);
 	}
 

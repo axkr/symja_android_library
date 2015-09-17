@@ -22,6 +22,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -65,7 +66,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				}
 			}
 			if (evaled) {
-				return $(head, x1);
+				return F.unaryAST1(head, x1);
 			}
 			return null;
 		}
@@ -117,7 +118,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				}
 			}
 			if (evaled) {
-				return $(head, x1, x2);
+				return F.binaryAST2(head, x1, x2);
 			}
 			return null;
 		}

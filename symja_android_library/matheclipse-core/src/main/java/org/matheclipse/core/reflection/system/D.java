@@ -33,7 +33,7 @@ public class D extends AbstractFunctionEvaluator {
 			IExpr der = Derivative.derivative(1, header);
 			if (der != null) {
 				// we've found a derivative for a function of the form f[x_]
-				IExpr derivative = F.eval(F.$(der, a1));
+				IExpr derivative = F.eval(F.unaryAST1(der, a1));
 				return F.Times(F.D(a1, x), derivative);
 			}
 			IAST fDerivParam = createDerivative(1, header, a1);
@@ -69,7 +69,7 @@ public class D extends AbstractFunctionEvaluator {
 			IExpr der = Derivative.derivative(n, m, header);
 			if (der != null) {
 				// we've found a derivative for a function of the form f[x_, y_]
-				IExpr derivative = F.eval(F.$(der, a1, a2));
+				IExpr derivative = F.eval(F.binaryAST2(der, a1, a2));
 				IAST times = F.Times();
 				if (n == 1) {
 					times.add(F.D(a1, x));

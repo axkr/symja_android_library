@@ -114,7 +114,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
 			}
 			if (result != null) {
-				return $(head, result);
+				return F.unaryAST1(head, result);
 			}
 			return null;
 		}

@@ -566,7 +566,7 @@ public class F {
 			: "LinearProgramming");
 	public final static ISymbol LinearSolve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearsolve" : "LinearSolve");
 	public final static ISymbol Literal = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "literal" : "Literal");
-	
+
 	public final static ISymbol Log = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log" : "Log");
 	public final static ISymbol LowerCaseQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lowercaseq" : "LowerCaseQ");
 	public final static ISymbol LUDecomposition = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ludecomposition"
@@ -4751,28 +4751,28 @@ public class F {
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
-			CInfinity = $(DirectedInfinity, C1);
-			CNInfinity = $(DirectedInfinity, CN1);
-			CIInfinity = $(DirectedInfinity, CI);
-			CNIInfinity = $(DirectedInfinity, CNI);
-			CComplexInfinity = $(DirectedInfinity);
+			CInfinity = unaryAST1(DirectedInfinity, C1);
+			CNInfinity = unaryAST1(DirectedInfinity, CN1);
+			CIInfinity = unaryAST1(DirectedInfinity, CI);
+			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
+			CComplexInfinity = headAST0(DirectedInfinity);
 
-			CSqrt2 = $(Power, C2, C1D2);
-			CSqrt3 = $(Power, C3, C1D2);
-			CSqrt5 = $(Power, C5, C1D2);
-			CSqrt6 = $(Power, C6, C1D2);
-			CSqrt7 = $(Power, C7, C1D2);
-			CSqrt10 = $(Power, C10, C1D2);
+			CSqrt2 = binaryAST2(Power, C2, C1D2);
+			CSqrt3 = binaryAST2(Power, C3, C1D2);
+			CSqrt5 = binaryAST2(Power, C5, C1D2);
+			CSqrt6 = binaryAST2(Power, C6, C1D2);
+			CSqrt7 = binaryAST2(Power, C7, C1D2);
+			CSqrt10 = binaryAST2(Power, C10, C1D2);
 
-			C1DSqrt2 = $(Power, C2, CN1D2);
-			C1DSqrt3 = $(Power, C3, CN1D2);
-			C1DSqrt5 = $(Power, C5, CN1D2);
-			C1DSqrt6 = $(Power, C6, CN1D2);
-			C1DSqrt7 = $(Power, C7, CN1D2);
-			C1DSqrt10 = $(Power, C10, CN1D2);
+			C1DSqrt2 = binaryAST2(Power, C2, CN1D2);
+			C1DSqrt3 = binaryAST2(Power, C3, CN1D2);
+			C1DSqrt5 = binaryAST2(Power, C5, CN1D2);
+			C1DSqrt6 = binaryAST2(Power, C6, CN1D2);
+			C1DSqrt7 = binaryAST2(Power, C7, CN1D2);
+			C1DSqrt10 = binaryAST2(Power, C10, CN1D2);
 
-			Slot1 = $(Slot, C1);
-			Slot2 = $(Slot, C2);
+			Slot1 = unaryAST1(Slot, C1);
+			Slot2 = unaryAST1(Slot, C2);
 
 			for (short i = 0; i < GLOBAL_IDS.length; i++) {
 				GLOBAL_IDS_MAP.put(GLOBAL_IDS[i], new ExprID(i));

@@ -1,20 +1,17 @@
 package org.matheclipse.core.generic;
 
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class BinaryMap extends BinaryFunctorImpl<IExpr> {
-	IAST fConstant;
-
-	public BinaryMap(final IAST constant) {
-		fConstant = constant;
+	final IExpr fHeader;
+	
+	public BinaryMap(final IExpr head) {
+		fHeader = head;
 	}
-
+	
 	public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
-		final IAST ast = fConstant.clone();
-		ast.add(firstArg);
-		ast.add(secondArg);
-		return ast;
+		return F.binaryAST2(fHeader, firstArg, secondArg);
 	}
 
 }

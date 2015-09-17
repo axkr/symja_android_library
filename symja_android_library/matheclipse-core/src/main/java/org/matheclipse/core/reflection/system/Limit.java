@@ -145,7 +145,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (expression.isAST()) {
 			final IAST arg1 = (IAST) expression;
 			if (arg1.isSin() || arg1.isCos()) {
-				return F.$(arg1.head(), F.Limit(arg1.arg1(), data.getRule()));
+				return F.unaryAST1(arg1.head(), F.Limit(arg1.arg1(), data.getRule()));
 			} else if (arg1.isPlus()) {
 				return plusLimit(arg1, data);
 			} else if (arg1.isTimes()) {

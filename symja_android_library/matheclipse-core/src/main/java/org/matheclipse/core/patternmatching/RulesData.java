@@ -124,10 +124,11 @@ public class RulesData implements Serializable {
 				key = iter.next();
 				pmEquals = fEqualUpRules.get(key);
 				setSymbol = pmEquals.getSetSymbol();
-				ast = F.ast(setSymbol);
-				ast.add(key);
-				ast.add(pmEquals.getRHS());
-				definitionList.add(ast);
+				// ast = F.ast(setSymbol);
+				// ast.add(key);
+				// ast.add(pmEquals.getRHS());
+				// definitionList.add(ast);
+				definitionList.add(F.binaryAST2(setSymbol, key, pmEquals.getRHS()));
 			}
 		}
 		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
@@ -139,15 +140,22 @@ public class RulesData implements Serializable {
 					pmEvaluator = (PatternMatcherAndEvaluator) elem;
 					setSymbol = pmEvaluator.getSetSymbol();
 
-					ast = F.ast(setSymbol);
-					ast.add(pmEvaluator.getLHS());
 					condition = pmEvaluator.getCondition();
 					if (condition != null) {
-						ast.add(F.Condition(pmEvaluator.getRHS(), condition));
+						// ast = F.ast(setSymbol);
+						// ast.add(pmEvaluator.getLHS());
+						// ast.add(F.Condition(pmEvaluator.getRHS(), condition));
+						// definitionList.add(ast);
+						definitionList.add(F.binaryAST2(setSymbol, pmEvaluator.getLHS(),
+								F.Condition(pmEvaluator.getRHS(), condition)));
 					} else {
-						ast.add(pmEvaluator.getRHS());
+						// ast = F.ast(setSymbol);
+						// ast.add(pmEvaluator.getLHS());
+						// ast.add(pmEvaluator.getRHS());
+						// definitionList.add(ast);
+						definitionList.add(F.binaryAST2(setSymbol, pmEvaluator.getLHS(), pmEvaluator.getRHS()));
 					}
-					definitionList.add(ast);
+
 				}
 				// if (elem instanceof PatternMatcherAndInvoker) {
 				// don't show internal methods associated with a pattern

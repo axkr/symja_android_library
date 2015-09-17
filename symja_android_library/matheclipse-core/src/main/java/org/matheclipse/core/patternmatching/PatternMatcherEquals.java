@@ -41,8 +41,9 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	 * Public constructor for serialization.
 	 */
 	public PatternMatcherEquals() {
-		
+
 	}
+
 	/**
 	 * 
 	 * @param setSymbol
@@ -150,12 +151,14 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 
 	public IAST getAsAST() {
 		ISymbol setSymbol;
-		IAST ast;
+		// IAST ast;
 		setSymbol = getSetSymbol();
-		ast = F.ast(setSymbol);
-		ast.add(fLhsPatternExpr);
-		ast.add(getRHS());
-		return ast;
+		return F.binaryAST2(setSymbol, fLhsPatternExpr, getRHS());
+		//
+		// ast = F.ast(setSymbol);
+		// ast.add(fLhsPatternExpr);
+		// ast.add(getRHS());
+		// return ast;
 	}
 
 	@Override

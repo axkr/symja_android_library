@@ -140,7 +140,7 @@ public class Matrix extends ASTDelegate {
 		IAST tempAST;
 		for (int i = 1; i < fAst.size(); i++) {
 			tempAST = createAST(getColumns());
-			((IAST) fAst.get(i)).map(tempAST, (IAST) that.fAst.get(i), new BinaryMap(F.Plus()));
+			((IAST) fAst.get(i)).map(tempAST, (IAST) that.fAst.get(i), new BinaryMap(F.Plus));
 			resultAST.add(tempAST);
 		}
 		return new Matrix(resultAST, getColumns());
