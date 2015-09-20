@@ -3155,6 +3155,10 @@ public class F {
 		return new MethodSymbol(symbolName, packageName, className, methodName);
 	}
 
+	public static IAST MessageName(final IExpr a0, final IExpr a1) {
+		return binaryAST2(MessageName, a0, a1);
+	}
+	
 	public static IAST Min() {
 		return ast(Min);
 	}
