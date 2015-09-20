@@ -417,16 +417,16 @@ public class Functors {
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules) throws WrongArgumentType {
 		final Map<IExpr, IExpr> equalRules;
-		
+
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
 		if (astRules.isList()) {
 			// assuming multiple rules in a list
 			IAST rule;
-			int size = astRules.size()-1;
+			int size = astRules.size() - 1;
 			if (size <= 5) {
-				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(size*3-1);
+				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(size * 3 - 1);
 			} else {
-				equalRules = new HashMap<IExpr, IExpr>( );
+				equalRules = new HashMap<IExpr, IExpr>();
 			}
 
 			for (final IExpr expr : astRules) {
@@ -457,17 +457,20 @@ public class Functors {
 	private static Predicate<IExpr> PATTERNQ_PREDICATE = new Predicate<IExpr>() {
 		@Override
 		public boolean apply(IExpr input) {
-			return input.isBlank() ||input.isPattern() || input.isPatternSequence();
+			return input.isBlank() || input.isPattern() || input.isPatternSequence();
 		}
 	};
 
 	private static void addRuleToCollection(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers, IAST rule) {
 		if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
-			if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
-				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
-				return;
+			IExpr temp = equalRules.get(rule.arg1());
+			if (temp == null) {
+				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
+					matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+					return;
+				}
+				equalRules.put(rule.arg1(), rule.arg2());
 			}
-			equalRules.put(rule.arg1(), rule.arg2());
 		} else {
 			matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
 		}
