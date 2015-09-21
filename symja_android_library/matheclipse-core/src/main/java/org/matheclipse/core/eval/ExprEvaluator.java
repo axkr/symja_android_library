@@ -24,6 +24,9 @@ public class ExprEvaluator {
 
 	private IExpr fExpr;
 
+	static {
+		F.initSymbols(null, null, false);
+	}
 	/**
 	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
 	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
