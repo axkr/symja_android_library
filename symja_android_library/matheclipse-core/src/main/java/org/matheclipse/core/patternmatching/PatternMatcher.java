@@ -593,7 +593,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		}
 		if (lhsPatternAST.isAST(F.Except, 2, 3)) {
 			if (lhsPatternAST.size() == 3) {
-				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)&&matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, stackMatcher);
+				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)
+						&& matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, stackMatcher);
 			} else {
 				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher);
 			}
@@ -671,12 +672,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 
 			if (lhsPatternAST.isOrderlessAST()) {
-				// only pure Orderless things (without Flat) will be handled
-				// here:
-				// final OrderlessMatcher foMatcher = new
-				// OrderlessMatcher(lhsPatternAST, lhsEvalAST);
-				// return foMatcher.matchOrderlessAST(1, stackMatcher);
-				OrderlessStepVisitor visitor = new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+				int attr = sym.getAttributes();
+				// only "pure Orderless" and "FlatOrderless with same size()" will be handled here:
+				OrderlessStepVisitor visitor = new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap,
+						((attr & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)
+						// if FLAT isn't and the Orderless ASTs have same size ==> use OneIdentity in pattern matching
+								|| (lhsPatternAST.size() == lhsEvalAST.size() && (attr & ISymbol.FLAT) == ISymbol.NOATTRIBUTE));
 				MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
 				return !iter.execute();
 			}
@@ -740,7 +741,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 	protected IExpr evalAST(final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr, StackMatcher stackMatcher) {
 		if (lhsPatternAST.size() < lhsEvalAST.size()) {
-			if (lhsPatternAST.isOrderlessAST()) {
+			if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.isFlatAST()) {
 				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), new StackMatcher())) {
 					return null;
 				}
@@ -750,7 +751,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					IAST lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
 					try {
-
 						IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 						result = F.eval(result);
 						lhsResultAST.add(result);
@@ -762,9 +762,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						lhsResultAST.add(e.getValue());
 						return lhsResultAST;
 					}
-					return null;
 				}
-
+				return null;
 			}
 			if (lhsPatternAST.isFlatAST()) {
 				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), new StackMatcher())) {

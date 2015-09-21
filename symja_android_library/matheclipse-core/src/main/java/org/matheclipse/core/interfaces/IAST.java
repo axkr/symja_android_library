@@ -70,7 +70,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * The list or the lists subexpressions contain no pattern object.
 	 */
 	public final int CONTAINS_NO_PATTERN = 0x0008;
-	
+
 	/**
 	 * One of the arguments of the list or sublists contains a pattern object. Combination of
 	 * <code>CONTAINS_PATTERN, CONTAINS_PATTERN_SEQUENCE, CONTAINS_DEFAULT_PATTERN</code>
@@ -133,12 +133,12 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * This expression is already evaluated by Expand() function
 	 */
 	public final int IS_EXPANDED = 0x1000;
-	
+
 	/**
 	 * This expression is already evaluated by ExpandAll() function
 	 */
 	public final int IS_ALL_EXPANDED = 0x2000;
-	
+
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
@@ -289,12 +289,20 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST clone();
 
 	/**
+	 * Create a copy of this <code>AST</code>, which contains the same head and all elements from to the given
+	 * <code>position</code> (inclusive).
+	 * 
+	 * @param position
+	 */
+	public IAST copyFrom(int position);
+
+	/**
 	 * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e. the element with index 0).
 	 */
 	public IAST copyHead();
 
 	/**
-	 * Create a copy of this <code>AST</code>, which contains alls elements up to the given <code>position</code> (exclusive).
+	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given <code>position</code> (exclusive).
 	 * 
 	 * @param position
 	 */

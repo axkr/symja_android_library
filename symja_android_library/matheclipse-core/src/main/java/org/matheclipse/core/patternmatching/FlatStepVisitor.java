@@ -9,8 +9,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>NumberPartitionsIterator</code> to match
- * flat expressions in pattern matching.
+ * This visitor is used in an <code>NumberPartitionsIterator</code> to match flat expressions in pattern matching.
  * 
  * @see PatternMatcher
  * @see NumberPartitionsIterator
@@ -22,9 +21,15 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	protected PatternMap fPatternMap;
 	protected IExpr[] patternValues;
 	protected IAST fLhsPatternAST;
-	protected boolean fOneIdentity;
+	protected final boolean fOneIdentity;
 
 	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher, PatternMap patternMap) {
+		this(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap,
+				(sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY);
+	}
+
+	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,
+			PatternMap patternMap, boolean oneIdentity) {
 		super(lhsEvalAST, 1, lhsEvalAST.size());
 		this.fSymbol = sym;
 		this.stackMatcher = stackMatcher;
@@ -32,7 +37,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 		// copy pattern values to local variable
 		this.patternValues = patternMap.copyPattern();
 		this.fLhsPatternAST = lhsPatternAST;
-		this.fOneIdentity = (sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY;
+		this.fOneIdentity = oneIdentity;
 	}
 
 	/**

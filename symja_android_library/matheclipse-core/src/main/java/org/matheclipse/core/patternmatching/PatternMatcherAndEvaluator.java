@@ -181,14 +181,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			}
 		}
 
-		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {
-			fPatternMap.initPattern();
-			IExpr result = evalAST((IAST) fLhsPatternExpr, (IAST) lhsEvalExpr, fRightHandSide, new StackMatcher());
-			if (result != null) {
-				return result;
-			}
-		}
-
 		fPatternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, lhsEvalExpr)) {
 			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
@@ -201,6 +193,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				result = e.getValue();
 			}
 			return result;
+		}
+		
+		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {
+			fPatternMap.initPattern();
+			IExpr result = evalAST((IAST) fLhsPatternExpr, (IAST) lhsEvalExpr, fRightHandSide, new StackMatcher());
+			if (result != null) {
+				return result;
+			}
 		}
 		return null;
 	}

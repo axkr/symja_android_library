@@ -3,14 +3,14 @@ package org.matheclipse.core.patternmatching;
 import org.matheclipse.combinatoric.IStepVisitor;
 import org.matheclipse.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>MultisetPartitionsIterator</code> to match
- * orderless expressions in pattern matching.
+ * This visitor is used in an <code>MultisetPartitionsIterator</code> to match orderless expressions in pattern matching.
  * 
  * @see PatternMatcher
  * @see MultisetPartitionsIterator
@@ -18,17 +18,20 @@ import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IStepVisitor {
 
 	/**
-	 * This visitor is used in an <code>MultisetPartitionsIterator</code> to match
-	 * orderless expressions in pattern matching. The
-	 * <code>lhsPatternAST.size()</code> must be equal to
-	 * <code>lhsEvalAST.size()</code>.
+	 * This visitor is used in an <code>MultisetPartitionsIterator</code> to match orderless expressions in pattern matching. The
+	 * <code>lhsPatternAST.size()</code> must be equal to <code>lhsEvalAST.size()</code>.
 	 * 
 	 * @see PatternMatcher
 	 * @see MultisetPartitionsIterator
 	 */
 	public OrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,
-			PatternMap patternMap) {
-		super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap);
+			PatternMap patternMap, boolean oneIdentity) {
+		super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, oneIdentity);
+//		if (!fOneIdentity && lhsEvalAST.size() == lhsPatternAST.size()) {
+//			if( (sym.getAttributes() & ISymbol.FLAT) == ISymbol.NOATTRIBUTE){
+//				fOneIdentity = true;
+//			}
+//		}
 	}
 
 	@Override
@@ -43,9 +46,16 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 			for (int j = 0; j < result.length; j++) {
 				final int n = result[j].length;
 				if (n == 1) {
-					if (!stackMatcher.push(fLhsPatternAST.get(j + 1), (IExpr) array[result[j][0]])) {
-						matched = false;
-						return false;
+					if (fOneIdentity) {
+						if (!stackMatcher.push(fLhsPatternAST.get(j + 1), (IExpr) array[result[j][0]])) {
+							matched = false;
+							return false;
+						}
+					} else {
+						if (!stackMatcher.push(fLhsPatternAST.get(j + 1), F.unaryAST1(fSymbol, (IExpr) array[result[j][0]]))) {
+							matched = false;
+							return false;
+						}
 					}
 				} else {
 					throw new WrongNumberOfArguments((IAST) list, 1, n);
