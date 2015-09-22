@@ -20,7 +20,7 @@ public class Block extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isList()) {

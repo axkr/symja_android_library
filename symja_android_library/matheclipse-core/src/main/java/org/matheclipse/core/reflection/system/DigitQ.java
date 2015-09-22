@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -21,7 +22,7 @@ public class DigitQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IStringX arg1 = Validate.checkStringType(ast, 1);
 		return F.bool(apply(arg1));

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size == 3) {
 			return binaryOperator(ast.arg1(), ast.arg2());

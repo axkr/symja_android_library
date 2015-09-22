@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
@@ -15,7 +16,7 @@ public class MemberQ extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 5);
 
 		boolean heads = false;

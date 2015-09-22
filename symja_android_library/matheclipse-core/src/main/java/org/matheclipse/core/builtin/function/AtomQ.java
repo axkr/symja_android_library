@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,7 +30,7 @@ public class AtomQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	 * Returns <code>True</code> if the 1st argument is an atomic object; <code>False</code> otherwise
 	 */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = F.eval(ast.arg1());
 		return F.bool(arg1.isAtom());

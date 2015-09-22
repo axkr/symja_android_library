@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,7 +20,7 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
 			return null;

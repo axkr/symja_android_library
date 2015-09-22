@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -17,7 +18,7 @@ public class Extract extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
 		if (ast.arg1().isAST() && ast.arg2().isList()) {

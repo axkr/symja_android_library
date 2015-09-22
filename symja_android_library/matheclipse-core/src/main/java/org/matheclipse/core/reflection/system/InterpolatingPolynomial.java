@@ -3,8 +3,9 @@ package org.matheclipse.core.reflection.system;
 import org.apache.commons.math4.exception.DimensionMismatchException;
 import org.apache.commons.math4.exception.NonMonotonicSequenceException;
 import org.apache.commons.math4.exception.NumberIsTooSmallException;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,11 +16,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Newton polynomial is sometimes called Newton's divided differences interpolation polynomial because the coefficients of the
  * polynomial are calculated using divided differences.
  * <p>
- *  
+ * 
  * See: <a href="http://en.wikipedia.org/wiki/Polynomial_interpolation">Wikipedia - Polynomial interpolation</a> and <a
  * href="http://en.wikipedia.org/wiki/Newton_polynomial">Wikipedia - Newton Polynomial</a>
  */
-public class InterpolatingPolynomial implements IFunctionEvaluator {
+public class InterpolatingPolynomial extends AbstractEvaluator {
 
 	public InterpolatingPolynomial() {
 	}
@@ -69,7 +70,7 @@ public class InterpolatingPolynomial implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isList() && ast.arg2().isSymbol()) {
@@ -114,11 +115,6 @@ public class InterpolatingPolynomial implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

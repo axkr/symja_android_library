@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -40,11 +41,11 @@ public class GCD extends AbstractArgMultiple {
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		if (ast.size() == 1) {
 			return F.C0;
 		}
-		return super.evaluate(ast);
+		return super.evaluate(ast, engine);
 	}
 
 }

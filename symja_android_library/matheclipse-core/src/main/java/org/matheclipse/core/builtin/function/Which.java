@@ -15,11 +15,9 @@ public class Which extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkEven(ast);
 		
-		final EvalEngine engine = EvalEngine.get();
-
 		for (int i = 1; i < ast.size(); i += 2) {
 			IExpr temp = engine.evaluate(ast.get(i));
 			if (temp.isFalse()) {

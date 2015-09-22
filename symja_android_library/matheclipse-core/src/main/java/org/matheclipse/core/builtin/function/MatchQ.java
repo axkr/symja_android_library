@@ -17,9 +17,8 @@ public class MatchQ extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if ((ast.size() == 3)) {
-			final EvalEngine engine = EvalEngine.get();
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			return F.bool(engine.evalPatternMatcher(ast.arg2()).apply(arg1));
 		}

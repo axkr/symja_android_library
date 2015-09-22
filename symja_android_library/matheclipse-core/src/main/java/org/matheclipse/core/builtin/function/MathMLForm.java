@@ -20,10 +20,9 @@ public class MathMLForm extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2); 
 
-		EvalEngine engine = EvalEngine.get();
 		MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, engine.isRelaxedSyntax());
 		IExpr arg1 = ast.arg1();
 		StringWriter stw = new StringWriter();

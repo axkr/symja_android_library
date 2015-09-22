@@ -19,6 +19,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
@@ -129,7 +130,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		if (ast.arg1().isAST()) {
 			boolean assumptions = false;

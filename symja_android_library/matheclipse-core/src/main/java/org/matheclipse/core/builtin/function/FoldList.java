@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -17,7 +18,7 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
 		return evaluateNestList(ast, List());

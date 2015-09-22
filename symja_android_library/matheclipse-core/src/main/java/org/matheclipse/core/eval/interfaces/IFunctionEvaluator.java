@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,6 +24,8 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * 
 	 * @param ast
 	 *            the abstract syntax tree (AST) which should be evaluated
+	 * @param engine
+	 *            the users current evaluation engine
 	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 	 * @see org.matheclipse.core.eval.exception.Validate
 	 * @see IExpr#head()
@@ -30,7 +33,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * @see IAST#arg2()
 	 * @see IAST#arg3()
 	 */
-	public IExpr evaluate(IAST ast);
+	public IExpr evaluate(IAST ast, EvalEngine engine);
 
 	/**
 	 * Numeric evaluation of a function. <code>ast.get(0)</code> (or alternatively <code>ast.head()</code>) contains the <i>head</i>
@@ -43,6 +46,8 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * 
 	 * @param ast
 	 *            the abstract syntax tree (AST) which should be evaluated
+	 * @param engine
+	 *            the users current evaluation engine
 	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 	 * @see org.matheclipse.core.eval.exception.Validate
 	 * @see IExpr#head()
@@ -50,6 +55,6 @@ public interface IFunctionEvaluator extends IEvaluator {
 	 * @see IAST#arg2()
 	 * @see IAST#arg3()
 	 */
-	public IExpr numericEval(IAST ast);
+	public IExpr numericEval(IAST ast, EvalEngine engine);
 
 }

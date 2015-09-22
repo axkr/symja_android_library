@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.Iterator;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpecification;
@@ -157,7 +158,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {

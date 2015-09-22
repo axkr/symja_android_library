@@ -19,7 +19,7 @@ public class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreate
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		final IExpr leftHandSide = ast.arg1();
 		final IExpr rightHandSide = ast.arg2();
@@ -55,11 +55,6 @@ public class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreate
 			return result;
 		}
 		throw new RuleCreationError(leftHandSide);
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

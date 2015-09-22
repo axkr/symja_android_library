@@ -6,6 +6,7 @@ import org.matheclipse.commons.math.linear.FieldLUDecomposition;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,7 +20,7 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		FieldMatrix matrix;
@@ -55,11 +56,6 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
+	} 
 
 }

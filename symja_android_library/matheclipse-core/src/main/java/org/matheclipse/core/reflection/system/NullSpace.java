@@ -4,6 +4,7 @@ import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -23,7 +24,7 @@ public class NullSpace extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
@@ -48,11 +49,6 @@ public class NullSpace extends AbstractFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST function) {
-		return evaluate(function);
 	}
 
 }

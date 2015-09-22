@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * 
  */
-public class UnitStep implements INumeric, IFunctionEvaluator {
+public class UnitStep extends AbstractEvaluator implements INumeric {
 
 	public UnitStep() {
 	}
@@ -27,12 +28,12 @@ public class UnitStep implements INumeric, IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size > 1) {
 			for (int i = 1; i < size; i++) {
 				ISignedNumber temp = ast.get(i).evalSignedNumber();
-				if (temp!=null) {
+				if (temp != null) {
 					if (temp.complexSign() < 0) {
 						return F.C0;
 					} else {
@@ -43,11 +44,6 @@ public class UnitStep implements INumeric, IFunctionEvaluator {
 			}
 		}
 		return F.C1;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

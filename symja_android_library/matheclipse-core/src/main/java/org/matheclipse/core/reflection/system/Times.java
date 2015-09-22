@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.y;
 
 import org.matheclipse.core.builtin.function.DirectedInfinity;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -239,7 +240,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size == 1) {
 			return F.C1;

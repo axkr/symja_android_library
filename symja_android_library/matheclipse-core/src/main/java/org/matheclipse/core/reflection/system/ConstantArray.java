@@ -5,8 +5,9 @@ import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.MultipleConstArrayFunction;
@@ -18,7 +19,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Array structure generator for constant (i,j) value.
  */
-public class ConstantArray implements IFunctionEvaluator {
+public class ConstantArray extends AbstractEvaluator {
 
 	public static class ArrayIterator implements IIterator<IExpr> {
 		int fCurrent;
@@ -68,7 +69,7 @@ public class ConstantArray implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		return evaluateArray(ast, List());
 	}
 
@@ -119,11 +120,6 @@ public class ConstantArray implements IFunctionEvaluator {
 			// the toInt() function throws ArithmeticExceptions
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

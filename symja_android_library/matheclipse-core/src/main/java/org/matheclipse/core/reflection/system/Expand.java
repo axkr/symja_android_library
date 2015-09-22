@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
 import org.matheclipse.core.eval.TimesOp;
@@ -371,7 +372,7 @@ public class Expand extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {

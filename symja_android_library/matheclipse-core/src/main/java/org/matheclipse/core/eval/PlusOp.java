@@ -260,7 +260,7 @@ public class PlusOp {
 	 */
 	public static IExpr plus(IAST plusAST) {
 		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(plusAST);
-		IExpr expr = Plus.CONST.evaluate(temp);
+		IExpr expr = Plus.CONST.evaluate(temp, null);
 		if (expr == null) {
 			return plusAST.getOneIdentity(F.C0);
 		}
@@ -276,7 +276,7 @@ public class PlusOp {
 	 */
 	public static IExpr plus(IExpr a1, IExpr a2) {
 		IAST plus = F.Plus(a1, a2);
-		IExpr expr = Plus.CONST.evaluate(plus);
+		IExpr expr = Plus.CONST.evaluate(plus, null);
 		if (expr == null) {
 			return plus;
 		}

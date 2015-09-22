@@ -5,6 +5,7 @@ import org.apache.commons.math4.fitting.PolynomialCurveFitter;
 import org.apache.commons.math4.fitting.WeightedObservedPoints;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.Expr2Object;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -35,13 +36,13 @@ public class Fit extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// switch to numeric calculation
-		return numericEval(ast);
+		return numericEval(ast, engine);
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
 		if (ast.arg2().isSignedNumber() && ast.arg3().isSymbol()) {

@@ -22,7 +22,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		int[] dim = ast.arg1().isMatrix();
 		if (dim == null || dim[0] <= 0 || dim[1] != 2) {
@@ -33,7 +33,6 @@ public class Piecewise extends AbstractFunctionEvaluator {
 		if (ast.size() == 3) {
 			defaultValue = ast.arg2();
 		}
-		EvalEngine engine = EvalEngine.get();
 		IExpr cond;
 		IAST row;
 		IAST result = F.List();

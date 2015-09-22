@@ -27,7 +27,7 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
 		return evaluateTable(ast, List(), List());
@@ -89,11 +89,6 @@ public class Table extends AbstractFunctionEvaluator {
 		} catch (final NoEvalException e) {
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

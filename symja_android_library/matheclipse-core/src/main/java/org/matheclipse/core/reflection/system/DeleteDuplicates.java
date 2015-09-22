@@ -16,7 +16,7 @@ public class DeleteDuplicates extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr test = F.Equal;
@@ -28,7 +28,6 @@ public class DeleteDuplicates extends AbstractFunctionEvaluator {
 			final IAST result = F.List();
 			IExpr temp;
 			boolean evaledTrue;
-			EvalEngine engine = EvalEngine.get();
 			for (int i = 1; i < list.size(); i++) {
 				temp = list.get(i);
 				evaledTrue = false;

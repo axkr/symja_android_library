@@ -4,6 +4,7 @@ import org.matheclipse.commons.math.linear.BlockFieldMatrix;
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -18,7 +19,7 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		FieldMatrix matrix;

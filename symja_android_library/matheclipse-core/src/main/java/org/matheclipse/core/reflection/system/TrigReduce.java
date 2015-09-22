@@ -16,8 +16,9 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -32,7 +33,7 @@ import org.matheclipse.core.visit.VisitorExpr;
  * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities" >List of
  * trigonometric identities - Product-to-sum and sum-to-product identities</a>
  */
-public class TrigReduce implements IFunctionEvaluator {
+public class TrigReduce extends AbstractEvaluator {
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
 
 	public TrigReduce() {
@@ -73,7 +74,7 @@ public class TrigReduce implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor();
@@ -91,11 +92,6 @@ public class TrigReduce implements IFunctionEvaluator {
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		EvalEngine.get().printMessage("Compile: Compile() function not implemented! ");
 		return F.Null;
 	}

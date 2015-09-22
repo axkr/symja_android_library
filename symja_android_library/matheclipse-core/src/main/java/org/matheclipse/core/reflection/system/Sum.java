@@ -47,7 +47,7 @@ public class Sum extends Table implements SumRules {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
 		IExpr arg1 = ast.arg1();

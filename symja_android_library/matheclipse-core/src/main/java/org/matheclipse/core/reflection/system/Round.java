@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Round;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -44,7 +45,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		try {
@@ -76,12 +77,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		}
 		return null;
 	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+ 
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

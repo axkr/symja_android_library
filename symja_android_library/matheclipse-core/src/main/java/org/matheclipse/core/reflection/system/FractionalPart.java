@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.Negate;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -26,7 +27,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();

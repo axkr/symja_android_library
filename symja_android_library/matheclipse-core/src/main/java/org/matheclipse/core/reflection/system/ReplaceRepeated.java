@@ -3,19 +3,19 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class ReplaceRepeated implements IFunctionEvaluator {
+public class ReplaceRepeated extends AbstractEvaluator {
 
 	public ReplaceRepeated() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		try {
 			Validate.checkSize(ast, 3);
 			if (ast.arg2().isListOfLists()) {
@@ -35,11 +35,6 @@ public class ReplaceRepeated implements IFunctionEvaluator {
 			EvalEngine.get().printMessage(wat.getMessage());
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

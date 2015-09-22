@@ -15,6 +15,7 @@ import org.apache.commons.math4.optim.linear.SimplexSolver;
 import org.apache.commons.math4.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -29,13 +30,13 @@ public class NMinimize extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// switch to numeric calculation
-		return numericEval(ast);
+		return numericEval(ast, engine);
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isList() && ast.arg2().isList()) {

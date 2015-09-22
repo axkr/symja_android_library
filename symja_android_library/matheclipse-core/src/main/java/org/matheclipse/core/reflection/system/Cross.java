@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -21,7 +22,7 @@ public class Cross extends AbstractFunctionEvaluator {
 	public Cross() {
 	}
 
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		IExpr arg1 = ast.arg1();
 		if (ast.size() == 3) {

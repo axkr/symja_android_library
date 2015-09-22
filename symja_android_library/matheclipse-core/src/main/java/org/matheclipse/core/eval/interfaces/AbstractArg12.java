@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -292,7 +293,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		if (ast.size() != 3) {
 			return unaryOperator(ast.arg1());

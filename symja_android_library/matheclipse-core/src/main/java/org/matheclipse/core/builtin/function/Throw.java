@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -15,7 +16,7 @@ public class Throw extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() == 2) {
 			throw new ThrowException(F.eval(ast.arg1()));
 		}

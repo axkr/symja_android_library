@@ -13,9 +13,8 @@ public class CompoundExpression extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() > 1) {
-			final EvalEngine engine = EvalEngine.get();
 			for (int i = 1; i < ast.size() - 1; i++) {
 				// as sideeffect evaluate the i-th argument
 				engine.evaluate(ast.get(i));
@@ -23,11 +22,6 @@ public class CompoundExpression extends AbstractCoreFunctionEvaluator {
 			return engine.evaluate(ast.get(ast.size() - 1));
 		}
 		return F.Null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

@@ -65,11 +65,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST holdallAST) {
+	public IExpr evaluate(final IAST holdallAST, EvalEngine engine) {
 		boolean calledRubi = false;
 		boolean evaled = false;
 		IExpr result;
-		EvalEngine engine = EvalEngine.get();
 		boolean numericMode = engine.isNumericMode();
 		try {
 			EvalEngine.get().setNumericMode(false);

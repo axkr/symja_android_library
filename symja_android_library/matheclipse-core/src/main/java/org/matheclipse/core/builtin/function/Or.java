@@ -18,7 +18,7 @@ public class Or extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() == 1) {
 			return F.False;
 		}
@@ -29,7 +29,6 @@ public class Or extends AbstractFunctionEvaluator {
 		int[] notSymbols = new int[ast.size()];
 
 		boolean evaled = false;
-		final EvalEngine engine = EvalEngine.get();
 		IAST result = ast.clone();
 		int index = 1;
 		for (int i = 1; i < ast.size(); i++) {

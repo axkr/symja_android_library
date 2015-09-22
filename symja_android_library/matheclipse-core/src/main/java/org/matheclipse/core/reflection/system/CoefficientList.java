@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -23,7 +24,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		ISymbol arg2 = Validate.checkSymbolType(ast, 2);

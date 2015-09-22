@@ -6,21 +6,22 @@ import org.apache.commons.math4.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class InterpolatingFunction implements IFunctionEvaluator {
+public class InterpolatingFunction extends AbstractEvaluator {
 
 	public InterpolatingFunction() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.head().isAST()) {
 			final IAST function = (IAST) ast.head();
 			if (ast.size() == 2 && ast.arg1() instanceof INum) {
@@ -59,11 +60,6 @@ public class InterpolatingFunction implements IFunctionEvaluator {
 		UnivariateFunction function = interpolator.interpolate(x, y);
 		double interpolatedY = function.value(interpolationX);
 		return interpolatedY;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

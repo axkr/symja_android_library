@@ -16,9 +16,8 @@ public class Switch extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4);
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		IPatternMatcher matcher;
 		for (int i = 2; i < ast.size(); i += 2) {

@@ -2,8 +2,9 @@ package org.matheclipse.core.reflection.system;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -19,13 +20,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.FromContinuedFraction
  */
-public class ContinuedFraction implements IFunctionEvaluator {
+public class ContinuedFraction extends AbstractEvaluator {
 
 	public ContinuedFraction() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
@@ -72,11 +73,6 @@ public class ContinuedFraction implements IFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -35,7 +36,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
 
 		ISymbol x = Validate.checkSymbolType(ast, 3);

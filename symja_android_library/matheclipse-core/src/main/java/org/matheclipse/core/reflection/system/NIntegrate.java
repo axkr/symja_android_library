@@ -37,7 +37,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			: "LegendreGauss");
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
 		ISymbol method = LegendreGauss;

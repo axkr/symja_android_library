@@ -1,22 +1,23 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class NonNegative implements IFunctionEvaluator {
+public class NonNegative extends AbstractEvaluator {
 
 	public NonNegative() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		
+
 		ISignedNumber arg1 = ast.arg1().evalSignedNumber();
 		if (arg1 != null) {
 			return F.bool(!arg1.isNegative());
@@ -25,11 +26,6 @@ public class NonNegative implements IFunctionEvaluator {
 			return F.False;
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

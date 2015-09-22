@@ -15,10 +15,9 @@ public class Sow extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		EvalEngine engine = EvalEngine.get();
 		IAST reapList = engine.getReapList();
 		IExpr expr = engine.evaluate(ast.arg1());
 		if (reapList != null) {

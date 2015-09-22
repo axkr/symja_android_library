@@ -15,9 +15,8 @@ public class FreeQ extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		final IExpr arg2 = engine.evalPattern(ast.arg2());
 		final IPatternMatcher matcher = new PatternMatcher(arg2);

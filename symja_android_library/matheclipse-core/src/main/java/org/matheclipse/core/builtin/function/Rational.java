@@ -22,7 +22,7 @@ public class Rational extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		try {
@@ -34,7 +34,6 @@ public class Rational extends AbstractCoreFunctionEvaluator {
 			} else if (arg0 instanceof INum && arg1 instanceof INum) {
 				// already evaluated
 			} else {
-				final EvalEngine engine = EvalEngine.get();
 				arg0 = engine.evaluate(arg0);
 				arg1 = engine.evaluate(arg1);
 			}

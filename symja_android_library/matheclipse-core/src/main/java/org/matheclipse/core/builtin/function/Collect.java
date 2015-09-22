@@ -28,14 +28,13 @@ public class Collect extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 		try {
 			IExpr head = null;
 			if (ast.size() == 4) {
 				head = ast.arg3();
 			}
-			final EvalEngine engine = EvalEngine.get();
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
 			if (!arg2.isList()) {

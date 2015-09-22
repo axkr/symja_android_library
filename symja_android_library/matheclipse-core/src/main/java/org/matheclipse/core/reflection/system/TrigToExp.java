@@ -28,8 +28,9 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -43,7 +44,7 @@ import org.matheclipse.core.visit.VisitorExpr;
  * identities - Exponential definitions</a>,<br/>
  * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
  */
-public class TrigToExp implements IFunctionEvaluator {
+public class TrigToExp extends AbstractEvaluator {
 
 	public TrigToExp() {
 	}
@@ -113,7 +114,7 @@ public class TrigToExp implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		TrigToExpVisitor tteVisitor = new TrigToExpVisitor();
@@ -122,11 +123,6 @@ public class TrigToExp implements IFunctionEvaluator {
 			return result;
 		}
 		return ast.arg1();
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

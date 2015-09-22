@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -17,7 +18,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() != 2) {
 			return null;
 		}

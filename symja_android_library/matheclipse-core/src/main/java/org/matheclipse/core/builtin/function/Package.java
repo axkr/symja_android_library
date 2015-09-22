@@ -29,7 +29,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
 		if (!(ast.arg1() instanceof IStringX) || !ast.arg2().isList() || !ast.arg3().isList()) {
@@ -172,7 +172,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(IAST functionList) {
+	public IExpr numericEval(IAST functionList, EvalEngine engine) {
 		return null;
 	}
 

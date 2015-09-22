@@ -16,12 +16,10 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
 		try {
-
-			final EvalEngine engine = EvalEngine.get();
 			final int iterationLimit = engine.getIterationLimit();
 			int iterationCounter = 1;
 

@@ -16,9 +16,8 @@ public class Rule extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		final EvalEngine engine = EvalEngine.get();
 		IExpr leftHandSide = ast.arg1();
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);

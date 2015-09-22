@@ -1,5 +1,6 @@
 package org.matheclipse.core.integrate.rubi45;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -12,7 +13,7 @@ public class AbortRubi extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		throw new AbortException();
 	}
 

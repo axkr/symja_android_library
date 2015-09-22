@@ -46,10 +46,9 @@ public class Count extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		
 		final VisitorLevelSpecification level;

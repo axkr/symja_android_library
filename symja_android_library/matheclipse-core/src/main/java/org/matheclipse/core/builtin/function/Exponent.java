@@ -22,10 +22,9 @@ public class Exponent extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr form = engine.evalPattern(ast.arg2());
 		if (form.isList()) {
 			return ((IAST) form).mapAt(ast, 2);

@@ -45,7 +45,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		try {
@@ -86,12 +86,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			return Negate(Ceiling(negExpr));
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
+	} 
 
 	@Override
 	public void setUp(final ISymbol symbol) {

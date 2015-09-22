@@ -12,9 +12,10 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,13 +27,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See: <a href="http://en.wikipedia.org/wiki/Imaginary_part">Imaginary part</a>
  */
-public class Im implements IFunctionEvaluator {
+public class Im extends AbstractEvaluator {
 
 	public Im() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
@@ -60,15 +61,15 @@ public class Im implements IFunctionEvaluator {
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).getIm();
 		}
-//		if (arg1.isSignedNumber()) {
-//			return F.C0;
-//		}
-//		if (arg1.isComplex()) {
-//			return ((IComplex) arg1).getIm();
-//		}
-//		if (arg1 instanceof IComplexNum) {
-//			return F.num(((IComplexNum) arg1).getImaginaryPart());
-//		}
+		// if (arg1.isSignedNumber()) {
+		// return F.C0;
+		// }
+		// if (arg1.isComplex()) {
+		// return ((IComplex) arg1).getIm();
+		// }
+		// if (arg1 instanceof IComplexNum) {
+		// return F.num(((IComplexNum) arg1).getImaginaryPart());
+		// }
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr != null) {
 			return Negate(Im(negExpr));
@@ -85,7 +86,7 @@ public class Im implements IFunctionEvaluator {
 			}
 		}
 		if (arg1.isPlus()) {
-			return ((IAST) arg1).mapAt((IAST)F.Im(null), 1);
+			return ((IAST) arg1).mapAt((IAST) F.Im(null), 1);
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;
@@ -126,11 +127,6 @@ public class Im implements IFunctionEvaluator {
 		}
 		return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
 				Sin(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

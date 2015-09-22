@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.math.BigInteger;
 import java.util.Random;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -21,7 +22,7 @@ public class RandomInteger extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		if (ast.arg1().isInteger()) {

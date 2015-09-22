@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -12,13 +12,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.base.Function;
 
-public class Replace implements IFunctionEvaluator {
+public class Replace extends AbstractEvaluator {
 
 	public Replace() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		try {
 			IExpr arg1 = ast.arg1();
@@ -93,11 +93,6 @@ public class Replace implements IFunctionEvaluator {
 			return temp;
 		}
 		return arg1;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

@@ -74,7 +74,7 @@ public class Array  extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		return evaluateArray(ast, List());
 	}
 

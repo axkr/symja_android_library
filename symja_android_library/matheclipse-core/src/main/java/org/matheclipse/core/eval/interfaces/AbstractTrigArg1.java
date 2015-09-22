@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.apache.commons.math4.complex.Complex;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -18,14 +19,14 @@ import org.matheclipse.core.interfaces.INum;
 public abstract class AbstractTrigArg1 extends AbstractArg1 {
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		return evaluateArg1(ast.arg1());
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = ast.arg1();
 		if (arg1 instanceof INum) {

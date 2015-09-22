@@ -1,8 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.convert.Lists;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,13 +16,13 @@ import cc.redberry.core.math.frobenius.FrobeniusSolver;
  * 
  * 
  */
-public class FrobeniusSolve implements IFunctionEvaluator {
+public class FrobeniusSolve extends AbstractEvaluator {
 
 	public FrobeniusSolve() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
 		if (ast.arg1().isList()) {
@@ -63,11 +64,6 @@ public class FrobeniusSolve implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

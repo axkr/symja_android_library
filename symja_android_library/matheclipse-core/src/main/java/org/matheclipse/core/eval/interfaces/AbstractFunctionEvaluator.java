@@ -53,7 +53,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	abstract public IExpr evaluate(final IAST ast);
+	abstract public IExpr evaluate(final IAST ast, EvalEngine engine);
 
 	/**
 	 * Create a rule which invokes the method name in this class instance.

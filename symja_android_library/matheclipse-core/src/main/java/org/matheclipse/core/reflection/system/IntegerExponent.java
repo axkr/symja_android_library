@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -19,7 +20,7 @@ public class IntegerExponent extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		IInteger base = F.C10;
 		if (ast.size() == 3) {

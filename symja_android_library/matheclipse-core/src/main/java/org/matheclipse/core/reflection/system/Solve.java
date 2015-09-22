@@ -590,7 +590,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);

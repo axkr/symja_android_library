@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -20,7 +21,7 @@ public class NestWhileList extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
 		return nestList(ast.arg2(), F.eval(ast.arg3()), Functors.append(F.ast(ast.arg1())), List());

@@ -471,7 +471,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
 		if (!ast.arg2().isRuleAST()) {

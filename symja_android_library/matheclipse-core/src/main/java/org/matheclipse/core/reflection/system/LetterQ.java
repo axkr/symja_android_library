@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -22,7 +23,7 @@ public class LetterQ extends AbstractFunctionEvaluator implements Predicate<IExp
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);

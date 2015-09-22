@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Power;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IIndexFunction;
@@ -21,7 +22,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast,2);
 		if (ast.arg1().isList()) {
 			final IAST lst = (IAST) ast.arg1();

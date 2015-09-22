@@ -5,6 +5,7 @@ import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -68,8 +69,8 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+		return evaluate(ast, null);
 	}
 
 	@Override

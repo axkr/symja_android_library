@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -104,7 +105,7 @@ public class Prime extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		if (ast.arg1().isInteger()) {

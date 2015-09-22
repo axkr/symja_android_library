@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -10,13 +11,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * EuclidianDistance of two vectors
  */
-public class EuclidianDistance implements IFunctionEvaluator {
+public class EuclidianDistance extends AbstractEvaluator {
 
 	public EuclidianDistance() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		IExpr arg1 = ast.arg1();
 		IExpr arg2 = ast.arg2();
@@ -38,11 +39,6 @@ public class EuclidianDistance implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

@@ -19,9 +19,8 @@ public class While extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
-		final EvalEngine engine = EvalEngine.get();
 
 		final int iterationLimit = engine.getIterationLimit();
 		int iterationCounter = 1;

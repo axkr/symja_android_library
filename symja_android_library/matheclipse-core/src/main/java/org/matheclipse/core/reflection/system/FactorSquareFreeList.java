@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -22,7 +23,7 @@ public class FactorSquareFreeList extends Factor {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		VariablesSet eVar = new VariablesSet(ast.arg1());

@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,13 +16,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  *         +1 for <code>real(this) &gt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &gt; 0 )</code> ;<br/>
  *         -1 for <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
  */
-public class SignCmp implements IFunctionEvaluator {
+public class SignCmp extends AbstractEvaluator {
 
 	public SignCmp() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
@@ -31,11 +32,6 @@ public class SignCmp implements IFunctionEvaluator {
 			return F.integer(signum);
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

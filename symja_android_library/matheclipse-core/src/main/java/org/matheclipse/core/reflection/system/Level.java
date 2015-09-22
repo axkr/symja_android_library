@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
@@ -17,7 +18,7 @@ public class Level extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 5);
 		
 		int lastIndex = ast.size() - 1;

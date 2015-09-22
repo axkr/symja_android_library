@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -22,7 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		final IExpr arg1 = ast.arg1();

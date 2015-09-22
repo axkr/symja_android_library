@@ -21,13 +21,12 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	 *
 	 */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isList()) {
 			IAST lst = (IAST) ast.arg1();
 			IExpr arg2 = ast.arg2();
-			final EvalEngine engine = EvalEngine.get();
 			return evalModule(lst, arg2, engine);
 		}
 

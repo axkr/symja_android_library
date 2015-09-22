@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -10,13 +11,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * SquaredEuclidianDistance of two vectors
  */
-public class SquaredEuclidianDistance implements IFunctionEvaluator {
+public class SquaredEuclidianDistance extends AbstractEvaluator {
 
 	public SquaredEuclidianDistance() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST functionList) {
+	public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 		if (functionList.size() != 3) {
 			throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
 		}
@@ -40,16 +41,6 @@ public class SquaredEuclidianDistance implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
-	@Override
-	public void setUp(ISymbol symbol) {
-
 	}
 
 }

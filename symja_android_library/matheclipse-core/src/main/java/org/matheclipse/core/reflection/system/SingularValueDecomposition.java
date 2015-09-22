@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -22,7 +23,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		RealMatrix matrix;
@@ -58,11 +59,6 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 }

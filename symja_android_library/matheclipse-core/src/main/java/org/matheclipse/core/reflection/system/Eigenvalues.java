@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.apache.commons.math4.linear.EigenDecomposition;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.F;
@@ -22,9 +23,9 @@ public class Eigenvalues extends AbstractMatrix1Expr {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// switch to numeric calculation
-		return numericEval(ast);
+		return numericEval(ast, engine);
 	}
 
 	@Override

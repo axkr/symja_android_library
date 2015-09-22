@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.IntegerPart;
 import static org.matheclipse.core.expression.F.Negate;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,7 +17,7 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		try {
@@ -45,12 +46,7 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 		} else {
 			return (signedNumber).floor();
 		}
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
+	} 
 
 	@Override
 	public void setUp(final ISymbol symbol) {

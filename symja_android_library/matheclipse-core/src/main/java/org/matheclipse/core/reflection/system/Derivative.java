@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -65,7 +66,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		if (ast.size() == 2) {
 			if (ast.head().isAST(F.Derivative, 2)) {
 				// Derivative(n)

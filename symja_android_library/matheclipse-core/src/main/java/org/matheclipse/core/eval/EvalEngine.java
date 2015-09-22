@@ -571,9 +571,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 			}
 		} else {
 			symbol = ast.topHead();
@@ -661,9 +661,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 			}
 
 		} else {
@@ -713,9 +713,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof IFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((IFunctionEvaluator) module).numericEval(ast);
+					return ((IFunctionEvaluator) module).numericEval(ast, this);
 				}
-				return ((IFunctionEvaluator) module).evaluate(ast);
+				return ((IFunctionEvaluator) module).evaluate(ast, this);
 			}
 		}
 		return null;
@@ -1194,10 +1194,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			EvalAttributes.sort(ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
-					return Plus.CONST.evaluate(ast);
+					return Plus.CONST.evaluate(ast, null);
 				}
 				if (ast.isTimes()) {
-					return Times.CONST.evaluate(ast);
+					return Times.CONST.evaluate(ast, null);
 				}
 			}
 		}

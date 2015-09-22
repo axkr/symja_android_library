@@ -19,7 +19,7 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		final IExpr leftHandSide = ast.arg1();
 		IExpr rightHandSide = ast.arg2();
@@ -90,11 +90,6 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 		// }
 		//
 		// throw new RuleCreationError(leftHandSide);
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

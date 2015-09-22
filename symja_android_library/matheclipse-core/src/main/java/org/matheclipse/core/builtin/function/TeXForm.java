@@ -20,10 +20,9 @@ public class TeXForm extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		EvalEngine engine = EvalEngine.get();
 		TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
 		IExpr arg1 = F.eval(ast.arg1());
 		StringWriter stw = new StringWriter();

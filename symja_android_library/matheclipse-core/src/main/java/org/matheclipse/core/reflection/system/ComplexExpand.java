@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CI;
@@ -22,8 +21,9 @@ import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.integer;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -35,7 +35,7 @@ import org.matheclipse.core.visit.VisitorExpr;
  * 
  * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of trigonometric identities</a>
  */
-public class ComplexExpand implements IFunctionEvaluator {
+public class ComplexExpand extends AbstractEvaluator {
 
 	public ComplexExpand() {
 	}
@@ -86,8 +86,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 			}
 			if (head.equals(Cot)) {
 				// -(Sin[2*Re[x]]/(Cos[2*Re[x]]-Cosh[2*Im[x]]))+(I*Sinh[2*Im[x]])/(Cos[2*Re[x]]-Cosh[2*Im[x]])
-				return Plus(
-						Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
+				return Plus(Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
 						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Csc)) {
@@ -121,7 +120,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 		IExpr arg1 = ast.arg1();
 		return complexExpand(arg1);
@@ -139,12 +138,7 @@ public class ComplexExpand implements IFunctionEvaluator {
 		ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor();
 		return arg1.accept(tteVisitor);
 	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
+ 
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);

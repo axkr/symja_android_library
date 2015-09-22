@@ -3,20 +3,21 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.builtin.function.FoldList;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryApply;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class ComposeList implements IFunctionEvaluator {
+public class ComposeList extends AbstractEvaluator {
 
 	public ComposeList() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		return evaluateComposeList(ast, List());
 	}
 
@@ -32,11 +33,6 @@ public class ComposeList implements IFunctionEvaluator {
 
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

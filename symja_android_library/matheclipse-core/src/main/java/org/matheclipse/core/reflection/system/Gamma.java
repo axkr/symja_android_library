@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -27,7 +28,7 @@ public class Gamma extends AbstractTrigArg1 {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 4);
 
 		if (ast.size() == 2) {

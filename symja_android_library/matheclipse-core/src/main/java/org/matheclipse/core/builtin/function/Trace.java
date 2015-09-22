@@ -20,12 +20,11 @@ public class Trace extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		final IExpr temp = ast.arg1();
 		IPatternMatcher matcher = null;
-		final EvalEngine engine = EvalEngine.get();
 		if (ast.size() == 3) {
 			matcher = engine.evalPatternMatcher(ast.arg2());
 		}

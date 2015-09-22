@@ -16,8 +16,9 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -27,15 +28,14 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Expands the argument of sine and cosine functions.
  * 
- * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List
- * of trigonometric identities</a>
+ * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric identities</a>
  */
-public class TrigExpand implements IFunctionEvaluator {
+public class TrigExpand extends AbstractEvaluator {
 	public TrigExpand() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr temp = ast.arg1();
@@ -58,11 +58,16 @@ public class TrigExpand implements IFunctionEvaluator {
 							IAST rest = F.Times();
 							rest.addAll(timesAST, 2, timesAST.size());
 							if (result.isSin()) {
-								return Sum(Times(Times(Times(Power(CN1, Times(Plus(F.$s("i"), Times(CN1, C1)), C1D2)), Binomial(iNum, $s("i"))),
-										Power(Cos(rest), Plus(iNum, Times(CN1, $s("i"))))), Power(Sin(rest), $s("i"))), List($s("i"), C1, iNum, C2));
+								return Sum(
+										Times(Times(
+												Times(Power(CN1, Times(Plus(F.$s("i"), Times(CN1, C1)), C1D2)),
+														Binomial(iNum, $s("i"))), Power(Cos(rest), Plus(iNum, Times(CN1, $s("i"))))),
+												Power(Sin(rest), $s("i"))), List($s("i"), C1, iNum, C2));
 							} else if (result.isCos()) {
-								return Sum(Times(Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(iNum, $s("i"))), Power(Cos(rest), Plus(
-										iNum, Times(CN1, $s("i"))))), Power(Sin(rest), $s("i"))), List($s("i"), C0, iNum, C2));
+								return Sum(
+										Times(Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(iNum, $s("i"))),
+												Power(Cos(rest), Plus(iNum, Times(CN1, $s("i"))))), Power(Sin(rest), $s("i"))),
+										List($s("i"), C0, iNum, C2));
 							}
 						}
 					}
@@ -103,11 +108,6 @@ public class TrigExpand implements IFunctionEvaluator {
 			result.add(Times(CN1, Sin(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
 		}
 		return result;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

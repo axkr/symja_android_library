@@ -17,7 +17,7 @@ public class Unset extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		final IExpr leftHandSide = ast.arg1();
 		if (leftHandSide.isList()) {
@@ -54,12 +54,7 @@ public class Unset extends AbstractCoreFunctionEvaluator {
 		}
 
 		throw new RuleCreationError(leftHandSide);
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
+	} 
 
 	@Override
 	public void setUp(final ISymbol symbol) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -13,8 +14,8 @@ public abstract class AbstractCoreFunctionEvaluator implements ICoreFunctionEval
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+		return evaluate(ast, engine);
 	}
 
 	/**
@@ -28,6 +29,6 @@ public abstract class AbstractCoreFunctionEvaluator implements ICoreFunctionEval
 
 	/** {@inheritDoc} */
 	@Override
-	abstract public IExpr evaluate(final IAST ast);
+	abstract public IExpr evaluate(final IAST ast, EvalEngine engine);
 
 }

@@ -17,11 +17,10 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
 		if (ast.size() == 2) {
-			EvalEngine engine = EvalEngine.get();
 			boolean numericMode = engine.isNumericMode();
 			try {
 				engine.setNumericMode(false);

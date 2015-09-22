@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.io.IOException;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -16,7 +17,7 @@ public class ToString extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		return F.stringx(outputForm(ast.arg1()));

@@ -25,7 +25,7 @@ public class Horner extends AbstractFunctionEvaluator {
 
 	@Override
 	@Deprecated
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		if (ast.arg1().isAST()) {

@@ -22,11 +22,10 @@ public class Complex extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		try {
-			final EvalEngine engine = EvalEngine.get();
 			IExpr arg1 = ast.arg1();
 			arg1 = engine.evaluate(arg1);
 			IExpr arg2 = ast.arg2();

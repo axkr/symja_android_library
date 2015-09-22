@@ -1,13 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -15,13 +15,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
  */
-public class Conjugate implements IFunctionEvaluator, INumeric {
+public class Conjugate extends AbstractEvaluator implements INumeric {
 
 	public Conjugate() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
@@ -70,7 +70,7 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).conjugate();
 		}
-		if (arg1.isRealResult()){
+		if (arg1.isRealResult()) {
 			return arg1;
 		}
 		if (arg1.isDirectedInfinity()) {
@@ -90,11 +90,6 @@ public class Conjugate implements IFunctionEvaluator, INumeric {
 			return F.Indeterminate;
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

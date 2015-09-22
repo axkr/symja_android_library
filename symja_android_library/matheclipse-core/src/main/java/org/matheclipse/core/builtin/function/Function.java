@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.function;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
@@ -18,7 +19,7 @@ public class Function extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.head().isAST()) {
 
 			final IAST function = (IAST) ast.head();

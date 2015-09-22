@@ -25,9 +25,8 @@ public class For extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
-		final EvalEngine engine = EvalEngine.get();
 		final int iterationLimit = engine.getIterationLimit();
 		int iterationCounter = 1;
 

@@ -40,10 +40,9 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 5);
 
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());

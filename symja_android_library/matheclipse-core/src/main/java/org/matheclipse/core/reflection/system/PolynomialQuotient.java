@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -20,7 +21,7 @@ public class PolynomialQuotient extends PolynomialQuotientRemainder {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
 		ISymbol variable = Validate.checkSymbolType(ast, 3);
 		IExpr arg1 = F.evalExpandAll(ast.arg1());

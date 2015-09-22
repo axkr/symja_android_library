@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,13 +17,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Gets the sign value of a number. See <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign function</a>
  * 
  */
-public class Sign implements IFunctionEvaluator {
+public class Sign extends AbstractEvaluator {
 
 	public Sign() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
@@ -65,11 +66,6 @@ public class Sign implements IFunctionEvaluator {
 			return c.divide(F.num(c.dabs()));
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.integer;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -165,7 +166,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {

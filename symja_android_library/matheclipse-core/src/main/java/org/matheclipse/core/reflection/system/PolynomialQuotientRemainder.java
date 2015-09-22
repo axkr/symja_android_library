@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -33,7 +34,7 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
 		ISymbol variable = Validate.checkSymbolType(ast, 3);
 		IExpr arg1 = F.evalExpandAll(ast.arg1());

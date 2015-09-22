@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -18,7 +19,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2);
 
 		IExpr arg1 = F.eval(ast.arg1());

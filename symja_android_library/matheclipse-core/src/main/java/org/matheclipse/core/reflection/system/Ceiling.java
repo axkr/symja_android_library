@@ -46,7 +46,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		try {
@@ -89,11 +89,6 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			return Negate(Floor(negExpr));
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

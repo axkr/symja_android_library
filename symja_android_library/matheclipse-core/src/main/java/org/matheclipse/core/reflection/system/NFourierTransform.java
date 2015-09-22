@@ -20,7 +20,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
 
 		IExpr expr = ast.arg1();

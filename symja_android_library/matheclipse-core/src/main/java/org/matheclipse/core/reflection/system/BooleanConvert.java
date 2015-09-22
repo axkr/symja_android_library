@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Not;
 import static org.matheclipse.core.expression.F.Or;
 import static org.matheclipse.core.expression.F.Xor;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -98,7 +99,7 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();

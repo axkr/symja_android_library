@@ -24,10 +24,9 @@ public class ArrayQ extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 4);
 
-		final EvalEngine engine = EvalEngine.get();
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		Predicate<IExpr> pred = null;
 		if ((ast.size() >= 4)) {

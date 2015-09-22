@@ -34,7 +34,7 @@ public class Get extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		if (!(ast.arg1() instanceof IStringX)) {
@@ -44,7 +44,6 @@ public class Get extends AbstractFunctionEvaluator {
 			throw new RuleCreationError(null);
 		}
 		IStringX arg1 = (IStringX) ast.arg1();
-		EvalEngine engine = EvalEngine.get();
 		FileReader reader;
 		try {
 			reader = new FileReader(arg1.toString());
@@ -57,7 +56,7 @@ public class Get extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(IAST functionList) {
+	public IExpr numericEval(IAST functionList, EvalEngine engine) {
 		return null;
 	}
 

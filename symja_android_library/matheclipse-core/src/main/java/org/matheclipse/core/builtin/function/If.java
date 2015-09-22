@@ -14,9 +14,8 @@ public class If extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 5);
-		final EvalEngine engine = EvalEngine.get();
 
 		final IExpr temp = engine.evaluate(ast.arg1());
 

@@ -1,25 +1,25 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Transpose a matrix.
  * 
  * See <a href="http://en.wikipedia.org/wiki/Transpose">Transpose</a>
  */
-public class Transpose implements IFunctionEvaluator {
+public class Transpose extends AbstractEvaluator {
 
 	public Transpose() {
 
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// TODO generalize transpose for all levels
 		Validate.checkRange(ast, 2);
 
@@ -48,15 +48,6 @@ public class Transpose implements IFunctionEvaluator {
 
 	protected IExpr transform(final IExpr expr) {
 		return expr;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
-	@Override
-	public void setUp(final ISymbol symbol) {
 	}
 
 }

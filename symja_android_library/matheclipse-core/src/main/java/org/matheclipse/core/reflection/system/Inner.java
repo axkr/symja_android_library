@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -82,7 +83,7 @@ public class Inner extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 4, 5);
 
 		if (ast.arg2().isAST() && ast.arg3().isAST()) {

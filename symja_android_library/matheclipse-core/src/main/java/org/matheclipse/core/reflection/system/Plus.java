@@ -26,6 +26,7 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -123,7 +124,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 	 */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size == 1) {
 			return F.C0;

@@ -1,8 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -13,15 +14,15 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.ContinuedFraction
  */
-public class FromContinuedFraction implements IFunctionEvaluator {
+public class FromContinuedFraction extends AbstractEvaluator {
 
 	public FromContinuedFraction() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
-		Validate.checkSize(ast, 2); 
-		if ( !ast.arg1().isList()) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+		if (!ast.arg1().isList()) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		IAST list = (IAST) ast.arg1();
@@ -34,11 +35,6 @@ public class FromContinuedFraction implements IFunctionEvaluator {
 			result = F.Plus(list.get(i), F.Power(result, F.CN1));
 		}
 		return result;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

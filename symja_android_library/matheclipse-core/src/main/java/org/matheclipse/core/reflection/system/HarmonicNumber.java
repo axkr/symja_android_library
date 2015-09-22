@@ -16,8 +16,9 @@ import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 
 import org.apache.commons.math4.fraction.BigFraction;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -29,13 +30,13 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
  */
-public class HarmonicNumber implements IFunctionEvaluator {
+public class HarmonicNumber extends AbstractEvaluator {
 
 	public HarmonicNumber() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
@@ -88,11 +89,6 @@ public class HarmonicNumber implements IFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	/**

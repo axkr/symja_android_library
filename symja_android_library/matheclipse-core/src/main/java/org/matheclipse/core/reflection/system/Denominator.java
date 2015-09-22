@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,12 +12,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Get the denominator part of an expression
  * 
- * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia:
- * Fraction (mathematics)</a>
+ * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
  * 
  * @see org.matheclipse.core.reflection.system.Numerator
  */
-public class Denominator implements IFunctionEvaluator {
+public class Denominator extends AbstractEvaluator {
 
 	static ISymbol[] NUMERATOR_SYMBOLS = { F.Csc, F.Cot, F.Sec };
 	static ISymbol[] DENOMINATOR_SYMBOLS = { F.Sin, F.Tan, F.Cos };
@@ -25,7 +25,7 @@ public class Denominator implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		IExpr expr = ast.arg1();
@@ -40,22 +40,15 @@ public class Denominator implements IFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
-	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	/**
-	 * Get the &quot;denominator form&quot; of the given function. Example:
-	 * <code>Csc[x]</code> gives <code>Sin[x]</code>.
+	 * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives <code>Sin[x]</code>.
 	 * 
 	 * @param function
-	 *          the function which should be transformed to &quot;denominator
-	 *          form&quot;
+	 *            the function which should be transformed to &quot;denominator form&quot;
 	 * @return
 	 */
 	public static IAST getDenominatorForm(IAST function) {

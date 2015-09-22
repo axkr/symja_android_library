@@ -19,10 +19,9 @@ public class Unique extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
-		final EvalEngine engine = EvalEngine.get();
 		final int moduleCounter = engine.incModuleCounter();
 		if (ast.size() == 2) {
 			if (ast.arg1().isSymbol()) {

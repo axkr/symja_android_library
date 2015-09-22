@@ -19,7 +19,7 @@ public class ClearAll extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		ISymbol symbol = Validate.checkSymbolType(ast, 1);

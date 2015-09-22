@@ -29,7 +29,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
@@ -50,13 +50,8 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		}
 
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST function) {
-		return evaluate(function);
-	}
-
+	} 
+	
 	/**
 	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations
 	 * 

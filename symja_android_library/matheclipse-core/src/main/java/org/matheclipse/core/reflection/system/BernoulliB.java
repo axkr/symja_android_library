@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.math.BigInteger;
 
 import org.apache.commons.math4.fraction.BigFraction;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,7 +30,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(IAST ast) {
+	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.size() == 2) {

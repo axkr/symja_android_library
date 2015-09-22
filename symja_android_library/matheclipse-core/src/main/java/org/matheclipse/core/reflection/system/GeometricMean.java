@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.apache.commons.math4.stat.StatUtils;
 import org.matheclipse.core.convert.Expr2Object;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -14,7 +15,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IAST arg1 = Validate.checkASTType(ast, 1);
 		if (arg1.size() > 1) {
@@ -24,7 +25,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
 		double[] values = Expr2Object.toDoubleVector(ast.getAST(1));

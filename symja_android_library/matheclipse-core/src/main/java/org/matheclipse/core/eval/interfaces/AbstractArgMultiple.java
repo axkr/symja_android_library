@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -19,7 +20,7 @@ import org.matheclipse.parser.client.SyntaxError;
 public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() == 3) {
 			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
 			if (temp != null) {

@@ -1,7 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,13 +13,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Trace_(linear_algebra)">Trace (linear algebra)</a>
  */
-public class Tr implements IFunctionEvaluator {
+public class Tr extends AbstractEvaluator {
 
 	public Tr() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
 		// TODO generalize for tensors
@@ -40,11 +41,6 @@ public class Tr implements IFunctionEvaluator {
 			return tr;
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

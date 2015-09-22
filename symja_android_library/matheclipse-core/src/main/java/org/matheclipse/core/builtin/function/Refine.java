@@ -19,14 +19,13 @@ public class Refine extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		// final IExpr arg1 = F.eval(ast.arg1());
 		final IExpr arg2 = F.eval(ast.arg2());
 		IAssumptions assumptions = Assumptions.getInstance(arg2);
 		if (assumptions != null) {
-			EvalEngine engine = EvalEngine.get();
 			try {
 				engine.setAssumptions(assumptions);
 				return engine.evalWithoutNumericReset(ast.arg1());

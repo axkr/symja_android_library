@@ -16,7 +16,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		FieldMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
@@ -41,12 +41,11 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		RealMatrix matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
-			EvalEngine engine = EvalEngine.get();
 			if (engine.isApfloat()) {
 				final IAST list = (IAST) ast.arg1();
 				FieldMatrix fieldMatrix = Convert.list2Matrix(list);
@@ -69,7 +68,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return evaluate(ast);
+		return evaluate(ast, engine);
 	}
 
 	public abstract FieldMatrix matrixEval(FieldMatrix matrix);

@@ -187,9 +187,9 @@ public class AST2Expr {
 	 * Converts a parsed FunctionNode expression into an IAST expression
 	 */
 	public IAST convert(IAST ast, FunctionNode functionNode) throws ConversionException {
-		ast.set(0, convert(functionNode.get(0)));
+		ast.set(0, convertNode(functionNode.get(0), null));
 		for (int i = 1; i < functionNode.size(); i++) {
-			ast.add(convert(functionNode.get(i)));
+			ast.add(convertNode(functionNode.get(i), null));
 		}
 		return ast;
 	}
@@ -199,13 +199,18 @@ public class AST2Expr {
 		if (engine != null) {
 			fPrecision = engine.getNumericPrecision();
 		}
-		return convert(node);
+		return convertNode(node, engine);
+	}
+
+	public IExpr convert(ASTNode node) throws ConversionException {
+		return convert(node, EvalEngine.get());
 	}
 
 	/**
 	 * Converts a parsed ASTNode expression into an IExpr expression
+	 * @param engine TODO
 	 */
-	public IExpr convert(ASTNode node) throws ConversionException {
+	private IExpr convertNode(ASTNode node, EvalEngine engine) throws ConversionException {
 		if (node == null) {
 			return null;
 		}
@@ -216,22 +221,23 @@ public class AST2Expr {
 			IAST ast;
 			switch (size) {
 			case 1:
-				ast = F.headAST0(convert(functionNode.get(0)));
+				ast = F.headAST0(convertNode(functionNode.get(0), engine));
 				break;
 			case 2:
-				ast = F.unaryAST1(convert(functionNode.get(0)), convert(functionNode.get(1)));
+				ast = F.unaryAST1(convertNode(functionNode.get(0), engine), convertNode(functionNode.get(1), engine));
 				break;
 			case 3:
-				ast = F.binaryAST2(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)));
+				ast = F.binaryAST2(convertNode(functionNode.get(0), engine), convertNode(functionNode.get(1), engine),
+						convertNode(functionNode.get(2), engine));
 				break;
 			case 4:
-				ast = F.ternaryAST3(convert(functionNode.get(0)), convert(functionNode.get(1)), convert(functionNode.get(2)),
-						convert(functionNode.get(3)));
+				ast = F.ternaryAST3(convertNode(functionNode.get(0), engine), convertNode(functionNode.get(1), engine),
+						convertNode(functionNode.get(2), engine), convertNode(functionNode.get(3), engine));
 				break;
 			default:
-				ast = F.ast(convert(functionNode.get(0)), functionNode.size(), false);
+				ast = F.ast(convertNode(functionNode.get(0), engine), functionNode.size(), false);
 				for (int i = 1; i < functionNode.size(); i++) {
-					ast.add(convert(functionNode.get(i)));
+					ast.add(convertNode(functionNode.get(i), engine));
 				}
 			}
 
@@ -241,7 +247,7 @@ public class AST2Expr {
 					int precision = Validate.checkIntType(ast.arg2());
 					if (EvalEngine.isApfloat(precision)) {
 						fPrecision = precision;
-						ast.set(1, convert(functionNode.get(1)));
+						ast.set(1, convertNode(functionNode.get(1), engine));
 					}
 					return ast;
 				} catch (WrongArgumentType wat) {
@@ -273,22 +279,22 @@ public class AST2Expr {
 				ISymbol compareHead = F.LessEqual;
 				return rewriteLessGreaterAST(ast, compareHead);
 			} else if (head.equals(F.PatternHead)) {
-				final IExpr expr = Pattern.CONST.evaluate(ast);
+				final IExpr expr = Pattern.CONST.evaluate(ast, engine);
 				if (expr != null) {
 					return expr;
 				}
 			} else if (head.equals(F.BlankHead)) {
-				final IExpr expr = Blank.CONST.evaluate(ast);
+				final IExpr expr = Blank.CONST.evaluate(ast, engine);
 				if (expr != null) {
 					return expr;
 				}
 			} else if (head.equals(F.Complex)) {
-				final IExpr expr = Complex.CONST.evaluate(ast);
+				final IExpr expr = Complex.CONST.evaluate(ast, engine);
 				if (expr != null) {
 					return expr;
 				}
 			} else if (head.equals(F.Rational)) {
-				final IExpr expr = Rational.CONST.evaluate(ast);
+				final IExpr expr = Rational.CONST.evaluate(ast, engine);
 				if (expr != null) {
 					return expr;
 				}
@@ -303,20 +309,20 @@ public class AST2Expr {
 		if (node instanceof Pattern3Node) {
 			final Pattern3Node p3n = (Pattern3Node) node;
 			SymbolNode sn = p3n.getSymbol();
-			return F.$ps((ISymbol) convert(sn), convert(p3n.getConstraint()), p3n.isDefault(), true);
+			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p3n.getConstraint(), engine), p3n.isDefault(), true);
 		}
 		if (node instanceof Pattern2Node) {
 			final Pattern2Node p2n = (Pattern2Node) node;
 			SymbolNode sn = p2n.getSymbol();
-			return F.$ps((ISymbol) convert(sn), convert(p2n.getConstraint()), p2n.isDefault(), false);
+			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p2n.getConstraint(), engine), p2n.isDefault(), false);
 		}
 		if (node instanceof PatternNode) {
 			final PatternNode pn = (PatternNode) node;
 			SymbolNode sn = pn.getSymbol();
 			if (sn == null) {
-				return F.$b(convert(pn.getConstraint())); // TODO , p2n.isDefault());
+				return F.$b(convertNode(pn.getConstraint(), engine)); // TODO , p2n.isDefault());
 			}
-			return F.$p((ISymbol) convert(pn.getSymbol()), convert(pn.getConstraint()), pn.isDefault());
+			return F.$p((ISymbol) convertNode(pn.getSymbol(), engine), convertNode(pn.getConstraint(), engine), pn.isDefault());
 		}
 
 		if (node instanceof IntegerNode) {
@@ -329,8 +335,8 @@ public class AST2Expr {
 		}
 		if (node instanceof FractionNode) {
 			FractionNode fr = (FractionNode) node;
-			IInteger numerator = (IInteger) convert(fr.getNumerator());
-			IInteger denominator = (IInteger) convert(fr.getDenominator());
+			IInteger numerator = (IInteger) convertNode(fr.getNumerator(), engine);
+			IInteger denominator = (IInteger) convertNode(fr.getDenominator(), engine);
 			if (denominator.isZero()) {
 				return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
 			}

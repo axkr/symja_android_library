@@ -19,7 +19,7 @@ public class Clear extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2);
 
 		for (int i = 1; i < ast.size(); i++) {

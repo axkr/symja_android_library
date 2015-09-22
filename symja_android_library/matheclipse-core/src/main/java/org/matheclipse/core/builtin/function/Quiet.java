@@ -18,9 +18,8 @@ public class Quiet extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		EvalEngine engine = EvalEngine.get();
 		boolean quietMode = engine.isQuietMode();
 		try {
 			engine.setQuietMode(true);

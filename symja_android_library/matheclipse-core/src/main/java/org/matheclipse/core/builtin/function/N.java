@@ -15,15 +15,14 @@ public class N extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
-		return numericEval(ast);
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		return numericEval(ast, engine);
 	}
 
 	@Override
-	public IExpr numericEval(final IAST ast) {
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		final EvalEngine engine = EvalEngine.get();
 		final boolean numericMode = engine.isNumericMode();
 		final int oldPrecision = engine.getNumericPrecision();
 		try {

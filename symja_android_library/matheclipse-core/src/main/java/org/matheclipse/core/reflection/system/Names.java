@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.SuggestTree;
@@ -19,7 +20,7 @@ public class Names extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
 		if (ast.size() == 1) {

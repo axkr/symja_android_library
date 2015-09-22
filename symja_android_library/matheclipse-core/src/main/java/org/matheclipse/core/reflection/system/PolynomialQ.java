@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 
 import org.matheclipse.core.convert.JASIExpr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
@@ -31,7 +32,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
 	 */
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
 		IAST list;

@@ -21,13 +21,12 @@ public class And extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() == 1) {
 			return F.True;
 		}
 
 		boolean evaled = false;
-		final EvalEngine engine = EvalEngine.get();
 		IAST result = ast.clone();
 		int index = 1;
 		IExpr temp;

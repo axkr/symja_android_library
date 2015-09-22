@@ -14,9 +14,8 @@ public class Part extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() >= 3) {
-			EvalEngine engine = EvalEngine.get();
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
 				IAST evaledAST = null;

@@ -49,7 +49,7 @@ public class Product extends Table {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
 		IExpr arg1 = ast.arg1();
@@ -154,8 +154,8 @@ public class Product extends Table {
 	}
 
 	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
+	public IExpr numericEval(final IAST functionList, EvalEngine engine) {
+		return evaluate(functionList, null);
 	}
 
 	@Override

@@ -19,11 +19,10 @@ public class Definition extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		ISymbol symbol = Validate.checkSymbolType(ast, 1);
 
-		final EvalEngine engine = EvalEngine.get();
 		PrintStream stream;
 		stream = engine.getOutPrintStream();
 		if (stream == null) {
