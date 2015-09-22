@@ -69,7 +69,7 @@ public class Sum extends Table implements SumRules {
 		IExpr temp;
 		if (argN.isList()) {
 			argN = evalBlockWithoutReap(argN, varList);
-			iterator = new Iterator((IAST) argN, EvalEngine.get());
+			iterator = new Iterator((IAST) argN, engine);
 			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);

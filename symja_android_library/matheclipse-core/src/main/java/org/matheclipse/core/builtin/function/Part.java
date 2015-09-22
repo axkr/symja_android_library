@@ -40,13 +40,13 @@ public class Part extends AbstractCoreFunctionEvaluator {
 				if (evaledAST == null) {
 					evaledAST = ast;
 				}
-				return getPart((IAST) arg1, evaledAST, 2);
+				return getPart((IAST) arg1, evaledAST, 2, engine);
 			}
 		}
 		return null;
 	}
 
-	private IExpr getPart(final IAST arg1, final IAST ast, int pos) {
+	private IExpr getPart(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
 		final IExpr arg2 = ast.get(pos);
 		int p1 = pos + 1;
 		if (arg2.isSignedNumber()) {
@@ -55,7 +55,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			ires = getIndex(arg1, indx);
 			if (p1 < ast.size()) {
 				if (ires.isAST()) {
-					return getPart((IAST) ires, ast, p1);
+					return getPart((IAST) ires, ast, p1, engine);
 				} else {
 					throw new WrongArgumentType(ast, arg1, pos, "Wrong argument for Part[] function. Function or list expected.");
 				}
@@ -78,7 +78,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					}
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
-							temp = getPart((IAST) ires, ast, p1);
+							temp = getPart((IAST) ires, ast, p1,engine);
 							result.add(temp);
 						} else {
 							throw new WrongArgumentType(ast, arg1, pos,
@@ -91,7 +91,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			}
 			return result;
 		}
-		EvalEngine.get().printMessage("Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+		engine.printMessage("Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 		return null;
 	}
 

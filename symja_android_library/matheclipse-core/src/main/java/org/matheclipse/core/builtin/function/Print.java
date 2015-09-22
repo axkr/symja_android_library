@@ -19,7 +19,7 @@ public class Print extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		PrintStream stream = EvalEngine.get().getOutPrintStream();
+		PrintStream stream = engine.getOutPrintStream();
 		if (stream == null) {
 			stream = System.out;
 		}

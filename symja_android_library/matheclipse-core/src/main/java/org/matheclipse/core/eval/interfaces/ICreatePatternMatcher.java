@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -15,5 +16,5 @@ public interface ICreatePatternMatcher {
 	 * @param packageMode TODO
 	 * @return
 	 */
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode);
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, final EvalEngine engine);
 }

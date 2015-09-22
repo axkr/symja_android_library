@@ -40,7 +40,7 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 			return current;
 
 		} finally {
-			EvalEngine.get().setNumericMode(false);
+			engine.setNumericMode(false);
 		}
 
 	}

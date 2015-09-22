@@ -21,14 +21,13 @@ public class Range extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		return evaluateTable(ast, List());
+		return evaluateTable(ast, List(), engine);
 	}
 
-	public IExpr evaluateTable(final IAST ast, final IAST resultList) {
+	public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
 		List<Iterator> iterList = null;
 		try {
 			if ((ast.size() > 1) && (ast.size() <= 4)) {
-				final EvalEngine engine = EvalEngine.get();
 				iterList = new ArrayList<Iterator>();
 				iterList.add(new Iterator(ast, null, engine));
 

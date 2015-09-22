@@ -25,7 +25,7 @@ public class Clear extends AbstractCoreFunctionEvaluator {
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isSymbol()) {
 				ISymbol symbol = (ISymbol) ast.get(i);
-				symbol.clear(EvalEngine.get());
+				symbol.clear(engine);
 			}
 		}
 

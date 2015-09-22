@@ -202,13 +202,22 @@ public class AST2Expr {
 		return convertNode(node, engine);
 	}
 
+	/**
+	 * 
+	 * @param node
+	 * @return
+	 * @throws ConversionException
+	 * @deprecated use <code>convert(ASTNode node, EvalEngine engine)</code> instead
+	 */
 	public IExpr convert(ASTNode node) throws ConversionException {
 		return convert(node, EvalEngine.get());
 	}
 
 	/**
 	 * Converts a parsed ASTNode expression into an IExpr expression
-	 * @param engine TODO
+	 * 
+	 * @param engine
+	 *            TODO
 	 */
 	private IExpr convertNode(ASTNode node, EvalEngine engine) throws ConversionException {
 		if (node == null) {

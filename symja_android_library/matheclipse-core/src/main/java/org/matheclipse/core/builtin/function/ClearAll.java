@@ -23,7 +23,7 @@ public class ClearAll extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		ISymbol symbol = Validate.checkSymbolType(ast, 1);
-		symbol.clearAll(EvalEngine.get());
+		symbol.clearAll(engine);
 		return F.Null;
 	} 
 

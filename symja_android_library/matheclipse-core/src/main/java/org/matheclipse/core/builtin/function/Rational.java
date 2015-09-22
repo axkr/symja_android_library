@@ -42,8 +42,7 @@ public class Rational extends AbstractCoreFunctionEvaluator {
 				IInteger numerator = (IInteger) arg0;
 				IInteger denominator = (IInteger) arg1;
 				if (denominator.isZero()) {
-					EvalEngine ee = EvalEngine.get();
-					ee.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+					engine.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					if (numerator.isZero()) {
 						// 0^0
 						return F.Indeterminate;
@@ -59,8 +58,7 @@ public class Rational extends AbstractCoreFunctionEvaluator {
 				INum numerator = (INum) arg0;
 				INum denominator = (INum) arg1;
 				if (denominator.isZero()) {
-					EvalEngine ee = EvalEngine.get();
-					ee.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+					engine.printMessage("Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					if (numerator.isZero()) {
 						// 0^0
 						return F.Indeterminate;

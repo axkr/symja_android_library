@@ -29,7 +29,7 @@ public class SetAttributes extends AbstractCoreFunctionEvaluator {
 		if (ast.arg1().isSymbol()) {
 			IExpr arg2 = F.eval(ast.arg2());
 			final ISymbol sym = ((ISymbol) ast.arg1());
-			if (!EvalEngine.get().isPackageMode()) {
+			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
 				}

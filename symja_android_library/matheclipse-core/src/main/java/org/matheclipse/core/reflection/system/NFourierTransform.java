@@ -34,7 +34,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 			}
 		}
 
-		UnivariateFunction f = new UnaryNumerical(expr, t, EvalEngine.get());
+		UnivariateFunction f = new UnaryNumerical(expr, t, engine);
 		FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
 		org.apache.commons.math4.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
 		return Object2Expr.convertComplex(result);

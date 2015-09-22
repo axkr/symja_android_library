@@ -25,7 +25,7 @@ public class Block extends AbstractCoreFunctionEvaluator {
 
 		if (ast.arg1().isList()) {
 			final IAST blockVariablesList = (IAST) ast.arg1();
-			return EvalEngine.get().evalBlock(ast.arg2(), blockVariablesList);
+			return engine.evalBlock(ast.arg2(), blockVariablesList);
 		}
 
 		return null;

@@ -21,7 +21,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 		if (F.evalTrue(ast.arg2())) {
 			return F.eval(ast.arg1());
 		}
-		if (EvalEngine.get().isEvalLHSMode()) {
+		if (engine.isEvalLHSMode()) {
 			return null;
 		}
 		throw new ConditionException(ast);

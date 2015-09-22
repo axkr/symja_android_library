@@ -71,10 +71,10 @@ public class Replace extends AbstractEvaluator {
 				return replaceRule(arg1, rule);
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-				EvalEngine.get().printMessage(wat.getMessage());
+				engine.printMessage(wat.getMessage());
 			}
 		} catch (WrongArgumentType wat) {
-			EvalEngine.get().printMessage(wat.getMessage());
+			engine.printMessage(wat.getMessage());
 		}
 		return null;
 	}

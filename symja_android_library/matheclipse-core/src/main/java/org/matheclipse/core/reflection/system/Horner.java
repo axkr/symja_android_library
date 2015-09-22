@@ -37,7 +37,7 @@ public class Horner extends AbstractFunctionEvaluator {
 				ISymbol sym = (ISymbol) variables.arg1();
 				if (poly.isASTSizeGE(F.Plus, 2)) {
 					HornerScheme scheme = new HornerScheme();
-					return scheme.generate(EvalEngine.get().isNumericMode(), poly, sym);
+					return scheme.generate(engine.isNumericMode(), poly, sym);
 				}
 			}
 

@@ -71,7 +71,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		IExpr result;
 		boolean numericMode = engine.isNumericMode();
 		try {
-			EvalEngine.get().setNumericMode(false);
+			engine.setNumericMode(false);
 			if (holdallAST.size() < 3) {
 				return null;
 			}
@@ -84,7 +84,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to Integrate[
 				// Integrate[fxy, y], x] ...
-				return holdallAST.range(2).foldRight(new BinaryEval(F.Integrate), arg1);
+				return holdallAST.range(2).foldRight(new BinaryEval(F.Integrate, engine), arg1);
 			}
 
 			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());

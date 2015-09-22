@@ -27,13 +27,12 @@ public class Unset extends AbstractCoreFunctionEvaluator {
 				return F.eval(temp);
 			}
 		}
-		removePatternMatcher(leftHandSide, EvalEngine.get().isPackageMode());
+		removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
 		return F.Null;
 	}
 
-	public void removePatternMatcher(IExpr leftHandSide, boolean packageMode) throws RuleCreationError {
+	public void removePatternMatcher(IExpr leftHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
 
-		final EvalEngine engine = EvalEngine.get();
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}

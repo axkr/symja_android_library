@@ -137,7 +137,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			IExpr temp0 = result.getOneIdentity(F.C1);
 			if (temp0.isAST()) {
-				return temp0.optional( rewriteInverseFunction((IAST) temp0, F.C0) );
+				return temp0.optional(rewriteInverseFunction((IAST) temp0, F.C0));
 			}
 			return temp0;
 		}
@@ -601,8 +601,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
 			if (expr.isMember(predicate, true)) {
-				EvalEngine.get()
-						.printMessage("Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
+				engine.printMessage("Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
 				return null;
 			}
 			exprAnalyzer = new ExprAnalyzer(expr, vars);

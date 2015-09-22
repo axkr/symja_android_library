@@ -52,7 +52,7 @@ public class ReplacePart extends AbstractEvaluator {
 			}
 			return result;
 		} catch (WrongArgumentType wat) {
-			EvalEngine.get().printMessage(wat.getMessage());
+			engine.printMessage(wat.getMessage());
 		}
 		return null;
 	}

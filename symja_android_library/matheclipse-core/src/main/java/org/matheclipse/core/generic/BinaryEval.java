@@ -17,9 +17,10 @@ public class BinaryEval extends BinaryFunctorImpl<IExpr> {
 	 * Define an binary AST with the header <code>head</code>.
 	 *
 	 * @param head the AST's head expresion
+	 * @param engine TODO
 	 */
-	public BinaryEval(final IExpr head) {
-		fEngine = EvalEngine.get();
+	public BinaryEval(final IExpr head, EvalEngine engine) {
+		fEngine = engine;
 		fAST = F.ast(head, 1, false);
 	}
 

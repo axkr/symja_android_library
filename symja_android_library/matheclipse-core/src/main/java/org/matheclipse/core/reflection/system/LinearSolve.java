@@ -25,7 +25,7 @@ public class LinearSolve extends AbstractFunctionEvaluator {
 
 		try {
 			FieldMatrix augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
-			return RowReduce.rowReduced2List(augmentedMatrix);
+			return RowReduce.rowReduced2List(augmentedMatrix, engine);
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

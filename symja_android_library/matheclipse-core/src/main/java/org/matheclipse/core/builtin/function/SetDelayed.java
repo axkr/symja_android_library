@@ -24,15 +24,15 @@ public class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreate
 		final IExpr leftHandSide = ast.arg1();
 		final IExpr rightHandSide = ast.arg2();
 
-		createPatternMatcher(leftHandSide, rightHandSide, EvalEngine.get().isPackageMode());
+		createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
 		return F.Null;
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, final EvalEngine engine) throws RuleCreationError {
 		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
 		return putDownRule(leftHandSide, rightHandSide, packageMode);
 	}

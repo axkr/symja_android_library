@@ -38,14 +38,13 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 			return null;
 		}
 		Object[] result;
-		result = createPatternMatcher(leftHandSide, rightHandSide, EvalEngine.get().isPackageMode());
+		result = createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 		return (IExpr) result[1];
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, final EvalEngine engine) throws RuleCreationError {
 
-		final EvalEngine engine = EvalEngine.get();
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}

@@ -72,15 +72,15 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				if (list.size() > 3) {
 					max = list.arg3().evalSignedNumber();
 				}
-				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, min, max, function))));
+				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
 			}
 		}
 		return null;
 	}
 
-	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function) {
+	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function,
+			EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
-		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
 		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;

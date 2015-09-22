@@ -40,12 +40,12 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		}
 		IAST symbols = (IAST) ast.arg2();
 		IAST list = (IAST) ast.arg3();
-		evalPackage(symbols, list);
+		evalPackage(symbols, list, engine);
 		// System.out.println(resultList);
 		return F.Null;
 	}
 
-	public static void evalPackage(IAST publicSymbols, IAST list) {
+	public static void evalPackage(IAST publicSymbols, IAST list, EvalEngine engine) {
 		HashMap<String, ISymbol> convertedSymbolMap = new HashMap<String, ISymbol>();
 		HashSet<ISymbol> publicSymbolSet = new HashSet<ISymbol>();
 
@@ -79,7 +79,6 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		for (int i = 1; i < list.size(); i++) {
 			resultList.add(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
 		}
-		EvalEngine engine = EvalEngine.get();
 		try {
 			engine.setPackageMode(true);
 			// evaluate the new converted rules
@@ -204,7 +203,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 				}
 				IAST symbols = (IAST) ast.arg2();
 				IAST list = (IAST) ast.arg3();
-				evalPackage(symbols, list);
+				evalPackage(symbols, list,engine);
 			}
 
 		} catch (final Exception e) {

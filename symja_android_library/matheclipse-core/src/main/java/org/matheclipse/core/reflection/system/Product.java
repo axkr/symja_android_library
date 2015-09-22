@@ -71,7 +71,7 @@ public class Product extends Table {
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				Iterator iterator = new Iterator((IAST) ast.get(i), EvalEngine.get());
+				Iterator iterator = new Iterator((IAST) ast.get(i), engine);
 				if (iterator.isValidVariable() && powArg2.isFree(iterator.getVariable())) {
 					continue;
 				}
@@ -86,7 +86,7 @@ public class Product extends Table {
 		}
 		IExpr argN = ast.get(ast.size() - 1);
 		if (ast.size() >= 3 && argN.isList()) {
-			Iterator iterator = new Iterator((IAST) argN, EvalEngine.get());
+			Iterator iterator = new Iterator((IAST) argN, engine);
 			if (iterator.isValidVariable()) {
 				if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol() && iterator.getStep().isOne()) {
 					final ISymbol var = iterator.getVariable();

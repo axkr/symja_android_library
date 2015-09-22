@@ -35,14 +35,13 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 				return F.eval(temp);
 			}
 		}
-		Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false);
+		Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 		return (IExpr) result[1];
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
 		final Object[] result = new Object[2];
-		final EvalEngine engine = EvalEngine.get();
 
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);

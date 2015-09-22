@@ -126,7 +126,7 @@ public class D extends AbstractFunctionEvaluator {
 		IExpr fx = ast.arg1();
 		if (ast.size() > 3) {
 			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-			return ast.range(2).foldLeft(new BinaryEval(F.D), fx);
+			return ast.range(2).foldLeft(new BinaryEval(F.D, engine), fx);
 		}
 
 		if (fx.isList()) {
@@ -140,7 +140,7 @@ public class D extends AbstractFunctionEvaluator {
 			IAST xList = (IAST) x;
 			if (xList.size() == 2 && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.args().mapLeft(F.List(), new BinaryEval(F.D), fx);
+				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
 			} else if (xList.size() == 3 && xList.arg2().isInteger()) {
 				int n = Validate.checkIntType(xList, 2, 1);
 

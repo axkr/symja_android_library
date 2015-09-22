@@ -23,7 +23,6 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
-		EvalEngine ee = EvalEngine.get();
 
 		IExpr arg2 = F.eval(ast.arg2());
 		long seconds = 0L;
@@ -31,11 +30,11 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 			if (arg2.isSignedNumber()) {
 				seconds = ((ISignedNumber) arg2).toLong();
 			} else {
-				ee.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
 				return null;
 			}
 		} catch (ArithmeticException ae) {
-			ee.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+			engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
 			return null;
 		}
 		// TODO implement &quot;TimeConstrained&quot; mode

@@ -75,14 +75,13 @@ public class Array  extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		return evaluateArray(ast, List());
+		return evaluateArray(ast, List(),engine);
 	}
 
-	public static IExpr evaluateArray(final IAST ast, IAST resultList) {
+	public static IExpr evaluateArray(final IAST ast, IAST resultList, EvalEngine engine) {
 		try {
 			if ((ast.size() >= 3) && (ast.size() <= 5)) {
 				int indx1, indx2;
-				final EvalEngine engine = EvalEngine.get();
 				final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
 				if ((ast.size() == 3) && ast.arg2().isInteger()) {
 					indx1 = Validate.checkIntType(ast, 2);

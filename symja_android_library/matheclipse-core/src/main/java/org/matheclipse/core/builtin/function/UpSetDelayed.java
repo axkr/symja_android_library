@@ -23,15 +23,14 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 		final IExpr leftHandSide = ast.arg1();
 		final IExpr rightHandSide = ast.arg2();
 
-		createPatternMatcher(leftHandSide, rightHandSide, false);
+		createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 
 		return F.Null;
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
 		final Object[] result = new Object[2];
-		final EvalEngine engine = EvalEngine.get();
 
 		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
