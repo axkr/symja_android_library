@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Package[{&lt;list of public package rule headers&gt;}, {&lt;list of rules in this package&gt;}}
  * 
  */
-public class Package implements IFunctionEvaluator {
+public class Package extends AbstractCoreFunctionEvaluator {
 
 	public Package() {
 	}

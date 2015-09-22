@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /** 
  *
  */
-public class DirectedInfinity implements IFunctionEvaluator {
+public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 
 	public DirectedInfinity() {
 	}
@@ -40,12 +40,7 @@ public class DirectedInfinity implements IFunctionEvaluator {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
+	} 
 
 	public static IExpr timesInf(IAST inf, IExpr a2) {
 		if (inf.size() == 2) {

@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,7 +14,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
  * <code>Hold[{...}]</code>.
  * 
  */
-public class Trace implements IFunctionEvaluator {
+public class Trace extends AbstractCoreFunctionEvaluator {
 
 	public Trace() {
 	}
@@ -35,11 +35,6 @@ public class Trace implements IFunctionEvaluator {
 		// final IAST holdList = F.ast(F.Hold);
 		// holdList.add(traceList);
 		// return holdList;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override

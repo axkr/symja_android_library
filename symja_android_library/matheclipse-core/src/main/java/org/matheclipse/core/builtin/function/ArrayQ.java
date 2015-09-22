@@ -2,13 +2,13 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+
 import com.google.common.base.Predicate;
 
 /**
@@ -18,7 +18,7 @@ import com.google.common.base.Predicate;
  * </p>
  *
  */
-public class ArrayQ implements IFunctionEvaluator {
+public class ArrayQ extends AbstractCoreFunctionEvaluator {
 
 	public ArrayQ() {
 	}
@@ -107,15 +107,6 @@ public class ArrayQ implements IFunctionEvaluator {
 			}
 		}
 		return resultDepth;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
-	}
-
-	@Override
-	public void setUp(final ISymbol symbol) {
 	}
 
 }

@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Match an expression against a given pattern.
  * 
  */
-public class MatchQ implements IFunctionEvaluator {
+public class MatchQ extends AbstractCoreFunctionEvaluator {
 
 	public MatchQ() {
 	}
@@ -24,11 +24,6 @@ public class MatchQ implements IFunctionEvaluator {
 			return F.bool(engine.evalPatternMatcher(ast.arg2()).apply(arg1));
 		}
 		return F.False;
-	} 
-
-	@Override
-	public IExpr numericEval(final IAST ast) {
-		return evaluate(ast);
 	}
 
 	@Override

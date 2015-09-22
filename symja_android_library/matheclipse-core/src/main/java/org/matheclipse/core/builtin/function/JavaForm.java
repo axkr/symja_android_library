@@ -1,22 +1,22 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <p>
  * Return the internal Java form of this expression. The Java form is useful for generating Symja programming expressions.
  * </p>
  * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
+ * See the online Symja function reference: <a
+ * href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
  * </p>
  */
-public class JavaForm implements IFunctionEvaluator {
+public class JavaForm extends AbstractCoreFunctionEvaluator {
 
 	public JavaForm() {
 	}
@@ -44,13 +44,4 @@ public class JavaForm implements IFunctionEvaluator {
 		return arg1.internalFormString(strictJava, 0);
 	}
 
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
-	}
-
-	@Override
-	public void setUp(ISymbol symbol) {
-		// symbol.setAttributes(ISymbol.HOLDALL);
-	}
 }

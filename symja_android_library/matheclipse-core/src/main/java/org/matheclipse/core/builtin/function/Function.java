@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Function implements IFunctionEvaluator {
+public class Function extends AbstractCoreFunctionEvaluator {
 
 	public Function() {
 	}
@@ -59,11 +59,6 @@ public class Function implements IFunctionEvaluator {
 	public static IExpr replaceSlots(final IExpr expr, final IAST list) {
 		final IExpr result = expr.replaceSlots(list);
 		return (result == null) ? expr : result;
-	}
-
-	@Override
-	public IExpr numericEval(final IAST functionList) {
-		return evaluate(functionList);
 	}
 
 	@Override
