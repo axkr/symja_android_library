@@ -9,52 +9,38 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.VisitorLevelSpecification;
 
 import com.google.common.base.Function;
 
 public class Replace extends AbstractEvaluator {
 
-	public Replace() {
-	}
+	private static final class ReplaceFunction implements Function<IExpr, IExpr> {
+		private final IAST ast;
+		private final EvalEngine engine;
+		private IExpr rules;
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
-		try {
-			IExpr arg1 = ast.arg1();
-			if (ast.arg2().isListOfLists()) {
-				IAST result = F.List();
+		public ReplaceFunction(final IAST ast, final IExpr rules, final EvalEngine engine) {
+			this.ast = ast;
+			this.rules = rules;
+			this.engine = engine;
+		}
 
-				for (IExpr list : (IAST) ast.arg2()) {
-					boolean evaled = false;
-					IAST subList = (IAST) list;
-					for (IExpr element : subList) {
-						if (element.isRuleAST()) {
-							IAST rule = (IAST) element;
-							Function<IExpr, IExpr> function = Functors.rules(rule);
-							IExpr temp = function.apply(arg1);
-							if (temp != null) {
-								result.add(temp);
-								evaled = true;
-								break;
-							}
-						} else {
-							WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
-							throw wat;
-						}
-					}
-					if (!evaled) {
-						result.add(arg1);
-					}
-				}
-				return result;
-			} else if (ast.arg2().isList()) {
-				IExpr result = arg1;
-				for (IExpr element : (IAST) ast.arg2()) {
+		/**
+		 * Replace the <code>input</code> expression with the given rules.
+		 * 
+		 * @param input
+		 *            the expression which should be replaced by the given rules
+		 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
+		 */
+		@Override
+		public IExpr apply(IExpr input) {
+			if (rules.isList()) {
+				for (IExpr element : (IAST) rules) {
 					if (element.isRuleAST()) {
 						IAST rule = (IAST) element;
 						Function<IExpr, IExpr> function = Functors.rules(rule);
-						IExpr temp = function.apply(arg1);
+						IExpr temp = function.apply(input);
 						if (temp != null) {
 							return temp;
 						}
@@ -64,19 +50,115 @@ public class Replace extends AbstractEvaluator {
 					}
 
 				}
-				return result;
+				return input;
 			}
-			if (ast.arg2().isRuleAST()) {
-				IAST rule = (IAST) ast.arg2();
-				return replaceRule(arg1, rule);
+			if (rules.isRuleAST()) {
+				return replaceRule(input, (IAST) rules);
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 				engine.printMessage(wat.getMessage());
 			}
-		} catch (WrongArgumentType wat) {
+			return null;
+		}
+
+		public void setRule(IExpr rules) {
+			this.rules = rules;
+		}
+
+	}
+
+	private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
+		if (rules.isListOfLists()) {
+			IAST result = F.List();
+
+			for (IExpr list : (IAST) rules) {
+				IAST subList = (IAST) list;
+				IExpr temp = null;
+				for (IExpr element : subList) {
+					if (element.isRuleAST()) {
+						IAST rule = (IAST) element;
+						Function<IExpr, IExpr> function = Functors.rules(rule);
+						temp = function.apply(arg1);
+						if (temp != null) {
+							break;
+						}
+					} else {
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+						throw wat;
+					}
+				}
+				if (temp != null) {
+					result.add(temp);
+				} else {
+					result.add(arg1);
+				}
+			}
+			return result;
+		} else if (rules.isList()) {
+			for (IExpr element : (IAST) rules) {
+				if (element.isRuleAST()) {
+					IAST rule = (IAST) element;
+					Function<IExpr, IExpr> function = Functors.rules(rule);
+					IExpr temp = function.apply(arg1);
+					if (temp != null) {
+						return temp;
+					}
+				} else {
+					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+					throw wat;
+				}
+
+			}
+			return arg1;
+		}
+		if (rules.isRuleAST()) {
+			return replaceRule(arg1, (IAST) rules);
+		} else {
+			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 			engine.printMessage(wat.getMessage());
 		}
 		return null;
+	}
+
+	private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules, IExpr exprLevelSpecification,
+			EvalEngine engine) {
+		// use replaceFunction#setRule() method to set the current rules which are initialized with null
+		ReplaceFunction replaceFunction = new ReplaceFunction(ast, null, engine);
+		VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false);
+
+		if (rules.isListOfLists()) {
+			IAST result = F.List();
+			for (IExpr list : (IAST) rules) {
+				IExpr temp = null;
+				IAST subList = (IAST) list;
+				for (IExpr element : subList) {
+					if (element.isRuleAST()) {
+						IAST rule = (IAST) element;
+						replaceFunction.setRule(rule);
+						temp = arg1.accept(level);
+						if (temp != null) {
+							break;
+						}
+					} else {
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+						throw wat;
+					}
+				}
+				if (temp != null) {
+					result.add(temp);
+				} else {
+					result.add(arg1);
+				}
+			}
+			return result;
+		}
+
+		replaceFunction.setRule(rules);
+		IExpr result = arg1.accept(level);
+		if (result == null) {
+			return arg1;
+		}
+		return result;
 	}
 
 	/**
@@ -86,13 +168,33 @@ public class Replace extends AbstractEvaluator {
 	 * @param rule
 	 * @return
 	 */
-	public IExpr replaceRule(IExpr arg1, IAST rule) {
+	private static IExpr replaceRule(IExpr arg1, IAST rule) {
 		Function<IExpr, IExpr> function = Functors.rules(rule);
 		IExpr temp = function.apply(arg1);
 		if (temp != null) {
 			return temp;
 		}
 		return arg1;
+	}
+
+	public Replace() {
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkRange(ast, 3, 4);
+		try {
+			IExpr arg1 = ast.arg1();
+			IExpr rules = F.eval(ast.arg2());
+			if (ast.size() == 4) {
+				// arg3 should contain a "level specification":
+				return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
+			}
+			return replaceExpr(ast, arg1, rules, engine);
+		} catch (WrongArgumentType wat) {
+			engine.printMessage(wat.getMessage());
+		}
+		return null;
 	}
 
 	@Override
