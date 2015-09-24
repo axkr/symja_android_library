@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -30,6 +31,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
 
+	public static final int DEFAULT_MAX_POINTS = 100;
+	public static final int DEFAULT_MAX_ITERATIONS = 10000;
 	public NIntegrate() {
 	}
 
@@ -38,12 +41,36 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
+		Validate.checkRange(ast, 3);
 
 		ISymbol method = LegendreGauss;
-		if (ast.size() == 4 && ast.arg3().isSymbol()) {
-			method = (ISymbol) ast.arg3();
+		int maxPoints = DEFAULT_MAX_POINTS;
+		int maxIterations = DEFAULT_MAX_ITERATIONS;
+		if (ast.size() >= 4) { // && ast.arg3().isSymbol()) {
+			// method = (ISymbol) ast.arg3();
+			final Options options = new Options(ast.topHead(), ast, 3);
+			IExpr option = options.getOption("Method");
+			if (option != null && option.isSymbol()) {
+				method = (ISymbol) option;
+			}
+			option = options.getOption("MaxPoints");
+			if (option != null && option.isSignedNumber()) {
+				try {
+					maxPoints = ((ISignedNumber) option).toInt();
+				} catch (ArithmeticException ae) {
+					engine.printMessage("Error in option MaxPoints. Using default value: " + maxPoints);
+				}
+			}
+			option = options.getOption("MaxIterations");
+			if (option != null && option.isSignedNumber()) {
+				try {
+					maxIterations = ((ISignedNumber) option).toInt();
+				} catch (ArithmeticException ae) {
+					engine.printMessage("Error in option MaxIterations. Using default value: " + maxIterations);
+				}
+			}
 		}
+
 		if ((ast.arg2().isList())) {
 			IAST list = (IAST) ast.arg2();
 			IExpr function = ast.arg1();
@@ -55,14 +82,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
 					}
 					try {
-						return Num.valueOf(integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(), function));
+						return Num.valueOf(integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(), function,
+								maxPoints, maxIterations));
 					} catch (ConvergenceException e) {
 						throw new WrappedException(e);
 					} catch (Exception e) {
 						throw new WrappedException(e);
-						// if (Config.SHOW_STACKTRACE) {
-						// e.printStackTrace();
-						// }
 					}
 				}
 			}
@@ -81,22 +106,21 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	 *            <code>upperBound</code> are numbers which could be converted to a Java double value.
 	 * @param function
 	 *            the function which should be integrated.
+	 * @param maxPoints
+	 *            maximum number of points
+	 * @param maxIterations
+	 *            maximum number of iterations
 	 * @return
 	 * @throws ConvergenceException
 	 */
-	public static double integrate(String method, IAST list, double min, double max, IExpr function) throws ConvergenceException {
+	public static double integrate(String method, IAST list, double min, double max, IExpr function, int maxPoints,
+			int maxIterations) throws ConvergenceException {
 		GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
-		ISymbol xVar = (ISymbol) list.arg1();
-		// ISignedNumber min = (ISignedNumber) list.arg2();
-		// ISignedNumber max = (ISignedNumber) list.arg3();
+		ISymbol xVar = (ISymbol) list.arg1(); 
 		final EvalEngine engine = EvalEngine.get();
 		function = F.eval(function);
-		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
-		// if (method.equalsIgnoreCase("legendregauss")) {
-		// GaussIntegrator integ = factory.legendre(7, min.doubleValue(), max.doubleValue());
-		// return integ.integrate(f);
-		// }
+		UnivariateFunction f = new UnaryNumerical(function, xVar, engine); 
 
 		UnivariateIntegrator integrator = null;
 		if (method.equalsIgnoreCase("Simpson")) {
@@ -107,10 +131,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			integrator = new TrapezoidIntegrator();
 		} else {
 			// default: LegendreGauss
-			GaussIntegrator integ = factory.legendre(7, min, max);
+			GaussIntegrator integ = factory.legendre(maxPoints, min, max);
 			return integ.integrate(f);
 		}
-		return integrator.integrate(10000, f, min, max);
+		return integrator.integrate(maxIterations, f, min, max);
 
 	}
 
