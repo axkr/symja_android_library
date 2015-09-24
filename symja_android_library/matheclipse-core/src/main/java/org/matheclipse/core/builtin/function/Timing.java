@@ -1,9 +1,10 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Times;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
@@ -12,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Calculate the time needed for evaluating a n expression
+ * Calculate the time needed for evaluating an expression
  * 
  */
 public class Timing extends AbstractEvaluator {
@@ -22,6 +23,8 @@ public class Timing extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+
 		if (ast.size() == 2) {
 			final long begin = System.currentTimeMillis();
 			final IExpr result = engine.evaluate(ast.arg1());

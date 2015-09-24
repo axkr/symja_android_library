@@ -392,6 +392,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.TeXForm());
 	public final static ISymbol TimeConstrained = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained"
 			: "TimeConstrained", new org.matheclipse.core.builtin.function.TimeConstrained());
+	public final static ISymbol Timing = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timing"
+			: "Timing", new org.matheclipse.core.builtin.function.Timing());
 	public final static ISymbol Throw = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw",
 			new org.matheclipse.core.builtin.function.Throw());
 	public final static ISymbol Trace = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trace" : "Trace",
@@ -711,7 +713,6 @@ public class F {
 	public final static ISymbol Through = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "through" : "Through");
 	public final static ISymbol Times = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times");
 	public final static ISymbol TimesBy = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timesby" : "TimesBy");
-	public final static ISymbol Timing = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timing" : "Timing");
 	public final static ISymbol ToCharacterCode = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tocharactercode"
 			: "ToCharacterCode");
 	public final static ISymbol Together = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "together" : "Together");
