@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -19,6 +20,10 @@ public class Unevaluated extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (!ToggleFeature.UNEVALUATED) {
+			return null;
+		}
+
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = F.eval(ast.arg1());
 
@@ -27,6 +32,9 @@ public class Unevaluated extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public void setUp(ISymbol symbol) {
+		if (!ToggleFeature.UNEVALUATED) {
+			return;
+		}
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}
 }

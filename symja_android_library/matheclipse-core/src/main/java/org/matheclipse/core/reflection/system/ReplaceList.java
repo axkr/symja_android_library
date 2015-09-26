@@ -59,7 +59,7 @@ public class ReplaceList extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (!ToggleFeature.REPLACE_LIST_FUNCTION) {
+		if (!ToggleFeature.REPLACE_LIST) {
 			return null;
 		}
 
@@ -86,7 +86,7 @@ public class ReplaceList extends AbstractEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		if (!ToggleFeature.REPLACE_LIST_FUNCTION) {
+		if (!ToggleFeature.REPLACE_LIST) {
 			return;
 		}
 		symbol.setAttributes(ISymbol.HOLDREST);
