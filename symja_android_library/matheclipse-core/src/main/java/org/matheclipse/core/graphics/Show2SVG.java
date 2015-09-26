@@ -30,7 +30,7 @@ public class Show2SVG {
 		buf.append("<svg xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns=\"http://www.w3.org/2000/svg\"\nversion=\"1.0\" "
 		// +
 		// "width=\"400.000000\" height=\"247.213595\" viewBox=\"-17.666667 -14.610939 435.333333 276.435473\">");
-				+ "width=\"400\" height=\"200\">");
+				+ "width=\"400\" height=\"200\">\n");
 
 		try {
 			for (int i = 1; i < ast.size(); i++) {
@@ -39,7 +39,7 @@ public class Show2SVG {
 				}
 			}
 		} finally {
-			buf.append("</svg>");
+			buf.append("\n</svg>");
 		}
 	}
 
@@ -97,12 +97,12 @@ public class Show2SVG {
 	}
 
 	public static void toSVG(IAST ast, Appendable buf) throws IOException {
-		buf.append("<math><mtable><mtr><mtd>");
+		// buf.append("<math><mtable><mtr><mtd>");
 		if (ast.size() > 1 && ast.get(1).isASTSizeGE(F.Graphics, 2)) {
 			graphicsToSVG(ast.getAST(1), buf);
 		} else if (ast.size() > 1 && ast.get(1).isASTSizeGE(F.Graphics3D, 2)) {
 			graphics3dToSVG(ast.getAST(1), buf);
 		}
-		buf.append("</mtd></mtr></mtable></math>");
+		// buf.append("</mtd></mtr></mtable></math>");
 	}
 }
