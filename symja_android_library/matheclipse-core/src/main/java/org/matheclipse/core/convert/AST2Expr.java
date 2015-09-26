@@ -85,18 +85,18 @@ public class AST2Expr {
 			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime",
 			"PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal",
 			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated", "RepeatedNull",
-			"Replace", "ReplaceAll", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle",
-			"RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed",
-			"SameQ", "Scan", "Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed",
-			"Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral",
-			"SinhIntegral", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop",
-			"StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom",
-			"Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor", "TeXForm",
-			"Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together",
-			"ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ",
-			"Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ",
-			"UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor",
-			"Zeta" };
+			"Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse",
+			"Riffle", "RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule",
+			"RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes",
+			"SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh",
+			"SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2",
+			"StringDrop", "StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
+			"SubtractFrom", "Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
+			"TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
+			"Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp",
+			"TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset",
+			"UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which",
+			"While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
