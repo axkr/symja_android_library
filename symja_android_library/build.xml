@@ -80,7 +80,7 @@
 		</unjar>   -->
 		
 		<jar manifest="${classes.dir}/META-INF/MANIFEST.MF" destfile="${jar.dir}/symja-${date}.jar" basedir="${classes.dir}">
-	 
+		
 		</jar>
 	</target>
 
@@ -148,11 +148,11 @@
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
-	           <keep access="public" name="org.apache.commons.math3.complex.Complex">
+	           <keep access="public" name="org.apache.commons.math4.complex.Complex">
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
-	           <keep access="public" name="org.apache.commons.math3.fraction.BigFraction">
+	           <keep access="public" name="org.apache.commons.math4.fraction.BigFraction">
 	                     <method access    ="public"
 	                             name      ="*" />
 	           </keep>
@@ -369,19 +369,19 @@
     public protected *;
 }
 
--keep public class org.apache.commons.math3.Field {
+-keep public class org.apache.commons.math4.Field {
     public protected *;
 }
 
--keep public class * implements org.apache.commons.math3.Field {
+-keep public class * implements org.apache.commons.math4.Field {
     public protected *;
 }
 
--keep public class org.apache.commons.math3.FieldElement {
+-keep public class org.apache.commons.math4.FieldElement {
     public protected *;
 }
 
--keep public class * implements org.apache.commons.math3.FieldElement {
+-keep public class * implements org.apache.commons.math4.FieldElement {
     public protected *;
 }
 
