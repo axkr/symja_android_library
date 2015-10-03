@@ -6,6 +6,23 @@ package org.matheclipse.core.interfaces;
  *
  */
 public abstract class AbstractEvalStepListener implements IEvalStepListener {
+
+	protected String fHint = null;
+
+	/** {@inheritDoc} */
+	@Override
+	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
+
+	/** {@inheritDoc} */
+	public String getHint() {
+		return fHint;
+	}
+
+	/** {@inheritDoc} */
+	public void setHint(String hint) {
+		this.fHint = hint;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void setUp(IExpr expr, int recursionDepth) {
@@ -17,9 +34,5 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
 	public void tearDown(int recursionDepth) {
 
 	}
-
-	/** {@inheritDoc} */
-	@Override
-	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
 
 }

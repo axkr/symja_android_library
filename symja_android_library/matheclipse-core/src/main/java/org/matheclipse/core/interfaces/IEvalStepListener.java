@@ -1,11 +1,26 @@
 package org.matheclipse.core.interfaces;
 
 /**
- * A listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to implement an evaluation trace or a
- * step by step evaluation.
+ * A listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to implement an evaluation trace or a step by step
+ * evaluation.
  *
  */
 public interface IEvalStepListener {
+
+	/**
+	 * Get the current &quot;evaluation step hint&quot; for the evaluation step listener.
+	 * 
+	 * @return the current hint or <code>null</code> if no hint was available.
+	 */
+	public abstract String getHint();
+
+	/**
+	 * Set an &quot;evaluation step hint&quot; for the evaluation step listener. If defined, this hint could be used in the
+	 * <code>add()</code> method instead of the <code>add's</code> hint parameter.
+	 * 
+	 * @param hint
+	 */
+	public abstract void setHint(String hint);
 
 	/**
 	 * Sets up the next evaluation step.
@@ -30,11 +45,16 @@ public interface IEvalStepListener {
 	 * Add a new step in which the <code>inputExpr</code> was evaluated to the new <code>resultExpr</code>.
 	 * 
 	 * @param inputExpr
+	 *            the input expression
 	 * @param resultExpr
+	 *            the evaluated result expression
 	 * @param recursionDepth
-	 *            TODO
+	 *            the current recursion depth
 	 * @param iterationCounter
-	 * @param hint TODO
+	 *            the current iteration counter
+	 * @param hint
+	 *            this hint will be used in the listener, if no other hint was set with the <code>setHint()</code> method.
+	 * @see IEvalStepListener#setHint(String)
 	 */
 	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
 
