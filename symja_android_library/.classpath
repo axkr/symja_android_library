@@ -7,11 +7,10 @@
 	<classpathentry kind="src" path="guava/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-core/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-parser/src/main/java"/>
-	<classpathentry kind="src" path="commons-math/src/main/resources"/>
-	<classpathentry kind="src" path="commons-math/src/main/java"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry exported="true" kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-over-slf4j-1.7.2.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="lib" path="lib/COMMONS_MATH4_SYMJA.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
