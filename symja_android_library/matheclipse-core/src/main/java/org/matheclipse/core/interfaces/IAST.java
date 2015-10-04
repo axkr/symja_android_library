@@ -34,7 +34,8 @@ import com.google.common.base.Predicate;
  * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>, <a
+ * href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
 public interface IAST extends IExpr, List<IExpr>, Cloneable {
 
@@ -289,8 +290,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST clone();
 
 	/**
-	 * Create a copy of this <code>AST</code>, which contains the same head and all elements from to the given
-	 * <code>position</code> (inclusive).
+	 * Create a copy of this <code>AST</code>, which contains the same head and all elements from to the given <code>position</code>
+	 * (inclusive).
 	 * 
 	 * @param position
 	 */
@@ -302,7 +303,8 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST copyHead();
 
 	/**
-	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given <code>position</code> (exclusive).
+	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given <code>position</code>
+	 * (exclusive).
 	 * 
 	 * @param position
 	 */
