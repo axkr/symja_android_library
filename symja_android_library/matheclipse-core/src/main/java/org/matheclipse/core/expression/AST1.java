@@ -31,7 +31,10 @@ public class AST1 extends AST0 {
 
 	private final static int SIZE = 2;
 
-	IExpr arg1;
+	/**
+	 * The first argument of this function.
+	 */
+	protected IExpr arg1;
 
 	/**
 	 * Constructs a new instance
@@ -39,8 +42,16 @@ public class AST1 extends AST0 {
 	public AST1() {
 	}
 
-	protected AST1(IExpr arg0, IExpr arg1) {
-		this.arg0 = arg0;
+	/**
+	 * Create a function with one arguments (i.e. <code>head[arg1]</code>).
+	 * 
+	 * @param head
+	 *            the head of the function
+	 * @param arg1
+	 *            the first argument of the function
+	 */
+	protected AST1(IExpr head, IExpr arg1) {
+		this.arg0 = head;
 		this.arg1 = arg1;
 	}
 
@@ -52,7 +63,7 @@ public class AST1 extends AST0 {
 	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg1() {
+	final public IExpr arg1() {
 		return arg1;
 	}
 

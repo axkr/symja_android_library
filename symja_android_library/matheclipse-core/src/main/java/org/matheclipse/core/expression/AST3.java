@@ -30,7 +30,10 @@ import org.matheclipse.core.interfaces.IExpr;
 public class AST3 extends AST2 {
 	private final static int SIZE = 4;
 
-	IExpr arg3;
+	/**
+	 * The third argument of this function.
+	 */
+	protected IExpr arg3;
 
 	/**
 	 * Constructs a new instance
@@ -38,8 +41,20 @@ public class AST3 extends AST2 {
 	public AST3() {
 	}
 
-	public AST3(IExpr arg0, IExpr arg1, IExpr arg2, IExpr arg3) {
-		this.arg0 = arg0;
+	/**
+	 * Create a function with three arguments (i.e. <code>head[arg1, arg2, arg3]</code>).
+	 * 
+	 * @param head
+	 *            the head of the function
+	 * @param arg1
+	 *            the first argument of the function
+	 * @param arg2
+	 *            the second argument of the function
+	 * @param arg3
+	 *            the thirs argument of the function
+	 */
+	public AST3(IExpr head, IExpr arg1, IExpr arg2, IExpr arg3) {
+		this.arg0 = head;
 		this.arg1 = arg1;
 		this.arg2 = arg2;
 		this.arg3 = arg3;
@@ -53,7 +68,7 @@ public class AST3 extends AST2 {
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg3() {
+	final public IExpr arg3() {
 		return arg3;
 	}
 

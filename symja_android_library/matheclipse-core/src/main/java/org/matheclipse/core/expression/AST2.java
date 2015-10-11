@@ -30,7 +30,10 @@ import org.matheclipse.core.interfaces.IExpr;
 public class AST2 extends AST1 {
 	private final static int SIZE = 3;
 
-	IExpr arg2;
+	/**
+	 * The second argument of this function.
+	 */
+	protected IExpr arg2;
 
 	/**
 	 * Constructs a new instance
@@ -38,8 +41,18 @@ public class AST2 extends AST1 {
 	public AST2() {
 	}
 
-	public AST2(IExpr arg0, IExpr arg1, IExpr arg2) {
-		this.arg0 = arg0;
+	/**
+	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code>).
+	 * 
+	 * @param head
+	 *            the head of the function
+	 * @param arg1
+	 *            the first argument of the function
+	 * @param arg2
+	 *            the second argument of the function
+	 */
+	public AST2(IExpr head, IExpr arg1, IExpr arg2) {
+		this.arg0 = head;
 		this.arg1 = arg1;
 		this.arg2 = arg2;
 	}
@@ -53,7 +66,7 @@ public class AST2 extends AST1 {
 	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
-	public IExpr arg2() {
+	final public IExpr arg2() {
 		return arg2;
 	}
 
@@ -98,7 +111,7 @@ public class AST2 extends AST1 {
 		}
 		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
-	
+
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {

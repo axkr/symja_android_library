@@ -45,7 +45,10 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 */
 	private static final long serialVersionUID = -5023978098877603499L;
 
-	IExpr arg0;
+	/**
+	 * The head of this function.
+	 */
+	protected IExpr arg0;
 
 	transient int hashValue;
 
@@ -55,8 +58,14 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	public AST0() {
 	}
 
-	protected AST0(IExpr arg0) {
-		this.arg0 = arg0;
+	/**
+	 * Create a function with no arguments (i.e. <code>head[ ]</code>).
+	 * 
+	 * @param head
+	 *            the head of the function
+	 */
+	protected AST0(IExpr head) {
+		this.arg0 = head;
 	}
 
 	/**
@@ -336,8 +345,8 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	@Override
 	public IExpr set(int location, IExpr object) {
 		hashValue = 0;
-		IExpr result;
 		if (location == 0) {
+			IExpr result;
 			result = arg0;
 			arg0 = object;
 			return result;
