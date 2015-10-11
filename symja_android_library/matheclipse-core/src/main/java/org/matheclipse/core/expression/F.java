@@ -1144,6 +1144,10 @@ public class F {
 		return org.matheclipse.core.expression.Blank.valueOf(condition);
 	}
 
+	public static IPattern $b(final IExpr condition, boolean def) {
+		return new org.matheclipse.core.expression.Blank(condition, def);
+	}
+	
 	/**
 	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term rewriting
 	 * 
