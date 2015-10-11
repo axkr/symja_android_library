@@ -435,7 +435,7 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Convert less or greter relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
 	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
