@@ -3802,7 +3802,7 @@ public class F {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
-		org.matheclipse.core.builtin.function.SetDelayed.CONST.putDownRule(lhs, rhs, true);
+		org.matheclipse.core.builtin.function.SetDelayed.putDownRule(lhs, rhs, true);
 		return null;
 	}
 
