@@ -324,7 +324,7 @@
 	      overloadaggressively="on"
 	      defaultpackage=""
 	      allowaccessmodification="on">
--libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar
+-libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar;${lib.dir}/COMMONS_MATH4_SYMJA.jar
 -injars      ${jar.dir}/symja-${date}.jar
 -outjars     ${jar.dir}/symja-lib-${date}.jar
 -keepattributes Signature
