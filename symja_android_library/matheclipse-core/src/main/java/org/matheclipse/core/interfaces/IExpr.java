@@ -160,7 +160,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	@Override
-	public IExpr divide(IExpr that);
+	public IExpr divide(final IExpr that);
 
 	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
@@ -190,7 +190,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	public ISignedNumber evalSignedNumber();
-	
+
 	/**
 	 * Evaluate an expression
 	 * 
@@ -247,6 +247,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
 	 */
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth);
+
+	/**
+	 * Return the internal Scala form of this expression.
+	 * 
+	 * @param symbolsAsFactoryMethod
+	 *            if <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
+	 * @param depth
+	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
+	 */
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth);
+
+	/**
+	 * Return the internal Java form of this expression.
+	 * 
+	 * @param symbolsAsFactoryMethod
+	 *            if <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
+	 * @param depth
+	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
+	 * @param useOperators
+	 *            use operators instead of function names for representation of Plus, Times, Power,...
+	 */
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators);
 
 	/**
 	 * Returns the multiplicative inverse of this object. It is the object such as <code>this.times(this.inverse()) == ONE </code>,
@@ -1265,7 +1287,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the multiplier expression
 	 * @return <code>(this * that)</code>
 	 */
-	IExpr times(IExpr that);
+	public IExpr times(final IExpr that);
 
 	/**
 	 * The 'highest level' head of the expression, before Symbol, Integer, Real or String. for example while the head of a[b][c] is
@@ -1282,4 +1304,44 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if no variable symbol was found.
 	 */
 	public IExpr variables2Slots(Map<IExpr, IExpr> map, List<IExpr> variableList);
+
+	/**
+	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IExpr $div(final IExpr that);
+
+	/**
+	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IExpr $minus(final IExpr that);
+
+	/**
+	 * Operator overloading for Scala operator <code>+</code>. Calls <code>plus(that)</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IExpr $plus(final IExpr that);
+
+	/**
+	 * Operator overloading for Scala operator <code>*</code>. Calls <code>times(that)</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IExpr $times(final IExpr that);
+
+	/**
+	 * Operator overloading for Scala operator <code>^</code>. Calls <code>power(that)</code>.
+	 * 
+	 * @param that
+	 * @return
+	 */
+	public IExpr $up(final IExpr that);
 }

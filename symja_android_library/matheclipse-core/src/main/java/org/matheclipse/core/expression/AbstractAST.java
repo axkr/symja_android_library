@@ -129,12 +129,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	private static final long serialVersionUID = -8682706994448890660L;
 
 	private static void internalFormOrderless(IAST ast, StringBuffer text, final String sep, boolean symbolsAsFactoryMethod,
-			int depth) {
+			int depth, boolean useOperators) {
 		for (int i = 1; i < ast.size(); i++) {
 			if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
-				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, depth);
+				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, depth, useOperators);
 			} else {
-				text.append(ast.get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+				text.append(ast.get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators));
 			}
 			if (i < ast.size() - 1) {
 				text.append(sep);
@@ -921,6 +921,18 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		final String sep = ",";
 		final IExpr temp = head();
 		if (temp.equals(F.Hold) && size() == 2) {
@@ -960,10 +972,10 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 						return "CSqrt10";
 					}
 				}
-				return "Sqrt(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+				return "Sqrt(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators) + ")";
 			}
 			if (equalsAt(2, F.C2)) {
-				return "Sqr(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+				return "Sqr(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators) + ")";
 			}
 			if (equalsAt(2, F.CN1D2)) {
 				if (arg1().isInteger()) {
@@ -988,7 +1000,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				try {
 					long exp = ((IInteger) arg2()).toLong();
 					// create Power(arg1, exp)
-					return "Power(" + arg1().internalFormString(symbolsAsFactoryMethod, depth + 1) + "," + Long.toString(exp) + ")";
+					return "Power(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators) + ","
+							+ Long.toString(exp) + ")";
 
 				} catch (Exception ex) {
 
@@ -1011,7 +1024,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				if (!Character.isUpperCase(sym.toString().charAt(0))) {
 					text.append("$(");
 					for (int i = 0; i < size(); i++) {
-						text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+						text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators));
 						if (i < size() - 1) {
 							text.append(sep);
 						}
@@ -1023,7 +1036,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		} else if (temp.isPattern() || temp.isAST()) {
 			text.append("$(");
 			for (int i = 0; i < size(); i++) {
-				text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators));
 				if (i < size() - 1) {
 					text.append(sep);
 				}
@@ -1033,16 +1046,43 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 
 		if (isTimes() && size() == 3 && arg1().isMinusOne() && !arg2().isTimes()) {
-			return "Negate(" + arg2().internalFormString(symbolsAsFactoryMethod, depth + 1) + ")";
+			return "Negate(" + arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators) + ")";
 		}
 
-		text.append(temp.internalFormString(false, 0));
+		if (useOperators && size() == 3) {
+			if (isTimes()) {
+				IExpr arg1 = arg1();
+				IExpr arg2 = arg2();
+				boolean isLowerPrecedence = arg1.isPlus();
+				internalOperatorForm(arg1, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, text);
+				text.append('*');
+				isLowerPrecedence = arg2.isPlus();
+				internalOperatorForm(arg2, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, text);
+				return text.toString();
+			} else if (isPlus()) {
+				arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators);
+				text.append('+');
+				arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators);
+				return text.toString();
+			} else if (isPower()) {
+				IExpr arg1 = arg1();
+				IExpr arg2 = arg2();
+				boolean isLowerPrecedence = arg1.isTimes() || arg1.isPlus();
+				internalOperatorForm(arg1, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, text);
+				text.append('^');
+				isLowerPrecedence = arg2.isTimes() || arg2.isPlus();
+				internalOperatorForm(arg2, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, text);
+				return text.toString();
+			}
+
+		}
+		text.append(temp.internalJavaString(false, 0, useOperators));
 		text.append('(');
 		if (isTimes() || isPlus()) {
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
-			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth);
+			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth, useOperators);
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
@@ -1051,7 +1091,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				text.append('\n');
 			}
 			for (int i = 1; i < size(); i++) {
-				text.append(get(i).internalFormString(symbolsAsFactoryMethod, depth + 1));
+				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators));
 				if (i < size() - 1) {
 					text.append(sep);
 					if (depth == 0 && isList()) {
@@ -1065,6 +1105,17 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 		text.append(')');
 		return text.toString();
+	}
+
+	private void internalOperatorForm(IExpr arg1, boolean isLowerPrecedence, boolean symbolsAsFactoryMethod, int depth,
+			boolean useOperators, StringBuffer text) {
+		if (isLowerPrecedence) {
+			text.append("(");
+		}
+		text.append(arg1.internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators));
+		if (isLowerPrecedence) {
+			text.append(")");
+		}
 	}
 
 	@Override
@@ -2733,4 +2784,28 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return variables2Slots(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableList));
 	}
 
+	@Override
+	public IExpr $div(final IExpr that) {
+		return divide(that);
+	}
+
+	@Override
+	public IExpr $minus(final IExpr that) {
+		return minus(that);
+	}
+
+	@Override
+	public IExpr $plus(final IExpr that) {
+		return plus(that);
+	}
+
+	@Override
+	public IExpr $times(final IExpr that) {
+		return times(that);
+	}
+
+	@Override
+	public IExpr $up(final IExpr that) {
+		return power(that);
+	}
 }

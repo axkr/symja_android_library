@@ -676,11 +676,21 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return uv2s.apply(this);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
 			if (fSymbolName.length() == 1) {// && Character.isLowerCase(fSymbolName.charAt(0))) {
 				char ch = fSymbolName.charAt(0);

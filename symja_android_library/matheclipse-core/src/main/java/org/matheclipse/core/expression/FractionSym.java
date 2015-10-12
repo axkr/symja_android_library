@@ -434,9 +434,19 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return super.times(that);
 	}
 
-	/** {@inheritDoc} */
+
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+	
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+	
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int numerator = fRational.getNumerator().intValue();
 		int denominator = fRational.getDenominator().intValue();
 		if (numerator == 1) {

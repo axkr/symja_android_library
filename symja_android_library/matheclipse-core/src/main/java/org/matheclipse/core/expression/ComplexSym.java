@@ -400,6 +400,16 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+	
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+	
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int real_numerator = NumberUtil.toInt(_real.getNumerator());
 		int real_denominator = NumberUtil.toInt(_real.getDenominator());
 		int imag_numerator = NumberUtil.toInt(_imaginary.getNumerator());

@@ -1148,6 +1148,16 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+	
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+	
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fInteger);
 		switch (value) {
 		case -1:

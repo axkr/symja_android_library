@@ -4747,12 +4747,12 @@ public class F {
 	static {
 
 		try {
-			if (Config.DEBUG) {
-				System.out.println("Config.DEBUG == true");
-			}
-			if (Config.SHOW_STACKTRACE) {
-				System.out.println("Config.SHOW_STACKTRACE == true");
-			}
+//			if (Config.DEBUG) {
+//				System.out.println("Config.DEBUG == true");
+//			}
+//			if (Config.SHOW_STACKTRACE) {
+//				System.out.println("Config.SHOW_STACKTRACE == true");
+//			}
 			ApfloatContext ctx = ApfloatContext.getContext();
 			ctx.setNumberOfProcessors(1);
 			// long start = System.currentTimeMillis();

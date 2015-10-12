@@ -221,16 +221,31 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		// return F.C1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr getAt(final int index) {
 		return F.Part(this, F.integer(index));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public abstract ISymbol head();
 
+	/** {@inheritDoc} */
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return toString();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return toString();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		return toString();
 	}
 
@@ -1148,4 +1163,28 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		return this;
 	}
 
+	@Override
+	public IExpr $div(final IExpr that) {
+		return divide(that);
+	}
+
+	@Override
+	public IExpr $minus(final IExpr that) {
+		return minus(that);
+	}
+
+	@Override
+	public IExpr $plus(final IExpr that) {
+		return plus(that);
+	}
+
+	@Override
+	public IExpr $times(final IExpr that) {
+		return times(that);
+	}
+
+	@Override
+	public IExpr $up(final IExpr that) {
+		return power(that);
+	}
 }

@@ -27,6 +27,7 @@ public class ExprEvaluator {
 	static {
 		F.initSymbols(null, null, false);
 	}
+
 	/**
 	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
 	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
@@ -226,7 +227,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a Java Symja expression string.
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -238,6 +239,23 @@ public class ExprEvaluator {
 			node = engine.parseNode(inputExpression);
 			parsedExpression = AST2Expr.CONST.convert(node, engine);
 			return parsedExpression.internalFormString(false, 0);
+		}
+		return "";
+	}
+
+	/**
+	 * Converts the inputExpression string into a Scala expression and writes the result to the given <code>Writer</code>string.
+	 * 
+	 * @param inputExpression
+	 * @param out
+	 */
+	public String toScalaForm(final String inputExpression) throws MathException {
+		IExpr parsedExpression = null;
+		ASTNode node;
+		if (inputExpression != null) {
+			node = engine.parseNode(inputExpression);
+			parsedExpression = AST2Expr.CONST.convert(node, engine);
+			return parsedExpression.internalScalaString(false, 0);
 		}
 		return "";
 	}

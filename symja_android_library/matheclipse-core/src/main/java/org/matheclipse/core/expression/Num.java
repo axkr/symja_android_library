@@ -24,7 +24,6 @@ public class Num extends ExprImpl implements INum {
 	 */
 	private static final long serialVersionUID = 188084692735007429L;
 
-	
 	double fDouble;
 
 	/**
@@ -68,7 +67,7 @@ public class Num extends ExprImpl implements INum {
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
 		return F.isNumEqualRational(fDouble, value);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {
@@ -90,10 +89,10 @@ public class Num extends ExprImpl implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalValue(IRational value){
-		return F.isZero(fDouble - value.doubleValue()); 
+	public boolean isRationalValue(IRational value) {
+		return F.isZero(fDouble - value.doubleValue());
 	}
-	
+
 	@Override
 	public boolean equalsInt(final int i) {
 		return fDouble == i;
@@ -554,6 +553,21 @@ public class Num extends ExprImpl implements INum {
 			return "0.0";
 		}
 		return Double.valueOf(fDouble).toString();
+	}
+
+	@Override
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		return "num(" + fDouble + ")";
 	}
 
 	/**

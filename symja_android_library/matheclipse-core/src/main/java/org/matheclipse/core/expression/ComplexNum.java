@@ -525,6 +525,21 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return fComplex.toString();
 	}
 
+	@Override
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		return "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
+	}
+
 	/**
 	 * @return
 	 */
