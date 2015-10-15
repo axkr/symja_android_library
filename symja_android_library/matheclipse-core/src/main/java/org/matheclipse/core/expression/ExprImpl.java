@@ -316,13 +316,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public boolean isAST(IExpr header, int minLength, int maxLength) {
+	public final boolean isAST(IExpr header, int minLength, int maxLength) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAST(IExpr header, int length, IExpr... args) {
+	public final boolean isAST(IExpr header, int length, IExpr... args) {
 		return false;
 	}
 
@@ -364,19 +364,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isComplexInfinity() {
+	public final boolean isComplexInfinity() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isComplexNumeric() {
+	public final boolean isComplexNumeric() {
 		return this instanceof IComplexNum;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isCondition() {
+	public final boolean isCondition() {
 		return false;
 	}
 
@@ -400,13 +400,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST[] isDerivative() {
+	public final IAST[] isDerivative() {
 		return null;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isDirectedInfinity() {
+	public final boolean isDirectedInfinity() {
 		return false;
 	}
 
@@ -418,19 +418,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isExpanded() {
+	public final boolean isExpanded() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAllExpanded() {
+	public final boolean isAllExpanded() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPlusTimesPower() {
+	public final boolean isPlusTimesPower() {
 		return false;
 	}
 
@@ -448,13 +448,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFraction() {
+	public final boolean isFraction() {
 		return this instanceof IFraction;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFree(final IExpr pattern) {
+	public final boolean isFree(final IExpr pattern) {
 		return isFree(pattern, true);
 	}
 
@@ -473,13 +473,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAST(final IExpr pattern) {
+	public final boolean isFreeAST(final IExpr pattern) {
 		return true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAST(Predicate<IExpr> predicate) {
+	public final boolean isFreeAST(Predicate<IExpr> predicate) {
 		return true;
 	}
 
@@ -491,19 +491,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFunction() {
+	public final boolean isFunction() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isGEOrdered(final IExpr obj) {
+	public final boolean isGEOrdered(final IExpr obj) {
 		return compareTo(obj) >= 0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isGTOrdered(final IExpr obj) {
+	public final boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
 
@@ -515,19 +515,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isInfinity() {
+	public final boolean isInfinity() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isInteger() {
+	public final boolean isInteger() {
 		return this instanceof IInteger;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isIntegerResult() {
+	public final boolean isIntegerResult() {
 		if (AbstractAssumptions.assumeInteger(this)) {
 			return true;
 		}
@@ -536,7 +536,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalResult() {
+	public final boolean isRationalResult() {
 		if (AbstractAssumptions.assumeRational(this)) {
 			return true;
 		}
@@ -545,7 +545,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRealResult() {
+	public final boolean isRealResult() {
 		if (AbstractAssumptions.assumeReal(this)) {
 			return true;
 		}
@@ -554,25 +554,25 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNegativeResult() {
+	public final boolean isNegativeResult() {
 		return AbstractAssumptions.assumeNegative(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPositiveResult() {
+	public final boolean isPositiveResult() {
 		return AbstractAssumptions.assumePositive(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNonNegativeResult() {
+	public final boolean isNonNegativeResult() {
 		return AbstractAssumptions.assumeNonNegative(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isLEOrdered(final IExpr obj) {
+	public final boolean isLEOrdered(final IExpr obj) {
 		return compareTo(obj) <= 0;
 	}
 
@@ -596,7 +596,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isLTOrdered(final IExpr obj) {
+	public final boolean isLTOrdered(final IExpr obj) {
 		return compareTo(obj) < 0;
 	}
 
@@ -609,14 +609,14 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isMember(final IExpr pattern, boolean heads) {
+	public final boolean isMember(final IExpr pattern, boolean heads) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return isMember(matcher, heads);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isMember(Predicate<IExpr> predicate, boolean heads) {
+	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
 		return predicate.apply(this);
 	}
 
@@ -628,7 +628,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isModule() {
+	public final boolean isModule() {
 		return false;
 	}
 
@@ -640,19 +640,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNegativeInfinity() {
+	public final boolean isNegativeInfinity() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNot() {
+	public final boolean isNot() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumber() {
+	public final boolean isNumber() {
 		return this instanceof INumber;
 	}
 
@@ -670,19 +670,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumeric() {
+	public final boolean isNumeric() {
 		return this instanceof INum || this instanceof IComplexNum;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumericFunction() {
+	public final boolean isNumericFunction() {
 		return isNumber() || isConstant();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumericMode() {
+	public final boolean isNumericMode() {
 		return isNumeric();
 	}
 
@@ -706,7 +706,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isOr() {
+	public final boolean isOr() {
 		return false;
 	}
 
@@ -781,7 +781,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRational() {
+	public final boolean isRational() {
 		return this instanceof IRational;
 	}
 
@@ -793,7 +793,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSame(IExpr expression) {
+	public final boolean isSame(IExpr expression) {
 		return isSame(expression, Config.DOUBLE_EPSILON);
 	}
 
@@ -829,19 +829,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSlot() {
+	public final boolean isSlot() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSlotSequence() {
+	public final boolean isSlotSequence() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSymbol() {
+	public final boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
 
@@ -877,7 +877,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isUnit() {
+	public final boolean isUnit() {
 		return true;
 	}
 
@@ -913,19 +913,19 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/** {@inheritDoc} */
-	public long leafCount() {
+	public final long leafCount() {
 		return isAtom() ? 1L : 0L;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public List<IExpr> leaves() {
+	public final List<IExpr> leaves() {
 		return null;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr minus(final IExpr that) {
+	public final IExpr minus(final IExpr that) {
 		if (this.isNumber() && that.isNumber()) {
 			return F.eval(F.Plus(this, ((INumber) that).opposite()));
 		}
@@ -936,7 +936,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public IExpr mod(final IExpr that) {
+	public final IExpr mod(final IExpr that) {
 		return F.Mod(this, that);
 	}
 
@@ -964,7 +964,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/** {@inheritDoc} */
-	public IExpr optional(final IExpr that) {
+	public final IExpr optional(final IExpr that) {
 		if (that != null) {
 			return that;
 		}
@@ -973,7 +973,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr or(final IExpr that) {
+	public final IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
 
@@ -985,13 +985,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr inc() {
+	public final IExpr inc() {
 		return plus(F.C1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr dec() {
+	public final IExpr dec() {
 		return plus(F.CN1);
 	}
 
@@ -1066,7 +1066,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replaceAll(final Function<IExpr, IExpr> function) {
+	public final IExpr replaceAll(final Function<IExpr, IExpr> function) {
 		return this.accept(new VisitorReplaceAll(function));
 	}
 
@@ -1074,7 +1074,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replaceAll(final IAST astRules) {
+	public final IExpr replaceAll(final IAST astRules) {
 		return this.accept(new VisitorReplaceAll(astRules));
 	}
 
@@ -1082,7 +1082,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replacePart(final IAST astRules) {
+	public final IExpr replacePart(final IAST astRules) {
 		return this.accept(new VisitorReplacePart(astRules));
 	}
 
@@ -1090,7 +1090,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
+	public final IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
 		return replaceRepeated(this, new VisitorReplaceAll(function));
 	}
 
@@ -1098,7 +1098,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replaceRepeated(final IAST astRules) {
+	public final IExpr replaceRepeated(final IAST astRules) {
 		return replaceRepeated(this, new VisitorReplaceAll(astRules));
 	}
 
@@ -1106,7 +1106,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr replaceSlots(final IAST astSlots) {
+	public final IExpr replaceSlots(final IAST astSlots) {
 		return this.accept(new VisitorReplaceSlots(astSlots));
 	}
 
@@ -1117,7 +1117,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	 */
 	@Deprecated
 	@Override
-	public int signum() {
+	public final int signum() {
 		if (isZERO()) {
 			return 0;
 		}
@@ -1128,12 +1128,12 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public IExpr subtract(IExpr that) {
+	public final IExpr subtract(IExpr that) {
 		return plus(that.negate());
 	}
 
 	@Override
-	public IExpr sum(IExpr that) {
+	public final IExpr sum(IExpr that) {
 		return this.plus(that);
 	}
 
@@ -1144,17 +1144,17 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public ISymbol topHead() {
+	public final ISymbol topHead() {
 		return head();
 	}
 
 	@Override
-	public String toScript() {
+	public final String toScript() {
 		return toString();
 	}
 
 	@Override
-	public String toScriptFactory() {
+	public final String toScriptFactory() {
 		throw new UnsupportedOperationException(toString());
 	}
 
@@ -1164,27 +1164,27 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public IExpr $div(final IExpr that) {
+	public final IExpr $div(final IExpr that) {
 		return divide(that);
 	}
 
 	@Override
-	public IExpr $minus(final IExpr that) {
+	public final IExpr $minus(final IExpr that) {
 		return minus(that);
 	}
 
 	@Override
-	public IExpr $plus(final IExpr that) {
+	public final IExpr $plus(final IExpr that) {
 		return plus(that);
 	}
 
 	@Override
-	public IExpr $times(final IExpr that) {
+	public final IExpr $times(final IExpr that) {
 		return times(that);
 	}
 
 	@Override
-	public IExpr $up(final IExpr that) {
+	public final IExpr $up(final IExpr that) {
 		return power(that);
 	}
 }

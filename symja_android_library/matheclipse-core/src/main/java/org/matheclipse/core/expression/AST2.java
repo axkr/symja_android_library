@@ -81,6 +81,12 @@ public class AST2 extends AST1 {
 		return new AST(arg0, arg1, arg2);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean contains(Object object) {
+		return arg0.equals(object) || arg1.equals(object) || arg2.equals(object);
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof AbstractAST) {
@@ -120,6 +126,30 @@ public class AST2 extends AST1 {
 			hashValue = 23 * hashValue + arg2.hashCode();
 		}
 		return hashValue;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head) {
+		return arg0.equals(head);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head, int length) {
+		return arg0.equals(head) && length == SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head, int minLength, int maxLength) {
+		return arg0.equals(head) && minLength <= SIZE && maxLength >= SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHeadSizeGE(IExpr head, int length) {
+		return arg0.equals(head) && length <= SIZE;
 	}
 
 	/**

@@ -231,6 +231,12 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 		return new AST(arg0);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean contains(Object object) {
+		return arg0.equals(object);
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof AbstractAST) {
@@ -268,6 +274,30 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	@Override
 	public final IExpr head() {
 		return arg0;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head) {
+		return arg0.equals(head);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head, int length) {
+		return arg0.equals(head) && length == SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHead(IExpr head, int minLength, int maxLength) {
+		return arg0.equals(head) && minLength <= SIZE && maxLength >= SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isSameHeadSizeGE(IExpr head, int length) {
+		return arg0.equals(head) && length <= SIZE;
 	}
 
 	@Override

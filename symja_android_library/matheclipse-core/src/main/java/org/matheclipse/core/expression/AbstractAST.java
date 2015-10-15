@@ -154,7 +154,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (expr.isAST()) {
 			IAST nestedList = (IAST) expr;
 			IAST result = null;
-			final IExpr head = nestedList.get(0);
+			final IExpr head = nestedList.head();
 			IExpr temp = variables2Slots(head, from, to);
 			if (temp != null) {
 				result = nestedList.apply(temp);
@@ -331,7 +331,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST copyHead() {
-		return AST.newInstance(get(0));
+		return AST.newInstance(head());
 	}
 
 	/** {@inheritDoc} */
@@ -469,14 +469,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 		return compareToAST(lhsAST, rhsAST);
 	}
-
-	/**
-	 * Searches this {@code ArrayList} for the specified object.
-	 * 
-	 * @param object
-	 *            the object to search for.
-	 * @return {@code true} if {@code object} is an element of this {@code ArrayList}, {@code false} otherwise
-	 */
+ 
+	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object object) {
 		int size = size();
@@ -490,7 +484,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr divide(IExpr that) {
+	public final IExpr divide(IExpr that) {
 		if (that.isNumber()) {
 			return F.eval(F.Times(this, that.inverse()));
 		}
@@ -504,7 +498,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr[] egcd(IExpr b) {
+	public final IExpr[] egcd(IExpr b) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -534,11 +528,11 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean equalsAt(int position, final IExpr expr) {
+	public final boolean equalsAt(int position, final IExpr expr) {
 		return get(position).equals(expr);
 	}
 
-	public boolean equalsFromPosition(final int from0, final IAST f1, final int from1) {
+	public final boolean equalsFromPosition(final int from0, final IAST f1, final int from1) {
 		if ((size() - from0) != (f1.size() - from1)) {
 			return false;
 		}
@@ -556,7 +550,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public double evalDouble() {
+	public final double evalDouble() {
 		ISignedNumber signedNumber = evalSignedNumber();
 		if (signedNumber != null) {
 			return signedNumber.doubleValue();
@@ -566,7 +560,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public Complex evalComplex() {
+	public final Complex evalComplex() {
 		INumber number = evalNumber();
 		if (number != null) {
 			return number.complexNumValue().complexValue();
@@ -576,7 +570,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public INumber evalNumber() {
+	public final INumber evalNumber() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
 			if (result.isNumber()) {
@@ -588,7 +582,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber evalSignedNumber() {
+	public final ISignedNumber evalSignedNumber() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
 			if (result.isSignedNumber()) {
@@ -599,7 +593,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr evaluate(EvalEngine engine) {
+	public final IExpr evaluate(EvalEngine engine) {
 		if (Config.DEBUG) {
 			System.out.println(toString());
 		}
@@ -620,13 +614,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public ElemFactory<IExpr> factory() {
+	public final ElemFactory<IExpr> factory() {
 		throw new UnsupportedOperationException();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST[] filter(final Function<IExpr, IExpr> function) {
+	public final IAST[] filter(final Function<IExpr, IExpr> function) {
 		IAST[] result = new IAST[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
@@ -702,7 +696,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST[] filter(Predicate<IExpr> predicate) {
+	public final IAST[] filter(Predicate<IExpr> predicate) {
 		IAST[] result = new IAST[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
@@ -710,7 +704,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return result;
 	}
 
-	public int findFirstEquals(final IExpr expr) {
+	public final int findFirstEquals(final IExpr expr) {
 		for (int i = 1; i < size(); i++) {
 			if (equalsAt(i, expr)) {
 				return i;
@@ -720,7 +714,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public String fullFormString() {
+	public final String fullFormString() {
 		final String sep = ", ";
 		IExpr temp = head();
 		StringBuffer text = new StringBuffer();
@@ -754,7 +748,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr gcd(IExpr that) {
+	public final IExpr gcd(IExpr that) {
 		if (equals(that)) {
 			return that;
 		}
@@ -846,7 +840,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	public IExpr getOneIdentity(IExpr defaultValue) {
+	public final IExpr getOneIdentity(IExpr defaultValue) {
 		if (size() > 2) {
 			return this;
 		}
@@ -856,7 +850,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return defaultValue;
 	}
 
-	public IExpr getPart(final int... positions) {
+	public final IExpr getPart(final int... positions) {
 		IExpr expr = this;
 		int size = positions.length;
 		for (int i = 0; i < size; i++) {
@@ -871,7 +865,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return null;
 	}
 
-	public IExpr getPart(final List<Integer> positions) {
+	public final IExpr getPart(final List<Integer> positions) {
 		IExpr expr = this;
 		int size = positions.size();
 		for (int i = 0; i < size; i++) {
@@ -907,7 +901,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public int indexOf(Object object) {
+	public final int indexOf(Object object) {
 		int size = size();
 		for (int i = 0; i < size; i++) {
 			if (object.equals(get(i))) {
@@ -920,19 +914,19 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+	public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public final String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		final String sep = ",";
 		final IExpr temp = head();
 		if (temp.equals(F.Hold) && size() == 2) {
@@ -1224,9 +1218,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			if (name.length() > 0) {
 				name = symbol.toLowerCase(Locale.ENGLISH);
 			}
-			return get(0).toString().equals(name);
+			return head().toString().equals(name);
 		}
-		return get(0).toString().equals(symbol);
+		return head().toString().equals(symbol);
 	}
 
 	/**
@@ -1239,9 +1233,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			if (name.length() > 0) {
 				name = symbol.toLowerCase(Locale.ENGLISH);
 			}
-			return (size() == length) && get(0).toString().equals(name);
+			return (size() == length) && head().toString().equals(name);
 		}
-		return (size() == length) && get(0).toString().equals(symbol);
+		return (size() == length) && head().toString().equals(symbol);
 	}
 
 	/**
@@ -1271,20 +1265,20 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isComplexInfinity() {
+	public final boolean isComplexInfinity() {
 		return isSameHead(F.DirectedInfinity, 1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isComplexNumeric() {
+	public final boolean isComplexNumeric() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isCondition() {
-		return size() == 3 && head().equals(F.Condition);
+		return isSameHead(F.Condition, 3);
 	}
 
 	/** {@inheritDoc} */
@@ -1307,7 +1301,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST[] isDerivative() {
+	public final IAST[] isDerivative() {
 		if (head().isAST()) {
 			IAST headAST = (IAST) head();
 			if (headAST.isAST(F.Derivative, 2)) {
@@ -1330,18 +1324,18 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isDirectedInfinity() {
-		return get(0) == F.DirectedInfinity && (size() == 2 || size() == 1);
+	public final boolean isDirectedInfinity() {
+		return isSameHead(F.DirectedInfinity, 1, 2);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isE() {
+	public final boolean isE() {
 		return false;
 	}
 
 	@Override
-	public boolean isEmpty() {
+	public final boolean isEmpty() {
 		return size() == 0;
 	}
 
@@ -1359,7 +1353,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isExpanded() {
+	public final boolean isExpanded() {
 		if (isPlusTimesPower()) {
 			if (isEvalFlagOff(IAST.IS_EXPANDED)) {
 				return false;
@@ -1388,7 +1382,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFree(final IExpr pattern) {
+	public final boolean isFree(final IExpr pattern) {
 		return isFree(pattern, true);
 	}
 
@@ -1407,15 +1401,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAST(final IExpr pattern) {
+	public final boolean isFreeAST(final IExpr pattern) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return isFreeAST(matcher);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAST(Predicate<IExpr> predicate) {
-		if (predicate.apply(get(0))) {
+	public final boolean isFreeAST(Predicate<IExpr> predicate) {
+		if (predicate.apply(head())) {
 			return false;
 		}
 		for (int i = 1; i < size(); i++) {
@@ -1428,13 +1422,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeAt(int position, final IExpr pattern) {
+	public final boolean isFreeAt(int position, final IExpr pattern) {
 		return get(position).isFree(pattern, true);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFreeOfPatterns() {
+	public final boolean isFreeOfPatterns() {
 		if ((getEvalFlags() & IAST.CONTAINS_NO_PATTERN) == IAST.CONTAINS_NO_PATTERN) {
 			return true;
 		}
@@ -1482,13 +1476,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isIndeterminate() {
+	public final boolean isIndeterminate() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isInfinity() {
+	public final boolean isInfinity() {
 		return this.equals(F.CInfinity);
 	}
 
@@ -1500,7 +1494,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isIntegerResult() {
+	public final boolean isIntegerResult() {
 		ISymbol symbol = topHead();
 		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
 			return true;
@@ -1527,7 +1521,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalResult() {
+	public final boolean isRationalResult() {
 		ISymbol symbol = topHead();
 		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
 			return true;
@@ -1566,7 +1560,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isListOfLists() {
+	public final boolean isListOfLists() {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isList()) {
@@ -1593,7 +1587,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public int[] isMatrix() {
+	public final int[] isMatrix() {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = size() - 1;
@@ -1635,7 +1629,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isMember(final IExpr pattern, boolean heads) {
+	public final boolean isMember(final IExpr pattern, boolean heads) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
 		return isMember(matcher, heads);
 	}
@@ -1672,7 +1666,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNegative() {
+	public final boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
 			if (result.isSignedNumber()) {
@@ -1684,13 +1678,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNegativeInfinity() {
+	public final boolean isNegativeInfinity() {
 		return this.equals(F.CNInfinity);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNegativeResult() {
+	public final boolean isNegativeResult() {
 		if (isPlus()) {
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isNegativeResult()) {
@@ -1729,7 +1723,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNonNegativeResult() {
+	public final boolean isNonNegativeResult() {
 		ISymbol symbol = topHead();
 		if (symbol.equals(F.Abs)) {
 			return true;
@@ -1783,13 +1777,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
+	public final boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
+	public final boolean isNumEqualRational(IRational value) throws ArithmeticException {
 		return false;
 	}
 
@@ -1801,7 +1795,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumericFunction() {
+	public final boolean isNumericFunction() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
 			// check if all arguments are &quot;numeric&quot;
@@ -1817,7 +1811,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isNumericMode() {
+	public final boolean isNumericMode() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
 			// check if one of the arguments is &quot;numeric&quot;
@@ -1868,13 +1862,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPatternDefault() {
+	public final boolean isPatternDefault() {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPatternExpr() {
+	public final boolean isPatternExpr() {
 		return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
 	}
 
@@ -1886,7 +1880,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPi() {
+	public final boolean isPi() {
 		return false;
 	}
 
@@ -1903,7 +1897,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	public boolean isPolynomial(IAST variables) {
+	public final boolean isPolynomial(IAST variables) {
 		if (isPlus() || isTimes() || isPower()) {
 			IExpr expr = F.evalExpandAll(this);
 			ExprPolynomialRing ring = new ExprPolynomialRing(variables);
@@ -1913,11 +1907,11 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	public boolean isPolynomial(ISymbol variable) {
+	public final boolean isPolynomial(ISymbol variable) {
 		return isPolynomial(F.List(variable));
 	}
 
-	public boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
+	public final boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
 		try {
 			if (isPlus() || isTimes() || isPower()) {
 				IExpr expr = F.evalExpandAll(this);
@@ -1932,13 +1926,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	/** {@inheritDoc} */
-	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+	public final boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
 		return isPolynomialOfMaxDegree(F.List(variable), maxDegree);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPositive() {
+	public final boolean isPositive() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
 			if (result.isSignedNumber()) {
@@ -1950,7 +1944,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPositiveResult() {
+	public final boolean isPositiveResult() {
 		if (isPlus()) {
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isPositiveResult()) {
@@ -2001,13 +1995,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRationalValue(IRational value) {
+	public final boolean isRationalValue(IRational value) {
 		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isRealResult() {
+	public final boolean isRealResult() {
 		IExpr head = head();
 		if (size() == 2 && F.Cos.equals(head) && F.Sin.equals(head)) {
 			// TODO add more functions
@@ -2060,8 +2054,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 *            object to compare with element at location <code>0</code>
 	 * @return
 	 */
-	public final boolean isSameHead(IExpr head) {
-		return get(0).equals(head);
+	public boolean isSameHead(IExpr head) {
+		return head().equals(head);
 	}
 
 	/**
@@ -2073,13 +2067,25 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * @param length
 	 * @return
 	 */
-	public final boolean isSameHead(IExpr head, int length) {
-		return get(0).equals(head) && length == size();
+	public boolean isSameHead(IExpr head, int length) {
+		return head().equals(head) && length == size();
 	}
 
-	public final boolean isSameHead(IExpr head, int minLength, int maxLength) {
+	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the size of the
+	 * list is between <code>minLength</code> and <code>maxLength</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @param minLength
+	 *            minimum length of list elements.
+	 * @param maxLength
+	 *            maximum length of list elements.
+	 * @return
+	 */
+	public boolean isSameHead(IExpr head, int minLength, int maxLength) {
 		int size = size();
-		return get(0).equals(head) && minLength <= size && maxLength >= size;
+		return head().equals(head) && minLength <= size && maxLength >= size;
 	}
 
 	/**
@@ -2091,9 +2097,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * @param length
 	 * @return
 	 */
-	public final boolean isSameHeadSizeGE(IExpr head, int length) {
+	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		int size = size();
-		return get(0).equals(head) && length <= size;
+		return head().equals(head) && length <= size;
 	}
 
 	/** {@inheritDoc} */
@@ -2197,7 +2203,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isVariable() {
+	public final boolean isVariable() {
 		return false;
 	}
 
@@ -2243,7 +2249,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * @return an iterator over this <code>IAST</code>s argument values from <code>1..(size-1)</code>.
 	 */
 	@Override
-	public Iterator<IExpr> iterator() {
+	public final Iterator<IExpr> iterator() {
 		ASTIterator i = new ASTIterator();
 		i._table = this;
 		i._start = 1;
@@ -2260,18 +2266,18 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * 
 	 * @return an iterator over this list values.
 	 */
-	public Iterator<IExpr> iterator0() {
+	public final Iterator<IExpr> iterator0() {
 		return super.iterator();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	final public IExpr last() {
+	public final IExpr last() {
 		return get(size() - 1);
 	}
 
 	@Override
-	public int lastIndexOf(Object object) {
+	public final int lastIndexOf(Object object) {
 		int size = size();
 		for (int i = size - 1; i >= 0; i--) {
 			if (object.equals(get(i))) {
@@ -2283,13 +2289,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public long leafCount() {
+	public final long leafCount() {
 		return accept(new LeafCount.LeafCountVisitor(0));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public List<IExpr> leaves() {
+	public final List<IExpr> leaves() {
 		int sz = size();
 		if (sz < 2) {
 			return java.util.Collections.EMPTY_LIST;
@@ -2307,7 +2313,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
+	public final IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
 			temp = function.apply(get(i));
@@ -2322,7 +2328,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
+	public final IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
 		for (int i = 1; i < size(); i++) {
 			resultAST.add(function.apply(get(i), secondAST.get(i)));
 		}
@@ -2333,13 +2339,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
+	public final IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
 		return map(setAtClone(0, head), function);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST mapAt(IAST appendAST, final IAST replacement, int position) {
+	public final IAST mapAt(IAST appendAST, final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
@@ -2353,17 +2359,17 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST mapAt(final IAST replacement, int position) {
+	public final IAST mapAt(final IAST replacement, int position) {
 		return map(Functors.replaceArg(replacement, position));
 	}
 
 	@Override
-	public IExpr minus(final IExpr that) {
+	public final IExpr minus(final IExpr that) {
 		return subtract(that);
 	}
 
 	@Override
-	public IExpr mod(final IExpr that) {
+	public final IExpr mod(final IExpr that) {
 		return F.Mod(this, that);
 	}
 
@@ -2404,12 +2410,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return opposite();
 	}
 
-	public IExpr opposite() {
+	public final IExpr opposite() {
 		return negate();
 	}
 
 	/** {@inheritDoc} */
-	public IExpr optional(final IExpr that) {
+	public final IExpr optional(final IExpr that) {
 		if (that != null) {
 			return that;
 		}
@@ -2417,7 +2423,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr or(final IExpr that) {
+	public final IExpr or(final IExpr that) {
 		return F.Or(this, that);
 	}
 
@@ -2426,7 +2432,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * 
 	 */
 	@Override
-	final public int patternHashCode() {
+    public final int patternHashCode() {
 		if (size() > 1) {
 			final int attr = topHead().getAttributes() & ISymbol.FLATORDERLESS;
 			if (attr != ISymbol.NOATTRIBUTE) {
@@ -2454,7 +2460,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr plus(final IExpr that) {
+	public final IExpr plus(final IExpr that) {
 		if (that.isZero()) {
 			return this;
 		}
@@ -2463,13 +2469,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr inc() {
+	public final IExpr inc() {
 		return plus(F.C1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr dec() {
+	public final IExpr dec() {
 		return plus(F.CN1);
 	}
 
@@ -2499,7 +2505,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST prependClone(IExpr expr) {
+	public final IAST prependClone(IExpr expr) {
 		return addAtClone(1, expr);
 	}
 
@@ -2534,7 +2540,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr remainder(IExpr that) {
+	public final IExpr remainder(IExpr that) {
 		if (equals(that)) {
 			return F.C0;
 		}
@@ -2544,7 +2550,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST removeAtClone(int position) {
+	public final IAST removeAtClone(int position) {
 		IAST ast = clone();
 		ast.remove(position);
 		return ast;
@@ -2593,7 +2599,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST setAtClone(int position, IExpr expr) {
+	public final IAST setAtClone(int position, IExpr expr) {
 		IAST ast = clone();
 		ast.set(position, expr);
 		return ast;
@@ -2612,7 +2618,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 */
 	@Deprecated
 	@Override
-	public int signum() {
+	public final int signum() {
 		if (isTimes()) {
 			IExpr temp = arg1();
 			if (temp.isSignedNumber() && ((ISignedNumber) temp).isNegative()) {
@@ -2632,7 +2638,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr subtract(IExpr that) {
+	public final IExpr subtract(IExpr that) {
 		if (that.isZero()) {
 			return this;
 		}
@@ -2643,19 +2649,19 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr sum(IExpr that) {
+	public final IExpr sum(IExpr that) {
 		return plus(that);
 	}
 
 	@Override
-	public IExpr times(final IExpr that) {
+	public final IExpr times(final IExpr that) {
 		if (that.isZero()) {
 			return F.C0;
 		}
 		return F.eval(F.Times(this, that));
 	}
 
-	private String toFullFormString() {
+	private final String toFullFormString() {
 		final String sep = ", ";
 		IExpr temp = null;
 		if (size() > 0) {
@@ -2683,7 +2689,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 * Returns the ISymbol of the IAST. If the head itself is a IAST it will recursively call head().
 	 */
 	@Override
-	public ISymbol topHead() {
+	public final ISymbol topHead() {
 		IExpr header = head();
 		if (header instanceof ISymbol) {
 			// this should be the "most common" case:
@@ -2732,7 +2738,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public String toString() {
+	public final String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
 			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this);
@@ -2785,27 +2791,27 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public IExpr $div(final IExpr that) {
+	public final IExpr $div(final IExpr that) {
 		return divide(that);
 	}
 
 	@Override
-	public IExpr $minus(final IExpr that) {
+	public final IExpr $minus(final IExpr that) {
 		return minus(that);
 	}
 
 	@Override
-	public IExpr $plus(final IExpr that) {
+	public final IExpr $plus(final IExpr that) {
 		return plus(that);
 	}
 
 	@Override
-	public IExpr $times(final IExpr that) {
+	public final IExpr $times(final IExpr that) {
 		return times(that);
 	}
 
 	@Override
-	public IExpr $up(final IExpr that) {
+	public final IExpr $up(final IExpr that) {
 		return power(that);
 	}
 }
