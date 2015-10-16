@@ -836,7 +836,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	// @Override
-	public void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
 		// boolean hasDownRulesData = stream.readBoolean();
@@ -854,7 +854,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	}
 
 	/** {@inheritDoc} */
-	public void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
 		// if (fDownRulesData == null) {

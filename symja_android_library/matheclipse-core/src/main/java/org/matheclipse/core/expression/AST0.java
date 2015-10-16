@@ -50,8 +50,6 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 */
 	protected IExpr arg0;
 
-	transient int hashValue;
-
 	/**
 	 * Constructs a new instance
 	 */

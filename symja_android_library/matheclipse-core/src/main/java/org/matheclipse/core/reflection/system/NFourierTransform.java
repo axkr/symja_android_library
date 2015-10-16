@@ -25,7 +25,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 
 		IExpr expr = ast.arg1();
 		ISymbol t = Validate.checkSymbolType(ast, 2);
-		IExpr omega = ast.arg3();
+//		IExpr omega = ast.arg3();
 		if (ast.size() > 4) {
 			final Options options = new Options(ast.topHead(), ast, 4);
 			IExpr optionFourierParameters = options.getOption("FourierParameters");

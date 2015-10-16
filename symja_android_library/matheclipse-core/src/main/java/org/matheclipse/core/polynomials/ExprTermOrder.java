@@ -226,9 +226,9 @@ public final class ExprTermOrder implements Serializable {
             };
             break;
         }
-        default: {
+		default: {
             horder = null;
-        }
+        } 
         }
         if (horder == null) {
             throw new IllegalArgumentException("invalid term order: " + evord);

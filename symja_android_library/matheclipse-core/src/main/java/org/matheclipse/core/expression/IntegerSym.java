@@ -36,7 +36,8 @@ import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.math.BigIntegerMath;
 
 /**
- * IInteger implementation which delegates most of the methods to the BigInteger methods
+ * IInteger implementation which delegates most of the methods to the BigInteger
+ * methods
  */
 public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	/**
@@ -64,9 +65,10 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the IntegerImpl for the specified character sequence stated in the specified radix. The characters must all be digits
-	 * of the specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus sign <code>'-'</code>
-	 * .
+	 * Returns the IntegerImpl for the specified character sequence stated in
+	 * the specified radix. The characters must all be digits of the specified
+	 * radix, except the first character which may be a plus sign
+	 * <code>'+'</code> or a minus sign <code>'-'</code> .
 	 * 
 	 * @param chars
 	 *            the character sequence to parse.
@@ -74,7 +76,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
 	 * @throws NumberFormatException
-	 *             if the specified character sequence does not contain a parsable large integer.
+	 *             if the specified character sequence does not contain a
+	 *             parsable large integer.
 	 */
 	public static IntegerSym valueOf(final String integerString, final int radix) {
 		IntegerSym z = new IntegerSym();
@@ -166,7 +169,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	 * IntegerSym extended greatest common divisor.
 	 * 
 	 * @param that
-	 *            if that is of type IntegerSym calculate the extended GCD otherwise call {@link super#egcd(IExpr)};
+	 *            if that is of type IntegerSym calculate the extended GCD
+	 *            otherwise call {@link super#egcd(IExpr)};
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -280,7 +284,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one specified.
+	 * Returns the greatest common divisor of this large integer and the one
+	 * specified.
 	 * 
 	 */
 	public IntegerSym gcd(final IntegerSym that) {
@@ -288,7 +293,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one specified.
+	 * Returns the greatest common divisor of this large integer and the one
+	 * specified.
 	 * 
 	 */
 	@Override
@@ -305,7 +311,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one specified.
+	 * Returns the least common multiple of this large integer and the one
+	 * specified.
 	 * 
 	 */
 	public IntegerSym lcm(final IntegerSym that) {
@@ -328,7 +335,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one specified.
+	 * Returns the least common multiple of this large integer and the one
+	 * specified.
 	 * 
 	 */
 	@Override
@@ -684,7 +692,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
+	 * Get the highest exponent of <code>base</code> that divides
+	 * <code>this</code>
 	 * 
 	 * @return the exponent
 	 */
@@ -833,7 +842,8 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a><br/>
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
+	 * Jacobi symbol</a><br/>
 	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
 	 * 
 	 * @param b
@@ -1006,15 +1016,16 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 			IInteger temp = this;
 			do {
 				result = temp;
-				temp = divideAndRemainder(temp.pow(n - 1))[0].add(temp.multiply(IntegerSym.valueOf(n - 1))).divideAndRemainder(
-						IntegerSym.valueOf(n))[0];
+				temp = divideAndRemainder(temp.pow(n - 1))[0].add(temp.multiply(IntegerSym.valueOf(n - 1)))
+						.divideAndRemainder(IntegerSym.valueOf(n))[0];
 			} while (temp.compareTo(result) < 0);
 			return result;
 		}
 	}
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so that
+	 * Split this integer into the nth-root (with prime factors less equal 1021)
+	 * and the &quot;rest-factor&quot;, so that
 	 * <code>this== (nth-root)^n + rest</code>
 	 * 
 	 * @return <code>{nth-root, rest}</code>
@@ -1084,8 +1095,9 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -1150,12 +1162,12 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
 	}
-	
+
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
-	
+
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fInteger);
@@ -1293,11 +1305,9 @@ public class IntegerSym extends ExprImpl implements IInteger, Externalizable {
 				objectOutput.writeShort((short) value);
 				return;
 			}
-			if (value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE) {
-				objectOutput.writeByte(4);
-				objectOutput.writeInt((int) value);
-				return;
-			}
+			objectOutput.writeByte(4);
+			objectOutput.writeInt((int) value);
+			return;
 		}
 
 		objectOutput.writeByte(0);

@@ -42,7 +42,7 @@ public class Nor extends AbstractFunctionEvaluator {
 				return F.True;
 			}
 			if (result.size() == 2) {
-				return F.Not(ast.arg1());
+				return F.Not(result.arg1());
 			}
 			return result;
 		}

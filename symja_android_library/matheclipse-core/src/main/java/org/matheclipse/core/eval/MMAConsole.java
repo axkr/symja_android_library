@@ -33,7 +33,8 @@ public class MMAConsole {
 	public static void main(final String args[]) {
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
-		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(), null, false);
+		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
+											// null, false);
 		printUsage();
 		MMAConsole console;
 		try {
@@ -183,7 +184,8 @@ public class MMAConsole {
 	}
 
 	/**
-	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
+	 * Evaluates the given string-expression and returns the result in
+	 * <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
 	 * 
@@ -193,10 +195,12 @@ public class MMAConsole {
 		final StringWriter buf = new StringWriter();
 		try {
 			result = (IExpr) fEvaluator.evaluate(inputExpression);
-			if (result.equals(F.Null)) {
-				return "";
+			if (result != null) {
+				if (result.equals(F.Null)) {
+					return "";
+				}
+				return result.toString();
 			}
-			return result.toString();
 		} catch (final RuntimeException re) {
 			printException(buf, re);
 		} catch (final Exception e) {
@@ -298,8 +302,8 @@ public class MMAConsole {
 	}
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in System.mep
-	 * resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup.
+	 * This file replaces the default built-in System.mep resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */

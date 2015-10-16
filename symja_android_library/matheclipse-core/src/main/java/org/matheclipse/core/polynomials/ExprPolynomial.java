@@ -363,9 +363,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			s.append("( ");
 		}
 		IAST v = ring.vars;
-		if (v == null) {
-			v = ExprPolynomialRing.newVars("x", ring.nvar);
-		}
+//		if (v == null) {
+//			v = ExprPolynomialRing.newVars("x", ring.nvar);
+//		}
 		boolean first = true;
 		for (Map.Entry<ExpVectorLong, IExpr> m : val.entrySet()) {
 			IExpr c = m.getValue();

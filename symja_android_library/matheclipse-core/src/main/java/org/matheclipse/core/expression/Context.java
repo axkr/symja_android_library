@@ -29,7 +29,10 @@ public class Context {
 
 	@Override
 	public boolean equals(Object obj) {
-		return contextName.equals(obj);
+		if (obj instanceof Context) {
+			return contextName.equals(obj);
+		}
+		return false;
 	}
 
 	public ISymbol get(Object key) {

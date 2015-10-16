@@ -155,7 +155,7 @@ public class Product extends Table {
 
 	@Override
 	public IExpr numericEval(final IAST functionList, EvalEngine engine) {
-		return evaluate(functionList, null);
+		return evaluate(functionList, engine);
 	}
 
 	@Override

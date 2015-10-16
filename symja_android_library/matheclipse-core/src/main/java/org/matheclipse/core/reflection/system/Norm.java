@@ -40,7 +40,7 @@ public class Norm extends AbstractEvaluator {
 		}
 		if (arg1.isNumber()) {
 			if (ast.size() == 3) {
-				IExpr arg2 = ast.arg2();
+ 				IExpr arg2 = ast.arg2();
 				return null;
 			}
 			// absolute Value of a number

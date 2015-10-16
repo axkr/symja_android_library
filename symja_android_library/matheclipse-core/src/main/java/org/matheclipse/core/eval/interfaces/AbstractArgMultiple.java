@@ -187,7 +187,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			} else if (o0.isFraction()) {
 				result = e2DblArg(F.num((IFraction) o0), (INum) o1);
 			} else if (o0 instanceof IComplexNum) {
-				if (o0 instanceof ApfloatNum) {
+				if (o1 instanceof ApfloatNum) {
 					result = e2DblComArg((IComplexNum) o0, F.complexNum(((ApfloatNum) o1).apfloatValue()));
 				} else {
 					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));

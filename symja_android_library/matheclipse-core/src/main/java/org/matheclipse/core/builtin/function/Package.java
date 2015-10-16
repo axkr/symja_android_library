@@ -136,7 +136,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		if (expr.isAST()) {
 			result = convertSymbolsInList((IAST) expr, convertedSymbols);
 		} else if (expr.isSymbol()) {
-			ISymbol toSymbol = convertedSymbols.get(expr);
+			ISymbol toSymbol = convertedSymbols.get(expr.toString());
 			if (toSymbol != null) {
 				result = toSymbol;
 			}

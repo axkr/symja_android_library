@@ -50,7 +50,7 @@ public class Pochhammer extends AbstractArg2 {
 				res = res.multiply(th.add(i));
 			}
 			return res.reciprocal();
-		} else if (n.equals(BigFraction.ZERO)) {
+		} else if (n.equals(BigInteger.ZERO)) {
 			return BigFraction.ONE;
 		} else {
 			BigFraction res = new BigFraction(th.getNumerator(), th.getDenominator());

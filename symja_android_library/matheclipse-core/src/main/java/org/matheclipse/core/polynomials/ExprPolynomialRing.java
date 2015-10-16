@@ -126,20 +126,6 @@ public class ExprPolynomialRing {
 	 * 
 	 * @param cf
 	 *            factory for coefficients of type C.
-	 * @param n
-	 *            number of variables.
-	 * @param t
-	 *            a term order.
-	 */
-	public ExprPolynomialRing(ExprRingFactory cf, int n, ExprTermOrder t) {
-		this(cf, null, n, t);
-	}
-
-	/**
-	 * The constructor creates a polynomial factory object.
-	 * 
-	 * @param cf
-	 *            factory for coefficients of type C.
 	 * @param v
 	 *            names for the variables.
 	 */
@@ -998,11 +984,11 @@ public class ExprPolynomialRing {
 	 *            number of variables to extend.
 	 * @return extended polynomial ring factory.
 	 */
-	public ExprPolynomialRing extend(int i) {
-		// add module variable names
-		IAST v = newVars("e", i);
-		return extend(v);
-	}
+//	public ExprPolynomialRing extend(int i) {
+//		// add module variable names
+//		IAST v = newVars("e", i);
+//		return extend(v);
+//	}
 
 	/**
 	 * Extend variables. Used e.g. in module embedding. Extend number of variables by length(vn).
@@ -1036,10 +1022,10 @@ public class ExprPolynomialRing {
 	 *            number of variables to extend.
 	 * @return extended polynomial ring factory.
 	 */
-	public ExprPolynomialRing extendLower(int i) {
-		IAST v = newVars("e", i);
-		return extendLower(v);
-	}
+//	public ExprPolynomialRing extendLower(int i) {
+//		IAST v = newVars("e", i);
+//		return extendLower(v);
+//	}
 
 	/**
 	 * Extend lower variables. Extend number of variables by length(vn).
@@ -1184,26 +1170,26 @@ public class ExprPolynomialRing {
 	 *            number of variables.
 	 * @return new variable names.
 	 */
-	public static IAST newVars(String prefix, int n) {
-		IAST vars = F.List();
-		synchronized (knownVars) {
-			int m = knownVars.size();
-			String name = prefix + m;
-			for (int i = 0; i < n; i++) {
-				while (knownVars.contains(name)) {
-					m++;
-					name = prefix + m;
-				}
-				ISymbol sym = F.$s(name);
-				vars.add(sym);
-				// System.out.println("new variable: " + name);
-				knownVars.add(sym);
-				m++;
-				name = prefix + m;
-			}
-		}
-		return vars;
-	}
+//	public static IAST newVars(String prefix, int n) {
+//		IAST vars = F.List();
+//		synchronized (knownVars) {
+//			int m = knownVars.size();
+//			String name = prefix + m;
+//			for (int i = 0; i < n; i++) {
+//				while (knownVars.contains(name)) {
+//					m++;
+//					name = prefix + m;
+//				}
+//				ISymbol sym = F.$s(name);
+//				vars.add(sym);
+//				// System.out.println("new variable: " + name);
+//				knownVars.add(sym);
+//				m++;
+//				name = prefix + m;
+//			}
+//		}
+//		return vars;
+//	}
 
 	/**
 	 * New variable names. Generate new names for variables,
@@ -1212,9 +1198,9 @@ public class ExprPolynomialRing {
 	 *            name prefix.
 	 * @return new variable names.
 	 */
-	public IAST newVars(String prefix) {
-		return newVars(prefix, nvar);
-	}
+//	public IAST newVars(String prefix) {
+//		return newVars(prefix, nvar);
+//	}
 
 	/**
 	 * New variable names. Generate new names for variables,
@@ -1223,18 +1209,18 @@ public class ExprPolynomialRing {
 	 *            number of variables.
 	 * @return new variable names.
 	 */
-	public static IAST newVars(int n) {
-		return newVars("x", n);
-	}
+//	public static IAST newVars(int n) {
+//		return newVars("x", n);
+//	}
 
 	/**
 	 * New variable names. Generate new names for variables,
 	 * 
 	 * @return new variable names.
 	 */
-	public IAST newVars() {
-		return newVars(nvar);
-	}
+//	public IAST newVars() {
+//		return newVars(nvar);
+//	}
 
 	/**
 	 * Add variable names.

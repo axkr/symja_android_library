@@ -30,7 +30,8 @@ public class Console {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
-		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(), null, false);
+		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
+											// null, false);
 		printUsage();
 		Console console;
 		try {
@@ -74,14 +75,15 @@ public class Console {
 				inputExpression = console.readString(System.out, ">>> ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
-					if ((inputExpression.length() >= 4) && inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
+					if ((inputExpression.length() >= 4)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
-							if (i != list.size()-1){
+							if (i != list.size() - 1) {
 								System.out.print(", ");
 							}
 						}
@@ -178,7 +180,8 @@ public class Console {
 	}
 
 	/**
-	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
+	 * Evaluates the given string-expression and returns the result in
+	 * <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
 	 * 
@@ -188,10 +191,12 @@ public class Console {
 		final StringWriter buf = new StringWriter();
 		try {
 			result = (IExpr) fEvaluator.evaluate(inputExpression);
-			if (result.equals(F.Null)) {
-				return "";
+			if (result != null) {
+				if (result.equals(F.Null)) {
+					return "";
+				}
+				return result.toString();
 			}
-			return result.toString();
 		} catch (final RuntimeException re) {
 			printException(buf, re);
 		} catch (final Exception e) {
@@ -293,8 +298,8 @@ public class Console {
 	}
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in System.mep
-	 * resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup.
+	 * This file replaces the default built-in System.mep resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */
