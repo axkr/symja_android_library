@@ -35,83 +35,77 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
 /**
- * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
- * expression into an IExpr expression
+ * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr expression
  * 
  */
 public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "Algebraics", "Automatic", "Booleans", "ComplexInfinity", "Catalan",
-			"Complexes", "Degree", "EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst",
-			"HoldRest", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "Modulus", "Null",
-			"NumericFunction", "OneIdentity", "Orderless", "Pi", "Primes", "Rationals", "Real", "Reals", "Slot",
-			"SlotSequence", "String", "Symbol", "True" };
+			"Complexes", "Degree", "EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
+			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "Modulus", "Null", "NumericFunction",
+			"OneIdentity", "Orderless", "Pi", "Primes", "Rationals", "Real", "Reals", "Slot", "SlotSequence", "String", "Symbol",
+			"True" };
 
-	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "Alternatives", "Apart", "AppellF1",
-			"Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec",
-			"ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions",
-			"AtomQ", "Attributes", "Begin", "BeginPackage", "BernoulliB", "Binomial", "Blank", "Block", "Boole",
-			"BooleanConvert", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "CatalanNumber",
-			"Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT", "ChessboardDistance", "Chop", "Clear",
-			"ClearAll", "Coefficient", "CoefficientList", "Colon", "Collect", "Complement", "Compile", "Complex",
-			"ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate",
-			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",
-			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement",
-			"Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth",
-			"Derivative", "Det", "DiagonalMatrix", "DigitQ", "Dimensions", "DirectedInfinity", "Direction",
-			"Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop",
-			"Eigenvalues", "Eigenvectors", "Element", "Eliminate", "EllipticE", "EllipticF", "EllipticPi", "End",
-			"EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi", "EuclidianDistance", "EulerE", "EulerPhi",
-			"EvenQ", "Except", "Exp", "Expand", "ExpandAll", "ExpIntegralE", "ExpIntegralEi", "Exponent", "ExtendedGCD",
-			"Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList",
-			"FactorTerms", "Flatten", "Fibonacci", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold",
-			"FoldList", "For", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
-			"FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean", "Get",
-			"Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "Haversine",
-			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm",
-			"HurwitzZeta", "HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im",
-			"Implies", "Increment", "Inner", "Insert", "IntegerExponent", "IntegerPart", "IntegerPartitions",
-			"IntegerQ", "Integrate", "InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse",
-			"InverseErf", "InverseFunction", "InverseHaversine", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join",
-			"KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform",
-			"LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming",
-			"LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral",
-			"LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm",
-			"MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MessageName",
-			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Names", "Nand", "Negative",
-			"Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate",
-			"NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not",
-			"NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order",
-			"OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition",
-			"Pattern", "PatternTest", "Permutations", "Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolyGamma",
-			"PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
-			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power",
-			"PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime", "PrimeQ",
-			"PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal",
-			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated",
-			"RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest",
-			"Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft",
-			"RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select",
-			"Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp",
-			"Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve",
-			"Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
-			"StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom",
-			"Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
+	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "Alternatives", "Apart", "AppellF1", "Append",
+			"AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin",
+			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin",
+			"BeginPackage", "BernoulliB", "Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "Break",
+			"Cancel", "CartesianProduct", "Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT",
+			"ChessboardDistance", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList", "Colon", "Collect", "Complement",
+			"Compile", "Complex", "ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition",
+			"Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",
+			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer",
+			"Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det",
+			"DiagonalMatrix", "DigitQ", "Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence",
+			"DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop", "Eigenvalues", "Eigenvectors", "Element", "Eliminate",
+			"EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
+			"EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exp", "Expand", "ExpandAll", "ExpIntegralE",
+			"ExpIntegralEi", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
+			"FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "Fibonacci", "FindRoot", "First", "Fit",
+			"FixedPoint", "Floor", "Fold", "FoldList", "For", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve",
+			"FromCharacterCode", "FromContinuedFraction", "FullForm", "FullSimplify", "Function", "Gamma", "GCD", "GeometricMean",
+			"Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "Haversine",
+			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
+			"HypergeometricPFQ", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner",
+			"Insert", "IntegerExponent", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
+			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseFunction", "InverseHaversine",
+			"JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount",
+			"LaguerreL", "LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line",
+			"LinearProgramming", "LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand",
+			"LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ",
+			"MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MessageName",
+			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Names", "Nand", "Negative", "Nest",
+			"NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate", "NMaximize", "NMinimize",
+			"NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not", "NRoots", "NSolve", "NullSpace", "NumberQ",
+			"Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft",
+			"PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "PatternTest", "Permutations", "Piecewise", "Plot",
+			"Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM",
+			"PolynomialQ", "PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
+			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime",
+			"PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal",
+			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated", "RepeatedNull",
+			"Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse",
+			"Riffle", "RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule",
+			"RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes",
+			"SetDelayed", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh",
+			"SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2",
+			"StringDrop", "StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
+			"SubtractFrom", "Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
 			"TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
-			"Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce",
-			"TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector",
-			"UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
+			"Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp",
+			"TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset",
+			"UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which",
+			"While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
-	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff",
-			"EvalF", "Int", "Ln", "Trunc", "NthRoot", "Root" };
-	private final static String[] ALIASES_SUBSTITUTES = { "ArcCos", "ArcSin", "ArcTan", "ArcCosh", "ArcSinh", "ArcTanh",
-			"D", "N", "Integrate", "Log", "IntegerPart", "Surd", "Surd" };
+	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff", "EvalF", "Int",
+			"Ln", "Trunc", "NthRoot", "Root" };
+	private final static String[] ALIASES_SUBSTITUTES = { "ArcCos", "ArcSin", "ArcTan", "ArcCosh", "ArcSinh", "ArcTanh", "D", "N",
+			"Integrate", "Log", "IntegerPart", "Surd", "Surd" };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
@@ -124,9 +118,9 @@ public class AST2Expr {
 	private static SuggestTree SUGGEST_TREE = null;
 
 	public static SuggestTree getSuggestTree() {
-		synchronized (SUGGEST_TREE) {
-			if (SUGGEST_TREE == null) {
-				SUGGEST_TREE = new SuggestTree(FUNCTION_STRINGS.length);
+		if (SUGGEST_TREE == null) {
+			SUGGEST_TREE = new SuggestTree(FUNCTION_STRINGS.length);
+			synchronized (SUGGEST_TREE) {
 				for (String str : FUNCTION_STRINGS) {
 					SUGGEST_TREE.put(str, 1);
 				}
@@ -215,8 +209,7 @@ public class AST2Expr {
 	 * @param node
 	 * @return
 	 * @throws ConversionException
-	 * @deprecated use <code>convert(ASTNode node, EvalEngine engine)</code>
-	 *             instead
+	 * @deprecated use <code>convert(ASTNode node, EvalEngine engine)</code> instead
 	 */
 	public IExpr convert(ASTNode node) throws ConversionException {
 		return convert(node, EvalEngine.get());
@@ -329,14 +322,12 @@ public class AST2Expr {
 		if (node instanceof Pattern3Node) {
 			final Pattern3Node p3n = (Pattern3Node) node;
 			SymbolNode sn = p3n.getSymbol();
-			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p3n.getConstraint(), engine), p3n.isDefault(),
-					true);
+			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p3n.getConstraint(), engine), p3n.isDefault(), true);
 		}
 		if (node instanceof Pattern2Node) {
 			final Pattern2Node p2n = (Pattern2Node) node;
 			SymbolNode sn = p2n.getSymbol();
-			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p2n.getConstraint(), engine), p2n.isDefault(),
-					false);
+			return F.$ps((ISymbol) convertNode(sn, engine), convertNode(p2n.getConstraint(), engine), p2n.isDefault(), false);
 		}
 		if (node instanceof PatternNode) {
 			final PatternNode pn = (PatternNode) node;
@@ -345,8 +336,7 @@ public class AST2Expr {
 				return F.$b(convertNode(pn.getConstraint(), engine)); // TODO ,
 																		// p2n.isDefault());
 			}
-			return F.$p((ISymbol) convertNode(pn.getSymbol(), engine), convertNode(pn.getConstraint(), engine),
-					pn.isDefault());
+			return F.$p((ISymbol) convertNode(pn.getSymbol(), engine), convertNode(pn.getConstraint(), engine), pn.isDefault());
 		}
 
 		if (node instanceof IntegerNode) {
@@ -450,8 +440,8 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Convert less or greater relations on input. Example: convert expressions
-	 * like <code>a<b<=c</code> to <code>Less[a,b]&&LessEqual[b,c]</code>.
+	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
 	 * @param compareHead
