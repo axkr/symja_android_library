@@ -25,7 +25,7 @@ public class HashedPatternFunction extends AbstractHashedPatternRules {
 		super(lhsPattern1, lhsPattern2, defaultHashCode);
 		this.function = function;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {

@@ -3,6 +3,7 @@ package org.matheclipse.core.eval;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;

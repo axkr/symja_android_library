@@ -23,6 +23,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 */
 	private static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
 
+		
+
 		final static public int LINEAR = 0;
 		final static public int OTHERS = 2;
 		final static public int POLYNOMIAL = 1;
@@ -113,6 +115,58 @@ public class NSolve extends AbstractFunctionEvaluator {
 			return 0;
 		}
 
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ExprAnalyzer other = (ExprAnalyzer) obj;
+			if (denom == null) {
+				if (other.denom != null)
+					return false;
+			} else if (!denom.equals(other.denom))
+				return false;
+			if (equationType != other.equationType)
+				return false;
+			if (expr == null) {
+				if (other.expr != null)
+					return false;
+			} else if (!expr.equals(other.expr))
+				return false;
+			if (leafCount != other.leafCount)
+				return false;
+			if (numer == null) {
+				if (other.numer != null)
+					return false;
+			} else if (!numer.equals(other.numer))
+				return false;
+			if (row == null) {
+				if (other.row != null)
+					return false;
+			} else if (!row.equals(other.row))
+				return false;
+			if (symbolSet == null) {
+				if (other.symbolSet != null)
+					return false;
+			} else if (!symbolSet.equals(other.symbolSet))
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			if (vars == null) {
+				if (other.vars != null)
+					return false;
+			} else if (!vars.equals(other.vars))
+				return false;
+			return true;
+		}
+		
 		/**
 		 * @return the expr
 		 */
@@ -246,6 +300,22 @@ public class NSolve extends AbstractFunctionEvaluator {
 			return value;
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((denom == null) ? 0 : denom.hashCode());
+			result = prime * result + equationType;
+			result = prime * result + ((expr == null) ? 0 : expr.hashCode());
+			result = prime * result + leafCount;
+			result = prime * result + ((numer == null) ? 0 : numer.hashCode());
+			result = prime * result + ((row == null) ? 0 : row.hashCode());
+			result = prime * result + ((symbolSet == null) ? 0 : symbolSet.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			result = prime * result + ((vars == null) ? 0 : vars.hashCode());
+			return result;
+		}
+		
 		/**
 		 * Return <code>true</code> if the expression is linear.
 		 * 

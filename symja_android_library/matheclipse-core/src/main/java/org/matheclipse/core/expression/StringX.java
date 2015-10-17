@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.matheclipse.core.interfaces.IExpr;
@@ -274,7 +275,7 @@ public class StringX extends ExprImpl implements IStringX {
 	 * @return
 	 */
 	public byte[] getBytes() {
-		return fString.getBytes();
+		return fString.getBytes(StandardCharsets.UTF_8);
 	}
 
 	/**

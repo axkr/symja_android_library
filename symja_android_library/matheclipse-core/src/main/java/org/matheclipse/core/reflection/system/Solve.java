@@ -37,7 +37,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		@Override
 		public boolean apply(IExpr input) {
 			if (input.isDirectedInfinity() || input.isIndeterminate()) {
-				// input is representing a DirectedInfinity() or Indeterminate object
+				// input is representing a DirectedInfinity() or Indeterminate
+				// object
 				wrongExpr = input;
 				return true;
 			}
@@ -95,8 +96,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * If possible simplify the numerator expression. After that analyze the numerator expression, if it has linear, polynomial
-		 * or other form.
+		 * If possible simplify the numerator expression. After that analyze the
+		 * numerator expression, if it has linear, polynomial or other form.
 		 */
 		protected void simplifyAndAnalyze() {
 			IExpr temp = null;
@@ -115,8 +116,9 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which may contain an invertable function argument
-		 * <code>f(x)</code> as subexpression.
+		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which
+		 * may contain an invertable function argument <code>f(x)</code> as
+		 * subexpression.
 		 */
 		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
 			IAST result = null;
@@ -143,8 +145,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which contains an invertable function argument
-		 * <code>f(x)</code>.
+		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which
+		 * contains an invertable function argument <code>f(x)</code>.
 		 */
 		private IExpr rewritePlusWithInverseFunctions(IAST plusAST) {
 			IExpr expr;
@@ -171,7 +173,9 @@ public class Solve extends AbstractFunctionEvaluator {
 						// } else {
 						// IInteger numer = arg2.getNumerator();
 						// IInteger denom = arg2.getDenominator();
-						// return F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus), denom)),
+						// return
+						// F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus),
+						// denom)),
 						// F.Expand(F.Power(function.arg1(), numer))));
 						// }
 					}
@@ -182,13 +186,14 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Check for an applicable inverse function at the given <code>position</code> in the <code>Plus(..., ,...)</code>
-		 * expression.
+		 * Check for an applicable inverse function at the given
+		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
 		 * 
 		 * @param plusAST
 		 *            the <code>Plus(..., ,...)</code> expression
 		 * @param position
-		 * @return <code>null</code> if no inverse function was found, otherwise return the rewritten expression
+		 * @return <code>null</code> if no inverse function was found, otherwise
+		 *         return the rewritten expression
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
@@ -200,8 +205,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Check for an applicable inverse function at the given <code>position</code> in the <code>Plus(..., ,...)</code>
-		 * expression.
+		 * Check for an applicable inverse function at the given
+		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
 		 * 
 		 * @param ast
 		 * @param arg1
@@ -278,6 +283,57 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 
 			return 0;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ExprAnalyzer other = (ExprAnalyzer) obj;
+			if (fDenom == null) {
+				if (other.fDenom != null)
+					return false;
+			} else if (!fDenom.equals(other.fDenom))
+				return false;
+			if (fEquationType != other.fEquationType)
+				return false;
+			if (fExpr == null) {
+				if (other.fExpr != null)
+					return false;
+			} else if (!fExpr.equals(other.fExpr))
+				return false;
+			if (fLeafCount != other.fLeafCount)
+				return false;
+			if (fMatrixRow == null) {
+				if (other.fMatrixRow != null)
+					return false;
+			} else if (!fMatrixRow.equals(other.fMatrixRow))
+				return false;
+			if (fNumer == null) {
+				if (other.fNumer != null)
+					return false;
+			} else if (!fNumer.equals(other.fNumer))
+				return false;
+			if (fPlusAST == null) {
+				if (other.fPlusAST != null)
+					return false;
+			} else if (!fPlusAST.equals(other.fPlusAST))
+				return false;
+			if (fSymbolSet == null) {
+				if (other.fSymbolSet != null)
+					return false;
+			} else if (!fSymbolSet.equals(other.fSymbolSet))
+				return false;
+			if (vars == null) {
+				if (other.vars != null)
+					return false;
+			} else if (!vars.equals(other.vars))
+				return false;
+			return true;
 		}
 
 		/**
@@ -417,6 +473,22 @@ public class Solve extends AbstractFunctionEvaluator {
 			return fPlusAST.getOneIdentity(F.C0);
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((fDenom == null) ? 0 : fDenom.hashCode());
+			result = prime * result + fEquationType;
+			result = prime * result + ((fExpr == null) ? 0 : fExpr.hashCode());
+			result = prime * result + (int) (fLeafCount ^ (fLeafCount >>> 32));
+			result = prime * result + ((fMatrixRow == null) ? 0 : fMatrixRow.hashCode());
+			result = prime * result + ((fNumer == null) ? 0 : fNumer.hashCode());
+			result = prime * result + ((fPlusAST == null) ? 0 : fPlusAST.hashCode());
+			result = prime * result + ((fSymbolSet == null) ? 0 : fSymbolSet.hashCode());
+			result = prime * result + ((vars == null) ? 0 : vars.hashCode());
+			return result;
+		}
+
 		/**
 		 * Return <code>true</code> if the expression is linear.
 		 * 
@@ -474,8 +546,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param vector
 	 * @return <code>null</code> if the solution couldn't be found
 	 */
-	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix, IAST vector)
-			throws NoSolution {
+	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
+			IAST vector) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -601,7 +673,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
 			if (expr.isMember(predicate, true)) {
-				engine.printMessage("Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
+				engine.printMessage(
+						"Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
 				return null;
 			}
 			exprAnalyzer = new ExprAnalyzer(expr, vars);
