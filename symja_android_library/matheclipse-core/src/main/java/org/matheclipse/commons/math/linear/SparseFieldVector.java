@@ -285,7 +285,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		}
 		checkIndex(index);
 		checkIndex(index + n - 1);
-		SparseFieldVector res = new SparseFieldVector(null, n);
+		SparseFieldVector res = new SparseFieldVector(n);
 		int end = index + n;
 		OpenIntToIExpr.Iterator iter = entries.iterator();
 		while (iter.hasNext()) {
@@ -563,7 +563,7 @@ public class SparseFieldVector implements FieldVector, Serializable {
 		} else {
 			final int n = v.getDimension();
 			checkVectorDimensions(n);
-			SparseFieldVector res = new SparseFieldVector(null, getDimension());
+			SparseFieldVector res = new SparseFieldVector(getDimension());
 			for (int i = 0; i < n; i++) {
 				res.setEntry(i, v.getEntry(i).plus(getEntry(i)));
 			}
