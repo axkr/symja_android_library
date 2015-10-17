@@ -21,7 +21,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric floating-point number.
+ * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to
+ * represent a numeric floating-point number.
  */
 public class ApfloatNum extends ExprImpl implements INum {
 
@@ -92,8 +93,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 	@Override
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
 		long precision = fApfloat.precision();
-		return fApfloat.equals(new Apfloat(value.getBigNumerator(), precision).divide(new Apfloat(value.getBigDenominator(),
-				precision)));
+		return fApfloat.equals(new Apfloat(value.getBigNumerator(), precision)
+				.divide(new Apfloat(value.getBigDenominator(), precision)));
 	}
 
 	/** {@inheritDoc} */
@@ -121,7 +122,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		// if (engine.isNumericMode() && engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
+		// if (engine.isNumericMode() && engine.getNumericPrecision() <=
+		// ApfloatNum.DOUBLE_PRECISION) {
 		// return Num.valueOf(fApfloat.doubleValue());
 		// }
 		return null;
@@ -171,8 +173,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 		}
 		if (that instanceof ComplexNum) {
 			ComplexNum cn = (ComplexNum) that;
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).add(
-					ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO)
+					.add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.plus(that);
 	}
@@ -214,7 +216,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApfloatNum) {
 			return fApfloat.equals(((ApfloatNum) expression).fApfloat);
-			// return F.isZero(fDouble - ((ApfloatNum) expression).fDouble, epsilon);
+			// return F.isZero(fDouble - ((ApfloatNum) expression).fDouble,
+			// epsilon);
 		}
 		return false;
 	}
@@ -287,8 +290,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 		}
 		if (that instanceof ComplexNum) {
 			ComplexNum cn = (ComplexNum) that;
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).multiply(
-					ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
+			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO)
+					.multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.times(that);
 	}
@@ -360,7 +363,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isRationalValue(IRational value) {
-		return fApfloat.equals(value.apfloatNumValue(fApfloat.precision()));
+		return fApfloat.equals(value.apfloatNumValue(fApfloat.precision()).fApfloat);
 	}
 
 	/** {@inheritDoc} */
@@ -400,8 +403,9 @@ public class ApfloatNum extends ExprImpl implements INum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {

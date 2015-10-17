@@ -110,18 +110,6 @@ public class ExprPolynomialRing {
 	final boolean numericFunction;
 
 	/**
-	 * The constructor creates a polynomial factory object with the default term order.
-	 * 
-	 * @param cf
-	 *            factory for coefficients of type C.
-	 * @param n
-	 *            number of variables.
-	 */
-	public ExprPolynomialRing(ExprRingFactory cf, int n) {
-		this(cf, null, n, new ExprTermOrder());
-	}
-
-	/**
 	 * The constructor creates a polynomial factory object.
 	 * 
 	 * @param cf
