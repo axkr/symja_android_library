@@ -2,14 +2,15 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -146,7 +147,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbolName
 	 * @return <code>null</code> if the stack doesn't exist
 	 */
-	final public static Stack<IExpr> localStack(final ISymbol symbol) {
+	final public static List<IExpr> localStack(final ISymbol symbol) {
 		return get().getLocalVariableStackMap().get(symbol);
 	}
 
@@ -157,13 +158,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbolName
 	 * @return
 	 */
-	public static Stack<IExpr> localStackCreate(final ISymbol symbol) {
-		Map<ISymbol, Stack<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
-		Stack<IExpr> temp = localVariableStackMap.get(symbol);
+	public static List<IExpr> localStackCreate(final ISymbol symbol) {
+		Map<ISymbol, List<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
+		List<IExpr> temp = localVariableStackMap.get(symbol);
 		if (temp != null) {
 			return temp;
 		}
-		temp = new Stack<IExpr>();
+		temp = new ArrayList<IExpr>();
 		localVariableStackMap.put(symbol, temp);
 		return temp;
 	}
@@ -226,7 +227,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Associate a symbol name with a local variable stack in this thread.
 	 * 
 	 */
-	transient private IdentityHashMap<ISymbol, Stack<IExpr>> fLocalVariableStackMap = null;
+	transient private IdentityHashMap<ISymbol, List<IExpr>> fLocalVariableStackMap = null;
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -1368,9 +1369,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fIterationLimit;
 	}
 
-	final public Map<ISymbol, Stack<IExpr>> getLocalVariableStackMap() {
+	final public Map<ISymbol, List<IExpr>> getLocalVariableStackMap() {
 		if (fLocalVariableStackMap == null) {
-			fLocalVariableStackMap = new IdentityHashMap<ISymbol, Stack<IExpr>>();
+			fLocalVariableStackMap = new IdentityHashMap<ISymbol, List<IExpr>>();
 		}
 		return fLocalVariableStackMap;
 	}

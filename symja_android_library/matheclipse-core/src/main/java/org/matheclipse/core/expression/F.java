@@ -2474,7 +2474,7 @@ public class F {
 	 * @param localValue
 	 *            the value
 	 */
-	public static IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue) {
+	public static IExpr evalBlock(IExpr expr, ISymbol symbol, @Nonnull IExpr localValue) {
 		try {
 			symbol.pushLocalVariable(localValue);
 			return eval(expr);
@@ -3312,7 +3312,7 @@ public class F {
 	 *            the name of the symbol
 	 * @return
 	 */
-	public static ISymbol local(final String symbolName, IExpr value) {
+	public static ISymbol local(final String symbolName,  @Nonnull IExpr value) {
 		// HashMap<String, ISymbol> variableMap = EvalEngine.getVariableMap();
 		// ISymbol temp = variableMap.get(symbolName);
 		// if (temp != null) {
