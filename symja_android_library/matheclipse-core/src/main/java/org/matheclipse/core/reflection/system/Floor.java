@@ -23,7 +23,7 @@ import com.google.common.base.Function;
  */
 public class Floor extends AbstractFunctionEvaluator implements INumeric {
 
-	private final class FloorPlusFunction implements Function<IExpr, IExpr> {
+	private final static class FloorPlusFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isInteger()) {

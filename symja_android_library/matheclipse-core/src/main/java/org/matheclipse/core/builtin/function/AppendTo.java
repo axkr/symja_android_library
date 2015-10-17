@@ -19,7 +19,7 @@ import com.google.common.base.Function;
  */
 public class AppendTo extends AbstractCoreFunctionEvaluator {
 
-	class AppendToFunction implements Function<IExpr, IExpr> {
+	static class AppendToFunction implements Function<IExpr, IExpr> {
 		private final IExpr value;
 
 		public AppendToFunction(final IExpr value) {

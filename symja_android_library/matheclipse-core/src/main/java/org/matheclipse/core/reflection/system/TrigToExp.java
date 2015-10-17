@@ -49,7 +49,7 @@ public class TrigToExp extends AbstractEvaluator {
 	public TrigToExp() {
 	}
 
-	class TrigToExpVisitor extends VisitorExpr {
+	static class TrigToExpVisitor extends VisitorExpr {
 		public TrigToExpVisitor() {
 			super();
 		}

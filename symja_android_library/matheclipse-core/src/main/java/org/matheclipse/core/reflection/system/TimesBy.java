@@ -11,7 +11,7 @@ import com.google.common.base.Function;
  * 
  */
 public class TimesBy extends AddTo {
-	class TimesByFunction implements Function<IExpr, IExpr> {
+	static class TimesByFunction implements Function<IExpr, IExpr> {
 		final IExpr value;
 
 		public TimesByFunction(final IExpr value) {

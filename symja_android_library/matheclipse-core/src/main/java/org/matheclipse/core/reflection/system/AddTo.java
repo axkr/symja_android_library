@@ -15,7 +15,7 @@ import com.google.common.base.Function;
  * 
  */
 public class AddTo extends AbstractFunctionEvaluator {
-	class AddToFunction implements Function<IExpr, IExpr> {
+	static class AddToFunction implements Function<IExpr, IExpr> {
 		final IExpr value;
 
 		public AddToFunction(final IExpr value) {

@@ -27,7 +27,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Check an expression, if it's an allowed object.
 	 *
 	 */
-	private final class IsWrongSolveExpression implements Predicate<IExpr> {
+	private final static class IsWrongSolveExpression implements Predicate<IExpr> {
 		IExpr wrongExpr;
 
 		public IsWrongSolveExpression() {

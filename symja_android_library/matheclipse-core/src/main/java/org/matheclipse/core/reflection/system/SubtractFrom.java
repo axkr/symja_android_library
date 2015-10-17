@@ -11,7 +11,7 @@ import com.google.common.base.Function;
  *
  */
 public class SubtractFrom extends AddTo {
-	class SubtractFromFunction implements Function<IExpr, IExpr> {
+	static class SubtractFromFunction implements Function<IExpr, IExpr> {
 		final IExpr value;
 
 		public SubtractFromFunction(final IExpr value) {

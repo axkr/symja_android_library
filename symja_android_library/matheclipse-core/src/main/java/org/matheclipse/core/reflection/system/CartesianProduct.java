@@ -23,7 +23,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 	 * 
 	 * @author Heinz Kredel
 	 */
-	class CartesianProductIterator implements Iterator<IAST> {
+	static class CartesianProductIterator implements Iterator<IAST> {
 
 		/**
 		 * data structure.

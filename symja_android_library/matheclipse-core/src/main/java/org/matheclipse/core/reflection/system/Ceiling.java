@@ -24,7 +24,7 @@ import com.google.common.base.Function;
  */
 public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 
-	private final class CeilingPlusFunction implements Function<IExpr, IExpr> {
+	private final static class CeilingPlusFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isInteger()) {

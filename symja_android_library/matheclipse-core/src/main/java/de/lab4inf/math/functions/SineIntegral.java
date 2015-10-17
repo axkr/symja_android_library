@@ -56,12 +56,16 @@ public class SineIntegral extends AbstractSiCiIntegrals {
 	/** internal faculty cache. */
 	private static final double[] FACULTY = new double[16];
 	/** Si kernal to use. */
-	private Sinc kernel = null;
-	/** Coefficients from R. Bulirsch, Numerische Mathematik 9, pp 380-385 (1967). */
+	// private Sinc kernel = null;
+	/**
+	 * Coefficients from R. Bulirsch, Numerische Mathematik 9, pp 380-385
+	 * (1967).
+	 */
 	private static final double[] A = { +8.105852955361245, -4.063980844911986, +2.778756381742663, -1.926565091150656,
-			+1.389308771171888, -0.968322236987086, +0.530148847916522, -0.211263780976555, +0.062033679432003, -0.013867445589417,
-			+0.002436221404749, -0.000345469155569, +0.000040420271419, -0.000003972908746, +0.000000332988589, -0.000000024100076,
-			+0.000000001522370, -0.000000000084710, +0.000000000004185, -0.000000000000185, +0.000000000000007 };
+			+1.389308771171888, -0.968322236987086, +0.530148847916522, -0.211263780976555, +0.062033679432003,
+			-0.013867445589417, +0.002436221404749, -0.000345469155569, +0.000040420271419, -0.000003972908746,
+			+0.000000332988589, -0.000000024100076, +0.000000001522370, -0.000000000084710, +0.000000000004185,
+			-0.000000000000185, +0.000000000000007 };
 
 	static {
 		final int n = FACULTY.length;
@@ -76,7 +80,8 @@ public class SineIntegral extends AbstractSiCiIntegrals {
 			c1 += A[i];
 			c2 += abs(A[i]);
 		}
-		// getLogger().info(format("Sine integral check sum A[k]=%.15f; sum |A[k]|=%.15f", c1, c2));
+		// getLogger().info(format("Sine integral check sum A[k]=%.15f; sum
+		// |A[k]|=%.15f", c1, c2));
 	}
 
 	/*

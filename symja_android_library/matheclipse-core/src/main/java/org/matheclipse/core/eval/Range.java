@@ -23,7 +23,7 @@ import com.google.common.collect.Sets;
  * 
  */
 public class Range implements Iterable<IExpr> {
-	class RangeIterator implements Iterator<IExpr> {
+	static class RangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;
 
 		private Range fRange;

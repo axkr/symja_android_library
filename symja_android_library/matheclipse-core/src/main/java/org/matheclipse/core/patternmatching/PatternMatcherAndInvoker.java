@@ -15,8 +15,8 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 public class PatternMatcherAndInvoker extends PatternMatcher {
 	/**
-   * 
-   */
+	* 
+	*/
 	private static final long serialVersionUID = -2448717771259975643L;
 
 	private transient Method fMethod;
@@ -33,7 +33,15 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	}
 
 	/**
-	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
+	 * Void constructor for Externalizable.
+	 */
+	public PatternMatcherAndInvoker() {
+		super(null);
+	}
+
+	/**
+	 * Create a pattern-matching rule which invokes the method name in the given
+	 * instance, if leftHandSide is matching.
 	 * 
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
@@ -49,7 +57,8 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	}
 
 	/**
-	 * Create a pattern-matching rule which invokes the method name in the given instance, if leftHandSide is matching.
+	 * Create a pattern-matching rule which invokes the method name in the given
+	 * instance, if leftHandSide is matching.
 	 * 
 	 * @param leftHandSide
 	 * @param instance

@@ -23,7 +23,7 @@ import com.google.common.base.Function;
  */
 public class Round extends AbstractFunctionEvaluator implements INumeric {
 
-	private final class RoundPlusFunction implements Function<IExpr, IExpr> {
+	private final static class RoundPlusFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isInteger()) {

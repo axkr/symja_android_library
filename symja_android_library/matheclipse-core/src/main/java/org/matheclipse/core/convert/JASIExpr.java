@@ -2,6 +2,7 @@ package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -29,10 +30,11 @@ import edu.jas.poly.TermOrder;
 import edu.jas.structure.RingFactory;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse <code>IExpr</code> objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
+ * and to MathEclipse <code>IExpr</code> objects
  * 
- * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers on input in method
- * <code>expr2IExprJAS(IExpr)</code>
+ * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow
+ * complex numbers on input in method <code>expr2IExprJAS(IExpr)</code>
  * 
  */
 public class JASIExpr {
@@ -48,7 +50,8 @@ public class JASIExpr {
 	private final List<? extends IExpr> fVariables;
 
 	/**
-	 * "numeric function" flag to allow numeric functions on input in method <code>expr2IExprJAS(IExpr)</code>
+	 * "numeric function" flag to allow numeric functions on input in method
+	 * <code>expr2IExprJAS(IExpr)</code>
 	 * 
 	 * @see {@link #expr2IExprJAS(IExpr)}
 	 */
@@ -113,7 +116,8 @@ public class JASIExpr {
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	public IExpr complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly) throws ArithmeticException, ClassCastException {
+	public IExpr complexPoly2Expr(final GenPolynomial<Complex<BigRational>> poly)
+			throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
@@ -146,10 +150,14 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only symbolic numbers
-	 * are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into the polynomial structure)
+	 * Convert the given expression into a
+	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
+	 * symbolic numbers are converted (i.e. no <code>INum</code> or
+	 * <code>IComplexNum</code> values are converted into the polynomial
+	 * structure)
 	 * 
-	 * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers on input in method
+	 * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to
+	 * allow complex numbers on input in method
 	 * <code>expr2IExprJAS(IExpr)</code>
 	 * 
 	 * @param exprPoly
@@ -169,9 +177,9 @@ public class JASIExpr {
 	public GenPolynomial<IExpr> expr2IExprJAS(final org.matheclipse.core.polynomials.ExprPolynomial exprPoly) {
 		GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(fPolyFactory);// fPolyFactory.getZERO();
 		SortedMap<org.matheclipse.core.polynomials.ExpVectorLong, IExpr> monoms = exprPoly.getMap();
-		for (ExpVectorLong expArray : monoms.keySet()) {
-			long[] arr = expArray.getVal();
-			result.doPutToMap(ExpVector.create(arr),monoms.get(expArray));
+		for (Entry<ExpVectorLong, IExpr> entry : monoms.entrySet()) {
+			long[] arr = entry.getKey().getVal();
+			result.doPutToMap(ExpVector.create(arr), monoms.get(entry.getKey()));
 		}
 		return result;
 	}
@@ -210,7 +218,8 @@ public class JASIExpr {
 							//
 						}
 						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+							throw new ArithmeticException(
+									"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.getONE().multiply(e);
@@ -255,7 +264,8 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
+	 * polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -268,7 +278,8 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
+	 * polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -311,12 +322,14 @@ public class JASIExpr {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication with the gcd
-	 * of the numerators and the lcm of the denominators of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with
+	 * BigInteger coefficients by multiplication with the gcd of the numerators
+	 * and the lcm of the denominators of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
-	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
+	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial
+	 *         with BigInteger coefficients.
 	 */
 	public Object[] factorTerms(GenPolynomial<BigRational> A) {
 		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
@@ -330,8 +343,9 @@ public class JASIExpr {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication with the lcm
-	 * of the numerators of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with
+	 * BigInteger coefficients by multiplication with the lcm of the numerators
+	 * of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
@@ -349,8 +363,8 @@ public class JASIExpr {
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	public IExpr integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly) throws ArithmeticException,
-			ClassCastException {
+	public IExpr integerPoly2Expr(final GenPolynomial<edu.jas.arith.BigInteger> poly)
+			throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
 			return F.C0;
 		}

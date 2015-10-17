@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class Sow extends AbstractCoreFunctionEvaluator {
 
-	public final double DEFAULT_CHOP_DELTA = 10E-10;
+	public final static double DEFAULT_CHOP_DELTA = 10E-10;
 
 	public Sow() {
 	}

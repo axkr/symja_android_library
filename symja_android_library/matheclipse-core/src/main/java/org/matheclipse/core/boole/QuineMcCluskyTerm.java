@@ -54,16 +54,18 @@ class QuineMcCluskyTerm {
 	}
 
 	public String toString() {
-		String result = "{";
+		StringBuilder result = new StringBuilder();
+		result.append("{");
 		for (int i = 0; i < varVals.length; i++) {
-			if (varVals[i] == NIL)
-				result += "X";
-			else
-				result += varVals[i];
-			result += " ";
+			if (varVals[i] == NIL) {
+				result.append("X");
+			} else {
+				result.append(varVals[i]);
+			}
+			result.append(" ");
 		}
-		result += "}";
-		return result;
+		result.append("}");
+		return result.toString();
 	}
 
 	public IExpr toExpr(IAST variables) throws BooleanFunctionConversionException {
@@ -199,7 +201,8 @@ class QuineMcCluskyTerm {
 		return terms;
 	}
 
-	public static ArrayList<QuineMcCluskyTerm> convertToTerms(IAST orAST, final IAST vars) throws BooleanFunctionConversionException {
+	public static ArrayList<QuineMcCluskyTerm> convertToTerms(IAST orAST, final IAST vars)
+			throws BooleanFunctionConversionException {
 		ArrayList<QuineMcCluskyTerm> terms = new ArrayList<QuineMcCluskyTerm>();
 		IExpr temp;
 		IExpr a;

@@ -27,8 +27,6 @@ public class Scanner {
 	 */
 	protected String fInputString;
 
-	protected char fLastChar;
-
 	/**
 	 * Recursion depth for brackets.
 	 */
@@ -241,7 +239,6 @@ public class Scanner {
 	}
 
 	private void getNextChar() {
-		fLastChar = fCurrentChar;
 		fCurrentChar = fInputString.charAt(fCurrentPosition++);
 		if (fCurrentChar == '\\') {
 			// search next non-whitespace character

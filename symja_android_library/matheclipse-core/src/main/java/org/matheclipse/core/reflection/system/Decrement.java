@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -9,7 +8,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Function;
 
 public class Decrement extends AbstractArg1 {
-	class DecrementFunction implements Function<IExpr, IExpr> {
+	static class DecrementFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(final IExpr assignedValue) {
 			return F.eval(F.Plus(assignedValue, F.CN1));

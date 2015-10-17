@@ -26,7 +26,7 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 		super();
 	}
 
-	class BooleanConvertVisitor extends VisitorExpr {
+	static class BooleanConvertVisitor extends VisitorExpr {
 		public BooleanConvertVisitor() {
 			super();
 		}

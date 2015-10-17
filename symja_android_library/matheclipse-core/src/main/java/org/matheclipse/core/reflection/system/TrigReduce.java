@@ -39,7 +39,7 @@ public class TrigReduce extends AbstractEvaluator {
 	public TrigReduce() {
 	}
 
-	class TrigReduceVisitor extends VisitorExpr {
+	static class TrigReduceVisitor extends VisitorExpr {
 		public TrigReduceVisitor() {
 			super();
 		}

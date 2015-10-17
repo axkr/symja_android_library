@@ -11,7 +11,7 @@ import com.google.common.base.Function;
  * 
  */
 public class DivideBy extends AddTo {
-	class DivideByFunction implements Function<IExpr, IExpr> {
+	static class DivideByFunction implements Function<IExpr, IExpr> {
 		final IExpr value;
 
 		public DivideByFunction(final IExpr value) {

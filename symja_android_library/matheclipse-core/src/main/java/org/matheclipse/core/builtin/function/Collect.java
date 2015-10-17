@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -66,10 +67,9 @@ public class Collect extends AbstractFunctionEvaluator {
 				if (rest.size() > 1) {
 					result.add(collectSingleVariable(rest, list.get(pos), list, pos + 1, head));
 				}
-				for (IExpr key : map.keySet()) {
-					IAST value = map.get(key);
-					IExpr temp = collectSingleVariable(value.getOneIdentity(F.C0), list.get(pos), list, pos + 1, head);
-					result.add(F.Times(key, temp));
+				for (Entry<IExpr, IAST> entry : map.entrySet()) {
+					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0), list.get(pos), list, pos + 1, head);
+					result.add(F.Times(entry.getKey(), temp)); 
 				}
 				return result;
 			}

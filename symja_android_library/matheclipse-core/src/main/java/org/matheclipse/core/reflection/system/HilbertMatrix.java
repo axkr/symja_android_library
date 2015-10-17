@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IFraction;
  */
 public class HilbertMatrix extends AbstractFunctionEvaluator {
 
-	public class HilbertFunctionDiagonal implements IIndexFunction<IExpr> {
+	public static class HilbertFunctionDiagonal implements IIndexFunction<IExpr> {
 
 		public HilbertFunctionDiagonal() {
 		}

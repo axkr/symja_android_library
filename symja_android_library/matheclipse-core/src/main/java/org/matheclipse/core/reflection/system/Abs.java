@@ -29,7 +29,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		return RULES;
 	}
 
-	private final class AbsTimesFunction implements Function<IExpr, IExpr> {
+	private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isNumber()) {

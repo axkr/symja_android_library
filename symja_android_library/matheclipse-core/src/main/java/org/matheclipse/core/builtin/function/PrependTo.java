@@ -12,7 +12,7 @@ import com.google.common.base.Function;
 
 public class PrependTo extends AbstractCoreFunctionEvaluator {
 
-	class PrependToFunction implements Function<IExpr, IExpr> {
+	static class PrependToFunction implements Function<IExpr, IExpr> {
 		private final IExpr value;
 
 		public PrependToFunction(final IExpr value) {

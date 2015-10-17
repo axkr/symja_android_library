@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -7,7 +8,12 @@ import java.util.Set;
 
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Context {
+public class Context implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8850219140638371052L;
+
 	public final static Context SYSTEM = new Context("System", F.PREDEFINED_SYMBOLS_MAP);
 
 	final String contextName;

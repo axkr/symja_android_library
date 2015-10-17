@@ -55,12 +55,12 @@ public class QuineMcCluskyFormula {
 	}
 
 	public String toString() {
-		String result = "";
-		result += termList.size() + " terms, " + termList.get(0).getNumVars() + " variables\n";
+		StringBuilder result = new StringBuilder();
+		result.append(termList.size() + " terms, " + termList.get(0).getNumVars() + " variables\n");
 		for (int i = 0; i < termList.size(); i++) {
-			result += termList.get(i) + "\n";
+			result.append(termList.get(i) + "\n");
 		}
-		return result;
+		return result.toString();
 	}
 
 	public IExpr toExpr() throws BooleanFunctionConversionException {

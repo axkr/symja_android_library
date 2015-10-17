@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Function;
 
 public class Increment extends Decrement {
-	class IncrementFunction implements Function<IExpr, IExpr> {
+	static class IncrementFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(final IExpr assignedValue) {
 			return F.eval(F.Plus(assignedValue, F.C1));
