@@ -98,6 +98,11 @@ public class Get extends AbstractFunctionEvaluator {
 						String contextName = Validate.checkContextName(ast, 1);
 						packageContext = new Context(contextName);
 						ISymbol endSymbol = F.EndPackage;
+						for (int j = 2; j < ast.size(); j++) {
+							FileReader reader = new FileReader(ast.get(j).toString());
+							Get.loadPackage(engine, reader);
+							reader.close();
+						}
 						i = addContextToPath(new ContextPath(packageContext), node, i, engine, endSymbol);
 						continue;
 					} else if (head.equals(F.Begin) && ast.size() >= 2) {
