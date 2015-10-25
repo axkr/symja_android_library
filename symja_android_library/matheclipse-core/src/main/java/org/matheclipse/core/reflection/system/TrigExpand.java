@@ -53,21 +53,21 @@ public class TrigExpand extends AbstractEvaluator {
 				} else if (result.getAt(1).isTimes()) {
 					IAST timesAST = (IAST) result.getAt(1);
 					if (timesAST.arg1().isInteger()) {
-						IInteger iNum = (IInteger) timesAST.arg1();
-						if (iNum.isGreaterThan(C0)) {
-							IAST rest = F.Times();
-							rest.addAll(timesAST, 2, timesAST.size());
+						IInteger n = (IInteger) timesAST.arg1();
+						if (n.isGreaterThan(C0)) {
+							IExpr theta = timesAST.removeAtClone(1).getOneIdentity(F.C1);
 							if (result.isSin()) {
+								// Sin(n*theta)
 								return Sum(
-										Times(Times(
-												Times(Power(CN1, Times(Plus(F.$s("i"), Times(CN1, C1)), C1D2)),
-														Binomial(iNum, $s("i"))), Power(Cos(rest), Plus(iNum, Times(CN1, $s("i"))))),
-												Power(Sin(rest), $s("i"))), List($s("i"), C1, iNum, C2));
+										Times(Times(Times(Power(CN1, Times(Plus(F.$s("i"), CN1), C1D2)), Binomial(n, $s("i"))),
+												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))), Power(Sin(theta), $s("i"))),
+										List($s("i"), C1, n, C2));
 							} else if (result.isCos()) {
+								// Cos(n*theta)
 								return Sum(
-										Times(Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(iNum, $s("i"))),
-												Power(Cos(rest), Plus(iNum, Times(CN1, $s("i"))))), Power(Sin(rest), $s("i"))),
-										List($s("i"), C0, iNum, C2));
+										Times(Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(n, $s("i"))),
+												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))), Power(Sin(theta), $s("i"))),
+										List($s("i"), C0, n, C2));
 							}
 						}
 					}
