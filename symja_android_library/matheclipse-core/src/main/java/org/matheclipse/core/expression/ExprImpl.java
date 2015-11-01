@@ -528,7 +528,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isIntegerResult() {
-		if (AbstractAssumptions.assumeInteger(this)) {
+		if (F.True.equals(AbstractAssumptions.assumeInteger(this))) {
 			return true;
 		}
 		return this instanceof IInteger;
@@ -537,7 +537,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isRationalResult() {
-		if (AbstractAssumptions.assumeRational(this)) {
+		if (F.True.equals(AbstractAssumptions.assumeRational(this))) {
 			return true;
 		}
 		return this instanceof IRational;
@@ -546,7 +546,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isRealResult() {
-		if (AbstractAssumptions.assumeReal(this)) {
+		if (F.True.equals(AbstractAssumptions.assumeReal(this))) {
 			return true;
 		}
 		return this instanceof ISignedNumber;

@@ -80,7 +80,7 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 				
 			}
 			
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period Pi
 				return Cot(parts[0]);
 			}

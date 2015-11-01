@@ -23,55 +23,63 @@ public class Element extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		final IExpr arg2 = F.eval(ast.arg2());
+		ISymbol truthValue;
 		if (arg2.isSymbol()) {
 			final IExpr arg1 = F.eval(ast.arg1());
 			if (arg1.isAST(F.Alternatives)) {
 				IAST list = (IAST) arg1;
 				for (int i = 1; i < list.size(); i++) {
-					if (!assumeDomain(arg1, (ISymbol) arg2)) {
-						return null;
+					truthValue = assumeDomain(arg1, (ISymbol) arg2);
+					if (truthValue != null) {
+						return truthValue;
 					}
 				}
 				return F.True;
-			} else if (assumeDomain(arg1, (ISymbol) arg2)) {
-				return F.True;
+			} else {
+				return assumeDomain(arg1, (ISymbol) arg2);
 			}
-			return null;
 		}
 		return null;
 	}
 
-	private boolean assumeDomain(final IExpr arg1, final ISymbol arg2) {
+	private ISymbol assumeDomain(final IExpr arg1, final ISymbol arg2) {
 		if (arg2.equals(F.Algebraics)) {
-			if (AbstractAssumptions.assumeAlgebraic(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Booleans)) {
-			if (AbstractAssumptions.assumeBoolean(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeBoolean(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Complexes)) {
-			if (AbstractAssumptions.assumeComplex(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeComplex(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Integers)) {
-			if (AbstractAssumptions.assumeInteger(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeInteger(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Primes)) {
-			if (AbstractAssumptions.assumePrime(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumePrime(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Rationals)) {
-			if (AbstractAssumptions.assumeRational(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeRational(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		} else if (arg2.equals(F.Reals)) {
-			if (AbstractAssumptions.assumeReal(arg1)) {
-				return true;
+			ISymbol truthValue = AbstractAssumptions.assumeReal(arg1);
+			if (truthValue != null) {
+				return truthValue;
 			}
 		}
-		return false;
+		return null;
 	}
 
 }

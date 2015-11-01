@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -133,169 +134,192 @@ public class AbstractAssumptions implements IAssumptions {
 	 * @param expr
 	 * @return
 	 */
-	public static boolean assumeAlgebraic(final IExpr expr) {
+	public static ISymbol assumeAlgebraic(final IExpr expr) {
 		if (expr.isRational()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return true;
+			return F.True;
+		}
+		if (expr.equals(F.CComplexInfinity)) {
+			return F.False;
 		}
 		if (expr.isSymbol()) {
-			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
-				return true;
+			if (expr.equals(F.Degree)) {
+				return F.False;
 			}
-		} 
+			if (expr.equals(F.Pi)) {
+				return F.False;
+			}
+			if (expr.equals(F.E)) {
+				return F.False;
+			}
+
+			// if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+			// return F.True;
+			// }
+		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isAlgebraic(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isRational(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isInteger(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumeBoolean(final IExpr expr) {
+	public static ISymbol assumeBoolean(final IExpr expr) {
 		if (expr.isTrue() || expr.isFalse()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return false;
+			return F.False;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isBoolean(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumeComplex(final IExpr expr) {
+	public static ISymbol assumeComplex(final IExpr expr) {
 		if (expr.isNumber()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isSymbol()) {
 			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
-				return true;
+				return F.True;
 			}
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isComplex(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isRational(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isInteger(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isReal(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isAlgebraic(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumeInteger(final IExpr expr) {
+	public static ISymbol assumeInteger(final IExpr expr) {
 		if (expr.isInteger()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return false;
+			return F.False;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isInteger(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumePrime(final IExpr expr) {
+	public static ISymbol assumePrime(final IExpr expr) {
 		if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return false;
+			return F.False;
 		}
+		// if (expr.isAST()) {
+		// IAST ast = (IAST) expr;
+		// if (ast.isPower() && ast.arg1().isRational() && ast.arg2().isRational()) {
+		// IExpr arg2 = ast.arg2();
+		// if (arg2.equals(F.C1D2)) {
+		// return F.False;
+		// }
+		// }
+		// }
+
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumeRational(final IExpr expr) {
+	public static ISymbol assumeRational(final IExpr expr) {
 		if (expr.isRational()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return false;
+			return F.False;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isRational(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isInteger(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	public static boolean assumeReal(final IExpr expr) {
+	public static ISymbol assumeReal(final IExpr expr) {
 		if (expr.isSignedNumber()) {
-			return true;
+			return F.True;
 		}
 		if (expr.isNumber()) {
-			return false;
+			return F.False;
 		}
 		if (expr.isSymbol()) {
 			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
-				return true;
+				return F.True;
 			}
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isReal(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isInteger(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isPrime(expr)) {
-				return true;
+				return F.True;
 			}
 			if (assumptions.isRational(expr)) {
-				return true;
+				return F.True;
 			}
 		}
-		return false;
+		return null;
 	}
 }

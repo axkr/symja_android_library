@@ -78,7 +78,7 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 				}
 			}
 			
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period Pi
 				return F.Tan(parts[0]);
 			}

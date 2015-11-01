@@ -86,7 +86,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 				}
 			}
 			
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period n*Pi
 				return Times(Power(CN1, parts[1]), Sec(parts[0]));
 			}

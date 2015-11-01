@@ -89,7 +89,7 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 				}
 			}
 
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period n*Pi
 				return Times(Power(CN1, parts[1]), Csc(parts[0]));
 			}

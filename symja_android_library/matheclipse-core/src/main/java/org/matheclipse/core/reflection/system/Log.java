@@ -141,7 +141,7 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 					return temp;
 				}
 			}
-			if (AbstractAssumptions.assumePositive(arg1) && AbstractAssumptions.assumeReal(arg2)) {
+			if (AbstractAssumptions.assumePositive(arg1) && F.True.equals(AbstractAssumptions.assumeReal(arg2))) {
 				// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is Real
 				return temp;
 			}

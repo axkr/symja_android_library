@@ -55,7 +55,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 				return signedNumber.round();
 			}
 
-			if (AbstractAssumptions.assumeInteger(arg1)) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(arg1))) {
 				return arg1;
 			}
 

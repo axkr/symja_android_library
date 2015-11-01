@@ -428,7 +428,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	}
 
 	@Override
-	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode) {
+	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			boolean packageMode) {
 		if (!packageMode) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
 				throw new RuleCreationError(leftHandSide);

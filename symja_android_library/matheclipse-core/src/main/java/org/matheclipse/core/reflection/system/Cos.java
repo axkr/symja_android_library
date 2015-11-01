@@ -92,7 +92,7 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 					return Sin(Subtract(Divide(Pi, C2), arg1));
 				}
 			}
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period n*Pi
 				return Times(Power(CN1, parts[1]), Cos(parts[0]));
 			}

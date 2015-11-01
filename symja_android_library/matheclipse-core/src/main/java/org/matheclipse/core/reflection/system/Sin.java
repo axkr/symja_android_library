@@ -87,7 +87,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 				}
 			}
 
-			if (AbstractAssumptions.assumeInteger(parts[1])) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
 				// period n*Pi
 				return Times(Power(CN1, parts[1]), Sin(parts[0]));
 			}
