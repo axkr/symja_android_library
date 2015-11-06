@@ -369,7 +369,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E>
         return set;
       }
     } else if (elements instanceof EnumSet) {
-      return copyOfEnumSet((EnumSet) elements);
+      return (ImmutableSet<E>)copyOfEnumSet((EnumSet) elements);
     }
     Object[] array = elements.toArray();
     return construct(array.length, array);
