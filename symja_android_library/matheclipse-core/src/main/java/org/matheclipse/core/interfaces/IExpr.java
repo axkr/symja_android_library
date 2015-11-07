@@ -3,6 +3,8 @@ package org.matheclipse.core.interfaces;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -12,9 +14,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 
 import edu.jas.structure.GcdRingElem;
 

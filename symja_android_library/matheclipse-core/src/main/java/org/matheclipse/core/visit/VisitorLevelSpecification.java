@@ -1,5 +1,7 @@
 package org.matheclipse.core.visit;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -15,7 +17,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.google.common.base.Function;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).

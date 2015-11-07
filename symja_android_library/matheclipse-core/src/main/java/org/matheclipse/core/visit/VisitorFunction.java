@@ -1,17 +1,17 @@
 package org.matheclipse.core.visit;
  
+import java.util.function.Function;
+
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Function;
 
 public class VisitorFunction<T> extends AbstractVisitor<T> {
 	int fHeadOffset;

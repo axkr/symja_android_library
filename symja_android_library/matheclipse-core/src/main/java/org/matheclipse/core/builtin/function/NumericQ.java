@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -10,8 +12,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
-
-import com.google.common.base.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is a numeric function or value.
@@ -28,7 +28,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	}
 
 	@Override
-	public boolean apply(IExpr arg) {
+	public boolean test(IExpr arg) {
 		return arg.isNumericFunction();
 	}
 
@@ -39,7 +39,7 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = F.eval(ast.arg1());
-		return F.bool(apply(arg1));
+		return F.bool(test(arg1));
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -14,10 +16,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
-import com.google.common.base.Predicate;
-
 /**
- * Position(list, pattern) - return the positions where the pattern occurs in list.
+ * Position(list, pattern) - return the positions where the pattern occurs in
+ * list.
  *
  */
 public class Position extends AbstractCoreFunctionEvaluator {
@@ -59,8 +60,10 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-	 * Add the positions to the <code>resultCollection</code> where the matching expressions appear in <code>list</code>. The
-	 * <code>positionConverter</code> converts the <code>int</code> position into an object for the <code>resultCollection</code>.
+	 * Add the positions to the <code>resultCollection</code> where the matching
+	 * expressions appear in <code>list</code>. The
+	 * <code>positionConverter</code> converts the <code>int</code> position
+	 * into an object for the <code>resultCollection</code>.
 	 * 
 	 * @param list
 	 * @param prototypeList
@@ -70,14 +73,15 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	 * @param positionConverter
 	 * @param headOffset
 	 */
-	public static IAST position(final IAST list, final IAST prototypeList, final IAST resultCollection, final LevelSpec level,
-			final Predicate<? super IExpr> matcher, final IPositionConverter<? extends IExpr> positionConverter, int headOffset) {
+	public static IAST position(final IAST list, final IAST prototypeList, final IAST resultCollection,
+			final LevelSpec level, final Predicate<? super IExpr> matcher,
+			final IPositionConverter<? extends IExpr> positionConverter, int headOffset) {
 		int minDepth = 0;
 		level.incCurrentLevel();
 		IAST clone = null;
 		final int size = list.size();
 		for (int i = headOffset; i < size; i++) {
-			if (matcher.apply(list.get(i))) {
+			if (matcher.test(list.get(i))) {
 				if (level.isInRange()) {
 					clone = prototypeList.clone();
 					IExpr IExpr = positionConverter.toObject(i);

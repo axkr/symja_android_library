@@ -4,7 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * Operator /=

@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 public class Predicates {
 	private Predicates() {
@@ -28,7 +28,7 @@ public class Predicates {
 			this.target = checkNotNull(target);
 		}
 
-		public boolean apply(IExpr t) {
+		public boolean test(IExpr t) {
 			for (IExpr expr : target) {
 				if (expr.equals(t)) {
 					return true;
@@ -90,7 +90,7 @@ public class Predicates {
 		 * <code>arg</code>.
 		 * 
 		 */
-		public boolean apply(final IExpr arg) {
+		public boolean test(final IExpr arg) {
 			final IAST ast = fAST.clone();
 			ast.add(arg);
 			return fEngine.evalTrue(ast);
@@ -165,7 +165,7 @@ public class Predicates {
 	public static Predicate<IExpr> isFree(final IExpr expr) {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return input.isFree(expr, true);
 			}
 		};
@@ -179,7 +179,7 @@ public class Predicates {
 	public static Predicate<IExpr> isPattern() {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return (input instanceof IPattern);
 			}
 		};
@@ -193,7 +193,7 @@ public class Predicates {
 	public static Predicate<IExpr> isNumber() {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return input.isNumber();
 			}
 		};
@@ -207,7 +207,7 @@ public class Predicates {
 	public static Predicate<IExpr> isNumeric() {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return input.isNumeric();
 			}
 		};
@@ -221,7 +221,7 @@ public class Predicates {
 	public static Predicate<IExpr> isSignedNumber() {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return input.isSignedNumber();
 			}
 		};
@@ -235,7 +235,7 @@ public class Predicates {
 	public static Predicate<IExpr> isAST(final ISymbol[] heads) {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				for (int i = 0; i < heads.length; i++) {
 					if (input.isAST(heads[i])) {
 						return true;

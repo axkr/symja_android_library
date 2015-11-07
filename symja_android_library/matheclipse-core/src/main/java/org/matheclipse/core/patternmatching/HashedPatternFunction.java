@@ -66,7 +66,7 @@ public class HashedPatternFunction extends AbstractHashedPatternRules {
 	public IExpr evalDownRule(IExpr e1, IExpr e2) {
 		PatternMatcher pm1 = new PatternMatcher(fLHSPattern1);
 		PatternMatcher pm2 = new PatternMatcher(fLHSPattern2);
-		if (pm1.apply(e1) && pm2.apply(e2)) {
+		if (pm1.test(e1) && pm2.test(e2)) {
 			IExpr v1 = pm1.getPatternValue0();
 			IExpr v2 = pm2.getPatternValue0();
 			return function.apply(v1, v2);

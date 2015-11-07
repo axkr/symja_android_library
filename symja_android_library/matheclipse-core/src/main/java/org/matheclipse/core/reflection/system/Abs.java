@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute value</a>

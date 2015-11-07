@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * A level specification visitor for levels in abstract syntax trees (AST), which removes elements from a (cloned) AST in the

@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * 

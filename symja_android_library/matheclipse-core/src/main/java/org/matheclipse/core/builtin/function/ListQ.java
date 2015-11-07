@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 /**
  * Predicate function
@@ -28,7 +28,7 @@ public class ListQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		final IExpr temp = F.eval(ast.arg1());
-		return F.bool(apply(temp));
+		return F.bool(test(temp));
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class ListQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	}
 
 	@Override
-	public boolean apply(final IExpr expr) {
+	public boolean test(final IExpr expr) {
 		return expr.isList();
 	}
 }

@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 public class Replace extends AbstractEvaluator {
 

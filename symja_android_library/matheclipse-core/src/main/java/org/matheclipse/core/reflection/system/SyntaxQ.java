@@ -13,7 +13,7 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is a string which has the
@@ -32,7 +32,7 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 		if (!(ast.arg1() instanceof IStringX)) {
 			return F.False;
 		}
-		return F.bool(apply(ast.arg1().toString()));
+		return F.bool(test(ast.arg1().toString()));
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 	}
 
 	@Override
-	public boolean apply(final String str) {
+	public boolean test(final String str) {
 		try {
 			final Parser fParser = new Parser();
 			final ASTNode parsedAST = fParser.parse(str);

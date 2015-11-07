@@ -22,7 +22,7 @@ public class Switch extends AbstractCoreFunctionEvaluator {
 		IPatternMatcher matcher;
 		for (int i = 2; i < ast.size(); i += 2) {
 			matcher = engine.evalPatternMatcher(ast.get(i));
-			if (matcher.apply(arg1) && (i + 1 < ast.size())) {
+			if (matcher.test(arg1) && (i + 1 < ast.size())) {
 				return engine.evaluate(ast.get(i + 1));
 			}
 		}

@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 /**
  * Predicate function
@@ -33,7 +33,7 @@ public class EvenQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 			// thread over list
 			return ((IAST) temp).mapAt(F.EvenQ(null), 1);
 		}
-		return F.bool(apply(temp));
+		return F.bool(test(temp));
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class EvenQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	}
 
 	@Override
-	public boolean apply(final IExpr expr) {
+	public boolean test(final IExpr expr) {
 		return (expr.isInteger()) && ((IInteger) expr).isEven();
 	}
 }

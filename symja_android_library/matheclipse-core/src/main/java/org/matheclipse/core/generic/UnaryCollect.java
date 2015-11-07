@@ -4,7 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * Collect the arguments in a new constructed internal AST.

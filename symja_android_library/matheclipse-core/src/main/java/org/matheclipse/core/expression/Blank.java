@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -20,10 +21,9 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-import com.google.common.base.Predicate;
-
 /**
- * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>&quot;)
+ * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e.
+ * &quot;<code>_</code>&quot;)
  * 
  */
 public class Blank extends ExprImpl implements IPattern {
@@ -123,8 +123,8 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
-	 * <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
+	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternObject
 	 * @param pm1
@@ -221,7 +221,7 @@ public class Blank extends ExprImpl implements IPattern {
 	 */
 	public boolean isCase(IExpr that) {
 		final IPatternMatcher matcher = new PatternMatcher(this);
-		if (matcher.apply(that)) {
+		if (matcher.test(that)) {
 			return true;
 		}
 		return false;
@@ -257,7 +257,7 @@ public class Blank extends ExprImpl implements IPattern {
 			traceMode = engine.isTraceMode();
 			engine.setTraceMode(false);
 			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			if (matcher.apply(expr)) {
+			if (matcher.test(expr)) {
 				patternMap.setValue(this, expr);
 				return true;
 			}

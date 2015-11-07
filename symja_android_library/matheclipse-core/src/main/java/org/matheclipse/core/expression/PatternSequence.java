@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
@@ -17,8 +18,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-
-import com.google.common.base.Predicate;
 
 /**
  * A concrete pattern sequence implementation (i.e. x__)
@@ -36,7 +35,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 *            TODO
 	 * 
 	 */
-	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
+	public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
+			boolean zeroArgsAllowed) {
 		PatternSequence p = new PatternSequence();
 		p.fSymbol = symbol;
 		p.fCondition = check;
@@ -108,8 +108,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
-	 * <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
+	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr2
 	 * @param pm1
@@ -289,8 +289,9 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof PatternSequence) {
@@ -349,7 +350,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 				}
 				engine.setTraceMode(false);
 
-				if (matcher.apply(sequence.get(i))) {
+				if (matcher.test(sequence.get(i))) {
 					continue;
 				}
 				return false;
@@ -367,7 +368,8 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	@Override
 	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return null;
-	} 
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -425,7 +427,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 */
 	public boolean isCase(IExpr that) {
 		final IPatternMatcher matcher = new PatternMatcher(this);
-		if (matcher.apply(that)) {
+		if (matcher.test(that)) {
 			return true;
 		}
 		return false;

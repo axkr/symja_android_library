@@ -1,5 +1,7 @@
 package org.matheclipse.core.visit;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -12,8 +14,6 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Function;
 
 /**
  * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non <code>null</code>

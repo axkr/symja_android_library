@@ -8,7 +8,7 @@ import org.matheclipse.core.generic.IsLEOrdered;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 	/**
@@ -22,11 +22,11 @@ public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAS
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		return F.bool(apply(((IAST) ast.arg1())));
+		return F.bool(test(((IAST) ast.arg1())));
 	}
 
 	@Override
-	public boolean apply(IAST ast) {
+	public boolean test(IAST ast) {
 		return ast.args().compareAdjacent(new IsLEOrdered<IExpr>());
 	}
 

@@ -2,15 +2,14 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
@@ -39,8 +38,6 @@ import org.matheclipse.core.reflection.system.Times;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
-
-import com.google.common.base.Predicate;
 
 /**
  * The main evaluation algorithms for the .Symja computer algebra system

@@ -12,7 +12,6 @@ import org.matheclipse.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -429,7 +428,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	@Override
-	public boolean apply(final IExpr leftHandSide) {
+	public boolean test(final IExpr leftHandSide) {
 
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
@@ -465,7 +464,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr);
 				}
 				final PatternMatcher matcher = new PatternMatcher(lhsPatternExpr);
-				if (matcher.apply(lhsEvalExpr)) {
+				if (matcher.test(lhsEvalExpr)) {
 					matched = true;
 					fPatternMap.copyPatternValuesFromPatternMatcher(matcher.fPatternMap);
 				}

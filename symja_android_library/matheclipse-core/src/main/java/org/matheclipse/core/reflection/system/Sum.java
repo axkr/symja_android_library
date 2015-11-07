@@ -27,7 +27,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SumRules;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 /**
  * Summation of expressions.
@@ -191,7 +191,7 @@ public class Sum extends Table implements SumRules {
 				IAST restCollector = F.Times();
 				((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
 					@Override
-					public boolean apply(IExpr input) {
+					public boolean test(IExpr input) {
 						return input.isFree(var, true);
 					}
 				});
@@ -259,7 +259,7 @@ public class Sum extends Table implements SumRules {
 			IAST restCollector = F.Times();
 			((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
 				@Override
-				public boolean apply(IExpr input) {
+				public boolean test(IExpr input) {
 					return input.isFree(var, true);
 				}
 			});

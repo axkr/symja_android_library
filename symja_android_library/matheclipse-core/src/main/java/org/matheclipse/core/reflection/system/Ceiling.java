@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * Returns the smallest (closest to negative infinity) <code>ISignedNumber</code> value that is not less than <code>this</code> and

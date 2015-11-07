@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -9,12 +11,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicate;
-
 /**
  * Predicate function
  * 
- * Returns <code>True</code> if the 1st argument is an odd integer number; <code>False</code> otherwise
+ * Returns <code>True</code> if the 1st argument is an odd integer number;
+ * <code>False</code> otherwise
  */
 public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 	/**
@@ -32,9 +33,9 @@ public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IEx
 		final IExpr temp = F.eval(ast.arg1());
 		if (temp.isList()) {
 			// thread over list
-			return ((IAST) temp).mapAt(F.OddQ(null),1);
+			return ((IAST) temp).mapAt(F.OddQ(null), 1);
 		}
-		return F.bool(apply(temp));
+		return F.bool(test(temp));
 	}
 
 	@Override
@@ -43,7 +44,7 @@ public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IEx
 	}
 
 	@Override
-	public boolean apply(final IExpr expr) {
+	public boolean test(final IExpr expr) {
 		return expr.isInteger() && ((IntegerSym) expr).isOdd();
 	}
 

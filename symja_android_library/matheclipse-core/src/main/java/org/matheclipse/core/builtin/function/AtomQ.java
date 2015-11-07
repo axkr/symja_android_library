@@ -1,14 +1,14 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Predicate;
+import org.matheclipse.core.interfaces.ISymbol; 
 
 /**
  * Returns <code>True</code>, if the given expression is an atomic object (i.e. no AST instance)
@@ -42,7 +42,7 @@ public class AtomQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	}
 
 	@Override
-	public boolean apply(final IExpr obj) {
+	public boolean test(final IExpr obj) {
 		return obj.isAtom();
 	}
 

@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Function;
 
 public class Decrement extends AbstractArg1 {
 	static class DecrementFunction implements Function<IExpr, IExpr> {

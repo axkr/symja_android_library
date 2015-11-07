@@ -3,6 +3,8 @@ package org.matheclipse.core.expression;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -26,9 +28,6 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 
 import edu.jas.structure.ElemFactory;
 
@@ -462,13 +461,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	@Override
 	public boolean isFree(final IExpr pattern, boolean heads) {
 		final IPatternMatcher matcher = new PatternMatcher(pattern);
-		return !matcher.apply(this);
+		return !matcher.test(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFree(Predicate<IExpr> predicate, boolean heads) {
-		return !predicate.apply(this);
+		return !predicate.test(this);
 	}
 
 	/** {@inheritDoc} */
@@ -617,7 +616,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
-		return predicate.apply(this);
+		return predicate.test(this);
 	}
 
 	/** {@inheritDoc} */

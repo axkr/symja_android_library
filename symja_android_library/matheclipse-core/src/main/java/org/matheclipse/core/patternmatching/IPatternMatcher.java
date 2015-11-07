@@ -2,10 +2,9 @@ package org.matheclipse.core.patternmatching;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IExpr;
-
-import com.google.common.base.Predicate;
 
 /**
  * Interface for the pattern matcher
@@ -80,7 +79,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Co
 	 * @param expr
 	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
 	 */
-	public abstract boolean apply(IExpr expr);
+	public abstract boolean test(IExpr expr);
 
 	/**
 	 * Match the given left-hand-side and return an evaluated expression

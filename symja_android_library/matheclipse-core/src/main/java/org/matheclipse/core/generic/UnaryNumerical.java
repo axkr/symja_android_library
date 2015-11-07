@@ -1,5 +1,7 @@
 package org.matheclipse.core.generic;
 
+import java.util.function.Function;
+
 import org.apache.commons.math4.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.core.basic.Alloc;
@@ -11,8 +13,6 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Function;
 
 /**
  * Unary numerical function for functions like Plot

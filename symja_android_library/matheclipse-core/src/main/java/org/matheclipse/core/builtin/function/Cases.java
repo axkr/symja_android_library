@@ -11,9 +11,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
-
-import com.google.common.base.Function;
-
+ 
+import java.util.function.Function;
 /** 
  * <p>
  * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">Cases</a>
@@ -54,7 +53,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr apply(final IExpr arg) throws StopException {
-			if (matcher.apply(arg)) {
+			if (matcher.test(arg)) {
 				resultCollection.add(arg);
 				if (maximumResults >= 0) {
 					resultsCounter++;

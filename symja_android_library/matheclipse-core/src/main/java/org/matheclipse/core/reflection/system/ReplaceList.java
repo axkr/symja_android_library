@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 public class ReplaceList extends AbstractEvaluator {
 

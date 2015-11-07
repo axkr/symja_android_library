@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.function.Predicate;
 
 import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
@@ -15,8 +16,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Predicate;
 
 /**
  * Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions).
@@ -35,7 +34,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		@Override
-		public boolean apply(IExpr input) {
+		public boolean test(IExpr input) {
 			if (input.isDirectedInfinity() || input.isIndeterminate()) {
 				// input is representing a DirectedInfinity() or Indeterminate
 				// object

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 public class DeleteCases extends AbstractCoreFunctionEvaluator {
 
@@ -28,7 +28,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			if (matcher.apply(arg)) {
+			if (matcher.test(arg)) {
 				return F.Null;
 			}
 			return null;

@@ -107,7 +107,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		if (expr.isFree(matcher, false)) {
 			rest.add(expr);
 			return;
-		} else if (matcher.apply(expr)) {
+		} else if (matcher.test(expr)) {
 			addPowerFactor(expr, F.C1, map);
 			return;
 		} else if (isPowerMatched(expr, matcher)) {
@@ -131,7 +131,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		} else if (expr.isTimes()) {
 			IAST timesAST = (IAST) expr;
 			for (int i = 1; i < timesAST.size(); i++) {
-				if (matcher.apply(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
+				if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
 					IAST clone = timesAST.clone();
 					clone.remove(i);
 					addOneIdentityPowerFactor(timesAST.get(i), clone, map);
@@ -148,7 +148,7 @@ public class Collect extends AbstractFunctionEvaluator {
 	public boolean collectToMapPlus(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map) {
 		if (expr.isFree(matcher, false)) {
 			return false;
-		} else if (matcher.apply(expr)) {
+		} else if (matcher.test(expr)) {
 			addPowerFactor(expr, F.C1, map);
 			return true;
 		} else if (isPowerMatched(expr, matcher)) {
@@ -157,7 +157,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		} else if (expr.isTimes()) {
 			IAST timesAST = (IAST) expr;
 			for (int i = 1; i < timesAST.size(); i++) {
-				if (matcher.apply(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
+				if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
 					IAST clone = timesAST.removeAtClone(i);
 					addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 					return true;
@@ -187,7 +187,7 @@ public class Collect extends AbstractFunctionEvaluator {
 	}
 
 	public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
-		return poly.isPower() && ((IAST) poly).arg2().isNumber() && matcher.apply(((IAST) poly).arg1());
+		return poly.isPower() && ((IAST) poly).arg2().isNumber() && matcher.test(((IAST) poly).arg1());
 	}
 
 	@Override

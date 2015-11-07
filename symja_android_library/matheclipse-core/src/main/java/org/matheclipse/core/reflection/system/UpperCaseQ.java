@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
@@ -9,8 +11,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is a string which only
@@ -29,7 +29,7 @@ public class UpperCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		
-		return F.bool(apply(ast.arg1()));
+		return F.bool(test(ast.arg1()));
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class UpperCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 	}
 
 	@Override
-	public boolean apply(final IExpr obj) {
+	public boolean test(final IExpr obj) {
 		final String str = obj.toString();
 		char ch;
 		for (int i = 0; i < str.length(); i++) {

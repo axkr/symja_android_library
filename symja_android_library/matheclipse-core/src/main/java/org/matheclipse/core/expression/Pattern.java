@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
@@ -15,11 +16,9 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMap;
 
-import com.google.common.base.Predicate;
-
 /**
  * A pattern with assigned &quot;pattern name&quot; (i.e. <code>x_</code>)
- *  
+ * 
  */
 public class Pattern extends Blank {
 
@@ -86,8 +85,9 @@ public class Pattern extends Blank {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -125,8 +125,8 @@ public class Pattern extends Blank {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
-	 * <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
+	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternObject
 	 * @param pm1
@@ -203,7 +203,7 @@ public class Pattern extends Blank {
 		}
 		return -1;
 	}
-	
+
 	@Override
 	public ISymbol getSymbol() {
 		return fSymbol;
@@ -234,7 +234,7 @@ public class Pattern extends Blank {
 			traceMode = engine.isTraceMode();
 			engine.setTraceMode(false);
 			final Predicate<IExpr> matcher = Predicates.isTrue(engine, fCondition);
-			if (matcher.apply(expr)) {
+			if (matcher.test(expr)) {
 				return true;
 			}
 		} finally {
@@ -244,7 +244,7 @@ public class Pattern extends Blank {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		final StringBuffer buffer = new StringBuffer();
@@ -337,6 +337,6 @@ public class Pattern extends Blank {
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
-		return optional( F.GLOBAL_IDS_MAP.get(this) );
+		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
 }

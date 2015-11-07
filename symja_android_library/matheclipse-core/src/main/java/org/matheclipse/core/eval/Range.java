@@ -14,8 +14,8 @@ import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import com.google.common.collect.Sets;
 
 /**
@@ -106,7 +106,7 @@ public class Range implements Iterable<IExpr> {
 	public boolean all(Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
-			if (!predicate.apply(fList.get(i))) {
+			if (!predicate.test(fList.get(i))) {
 				return false;
 			}
 		}
@@ -124,7 +124,7 @@ public class Range implements Iterable<IExpr> {
 
 			for (int j = 0; j < predicates.length; j++) {
 
-				if (!predicates[i].apply(fList.get(i))) {
+				if (!predicates[i].test(fList.get(i))) {
 					return false;
 				}
 			}
@@ -140,7 +140,7 @@ public class Range implements Iterable<IExpr> {
 	public boolean any(Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				return true;
 			}
 		}
@@ -157,7 +157,7 @@ public class Range implements Iterable<IExpr> {
 
 			for (int j = 0; j < predicates.length; j++) {
 
-				if (predicates[i].apply(fList.get(i))) {
+				if (predicates[i].test(fList.get(i))) {
 					return true;
 				}
 			}
@@ -238,7 +238,7 @@ public class Range implements Iterable<IExpr> {
 		int counter = 0;
 		for (int i = fStart; i < fEnd; i++) {
 
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				counter++;
 			}
 		}
@@ -272,7 +272,7 @@ public class Range implements Iterable<IExpr> {
 	 */
 	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				filterList.add(fList.get(i));
 			} else {
 				restList.add(fList.get(i));
@@ -313,7 +313,7 @@ public class Range implements Iterable<IExpr> {
 	 */
 	public IAST filter(IAST list, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				list.add(fList.get(i));
 			}
 		}
@@ -333,7 +333,7 @@ public class Range implements Iterable<IExpr> {
 		}
 		for (int i = fStart; i < fEnd; i++) {
 
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				if (++count == maxMatches) {
 					list.add(fList.get(i));
 					break;
@@ -400,7 +400,7 @@ public class Range implements Iterable<IExpr> {
 	private int findAdjacent(Predicate<IExpr> predicate, int start) {
 		for (int i = start; i < fEnd - 1; i++) {
 
-			if (predicate.apply(fList.get(i)) && predicate.apply(fList.get(i + 1))) {
+			if (predicate.test(fList.get(i)) && predicate.test(fList.get(i + 1))) {
 				return i;
 			}
 		}
@@ -530,7 +530,7 @@ public class Range implements Iterable<IExpr> {
 	public int indexOf(Predicate<IExpr> predicate, int start) {
 		for (int i = start; i < fEnd; i++) {
 
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				return i;
 			}
 		}
@@ -614,7 +614,7 @@ public class Range implements Iterable<IExpr> {
 	public int lastIndexOf(Predicate<IExpr> predicate) {
 		for (int i = fEnd - 1; i >= fStart; i--) {
 
-			if (predicate.apply(fList.get(i))) {
+			if (predicate.test(fList.get(i))) {
 				return i;
 			}
 		}
@@ -751,7 +751,7 @@ public class Range implements Iterable<IExpr> {
 	public Collection<IExpr> removeAll(Collection<IExpr> list, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 
-			if (!predicate.apply(fList.get(i))) {
+			if (!predicate.test(fList.get(i))) {
 				list.add(fList.get(i));
 			}
 		}

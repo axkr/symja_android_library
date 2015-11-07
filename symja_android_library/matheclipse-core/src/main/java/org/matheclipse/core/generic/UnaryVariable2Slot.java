@@ -4,13 +4,12 @@ import static org.matheclipse.core.expression.F.Slot;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Function;
 
 public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
 	final private Map<IExpr, IExpr> fMap;

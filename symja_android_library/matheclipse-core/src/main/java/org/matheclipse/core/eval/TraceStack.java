@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.AbstractEvalStepListener;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 final public class TraceStack extends AbstractEvalStepListener {
 
@@ -49,7 +49,7 @@ final public class TraceStack extends AbstractEvalStepListener {
 	 */
 	public void add(IExpr expr) {
 		if (fMatcher != null) {
-			if (fMatcher.apply(expr)) {
+			if (fMatcher.test(expr)) {
 				fTraceList.add(F.HoldForm(expr));
 			}
 		} else {
@@ -66,7 +66,7 @@ final public class TraceStack extends AbstractEvalStepListener {
 	public void addIfEmpty(IExpr expr) {
 		if (fTraceList.size() == 1) {
 			if (fMatcher != null) {
-				if (fMatcher.apply(expr)) {
+				if (fMatcher.test(expr)) {
 					fTraceList.add(F.HoldForm(expr));
 				}
 			} else {

@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.base.Predicates;
+import java.util.function.Predicate;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
@@ -27,7 +27,8 @@ import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrder;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
+ * and to MathEclipse objects
  * 
  * 
  * @param <C>
@@ -37,7 +38,8 @@ public class JASModInteger {
 	private final TermOrder fTermOrder;
 	private final GenPolynomialRing<ModLong> fPolyFactory;
 
-	// private final GenPolynomialRing<edu.jas.arith.BigInteger> fBigIntegerPolyFactory;
+	// private final GenPolynomialRing<edu.jas.arith.BigInteger>
+	// fBigIntegerPolyFactory;
 
 	private final List<? extends IExpr> fVariables;
 
@@ -52,7 +54,8 @@ public class JASModInteger {
 		}
 		this.fTermOrder = new TermOrder(TermOrder.INVLEX);
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		// this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
+		// this.fBigIntegerPolyFactory = new
+		// GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
 		// fVariables.size(), fTermOrder, vars);
 	}
 
@@ -69,7 +72,8 @@ public class JASModInteger {
 		}
 		this.fTermOrder = termOrder;
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		// this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
+		// this.fBigIntegerPolyFactory = new
+		// GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
 		// fVariables.size(), fTermOrder, vars);
 	}
 
@@ -83,8 +87,10 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. <code>INum</code>
-	 * double values are internally converted to IFractions and converte into the pokynomial structure.
+	 * Convert the given expression into a
+	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
+	 * <code>INum</code> double values are internally converted to IFractions
+	 * and converte into the pokynomial structure.
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -100,8 +106,11 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only symbolic numbers
-	 * are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into the polynomial structure)
+	 * Convert the given expression into a
+	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
+	 * symbolic numbers are converted (i.e. no <code>INum</code> or
+	 * <code>IComplexNum</code> values are converted into the polynomial
+	 * structure)
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -117,31 +126,36 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. <code>INum</code>
-	 * values are internally converted to IFractions and <code>expr2Poly</code> was called for the expression
+	 * Convert the given expression into a
+	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
+	 * <code>INum</code> values are internally converted to IFractions and
+	 * <code>expr2Poly</code> was called for the expression
 	 * 
 	 * @param exprPoly
 	 * @return
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	private GenPolynomial<ModLong> numericExpr2Poly(final IExpr exprPoly) throws ArithmeticException, ClassCastException {
+	private GenPolynomial<ModLong> numericExpr2Poly(final IExpr exprPoly)
+			throws ArithmeticException, ClassCastException {
 		return expr2Poly(exprPoly, true);
 	}
 
 	/**
-	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
+	 * Convert the given expression into a
+	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
 	 * 
 	 * @param exprPoly
 	 * @param numeric2Rational
-	 *            if <code>true</code>, <code>INum</code> double values are converted to <code>BigRational</code> internally
+	 *            if <code>true</code>, <code>INum</code> double values are
+	 *            converted to <code>BigRational</code> internally
 	 * 
 	 * @return
 	 * @throws ArithmeticException
 	 * @throws ClassCastException
 	 */
-	private GenPolynomial<ModLong> expr2Poly(final IExpr exprPoly, boolean numeric2Rational) throws ArithmeticException,
-			ClassCastException {
+	private GenPolynomial<ModLong> expr2Poly(final IExpr exprPoly, boolean numeric2Rational)
+			throws ArithmeticException, ClassCastException {
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
 			GenPolynomial<ModLong> result = fPolyFactory.getZERO();
@@ -174,7 +188,8 @@ public class JASModInteger {
 						} catch (WrongArgumentType e) {
 						}
 						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+							throw new ArithmeticException(
+									"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.valueOf(e);
@@ -191,7 +206,8 @@ public class JASModInteger {
 			}
 			// class cast exception
 		} else if (exprPoly instanceof IInteger) {
-			return fPolyFactory.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
+			return fPolyFactory
+					.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
 			// } else if (exprPoly instanceof IFraction) {
 			// return fraction2Poly((IFraction) exprPoly);
 			// } else if (exprPoly instanceof INum && numeric2Rational) {
@@ -256,7 +272,8 @@ public class JASModInteger {
 							//
 						}
 						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+							throw new ArithmeticException(
+									"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.getONE().multiply(e);
@@ -272,11 +289,12 @@ public class JASModInteger {
 			}
 			return new GenPolynomial(fPolyFactory, exprPoly);
 		} else if (exprPoly instanceof IInteger) {
-			return fPolyFactory.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
+			return fPolyFactory
+					.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
 		} else if (exprPoly instanceof IFraction) {
 			return fraction2Poly((IFraction) exprPoly);
 		}
-		if (exprPoly.isFree(Predicates.in(fVariables), true)) {
+		if (exprPoly.isFree(t -> fVariables.contains(t), true)) {
 			return new GenPolynomial(fPolyFactory, exprPoly);
 		} else {
 			for (int i = 0; i < fVariables.size(); i++) {

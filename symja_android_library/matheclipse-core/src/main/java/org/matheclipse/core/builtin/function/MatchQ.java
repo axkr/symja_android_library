@@ -20,7 +20,7 @@ public class MatchQ extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if ((ast.size() == 3)) {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
-			return F.bool(engine.evalPatternMatcher(ast.arg2()).apply(arg1));
+			return F.bool(engine.evalPatternMatcher(ast.arg2()).test(arg1));
 		}
 		return F.False;
 	}

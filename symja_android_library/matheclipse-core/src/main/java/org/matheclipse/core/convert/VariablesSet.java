@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,16 +16,16 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorCollectionBoolean;
 
-import com.google.common.base.Predicate;
-
 /**
- * Determine the variable symbols from a Symja expression and store them internally in a <code>java.util.Set</code>.
+ * Determine the variable symbols from a Symja expression and store them
+ * internally in a <code>java.util.Set</code>.
  * 
  */
 public class VariablesSet {
 
 	/**
-	 * Return <code>true</code>, if the expression contains one of the variable store in the internal <code>java.util.Set</code>.
+	 * Return <code>true</code>, if the expression contains one of the variable
+	 * store in the internal <code>java.util.Set</code>.
 	 * 
 	 * @see IExpr#isVariable()
 	 */
@@ -70,7 +71,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Return a <code>Predicate</code> which tests, if the given input is free of the variables set.
+	 * Return a <code>Predicate</code> which tests, if the given input is free
+	 * of the variables set.
 	 * 
 	 * @param exprVar
 	 * @return
@@ -80,7 +82,7 @@ public class VariablesSet {
 			final IsMemberVisitor visitor = exprVar.new IsMemberVisitor();
 
 			@Override
-			public boolean apply(IExpr input) {
+			public boolean test(IExpr input) {
 				return !input.accept(visitor);
 			}
 		};
@@ -110,7 +112,8 @@ public class VariablesSet {
 	 * Add the symbol to the set of variables.
 	 * 
 	 * @param symbol
-	 * @return <tt>true</tt> if the underlying set did not already contain the symbol
+	 * @return <tt>true</tt> if the underlying set did not already contain the
+	 *         symbol
 	 */
 	public boolean add(final ISymbol symbol) {
 		return fVariablesSet.add(symbol);
@@ -126,7 +129,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Append the set of variables to a <code>List&lt;IExpr&gt;</code> list of variables.
+	 * Append the set of variables to a <code>List&lt;IExpr&gt;</code> list of
+	 * variables.
 	 * 
 	 * @return the list of variables.
 	 */
@@ -161,7 +165,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Transform the set of variables into a <code>List&lt;IExpr&gt;</code> list of ordered variables.
+	 * Transform the set of variables into a <code>List&lt;IExpr&gt;</code> list
+	 * of ordered variables.
 	 * 
 	 * @return the ordered list of variables.
 	 */
@@ -175,7 +180,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Transform the set of variables into an <code>IAST</code> list of ordered variables.
+	 * Transform the set of variables into an <code>IAST</code> list of ordered
+	 * variables.
 	 * 
 	 * @return the ordered list of variables.
 	 */
@@ -212,7 +218,8 @@ public class VariablesSet {
 	 * Check if the expression contains the given number of variables.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the expr contains the given number of variables.
+	 * @return <code>true</code> if the expr contains the given number of
+	 *         variables.
 	 */
 	public boolean isSize(int size) {
 		return fVariablesSet.size() == size;

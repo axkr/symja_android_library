@@ -8,8 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-
-import com.google.common.base.Function;
+ 
+import java.util.function.Function;
 
 /**
  * Count the number of elements in an expression which match the given pattern.
@@ -34,7 +34,7 @@ public class Count extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			if (matcher.apply(arg)) {
+			if (matcher.test(arg)) {
 				counter++;
 			}
 			return null;

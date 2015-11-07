@@ -17,7 +17,7 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.parser.client.SyntaxError;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.ufd.GCDFactory;
@@ -35,7 +35,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	private final static class PolynomialPredicate implements Predicate<IExpr> {
 
 		@Override
-		public boolean apply(IExpr expr) {
+		public boolean test(IExpr expr) {
 			return expr.isPolynomial(F.List());
 		}
 	}

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -9,8 +11,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.base.Predicate;
 
 /**
  * Test if a number is prime. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
@@ -28,11 +28,11 @@ public class PrimeQ extends AbstractFunctionEvaluator implements Predicate<IExpr
 		if (!ast.arg1().isInteger()) {
 			return F.False;
 		}
-		return F.bool(apply(ast.arg1()));
+		return F.bool(test(ast.arg1()));
 	}
 
 	@Override
-	public boolean apply(final IExpr obj) {
+	public boolean test(final IExpr obj) {
 		try {
 			return ((IInteger) obj).isProbablePrime();
 		} catch (final Exception e) {

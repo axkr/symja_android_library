@@ -17,8 +17,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExpVectorLong;
 
-import com.google.common.base.Predicates;
-
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ExpVector;
@@ -250,7 +248,7 @@ public class JASIExpr {
 		} else if (exprPoly instanceof IFraction) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		}
-		if (exprPoly.isFree(Predicates.in(fVariables), true)) {
+		if (exprPoly.isFree(t->fVariables.contains(t), true)) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		} else {
 			for (int i = 0; i < fVariables.size(); i++) {

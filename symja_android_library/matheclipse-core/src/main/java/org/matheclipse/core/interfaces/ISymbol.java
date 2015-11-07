@@ -2,16 +2,14 @@ package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
-import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
-
-import com.google.common.base.Function;
 
 /**
  * An expression representing a symbol (i.e. variable- constant- or function-name)

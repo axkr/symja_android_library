@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -8,8 +10,6 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-
-import com.google.common.base.Predicate;
 
 /**
  * ArrayQ tests whether an expression is a full array.
@@ -38,7 +38,7 @@ public class ArrayQ extends AbstractCoreFunctionEvaluator {
 			if ((ast.size() >= 3)) {
 				// Match the depth with the second argumnt
 				final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-				if (!matcher.apply(F.integer(depth))) {
+				if (!matcher.test(F.integer(depth))) {
 					return F.False;
 				}
 			}
@@ -92,7 +92,7 @@ public class ArrayQ extends AbstractCoreFunctionEvaluator {
 						return -1;
 					}
 					if (predicate != null) {
-						if (!predicate.apply(ast.get(i))) {
+						if (!predicate.test(ast.get(i))) {
 							return -1;
 						}
 					}
@@ -101,7 +101,7 @@ public class ArrayQ extends AbstractCoreFunctionEvaluator {
 			return resultDepth;
 		}
 		if (predicate != null) {
-			if (!predicate.apply(expr)) {
+			if (!predicate.test(expr)) {
 				return -1;
 			}
 		}

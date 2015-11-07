@@ -41,7 +41,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 /**
  * Implements Symbols for function, constant and variable names

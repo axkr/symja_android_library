@@ -60,7 +60,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	}
 
 	@Override
-	public boolean apply(IExpr lhsEvalExpr) {
+	public boolean test(IExpr lhsEvalExpr) {
 		return fLhsPatternExpr.equals(lhsEvalExpr);
 	}
 
@@ -82,7 +82,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 
 	@Override
 	public IExpr eval(IExpr lhsEvalExpr) {
-		if (apply(lhsEvalExpr)) {
+		if (test(lhsEvalExpr)) {
 			return fRightHandSide;
 		}
 		return null;
