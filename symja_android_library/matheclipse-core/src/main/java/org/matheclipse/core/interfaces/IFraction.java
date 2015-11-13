@@ -11,12 +11,13 @@ import org.apache.commons.math4.fraction.BigFraction;
 public interface IFraction extends IRational {
 
 	/** {@inheritDoc} */
-    public IFraction abs();
-    
+	public IFraction abs();
+
 	public IFraction add(IFraction parm1);
 
 	/**
-	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
+	 * Returns an array of two BigIntegers containing (numerator / denominator)
+	 * followed by (numerator % denominator).
 	 * 
 	 * @return
 	 */
@@ -46,11 +47,36 @@ public interface IFraction extends IRational {
 	//
 	// public IFraction subtract(IFraction parm1);
 
+	/**
+	 * Returns this number raised at the specified exponent.
+	 * 
+	 * @param exp
+	 *            the exponent.
+	 * @return <code>this<sup>exp</sup></code>
+	 */
 	public IFraction pow(final int exp);
 
 	/**
-	 * Return the normalized form of this number (i.e. if the denominator part equals one, return the numerator part as an integer
-	 * number).
+	 * Returns this number raised at the specified exponent.
+	 * 
+	 * @param exp
+	 *            the exponent.
+	 * @return <code>this<sup>exp</sup></code>
+	 */
+	public IFraction pow(final BigInteger exp);
+
+	/**
+	 * Returns this number raised at the specified exponent.
+	 * 
+	 * @param exp
+	 *            the exponent.
+	 * @return <code>this<sup>exp</sup></code>
+	 */
+	public IFraction pow(final IInteger exp);
+
+	/**
+	 * Return the normalized form of this number (i.e. if the denominator part
+	 * equals one, return the numerator part as an integer number).
 	 * 
 	 * @return
 	 */

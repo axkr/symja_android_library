@@ -383,18 +383,22 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
 
-	/**
-	 * Returns this number raised at the specified positive exponent.
-	 * 
-	 * @param exp
-	 *            the positive exponent.
-	 * @return <code>this<sup>exp</sup></code>
-	 * @throws IllegalArgumentException
-	 *             if <code>exp &lt;= 0</code>
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public IFraction pow(final int exp) {
 		return newInstance(fRational.pow(exp));
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IFraction pow(final BigInteger exp) {
+		return newInstance(fRational.pow(exp));
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public IFraction pow(final IInteger exp) {
+		return newInstance(fRational.pow(exp.getBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
