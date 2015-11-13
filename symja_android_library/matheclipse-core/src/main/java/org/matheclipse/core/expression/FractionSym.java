@@ -26,7 +26,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * IFraction implementation which delegates most of the methods to the Apache commons BigFraction methods
+ * IFraction implementation which delegates most of the methods to the Apache
+ * commons BigFraction methods
  */
 public class FractionSym extends ExprImpl implements IFraction {
 
@@ -114,7 +115,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equalsInt(final int i) {
-		return fRational.getNumerator().equals(BigInteger.valueOf(i)) && fRational.getDenominator().equals(BigInteger.ONE);
+		return fRational.getNumerator().equals(BigInteger.valueOf(i))
+				&& fRational.getDenominator().equals(BigInteger.ONE);
 	}
 
 	/** {@inheritDoc} */
@@ -228,7 +230,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/**
-	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
+	 * Returns an array of two BigIntegers containing (numerator / denominator)
+	 * followed by (numerator % denominator).
 	 * 
 	 * @return
 	 */
@@ -390,19 +393,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	 *             if <code>exp &lt;= 0</code>
 	 */
 	@Override
-	public IFraction pow(int exp) {
-		if (exp <= 0)
-			throw new IllegalArgumentException("exp: " + exp + " should be a positive number");
-		IFraction powSqr = this;
-		IFraction result = null;
-		while (exp >= 1) { // Iteration.
-			if ((exp & 1) == 1) {
-				result = (result == null) ? powSqr : result.multiply(powSqr);
-			}
-			powSqr = powSqr.multiply(powSqr);
-			exp >>>= 1;
-		}
-		return result;
+	public IFraction pow(final int exp) {
+		return newInstance(fRational.pow(exp));
 	}
 
 	/** {@inheritDoc} */
@@ -434,17 +426,16 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return super.times(that);
 	}
 
-
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
 	}
-	
+
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
-	
+
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int numerator = fRational.getNumerator().intValue();
@@ -600,8 +591,9 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -703,7 +695,8 @@ public class FractionSym extends ExprImpl implements IFraction {
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		Apfloat real = new Apfloat(fRational.getNumerator(), precision).divide(new Apfloat(fRational.getDenominator(), precision));
+		Apfloat real = new Apfloat(fRational.getNumerator(), precision)
+				.divide(new Apfloat(fRational.getDenominator(), precision));
 		return new Apcomplex(real);
 	}
 
