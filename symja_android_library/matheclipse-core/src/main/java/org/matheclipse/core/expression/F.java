@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import edu.jas.kern.ComputerThreads;
 
 /**
  * Factory for creating MathEclipse expression objects.
@@ -2985,6 +2986,7 @@ public class F {
 		if (!isSystemStarted) {
 			try {
 				isSystemStarted = true;
+				ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 
 				if (Config.SHOW_PATTERN_EVAL_STEPS) {
 					// watch the rules which are used in pattern matching in
@@ -3312,7 +3314,7 @@ public class F {
 	 *            the name of the symbol
 	 * @return
 	 */
-	public static ISymbol local(final String symbolName,  @Nonnull IExpr value) {
+	public static ISymbol local(final String symbolName, @Nonnull IExpr value) {
 		// HashMap<String, ISymbol> variableMap = EvalEngine.getVariableMap();
 		// ISymbol temp = variableMap.get(symbolName);
 		// if (temp != null) {

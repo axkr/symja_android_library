@@ -12,8 +12,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Config {
 
 	/**
-	 * COMPILER switch - set this boolean variable to <code>true</code>, if you would force a direct plot frame creation from the
-	 * Plot[], Plot3D[] and ParametricPlot[] functions
+	 * COMPILER switch - set this boolean variable to <code>true</code>, if you
+	 * would force a direct plot frame creation from the Plot[], Plot3D[] and
+	 * ParametricPlot[] functions
 	 * 
 	 * On the server this switch should be set to <code>false</code>
 	 */
@@ -34,7 +35,8 @@ public class Config {
 	public final static long FOREVER = 0L;
 
 	/**
-	 * The time in milliseconds an evaluation thread should sleep until <code>Thread#stop()</code> will be called.
+	 * The time in milliseconds an evaluation thread should sleep until
+	 * <code>Thread#stop()</code> will be called.
 	 * 
 	 */
 	public final static long TIME_CONSTRAINED_SLEEP_MILLISECONDS = 500;
@@ -52,7 +54,8 @@ public class Config {
 	public final static boolean SHOW_STACKTRACE = true;
 
 	/**
-	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
+	 * Show the console output, if an expression has a head symbol with
+	 * attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
 	 * 
 	 */
 	public final static boolean SHOW_CONSOLE = true;
@@ -66,36 +69,45 @@ public class Config {
 	public final static Set<ISymbol> SHOW_PATTERN_SYMBOL_STEPS = new HashSet<ISymbol>();
 
 	/**
-	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function names,...)
+	 * If <code>true</code> the parser doesn't distinguish between lower- or
+	 * uppercase symbols (i.e. constants, function names,...)
 	 */
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 	/**
-	 * Used to parse Rubi files. See <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a>
+	 * Used to parse Rubi files. See
+	 * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration
+	 * Rules</a>
 	 */
 	public static boolean RUBI_CONVERT_SYMBOLS = false;
 
 	/**
-	 * Used to serialize the internal Rubi rules or the <code>org.matheclipse.core.reflection.system.rules</code> classes to a file.
+	 * Used to serialize the internal Rubi rules or the
+	 * <code>org.matheclipse.core.reflection.system.rules</code> classes to a
+	 * file.
 	 */
 	public static boolean SERIALIZE_SYMBOLS = false;
 
 	/**
-	 * If set to true the <code>Integrate</code> initialization Rules will be read from ressource <code>/ser/integrate.ser</code>
+	 * If set to true the <code>Integrate</code> initialization Rules will be
+	 * read from ressource <code>/ser/integrate.ser</code>
 	 */
 	// public static boolean LOAD_SERIALIZED_RULES = false;
 
 	/**
 	 * <code>true</code> if the engine is started by a servlet<br/>
-	 * In <i>server mode</i> the user can only assign values to variables with prefix '$' <br/>
+	 * In <i>server mode</i> the user can only assign values to variables with
+	 * prefix '$' <br/>
 	 * <br/>
-	 * SERVER_MODE should be set to <code>true</code> in the initialization of a servlet
+	 * SERVER_MODE should be set to <code>true</code> in the initialization of a
+	 * servlet
 	 * 
 	 */
 	public static boolean SERVER_MODE = false;
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia: Machine epsilon</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia:
+	 * Machine epsilon</a>
 	 */
 	public static double DOUBLE_EPSILON = Precision.EPSILON;
 
@@ -105,7 +117,8 @@ public class Config {
 	public final static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
 
 	/**
-	 * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.
+	 * Replace <code>double</code> values in root algorithms by 0 if they are
+	 * below this tolerance.
 	 */
 	public final static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
@@ -124,7 +137,8 @@ public class Config {
 	public static int FASTTABLE_MAX_SIZE = 65536;
 
 	/**
-	 * Maximum length of the StringImpl's <code>String</code> in <i>server mode</i>.
+	 * Maximum length of the StringImpl's <code>String</code> in <i>server
+	 * mode</i>.
 	 * 
 	 * @see org.matheclipse.core.expression.Expression
 	 */
@@ -192,5 +206,13 @@ public class Config {
 	 * @see org.matheclipse.core.basic.Alloc
 	 */
 	public static int MAX_DOUBLE_MATRIX_SIZE = 65536;
+
+	/**
+	 * Flag for thread usage. <b>Note:</b> Only introduced because Google app
+	 * engine does not support threads.
+	 * 
+	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
+	 */
+	public static boolean JAS_NO_THREADS = true;
 
 }
