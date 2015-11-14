@@ -1,5 +1,5 @@
 /*
- * $Id: ComplexRootsAbstract.java 4961 2014-10-17 18:59:39Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;

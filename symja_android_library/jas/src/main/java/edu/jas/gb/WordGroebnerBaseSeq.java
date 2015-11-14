@@ -1,5 +1,5 @@
 /*
- * $Id: WordGroebnerBaseSeq.java 5041 2014-12-29 11:58:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -151,7 +151,7 @@ public class WordGroebnerBaseSeq<C extends RingElem<C>> extends WordGroebnerBase
         }
         //logger.info("#sequential list = " + G.size());
         G = minimalGB(G);
-        logger.info("" + pairlist);
+        logger.info("end   " + pairlist);
         //Collections.sort(G);
         //Collections.reverse(G);
         return G;

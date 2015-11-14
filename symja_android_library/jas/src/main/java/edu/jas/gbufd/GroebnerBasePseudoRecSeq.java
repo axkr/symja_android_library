@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBasePseudoRecSeq.java 5061 2015-01-01 19:45:33Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;

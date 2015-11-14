@@ -1,5 +1,5 @@
 /*
- * $Id: Word.java 5139 2015-03-01 12:23:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -242,7 +242,7 @@ public final class Word implements MonoidElem<Word> {
      * @return If this is the empty word then true is returned, else false.
      */
     public boolean isONE() {
-        return (0 == val.length());
+        return val.isEmpty();
     }
 
 
@@ -271,24 +271,64 @@ public final class Word implements MonoidElem<Word> {
      * @return this / V.
      */
     public Word divide(Word V) {
-        Word[] ret = divideWord(V);
+        return divideLeft(V);
+    }
+
+
+    /**
+     * Word divide left.
+     * @param V other word.
+     * @return this / V = left, with left * V = this.
+     */
+    public Word divideLeft(Word V) {
+        Word[] ret = divideWord(V,false);
         // TODO: fail if both non zero?
-        if (!ret[0].isONE() && !ret[1].isONE()) {
-            throw new IllegalArgumentException("not simple dividable: left = " + ret[0] + ", right = "
+        if (!ret[1].isONE()) {
+            throw new IllegalArgumentException("not simple left dividable: left = " + ret[0] + ", right = "
                             + ret[1] + ", use divideWord");
         }
-        return ret[0].multiply(ret[1]);
+        return ret[0];
+    }
+
+
+    /**
+     * Word divide right.
+     * @param V other word.
+     * @return this / V = right, with V * right = this.
+     */
+    public Word divideRight(Word V) {
+        Word[] ret = divideWord(V,true);
+        // TODO: fail if both non zero?
+        if (!ret[0].isONE()) {
+            throw new IllegalArgumentException("not simple right dividable: left = " + ret[0] + ", right = "
+                            + ret[1] + ", use divideWord");
+        }
+        return ret[1];
     }
 
 
     /**
      * Word divide with prefix and suffix.
      * @param V other word.
-     * @return [prefix(this/V), suffix(this/V)] = [left,right] with left * V *
-     *         right = this.
+     * @return [left,right] with left * V * right = this.
      */
     public Word[] divideWord(Word V) {
-        int i = this.val.indexOf(V.val);
+	return divideWord(V,true); 
+    }
+
+    /**
+     * Word divide with prefix and suffix.
+     * @param V other word.
+     * @param first is true for first index, false for last index.
+     * @return [left,right] with left * V * right = this.
+     */
+    public Word[] divideWord(Word V, boolean first) {
+        int i;
+        if (first) {
+            i = this.val.indexOf(V.val);
+        } else {
+            i = this.val.lastIndexOf(V.val);
+        }
         if (i < 0) {
             throw new NotInvertibleException("not dividable: " + this + ", other " + V);
         }
@@ -617,8 +657,8 @@ public final class Word implements MonoidElem<Word> {
             return null;
         }
         Overlap ol = oll.ols.get(0);
-        Word g = ol.l1.multiply(this).multiply(ol.r1);
-        return g;
+        Word w = ol.l1.multiply(this).multiply(ol.r1);
+        return w;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReduction.java 5025 2014-12-27 13:15:16Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -152,5 +152,15 @@ public interface SolvableReduction<C extends RingElem<C>> extends Serializable {
      * @return true if A is in normalform with respect to P.
      */
     public boolean isNormalform(List<GenSolvablePolynomial<C>> P, GenSolvablePolynomial<C> A);
+
+
+    /**
+     * Two-sided Normalform.
+     * @param Ap solvable polynomial.
+     * @param Pp solvable polynomial list.
+     * @return two-sided-nf(Ap) with respect to Pp.
+     */
+    public GenSolvablePolynomial<C> normalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap);
 
 }

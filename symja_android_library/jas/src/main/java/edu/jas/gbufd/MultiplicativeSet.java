@@ -1,5 +1,5 @@
 /*
- * $Id: MultiplicativeSet.java 4945 2014-10-05 21:45:31Z axelclk $
+ * $Id$
  */
 
 package edu.jas.gbufd;

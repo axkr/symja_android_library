@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseAbstract.java 4964 2014-10-17 19:43:31Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -21,6 +21,7 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.PolynomialList;
+import edu.jas.poly.ModuleList;
 import edu.jas.poly.TermOrder;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
@@ -124,8 +125,11 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
      * @return list of polynomials with zeros removed and ones/units reduced.
      */
     public List<GenPolynomial<C>> normalizeZerosOnes(List<GenPolynomial<C>> A) {
+        if (A == null) {
+            return A;
+        }
         List<GenPolynomial<C>> N = new ArrayList<GenPolynomial<C>>(A.size());
-        if (A == null || A.isEmpty()) {
+        if (A.isEmpty()) {
             return N;
         }
         for (GenPolynomial<C> p : A) {
@@ -322,6 +326,47 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
      */
     public List<GenPolynomial<C>> GB(List<GenPolynomial<C>> F) {
         return GB(0, F);
+    }
+
+
+    /**
+     * isGB.
+     * @param M a module basis.
+     * @return true, if M is a Groebner base, else false.
+     */
+    public boolean isGB(ModuleList<C> M) {
+        if (M == null || M.list == null) {
+            return true;
+        }
+        if (M.rows == 0 || M.cols == 0) {
+            return true;
+        }
+        PolynomialList<C> F = M.getPolynomialList();
+        int modv = M.cols; // > 0  
+        return isGB(modv, F.list);
+    }
+
+
+    /**
+     * GB.
+     * @param M a module basis.
+     * @return GB(M), a Groebner base of M.
+     */
+    public ModuleList<C> GB(ModuleList<C> M) {
+        ModuleList<C> N = M;
+        if (M == null || M.list == null) {
+            return N;
+        }
+        if (M.rows == 0 || M.cols == 0) {
+            return N;
+        }
+
+        PolynomialList<C> F = M.getPolynomialList();
+        int modv = M.cols;
+        List<GenPolynomial<C>> G = GB(modv, F.list);
+        F = new PolynomialList<C>(F.ring, G);
+        N = F.getModuleList(modv);
+        return N;
     }
 
 

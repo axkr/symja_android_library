@@ -1,5 +1,5 @@
 /*
- * $Id: RingElem.java 4056 2012-07-26 17:44:13Z kredel $
+ * $Id$
  */
 
 package edu.jas.structure;

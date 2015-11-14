@@ -1,5 +1,5 @@
 /*
- * $Id: FactorsMap.java 5050 2014-12-31 13:06:24Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -7,6 +7,7 @@ package edu.jas.ufd;
 
 import java.io.Serializable;
 import java.util.SortedMap;
+import java.util.Map;
 
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.GenPolynomial;
@@ -75,14 +76,15 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
         sb.append(poly.toString());
         sb.append(" =\n");
         boolean first = true;
-        for (GenPolynomial<C> p : factors.keySet()) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : factors.entrySet()) {
+            GenPolynomial<C> p = me.getKey();
             if (first) {
                 first = false;
             } else {
                 sb.append(",\n ");
             }
             sb.append(p.toString());
-            long e = factors.get(p);
+            long e = me.getValue();
             if (e > 1) {
                 sb.append("**" + e);
             }
@@ -90,14 +92,15 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
         if (afactors == null) {
             return sb.toString();
         }
-        for (Factors<C> f : afactors.keySet()) {
+        for (Map.Entry<Factors<C>,Long> me : afactors.entrySet()) {
+            Factors<C> f = me.getKey();
             if (first) {
                 first = false;
             } else {
                 sb.append(",\n ");
             }
             sb.append(f.toString());
-            Long e = afactors.get(f);
+            Long e = me.getValue();
             if (e == null) {
                 continue;
             }
@@ -120,14 +123,15 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
         //sb.append(poly.toScript());
         //sb.append(" =\n");
         boolean first = true;
-        for (GenPolynomial<C> p : factors.keySet()) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : factors.entrySet()) {
+            GenPolynomial<C> p = me.getKey();
             if (first) {
                 first = false;
             } else {
                 sb.append("\n * ");
             }
             sb.append(p.toScript());
-            long e = factors.get(p);
+            long e = me.getValue();
             if (e > 1) {
                 sb.append("**" + e);
             }
@@ -135,13 +139,14 @@ public class FactorsMap<C extends GcdRingElem<C>> implements Serializable {
         if (afactors == null) {
             return sb.toString();
         }
-        for (Factors<C> f : afactors.keySet()) {
+        for (Map.Entry<Factors<C>,Long> me : afactors.entrySet()) {
+            Factors<C> f = me.getKey();
             if (first) {
                 first = false;
             } else {
                 sb.append("\n * ");
             }
-            Long e = afactors.get(f);
+            Long e = me.getValue();
             if (e == null) { // should not happen
                 System.out.println("f = " + f);
                 System.out.println("afactors = " + afactors);

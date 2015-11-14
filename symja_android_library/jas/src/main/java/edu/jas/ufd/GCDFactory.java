@@ -1,5 +1,5 @@
 /*
- * $Id: GCDFactory.java 5110 2015-02-12 20:32:08Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;

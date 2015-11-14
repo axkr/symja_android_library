@@ -1,5 +1,5 @@
 /*
- * $Id: ExamplesMulti.java 3345 2010-10-15 19:50:36Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

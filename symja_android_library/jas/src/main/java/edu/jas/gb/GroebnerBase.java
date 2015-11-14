@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBase.java 4179 2012-09-09 10:45:58Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -11,6 +11,7 @@ import java.io.Serializable;
 import edu.jas.structure.RingElem;
 
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.ModuleList;
 
 
 /**
@@ -62,6 +63,22 @@ public interface GroebnerBase<C extends RingElem<C>>
     public List<GenPolynomial<C>> 
            GB( int modv, 
                List<GenPolynomial<C>> F );
+
+
+    /**
+     * isGB.
+     * @param M a module basis.
+     * @return true, if M is a Groebner base, else false.
+     */
+    public boolean isGB(ModuleList<C> M);
+
+
+    /**
+     * GB.
+     * @param M a module basis.
+     * @return GB(M), a Groebner base of M.
+     */
+    public ModuleList<C> GB(ModuleList<C> M);
 
 
     /** 

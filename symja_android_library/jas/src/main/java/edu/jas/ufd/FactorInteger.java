@@ -1,5 +1,5 @@
 /*
- * $Id: FactorInteger.java 4976 2014-10-23 21:22:28Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -155,10 +155,10 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                 primes = new PrimeList(PrimeList.Range.medium);
                 pit = primes.iterator();
             }
-            if (k == TT + 1) { // -1
-                primes = new PrimeList(PrimeList.Range.large);
-                pit = primes.iterator();
-            }
+            //if (k == TT + 1) { // -1
+            //    primes = new PrimeList(PrimeList.Range.large);
+            //    pit = primes.iterator();
+            //}
             while (pit.hasNext()) {
                 java.math.BigInteger p = pit.next();
                 //System.out.println("next run ++++++++++++++++++++++++++++++++++");
@@ -284,13 +284,14 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                     factors = searchFactorsMonic(P, M, mlist, AD); // does now work in all cases
                     t = System.currentTimeMillis() - t;
                     //System.out.println("monic time = " + t);
+                    intfac[0] = factors;
                     if (debug) {
                         t = System.currentTimeMillis();
                         List<GenPolynomial<BigInteger>> fnm = searchFactorsNonMonic(P, M, mlist, AD);
                         t = System.currentTimeMillis() - t;
                         System.out.println("non monic time = " + t);
                         if (!factors.equals(fnm)) {
-                            System.out.println("monic factors     = " + factors);
+                            System.out.println("monic factors     = " + intfac[0]); //factors);
                             System.out.println("non monic factors = " + fnm);
                         }
                     }
@@ -974,8 +975,8 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                         if (ci.abs().isONE()) {
                             System.out.println("ppl = " + ppl + ", ci = " + ci + ", lfp = " + lfp
                                             + ", lfacs.get(ii) = " + lfacs.get(ii));
+                            notLucky = true;
                             throw new RuntimeException("something is wrong, ci is a unit");
-                            //notLucky = true;
                         }
                         while (ppl.remainder(ci).isZERO() && lfacs.size() > ii) {
                             ppl = ppl.divide(ci);
@@ -1076,9 +1077,9 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                         }
                     }
                 }
-                if (notLucky) {
-                    continue;
-                }
+                //if (notLucky) {
+                //    continue;
+                //}
                 logger.info("distributed factors of leading coefficient = " + lf);
                 lpx = Power.<GenPolynomial<BigInteger>> multiply(lprr.ring, lf);
                 if (!lprr.abs().equals(lpx.abs())) { // not correctly distributed
@@ -1253,12 +1254,12 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         } catch (NoLiftingException nle) {
             //System.out.println("exception : " + nle);
             //nle.printStackTrace();
-            mlift = new ArrayList<GenPolynomial<MOD>>();
+            //mlift = new ArrayList<GenPolynomial<MOD>>();
             throw new RuntimeException(nle);
         } catch (ArithmeticException aex) {
             //System.out.println("exception : " + aex);
             //aex.printStackTrace();
-            mlift = new ArrayList<GenPolynomial<MOD>>();
+            //mlift = new ArrayList<GenPolynomial<MOD>>();
             throw aex;
         }
         if (mlift.size() <= 1) { // irreducible mod I, p^k, can this happen?
@@ -1343,10 +1344,10 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
      */
     boolean testSeparate(List<BigInteger> A, BigInteger b) {
         int i = 0;
-        List<BigInteger> gei = new ArrayList<BigInteger>(A.size());
+        //List<BigInteger> gei = new ArrayList<BigInteger>(A.size());
         for (BigInteger c : A) {
             BigInteger g = c.gcd(b).abs();
-            gei.add(g);
+            //gei.add(g);
             if (!g.isONE()) {
                 i++;
             }

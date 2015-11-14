@@ -1,5 +1,5 @@
 /*
- * $Id: Product.java 5043 2014-12-29 12:38:51Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;
@@ -218,8 +218,9 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
         // Python case
         StringBuffer s = new StringBuffer("( ");
         boolean first = true;
-        for (Integer i : val.keySet()) {
-            C v = val.get(i);
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
+            C v = me.getValue();
             if (first) {
                 first = false;
             } else {
@@ -344,8 +345,9 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
      */
     public Product<C> abs() {
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
-        for (Integer i : val.keySet()) {
-            C v = val.get(i).abs();
+        for (Map.Entry<Integer,C> e : val.entrySet()) {
+            Integer i = e.getKey();
+            C v = e.getValue().abs();
             elem.put(i, v);
         }
         return new Product<C>(ring, elem, isunit);
@@ -392,8 +394,9 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
      */
     public Product<C> negate() {
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
-        for (Integer i : val.keySet()) {
-            C v = val.get(i).negate();
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
+            C v = me.getValue().negate();
             elem.put(i, v);
         }
         return new Product<C>(ring, elem, isunit);
@@ -435,8 +438,9 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
         }
         int isu = 0;
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
-        for (Integer i : val.keySet()) {
-            C x = val.get(i); // is non zero
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
+            C x = me.getValue(); // is non zero
             try {
                 x = x.inverse();
             } catch (NotInvertibleException e) {
@@ -611,10 +615,11 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
         }
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
         SortedMap<Integer, C> sel = S.val;
-        for (Integer i : val.keySet()) {
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
             C y = sel.get(i);
             if (y != null) {
-                C x = val.get(i);
+                C x = me.getValue();
                 try {
                     x = x.divide(y);
                 } catch (NotInvertibleException e) {
@@ -649,10 +654,11 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
         }
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
         SortedMap<Integer, C> sel = S.val;
-        for (Integer i : val.keySet()) {
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
             C y = sel.get(i);
             if (y != null) {
-                C x = val.get(i);
+                C x = me.getValue();
                 x = x.remainder(y);
                 if (x != null && !x.isZERO()) { // can happen
                     elem.put(i, x);
@@ -690,10 +696,11 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
         }
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
         SortedMap<Integer, C> sel = S.val;
-        for (Integer i : val.keySet()) {
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
             C y = sel.get(i);
             if (y != null) {
-                C x = val.get(i);
+                C x = me.getValue();
                 x = x.multiply(y);
                 if (x != null && !x.isZERO()) {
                     elem.put(i, x);
@@ -711,8 +718,9 @@ public class Product<C extends RingElem<C>> implements RegularRingElem<Product<C
      */
     public Product<C> multiply(C c) {
         SortedMap<Integer, C> elem = new TreeMap<Integer, C>();
-        for (Integer i : val.keySet()) {
-            C v = val.get(i).multiply(c);
+        for (Map.Entry<Integer,C> me : val.entrySet()) {
+            Integer i = me.getKey();
+            C v = me.getValue().multiply(c);
             if (v != null && !v.isZERO()) {
                 elem.put(i, v);
             }

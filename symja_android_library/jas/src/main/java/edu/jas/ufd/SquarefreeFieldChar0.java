@@ -1,5 +1,5 @@
 /*
- * $Id: SquarefreeFieldChar0.java 4935 2014-09-28 21:51:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;

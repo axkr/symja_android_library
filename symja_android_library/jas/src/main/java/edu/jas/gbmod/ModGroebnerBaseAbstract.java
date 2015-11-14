@@ -1,5 +1,5 @@
 /*
- * $Id: ModGroebnerBaseAbstract.java 5080 2015-01-25 17:40:00Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -18,8 +18,9 @@ import edu.jas.structure.GcdRingElem;
 /**
  * Module Groebner Bases abstract class. Implements Groebner bases and GB test.
  * @author Heinz Kredel
+ * @deprecated use respective methods from GroebnerBaseAbstract
  */
-
+@Deprecated
 public abstract class ModGroebnerBaseAbstract<C extends GcdRingElem<C>> implements ModGroebnerBase<C> {
 
 

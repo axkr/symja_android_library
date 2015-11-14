@@ -1,5 +1,5 @@
 /*
- * $Id: SolvablePseudoReductionSeq.java 5208 2015-04-05 10:36:25Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;
@@ -11,8 +11,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import edu.jas.gb.SolvableReductionAbstract;
-import edu.jas.gbmod.SolvableSyzygyAbstract;
-import edu.jas.gbmod.SolvableSyzygySeq;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -69,7 +67,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new GcdRingElem[l];
+        //C[] lbc = (C[]) new GcdRingElem[l];
         GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
         int i;
         int j = 0;
@@ -82,7 +80,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -125,12 +123,9 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
                 }
                 ExpVector h = S.leadingExpVector();
                 if (g.equals(h)) { // Ore condition not fulfilled
-                    System.out.println("g = " + g + ", h = " + h);
-                    System.out.println("c*ap = " + c.multiply(ap) + ", ap*c = " + ap.multiply(c));
+                    logger.info("g==h: g = " + g + ", c = " + c);
                     throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap + ", c = " + c);
                 }
-                //Q = p[i].multiply(a, e);
-                //S = S.subtract(Q);
             }
         }
         return R;
@@ -160,7 +155,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        GenPolynomial<C>[] lbc = (GenPolynomial<C>[]) new GenPolynomial[l];
+        //GenPolynomial<C>[] lbc = (GenPolynomial<C>[]) new GenPolynomial[l];
         GenSolvablePolynomial<GenPolynomial<C>>[] p = new GenSolvablePolynomial[l];
         int i;
         int j = 0;
@@ -173,7 +168,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -192,7 +187,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         GenSolvablePolynomial<GenPolynomial<C>> R = Ap.ring.getZERO().copy();
         GenSolvablePolynomial<GenPolynomial<C>> Q = null;
         GenSolvablePolynomial<GenPolynomial<C>> S = Ap.copy();
-        GenSolvablePolynomial<GenPolynomial<C>> Sp = null;
+        //GenSolvablePolynomial<GenPolynomial<C>> Sp = null;
         while (S.length() > 0) {
             m = S.leadingMonomial();
             e = m.getKey();
@@ -221,25 +216,20 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
                 GenPolynomial<C> ap = a;
                 if (commCoeff) {
                     GenPolynomial<C> c = Q.leadingBaseCoefficient();
-                    if (PolyUtil.<C> baseSparsePseudoRemainder(a, c).isZERO() && !c.isConstant()) {
-                        if (debug) {
-                            logger.info("red c = " + c);
-                        }
+                    if (!c.isConstant() && PolyUtil.<C> baseSparsePseudoRemainder(a, c).isZERO()) {
                         //a = a.divide(c);
                         b = PolyUtil.<C> basePseudoDivide(a, c);
-                        Sp = S.subtractMultiple(b, Q);
-                        if (e.equals(Sp.leadingExpVector())) { // TODO: use Ore cond
-                            throw new RuntimeException("degree not descending");
-                            //logger.info("degree not descending: S = " + S + ", Sp = " + Sp);
-                            //R = R.multiplyLeft(c);
-                            //Sp = S.scaleSubtractMultiple(c, a, Q);
+                        if (a.equals(b.multiply(c))) {
+                            S = S.subtractMultiple(b, Q);
+                        } else {
+                            R = R.multiplyLeft(c);
+                            S = S.scaleSubtractMultiple(c, a, Q);
                         }
-                        S = Sp;
                     } else {
                         R = R.multiplyLeft(c);
                         S = S.scaleSubtractMultiple(c, a, Q);
                     }
-                } else {
+                } else { // use Ore condition
                     GenSolvablePolynomial<C> cs = (GenSolvablePolynomial<C>) Q.leadingBaseCoefficient();
                     GenSolvablePolynomial<C> as = (GenSolvablePolynomial<C>) a;
                     GenPolynomial<C>[] ore = ssy.leftOreCond(cs, as);
@@ -250,11 +240,9 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
                 }
                 ExpVector h = S.leadingExpVector();
                 if (g.equals(h)) { // ! Ore cond
-                    System.out.println("g = " + g + ", h = " + h);
-                    //System.out.println("c*ap = " + c.multiply(ap) + ", ap*c = " + ap.multiply(c));
-                    throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap); // + ", c = " + c);
+                    logger.info("g==h: g = " + g);
+                    throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap);
                 }
-                //S = S.subtract(Q);
             }
         }
         //System.out.println("Ap = " + Ap + ", R = " + R);
@@ -287,7 +275,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new GcdRingElem[l];
+        //C[] lbc = (C[]) new GcdRingElem[l];
         GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
         Map.Entry<ExpVector, C> m;
         int j = 0;
@@ -298,7 +286,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -393,7 +381,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new GcdRingElem[l]; // want C[] 
+        //C[] lbc = (C[]) new GcdRingElem[l]; 
         GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
         int i;
         int j = 0;
@@ -406,7 +394,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -450,12 +438,9 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
                 }
                 ExpVector h = S.leadingExpVector();
                 if (g.equals(h)) { // Ore condition not fulfilled
-                    System.out.println("g = " + g + ", h = " + h);
-                    System.out.println("c*ap = " + c.multiply(ap) + ", ap*c = " + ap.multiply(c));
-                    throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap + ", c = " + c);
+                    logger.info("g==h: g = " + g + ", c = " + c);
+                    throw new RuntimeException("g==h: a = " + a + ", ap = " + ap);
                 }
-                //Q = p[i].multiply(a, e);
-                //S = S.subtract(Q);
             }
         }
         if (logger.isDebugEnabled()) {
@@ -489,7 +474,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new GcdRingElem[l];
+        //C[] lbc = (C[]) new GcdRingElem[l];
         GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
         int i;
         int j = 0;
@@ -502,7 +487,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -550,12 +535,9 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
                 }
                 ExpVector h = S.leadingExpVector();
                 if (g.equals(h)) { // Ore condition not fulfilled
-                    System.out.println("g = " + g + ", h = " + h);
-                    System.out.println("c*ap = " + c.multiply(ap) + ", ap*c = " + ap.multiply(c));
-                    throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap + ", c = " + c);
+                    logger.info("g==h: g = " + g + ", c = " + c);
+                    throw new RuntimeException("g.equals(h): a = " + a + ", ap = " + ap);
                 }
-                //Q = p[i].multiply(a, e);
-                //S = S.subtract(Q);
             }
         }
         //System.out.println("R = " + R);
@@ -569,7 +551,6 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
      * @param Pp recursive polynomial list.
      * @return nf(Ap) with respect to Pp. <b>Note: </b> not implemented;
      */
-
     @SuppressWarnings("unused")
     public GenSolvablePolynomial<GenPolynomial<C>> rightNormalformRecursive(
                     List<GenSolvablePolynomial<GenPolynomial<C>>> Pp,

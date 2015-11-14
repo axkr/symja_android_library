@@ -1,5 +1,5 @@
 /*
- * $Id: Scripting.java 4055 2012-07-26 17:37:29Z kredel $
+ * $Id$
  */
 
 package edu.jas.kern;
@@ -19,6 +19,9 @@ public class Scripting {
 
 
     private static Lang script = Lang.Python;
+
+
+    private static int precision = -1; // == fraction output
 
 
     protected Scripting() {
@@ -42,6 +45,27 @@ public class Scripting {
     public static Lang setLang(Lang s) {
         Lang o = script;
         script = s;
+        return o;
+    }
+
+
+    /**
+     * Get decimal approximation precision for scripting.
+     * @return number of decimals after '.'.
+     */
+    public static int getPrecision() {
+        return precision;
+    }
+
+
+    /**
+     * Set decimal approximation precision for scripting.
+     * @param p number of decimals after '.'
+     * @return old number of decimals after '.'.
+     */
+    public static int setPrecision(int p) {
+        int o = precision;
+        precision = p;
         return o;
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: GCDProxy.java 4045 2012-07-25 16:48:23Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;

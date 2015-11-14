@@ -1,5 +1,5 @@
 /*
- * $Id: WordReduction.java 4782 2014-04-06 21:56:08Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -114,6 +114,26 @@ public interface WordReduction<C extends RingElem<C>> extends Serializable {
 
 
     /**
+     * Normalform with left recording.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the left normal form of Ap wrt. Pp.
+     */
+    public GenWordPolynomial<C> leftNormalform(List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
+
+
+    /**
+     * Normalform with left recording.
+     * @param lrow left recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the left normal form of Ap wrt. Pp.
+     */
+    public GenWordPolynomial<C> leftNormalform(List<GenWordPolynomial<C>> lrow, 
+                                    List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
+
+
+    /**
      * Irreducible set.
      * @param Pp polynomial list.
      * @return a list P of polynomials which are in normalform wrt. P and with
@@ -133,5 +153,25 @@ public interface WordReduction<C extends RingElem<C>> extends Serializable {
      */
     public boolean isReductionNF(List<GenWordPolynomial<C>> lrow, List<GenWordPolynomial<C>> rrow,
                     List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap, GenWordPolynomial<C> Np);
+
+
+    /**
+     * Right normalform with recording.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
+     */
+    public GenWordPolynomial<C> rightNormalform(List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
+
+
+    /**
+     * Right normalform with recording.
+     * @param rrow right recording matrix, is modified.
+     * @param Pp a polynomial list for reduction.
+     * @param Ap a polynomial.
+     * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
+     */
+    public GenWordPolynomial<C> rightNormalform(List<GenWordPolynomial<C>> rrow, 
+		List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
 
 }

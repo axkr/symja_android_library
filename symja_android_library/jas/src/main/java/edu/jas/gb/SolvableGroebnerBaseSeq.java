@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBaseSeq.java 5221 2015-04-12 18:58:32Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -404,6 +404,7 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
         logger.info("right multipliers = " + X);
         List<GenSolvablePolynomial<C>> G = new ArrayList<GenSolvablePolynomial<C>>(F.size() * (1 + X.size()));
         G.addAll(F);
+        logger.info("right multipy: G = " + G);
         GenSolvablePolynomial<C> p, q;
         for (int i = 0; i < G.size(); i++) { // G changes
             p = G.get(i);
@@ -413,8 +414,10 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                     continue;
                 }
                 q = p.multiply(x);
+                logger.info("right multipy: p = " + p + ", x = " + x + ", q = " + q);
                 q = sred.leftNormalform(G, q);
                 q = q.monic();
+                logger.info("right multipy: red(q) = " + q);
                 if (!q.isZERO()) {
                     //System.out.println("q generating: = " + q + ", p = " + p + ", x = " + x);
                     if (q.isONE()) {
@@ -423,7 +426,11 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                         G.add(q);
                         return G; // since no threads are activated
                     }
-                    G.add(q);
+                    if (!G.contains(q)) { // why?
+                       G.add(q);
+                    } else {
+                       logger.info("right multipy contained: q = " + q);
+                    } 
                 }
             }
         }

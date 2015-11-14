@@ -1,5 +1,5 @@
 /*
- * $Id: RelationGenerator.java 4508 2013-07-25 08:31:15Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

@@ -1,5 +1,5 @@
 /*
- * $Id: MultiVarPowerSeries.java 4965 2014-10-17 20:07:51Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;
@@ -884,7 +884,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         GenPolynomial<C> p = null;
         int t = 0;
         while (lazyCoeffs.homCheck.get(t)) {
-            p = lazyCoeffs.coeffCache.get(t);
+            p = lazyCoeffs.coeffCache.get((long)t);
             if (p == null || p.isZERO()) { // ??
                 t++;
                 continue;

@@ -1,5 +1,5 @@
 /*
- * $Id: GenSolvablePolynomial.java 5226 2015-04-19 10:16:29Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -782,7 +782,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
 
     /**
      * GenSolvablePolynomial left monic, i.e. leadingCoefficient == 1. If
-     * leadingCoefficient is not invertible returns this unmodified.
+     * leadingCoefficient is not invertible returns this abs value.
      * @return monic(this).
      */
     @Override
@@ -791,15 +791,15 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
             return this;
         }
         C lc = leadingBaseCoefficient();
-        //System.out.println("lc = "+lc);
         if (!lc.isUnit()) {
-            return this;
+            return (GenSolvablePolynomial<C>)this.abs();
         }
         try {
             C lm = lc.inverse();
             //System.out.println("lm = "+lm);
-            return multiplyLeft(lm);
+            return (GenSolvablePolynomial<C>)multiplyLeft(lm).abs();
         } catch (NotInvertibleException e) {
+            logger.info("monic not invertible " + lc);
             //e.printStackTrace();
         }
         return this;

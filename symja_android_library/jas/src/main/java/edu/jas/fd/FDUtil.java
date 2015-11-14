@@ -1,5 +1,5 @@
 /*
- * $Id: FDUtil.java 5105 2015-02-07 14:35:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.fd;
@@ -12,8 +12,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.gbmod.SolvableQuotient;
-import edu.jas.gbmod.SolvableQuotientRing;
+import edu.jas.gbufd.SolvableQuotient;
+import edu.jas.gbufd.SolvableQuotientRing;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;

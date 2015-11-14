@@ -1,5 +1,5 @@
 /*
- * $Id: ListUtil.java 5040 2014-12-29 11:31:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.util;

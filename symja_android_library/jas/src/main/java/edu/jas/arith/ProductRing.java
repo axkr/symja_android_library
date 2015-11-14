@@ -1,5 +1,5 @@
 /*
- * $Id: ProductRing.java 4940 2014-10-05 13:34:52Z axelclk $
+ * $Id$
  */
 
 package edu.jas.arith;

@@ -1,5 +1,5 @@
 /*
- * $Id: OrderedPolynomialList.java 4972 2014-10-22 21:49:51Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

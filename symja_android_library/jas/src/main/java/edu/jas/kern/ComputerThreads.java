@@ -1,5 +1,5 @@
 /*
- * $Id: ComputerThreads.java 3295 2010-08-26 17:01:10Z kredel $
+ * $Id$
  */
 
 package edu.jas.kern;
@@ -37,7 +37,7 @@ public class ComputerThreads {
      * engine does not support threads.
      * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
      */
-    public static boolean NO_THREADS = true;
+    public static boolean NO_THREADS = false;
 
 
     /**

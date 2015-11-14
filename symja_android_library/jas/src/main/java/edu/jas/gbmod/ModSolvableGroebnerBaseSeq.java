@@ -1,5 +1,5 @@
 /*
- * $Id: ModSolvableGroebnerBaseSeq.java 5105 2015-02-07 14:35:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -20,8 +20,9 @@ import edu.jas.structure.RingFactory;
  * Groebner bases and GB test.
  * @param <C> coefficient type
  * @author Heinz Kredel
+ * @deprecated use respective methods from SolvableGroebnerBaseSeq
  */
-
+@Deprecated
 public class ModSolvableGroebnerBaseSeq<C extends GcdRingElem<C>> extends ModSolvableGroebnerBaseAbstract<C> {
 
 

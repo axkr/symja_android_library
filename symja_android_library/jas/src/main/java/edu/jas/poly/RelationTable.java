@@ -1,5 +1,5 @@
 /*
- * $Id: RelationTable.java 5205 2015-04-05 10:32:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -114,8 +114,9 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             logger.info("keySet != :  a = " + table.keySet() + ", b = " + tab.table.keySet());
             return false;
         }
-        for (List<Integer> k : table.keySet()) {
-            List a = table.get(k);
+        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+            List<Integer> k = me.getKey();
+            List a = me.getValue();
             List b = tab.table.get(k);
             // check contents, but only base relations
             Map<ExpVectorPair, GenPolynomial<C>> t1ex = fromListDeg2(a);
@@ -213,8 +214,9 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         //int h = ring.hashCode(); // infinite recursion
         int h = 0; //table.hashCode();
         h = table.keySet().hashCode();
-        for (List<Integer> k : table.keySet()) {
-            List a = table.get(k);
+        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+            //List<Integer> k = me.getKey();
+            List a = me.getValue();
             int t1 = fromListDeg2HashCode(a);
             h = 31 * h + t1;
         }
@@ -240,14 +242,15 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         StringBuffer s = new StringBuffer("RelationTable[");
         boolean first = true;
-        for (List<Integer> k : table.keySet()) {
+        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+            List<Integer> k = me.getKey();
             if (first) {
                 first = false;
             } else {
                 s.append(", ");
             }
             s.append(k.toString());
-            v = table.get(k);
+            v = me.getValue();
             s.append("=");
             s.append(v.toString());
         }
@@ -280,14 +283,15 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         if (PrettyPrint.isTrue()) {
             boolean first = true;
-            for (List<Integer> k : table.keySet()) {
+            for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+                List<Integer> k = me.getKey();
                 if (first) {
                     first = false;
                     s.append("\n");
                 } else {
                     s.append(",\n");
                 }
-                v = table.get(k);
+                v = me.getValue();
                 for (Iterator jt = v.iterator(); jt.hasNext();) {
                     ExpVectorPair ep = (ExpVectorPair) jt.next();
                     GenSolvablePolynomial<C> p = (GenSolvablePolynomial<C>) jt.next();
@@ -308,13 +312,14 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             }
         } else {
             boolean first = true;
-            for (List<Integer> k : table.keySet()) {
+            for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+                List<Integer> k = me.getKey();
                 if (first) {
                     first = false;
                 } else {
                     s.append(",\n");
                 }
-                v = table.get(k);
+                v = me.getValue();
                 for (Iterator jt = v.iterator(); jt.hasNext();) {
                     ExpVectorPair ep = (ExpVectorPair) jt.next();
                     s.append("( " + ep.getFirst().toString(vars) + " ), ");
@@ -356,14 +361,15 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         StringBuffer s = new StringBuffer("[");
         boolean first = true;
-        for (List<Integer> k : table.keySet()) {
+        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+            List<Integer> k = me.getKey();
             if (first) {
                 first = false;
                 s.append("");
             } else {
                 s.append(", ");
             }
-            v = table.get(k);
+            v = me.getValue();
             for (Iterator jt = v.iterator(); jt.hasNext();) {
                 ExpVectorPair ep = (ExpVectorPair) jt.next();
                 GenPolynomial<C> p = (GenPolynomial<C>) jt.next();
@@ -934,8 +940,9 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
     public List<GenSolvablePolynomial<C>> relationList() {
         List<GenSolvablePolynomial<C>> rels = new ArrayList<GenSolvablePolynomial<C>>();
         //C one = ring.getONECoefficient();
-        for (List<Integer> k : table.keySet()) {
-            List v = table.get(k);
+        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+            List<Integer> k = me.getKey();
+            List v = me.getValue();
             for (Iterator jt = v.iterator(); jt.hasNext();) {
                 ExpVectorPair ep = (ExpVectorPair) jt.next();
                 ExpVector e = ep.getFirst();

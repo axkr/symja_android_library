@@ -1,5 +1,5 @@
 /*
- * $Id: Coefficients.java 4043 2012-07-25 16:46:06Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

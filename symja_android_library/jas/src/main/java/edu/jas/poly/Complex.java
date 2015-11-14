@@ -1,5 +1,5 @@
 /*
- * $Id: Complex.java 4956 2014-10-16 22:45:10Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

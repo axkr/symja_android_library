@@ -1,5 +1,5 @@
 /*
- * $Id: ModSolvableGroebnerBase.java 5081 2015-01-25 18:00:00Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -18,8 +18,9 @@ import edu.jas.structure.RingElem;
  * bases and GB test.
  * @param <C> coefficient type
  * @author Heinz Kredel
+ * @deprecated use respective methods from SolvableGroebnerBase 
  */
-
+@Deprecated
 public interface ModSolvableGroebnerBase<C extends RingElem<C>> extends Serializable {
 
 

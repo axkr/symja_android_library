@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUtil.java 5109 2015-02-09 21:48:55Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

@@ -1,5 +1,5 @@
 /*
- * $Id: Value.java 5204 2015-04-05 10:30:15Z kredel $
+ * $Id$
  */
 
 package edu.jas.structure;

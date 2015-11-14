@@ -1,5 +1,5 @@
 /*
- * $Id: TableRelation.java 4439 2013-05-26 11:00:32Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

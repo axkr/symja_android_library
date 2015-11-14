@@ -1,5 +1,5 @@
 /*
- * $Id: RootUtil.java 4527 2013-07-27 13:40:35Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;

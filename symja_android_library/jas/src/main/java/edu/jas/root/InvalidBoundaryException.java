@@ -1,5 +1,5 @@
 /*
- * $Id: InvalidBoundaryException.java 2925 2009-12-25 17:50:01Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;

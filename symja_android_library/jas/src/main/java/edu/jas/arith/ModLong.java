@@ -1,5 +1,5 @@
 /*
- * $Id: ModLong.java 4640 2013-09-14 11:32:01Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;
@@ -72,7 +72,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @param s String.
      */
     public ModLong(ModLongRing m, String s) {
-        this(m, new Long(s.trim()));
+        this(m, Long.valueOf(s.trim()));
     }
 
 

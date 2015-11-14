@@ -1,5 +1,5 @@
 /*
- * $Id: HenselApprox.java 4943 2014-10-05 18:14:38Z axelclk $
+ * $Id$
  */
 
 package edu.jas.ufd;

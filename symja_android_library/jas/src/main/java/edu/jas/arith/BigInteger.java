@@ -1,5 +1,5 @@
 /*
- * $Id: BigInteger.java 4743 2014-01-19 21:47:34Z axelclk $
+ * $Id$
  */
 
 package edu.jas.arith;

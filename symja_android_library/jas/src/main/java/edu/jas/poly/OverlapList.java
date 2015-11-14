@@ -1,5 +1,5 @@
 /*
- * $Id: OverlapList.java 4149 2012-09-01 09:01:54Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialRing.java 5226 2015-04-19 10:16:29Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -117,7 +117,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
     /**
      * Count for number of polynomial creations.
      */
-    public static int creations = 0;
+    static int creations = 0;
 
 
     /**

@@ -1,5 +1,5 @@
 /*
- * $Id: UnivPowerSeries.java 4974 2014-10-23 20:57:56Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

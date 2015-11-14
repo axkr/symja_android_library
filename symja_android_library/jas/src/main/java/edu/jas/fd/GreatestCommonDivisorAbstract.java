@@ -1,5 +1,5 @@
 /*
- * $Id: GreatestCommonDivisorAbstract.java 5105 2015-02-07 14:35:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.fd;
@@ -11,8 +11,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.gbmod.SolvableSyzygyAbstract;
-import edu.jas.gbmod.SolvableSyzygySeq;
+import edu.jas.gbufd.SolvableSyzygyAbstract;
+import edu.jas.gbufd.SolvableSyzygySeq;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.poly.GenSolvablePolynomialRing;
@@ -1052,12 +1052,12 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
         GenSolvablePolynomial<C>[] ret = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[2];
         ret[0] = null;
         ret[1] = null;
-        if (S == null || S.isZERO()) {
+        if (S.isZERO()) {
             ret[0] = P;
             ret[1] = P.ring.getONE();
             return ret;
         }
-        if (P == null || P.isZERO()) {
+        if (P.isZERO()) {
             ret[0] = S;
             ret[1] = S.ring.getZERO();
             return ret;

@@ -1,5 +1,5 @@
 /*
- * $Id: QLRSolvablePolynomialRing.java 5162 2015-03-26 23:04:53Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

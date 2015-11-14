@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionSeq.java 5206 2015-04-05 10:33:56Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -57,7 +57,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
         int l = P.length;
         int i;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new RingElem[l];
+        //C[] lbc = (C[]) new RingElem[l];
         GenSolvablePolynomial<C>[] p = new GenSolvablePolynomial[l];
         int j = 0;
         for (i = 0; i < l; i++) {
@@ -69,17 +69,18 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
         l = j;
-        ExpVector e;
-        C a;
+        ExpVector e, f;
+        C a, b;
         boolean mt = false;
         GenSolvablePolynomial<C> R = Ap.ring.getZERO().copy();
         GenSolvablePolynomial<C> Q = null;
         GenSolvablePolynomial<C> S = Ap.copy();
+        GenSolvablePolynomial<C> Sp;
         while (S.length() > 0) {
             m = S.leadingMonomial();
             e = m.getKey();
@@ -100,19 +101,28 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
             } else {
+                f = e;
                 e = e.subtract(htl[i]);
                 //logger.debug("red div = " + e);
                 Q = p[i].multiplyLeft(e);
+                b = a;
                 a = a.divide(Q.leadingBaseCoefficient());
                 //Q = Q.multiplyLeft(a);
                 //S = (GenSolvablePolynomial<C>) S.subtract(Q);
                 ExpVector g1 = S.leadingExpVector();
+                Sp = S;
                 S = S.subtractMultiple(a, Q);
                 //S = S.subtractMultiple(a, e, p[i]);
                 ExpVector g2 = S.leadingExpVector();
                 if (g1.equals(g2)) {
-                    throw new RuntimeException("g1.equals(g2): " + g1 + ", a = " + a + ", lc(S) = "
-                                    + S.leadingBaseCoefficient());
+                    logger.info("g1.equals(g2): Pp       = " + Pp);
+                    logger.info("g1.equals(g2): Ap       = " + Ap);
+                    logger.info("g1.equals(g2): p[i]     = " + p[i]);
+                    logger.info("g1.equals(g2): Q        = " + Q);
+                    logger.info("g1.equals(g2): R        = " + R);
+                    logger.info("g1.equals(g2): Sp       = " + Sp);
+                    logger.info("g1.equals(g2): S        = " + S);
+                    throw new RuntimeException("g1.equals(g2): " + g1 + ", a = " + a  + ", b = " + b);
                 }
             }
         }
@@ -142,7 +152,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
         }
         int l = P.length;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new RingElem[l];
+        //C[] lbc = (C[]) new RingElem[l];
         GenSolvablePolynomial<C>[] p = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
         Map.Entry<ExpVector, C> m;
         int j = 0;
@@ -153,7 +163,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -183,7 +193,6 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 R.doPutToMap(e, a);
                 S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
-                // throw new RuntimeException("Syzygy no leftGB");
             } else {
                 e = e.subtract(htl[i]);
                 //logger.info("red div = " + e);
@@ -241,7 +250,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
         }
         int i;
         ExpVector[] htl = new ExpVector[l];
-        C[] lbc = (C[]) new RingElem[l];
+        //C[] lbc = (C[]) new RingElem[l];
         GenSolvablePolynomial<C>[] p = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
         int j = 0;
         for (i = 0; i < l; i++) {
@@ -250,7 +259,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -275,7 +284,6 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             }
             if (!mt) {
                 //logger.debug("irred");
-                //T = new OrderedMapPolynomial( a, e );
                 //R = (GenSolvablePolynomial<C>) R.sum(a, e);
                 //S = (GenSolvablePolynomial<C>) S.subtract(a, e);
                 R.doPutToMap(e, a);
@@ -327,7 +335,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             }
         }
         ExpVector[] htl = new ExpVector[l];
-        Object[] lbc = new Object[l]; // want <C>
+        //C[] lbc = (C[]) new RingElem[l];
         GenSolvablePolynomial<C>[] p = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[l];
         Map.Entry<ExpVector, C> m;
         int j = 0;
@@ -338,7 +346,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             if (m != null) {
                 p[j] = p[i];
                 htl[j] = m.getKey();
-                lbc[j] = m.getValue();
+                //lbc[j] = m.getValue();
                 j++;
             }
         }
@@ -368,7 +376,6 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 //S = (GenSolvablePolynomial<C>) S.subtract(a, e);
                 R.doPutToMap(e, a);
                 S.doRemoveFromMap(e, a);
-                // System.out.println(" S = " + S);
             } else {
                 e = e.subtract(htl[i]);
                 //logger.info("red div = " + e);

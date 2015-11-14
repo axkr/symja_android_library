@@ -1,5 +1,5 @@
 /*
- * $Id: SolvablePseudoReduction.java 5041 2014-12-29 11:58:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;

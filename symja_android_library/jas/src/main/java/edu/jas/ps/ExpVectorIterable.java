@@ -1,5 +1,5 @@
 /*
- * $Id: ExpVectorIterable.java 3444 2010-12-25 17:13:53Z kredel $
+ * $Id$
  */
 
 package edu.jas.ps;

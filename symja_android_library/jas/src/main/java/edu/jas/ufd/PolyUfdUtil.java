@@ -1,5 +1,5 @@
 /*
- * $Id: PolyUfdUtil.java 4967 2014-10-19 20:33:00Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -259,9 +259,12 @@ public class PolyUfdUtil {
      */
     public static List<GenPolynomial<GenPolynomial<BigInteger>>> integerFromRationalCoefficients(
                       GenPolynomialRing<GenPolynomial<BigInteger>> fac, List<GenPolynomial<GenPolynomial<BigRational>>> L) {
-        List<GenPolynomial<GenPolynomial<BigInteger>>> K;
+        List<GenPolynomial<GenPolynomial<BigInteger>>> K = null;
+        if (L == null) {
+            return K;
+        }
         K = new ArrayList<GenPolynomial<GenPolynomial<BigInteger>>>(L.size());
-        if (L == null || L.isEmpty()) {
+        if (L.isEmpty()) {
             return K;
         }
         for (GenPolynomial<GenPolynomial<BigRational>> a : L) {

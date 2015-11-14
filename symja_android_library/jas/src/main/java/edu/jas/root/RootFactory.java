@@ -1,5 +1,5 @@
 /*
- * $Id: RootFactory.java 3974 2012-07-01 12:29:44Z kredel $
+ * $Id$
  */
 
 package edu.jas.root;
@@ -59,14 +59,15 @@ public class RootFactory {
         RealRoots<C> rr = new RealRootsSturm<C>();
         SquarefreeAbstract<C> engine = SquarefreeFactory.<C> getImplementation(f.ring.coFac);
         Map<GenPolynomial<C>,Long> SF = engine.squarefreeFactors(f);
-        Set<GenPolynomial<C>> S = SF.keySet();
+        //Set<GenPolynomial<C>> S = SF.keySet();
         List<RealAlgebraicNumber<C>> list = new ArrayList<RealAlgebraicNumber<C>>();
-        for (GenPolynomial<C> sp : S) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : SF.entrySet()) {
+            GenPolynomial<C> sp = me.getKey();
             List<Interval<C>> iv = rr.realRoots(sp);
             for (Interval<C> I : iv) {
                 RealAlgebraicRing<C> rar = new RealAlgebraicRing<C>(sp, I);
                 RealAlgebraicNumber<C> rn = rar.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(rn);
                 }
@@ -87,15 +88,16 @@ public class RootFactory {
         RealRoots<C> rr = new RealRootsSturm<C>();
         SquarefreeAbstract<C> engine = SquarefreeFactory.<C> getImplementation(f.ring.coFac);
         Map<GenPolynomial<C>,Long> SF = engine.squarefreeFactors(f);
-        Set<GenPolynomial<C>> S = SF.keySet();
+        //Set<GenPolynomial<C>> S = SF.keySet();
         List<RealAlgebraicNumber<C>> list = new ArrayList<RealAlgebraicNumber<C>>();
-        for (GenPolynomial<C> sp : S) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : SF.entrySet()) {
+            GenPolynomial<C> sp = me.getKey();
             List<Interval<C>> iv = rr.realRoots(sp,eps);
             for (Interval<C> I : iv) {
                 RealAlgebraicRing<C> rar = new RealAlgebraicRing<C>(sp, I);
                 rar.setEps(eps);
                 RealAlgebraicNumber<C> rn = rar.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(rn);
                 }
@@ -115,14 +117,15 @@ public class RootFactory {
         RealRoots<C> rr = new RealRootsSturm<C>();
         FactorAbstract<C> engine = FactorFactory.<C> getImplementation(f.ring.coFac);
         Map<GenPolynomial<C>,Long> SF = engine.baseFactors(f);
-        Set<GenPolynomial<C>> S = SF.keySet();
+        //Set<GenPolynomial<C>> S = SF.keySet();
         List<RealAlgebraicNumber<C>> list = new ArrayList<RealAlgebraicNumber<C>>();
-        for (GenPolynomial<C> sp : S) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : SF.entrySet()) {
+            GenPolynomial<C> sp = me.getKey();
             List<Interval<C>> iv = rr.realRoots(sp);
             for (Interval<C> I : iv) {
                 RealAlgebraicRing<C> rar = new RealAlgebraicRing<C>(sp, I, true);//field
                 RealAlgebraicNumber<C> rn = rar.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(rn);
                 }
@@ -143,15 +146,16 @@ public class RootFactory {
         RealRoots<C> rr = new RealRootsSturm<C>();
         FactorAbstract<C> engine = FactorFactory.<C> getImplementation(f.ring.coFac);
         Map<GenPolynomial<C>,Long> SF = engine.baseFactors(f);
-        Set<GenPolynomial<C>> S = SF.keySet();
+        //Set<GenPolynomial<C>> S = SF.keySet();
         List<RealAlgebraicNumber<C>> list = new ArrayList<RealAlgebraicNumber<C>>();
-        for (GenPolynomial<C> sp : S) {
+        for (Map.Entry<GenPolynomial<C>,Long> me : SF.entrySet()) {
+            GenPolynomial<C> sp = me.getKey();
             List<Interval<C>> iv = rr.realRoots(sp,eps);
             for (Interval<C> I : iv) {
                 RealAlgebraicRing<C> rar = new RealAlgebraicRing<C>(sp, I, true);//field
                 rar.setEps(eps);
                 RealAlgebraicNumber<C> rn = rar.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(rn);
                 }
@@ -248,14 +252,15 @@ public class RootFactory {
         SquarefreeAbstract<Complex<C>> engine = SquarefreeFactory
                 .<Complex<C>> getImplementation(f.ring.coFac);
         Map<GenPolynomial<Complex<C>>,Long> SF = engine.squarefreeFactors(f);
-        Set<GenPolynomial<Complex<C>>> S = SF.keySet();
+        //Set<GenPolynomial<Complex<C>>> S = SF.keySet();
         List<ComplexAlgebraicNumber<C>> list = new ArrayList<ComplexAlgebraicNumber<C>>();
-        for (GenPolynomial<Complex<C>> sp : S) {
+        for (Map.Entry<GenPolynomial<Complex<C>>,Long> me : SF.entrySet()) {
+            GenPolynomial<Complex<C>> sp = me.getKey();
             List<Rectangle<C>> iv = cr.complexRoots(sp);
             for (Rectangle<C> I : iv) {
                 ComplexAlgebraicRing<C> car = new ComplexAlgebraicRing<C>(sp, I);
                 ComplexAlgebraicNumber<C> cn = car.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(cn);
                 }
@@ -277,9 +282,10 @@ public class RootFactory {
         SquarefreeAbstract<Complex<C>> engine = SquarefreeFactory
                 .<Complex<C>> getImplementation(f.ring.coFac);
         Map<GenPolynomial<Complex<C>>,Long> SF = engine.squarefreeFactors(f);
-        Set<GenPolynomial<Complex<C>>> S = SF.keySet();
+        //Set<GenPolynomial<Complex<C>>> S = SF.keySet();
         List<ComplexAlgebraicNumber<C>> list = new ArrayList<ComplexAlgebraicNumber<C>>();
-        for (GenPolynomial<Complex<C>> sp : S) {
+        for (Map.Entry<GenPolynomial<Complex<C>>,Long> me : SF.entrySet()) {
+            GenPolynomial<Complex<C>> sp = me.getKey();
             List<Rectangle<C>> iv = cr.complexRoots(sp);
             for (Rectangle<C> I : iv) {
                 Rectangle<C> Iv = I;
@@ -291,7 +297,7 @@ public class RootFactory {
                 ComplexAlgebraicRing<C> car = new ComplexAlgebraicRing<C>(sp, Iv);
                 car.setEps(eps);
                 ComplexAlgebraicNumber<C> cn = car.getGenerator();
-                long mult = SF.get(sp);
+                long mult = me.getValue();
                 for ( int i = 0; i < mult; i++ ) {
                      list.add(cn);
                 }

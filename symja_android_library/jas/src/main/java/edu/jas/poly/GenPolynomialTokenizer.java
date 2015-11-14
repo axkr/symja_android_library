@@ -1,5 +1,5 @@
 /*
- * $Id: GenPolynomialTokenizer.java 5240 2015-04-26 18:06:05Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

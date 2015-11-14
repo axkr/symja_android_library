@@ -1,5 +1,5 @@
 /*
- * $Id: WordGroebnerBaseAbstract.java 5041 2014-12-29 11:58:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -93,8 +93,11 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements
      * @return list of polynomials with zeros removed and ones/units reduced.
      */
     public List<GenWordPolynomial<C>> normalizeZerosOnes(List<GenWordPolynomial<C>> A) {
+        if (A == null) {
+            return A;
+        }
         List<GenWordPolynomial<C>> N = new ArrayList<GenWordPolynomial<C>>(A.size());
-        if (A == null || A.isEmpty()) {
+        if (A.isEmpty()) {
             return N;
         }
         for (GenWordPolynomial<C> p : A) {

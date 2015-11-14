@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseQuotient.java 4806 2014-04-13 12:17:31Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbufd;

@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableGroebnerBase.java 5102 2015-02-07 11:03:52Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -8,6 +8,7 @@ package edu.jas.gb;
 import java.io.Serializable;
 import java.util.List;
 
+import edu.jas.poly.ModuleList;
 import edu.jas.poly.GenSolvablePolynomial;
 import edu.jas.structure.RingElem;
 
@@ -167,5 +168,53 @@ public interface SolvableGroebnerBase<C extends RingElem<C>> extends Serializabl
      */
     public boolean isLeftReductionMatrix(List<GenSolvablePolynomial<C>> F, List<GenSolvablePolynomial<C>> G,
                     List<List<GenSolvablePolynomial<C>>> Mf, List<List<GenSolvablePolynomial<C>>> Mg);
+
+
+    /**
+     * Module left Groebner base test.
+     * @param M a module basis.
+     * @return true, if M is a left Groebner base, else false.
+     */
+    public boolean isLeftGB(ModuleList<C> M);
+
+
+    /**
+     * Left Groebner base using pairlist class.
+     * @param M a module basis.
+     * @return leftGB(M) a left Groebner base for M.
+     */
+    public ModuleList<C> leftGB(ModuleList<C> M);
+
+
+    /**
+     * Module twosided Groebner base test.
+     * @param M a module basis.
+     * @return true, if M is a twosided Groebner base, else false.
+     */
+    public boolean isTwosidedGB(ModuleList<C> M);
+
+
+    /**
+     * Twosided Groebner base using pairlist class.
+     * @param M a module basis.
+     * @return tsGB(M) a twosided Groebner base for M.
+     */
+    public ModuleList<C> twosidedGB(ModuleList<C> M);
+
+
+    /**
+     * Module right Groebner base test.
+     * @param M a module basis.
+     * @return true, if M is a right Groebner base, else false.
+     */
+    public boolean isRightGB(ModuleList<C> M);
+
+
+    /**
+     * Right Groebner base using pairlist class.
+     * @param M a module basis.
+     * @return rightGB(M) a right Groebner base for M.
+     */
+    public ModuleList<C> rightGB(ModuleList<C> M);
 
 }

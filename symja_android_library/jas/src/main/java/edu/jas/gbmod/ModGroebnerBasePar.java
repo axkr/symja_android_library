@@ -1,5 +1,5 @@
 /*
- * $Id: ModGroebnerBasePar.java 5105 2015-02-07 14:35:17Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -15,8 +15,9 @@ import edu.jas.structure.RingFactory;
  * Module Groebner Bases sequential algorithm. Implements Groebner bases and GB
  * test.
  * @author Heinz Kredel
+ * @deprecated use respective methods from GroebnerBaseParallel 
  */
-
+@Deprecated
 public class ModGroebnerBasePar<C extends GcdRingElem<C>> extends ModGroebnerBaseSeq<C> {
 
 

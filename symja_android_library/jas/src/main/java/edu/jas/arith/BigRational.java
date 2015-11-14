@@ -1,5 +1,5 @@
 /*
- * $Id: BigRational.java 5040 2014-12-29 11:31:34Z kredel $
+ * $Id$
  */
 
 package edu.jas.arith;
@@ -189,9 +189,18 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             }
             den = r.den;
         } else {
-            n = new BigInteger(s.substring(0, i));
-            d = new BigInteger(s.substring(i + 1, s.length()));
-            BigRational r = RNRED(n, d);
+            String sn = s.substring(0, i);
+            String sd = s.substring(i + 1, s.length());
+            BigRational r;
+            if (s.indexOf(".") < 0) { // all integers
+                n = new BigInteger(sn);
+                d = new BigInteger(sd);
+                r = RNRED(n, d);
+            } else { // integers or decimal fractions
+                BigRational rn = new BigRational(sn);
+                BigRational rd = new BigRational(sd);
+                r = rn.divide(rd);
+            }
             num = r.num;
             den = r.den;
             return;
@@ -285,6 +294,9 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      */
     @Override
     public String toString() {
+        if (Scripting.getPrecision() >= 0) {
+            return toString(Scripting.getPrecision());
+        }
         StringBuffer s = new StringBuffer();
         s.append(num);
         if (!den.equals(BigInteger.ONE)) {
@@ -296,10 +308,13 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
 
     /**
      * Get the decimal string representation with given precision.
-     * @param n precission.
+     * @param n precision.
      * @return decimal approximation.
      */
     public String toString(int n) {
+        if (n < 0) {
+            return toString();
+        }
         java.math.MathContext mc = new java.math.MathContext(n);
         BigDecimal d = new BigDecimal(this, mc);
         return d.toString();
@@ -331,6 +346,9 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             s.append(num.toString());
             return s.toString();
         }
+        if (Scripting.getPrecision() >= 0) {
+            return toString(Scripting.getPrecision());
+        }
         switch (Scripting.getLang()) {
         case Python:
             s.append("(");
@@ -356,7 +374,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      */
     @Override
     public String toScriptFactory() {
-        // Python case
+        // Python and Ruby case
         return "QQ()";
     }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ModGroebnerBase.java 5080 2015-01-25 17:40:00Z kredel $
+ * $Id$
  */
 
 package edu.jas.gbmod;
@@ -15,8 +15,9 @@ import edu.jas.structure.RingElem;
 /**
  * Module Groebner Bases interface. Defines Groebner bases and GB test.
  * @author Heinz Kredel
+ * @deprecated use respective methods from GroebnerBase 
  */
-
+@Deprecated
 public interface ModGroebnerBase<C extends RingElem<C>> {
 
 

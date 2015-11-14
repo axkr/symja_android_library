@@ -1,5 +1,5 @@
 /*
- * $Id: HenselMultUtil.java 4520 2013-07-27 10:02:52Z kredel $
+ * $Id$
  */
 
 package edu.jas.ufd;
@@ -147,9 +147,9 @@ public class HenselMultUtil {
             //System.out.println("psfac = " + psfac);
             TaylorFunction<GenPolynomial<MOD>> F = new PolynomialTaylorFunction<GenPolynomial<MOD>>(Epr);
             //System.out.println("F     = " + F);
-            List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
+            //List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
             GenPolynomial<MOD> vq = ckfac.fromInteger(v.getSymmetricInteger().getVal());
-            Vs.add(vq);
+            //Vs.add(vq);
             //System.out.println("Vs    = " + Vs);
             UnivPowerSeries<GenPolynomial<MOD>> Epst = psfac.seriesOfTaylor(F, vq);
             //System.out.println("Epst  = " + Epst);
@@ -169,14 +169,14 @@ public class HenselMultUtil {
             }
             mon = mon.multiply(xv); // Power.<GenPolynomial<MOD>> power(pkfac,xv,e);
             //System.out.println("mon  = " + mon);
-            List<GenPolynomial<MOD>> Sp = new ArrayList<GenPolynomial<MOD>>(S.size());
+            //List<GenPolynomial<MOD>> Sp = new ArrayList<GenPolynomial<MOD>>(S.size());
             int i = 0;
             supi = new ArrayList<GenPolynomial<BigInteger>>(su.size());
             for (GenPolynomial<MOD> dd : S) {
                 //System.out.println("dd = " + dd);
                 GenPolynomial<MOD> de = dd.extend(pkfac, 0, 0L);
                 GenPolynomial<MOD> dm = de.multiply(mon);
-                Sp.add(dm);
+                //Sp.add(dm);
                 de = sup.get(i).sum(dm);
                 //System.out.println("dd = " + dd);
                 sup.set(i++, de);
@@ -290,11 +290,11 @@ public class HenselMultUtil {
         }
         //System.out.println("sup  = " + sup);
         //System.out.println("supi = " + supi);
-        List<GenPolynomial<BigInteger>> Ai = new ArrayList<GenPolynomial<BigInteger>>(A.size());
-        for (GenPolynomial<MOD> a : A) {
-            GenPolynomial<BigInteger> ai = PolyUtil.integerFromModularCoefficients(ifac, a);
-            Ai.add(ai);
-        }
+        //List<GenPolynomial<BigInteger>> Ai = new ArrayList<GenPolynomial<BigInteger>>(A.size());
+        //for (GenPolynomial<MOD> a : A) {
+        //    GenPolynomial<BigInteger> ai = PolyUtil.integerFromModularCoefficients(ifac, a);
+        //    Ai.add(ai);
+        //}
         List<GenPolynomial<BigInteger>> Bi = new ArrayList<GenPolynomial<BigInteger>>(A.size());
         for (GenPolynomial<MOD> b : Bp) {
             GenPolynomial<BigInteger> bi = PolyUtil.integerFromModularCoefficients(ifac, b);
@@ -304,11 +304,11 @@ public class HenselMultUtil {
         //System.out.println("Ai = " + Ai);
         //System.out.println("Ci = " + Ci);
 
-        List<GenPolynomial<MOD>> Aq = new ArrayList<GenPolynomial<MOD>>(A.size());
-        for (GenPolynomial<BigInteger> ai : Ai) {
-            GenPolynomial<MOD> aq = PolyUtil.<MOD> fromIntegerCoefficients(pkfac, ai);
-            Aq.add(aq);
-        }
+        //List<GenPolynomial<MOD>> Aq = new ArrayList<GenPolynomial<MOD>>(A.size());
+        //for (GenPolynomial<BigInteger> ai : Ai) {
+        //    GenPolynomial<MOD> aq = PolyUtil.<MOD> fromIntegerCoefficients(pkfac, ai);
+        //    Aq.add(aq);
+        //}
         //System.out.println("Aq = " + Aq);
 
         // compute error:
@@ -337,9 +337,9 @@ public class HenselMultUtil {
             //System.out.println("psfac = " + psfac);
             TaylorFunction<GenPolynomial<MOD>> F = new PolynomialTaylorFunction<GenPolynomial<MOD>>(Epr);
             //System.out.println("F     = " + F);
-            List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
+            //List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
             GenPolynomial<MOD> vq = ckfac.fromInteger(v.getSymmetricInteger().getVal());
-            Vs.add(vq);
+            //Vs.add(vq);
             //System.out.println("Vs    = " + Vs);
             UnivPowerSeries<GenPolynomial<MOD>> Epst = psfac.seriesOfTaylor(F, vq);
             //System.out.println("Epst  = " + Epst);
@@ -361,14 +361,14 @@ public class HenselMultUtil {
             }
             mon = mon.multiply(xv); // Power.<GenPolynomial<MOD>> power(pkfac,xv,e);
             //System.out.println("mon  = " + mon);
-            List<GenPolynomial<MOD>> Sp = new ArrayList<GenPolynomial<MOD>>(S.size());
+            //List<GenPolynomial<MOD>> Sp = new ArrayList<GenPolynomial<MOD>>(S.size());
             i = 0;
             supi = new ArrayList<GenPolynomial<BigInteger>>(su.size());
             for (GenPolynomial<MOD> dd : S) {
                 //System.out.println("dd = " + dd);
                 GenPolynomial<MOD> de = dd.extend(pkfac, 0, 0L);
                 GenPolynomial<MOD> dm = de.multiply(mon);
-                Sp.add(dm);
+                //Sp.add(dm);
                 de = sup.get(i).sum(dm);
                 //System.out.println("dd = " + dd);
                 sup.set(i++, de);
@@ -599,9 +599,9 @@ public class HenselMultUtil {
                 //System.out.println("psfac = " + psfac);
                 TaylorFunction<GenPolynomial<MOD>> T = new PolynomialTaylorFunction<GenPolynomial<MOD>>(Epr);
                 //System.out.println("T     = " + T);
-                List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
+                //List<GenPolynomial<MOD>> Vs = new ArrayList<GenPolynomial<MOD>>(1);
                 GenPolynomial<MOD> vq = ckfac.fromInteger(v.getSymmetricInteger().getVal());
-                Vs.add(vq);
+                //Vs.add(vq);
                 //System.out.println("Vs    = " + Vs + ", Vh = " + Vh);
                 UnivPowerSeries<GenPolynomial<MOD>> Epst = psfac.seriesOfTaylor(T, vq);
                 //System.out.println("Epst  = " + Epst);
@@ -616,14 +616,14 @@ public class HenselMultUtil {
 
                 mon = mon.multiply(xv); // Power.<GenPolynomial<MOD>> power(pkfac,xv,e);
                 //System.out.println("mon  = " + mon);
-                List<GenPolynomial<MOD>> Sd = new ArrayList<GenPolynomial<MOD>>(Ud.size());
+                //List<GenPolynomial<MOD>> Sd = new ArrayList<GenPolynomial<MOD>>(Ud.size());
                 int i = 0;
                 List<GenPolynomial<BigInteger>> Si = new ArrayList<GenPolynomial<BigInteger>>(Ud.size());
                 for (GenPolynomial<MOD> dd : Ud) {
                     //System.out.println("dd = " + dd);
                     GenPolynomial<MOD> de = dd.extend(pkfac, 0, 0L);
                     GenPolynomial<MOD> dm = de.multiply(mon);
-                    Sd.add(dm);
+                    //Sd.add(dm);
                     de = U.get(i).sum(dm);
                     //System.out.println("de = " + de);
                     U.set(i++, de);
@@ -861,14 +861,14 @@ public class HenselMultUtil {
 
                 mon = mon.multiply(xv); // Power.<GenPolynomial<MOD>> power(pkfac,xv,e);
                 //System.out.println("mon  = " + mon);
-                List<GenPolynomial<MOD>> Sd = new ArrayList<GenPolynomial<MOD>>(Ud.size());
+                //List<GenPolynomial<MOD>> Sd = new ArrayList<GenPolynomial<MOD>>(Ud.size());
                 int i = 0;
                 Si = new ArrayList<GenPolynomial<BigInteger>>(Ud.size());
                 for (GenPolynomial<MOD> dd : Ud) {
                     //System.out.println("dd = " + dd);
                     GenPolynomial<MOD> de = dd.extend(pkfac, 0, 0L);
                     GenPolynomial<MOD> dm = de.multiply(mon);
-                    Sd.add(dm);
+                    //Sd.add(dm);
                     de = U.get(i).sum(dm);
                     //System.out.println("de = " + de);
                     U.set(i++, de);
@@ -1007,7 +1007,7 @@ public class HenselMultUtil {
         ////System.out.println("F.fac = " + F.get(0).ring);
 
         // evaluate G to Z_q
-        List<GenPolynomial<MOD>> GP = new ArrayList<GenPolynomial<MOD>>();
+        //List<GenPolynomial<MOD>> GP = new ArrayList<GenPolynomial<MOD>>();
         for (GenPolynomial<MOD> gq : GQ) {
             GenPolynomialRing<MOD> gf = gcfac;
             GenPolynomial<MOD> gp = gq;
@@ -1019,7 +1019,7 @@ public class HenselMultUtil {
                 gp = PolyUtil.<MOD> evaluateMain(gf, gp, vp);
                 //System.out.println("gp     = " + gp);
             }
-            GP.add(gp);
+            //GP.add(gp);
         }
         //System.out.println("GP = " + GP); // + ", GP.ring = " + GP.get(0).ring);
 

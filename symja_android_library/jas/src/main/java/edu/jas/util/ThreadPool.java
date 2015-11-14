@@ -1,5 +1,5 @@
 /*
- * $Id: ThreadPool.java 4962 2014-10-17 19:05:55Z kredel $
+ * $Id$
  */
 
 // package edu.unima.ky.parallel;

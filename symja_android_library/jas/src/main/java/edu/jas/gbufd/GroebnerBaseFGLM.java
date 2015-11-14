@@ -1,5 +1,5 @@
 /*
- * $Id: GroebnerBaseFGLM.java 4177 2012-09-09 10:44:00Z suess $
+ * $Id$
  */
 
 package edu.jas.gbufd;

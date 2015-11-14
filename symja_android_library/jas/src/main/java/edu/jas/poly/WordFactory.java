@@ -1,5 +1,5 @@
 /*
- * $Id: WordFactory.java 5182 2015-04-01 21:12:44Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;

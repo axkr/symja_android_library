@@ -1,5 +1,5 @@
 /*
- * $Id: GBProxy.java 5104 2015-02-07 13:12:43Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;

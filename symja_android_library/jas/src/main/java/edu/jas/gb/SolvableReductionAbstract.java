@@ -1,5 +1,5 @@
 /*
- * $Id: SolvableReductionAbstract.java 5041 2014-12-29 11:58:22Z kredel $
+ * $Id$
  */
 
 package edu.jas.gb;
@@ -386,5 +386,16 @@ public abstract class SolvableReductionAbstract<C extends RingElem<C>> implement
         return true;
     }
 
+
+    /**
+     * Two-sided Normalform.
+     * @param Ap solvable polynomial.
+     * @param Pp solvable polynomial list.
+     * @return two-sided-nf(Ap) with respect to Pp.
+     */
+    public GenSolvablePolynomial<C> normalform(List<GenSolvablePolynomial<C>> Pp,
+                    GenSolvablePolynomial<C> Ap) {
+	throw new UnsupportedOperationException("two-sided normalform not implemented");
+    }
 
 }

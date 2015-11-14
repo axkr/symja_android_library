@@ -1,5 +1,5 @@
 /*
- * $Id: GenWordPolynomial.java 5184 2015-04-01 21:17:18Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -1197,7 +1197,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
         for (Map.Entry<Word, C> m : val.entrySet()) {
             Word e = m.getKey();
             C c1 = m.getValue();
-            C c = c1.divide(s);
+            C c = c1.divide(s); // is divideLeft
             if (debug) {
                 C x = c1.remainder(s);
                 if (!x.isZERO()) {
