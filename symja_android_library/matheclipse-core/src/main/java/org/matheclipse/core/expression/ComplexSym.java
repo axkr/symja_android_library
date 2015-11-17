@@ -21,7 +21,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * A symbolic complex implementation
+ * A symbolic complex number implementation
  * 
  */
 public class ComplexSym extends ExprImpl implements IComplex {
@@ -36,22 +36,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	private BigFraction _imaginary;
 
 	private transient int fHashValue;
-	/**
-	 * Holds the factory constructing complex instances.
-	 */
-	// private static final ObjectFactory<ComplexSym> FACTORY = new
-	// ObjectFactory<ComplexSym>() {
-	// @Override
-	// public ComplexSym create() {
-	// if (Config.SERVER_MODE && currentQueue().getSize() >=
-	// Config.COMPLEX_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("ComplexImpl",
-	// currentQueue().getSize());
-	// }
-	// return new ComplexSym();
-	// }
-	// };
-	// write this object after the FACTORY initialization
+ 
 	public final static ComplexSym ZERO = ComplexSym.valueOf(BigFraction.ZERO);
 
 	private ComplexSym() {
