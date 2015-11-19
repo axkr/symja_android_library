@@ -498,7 +498,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 			return null;
 		}
-		return f0.pow(f1.getBigNumerator());
+		return f0.power(f1);
 	}
 
 	/**

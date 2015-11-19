@@ -56,4 +56,12 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return denominator
 	 */
 	public IInteger getNumerator();
+	
+	/**
+	 * Return the normalized form of this number (i.e. if the denominator part
+	 * equals one, return the numerator part as an integer number).
+	 * 
+	 * @return
+	 */
+	public INumber normalize();
 }

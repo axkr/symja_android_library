@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -99,10 +100,10 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return c;
 	}
 
-	public static ComplexSym valueOf(final IFraction real, final IFraction imaginary) {
+	public static ComplexSym valueOf(final IRational real, final IRational imaginary) {
 		final ComplexSym c = new ComplexSym();// FACTORY.object();
-		c._real = real.getRational();
-		c._imaginary = imaginary.getRational();
+		c._real = real.getFraction();
+		c._imaginary = imaginary.getFraction();
 		return c;
 	}
 
@@ -195,7 +196,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (_imaginary.getDenominator().equals(BigInteger.ONE)) {
 			return IntegerSym.newInstance(_imaginary.getNumerator());
 		}
-		return FractionSym.newInstance(_imaginary);
+		return AbstractFractionSym.valueOf(_imaginary);
 	}
 
 	/**
@@ -211,7 +212,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (_real.getDenominator().equals(BigInteger.ONE)) {
 			return IntegerSym.newInstance(_real.getNumerator());
 		}
-		return FractionSym.newInstance(_real);
+		return AbstractFractionSym.valueOf(_real);
 	}
 
 	@Override
@@ -275,8 +276,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IntegerSym) {
 			return this.add(valueOf((IntegerSym) that));
 		}
-		if (that instanceof FractionSym) {
-			return this.add(valueOf((FractionSym) that));
+		if (that instanceof AbstractFractionSym) {
+			return this.add(valueOf((AbstractFractionSym) that));
 		}
 		return super.plus(that);
 	}
@@ -299,8 +300,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IntegerSym) {
 			return this.multiply(valueOf((IntegerSym) that));
 		}
-		if (that instanceof FractionSym) {
-			return this.multiply(valueOf((FractionSym) that));
+		if (that instanceof AbstractFractionSym) {
+			return this.multiply(valueOf((AbstractFractionSym) that));
 		}
 		return super.times(that);
 	}
@@ -418,7 +419,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			if (_real.getNumerator().equals(BigInteger.ZERO)) {
 				return F.C0;
 			}
-			return FractionSym.newInstance(_real);
+			return AbstractFractionSym.valueOf(_real);
 		}
 		return this;
 	}

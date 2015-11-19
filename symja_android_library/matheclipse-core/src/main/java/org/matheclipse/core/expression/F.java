@@ -1086,32 +1086,32 @@ public class F {
 	/**
 	 * Constant fraction &quot;1/2&quot;
 	 */
-	public final static IFraction C1D2 = FractionSym.valueOf(1, 2);
+	public final static IFraction C1D2 = AbstractFractionSym.newinstance(1, 2);
 
 	/**
 	 * Constant fraction &quot;-1/2&quot;
 	 */
-	public final static IFraction CN1D2 = FractionSym.valueOf(-1, 2);
+	public final static IFraction CN1D2 = AbstractFractionSym.newinstance(-1, 2);
 
 	/**
 	 * Constant fraction &quot;1/3&quot;
 	 */
-	public final static IFraction C1D3 = FractionSym.valueOf(1, 3);
+	public final static IFraction C1D3 = AbstractFractionSym.newinstance(1, 3);
 
 	/**
 	 * Constant fraction &quot;-1/3&quot;
 	 */
-	public final static IFraction CN1D3 = FractionSym.valueOf(-1, 3);
+	public final static IFraction CN1D3 = AbstractFractionSym.newinstance(-1, 3);
 
 	/**
 	 * Constant fraction &quot;1/4&quot;
 	 */
-	public final static IFraction C1D4 = FractionSym.valueOf(1, 4);
+	public final static IFraction C1D4 = AbstractFractionSym.newinstance(1, 4);
 
 	/**
 	 * Constant fraction &quot;-1/4&quot;
 	 */
-	public final static IFraction CN1D4 = FractionSym.valueOf(-1, 4);
+	public final static IFraction CN1D4 = AbstractFractionSym.newinstance(-1, 4);
 
 	/**
 	 * Constant double &quot;0.0&quot;
@@ -2012,7 +2012,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IComplex complex(final double realPart, final double imagPart) {
-		return ComplexSym.valueOf(FractionSym.valueOf(realPart), FractionSym.valueOf(imagPart));
+		return ComplexSym.valueOf(AbstractFractionSym.valueOf(realPart), AbstractFractionSym.valueOf(imagPart));
 	}
 
 	/**
@@ -2021,7 +2021,7 @@ public class F {
 	 * @param re
 	 * @return
 	 */
-	public static IComplex complex(final IFraction re) {
+	public static IComplex complex(final IRational re) {
 		return complex(re, fraction(0, 1));
 	}
 
@@ -2032,7 +2032,7 @@ public class F {
 	 * @param im
 	 * @return
 	 */
-	public static IComplex complex(final IFraction re, final IFraction im) {
+	public static IComplex complex(final IRational re, final IRational im) {
 		return ComplexSym.valueOf(re, im);
 	}
 
@@ -2730,7 +2730,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final BigFraction value) {
-		return FractionSym.valueOf(value.getNumerator(), value.getDenominator());
+		return AbstractFractionSym.valueOf(value.getNumerator(), value.getDenominator());
 	}
 
 	/**
@@ -2743,7 +2743,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final BigInteger numerator, final BigInteger denominator) {
-		return FractionSym.valueOf(numerator, denominator);
+		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
 
 	/**
@@ -2755,7 +2755,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final double value) {
-		return FractionSym.valueOf(value);
+		return AbstractFractionSym.valueOf(value);
 	}
 
 	/**
@@ -2768,7 +2768,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final IInteger numerator, final IInteger denominator) {
-		return FractionSym.valueOf(numerator, denominator);
+		return AbstractFractionSym.valueOf(numerator.getBigNumerator(), denominator.getBigNumerator());
 	}
 
 	/**
@@ -2780,8 +2780,8 @@ public class F {
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
-	public static IFraction fraction(final long numerator, final long denominator) {
-		return FractionSym.valueOf(numerator, denominator);
+	public static IRational fraction(final long numerator, final long denominator) {
+		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
 
 	public static IAST FractionalPart(final IExpr a) {
@@ -3811,12 +3811,12 @@ public class F {
 	 * 
 	 * @param numerator
 	 *            numerator of the fractional number
-	 * @param denominator
+	 * @param fDenominator
 	 *            denumerator of the fractional number
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final BigFraction frac) {
-		return FractionSym.valueOf(frac);
+		return AbstractFractionSym.valueOf(frac);
 	}
 
 	/**
@@ -3829,7 +3829,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
-		return FractionSym.valueOf(numerator, denominator);
+		return AbstractFractionSym.valueOf(numerator.getBigNumerator(), denominator.getBigNumerator());
 	}
 
 	/**
@@ -3842,7 +3842,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final long numerator, final long denominator) {
-		return FractionSym.valueOf(numerator, denominator);
+		return AbstractFractionSym.newinstance(numerator, denominator);
 	}
 
 	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,

@@ -800,6 +800,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param value
 	 * @return
+	 * @see #isRational()
 	 */
 	public boolean isNumEqualRational(IRational value) throws ArithmeticException;
 
@@ -959,6 +960,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	/**
 	 * Test if this expression is a rational number, i.e. integer or fraction number.
 	 * 
+	 * @see #isNumEqualRational()
 	 */
 	public boolean isRational();
 

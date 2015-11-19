@@ -35,12 +35,14 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  */
 public class OutputFormFactory {
 	/**
-	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
+	 * The conversion wasn't called with an operator preceding the
+	 * <code>IExpr</code> object.
 	 */
 	public final static boolean NO_PLUS_CALL = false;
 
 	/**
-	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
+	 * The conversion was called with a &quot;+&quot; operator preceding the
+	 * <code>IExpr</code> object.
 	 */
 	public final static boolean PLUS_CALL = true;
 
@@ -56,12 +58,15 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal
+	 * expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            If <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e. sin() instead
-	 *            of Sin[]. If <code>true</code> use single square brackets instead of double square brackets for extracting parts
-	 *            of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            If <code>true</code> use paranthesis instead of square
+	 *            brackets and ignore case for functions, i.e. sin() instead of
+	 *            Sin[]. If <code>true</code> use single square brackets instead
+	 *            of double square brackets for extracting parts of an
+	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax) {
@@ -69,14 +74,18 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal
+	 * expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e. sin() instead
-	 *            of Sin[]. If <code>true</code> use single square brackets instead of double square brackets for extracting parts
-	 *            of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            if <code>true</code> use paranthesis instead of square
+	 *            brackets and ignore case for functions, i.e. sin() instead of
+	 *            Sin[]. If <code>true</code> use single square brackets instead
+	 *            of double square brackets for extracting parts of an
+	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @param plusReversed
-	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed order
+	 *            if <code>true</code> the arguments of the <code>Plus()</code>
+	 *            function will be printed in reversed order
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
@@ -84,8 +93,9 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string, with
-	 * <code>relaxedSyntax</code> set to false.
+	 * Get an <code>OutputFormFactory</code> for converting an internal
+	 * expression to a user readable string, with <code>relaxedSyntax</code> set
+	 * to false.
 	 * 
 	 * @return
 	 * @see #get(boolean)
@@ -94,7 +104,8 @@ public class OutputFormFactory {
 		return get(false);
 	}
 
-	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller) throws IOException {
+	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller)
+			throws IOException {
 		if (d.isZero()) {
 			convertDoubleValue(buf, "0.0", precedence, false);
 			return;
@@ -106,8 +117,8 @@ public class OutputFormFactory {
 		convertDoubleValue(buf, d.toString(), precedence, isNegative);
 	}
 
-	private void convertDoubleValue(final Appendable buf, final String d, final int precedence, final boolean isNegative)
-			throws IOException {
+	private void convertDoubleValue(final Appendable buf, final String d, final int precedence,
+			final boolean isNegative) throws IOException {
 		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, "(");
 		}
@@ -154,7 +165,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence, boolean caller) throws IOException {
+	public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence, boolean caller)
+			throws IOException {
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 			append(buf, "(");
 		}
@@ -186,7 +198,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertInteger(final Appendable buf, final IInteger i, final int precedence, boolean caller) throws IOException {
+	public void convertInteger(final Appendable buf, final IInteger i, final int precedence, boolean caller)
+			throws IOException {
 		final boolean isNegative = i.isNegative();
 		if (!isNegative && caller == PLUS_CALL) {
 			append(buf, "+");
@@ -217,9 +230,15 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertFraction(final Appendable buf, final BigFraction f, final int precedence, boolean caller) throws IOException {
-		boolean isInteger = f.getDenominator().compareTo(BigInteger.ONE) == 0;
-		final boolean isNegative = f.getNumerator().compareTo(BigInteger.ZERO) < 0;
+	public void convertFraction(final Appendable buf, final BigFraction f, final int precedence, boolean caller)
+			throws IOException {
+		convertFraction(buf, f.getNumerator(), f.getDenominator(), precedence, caller);
+	}
+
+	public void convertFraction(final Appendable buf, final BigInteger numerator, BigInteger denominator,
+			final int precedence, boolean caller) throws IOException {
+		boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
+		final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
 		final int prec = isNegative ? ASTNodeFactory.PLUS_PRECEDENCE : ASTNodeFactory.TIMES_PRECEDENCE;
 		if (!isNegative) {
 			if (caller == PLUS_CALL) {
@@ -231,7 +250,7 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 
-		String str = f.getNumerator().toString();
+		String str = numerator.toString();
 		if ((str.length() + getColumnCounter() > 80)) {
 			if (getColumnCounter() > 40) {
 				newLine(buf);
@@ -251,8 +270,7 @@ public class OutputFormFactory {
 		}
 		if (!isInteger) {
 			append(buf, "/");
-			// append(buf, f.getDenominator().toString());
-			str = f.getDenominator().toString();
+			str = denominator.toString();
 			if ((str.length() + getColumnCounter() > 80)) {
 				if (getColumnCounter() > 40) {
 					newLine(buf);
@@ -276,7 +294,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertComplex(final Appendable buf, final IComplex c, final int precedence, boolean caller) throws IOException {
+	public void convertComplex(final Appendable buf, final IComplex c, final int precedence, boolean caller)
+			throws IOException {
 		boolean isReZero = c.getRealPart().compareTo(BigFraction.ZERO) == 0;
 		final boolean isImOne = c.getImaginaryPart().compareTo(BigFraction.ONE) == 0;
 		final boolean isImMinusOne = c.getImaginaryPart().equals(BigFraction.MINUS_ONE);
@@ -352,8 +371,8 @@ public class OutputFormFactory {
 		convert(buf, obj);
 	}
 
-	private void convertPlusOperator(final Appendable buf, final IAST plusAST, final InfixOperator oper, final int precedence)
-			throws IOException {
+	private void convertPlusOperator(final Appendable buf, final IAST plusAST, final InfixOperator oper,
+			final int precedence) throws IOException {
 		int operPrecedence = oper.getPrecedence();
 		if (operPrecedence < precedence) {
 			append(buf, "(");
@@ -465,8 +484,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	private void convertTimesFraction(final Appendable buf, final IAST timesAST, final InfixOperator oper, final int precedence,
-			boolean caller) throws IOException {
+	private void convertTimesFraction(final Appendable buf, final IAST timesAST, final InfixOperator oper,
+			final int precedence, boolean caller) throws IOException {
 		IExpr[] parts = Apart.getFractionalPartsTimes(timesAST, true, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, timesAST, oper, precedence, caller);
@@ -498,7 +517,8 @@ public class OutputFormFactory {
 					}
 					// insert numerator in buffer:
 					if (numerator.isTimes()) {
-						convertTimesOperator(buf, (IAST) numerator, oper, ASTNodeFactory.DIVIDE_PRECEDENCE, NO_PLUS_CALL);
+						convertTimesOperator(buf, (IAST) numerator, oper, ASTNodeFactory.DIVIDE_PRECEDENCE,
+								NO_PLUS_CALL);
 					} else {
 						convert(buf, numerator, ASTNodeFactory.DIVIDE_PRECEDENCE);
 					}
@@ -519,8 +539,8 @@ public class OutputFormFactory {
 		convertTimesOperator(buf, timesAST, oper, precedence, caller);
 	}
 
-	private void convertTimesOperator(final Appendable buf, final IAST timesAST, final InfixOperator oper, final int precedence,
-			boolean caller) throws IOException {
+	private void convertTimesOperator(final Appendable buf, final IAST timesAST, final InfixOperator oper,
+			final int precedence, boolean caller) throws IOException {
 		boolean showOperator = true;
 		int currPrecedence = oper.getPrecedence();
 		if (currPrecedence < precedence) {
@@ -558,8 +578,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertPowerOperator(final Appendable buf, final IAST list, final InfixOperator oper, final int precedence)
-			throws IOException {
+	public void convertPowerOperator(final Appendable buf, final IAST list, final InfixOperator oper,
+			final int precedence) throws IOException {
 		IExpr arg2 = list.arg2();
 		if (arg2.isNumber()) {
 			INumber exp = (INumber) arg2;
@@ -593,8 +613,8 @@ public class OutputFormFactory {
 		convertInfixOperator(buf, list, oper, precedence);
 	}
 
-	public void convertInfixOperator(final Appendable buf, final IAST list, final InfixOperator oper, final int precedence)
-			throws IOException {
+	public void convertInfixOperator(final Appendable buf, final IAST list, final InfixOperator oper,
+			final int precedence) throws IOException {
 
 		if (list.size() == 3) {
 			if (oper.getPrecedence() < precedence) {
@@ -640,8 +660,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertPrefixOperator(final Appendable buf, final IAST list, final PrefixOperator oper, final int precedence)
-			throws IOException {
+	public void convertPrefixOperator(final Appendable buf, final IAST list, final PrefixOperator oper,
+			final int precedence) throws IOException {
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
@@ -652,8 +672,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertPostfixOperator(final Appendable buf, final IAST list, final PostfixOperator oper, final int precedence)
-			throws IOException {
+	public void convertPostfixOperator(final Appendable buf, final IAST list, final PostfixOperator oper,
+			final int precedence) throws IOException {
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
@@ -668,7 +688,8 @@ public class OutputFormFactory {
 		convert(buf, o, Integer.MIN_VALUE);
 	}
 
-	public void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller) throws IOException {
+	public void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller)
+			throws IOException {
 		if (o instanceof INum) {
 			convertDouble(buf, (INum) o, precedence, caller);
 			return;
@@ -702,7 +723,8 @@ public class OutputFormFactory {
 				if (derivStruct != null) {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];
-					if (a1Head.size() == 2 && a1Head.arg1().isInteger() && headAST.size() == 2 && headAST.arg1().isSymbol()) {
+					if (a1Head.size() == 2 && a1Head.arg1().isInteger() && headAST.size() == 2
+							&& headAST.arg1().isSymbol()) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							// IExpr arg1 = listArg1.arg1();
@@ -789,7 +811,8 @@ public class OutputFormFactory {
 					return;
 				}
 			}
-			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity)) {
+			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
+												// {
 				if (list.size() == 1) {
 					append(buf, "ComplexInfinity");
 					return;
@@ -875,7 +898,8 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.size() == 3</code> and the head equals "Part".
+	 * This method will only be called if <code>list.size() == 3</code> and the
+	 * head equals "Part".
 	 * 
 	 * @param buf
 	 * @param list
@@ -906,10 +930,13 @@ public class OutputFormFactory {
 	 * Convert a <code>SeriesData[...]</code> expression.
 	 * 
 	 * @param buf
-	 * @param seriesData  <code>SeriesData[x, x0, list, nmin, nmax, den]</code> expression
+	 * @param seriesData
+	 *            <code>SeriesData[x, x0, list, nmin, nmax, den]</code>
+	 *            expression
 	 * @throws IOException
 	 */
-	public boolean convertSeriesData(final Appendable buf, final IAST seriesData, final int precedence) throws IOException {
+	public boolean convertSeriesData(final Appendable buf, final IAST seriesData, final int precedence)
+			throws IOException {
 		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
 		if (operPrecedence < precedence) {

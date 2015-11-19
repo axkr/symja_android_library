@@ -26,8 +26,6 @@ public interface IFraction extends IRational {
 	//
 	// public IFraction divide(IFraction parm1);
 
-	public BigFraction getRational();
-
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
@@ -43,42 +41,17 @@ public interface IFraction extends IRational {
 	public BigInteger getBigNumerator();
 
 	public IFraction multiply(IFraction parm1);
-
-	//
-	// public IFraction subtract(IFraction parm1);
-
+	
+	public BigFraction getRational();
+	
 	/**
 	 * Returns this number raised at the specified exponent.
 	 * 
 	 * @param exp
 	 *            the exponent.
 	 * @return <code>this<sup>exp</sup></code>
+	 * @throws ArithmeticException if {@code 0^0} is given.  
 	 */
-	public IFraction pow(final int exp);
+	public IFraction pow(final long exp) throws ArithmeticException;
 
-	/**
-	 * Returns this number raised at the specified exponent.
-	 * 
-	 * @param exp
-	 *            the exponent.
-	 * @return <code>this<sup>exp</sup></code>
-	 */
-	public IFraction pow(final BigInteger exp);
-
-	/**
-	 * Returns this number raised at the specified exponent.
-	 * 
-	 * @param exp
-	 *            the exponent.
-	 * @return <code>this<sup>exp</sup></code>
-	 */
-	public IFraction pow(final IInteger exp);
-
-	/**
-	 * Return the normalized form of this number (i.e. if the denominator part
-	 * equals one, return the numerator part as an integer number).
-	 * 
-	 * @return
-	 */
-	public INumber normalize();
 }

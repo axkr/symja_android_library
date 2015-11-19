@@ -5,506 +5,268 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.commons.math4.fraction.BigFraction;
-import org.apache.commons.math4.fraction.FractionConversionException;
-import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
+import org.apache.commons.math4.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalAttributes;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.IVisitor;
-import org.matheclipse.core.visit.IVisitorBoolean;
-import org.matheclipse.core.visit.IVisitorInt;
-import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * IFraction implementation which delegates most of the methods to the Apache
- * commons BigFraction methods
+ * IFraction implementation which reimplements methods of the Apache
+ * <code>org.apache.commons.math4.fraction.Fraction</code> methods.
+ * 
+ * @see AbstractFractionSym
+ * @see BigFractionSym
  */
-public class FractionSym extends ExprImpl implements IFraction {
-
-	/**
-	 * Be cautious with this method, no new internal rational is created
-	 * 
-	 * @param numerator
-	 * @return
-	 */
-	protected static FractionSym newInstance(final BigFraction rational) {
-		FractionSym r = new FractionSym();
-		r.fRational = rational;
-		return r;
-	}
-
-	public static FractionSym valueOf(final BigInteger numerator) {
-		FractionSym r = new FractionSym();
-		r.fRational = new BigFraction(numerator, BigInteger.ONE);
-		return r;
-	}
-
+public class FractionSym extends AbstractFractionSym {
 	/**
 	 * 
-	 * @param rat
-	 * @return
-	 * 
 	 */
-	public static FractionSym valueOf(final BigFraction rat) {
-		return newInstance(rat);
+	private static final long serialVersionUID = 1225728601457694359L;
+
+	/**
+	 * Check if numerator and denominator are equal and the numerator isn't
+	 * zero.
+	 * 
+	 * @param num
+	 *            Numerator
+	 * @param den
+	 *            Denominator
+	 * @return
+	 */
+	private static boolean isOne(long num, long den) {
+		return num == den && num != 0;
 	}
 
-	public static FractionSym valueOf(final BigInteger numerator, final BigInteger denominator) {
-		FractionSym r = new FractionSym();
-		r.fRational = new BigFraction(numerator, denominator);
-		return r;
+	int fNumerator;
+
+	int fDenominator;
+
+	/**
+	 * Construct a rational from two ints. The constructor is private and does
+	 * not normalize. Use the static constructor valueOf instead.
+	 * 
+	 * @param nom
+	 *            Numerator
+	 * @param denom
+	 *            Denominator
+	 */
+	FractionSym(int nom, int denom) {
+		fNumerator = nom;
+		fDenominator = denom;
 	}
 
-	public static FractionSym valueOf(final IInteger numerator, final IInteger denominator) {
-		FractionSym r = new FractionSym();
-		r.fRational = new BigFraction(numerator.getBigNumerator(), denominator.getBigNumerator());
-		return r;
+	/**
+	 * Compute the absolute of this rational.
+	 * 
+	 * @return Rational that is equal to the absolute value of this rational.
+	 */
+	@Override
+	public AbstractFractionSym abs() {
+		return newinstance(Math.abs((long) fNumerator), fDenominator);
 	}
 
-	public static FractionSym valueOf(final long numerator, final long denominator) {
-		FractionSym r = new FractionSym();
-		r.fRational = new BigFraction(numerator, denominator);
-		return r;
-	}
-
-	public static FractionSym valueOf(final double value) {
-		FractionSym r = new FractionSym();
-		try {
-			r.fRational = new BigFraction(value, Config.DOUBLE_EPSILON, 200);
-		} catch (FractionConversionException e) {
-			r.fRational = new BigFraction(value);
+	/**
+	 * Return a new rational representing <code>this + other</code>.
+	 * 
+	 * @param other
+	 *            Rational to add.
+	 * @return Sum of <code>this</code> and <code>other</code>.
+	 */
+	@Override
+	public AbstractFractionSym add(AbstractFractionSym other) {
+		if (fNumerator == 0) {
+			return other;
 		}
-		return r;
+		if (other instanceof BigFractionSym) {
+			return ((BigFractionSym) other).add(this);
+		} else {
+			FractionSym fs = (FractionSym) other;
+			if (fs.fNumerator == 0) {
+				return this;
+			}
+			if (fDenominator == fs.fDenominator) {
+				return newinstance((long) fNumerator + fs.fNumerator, fDenominator);
+			}
+			int gcd = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
+			if (gcd == 1) {
+				long denomgcd = fDenominator;
+				long otherdenomgcd = fs.fDenominator;
+				long newdenom = denomgcd * otherdenomgcd;
+				long newnum = otherdenomgcd * fNumerator + (long) fDenominator * (long) fs.fNumerator;
+				return newinstance(newnum, newdenom);
+			}
+			long denomgcd = fDenominator / gcd;
+			long otherdenomgcd = fs.fDenominator / gcd;
+			long newdenom = denomgcd * fs.fDenominator;
+			long newnum = otherdenomgcd * fNumerator + denomgcd * fs.fNumerator;
+			return newinstance(newnum, newdenom);
+		}
 	}
 
 	/**
+	 * Return a new rational representing the smallest integral rational not
+	 * smaller than <code>this</code>.
 	 * 
-	 */
-	private static final long serialVersionUID = 2396715994276842438L;
-
-	/* package private */BigFraction fRational;
-
-	private transient int fHashValue = 0;
-
-	private FractionSym() {
-		fRational = null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isZero() {
-		return getBigNumerator().equals(BigInteger.ZERO);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isOne() {
-		return getBigNumerator().equals(BigInteger.ONE) && getBigDenominator().equals(BigInteger.ONE);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean equalsInt(final int i) {
-		return fRational.getNumerator().equals(BigInteger.valueOf(i))
-				&& fRational.getDenominator().equals(BigInteger.ONE);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public BigInteger getBigDenominator() {
-		return fRational.getDenominator();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public BigInteger getBigNumerator() {
-		return fRational.getNumerator();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public BigFraction getFraction() {
-		return fRational;
-	}
-
-	/**
-	 * Returns the denominator of this fraction.
-	 * 
-	 * @return denominator
+	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public IInteger getDenominator() {
-		return IntegerSym.valueOf(fRational.getDenominator());
+	public AbstractFractionSym ceil() {
+		if (fDenominator == 1) {
+			return this;
+		}
+		int div = fNumerator / fDenominator;
+		// Java rounds the wrong way for positive numbers.
+		// We know that the division is not exact due to
+		// normalization and mdenom != 1, so adding
+		// one fixes the result for positive numbers.
+		if (fNumerator > 0) {
+			div++;
+		}
+		return newinstance(div, 1);
 	}
 
-	/**
-	 * Returns the numerator of this Rational.
-	 * 
-	 * @return numerator
-	 */
-	@Override
-	public IInteger getNumerator() {
-		return IntegerSym.valueOf(fRational.getNumerator());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int hierarchy() {
-		return FRACTIONID;
-	}
-
-	@Override
-	public IFraction add(final IFraction parm1) {
-		return newInstance(fRational.add(((FractionSym) parm1).fRational));
-	}
-
-	@Override
-	public IFraction multiply(final IFraction parm1) {
-		return newInstance(fRational.multiply(((FractionSym) parm1).fRational));
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNegative() {
-		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == -1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNumEqualRational(IRational value) throws ArithmeticException {
-		return equals(value);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPositive() {
-		return (fRational.getNumerator().compareTo(BigInteger.ZERO) == 1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isRationalValue(IRational value) {
-		return equals(value);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public FractionSym eabs() {
-		return newInstance(fRational.abs());
-	}
-
-	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
-		BigFraction temp = fRational;
-		if (fRational.compareTo(BigFraction.ZERO) < 0) {
-			temp = temp.negate();
+		long num = fNumerator;
+		if (fNumerator < 0) {
+			num *= (-1);
 		}
-		return temp.compareTo(BigFraction.ONE);
+		if (isOne(num, fDenominator)) {
+			return 0;
+		}
+		return (num > fDenominator) ? 1 : -1;
+	}
+
+	@Override
+	public int compareTo(IExpr expr) {
+		if (expr instanceof FractionSym) {
+			FractionSym temp = (FractionSym) expr;
+			if (temp.fDenominator == fDenominator) {
+				return fNumerator < temp.fNumerator ? -1 : fNumerator == temp.fNumerator ? 0 : 1;
+			}
+			long valt = (long) fNumerator * (long) temp.fDenominator;
+			long valo = (long) temp.fNumerator * (long) fDenominator;
+			return valt < valo ? -1 : valt == valo ? 0 : 1;
+		}
+		if (expr instanceof IntegerSym) {
+			return compareTo(new BigFractionSym(((IntegerSym) expr).fInteger, BigInteger.ONE));
+		}
+		if (expr instanceof Num) {
+			double d = doubleValue() - ((Num) expr).getRealPart();
+			if (d < 0.0) {
+				return -1;
+			}
+			if (d > 0.0) {
+				return 1;
+			}
+			return super.compareTo(expr);
+		}
+		if (expr instanceof BigFractionSym) {
+			return -expr.compareTo(this);
+		}
+		return super.compareTo(expr);
+	}
+
+	@Override
+	public ComplexNum complexNumValue() {
+		// double precision complex number
+		double nr = fNumerator;
+		double dr = fDenominator;
+		return ComplexNum.valueOf(nr / dr);
 	}
 
 	/**
-	 * @param that
-	 * @return
-	 */
-	public BigFraction add(final BigFraction that) {
-		return fRational.add(that);
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	public BigFraction divide(final BigFraction that) {
-		return fRational.divide(that);
-	}
-
-	/**
-	 * Returns an array of two BigIntegers containing (numerator / denominator)
-	 * followed by (numerator % denominator).
+	 * Return a new rational representing <code>this / other</code>.
 	 * 
-	 * @return
+	 * @param other
+	 *            Rational to divide.
+	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
-	public BigInteger[] divideAndRemainder() {
-		return fRational.getNumerator().divideAndRemainder(fRational.getDenominator());
+	@Override
+	public AbstractFractionSym div(AbstractFractionSym other) {
+		if (other instanceof BigFractionSym) {
+			return ((BigFractionSym) other).idiv(this);
+		}
+
+		FractionSym fs = (FractionSym) other;
+		if (fs.fDenominator == 1) {
+			if (fs.fNumerator == 1) {
+				return this;
+			}
+			if (fs.fNumerator == -1) {
+				return this.negate();
+			}
+		}
+		long newnum = (long) fNumerator * fs.fDenominator;
+		long newdenom = (long) fDenominator * fs.fNumerator;
+		// +-inf : -c = -+inf
+		if (newdenom == 0 && fs.fNumerator < 0)
+			newnum = -newnum;
+		return newinstance(newnum, newdenom);
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
 	public double doubleValue() {
-		return fRational.doubleValue();
+		return ((double) fNumerator) / ((double) fDenominator);
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (obj instanceof FractionSym) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
-			if (this == obj) {
-				return true;
-			}
-			return fRational.equals(((FractionSym) obj).fRational);
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof FractionSym) {
+			FractionSym r = (FractionSym) o;
+			return fNumerator == r.fNumerator && fDenominator == r.fDenominator;
+		}
+		if (o instanceof BigFractionSym) {
+			return o.equals(this);
 		}
 		return false;
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * Return a new rational representing the biggest integral rational not
+	 * bigger than <code>this</code>.
+	 * 
+	 * @return Next smaller integer of <code>this</code>.
+	 */
 	@Override
-	public IExpr evaluate(EvalEngine engine) {
-		if (engine.isNumericMode()) {
-			return numericNumber();
+	public AbstractFractionSym floor() {
+		if (fDenominator == 1) {
+			return this;
 		}
-		final INumber cTemp = normalize();
-		return (cTemp == this) ? null : cTemp;
-	}
-
-	public final INumber numericNumber() {
-		return F.num(this);
-	}
-
-	public ISignedNumber normalize() {
-		if (getBigDenominator().equals(BigInteger.ONE)) {
-			return F.integer(getBigNumerator());
+		int div = fNumerator / fDenominator;
+		// Java rounds the wrong way for negative numbers.
+		// We know that the division is not exact due to
+		// normalization and mdenom != 1, so subtracting
+		// one fixes the result for negative numbers.
+		if (fNumerator < 0) {
+			div--;
 		}
-		if (getBigNumerator().equals(BigInteger.ZERO)) {
-			return F.C0;
-		}
-		return this;
+		return newinstance(div, 1);
 	}
 
 	/**
-	 * @return
+	 * Returns the fractional part of the rational, i.e. the number
+	 * this.sub(this.floor()).
+	 * 
+	 * @return Next smaller integer of <code>this</code>.
 	 */
-	public BigInteger getDividend() {
-		return fRational.getNumerator();
-	}
-
-	/**
-	 * @return
-	 */
-	public BigInteger getDivisor() {
-		return fRational.getDenominator();
-	}
-
-	@Override
-	public int hashCode() {
-		if (fHashValue == 0) {
-			fHashValue = fRational.hashCode();
+	public AbstractFractionSym frac() {
+		if (fDenominator == 1) {
+			return AbstractFractionSym.ZERO;
 		}
-		return fHashValue;
-	}
-
-	/**
-	 * @return
-	 */
-	public long longValue() {
-		return fRational.longValue();
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	public BigFraction multiply(final BigFraction that) {
-		return fRational.multiply(that);
-	}
-
-	/**
-	 * @return
-	 */
-	@Override
-	public ISignedNumber negate() {
-		return newInstance(fRational.negate());
-	}
-
-	/**
-	 * @return
-	 */
-	@Override
-	public ISignedNumber opposite() {
-		return newInstance(fRational.negate());
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	@Override
-	public IExpr plus(final IExpr that) {
-		if (that instanceof FractionSym) {
-			return this.add((FractionSym) that);
-		}
-		if (that instanceof IntegerSym) {
-			return this.add(valueOf(((IntegerSym) that).fInteger));
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
-		}
-		return super.plus(that);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber divideBy(ISignedNumber that) {
-		if (that instanceof FractionSym) {
-			return newInstance(this.divide(((FractionSym) that).fRational));
-		}
-		if (that instanceof IntegerSym) {
-			return this.divideBy(valueOf(((IntegerSym) that).fInteger));
-		}
-		return Num.valueOf(doubleValue() / that.doubleValue());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber subtractFrom(ISignedNumber that) {
-		if (that instanceof FractionSym) {
-			return this.add((FractionSym) that.negate());
-		}
-		if (isZero()) {
-			return that.negate();
-		}
-		if (that instanceof IntegerSym) {
-			return this.subtractFrom(valueOf(((IntegerSym) that).fInteger));
-		}
-		return Num.valueOf(doubleValue() - that.doubleValue());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IFraction pow(final int exp) {
-		return newInstance(fRational.pow(exp));
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public IFraction pow(final BigInteger exp) {
-		return newInstance(fRational.pow(exp));
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public IFraction pow(final IInteger exp) {
-		return newInstance(fRational.pow(exp.getBigNumerator()));
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber inverse() {
-		return newInstance(NumberUtil.inverse(fRational)).normalize();
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	public BigFraction subtract(final BigFraction that) {
-		return fRational.subtract(that);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IExpr times(final IExpr that) {
-		if (that instanceof FractionSym) {
-			return this.multiply((FractionSym) that).normalize();
-		}
-		if (that instanceof IntegerSym) {
-			return this.multiply(valueOf(((IntegerSym) that).fInteger)).normalize();
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
-		}
-		return super.times(that);
-	}
-
-	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false);
-	}
-
-	@Override
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
-	}
-
-	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
-		int numerator = fRational.getNumerator().intValue();
-		int denominator = fRational.getDenominator().intValue();
-		if (numerator == 1) {
-			switch (denominator) {
-			case 2:
-				return "C1D2";
-			case 3:
-				return "C1D3";
-			case 4:
-				return "C1D4";
-			}
-		}
-		if (numerator == -1) {
-			switch (denominator) {
-			case 2:
-				return "CN1D2";
-			case 3:
-				return "CN1D3";
-			case 4:
-				return "CN1D4";
-			}
-		}
-		return "QQ(" + numerator + "L," + denominator + "L)";
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int toInt() throws ArithmeticException {
-		if (fRational.getDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toInt(fRational.getNumerator());
-		}
-		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
-			return 0;
-		}
-		throw new ArithmeticException("toInt: denominator != 1");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public long toLong() throws ArithmeticException {
-		if (fRational.getDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toLong(fRational.getNumerator());
-		}
-		if (fRational.getNumerator().equals(BigInteger.ZERO)) {
-			return 0L;
-		}
-		throw new ArithmeticException("toLong: denominator != 1");
-	}
-
-	@Override
-	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertFraction(sb, fRational, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
-			return sb.toString();
-		} catch (Exception e1) {
-		}
-		// fall back to simple output format
-		return fRational.getNumerator().toString() + "/" + fRational.getDenominator().toString();
+		int newnum = fNumerator % fDenominator;
+		// Java rounds the wrong way for negative numbers.
+		// We know that the division is not exact due to
+		// normalization and mdenom != 1, so subtracting
+		// one fixes the result for negative numbers.
+		if (newnum < 0)
+			newnum += fDenominator;
+		return newinstance(newnum, fDenominator);
 	}
 
 	@Override
@@ -515,9 +277,9 @@ public class FractionSym extends ExprImpl implements IFraction {
 		} else {
 			buf.append('[');
 		}
-		buf.append(fRational.getNumerator().toString().toString());
+		buf.append(Integer.toString(fNumerator));
 		buf.append(',');
-		buf.append(fRational.getDenominator().toString().toString());
+		buf.append(Integer.toString(fDenominator));
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append(')');
 		} else {
@@ -526,195 +288,294 @@ public class FractionSym extends ExprImpl implements IFraction {
 		return buf.toString();
 	}
 
+	/**
+	 * Compute the gcd of two rationals (this and other). The gcd is the
+	 * rational number, such that dividing this and other with the gcd will
+	 * yield two co-prime integers.
+	 * 
+	 * @param other
+	 *            the second rational argument.
+	 * @return the gcd of this and other.
+	 */
+	public AbstractFractionSym gcd(AbstractFractionSym other) {
+		if (isZero()) {
+			return other;
+		}
+		if (other.isZero()) {
+			return this;
+		}
+		if (other instanceof BigFractionSym) {
+			return ((BigFractionSym) other).gcd(this);
+		}
+		/* new numerator = gcd(num, other.num) */
+		/* new denominator = lcm(denom, other.denom) */
+		FractionSym fs = (FractionSym) other;
+		int gcddenom = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
+		long denom = ((long) (fDenominator / gcddenom)) * (long) fs.fDenominator;
+		long num = ArithmeticUtils.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
+				fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
+		return newinstance(num, denom);
+	}
+
 	@Override
 	public IExpr gcd(IExpr that) {
 		if (that instanceof FractionSym) {
-			BigFraction arg2 = ((FractionSym) that).getRational();
-			return valueOf(fRational.getNumerator().gcd(arg2.getNumerator()),
-					IntegerSym.lcm(fRational.getDenominator(), arg2.getDenominator()));
+			return gcd((FractionSym) that);
 		}
 		return super.gcd(that);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.parser.interfaces.IFraction#getRational()
-	 */
+	@Override
+	public BigInteger getBigDenominator() {
+		return BigInteger.valueOf(fDenominator);
+	}
+
+	@Override
+	public BigInteger getBigNumerator() {
+		return BigInteger.valueOf(fNumerator);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigFraction getFraction() {
+		return new BigFraction(fNumerator, fDenominator);
+	}
+
 	@Override
 	public BigFraction getRational() {
-		return fRational;
+		return new BigFraction(fNumerator, fDenominator);
+	}
+
+	@Override
+	public int hashCode() {
+		return 37 * (37 * 17 + fNumerator) + fDenominator;
+	}
+
+	@Override
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	}
+
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		if (fNumerator == 1) {
+			switch (fDenominator) {
+			case 2:
+				return "C1D2";
+			case 3:
+				return "C1D3";
+			case 4:
+				return "C1D4";
+			}
+		}
+		if (fNumerator == -1) {
+			switch (fDenominator) {
+			case 2:
+				return "CN1D2";
+			case 3:
+				return "CN1D3";
+			case 4:
+				return "CN1D4";
+			}
+		}
+		return "QQ(" + fNumerator + "L," + fDenominator + "L)";
+	}
+
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+
+	/**
+	 * Returns a new rational representing the inverse of <code>this</code>.
+	 * 
+	 * @return Inverse of <code>this</code>.
+	 */
+	@Override
+	public AbstractFractionSym inverse() {
+		return newinstance(fDenominator, fNumerator);
+	}
+
+	/**
+	 * Check whether this rational corresponds to a (finite) rational value.
+	 * This function can be used to test for infinites and NaNs.
+	 * 
+	 * @return true if and only if this rational is not infinite or NaN.
+	 */
+	public boolean isDefined() {
+		return fDenominator != 0;
+	}
+
+	/**
+	 * Check whether this rational represents an integral value.  
+	 * 
+	 * @return <code>true</code> iff value is integral.
+	 */
+	@Override
+	public boolean isIntegral() {
+		return fDenominator == 1;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int sign() {
-		return fRational.getNumerator().signum();
+	public boolean isMinusOne() {
+		return fNumerator == (-1 * fDenominator) && fNumerator != 0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int complexSign() {
-		return sign();
+	public boolean isNegative() {
+		return fNumerator < 0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger ceil() {
-		return IntegerSym.valueOf(NumberUtil.ceiling(fRational));
+	public boolean isOne() {
+		return fNumerator == fDenominator && fNumerator != 0;
 	}
 
 	/** {@inheritDoc} */
-	public IAST factorInteger() {
-		IInteger num = getNumerator();
-		IInteger den = getDenominator();
-		IAST result = den.factorInteger();
+	@Override
+	public boolean isPositive() {
+		return fNumerator > 0;
+	}
 
-		// negate the exponents of the denominator part
-		for (int i = 1; i < result.size(); i++) {
-			IAST list = (IAST) result.get(i);
-			list.set(2, ((ISignedNumber) list.arg2()).negate());
+	/** {@inheritDoc} */
+	@Override
+	public boolean isZero() {
+		return fNumerator == 0;
+	}
+
+	/**
+	 * Return a new rational representing <code>this * other</code>.
+	 * 
+	 * @param other
+	 *            Rational to multiply.
+	 * @return Product of <code>this</code> and <code>other</code>.
+	 */
+	@Override
+	public AbstractFractionSym mul(AbstractFractionSym other) {
+		if (other.isOne()) {
+			return this;
+		}
+		if (this.isOne()) {
+			return other;
+		}
+		if (other.isMinusOne()) {
+			return this.negate();
+		}
+		if (this.isMinusOne()) {
+			return other.negate();
+		}
+		if (other instanceof BigFractionSym) {
+			return other.mul(this);
 		}
 
-		// add th factors from the numerator part
-		result.addAll(num.factorInteger());
-		EvalAttributes.sort(result);
-		return result;
+		FractionSym fs = (FractionSym) other;
+		long newnum = (long) fNumerator * fs.fNumerator;
+		long newdenom = (long) fDenominator * fs.fDenominator;
+		return newinstance(newnum, newdenom);
+	}
+
+	/**
+	 * Return a new rational representing <code>this * other</code>.
+	 * 
+	 * @param other
+	 *            big integer to multiply.
+	 * @return Product of <code>this</code> and <code>other</code>.
+	 */
+	public AbstractFractionSym mul(BigInteger other) {
+		if (other.bitLength() < 32) { 
+			int oint = other.intValue();
+			if (oint == 1)
+				return this;
+			if (oint == -1)
+				return this.negate();
+			long newnum = (long) fNumerator * oint;
+			return newinstance(newnum, fDenominator);
+		}
+
+		if (this.isOne()) {
+			return valueOf(other, BigInteger.ONE);
+		}
+		if (this.isMinusOne()) {
+			return valueOf(other.negate(), BigInteger.ONE);
+		}
+
+		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
+	}
+
+	/**
+	 * Returns a new rational equal to <code>-this</code>.
+	 * 
+	 * @return <code>-this</code>.
+	 */
+	@Override
+	public AbstractFractionSym negate() {
+		return AbstractFractionSym.newinstance(-(long) fNumerator, fDenominator);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger floor() {
-		return IntegerSym.valueOf(NumberUtil.floor(fRational));
+	public INumber normalize() {
+		if (fDenominator == 1) {
+			return F.integer(fNumerator);
+		}
+		if (isZero()) {
+			return F.C0;
+		}
+		return this;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IInteger round() {
-		return IntegerSym.valueOf(NumberUtil.round(fRational, BigDecimal.ROUND_HALF_EVEN));
-	}
-
-	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
-	 */
-	@Override
-	public int compareTo(final IExpr expr) {
-		if (expr instanceof FractionSym) {
-			return fRational.compareTo(((FractionSym) expr).fRational);
-		}
-		if (expr instanceof IntegerSym) {
-			return fRational.compareTo(new BigFraction(((IntegerSym) expr).fInteger, BigInteger.ONE));
-		}
-		if (expr instanceof Num) {
-			double d = fRational.doubleValue() - ((Num) expr).getRealPart();
-			if (d < 0.0) {
-				return -1;
-			}
-			if (d > 0.0) {
-				return 1;
-			}
-		}
-		return super.compareTo(expr);
-	}
-
-	@Override
-	public boolean isLessThan(ISignedNumber obj) {
-		if (obj instanceof FractionSym) {
-			return fRational.compareTo(((FractionSym) obj).fRational) < 0;
-		}
-		if (obj instanceof IntegerSym) {
-			return fRational.compareTo(new BigFraction(((IntegerSym) obj).fInteger, BigInteger.ONE)) < 0;
-		}
-		return fRational.doubleValue() < obj.doubleValue();
-	}
-
-	@Override
-	public boolean isGreaterThan(ISignedNumber obj) {
-		if (obj instanceof FractionSym) {
-			return fRational.compareTo(((FractionSym) obj).fRational) > 0;
-		}
-		if (obj instanceof IntegerSym) {
-			return fRational.compareTo(new BigFraction(((IntegerSym) obj).fInteger, BigInteger.ONE)) > 0;
-		}
-		return fRational.doubleValue() > obj.doubleValue();
-	}
-
-	@Override
-	public ISymbol head() {
-		return F.Rational;
+		BigFraction temp = new BigFraction(fNumerator, fDenominator);
+		return IntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IFraction abs() {
-		return eabs();
+	public int sign() {
+		return fNumerator < 0 ? -1 : fNumerator == 0 ? 0 : 1;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
+	public int toInt() throws ArithmeticException {
+		if (fDenominator == 1) {
+			return fNumerator;
+		}
+		if (fNumerator == 0) {
+			return 0;
+		}
+		throw new ArithmeticException("toInt: denominator != 1");
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
+	public long toLong() throws ArithmeticException {
+		if (fDenominator == 1) {
+			return fNumerator;
+		}
+		if (fNumerator == 0) {
+			return 0L;
+		}
+		throw new ArithmeticException("toLong: denominator != 1");
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber getIm() {
-		return F.C0;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber getRe() {
-		return this;
-	}
-
-	@Override
-	public ApfloatNum apfloatNumValue(long precision) {
-		return ApfloatNum.valueOf(fRational.getNumerator(), fRational.getDenominator(), precision);
-	}
-
-	@Override
-	public Num numValue() {
-		return Num.valueOf(fRational.doubleValue());
-	}
-
-	public Apcomplex apcomplexValue(long precision) {
-		Apfloat real = new Apfloat(fRational.getNumerator(), precision)
-				.divide(new Apfloat(fRational.getDenominator(), precision));
-		return new Apcomplex(real);
-	}
-
-	@Override
-	public ApcomplexNum apcomplexNumValue(long precision) {
-		return ApcomplexNum.valueOf(apcomplexValue(precision));
-	}
-
-	@Override
-	public ComplexNum complexNumValue() {
-		// double precision complex number
-		double nr = fRational.getNumerator().doubleValue();
-		double dr = fRational.getDenominator().doubleValue();
-		return ComplexNum.valueOf(nr / dr);
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertFraction(sb, getBigNumerator(), getBigDenominator(), Integer.MIN_VALUE,
+					OutputFormFactory.NO_PLUS_CALL);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
+		return getBigNumerator().toString() + "/" + getBigDenominator().toString();
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

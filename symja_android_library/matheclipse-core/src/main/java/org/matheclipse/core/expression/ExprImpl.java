@@ -1012,11 +1012,14 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr power(final long n) {
+	public IExpr power(final long n) {
 		if (n == 0L) {
 			if (!this.isZero()) {
 				return F.C1;
 			}
+			// don't return F.Indeterminate here! The evaluation of F.Power()
+			// returns Indeterminate
+			return F.Power(this, F.C0);
 		} else if (n == 1L) {
 			return this;
 		} else if (this.isNumber()) {
@@ -1110,13 +1113,14 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/**
-	 * Signum functionality is used in JAS toString() method, don't use it as math signum function.
+	 * Signum functionality is used in JAS toString() method, don't use it as
+	 * math signum function.
 	 * 
 	 * @deprecated
 	 */
 	@Deprecated
 	@Override
-	public final int signum() {
+	public int signum() {
 		if (isZERO()) {
 			return 0;
 		}
