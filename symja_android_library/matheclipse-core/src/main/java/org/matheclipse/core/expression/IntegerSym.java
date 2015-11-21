@@ -28,8 +28,9 @@ import org.matheclipse.core.reflection.system.Subsets.KSubsetsList;
 import com.google.common.math.BigIntegerMath;
 
 /**
- * IInteger implementation which delegates most of the methods to the BigInteger
- * methods
+ * IInteger implementation which uses an internal <code>int</code> value
+ * @see AbstractIntegerSym
+ * @see BigIntegerSym
  */
 public class IntegerSym extends AbstractIntegerSym {
 
@@ -297,7 +298,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	public final boolean equalsFraction(final int numerator, final int denominator) {
 		return denominator == 1 && fIntValue == numerator;
 	}
-	
+
 	@Override
 	public boolean equalsInt(final int value) {
 		return fIntValue == value;

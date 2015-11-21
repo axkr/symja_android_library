@@ -25,6 +25,13 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+/**
+ * Abstract base class for FractionSym and BigFractionSym
+ * 
+ * @see FractionSym
+ * @see BigFractionSym
+ *
+ */
 public abstract class AbstractFractionSym extends ExprImpl implements IFraction {
 
 	public final static FractionSym ZERO = new FractionSym(0, 1);

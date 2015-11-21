@@ -28,7 +28,10 @@ import com.google.common.math.BigIntegerMath;
 
 /**
  * IInteger implementation which delegates most of the methods to the BigInteger
- * methods
+ * methods.
+ * 
+ * @see AbstractIntegerSym
+ * @see IntegerSym
  */
 public class BigIntegerSym extends AbstractIntegerSym {
 

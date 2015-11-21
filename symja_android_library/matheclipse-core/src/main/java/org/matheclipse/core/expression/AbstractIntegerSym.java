@@ -17,6 +17,13 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+/**
+ * Abstract base class for IntegerSym and BigIntegerSym
+ * 
+ * @see IntegerSym
+ * @see BigIntegerSym
+ *
+ */
 public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, Externalizable {
 	/**
 	 * The BigInteger constant minus one.
