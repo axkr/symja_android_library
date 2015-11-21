@@ -268,7 +268,7 @@ public class AST extends HMArrayList implements Externalizable {
 		IExpr[] eArr = new IExpr[arr.length + 1];
 		eArr[0] = symbol;
 		for (int i = 1; i <= arr.length; i++) {
-			eArr[i] = IntegerSym.valueOf(arr[i - 1]);
+			eArr[i] = AbstractIntegerSym.valueOf(arr[i - 1]);
 		}
 		return new AST(eArr);
 	}

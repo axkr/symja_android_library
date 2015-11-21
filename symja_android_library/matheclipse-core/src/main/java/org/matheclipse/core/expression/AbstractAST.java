@@ -309,8 +309,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 		} else if (clazz.equals(java.math.BigInteger.class)) {
 			IExpr temp = F.eval(this);
-			if (temp instanceof IntegerSym) {
-				return new java.math.BigInteger(((IntegerSym) temp).toByteArray());
+			if (temp instanceof AbstractIntegerSym) {
+				return new java.math.BigInteger(((AbstractIntegerSym) temp).toByteArray());
 			}
 		} else if (clazz.equals(String.class)) {
 			return toString();

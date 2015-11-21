@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -21,7 +22,7 @@ public class JacobiSymbol extends AbstractArg2 {
 				// not defined for negative arguments
 				return null;
 			}
-			IntegerSym jacobi = ((IntegerSym) i0).jacobiSymbol((IntegerSym) i1);
+			AbstractIntegerSym jacobi = ((AbstractIntegerSym) i0).jacobiSymbol((AbstractIntegerSym) i1);
 			return jacobi;
 		} catch (ArithmeticException e) {
 			// integer to large?

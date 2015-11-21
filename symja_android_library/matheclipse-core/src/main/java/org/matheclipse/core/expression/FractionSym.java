@@ -76,7 +76,7 @@ public class FractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public AbstractFractionSym add(AbstractFractionSym other) {
-		if (fNumerator == 0) {
+		if (isZero()) {
 			return other;
 		}
 		if (other instanceof BigFractionSym) {
@@ -150,8 +150,8 @@ public class FractionSym extends AbstractFractionSym {
 			long valo = (long) temp.fNumerator * (long) fDenominator;
 			return valt < valo ? -1 : valt == valo ? 0 : 1;
 		}
-		if (expr instanceof IntegerSym) {
-			return compareTo(new BigFractionSym(((IntegerSym) expr).fInteger, BigInteger.ONE));
+		if (expr instanceof AbstractIntegerSym) {
+			return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).getBigNumerator(), BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = doubleValue() - ((Num) expr).getRealPart();
@@ -217,14 +217,20 @@ public class FractionSym extends AbstractFractionSym {
 		if (this == o) {
 			return true;
 		}
-		if (o instanceof FractionSym) {
-			FractionSym r = (FractionSym) o;
-			return fNumerator == r.fNumerator && fDenominator == r.fDenominator;
-		}
-		if (o instanceof BigFractionSym) {
-			return o.equals(this);
+		if (o instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym)o).equalsFraction(fNumerator, fDenominator);
 		}
 		return false;
+	}
+
+	@Override
+	public final boolean equalsFraction(final int numerator, final int denominator) {
+		return fNumerator == numerator && fDenominator == denominator;
+	}
+	
+	@Override
+	public boolean equalsInt(final int value) {
+		return fNumerator == value && fDenominator == 1;
 	}
 
 	/**
@@ -407,7 +413,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Check whether this rational represents an integral value.  
+	 * Check whether this rational represents an integral value.
 	 * 
 	 * @return <code>true</code> iff value is integral.
 	 */
@@ -485,7 +491,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	public AbstractFractionSym mul(BigInteger other) {
-		if (other.bitLength() < 32) { 
+		if (other.bitLength() < 32) {
 			int oint = other.intValue();
 			if (oint == 1)
 				return this;
@@ -531,7 +537,7 @@ public class FractionSym extends AbstractFractionSym {
 	@Override
 	public IInteger round() {
 		BigFraction temp = new BigFraction(fNumerator, fDenominator);
-		return IntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
+		return AbstractIntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
 	}
 
 	/** {@inheritDoc} */

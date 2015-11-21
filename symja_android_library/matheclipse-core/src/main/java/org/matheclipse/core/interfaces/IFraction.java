@@ -40,9 +40,9 @@ public interface IFraction extends IRational {
 	 */
 	public BigInteger getBigNumerator();
 
-	public IFraction multiply(IFraction parm1);
-	
 	public BigFraction getRational();
+	
+	public IFraction multiply(IFraction parm1);
 	
 	/**
 	 * Returns this number raised at the specified exponent.

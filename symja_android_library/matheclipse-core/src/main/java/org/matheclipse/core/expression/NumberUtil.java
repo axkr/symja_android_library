@@ -6,7 +6,6 @@ import java.math.RoundingMode;
 
 import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
 import com.google.common.math.DoubleMath;
@@ -118,22 +117,6 @@ public class NumberUtil {
 		return new BigFraction(fraction.getDenominator(), fraction.getNumerator());
 	}
 
-	public static boolean isOne(final IExpr i) {
-		return (i instanceof IInteger) && ((IInteger) i).getBigNumerator().equals(BigInteger.ONE);
-	}
-
-	public static boolean isMinusOne(final IExpr i) {
-		return (i instanceof IInteger) && ((IInteger) i).getBigNumerator().equals(MINUS_ONE);
-	}
-
-	public static boolean isLargerThan(BigInteger a, BigInteger b) {
-		return (a.compareTo(b) > 0);
-	}
-
-	public static boolean isLessThan(BigInteger a, BigInteger b) {
-		return (a.compareTo(b) < 0);
-	}
-
 	public static boolean isNegative(BigInteger a) {
 		return (a.compareTo(BigInteger.ZERO) < 0);
 	}
@@ -192,11 +175,11 @@ public class NumberUtil {
 	 * Test if this BigInteger equals the given <code>int</code> value.
 	 */
 	public static boolean isInt(BigInteger a, int value) throws ArithmeticException {
-		int val = a.intValue();
-		if (!a.equals(BigInteger.valueOf(val))) {
-			return false;
-		}
-		return val == value;
+		// int val = a.intValue();
+		// if (!a.equals(BigInteger.valueOf(val))) {
+		// return false;
+		// }
+		return a.intValue() == value && a.bitLength() <= 31;
 	}
 
 	/**

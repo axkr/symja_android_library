@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
@@ -21,9 +21,9 @@ public class Divisors extends AbstractTrigArg1 {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
-			IntegerSym i = (IntegerSym) arg1;
+			AbstractIntegerSym i = (AbstractIntegerSym) arg1;
 			if (i.isNegative()) {
-				i = (IntegerSym) i.negate();
+				i = (AbstractIntegerSym) i.negate();
 			}
 			return i.divisors();
 		}

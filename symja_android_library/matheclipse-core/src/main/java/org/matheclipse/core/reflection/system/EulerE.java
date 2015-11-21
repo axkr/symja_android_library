@@ -4,8 +4,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
@@ -26,8 +26,8 @@ public class EulerE extends AbstractTrigArg1 {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
 			try {
-				int n = ((IntegerSym) arg1).toInt();
-				if ((n & 0x0001) == 0x0001) {
+				int n = ((AbstractIntegerSym) arg1).toInt();
+				if ((n & 0x00000001) == 0x00000001) {
 					return F.C0;
 				}
 				n /= 2;

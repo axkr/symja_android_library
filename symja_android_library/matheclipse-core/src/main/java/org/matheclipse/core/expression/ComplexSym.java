@@ -194,7 +194,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	public ISignedNumber getIm() {
 		if (_imaginary.getDenominator().equals(BigInteger.ONE)) {
-			return IntegerSym.newInstance(_imaginary.getNumerator());
+			return AbstractIntegerSym.valueOf(_imaginary.getNumerator());
 		}
 		return AbstractFractionSym.valueOf(_imaginary);
 	}
@@ -210,7 +210,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 
 	public ISignedNumber getRe() {
 		if (_real.getDenominator().equals(BigInteger.ONE)) {
-			return IntegerSym.newInstance(_real.getNumerator());
+			return  AbstractIntegerSym.valueOf(_real.getNumerator());
 		}
 		return AbstractFractionSym.valueOf(_real);
 	}
@@ -273,8 +273,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof ComplexSym) {
 			return this.add((ComplexSym) that);
 		}
-		if (that instanceof IntegerSym) {
-			return this.add(valueOf((IntegerSym) that));
+		if (that instanceof AbstractIntegerSym) {
+			return this.add(valueOf((AbstractIntegerSym) that));
 		}
 		if (that instanceof AbstractFractionSym) {
 			return this.add(valueOf((AbstractFractionSym) that));
@@ -297,8 +297,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof ComplexSym) {
 			return multiply((ComplexSym) that);
 		}
-		if (that instanceof IntegerSym) {
-			return this.multiply(valueOf((IntegerSym) that));
+		if (that instanceof AbstractIntegerSym) {
+			return this.multiply(valueOf((AbstractIntegerSym) that));
 		}
 		if (that instanceof AbstractFractionSym) {
 			return this.multiply(valueOf((AbstractFractionSym) that));

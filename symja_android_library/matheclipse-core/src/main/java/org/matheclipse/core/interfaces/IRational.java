@@ -5,7 +5,8 @@ import java.math.BigInteger;
 import org.apache.commons.math4.fraction.BigFraction;
 
 /**
- * Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction)
+ * Interface for "rational" numbers (i.e. numbers implementing IInteger or
+ * IFraction)
  * 
  */
 public interface IRational extends ISignedNumber, IBigNumber {
@@ -14,14 +15,29 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	public IRational abs();
 
 	/**
-	 * Return the factors paired with their exponents for integer and fractional numbers. For factors of the denominator part of
-	 * fractional numbers the exponents are negative.
+	 * Check if this number equals the given fraction
+	 * <code>numerator/denominator</code> number.
+	 * <code>GCD(numerator, /denominator)</code> should be 1;
+	 * 
+	 * @param numerator
+	 *            the numerator
+	 * @param denominator
+	 *            the denominator
+	 * @return
+	 */
+	public boolean equalsFraction(final int numerator, final int denominator);
+
+	/**
+	 * Return the factors paired with their exponents for integer and fractional
+	 * numbers. For factors of the denominator part of fractional numbers the
+	 * exponents are negative.
 	 * 
 	 * <pre>
 	 * factorInteger(-4) ==> {{-1,1},{2,2}}
 	 * </pre>
 	 */
 	public IAST factorInteger();
+
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
@@ -35,7 +51,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return denominator
 	 */
 	public BigInteger getBigNumerator();
-	
+
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
@@ -56,7 +72,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return denominator
 	 */
 	public IInteger getNumerator();
-	
+
 	/**
 	 * Return the normalized form of this number (i.e. if the denominator part
 	 * equals one, return the numerator part as an integer number).

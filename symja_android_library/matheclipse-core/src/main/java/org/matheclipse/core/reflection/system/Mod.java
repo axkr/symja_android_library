@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
-import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -17,9 +17,9 @@ public class Mod extends AbstractArg2 {
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 		if (i1.isNegative()) {
-			return ((IntegerSym)(i0.negate())).mod((IntegerSym)(i1.negate())).negate();
+			return ((AbstractIntegerSym)(i0.negate())).mod((AbstractIntegerSym)(i1.negate())).negate();
 		}
-		return ((IntegerSym) i0).mod((IntegerSym)i1);
+		return ((AbstractIntegerSym) i0).mod((AbstractIntegerSym)i1);
 	}
 
 }

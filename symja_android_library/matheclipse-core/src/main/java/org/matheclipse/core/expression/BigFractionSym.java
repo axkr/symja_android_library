@@ -67,7 +67,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 		BigInteger tdenom = getBigDenominator();
 		BigInteger odenom = other.getBigDenominator();
-		if (tdenom.equals(odenom)) { 
+		if (tdenom.equals(odenom)) {
 			return valueOf(getBigNumerator().add(other.getBigNumerator()), tdenom);
 		}
 		BigInteger gcd = tdenom.gcd(odenom);
@@ -104,6 +104,16 @@ public class BigFractionSym extends AbstractFractionSym {
 		return temp.compareTo(BigFraction.ONE);
 	}
 
+	// public int compareFraction(final int numerator, final int denominator) {
+	// BigInteger num = fFraction.getNumerator();
+	// BigInteger den = fFraction.getDenominator();
+	// if (num.bitLength() <= 31) {
+	// int temp = num.intValue();
+	// return temp > value ? 1 : temp == value ? 0 : -1;
+	// }
+	// return num.signum();
+	// }
+
 	@Override
 	public int compareTo(IExpr expr) {
 		if (expr instanceof AbstractFractionSym) {
@@ -111,8 +121,8 @@ public class BigFractionSym extends AbstractFractionSym {
 			BigInteger valo = ((AbstractFractionSym) expr).getBigNumerator().multiply(getBigDenominator());
 			return valthis.compareTo(valo);
 		}
-		if (expr instanceof IntegerSym) {
-			return fFraction.compareTo(new BigFraction(((IntegerSym) expr).fInteger, BigInteger.ONE));
+		if (expr instanceof AbstractIntegerSym) {
+			return fFraction.compareTo(new BigFraction(((AbstractIntegerSym) expr).getBigNumerator(), BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = fFraction.doubleValue() - ((Num) expr).getRealPart();
@@ -169,16 +179,32 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public boolean equals(Object o) {
+		if (o instanceof FractionSym) {
+			final FractionSym r = (FractionSym) o;
+			return equalsFraction(r.fNumerator, r.fDenominator);
+			// return NumberUtil.isInt(fFraction.getNumerator(), r.fNumerator)
+			// && NumberUtil.isInt(fFraction.getDenominator(), r.fDenominator);
+		}
 		if (o instanceof BigFractionSym) {
 			BigFractionSym r = (BigFractionSym) o;
 			return fFraction.equals(r.fFraction);
 		}
-		if (o instanceof FractionSym) {
-			final FractionSym r = (FractionSym) o;
-			return NumberUtil.isInt(fFraction.getNumerator(), r.fNumerator)
-					&& NumberUtil.isInt(fFraction.getDenominator(), r.fDenominator);
-		}
 		return false;
+	}
+
+	@Override
+	public final boolean equalsFraction(final int numerator, final int denominator) {
+		BigInteger num = fFraction.getNumerator();
+		BigInteger den = fFraction.getDenominator();
+		return num.intValue() == numerator && den.intValue() == denominator && num.bitLength() <= 31
+				&& den.bitLength() <= 31;
+	}
+
+	@Override
+	public boolean equalsInt(final int numerator) {
+		BigInteger num = fFraction.getNumerator();
+		return num.intValue() == numerator && fFraction.getDenominator().equals(BigInteger.ONE)
+				&& num.bitLength() <= 31;
 	}
 
 	/**
@@ -262,7 +288,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (that instanceof AbstractFractionSym) {
 			BigFraction arg2 = ((AbstractFractionSym) that).getRational();
 			return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
-					IntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
+					AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
 		}
 		return super.gcd(that);
 	}
@@ -307,9 +333,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	public AbstractFractionSym idiv(AbstractFractionSym other) {
 		BigInteger num = getBigDenominator().multiply(other.getBigNumerator());
 		BigInteger denom = getBigNumerator().multiply(other.getBigDenominator());
-		// +-inf : -c = -+inf
-		if (denom.equals(BigInteger.ZERO) && getBigNumerator().signum() == -1)
+
+		if (denom.equals(BigInteger.ZERO) && getBigNumerator().signum() == -1) {
 			num = num.negate();
+		}
 		return valueOf(num, denom);
 	}
 
@@ -439,7 +466,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger round() {
-		return IntegerSym.valueOf(NumberUtil.round(fFraction, BigDecimal.ROUND_HALF_EVEN));
+		return AbstractIntegerSym.valueOf(NumberUtil.round(fFraction, BigDecimal.ROUND_HALF_EVEN));
 	}
 
 	/** {@inheritDoc} */
