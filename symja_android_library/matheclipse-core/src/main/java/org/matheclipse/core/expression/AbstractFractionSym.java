@@ -70,7 +70,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 * @param newdenom
 	 *            Denominator.
 	 */
-	public static AbstractFractionSym newinstance(long newnum, long newdenom) {
+	public static AbstractFractionSym valueOf(long newnum, long newdenom) {
 		if (newdenom != 1) {
 			if (newdenom == 0) {
 				throw new ZeroException(LocalizedFormats.ZERO_DENOMINATOR);
@@ -135,8 +135,8 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 				den = den.divide(norm);
 			}
 		}
-		if (den.bitLength() < 32 && num.bitLength() < 32) {
-			return newinstance(num.intValue(), den.intValue());
+		if (den.bitLength() <= 31 && num.bitLength() <= 31) {
+			return valueOf(num.intValue(), den.intValue());
 		} else {
 			return new BigFractionSym(num, den);
 		}
@@ -154,49 +154,10 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	}
 
 	public static AbstractFractionSym valueOf(IInteger numerator, IInteger denominator) {
+		if (numerator instanceof IntegerSym && denominator instanceof IntegerSym) {
+			return valueOf(((IntegerSym) numerator).fIntValue, ((IntegerSym) denominator).fIntValue);
+		}
 		return valueOf(numerator.getBigNumerator(), denominator.getBigNumerator());
-	}
-
-	/**
-	 * Construct a rational from two longs. Use this method to create a rational
-	 * number. This method normalizes the rational number and may return a
-	 * previously created one. This method does not work if called with value
-	 * Long.MIN_VALUE.
-	 * 
-	 * @param newnum
-	 *            Numerator.
-	 * @param newdenom
-	 *            Denominator.
-	 */
-	public static IRational valueOf(long newnum, long newdenom) {
-		if (newdenom != 1) {
-			if (newdenom == 0) {
-				throw new ZeroException(LocalizedFormats.ZERO_DENOMINATOR);
-			}
-			long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
-			if (newdenom < 0) {
-				gcd2 = -gcd2;
-			}
-			newnum /= gcd2;
-			newdenom /= gcd2;
-		}
-
-		if (newdenom == 1) {
-			if (newnum == 0) {
-				return F.C0;
-			}
-			if (newnum == 1) {
-				return F.C1;
-			}
-			if (newnum == -1) {
-				return F.CN1;
-			}
-		}
-
-		if (Integer.MIN_VALUE <= newnum && newnum <= Integer.MAX_VALUE && newdenom <= Integer.MAX_VALUE) {
-			return new FractionSym((int) newnum, (int) newdenom);
-		}
-		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.valueOf(newdenom));
 	}
 
 	/**
@@ -230,6 +191,10 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
 	}
+
+	public abstract AbstractFractionSym ceilFraction();
+
+	public abstract AbstractFractionSym floorFraction();
 
 	public abstract AbstractFractionSym add(AbstractFractionSym other);
 
@@ -276,16 +241,22 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
-		if (that instanceof AbstractFractionSym) {
-			return (ISignedNumber) this.divide((that));
-		}
-		if (that instanceof IntegerSym) {
-			return this.divideBy(AbstractFractionSym.valueOf(((IntegerSym) that).fIntValue));
-		}
-		if (that instanceof BigIntegerSym) {
-			return this.divideBy(AbstractFractionSym.valueOf(((BigIntegerSym) that).fBigIntValue));
+		if (that instanceof IRational) {
+			return this.divideBy((IRational) that);
 		}
 		return Num.valueOf(doubleValue() / that.doubleValue());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IRational divideBy(IRational that) {
+		if (that instanceof AbstractFractionSym) {
+			return this.div((AbstractFractionSym) that);
+		}
+		if (that instanceof IntegerSym) {
+			return this.div(AbstractFractionSym.valueOf(((IntegerSym) that).fIntValue));
+		}
+		return this.div(AbstractFractionSym.valueOf(((BigIntegerSym) that).fBigIntValue));
 	}
 
 	@Override
@@ -562,19 +533,19 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
-		if (that instanceof AbstractFractionSym) {
-			return this.add((AbstractFractionSym) that.negate());
+		if (that instanceof IRational) {
+			return this.add((IRational) that.negate());
 		}
+		return Num.valueOf(doubleValue() - that.doubleValue());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IRational subtract(IRational that) {
 		if (isZero()) {
 			return that.negate();
 		}
-		if (that instanceof IntegerSym) {
-			return this.subtractFrom(valueOf(((IntegerSym) that).fIntValue));
-		}
-		if (that instanceof BigIntegerSym) {
-			return this.subtractFrom(valueOf(((BigIntegerSym) that).fBigIntValue));
-		}
-		return Num.valueOf(doubleValue() - that.doubleValue());
+		return this.add(that.negate());
 	}
 
 	/** {@inheritDoc} */

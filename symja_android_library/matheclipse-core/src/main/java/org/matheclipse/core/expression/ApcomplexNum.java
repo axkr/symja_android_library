@@ -474,13 +474,13 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	@Override
-	public INumber ceil() throws ArithmeticException {
+	public INumber ceilFraction() throws ArithmeticException {
 		return F.complex(F.integer(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
 				F.integer(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
 	}
 
 	@Override
-	public INumber floor() throws ArithmeticException {
+	public INumber floorFraction() throws ArithmeticException {
 		return F.complex(F.integer(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
 				F.integer(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
 	}

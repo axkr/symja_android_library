@@ -9,6 +9,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 
 /**
  * IFraction implementation which uses methods of the Apache
@@ -78,6 +79,40 @@ public class BigFractionSym extends AbstractFractionSym {
 		return valueOf(newnum, newdenom);
 	}
 
+	@Override
+	public IRational add(IRational parm1) {
+		if (parm1.isZero()) {
+			return this;
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return add((AbstractFractionSym) parm1);
+		}
+		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
+		return valueOf(newnum, getBigDenominator());
+	}
+
+	@Override
+	public IInteger ceil() {
+		if (isIntegral()) {
+			return AbstractIntegerSym.valueOf(getBigNumerator());
+		}
+		BigInteger div = getBigNumerator().divide(getBigDenominator());
+		if (getBigNumerator().signum() > 0)
+			div = div.add(BigInteger.ONE);
+		return AbstractIntegerSym.valueOf(div);
+	}
+
+	// public int compareFraction(final int numerator, final int denominator) {
+	// BigInteger num = fFraction.getNumerator();
+	// BigInteger den = fFraction.getDenominator();
+	// if (num.bitLength() <= 31) {
+	// int temp = num.intValue();
+	// return temp > value ? 1 : temp == value ? 0 : -1;
+	// }
+	// return num.signum();
+	// }
+
 	/**
 	 * Return a new rational representing the smallest integral rational not
 	 * smaller than <code>this</code>.
@@ -85,7 +120,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym ceil() {
+	public AbstractFractionSym ceilFraction() {
 		if (isIntegral()) {
 			return this;
 		}
@@ -104,15 +139,11 @@ public class BigFractionSym extends AbstractFractionSym {
 		return temp.compareTo(BigFraction.ONE);
 	}
 
-	// public int compareFraction(final int numerator, final int denominator) {
-	// BigInteger num = fFraction.getNumerator();
-	// BigInteger den = fFraction.getDenominator();
-	// if (num.bitLength() <= 31) {
-	// int temp = num.intValue();
-	// return temp > value ? 1 : temp == value ? 0 : -1;
-	// }
-	// return num.signum();
-	// }
+	@Override
+	public int compareInt(final int value) {
+		BigInteger dOn = getBigDenominator().multiply(BigInteger.valueOf(value));
+		return getBigNumerator().compareTo(dOn);
+	}
 
 	@Override
 	public int compareTo(IExpr expr) {
@@ -200,11 +231,31 @@ public class BigFractionSym extends AbstractFractionSym {
 				&& den.bitLength() <= 31;
 	}
 
+	// public IInteger ceil() {
+	//
+	// }
+	//
+	// public IInteger floor() {
+	//
+	// }
+
 	@Override
 	public boolean equalsInt(final int numerator) {
 		BigInteger num = fFraction.getNumerator();
 		return num.intValue() == numerator && fFraction.getDenominator().equals(BigInteger.ONE)
 				&& num.bitLength() <= 31;
+	}
+
+	@Override
+	public IInteger floor() {
+		if (isIntegral()) {
+			return AbstractIntegerSym.valueOf(getBigNumerator());
+		}
+		BigInteger div = getBigNumerator().divide(getBigDenominator());
+		if (getBigNumerator().signum() < 0) {
+			div = div.subtract(BigInteger.ONE);
+		}
+		return AbstractIntegerSym.valueOf(div);
 	}
 
 	/**
@@ -214,7 +265,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym floor() {
+	public AbstractFractionSym floorFraction() {
 		if (isIntegral()) {
 			return this;
 		}
@@ -442,6 +493,25 @@ public class BigFractionSym extends AbstractFractionSym {
 		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
 	}
 
+	@Override
+	public IRational multiply(IRational parm1) {
+		if (parm1.isOne()) {
+			return this;
+		}
+		if (parm1.isZero()) {
+			return parm1;
+		}
+		if (parm1.isMinusOne()) {
+			return this.negate();
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return mul((AbstractFractionSym) parm1);
+		}
+		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		return valueOf(newnum, getBigDenominator());
+	}
+
 	/**
 	 * Returns a new rational equal to <code>-this</code>.
 	 * 
@@ -503,12 +573,11 @@ public class BigFractionSym extends AbstractFractionSym {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertFraction(sb, fFraction, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+			OutputFormFactory.get().convertFraction(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 		}
 		// fall back to simple output format
 		return fFraction.getNumerator().toString() + "/" + fFraction.getDenominator().toString();
 	}
-
 }

@@ -3,14 +3,12 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.apache.commons.math4.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -20,6 +18,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Apart;
@@ -230,9 +229,9 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertFraction(final Appendable buf, final BigFraction f, final int precedence, boolean caller)
+	public void convertFraction(final Appendable buf, final IRational f, final int precedence, boolean caller)
 			throws IOException {
-		convertFraction(buf, f.getNumerator(), f.getDenominator(), precedence, caller);
+		convertFraction(buf, f.getBigNumerator(), f.getBigDenominator(), precedence, caller);
 	}
 
 	public void convertFraction(final Appendable buf, final BigInteger numerator, BigInteger denominator,
@@ -296,9 +295,9 @@ public class OutputFormFactory {
 
 	public void convertComplex(final Appendable buf, final IComplex c, final int precedence, boolean caller)
 			throws IOException {
-		boolean isReZero = c.getRealPart().compareTo(BigFraction.ZERO) == 0;
-		final boolean isImOne = c.getImaginaryPart().compareTo(BigFraction.ONE) == 0;
-		final boolean isImMinusOne = c.getImaginaryPart().equals(BigFraction.MINUS_ONE);
+		boolean isReZero = c.getRealPart().isZero();
+		final boolean isImOne = c.getImaginaryPart().isOne();
+		final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
 		if (!isReZero && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, "(");
 		}
@@ -321,8 +320,8 @@ public class OutputFormFactory {
 			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 				append(buf, "(");
 			}
-			final BigFraction im = c.getImaginaryPart();
-			if (NumberUtil.isNegative(im)) {
+			final IRational im = c.getImaginaryPart();
+			if (im.isNegative()) {
 				append(buf, "-I*");
 				convertFraction(buf, c.getImaginaryPart().negate(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 			} else {
@@ -703,7 +702,7 @@ public class OutputFormFactory {
 			return;
 		}
 		if (o instanceof IFraction) {
-			convertFraction(buf, ((IFraction) o).getRational(), precedence, caller);
+			convertFraction(buf, (IFraction) o, precedence, caller);
 			return;
 		}
 		if (o instanceof IComplex) {

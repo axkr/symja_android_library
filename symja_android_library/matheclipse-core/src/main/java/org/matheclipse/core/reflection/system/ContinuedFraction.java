@@ -16,7 +16,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * ContinuedFraction of a double or fraction number
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Continued_fraction">Continued fraction</a>
+ * See: <a href="http://en.wikipedia.org/wiki/Continued_fraction">Continued
+ * fraction</a>
  * 
  * @see org.matheclipse.core.reflection.system.FromContinuedFraction
  */
@@ -58,7 +59,7 @@ public class ContinuedFraction extends AbstractEvaluator {
 				IFraction temp = F.fraction(rat.getNumerator(), rat.getDenominator());
 				BigInteger quotient;
 				BigInteger remainder;
-				while (temp.getDenominator().isGreaterThan(F.C1) && (0 < maxIterations--)) {
+				while (temp.getDenominator().compareInt(1) > 0 && (0 < maxIterations--)) {
 					quotient = temp.getBigNumerator().divide(temp.getBigDenominator());
 					remainder = temp.getBigNumerator().mod(temp.getBigDenominator());
 					continuedFractionList.add(F.integer(quotient));

@@ -30,7 +30,7 @@ public interface INumber extends IExpr {
 	 *         value that is not less than <code>this</code> and is equal to a
 	 *         mathematical integer.
 	 */
-	public INumber ceil() throws ArithmeticException;
+	public INumber ceilFraction() throws ArithmeticException;
 
 	/**
 	 * Compare the absolute value of this number with <code>1</code> and return
@@ -96,7 +96,7 @@ public interface INumber extends IExpr {
 	 *         value that is not greater than <code>this</code> and is equal to
 	 *         a mathematical integer.
 	 */
-	public INumber floor() throws ArithmeticException;
+	public INumber floorFraction() throws ArithmeticException;
 
 	/**
 	 * Returns the imaginary part of a complex number

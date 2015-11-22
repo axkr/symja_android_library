@@ -42,9 +42,9 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 	private IExpr signedNumberIntegerPart(ISignedNumber arg1) {
 		final ISignedNumber signedNumber = arg1;
 		if ((signedNumber).isNegative()) {
-			return (signedNumber).ceil();
+			return (signedNumber).ceilFraction();
 		} else {
-			return (signedNumber).floor();
+			return (signedNumber).floorFraction();
 		}
 	} 
 

@@ -14,7 +14,8 @@ import com.google.common.math.BigIntegerMath;
 /**
  * Returns the binomial coefficient of 2 integers.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Binomial coefficient</a>
+ * See <a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Binomial
+ * coefficient</a>
  */
 public class Binomial extends AbstractArg2 {
 
@@ -76,7 +77,7 @@ public class Binomial extends AbstractArg2 {
 			if (ki.isZero()) {
 				return F.C1;
 			}
-			if (ki.isLessThan(F.C10) && ki.isGreaterThan(F.C1)) {
+			if (ki.compareInt(10) < 0 && ki.compareInt(1) > 0) {
 				int kInt = ki.intValue();
 				IAST ast = F.Times();
 				IAST temp;

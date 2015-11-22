@@ -11,7 +11,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * IntegerExponent(n, base) gets the highest exponent of base (greater than 1) that divides n.
+ * IntegerExponent(n, base) gets the highest exponent of base (greater than 1)
+ * that divides n.
  * 
  */
 public class IntegerExponent extends AbstractFunctionEvaluator {
@@ -25,7 +26,7 @@ public class IntegerExponent extends AbstractFunctionEvaluator {
 		IInteger base = F.C10;
 		if (ast.size() == 3) {
 			IExpr arg2 = ast.arg2();
-			if (arg2.isInteger() && ((IInteger) arg2).isGreaterThan(F.C1)) {
+			if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
 				base = (IInteger) arg2;
 			} else {
 				return null;

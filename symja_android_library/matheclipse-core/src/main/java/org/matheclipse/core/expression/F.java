@@ -1086,32 +1086,32 @@ public class F {
 	/**
 	 * Constant fraction &quot;1/2&quot;
 	 */
-	public final static IFraction C1D2 = AbstractFractionSym.newinstance(1, 2);
+	public final static IFraction C1D2 = AbstractFractionSym.valueOf(1, 2);
 
 	/**
 	 * Constant fraction &quot;-1/2&quot;
 	 */
-	public final static IFraction CN1D2 = AbstractFractionSym.newinstance(-1, 2);
+	public final static IFraction CN1D2 = AbstractFractionSym.valueOf(-1, 2);
 
 	/**
 	 * Constant fraction &quot;1/3&quot;
 	 */
-	public final static IFraction C1D3 = AbstractFractionSym.newinstance(1, 3);
+	public final static IFraction C1D3 = AbstractFractionSym.valueOf(1, 3);
 
 	/**
 	 * Constant fraction &quot;-1/3&quot;
 	 */
-	public final static IFraction CN1D3 = AbstractFractionSym.newinstance(-1, 3);
+	public final static IFraction CN1D3 = AbstractFractionSym.valueOf(-1, 3);
 
 	/**
 	 * Constant fraction &quot;1/4&quot;
 	 */
-	public final static IFraction C1D4 = AbstractFractionSym.newinstance(1, 4);
+	public final static IFraction C1D4 = AbstractFractionSym.valueOf(1, 4);
 
 	/**
 	 * Constant fraction &quot;-1/4&quot;
 	 */
-	public final static IFraction CN1D4 = AbstractFractionSym.newinstance(-1, 4);
+	public final static IFraction CN1D4 = AbstractFractionSym.valueOf(-1, 4);
 
 	/**
 	 * Constant double &quot;0.0&quot;
@@ -2100,12 +2100,12 @@ public class F {
 	}
 
 	public static IComplexNum complexNum(final IComplex value) {
-		final BigFraction realFraction = value.getRealPart();
-		final BigFraction imagFraction = value.getImaginaryPart();
+		final IRational realFraction = value.getRealPart();
+		final IRational imagFraction = value.getImaginaryPart();
 		final EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApcomplexNum.valueOf(realFraction.getNumerator(), realFraction.getDenominator(),
-					imagFraction.getNumerator(), imagFraction.getDenominator(), engine.getNumericPrecision());
+			return ApcomplexNum.valueOf(realFraction.getBigNumerator(), realFraction.getBigDenominator(),
+					imagFraction.getBigNumerator(), imagFraction.getBigDenominator(), engine.getNumericPrecision());
 		}
 		// double precision complex number
 		double nr = realFraction.getNumerator().doubleValue();
@@ -3818,7 +3818,7 @@ public class F {
 	public static IFraction QQ(final BigFraction frac) {
 		return AbstractFractionSym.valueOf(frac);
 	}
-
+	
 	/**
 	 * Create a "fractional" number
 	 * 
@@ -3842,7 +3842,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final long numerator, final long denominator) {
-		return AbstractFractionSym.newinstance(numerator, denominator);
+		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
 
 	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,

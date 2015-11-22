@@ -189,6 +189,11 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return this;
 	}
 
+	@Override
+	public IInteger ceilFraction() {
+		return this;
+	}
+
 	public abstract AbstractIntegerSym div(final AbstractIntegerSym that);
 
 	public abstract IAST divisors();
@@ -223,6 +228,11 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 
 	@Override
 	public IInteger floor() {
+		return this;
+	}
+
+	@Override
+	public IInteger floorFraction() {
 		return this;
 	}
 
@@ -465,7 +475,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	public BigInteger shiftLeft(final int n) {
 		return getBigNumerator().shiftLeft(n);
 	}
-
+	
 	/**
 	 * @param n
 	 * @return
@@ -477,4 +487,21 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	public byte[] toByteArray() {
 		return getBigNumerator().toByteArray();
 	}
+	
+	@Override
+	public IRational subtract(final IRational that) {
+		if (isZero()) {
+			return that.negate();
+		}
+		return this.add(that.negate());
+	}
+
+	@Override
+	public ISignedNumber subtractFrom(ISignedNumber that) {
+		if (that instanceof IRational) {
+			return this.add((IRational) that.negate());
+		}
+		return Num.valueOf(doubleValue() - that.doubleValue());
+	}
+	
 }

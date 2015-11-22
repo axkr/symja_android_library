@@ -28,7 +28,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Expands the argument of sine and cosine functions.
  * 
- * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric identities</a>
+ * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List
+ * of trigonometric identities</a>
  */
 public class TrigExpand extends AbstractEvaluator {
 	public TrigExpand() {
@@ -54,20 +55,20 @@ public class TrigExpand extends AbstractEvaluator {
 					IAST timesAST = (IAST) result.getAt(1);
 					if (timesAST.arg1().isInteger()) {
 						IInteger n = (IInteger) timesAST.arg1();
-						if (n.isGreaterThan(C0)) {
+						if (n.compareInt(0) > 0) {
 							IExpr theta = timesAST.removeAtClone(1).getOneIdentity(F.C1);
 							if (result.isSin()) {
 								// Sin(n*theta)
-								return Sum(
-										Times(Times(Times(Power(CN1, Times(Plus(F.$s("i"), CN1), C1D2)), Binomial(n, $s("i"))),
-												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))), Power(Sin(theta), $s("i"))),
-										List($s("i"), C1, n, C2));
+								return Sum(Times(
+										Times(Times(Power(CN1, Times(Plus(F.$s("i"), CN1), C1D2)),
+												Binomial(n, $s("i"))), Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))),
+										Power(Sin(theta), $s("i"))), List($s("i"), C1, n, C2));
 							} else if (result.isCos()) {
 								// Cos(n*theta)
-								return Sum(
-										Times(Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(n, $s("i"))),
-												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))), Power(Sin(theta), $s("i"))),
-										List($s("i"), C0, n, C2));
+								return Sum(Times(
+										Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(n, $s("i"))),
+												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))),
+										Power(Sin(theta), $s("i"))), List($s("i"), C0, n, C2));
 							}
 						}
 					}

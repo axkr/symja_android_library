@@ -15,14 +15,14 @@ public interface IComplex extends IBigNumber {
 	 * 
 	 * @return imaginary part
 	 */
-	public BigFraction getImaginaryPart();
+	public IRational getImaginaryPart();
 
 	/**
 	 * Returns the real part of a complex number
 	 * 
 	 * @return real part
 	 */
-	public BigFraction getRealPart();
+	public IRational getRealPart();
 
 	public IComplex multiply(IComplex val);
 

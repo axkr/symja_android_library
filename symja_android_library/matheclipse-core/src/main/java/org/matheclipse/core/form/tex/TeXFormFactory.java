@@ -2,7 +2,6 @@ package org.matheclipse.core.form.tex;
 
 import java.math.BigInteger;
 import java.util.Hashtable;
-import java.util.Map;
 
 import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
@@ -15,6 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
@@ -151,11 +151,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
 		}
-		BigFraction re = c.getRealPart();
-		BigFraction im = c.getImaginaryPart();
-		if (!re.equals(BigFraction.ZERO)) {
+		IRational re = c.getRealPart();
+		IRational im = c.getImaginaryPart();
+		if (!re.isZero()) {
 			convert(buf, c.getRealPart(), 0);
-			if (im.compareTo(BigFraction.ZERO) >= 0) {
+			if (im.compareInt(0) >= 0) {
 				buf.append(" + ");
 			} else {
 				buf.append(" - ");
@@ -249,20 +249,20 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			convertAST(buf, f);
 			return;
 		}
-		if (o instanceof INum) {
-			convertDouble(buf, (INum) o, precedence);
-			return;
-		}
-		if (o instanceof IComplexNum) {
-			convertDoubleComplex(buf, (IComplexNum) o, precedence);
-			return;
-		}
 		if (o instanceof IInteger) {
 			convertInteger(buf, (IInteger) o, precedence);
 			return;
 		}
 		if (o instanceof IFraction) {
 			convertFraction(buf, (IFraction) o, precedence);
+			return;
+		}
+		if (o instanceof INum) {
+			convertDouble(buf, (INum) o, precedence);
+			return;
+		}
+		if (o instanceof IComplexNum) {
+			convertDoubleComplex(buf, (IComplexNum) o, precedence);
 			return;
 		}
 		if (o instanceof IComplex) {

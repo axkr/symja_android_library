@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 
 import com.google.common.math.DoubleMath;
 
@@ -470,6 +471,27 @@ public class NumberUtil {
 		return false; // number out of range exception
 	}
 
+	/**
+	 * Test if the fraction value is a perfect square (i.e. its numerator's and
+	 * denominator's square root are integers). See <a href=
+	 * "http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer">
+	 * Stackoverflow.com - Fastest way to determine if an integer's square root
+	 * is an integer</a>
+	 * 
+	 * @param bf
+	 * @return <code>true</code> if the number is a perfect square.
+	 */
+	public final static boolean isPerfectSquare(IRational bf) {
+		try {
+			long num = toLong(bf.getBigNumerator());
+			long den = toLong(bf.getBigDenominator());
+			return isPerfectSquare(den) && isPerfectSquare(num);
+		} catch (ArithmeticException ae) {
+
+		}
+		return false; // number out of range exception
+	}
+	
 	/**
 	 * Test if a long value is a perfect square (i.e. its square root is another
 	 * integer). See <a href=

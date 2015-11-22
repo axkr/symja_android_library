@@ -507,13 +507,13 @@ public class Num extends ExprImpl implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger ceil() {
+	public IInteger ceilFraction() {
 		return F.integer(NumberUtil.toLong(Math.ceil(fDouble)));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger floor() {
+	public IInteger floorFraction() {
 		return F.integer(NumberUtil.toLong(Math.floor(fDouble)));
 	}
 

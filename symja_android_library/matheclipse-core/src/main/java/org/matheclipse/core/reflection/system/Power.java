@@ -546,17 +546,17 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 	@Override
 	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
-		if (i1.equals(F.C1D2) && c0.getRealPart().equals(BigFraction.ZERO)) {
+		if (i1.equals(F.C1D2) && c0.getRealPart().isZero()) {
 			// square root of pure imaginary number
-			BigFraction im = c0.getImaginaryPart();
+			IRational im = c0.getImaginaryPart();
 			boolean negative = false;
-			im = im.divide(BigInteger.valueOf(2L));
-			if (NumberUtil.isNegative(im)) {
+			im = im.divideBy(F.C2);
+			if (im.isNegative()) {
 				im = im.negate();
 				negative = true;
 			}
 			if (NumberUtil.isPerfectSquare(im)) {
-				IExpr temp = F.Sqrt(F.fraction(im));
+				IExpr temp = F.Sqrt(im);
 				if (negative) {
 					// Sqrt(im.negate()) - I * Sqrt(im);
 					return F.Plus(temp, F.Times(F.CNI, temp));

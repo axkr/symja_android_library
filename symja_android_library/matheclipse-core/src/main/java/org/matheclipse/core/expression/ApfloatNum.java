@@ -392,13 +392,13 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger ceil() {
+	public IInteger ceilFraction() {
 		return F.integer(ApfloatMath.ceil(fApfloat).toBigInteger());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger floor() {
+	public IInteger floorFraction() {
 		return F.integer(ApfloatMath.floor(fApfloat).toBigInteger());
 	}
 

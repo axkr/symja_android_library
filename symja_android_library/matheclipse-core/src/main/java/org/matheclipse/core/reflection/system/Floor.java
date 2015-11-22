@@ -67,7 +67,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 	public IExpr evalFloor(IExpr arg1) {
 		INumber number = arg1.evalNumber();
 		if (number != null) {
-			return number.floor();
+			return number.floorFraction();
 		}
 		if (arg1.isIntegerResult()) {
 			return arg1;

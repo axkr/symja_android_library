@@ -655,12 +655,12 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	@Override
-	public INumber ceil() throws ArithmeticException {
+	public INumber ceilFraction() throws ArithmeticException {
 		return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())), NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
 	}
 
 	@Override
-	public INumber floor() throws ArithmeticException {
+	public INumber floorFraction() throws ArithmeticException {
 		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())), NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
 	}
 

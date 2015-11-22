@@ -68,7 +68,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 	public IExpr evalCeiling(IExpr arg1) {
 		INumber number = arg1.evalNumber();
 		if (number != null) {
-			return number.ceil();
+			return number.ceilFraction();
 		}
 
 		if (arg1.isIntegerResult()) {

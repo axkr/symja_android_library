@@ -29,6 +29,7 @@ import com.google.common.math.BigIntegerMath;
 
 /**
  * IInteger implementation which uses an internal <code>int</code> value
+ * 
  * @see AbstractIntegerSym
  * @see BigIntegerSym
  */
@@ -85,6 +86,24 @@ public class IntegerSym extends AbstractIntegerSym {
 		return add((AbstractIntegerSym) val);
 	}
 
+	@Override
+	public IRational add(IRational parm1) {
+		if (parm1.isZero()) {
+			return this;
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym) parm1).add(this);
+		}
+		if (parm1 instanceof IntegerSym) {
+			IntegerSym is = (IntegerSym) parm1;
+			long newnum = (long) fIntValue + (long) is.fIntValue;
+			return valueOf(newnum);
+		}
+		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
+		return valueOf(newnum);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
@@ -96,6 +115,11 @@ public class IntegerSym extends AbstractIntegerSym {
 			return 0;
 		}
 		return (num > 0) ? 1 : -1;
+	}
+
+	@Override
+	public int compareInt(final int value) {
+		return (fIntValue > value) ? 1 : (fIntValue == value) ? 0 : -1;
 	}
 
 	/**
@@ -152,6 +176,11 @@ public class IntegerSym extends AbstractIntegerSym {
 		res[1] = valueOf(largeRes[1]);
 
 		return res;
+	}
+
+	@Override
+	public IRational divideBy(IRational that) {
+		return AbstractFractionSym.valueOf(fIntValue).divideBy(that);
 	}
 
 	@Override
@@ -731,6 +760,30 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
+	public IRational multiply(IRational parm1) {
+		if (parm1.isZero()) {
+			return F.C0;
+		}
+		if (parm1.isOne()) {
+			return this;
+		}
+		if (parm1.isMinusOne()) {
+			return this.negate();
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym) parm1).multiply(this);
+		}
+		if (parm1 instanceof IntegerSym) {
+			IntegerSym is = (IntegerSym) parm1;
+			long newnum = (long) fIntValue * (long) is.fIntValue;
+			return valueOf(newnum);
+		}
+		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		return valueOf(newnum);
+	}
+
+	@Override
 	public IntegerSym negate() {
 		return valueOf(-fIntValue);
 	}
@@ -921,21 +974,21 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public ISignedNumber subtractFrom(ISignedNumber that) {
-		if (isZero()) {
-			return that.negate();
+	public IRational subtract(IRational parm1) {
+		if (parm1.isZero()) {
+			return this;
 		}
-		if (that instanceof IntegerSym) {
-			long result = (long) fIntValue - (long) ((IntegerSym) that).fIntValue;
-			return valueOf(result);
+		if (parm1 instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym) parm1).negate().add(this);
 		}
-		if (that instanceof BigIntegerSym) {
-			return this.add((BigIntegerSym) that.negate());
+		if (parm1 instanceof IntegerSym) {
+			IntegerSym is = (IntegerSym) parm1;
+			long newnum = (long) fIntValue - (long) is.fIntValue;
+			return valueOf(newnum);
 		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fIntValue).subtractFrom(that);
-		}
-		return Num.valueOf(doubleValue() - that.doubleValue());
+		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().subtract(p1.getBigNumerator());
+		return valueOf(newnum);
 	}
 
 	/**
@@ -1010,4 +1063,5 @@ public class IntegerSym extends AbstractIntegerSym {
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
+
 }

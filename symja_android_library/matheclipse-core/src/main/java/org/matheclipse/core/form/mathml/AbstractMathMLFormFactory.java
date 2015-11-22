@@ -5,9 +5,9 @@ import java.util.Hashtable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -119,7 +119,7 @@ abstract public class AbstractMathMLFormFactory {
    * @param d
    * @param precedence
    */
-  abstract public void convertFraction(StringBuffer buf, IFraction f, int precedence);
+  abstract public void convertFraction(StringBuffer buf, IRational f, int precedence);
 
   /**
    * convert a complex nummber

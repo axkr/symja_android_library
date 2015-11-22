@@ -74,6 +74,19 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return valueOf(fBigIntValue.add(val.getBigNumerator()));
 	}
 
+	@Override
+	public IRational add(IRational parm1) {
+		if (parm1.isZero()) {
+			return this;
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym) parm1).add(this);
+		}
+		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
+		return valueOf(newnum);
+	}
+
 	/**
 	 * @return
 	 */
@@ -91,6 +104,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return temp.compareTo(BigInteger.ONE);
 	}
 
+	@Override
 	public int compareInt(final int value) {
 		if (fBigIntValue.bitLength() <= 31) {
 			int temp = fBigIntValue.intValue();
@@ -156,6 +170,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		res[1] = valueOf(largeRes[1]);
 
 		return res;
+	}
+
+	@Override
+	public IRational divideBy(IRational that) {
+		return AbstractFractionSym.valueOf(fBigIntValue).divideBy(that);
 	}
 
 	@Override
@@ -729,6 +748,25 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
+	public IRational multiply(IRational parm1) {
+		if (parm1.isZero()) {
+			return F.C0;
+		}
+		if (parm1.isOne()) {
+			return this;
+		}
+		if (parm1.isMinusOne()) {
+			return this.negate();
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return ((AbstractFractionSym) parm1).multiply(this);
+		}
+		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		return valueOf(newnum);
+	}
+
+	@Override
 	public AbstractIntegerSym negate() {
 		return valueOf(fBigIntValue.negate());
 	}
@@ -919,20 +957,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return valueOf(fBigIntValue.subtract(that.getBigNumerator()));
 	}
 
-	@Override
-	public ISignedNumber subtractFrom(ISignedNumber that) {
-		if (that instanceof BigIntegerSym) {
-			return this.add((BigIntegerSym) that.negate());
-		}
-		if (isZero()) {
-			return that.negate();
-		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fBigIntValue).subtractFrom(that);
-		}
-		return Num.valueOf(fBigIntValue.doubleValue() - that.doubleValue());
-	}
-
 	/**
 	 * @param that
 	 * @return
@@ -1012,4 +1036,5 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
+
 }

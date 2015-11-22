@@ -11,6 +11,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 
 /**
  * IFraction implementation which reimplements methods of the Apache
@@ -64,7 +65,7 @@ public class FractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public AbstractFractionSym abs() {
-		return newinstance(Math.abs((long) fNumerator), fDenominator);
+		return valueOf(Math.abs((long) fNumerator), fDenominator);
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class FractionSym extends AbstractFractionSym {
 				return this;
 			}
 			if (fDenominator == fs.fDenominator) {
-				return newinstance((long) fNumerator + fs.fNumerator, fDenominator);
+				return valueOf((long) fNumerator + fs.fNumerator, fDenominator);
 			}
 			int gcd = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
 			if (gcd == 1) {
@@ -95,14 +96,48 @@ public class FractionSym extends AbstractFractionSym {
 				long otherdenomgcd = fs.fDenominator;
 				long newdenom = denomgcd * otherdenomgcd;
 				long newnum = otherdenomgcd * fNumerator + (long) fDenominator * (long) fs.fNumerator;
-				return newinstance(newnum, newdenom);
+				return valueOf(newnum, newdenom);
 			}
 			long denomgcd = fDenominator / gcd;
 			long otherdenomgcd = fs.fDenominator / gcd;
 			long newdenom = denomgcd * fs.fDenominator;
 			long newnum = otherdenomgcd * fNumerator + denomgcd * fs.fNumerator;
-			return newinstance(newnum, newdenom);
+			return valueOf(newnum, newdenom);
 		}
+	}
+
+	@Override
+	public IRational add(IRational parm1) {
+		if (parm1.isZero()) {
+			return this;
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return add((AbstractFractionSym) parm1);
+		}
+		if (parm1 instanceof IntegerSym) {
+			IntegerSym is = (IntegerSym) parm1;
+			long newnum = fNumerator + (long) fDenominator * (long) is.fIntValue;
+			return valueOf(newnum, fDenominator);
+		}
+		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
+		return valueOf(newnum, getBigDenominator());
+	}
+
+	@Override
+	public IInteger ceil() {
+		if (fDenominator == 1) {
+			return AbstractIntegerSym.valueOf(fNumerator);
+		}
+		int div = fNumerator / fDenominator;
+		// Java rounds the wrong way for positive numbers.
+		// We know that the division is not exact due to
+		// normalization and mdenom != 1, so adding
+		// one fixes the result for positive numbers.
+		if (fNumerator > 0) {
+			div++;
+		}
+		return AbstractIntegerSym.valueOf(div);
 	}
 
 	/**
@@ -112,7 +147,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym ceil() {
+	public AbstractFractionSym ceilFraction() {
 		if (fDenominator == 1) {
 			return this;
 		}
@@ -124,7 +159,7 @@ public class FractionSym extends AbstractFractionSym {
 		if (fNumerator > 0) {
 			div++;
 		}
-		return newinstance(div, 1);
+		return valueOf(div, 1);
 	}
 
 	@Override
@@ -140,6 +175,12 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	@Override
+	public int compareInt(final int value) {
+		long valo = (long) fDenominator * (long) value;
+		return fNumerator < valo ? -1 : fNumerator == valo ? 0 : 1;
+	}
+
+	@Override
 	public int compareTo(IExpr expr) {
 		if (expr instanceof FractionSym) {
 			FractionSym temp = (FractionSym) expr;
@@ -147,7 +188,7 @@ public class FractionSym extends AbstractFractionSym {
 				return fNumerator < temp.fNumerator ? -1 : fNumerator == temp.fNumerator ? 0 : 1;
 			}
 			long valt = (long) fNumerator * (long) temp.fDenominator;
-			long valo = (long) temp.fNumerator * (long) fDenominator;
+			long valo = (long) fDenominator * (long) temp.fNumerator;
 			return valt < valo ? -1 : valt == valo ? 0 : 1;
 		}
 		if (expr instanceof AbstractIntegerSym) {
@@ -204,7 +245,7 @@ public class FractionSym extends AbstractFractionSym {
 		// +-inf : -c = -+inf
 		if (newdenom == 0 && fs.fNumerator < 0)
 			newnum = -newnum;
-		return newinstance(newnum, newdenom);
+		return valueOf(newnum, newdenom);
 	}
 
 	@Override
@@ -218,7 +259,7 @@ public class FractionSym extends AbstractFractionSym {
 			return true;
 		}
 		if (o instanceof AbstractFractionSym) {
-			return ((AbstractFractionSym)o).equalsFraction(fNumerator, fDenominator);
+			return ((AbstractFractionSym) o).equalsFraction(fNumerator, fDenominator);
 		}
 		return false;
 	}
@@ -227,10 +268,26 @@ public class FractionSym extends AbstractFractionSym {
 	public final boolean equalsFraction(final int numerator, final int denominator) {
 		return fNumerator == numerator && fDenominator == denominator;
 	}
-	
+
 	@Override
 	public boolean equalsInt(final int value) {
 		return fNumerator == value && fDenominator == 1;
+	}
+
+	@Override
+	public IInteger floor() {
+		if (fDenominator == 1) {
+			return AbstractIntegerSym.valueOf(fNumerator);
+		}
+		int div = fNumerator / fDenominator;
+		// Java rounds the wrong way for negative numbers.
+		// We know that the division is not exact due to
+		// normalization and mdenom != 1, so subtracting
+		// one fixes the result for negative numbers.
+		if (fNumerator < 0) {
+			div--;
+		}
+		return AbstractIntegerSym.valueOf(div);
 	}
 
 	/**
@@ -240,7 +297,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym floor() {
+	public AbstractFractionSym floorFraction() {
 		if (fDenominator == 1) {
 			return this;
 		}
@@ -252,7 +309,7 @@ public class FractionSym extends AbstractFractionSym {
 		if (fNumerator < 0) {
 			div--;
 		}
-		return newinstance(div, 1);
+		return valueOf(div, 1);
 	}
 
 	/**
@@ -272,7 +329,7 @@ public class FractionSym extends AbstractFractionSym {
 		// one fixes the result for negative numbers.
 		if (newnum < 0)
 			newnum += fDenominator;
-		return newinstance(newnum, fDenominator);
+		return valueOf(newnum, fDenominator);
 	}
 
 	@Override
@@ -320,7 +377,7 @@ public class FractionSym extends AbstractFractionSym {
 		long denom = ((long) (fDenominator / gcddenom)) * (long) fs.fDenominator;
 		long num = ArithmeticUtils.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
 				fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
-		return newinstance(num, denom);
+		return valueOf(num, denom);
 	}
 
 	@Override
@@ -399,7 +456,7 @@ public class FractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public AbstractFractionSym inverse() {
-		return newinstance(fDenominator, fNumerator);
+		return valueOf(fDenominator, fNumerator);
 	}
 
 	/**
@@ -480,7 +537,7 @@ public class FractionSym extends AbstractFractionSym {
 		FractionSym fs = (FractionSym) other;
 		long newnum = (long) fNumerator * fs.fNumerator;
 		long newdenom = (long) fDenominator * fs.fDenominator;
-		return newinstance(newnum, newdenom);
+		return valueOf(newnum, newdenom);
 	}
 
 	/**
@@ -498,7 +555,7 @@ public class FractionSym extends AbstractFractionSym {
 			if (oint == -1)
 				return this.negate();
 			long newnum = (long) fNumerator * oint;
-			return newinstance(newnum, fDenominator);
+			return valueOf(newnum, fDenominator);
 		}
 
 		if (this.isOne()) {
@@ -511,6 +568,30 @@ public class FractionSym extends AbstractFractionSym {
 		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
 	}
 
+	@Override
+	public IRational multiply(IRational parm1) {
+		if (isZero() || parm1.isZero()) {
+			return F.C0;
+		}
+		if (parm1.isOne()) {
+			return this;
+		}
+		if (parm1.isMinusOne()) {
+			return this.negate();
+		}
+		if (parm1 instanceof AbstractFractionSym) {
+			return mul((AbstractFractionSym) parm1);
+		}
+		if (parm1 instanceof IntegerSym) {
+			IntegerSym is = (IntegerSym) parm1;
+			long newnum = (long) fNumerator * (long) is.fIntValue;
+			return valueOf(newnum, fDenominator);
+		}
+		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		return valueOf(newnum, getBigDenominator());
+	}
+
 	/**
 	 * Returns a new rational equal to <code>-this</code>.
 	 * 
@@ -518,7 +599,7 @@ public class FractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public AbstractFractionSym negate() {
-		return AbstractFractionSym.newinstance(-(long) fNumerator, fDenominator);
+		return AbstractFractionSym.valueOf(-(long) fNumerator, fDenominator);
 	}
 
 	/** {@inheritDoc} */

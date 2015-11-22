@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
@@ -141,8 +142,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
-	public void convertFraction(final StringBuffer buf, final BigFraction f, final int precedence) {
-		if (NumberUtil.isNegative(f) && (precedence > plusPrec)) {
+	public void convertFraction(final StringBuffer buf, final IRational f, final int precedence) {
+		if (f.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
@@ -160,16 +161,16 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mn");
 			tagEnd(buf, "mfrac");
 		}
-		if (NumberUtil.isNegative(f) && (precedence > plusPrec)) {
+		if (f.isNegative() && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
 	}
 
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
-		boolean isReZero = c.getRealPart().compareTo(BigFraction.ZERO) == 0;
-		final boolean isImOne = c.getImaginaryPart().compareTo(BigFraction.ONE) == 0;
-		final boolean isImNegative = c.getImaginaryPart().compareTo(BigFraction.ZERO) < 0;
+		boolean isReZero = c.getRealPart().isZero();
+		final boolean isImOne = c.getImaginaryPart().isOne();
+		final boolean isImNegative = c.getImaginaryPart().isLessThan(F.C0);
 		final boolean isImMinusOne = c.getImaginaryPart().equals(BigFraction.MINUS_ONE);
 		tagStart(buf, "mrow");
 		if (!isReZero) {
