@@ -163,8 +163,19 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public AbstractIntegerSym div(final AbstractIntegerSym that) {
+	public AbstractIntegerSym div(final IInteger that) {
+		if (that instanceof IntegerSym) {
+			return new IntegerSym(fIntValue / ((IntegerSym) that).fIntValue);
+		}
 		return valueOf(getBigNumerator().divide(that.getBigNumerator()));
+	}
+
+	@Override
+	public AbstractIntegerSym mod(final IInteger that) {
+		if (that instanceof IntegerSym) {
+			return new IntegerSym(fIntValue % ((IntegerSym) that).fIntValue);
+		}
+		return valueOf(getBigNumerator().mod(that.getBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
@@ -179,17 +190,12 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IRational divideBy(IRational that) {
-		return AbstractFractionSym.valueOf(fIntValue).divideBy(that);
-	}
-
-	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof IntegerSym) {
-			return AbstractFractionSym.valueOf(fIntValue).divideBy(that);
+			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
 		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fIntValue).divideBy(that);
+			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
 		return Num.valueOf((fIntValue) / that.doubleValue());
 	}
@@ -894,23 +900,6 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IExpr plus(final IExpr that) {
-		if (that instanceof AbstractIntegerSym) {
-			return this.add((AbstractIntegerSym) that);
-		}
-		if (isZero()) {
-			return that;
-		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fIntValue).add((AbstractFractionSym) that);
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
-		}
-		return super.plus(that);
-	}
-
-	@Override
 	public AbstractIntegerSym quotient(final AbstractIntegerSym that) {
 		return valueOf(getBigNumerator().divide(that.getBigNumerator()));
 	}
@@ -989,30 +978,6 @@ public class IntegerSym extends AbstractIntegerSym {
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
 		BigInteger newnum = getBigNumerator().subtract(p1.getBigNumerator());
 		return valueOf(newnum);
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	@Override
-	public IExpr times(final IExpr that) {
-		if (that instanceof IntegerSym) {
-			return this.multiply((IntegerSym) that);
-		}
-		if (isZero()) {
-			return F.C0;
-		}
-		if (isOne()) {
-			return that;
-		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fIntValue).multiply((AbstractFractionSym) that).normalize();
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
-		}
-		return super.times(that);
 	}
 
 	/**

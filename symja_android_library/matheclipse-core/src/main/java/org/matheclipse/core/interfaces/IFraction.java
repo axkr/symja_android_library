@@ -21,10 +21,7 @@ public interface IFraction extends IRational {
 	 * 
 	 * @return
 	 */
-	public BigInteger[] divideAndRemainder();
-
-	//
-	// public IFraction divide(IFraction parm1);
+	public IInteger[] divideAndRemainder();
 
 	/**
 	 * Returns the denominator of this fraction.

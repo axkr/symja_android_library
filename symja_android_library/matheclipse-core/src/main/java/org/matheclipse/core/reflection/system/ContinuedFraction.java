@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -9,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -57,13 +56,13 @@ public class ContinuedFraction extends AbstractEvaluator {
 				continuedFractionList.add(rat.getDenominator());
 			} else {
 				IFraction temp = F.fraction(rat.getNumerator(), rat.getDenominator());
-				BigInteger quotient;
-				BigInteger remainder;
+				IInteger quotient;
+				IInteger remainder;
 				while (temp.getDenominator().compareInt(1) > 0 && (0 < maxIterations--)) {
-					quotient = temp.getBigNumerator().divide(temp.getBigDenominator());
-					remainder = temp.getBigNumerator().mod(temp.getBigDenominator());
-					continuedFractionList.add(F.integer(quotient));
-					temp = F.fraction(temp.getBigDenominator(), remainder);
+					quotient = temp.getNumerator().div(temp.getDenominator());
+					remainder = temp.getNumerator().mod(temp.getDenominator());
+					continuedFractionList.add(quotient);
+					temp = F.fraction(temp.getDenominator(), remainder);
 					if (temp.getDenominator().isOne()) {
 						continuedFractionList.add(temp.getNumerator());
 					}

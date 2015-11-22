@@ -70,11 +70,11 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 			if (parts[1].isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
-				BigInteger[] divRem = f.divideAndRemainder();
-				IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
-				if (!NumberUtil.isZero(divRem[0])) {
+				IInteger[] divRem = f.divideAndRemainder();
+				IFraction rest = F.fraction(divRem[1], f.getDenominator());
+				if (!divRem[0].isZero()) {
 
-					if (NumberUtil.isEven(divRem[0])) {
+					if (divRem[0].isEven()) {
 						return Sin(Plus(parts[0], Times(rest, Pi)));
 					} else {
 						return Times(CN1, Sin(Plus(parts[0], Times(rest, Pi))));

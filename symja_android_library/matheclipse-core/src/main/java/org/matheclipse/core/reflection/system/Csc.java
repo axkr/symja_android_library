@@ -73,10 +73,10 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 			if (parts[1].isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
-				BigInteger[] divRem = f.divideAndRemainder();
-				if (!NumberUtil.isZero(divRem[0])) {
-					IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
-					if (NumberUtil.isEven(divRem[0])) {
+				IInteger[] divRem = f.divideAndRemainder();
+				if (!divRem[0].isZero()) {
+					IFraction rest = F.fraction(divRem[1], f.getDenominator());
+					if (divRem[0].isEven()) {
 						return Csc(Plus(parts[0], Times(rest, Pi)));
 					} else {
 						return Times(CN1, Csc(Plus(parts[0], Times(rest, Pi))));

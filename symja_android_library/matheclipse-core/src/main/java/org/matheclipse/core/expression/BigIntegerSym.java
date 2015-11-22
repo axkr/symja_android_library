@@ -157,8 +157,17 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	@Override
-	public AbstractIntegerSym div(final AbstractIntegerSym that) {
+	public AbstractIntegerSym div(final IInteger that) {
 		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
+	}
+	
+	/**
+	 * @param that
+	 * @return
+	 */
+	@Override
+	public AbstractIntegerSym mod(final IInteger that) {
+		return valueOf(fBigIntValue.mod(that.getBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
@@ -173,17 +182,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IRational divideBy(IRational that) {
-		return AbstractFractionSym.valueOf(fBigIntValue).divideBy(that);
-	}
-
-	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof BigIntegerSym) {
-			return AbstractFractionSym.valueOf(fBigIntValue).divideBy(that);
+			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
 		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fBigIntValue).divideBy(that);
+			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
 		return Num.valueOf(fBigIntValue.doubleValue() / that.doubleValue());
 	}
@@ -877,23 +881,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IExpr plus(final IExpr that) {
-		if (isZero()) {
-			return that;
-		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.add((AbstractIntegerSym) that);
-		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fBigIntValue).add((AbstractFractionSym) that);
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
-		}
-		return super.plus(that);
-	}
-
-	@Override
 	public AbstractIntegerSym quotient(final AbstractIntegerSym that) {
 		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
 	}
@@ -955,30 +942,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger subtract(final IInteger that) {
 		return valueOf(fBigIntValue.subtract(that.getBigNumerator()));
-	}
-
-	/**
-	 * @param that
-	 * @return
-	 */
-	@Override
-	public IExpr times(final IExpr that) {
-		if (that instanceof BigIntegerSym) {
-			return this.multiply((BigIntegerSym) that);
-		}
-		if (isZero()) {
-			return F.C0;
-		}
-		if (isOne()) {
-			return that;
-		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(fBigIntValue).multiply((AbstractFractionSym) that).normalize();
-		}
-		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
-		}
-		return super.times(that);
 	}
 
 	/**

@@ -2035,18 +2035,7 @@ public class F {
 	public static IComplex complex(final IRational re, final IRational im) {
 		return ComplexSym.valueOf(re, im);
 	}
-
-	/**
-	 * Create a symbolic complex number
-	 * 
-	 * @param re
-	 * @param im
-	 * @return
-	 */
-	public static IComplex complex(final IInteger re, final IInteger im) {
-		return ComplexSym.valueOf(re, im);
-	}
-
+ 
 	/**
 	 * Create a symbolic complex number
 	 * 
@@ -2768,7 +2757,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final IInteger numerator, final IInteger denominator) {
-		return AbstractFractionSym.valueOf(numerator.getBigNumerator(), denominator.getBigNumerator());
+		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
 
 	/**
@@ -3829,7 +3818,7 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
-		return AbstractFractionSym.valueOf(numerator.getBigNumerator(), denominator.getBigNumerator());
+		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
 
 	/**

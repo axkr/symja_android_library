@@ -119,8 +119,8 @@ public class FractionSym extends AbstractFractionSym {
 			long newnum = fNumerator + (long) fDenominator * (long) is.fIntValue;
 			return valueOf(newnum, fDenominator);
 		}
-		BigIntegerSym p1 = (BigIntegerSym) parm1;
-		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
+//		BigIntegerSym p1 = (BigIntegerSym) parm1;
+		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(parm1.getBigNumerator()));
 		return valueOf(newnum, getBigDenominator());
 	}
 
@@ -218,6 +218,14 @@ public class FractionSym extends AbstractFractionSym {
 		return ComplexNum.valueOf(nr / dr);
 	}
 
+	@Override
+	public IInteger[] divideAndRemainder() {
+		IInteger[] result = new IInteger[2];
+		result[0] = AbstractIntegerSym.valueOf(fNumerator / fDenominator);
+		result[1] = AbstractIntegerSym.valueOf(fNumerator % fDenominator);
+		return result;
+	}
+	
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
@@ -548,7 +556,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	public AbstractFractionSym mul(BigInteger other) {
-		if (other.bitLength() < 32) {
+		if (other.bitLength() <=31) {
 			int oint = other.intValue();
 			if (oint == 1)
 				return this;

@@ -76,11 +76,11 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 			if (parts[1].isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
-				BigInteger[] divRem = f.divideAndRemainder();
-				IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
+				IInteger[] divRem = f.divideAndRemainder();
+				IFraction rest = F.fraction(divRem[1], f.getDenominator());
 				if (!NumberUtil.isZero(divRem[0])) {
 
-					if (NumberUtil.isEven(divRem[0])) {
+					if (divRem[0].isEven()) {
 						return Cos(Plus(parts[0], Times(rest, Pi)));
 					} else {
 						return Negate(Cos(Plus(parts[0], Times(rest, Pi))));

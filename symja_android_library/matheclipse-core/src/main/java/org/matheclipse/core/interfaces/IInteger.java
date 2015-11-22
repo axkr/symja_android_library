@@ -2,6 +2,8 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.expression.AbstractIntegerSym;
+
 /**
  * An expression representing a big integer number
  * 
@@ -14,12 +16,7 @@ public interface IInteger extends IRational {
 
 	public IInteger add(IInteger val);
 
-	/**
-	 * Returns an <code>IInteger</code> whose value is <code>(-1) * this</code>.
-	 * 
-	 * @return
-	 */
-	public IInteger negate();
+	public IInteger div(final IInteger that);
 
 	/**
 	 * Returns an array of two IIntegers containing (this / that) followed by (this % that).
@@ -28,7 +25,6 @@ public interface IInteger extends IRational {
 	 * @return
 	 */
 	public IInteger[] divideAndRemainder(final IInteger that);
-
 	/**
 	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
 	 * 
@@ -38,6 +34,26 @@ public interface IInteger extends IRational {
 	 * @return the exponent
 	 */
 	public IExpr exponent(IInteger base);
+	/**
+	 * Returns the greatest common divisor of this large integer and the one specified.
+	 * 
+	 */
+	public IInteger gcd(IInteger val);
+
+	/**
+	 * Returns the numerator of this Rational.
+	 * 
+	 * @return numerator
+	 */
+	public BigInteger getBigNumerator();
+
+	/**
+	 * Converts this large integer to <code>int</code>; unlike {@link #toInt} this method raises no exception, if this integer
+	 * cannot be represented by an <code>int</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
+	 */
+	public int intValue();
 
 	public boolean isEven();
 
@@ -48,11 +64,14 @@ public interface IInteger extends IRational {
 	public boolean isProbablePrime(int certainty);
 
 	/**
-	 * Returns the numerator of this Rational.
+	 * Returns the least common multiple of this large integer and the one specified.
 	 * 
-	 * @return numerator
 	 */
-	public BigInteger getBigNumerator();
+	public IInteger lcm(IInteger val);
+
+	public long longValue();
+
+	public IInteger mod(final IInteger that);
 
 	/**
 	 * Multiply this integer with value
@@ -62,31 +81,12 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger multiply(IInteger value);
 
-	public IInteger subtract(IInteger value);
-
-	public IInteger pow(int exponent);
-
 	/**
-	 * Converts this large integer to <code>int</code>; unlike {@link #toInt} this method raises no exception, if this integer
-	 * cannot be represented by an <code>int</code> type.
+	 * Returns an <code>IInteger</code> whose value is <code>(-1) * this</code>.
 	 * 
-	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
+	 * @return
 	 */
-	public int intValue();
-
-	public long longValue();
-
-	/**
-	 * Returns the greatest common divisor of this large integer and the one specified.
-	 * 
-	 */
-	public IInteger gcd(IInteger val);
-
-	/**
-	 * Returns the least common multiple of this large integer and the one specified.
-	 * 
-	 */
-	public IInteger lcm(IInteger val);
+	public IInteger negate();
 
 	/**
 	 * Returns the n-th integer root
@@ -103,4 +103,8 @@ public interface IInteger extends IRational {
 	 * @return <code>{nth-root, rest factor}</code>
 	 */
 	public IInteger[] nthRootSplit(int n);
+
+	public IInteger pow(int exponent);
+
+	public IInteger subtract(IInteger value);
 }

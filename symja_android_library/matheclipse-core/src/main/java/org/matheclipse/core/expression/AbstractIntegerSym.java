@@ -194,7 +194,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return this;
 	}
 
-	public abstract AbstractIntegerSym div(final AbstractIntegerSym that);
+	public abstract AbstractIntegerSym div(final IInteger that);
+
+	@Override
+	public IRational divideBy(IRational that) {
+		return AbstractFractionSym.valueOf(this).divideBy(that);
+	}
 
 	public abstract IAST divisors();
 
@@ -382,6 +387,23 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return negate();
 	}
 
+	@Override
+	public IExpr plus(final IExpr that) {
+		if (isZero()) {
+			return that;
+		}
+		if (that instanceof AbstractIntegerSym) {
+			return this.add((AbstractIntegerSym) that);
+		}
+		if (that instanceof AbstractFractionSym) {
+			return AbstractFractionSym.valueOf(this).add((AbstractFractionSym) that);
+		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
+		}
+		return super.plus(that);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final AbstractIntegerSym pow(final int exponent) throws ArithmeticException {
@@ -465,7 +487,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		return resultArray;
 	}
-
+	
 	public abstract AbstractIntegerSym quotient(final AbstractIntegerSym that);
 
 	/**
@@ -484,10 +506,6 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return getBigNumerator().shiftRight(n);
 	}
 
-	public byte[] toByteArray() {
-		return getBigNumerator().toByteArray();
-	}
-	
 	@Override
 	public IRational subtract(final IRational that) {
 		if (isZero()) {
@@ -495,7 +513,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		return this.add(that.negate());
 	}
-
+	
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
 		if (that instanceof IRational) {
@@ -504,4 +522,27 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
 	
+	@Override
+	public IExpr times(final IExpr that) {
+		if (isZero()) {
+			return F.C0;
+		}
+		if (isOne()) {
+			return that;
+		}
+		if (that instanceof AbstractIntegerSym) {
+			return this.multiply((AbstractIntegerSym) that);
+		}
+		if (that instanceof AbstractFractionSym) {
+			return AbstractFractionSym.valueOf(this).multiply((AbstractFractionSym) that).normalize();
+		}
+		if (that instanceof ComplexSym) {
+			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
+		}
+		return super.times(that);
+	}
+	
+	public byte[] toByteArray() {
+		return getBigNumerator().toByteArray();
+	}
 }

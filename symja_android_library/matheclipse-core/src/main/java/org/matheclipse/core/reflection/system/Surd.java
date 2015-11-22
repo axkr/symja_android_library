@@ -57,7 +57,7 @@ public class Surd extends AbstractArg2 implements INumeric {
 			if (o.isMinusOne()) {
 				return F.CN1;
 			}
-			return Power(o, AbstractFractionSym.valueOf(F.C1, (IInteger) r));
+			return Power(o, ((IInteger) r).inverse());
 		}
 		return null;
 	}

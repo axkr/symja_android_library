@@ -11,8 +11,6 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.math.BigInteger;
-
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -27,6 +25,7 @@ import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.parser.client.SyntaxError;
@@ -66,9 +65,9 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 			if (parts[1].isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts[1];
-				BigInteger[] divRem = f.divideAndRemainder();
-				IFraction rest = F.fraction(divRem[1], f.getBigDenominator());
-				if (!NumberUtil.isZero(divRem[0])) {
+				IInteger[] divRem = f.divideAndRemainder();
+				IFraction rest = F.fraction(divRem[1], f.getDenominator());
+				if (!divRem[0].isZero()) {
 					return Tan(Plus(parts[0], Times(rest, Pi)));
 				}
 				

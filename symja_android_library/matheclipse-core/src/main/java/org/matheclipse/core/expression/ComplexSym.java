@@ -11,7 +11,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -32,21 +31,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	 */
 	private static final long serialVersionUID = 1489050560741527824L;
 
-	private IRational _real;
-
-	private IRational _imaginary;
-
-	private transient int fHashValue;
-
 	public final static ComplexSym ZERO = ComplexSym.valueOf(F.C0);
 
-	private ComplexSym() {
-	}
-
-	public static ComplexSym valueOf(final BigInteger real, final BigInteger imaginary) {
+	public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
 		final ComplexSym c = new ComplexSym();
-		c._real = AbstractIntegerSym.valueOf(real);
-		c._imaginary = AbstractIntegerSym.valueOf(imaginary);
+		c._real = AbstractFractionSym.valueOf(real);
+		c._imaginary = AbstractFractionSym.valueOf(imaginary);
 		return c;
 	}
 
@@ -57,43 +47,21 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return c;
 	}
 
-	public static ComplexSym valueOf(final IInteger real, final IInteger imaginary) {
+	public static ComplexSym valueOf(final BigInteger real, final BigInteger imaginary) {
 		final ComplexSym c = new ComplexSym();
-		c._real = real;
-		c._imaginary = imaginary;
-		return c;
-	}
-
-	public static ComplexSym valueOf(final IInteger real) {
-		final ComplexSym c = new ComplexSym();
-		c._real = AbstractIntegerSym.valueOf(real.getBigNumerator());
-		c._imaginary = F.C0;
-		return c;
-	}
-
-	// public static ComplexSym valueOf(final BigFraction real) {
-	// final ComplexSym c = new ComplexSym();
-	// c._real = AbstractFractionSym.valueOf(real);
-	// c._imaginary = F.C0;
-	// return c;
-	// }
-
-	public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
-		final ComplexSym c = new ComplexSym();
-		c._real = AbstractFractionSym.valueOf(real);
-		c._imaginary = AbstractFractionSym.valueOf(imaginary);
-		return c;
-	}
-
-	public static ComplexSym valueOf(final long real_numerator, final long real_denominator, final long imag_numerator,
-			final long imag_denominator) {
-		final ComplexSym c = new ComplexSym();
-		c._real = AbstractFractionSym.valueOf(real_numerator, real_denominator);
-		c._imaginary = AbstractFractionSym.valueOf(imag_numerator, imag_denominator);
+		c._real = AbstractIntegerSym.valueOf(real);
+		c._imaginary = AbstractIntegerSym.valueOf(imaginary);
 		return c;
 	}
 
 	public static ComplexSym valueOf(final IFraction real) {
+		final ComplexSym c = new ComplexSym();
+		c._real = real;
+		c._imaginary = F.C0;
+		return c;
+	}
+
+	public static ComplexSym valueOf(final IRational real) {
 		final ComplexSym c = new ComplexSym();
 		c._real = real;
 		c._imaginary = F.C0;
@@ -107,30 +75,59 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return c;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IComplex conjugate() {
-		return ComplexSym.valueOf(_real, _imaginary.negate());
+	public static ComplexSym valueOf(final long real_numerator, final long real_denominator, final long imag_numerator,
+			final long imag_denominator) {
+		final ComplexSym c = new ComplexSym();
+		c._real = AbstractFractionSym.valueOf(real_numerator, real_denominator);
+		c._imaginary = AbstractFractionSym.valueOf(imag_numerator, imag_denominator);
+		return c;
+	}
+
+	private IRational _real;
+
+	private IRational _imaginary;
+
+	private transient int fHashValue;
+
+	private ComplexSym() {
 	}
 
 	/** {@inheritDoc} */
-	public IExpr eabs() {
-		return F.Sqrt(_real.multiply(_real).add(_imaginary.multiply(_imaginary)));
+	@Override
+	public <T> T accept(IVisitor<T> visitor) {
+		return visitor.visit(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int compareAbsValueToOne() {
-		IRational temp = _real.multiply(_real).add(_imaginary.multiply(_imaginary));
-		return temp.compareTo(F.C1);
+	public boolean accept(IVisitorBoolean visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
 	}
 
 	public ComplexSym add(final ComplexSym parm1) throws java.lang.ArithmeticException {
 		return ComplexSym.valueOf(_real.add(parm1._real), _imaginary.add(parm1._imaginary));
 	}
 
+	@Override
 	public IComplex add(final IComplex parm1) {
 		return ComplexSym.valueOf(_real.add(parm1.getRealPart()), _imaginary.add(parm1.getImaginaryPart()));
+	}
+
+	@Override
+	public ApcomplexNum apcomplexNumValue(long precision) {
+		return ApcomplexNum.valueOf(apcomplexValue(precision));
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
@@ -142,8 +139,32 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
-	public ApcomplexNum apcomplexNumValue(long precision) {
-		return ApcomplexNum.valueOf(apcomplexValue(precision));
+	public INumber ceilFraction() throws ArithmeticException {
+		return valueOf((IRational) _real.ceilFraction(), (IRational) _imaginary.ceilFraction());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int compareAbsValueToOne() {
+		IRational temp = _real.multiply(_real).add(_imaginary.multiply(_imaginary));
+		return temp.compareTo(F.C1);
+	}
+
+	/**
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
+	 */
+	@Override
+	public int compareTo(final IExpr expr) {
+		if (expr instanceof ComplexSym) {
+			final int cp = _real.compareTo(((ComplexSym) expr)._real);
+			if (cp != 0) {
+				return cp;
+			}
+			return _imaginary.compareTo(((ComplexSym) expr)._imaginary);
+		}
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -154,6 +175,29 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		double ni = _imaginary.getNumerator().doubleValue();
 		double di = _imaginary.getDenominator().doubleValue();
 		return ComplexNum.valueOf(nr / dr, ni / di);
+	}
+
+	@Override
+	public int complexSign() {
+		final int i = _real.getNumerator().sign();
+
+		if (i == 0) {
+			return _imaginary.getNumerator().sign();
+		}
+
+		return i;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IComplex conjugate() {
+		return ComplexSym.valueOf(_real, _imaginary.negate());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr eabs() {
+		return F.Sqrt(_real.multiply(_real).add(_imaginary.multiply(_imaginary)));
 	}
 
 	@Override
@@ -170,6 +214,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return false;
 	}
 
+	@Override
+	public boolean equalsInt(int i) {
+		return false;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
@@ -180,156 +229,9 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return (cTemp == this) ? null : cTemp;
 	}
 
-	public final INumber numericNumber() {
-		return F.complexNum(this);
-	}
-
-	/**
-	 * Returns the imaginary part of a complex number
-	 * 
-	 * @return imaginary part
-	 */
-	public IRational getImaginaryPart() {
-		return _imaginary;
-	}
-
-	public ISignedNumber getIm() {
-		if (_imaginary.getDenominator().isOne()) {
-			return _imaginary.getNumerator();
-		}
-		return _imaginary;
-	}
-
-	/**
-	 * Returns the real part of a complex number
-	 * 
-	 * @return real part
-	 */
-	public IRational getRealPart() {
-		return _real;
-	}
-
-	public ISignedNumber getRe() {
-		if (_real.getDenominator().isOne()) {
-			return _real.getNumerator();
-		}
-		return _real;
-	}
-
 	@Override
-	public final int hashCode() {
-		if (fHashValue == 0) {
-			fHashValue = _real.hashCode() * 29 + _imaginary.hashCode();
-		}
-		return fHashValue;
-	}
-
-	public int hierarchy() {
-		return COMPLEXID;
-	}
-
-	@Override
-	public boolean isZero() {
-		return NumberUtil.isZero(_real) && NumberUtil.isZero(_imaginary);
-	}
-
-	public IComplex multiply(final IComplex parm1) {
-		return ComplexSym.valueOf(
-				_real.multiply(parm1.getRealPart()).subtract(_imaginary.multiply(parm1.getImaginaryPart())),
-				_real.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(_imaginary)));
-	}
-
-	public IComplex pow(final int parm1) {
-		int temp = parm1;
-
-		if ((parm1 == 0) && _real.isZero() && _imaginary.isZero()) {
-			throw new java.lang.ArithmeticException();
-		}
-
-		if (parm1 == 1) {
-			return this;
-		}
-
-		IComplex res = ComplexSym.valueOf(F.C1, F.C0);
-
-		if (parm1 < 0) {
-			temp *= -1;
-		}
-
-		for (int i = 0; i < temp; i++) {
-			res = res.multiply(this);
-		}
-
-		if (parm1 < 0) {
-			final IRational d = res.getRealPart().multiply(res.getRealPart())
-					.add(res.getImaginaryPart().multiply(res.getImaginaryPart()));
-
-			return ComplexSym.valueOf(res.getRealPart().divideBy(d), res.getImaginaryPart().negate().divideBy(d));
-		}
-
-		return res;
-	}
-
-	@Override
-	public IExpr plus(final IExpr that) {
-		if (that instanceof ComplexSym) {
-			return this.add((ComplexSym) that);
-		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.add(valueOf((AbstractIntegerSym) that));
-		}
-		if (that instanceof AbstractFractionSym) {
-			return this.add(valueOf((AbstractFractionSym) that));
-		}
-		return super.plus(that);
-	}
-
-	@Override
-	public ComplexSym negate() {
-		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
-	}
-
-	@Override
-	public INumber opposite() {
-		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
-	}
-
-	@Override
-	public IExpr times(final IExpr that) {
-		if (that instanceof ComplexSym) {
-			return multiply((ComplexSym) that);
-		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.multiply(valueOf((AbstractIntegerSym) that));
-		}
-		if (that instanceof AbstractFractionSym) {
-			return this.multiply(valueOf((AbstractFractionSym) that));
-		}
-		return super.times(that);
-	}
-
-	@Override
-	public IExpr inverse() {
-		final IRational tmp = (_real.multiply(_real)).add((_imaginary.multiply(_imaginary)));
-		return ComplexSym.valueOf(_real.divideBy(tmp), _imaginary.negate().divideBy(tmp));
-	}
-
-	@Override
-	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
-			return sb.toString();
-		} catch (Exception e1) {
-		}
-		// fall back to simple output format
-		final StringBuilder tb = new StringBuilder();
-		tb.append('(');
-		tb.append(_real.toString());
-		tb.append(")+I*(");
-		tb.append(_imaginary.toString());
-		tb.append(')');
-		return tb.toString();
+	public INumber floorFraction() throws ArithmeticException {
+		return valueOf((IRational) _real.floorFraction(), (IRational) _imaginary.floorFraction());
 	}
 
 	@Override
@@ -387,13 +289,62 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+	public ISignedNumber getIm() {
+		if (_imaginary.getDenominator().isOne()) {
+			return _imaginary.getNumerator();
+		}
+		return _imaginary;
+	}
+
+	/**
+	 * Returns the imaginary part of a complex number
+	 * 
+	 * @return imaginary part
+	 */
+	@Override
+	public IRational getImaginaryPart() {
+		return _imaginary;
 	}
 
 	@Override
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	public ISignedNumber getRe() {
+		if (_real.getDenominator().isOne()) {
+			return _real.getNumerator();
+		}
+		return _real;
+	}
+
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	@Override
+	public IRational getRealPart() {
+		return _real;
+	}
+
+	@Override
+	public final int hashCode() {
+		if (fHashValue == 0) {
+			fHashValue = _real.hashCode() * 29 + _imaginary.hashCode();
+		}
+		return fHashValue;
+	}
+
+	@Override
+	public ISymbol head() {
+		return F.Complex;
+	}
+
+	@Override
+	public int hierarchy() {
+		return COMPLEXID;
+	}
+
+	@Override
+	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, false);
 	}
 
 	@Override
@@ -415,6 +366,35 @@ public class ComplexSym extends ExprImpl implements IComplex {
 				+ "L)";
 	}
 
+	@Override
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+	}
+
+	@Override
+	public IExpr inverse() {
+		final IRational tmp = (_real.multiply(_real)).add((_imaginary.multiply(_imaginary)));
+		return ComplexSym.valueOf(_real.divideBy(tmp), _imaginary.negate().divideBy(tmp));
+	}
+
+	@Override
+	public boolean isZero() {
+		return NumberUtil.isZero(_real) && NumberUtil.isZero(_imaginary);
+	}
+
+	@Override
+	public IComplex multiply(final IComplex parm1) {
+		return ComplexSym.valueOf(
+				_real.multiply(parm1.getRealPart()).subtract(_imaginary.multiply(parm1.getImaginaryPart())),
+				_real.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(_imaginary)));
+	}
+
+	@Override
+	public ComplexSym negate() {
+		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
+	}
+
+	@Override
 	public INumber normalize() {
 		if (_imaginary.isZero()) {
 			if (_real instanceof IFraction) {
@@ -452,70 +432,91 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return this;
 	}
 
-	public int complexSign() {
-		final int i = _real.getNumerator().sign();
+	@Override
+	public final INumber numericNumber() {
+		return F.complexNum(this);
+	}
 
-		if (i == 0) {
-			return _imaginary.getNumerator().sign();
+	@Override
+	public INumber opposite() {
+		return ComplexSym.valueOf(_real.negate(), _imaginary.negate());
+	}
+
+	@Override
+	public IExpr plus(final IExpr that) {
+		if (that instanceof ComplexSym) {
+			return this.add((ComplexSym) that);
+		}
+		if (that instanceof AbstractIntegerSym) {
+			return this.add(valueOf((AbstractIntegerSym) that));
+		}
+		if (that instanceof AbstractFractionSym) {
+			return this.add(valueOf((AbstractFractionSym) that));
+		}
+		return super.plus(that);
+	}
+
+	@Override
+	public IComplex pow(final int parm1) {
+		int temp = parm1;
+
+		if ((parm1 == 0) && _real.isZero() && _imaginary.isZero()) {
+			throw new java.lang.ArithmeticException();
 		}
 
-		return i;
-	}
-
-	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
-	 */
-	public int compareTo(final IExpr expr) {
-		if (expr instanceof ComplexSym) {
-			final int cp = _real.compareTo(((ComplexSym) expr)._real);
-			if (cp != 0) {
-				return cp;
-			}
-			return _imaginary.compareTo(((ComplexSym) expr)._imaginary);
+		if (parm1 == 1) {
+			return this;
 		}
-		return super.compareTo(expr);
+
+		IComplex res = ComplexSym.valueOf(F.C1, F.C0);
+
+		if (parm1 < 0) {
+			temp *= -1;
+		}
+
+		for (int i = 0; i < temp; i++) {
+			res = res.multiply(this);
+		}
+
+		if (parm1 < 0) {
+			final IRational d = res.getRealPart().multiply(res.getRealPart())
+					.add(res.getImaginaryPart().multiply(res.getImaginaryPart()));
+
+			return ComplexSym.valueOf(res.getRealPart().divideBy(d), res.getImaginaryPart().negate().divideBy(d));
+		}
+
+		return res;
 	}
 
 	@Override
-	public ISymbol head() {
-		return F.Complex;
-	}
-
-	/** {@inheritDoc} */
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
+	public IExpr times(final IExpr that) {
+		if (that instanceof ComplexSym) {
+			return multiply((ComplexSym) that);
+		}
+		if (that instanceof AbstractIntegerSym) {
+			return this.multiply(valueOf((AbstractIntegerSym) that));
+		}
+		if (that instanceof AbstractFractionSym) {
+			return this.multiply(valueOf((AbstractFractionSym) that));
+		}
+		return super.times(that);
 	}
 
 	@Override
-	public boolean equalsInt(int i) {
-		return false;
-	}
-
-	@Override
-	public INumber ceilFraction() throws ArithmeticException {
-		return valueOf((IRational) _real.ceilFraction(), (IRational) _imaginary.ceilFraction());
-	}
-
-	@Override
-	public INumber floorFraction() throws ArithmeticException {
-		return valueOf((IRational) _real.floorFraction(), (IRational) _imaginary.floorFraction());
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+			return sb.toString();
+		} catch (Exception e1) {
+		}
+		// fall back to simple output format
+		final StringBuilder tb = new StringBuilder();
+		tb.append('(');
+		tb.append(_real.toString());
+		tb.append(")+I*(");
+		tb.append(_imaginary.toString());
+		tb.append(')');
+		return tb.toString();
 	}
 }

@@ -199,8 +199,12 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public BigInteger[] divideAndRemainder() {
-		return getBigNumerator().divideAndRemainder(getBigDenominator());
+	public IInteger[] divideAndRemainder() {
+		IInteger[] result = new IInteger[2];
+		BigInteger[] intResult = getBigNumerator().divideAndRemainder(getBigDenominator());
+		result[0] = AbstractIntegerSym.valueOf(intResult[0]);
+		result[1] = AbstractIntegerSym.valueOf(intResult[1]);
+		return result;
 	}
 
 	@Override
