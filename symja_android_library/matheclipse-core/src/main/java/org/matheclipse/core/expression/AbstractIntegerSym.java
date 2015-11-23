@@ -8,6 +8,7 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -197,6 +198,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return AbstractFractionSym.valueOf(this).divideBy(that);
 	}
 
+	@Override
 	public IInteger eulerPhi() throws ArithmeticException {
 		IAST ast = factorInteger();
 		IInteger phi = AbstractIntegerSym.valueOf(1);
@@ -291,6 +293,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @param b
 	 * @return
 	 */
+	@Override
 	public IInteger jacobiSymbol(IInteger b) {
 		if (isOne()) {
 			return F.C1;
@@ -308,6 +311,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return b.mod(this).jacobiSymbol(this).multiply(jacobiSymbolG(b));
 	}
 
+	@Override
 	public IInteger jacobiSymbolF() {
 		IInteger a = mod(F.C8);
 		if (a.isOne()) {
@@ -319,6 +323,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return F.CN1;
 	}
 
+	@Override
 	public IInteger jacobiSymbolG(IInteger b) {
 		IInteger i1 = mod(F.C4);
 		if (i1.isOne()) {
@@ -336,6 +341,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * specified.
 	 * 
 	 */
+	@Override
 	public IInteger lcm(final IInteger that) {
 		if (this.isZero() || that.isZero()) {
 			return F.C0;
@@ -376,8 +382,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (that instanceof IInteger) {
 			return this.add((IInteger) that);
 		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(this).add((AbstractFractionSym) that);
+		if (that instanceof IFraction) {
+			return AbstractFractionSym.valueOf(this).add((IFraction) that);
 		}
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
@@ -432,8 +438,9 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @return the primitive roots
 	 * @throws ArithmeticException
 	 */
+	@Override
 	public IInteger[] primitiveRoots() throws ArithmeticException {
-		IInteger phi = (IInteger) eulerPhi();
+		IInteger phi = eulerPhi();
 		int size = phi.eulerPhi().toInt();
 		if (size <= 0) {
 			return null;
@@ -496,8 +503,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (that instanceof IInteger) {
 			return this.multiply((IInteger) that);
 		}
-		if (that instanceof AbstractFractionSym) {
-			return AbstractFractionSym.valueOf(this).multiply((AbstractFractionSym) that).normalize();
+		if (that instanceof IFraction) {
+			return AbstractFractionSym.valueOf(this).multiply((IFraction) that).normalize();
 		}
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
@@ -505,6 +512,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return super.times(that);
 	}
 
+	@Override
 	public byte[] toByteArray() {
 		return getBigNumerator().toByteArray();
 	}

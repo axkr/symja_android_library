@@ -7,6 +7,7 @@ import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -15,7 +16,7 @@ import org.matheclipse.core.interfaces.IRational;
  * IFraction implementation which uses methods of the Apache
  * <code>org.apache.commons.math4.fraction.BigFraction</code> methods.
  * 
- * @see AbstractFractionSym
+ * @see IFraction
  * @see FractionSym
  */
 public class BigFractionSym extends AbstractFractionSym {
@@ -50,7 +51,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public AbstractFractionSym abs() {
+	public IFraction abs() {
 		return new BigFractionSym(fFraction.abs());
 	}
 
@@ -62,7 +63,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Sum of <code>this</code> and <code>other</code>.
 	 */
 	@Override
-	public AbstractFractionSym add(AbstractFractionSym other) {
+	public IFraction add(IFraction other) {
 		if (other.isZero())
 			return this;
 
@@ -84,8 +85,8 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (parm1.isZero()) {
 			return this;
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return add((AbstractFractionSym) parm1);
+		if (parm1 instanceof IFraction) {
+			return add((IFraction) parm1);
 		}
 		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
@@ -120,7 +121,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym ceilFraction() {
+	public IFraction ceilFraction() {
 		if (isIntegral()) {
 			return this;
 		}
@@ -147,9 +148,9 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public int compareTo(IExpr expr) {
-		if (expr instanceof AbstractFractionSym) {
-			BigInteger valthis = getBigNumerator().multiply(((AbstractFractionSym) expr).getBigDenominator());
-			BigInteger valo = ((AbstractFractionSym) expr).getBigNumerator().multiply(getBigDenominator());
+		if (expr instanceof IFraction) {
+			BigInteger valthis = getBigNumerator().multiply(((IFraction) expr).getBigDenominator());
+			BigInteger valo = ((IFraction) expr).getBigNumerator().multiply(getBigDenominator());
 			return valthis.compareTo(valo);
 		}
 		if (expr instanceof IInteger) {
@@ -183,7 +184,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	@Override
-	public AbstractFractionSym div(AbstractFractionSym other) {
+	public IFraction div(IFraction other) {
 		if (other.isOne()) {
 			return this;
 		}
@@ -269,7 +270,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym floorFraction() {
+	public IFraction floorFraction() {
 		if (isIntegral()) {
 			return this;
 		}
@@ -286,7 +287,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
-	public AbstractFractionSym frac() {
+	public IFraction frac() {
 		if (isIntegral()) {
 			return AbstractFractionSym.ZERO;
 		}
@@ -317,6 +318,16 @@ public class BigFractionSym extends AbstractFractionSym {
 		return buf.toString();
 	}
 
+	@Override
+	public IExpr gcd(IExpr that) {
+		if (that instanceof IFraction) {
+			BigFraction arg2 = ((IFraction) that).getRational();
+			return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
+					AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
+		}
+		return super.gcd(that);
+	}
+
 	/**
 	 * Compute the gcd of two rationals (this and other). The gcd is the
 	 * rational number, such that dividing this and other with the gcd will
@@ -326,7 +337,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 *            the second rational argument.
 	 * @return the gcd of this and other.
 	 */
-	public AbstractFractionSym gcd(FractionSym other) {
+	public IFraction gcd(IFraction other) {
 		if (other.isZero()) {
 			return this;
 		}
@@ -336,16 +347,6 @@ public class BigFractionSym extends AbstractFractionSym {
 		BigInteger denom = tdenom.divide(gcddenom).multiply(odenom);
 		BigInteger num = getBigNumerator().gcd(other.getBigNumerator());
 		return AbstractFractionSym.valueOf(num, denom);
-	}
-
-	@Override
-	public IExpr gcd(IExpr that) {
-		if (that instanceof AbstractFractionSym) {
-			BigFraction arg2 = ((AbstractFractionSym) that).getRational();
-			return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
-					AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
-		}
-		return super.gcd(that);
 	}
 
 	@Override
@@ -385,7 +386,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 *            Rational to divide.
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
-	public AbstractFractionSym idiv(AbstractFractionSym other) {
+	public IFraction idiv(IFraction other) {
 		BigInteger num = getBigDenominator().multiply(other.getBigNumerator());
 		BigInteger denom = getBigNumerator().multiply(other.getBigDenominator());
 
@@ -432,7 +433,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Inverse of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym inverse() {
+	public IFraction inverse() {
 		return new BigFractionSym(fFraction.reciprocal());
 	}
 
@@ -484,7 +485,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 *            big integer to multiply.
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
-	public AbstractFractionSym mul(BigInteger other) {
+	public IFraction mul(BigInteger other) {
 		if (other.bitLength() < 2) {
 			int oint = other.intValue();
 			if (oint == 1)
@@ -508,8 +509,8 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (parm1.isMinusOne()) {
 			return this.negate();
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return mul((AbstractFractionSym) parm1);
+		if (parm1 instanceof IFraction) {
+			return mul((IFraction) parm1);
 		}
 		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
@@ -522,7 +523,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return <code>-this</code>
 	 */
 	@Override
-	public AbstractFractionSym negate() {
+	public IFraction negate() {
 		return new BigFractionSym(fFraction.negate());
 	}
 

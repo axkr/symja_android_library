@@ -451,8 +451,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IInteger) {
 			return this.add(valueOf((IInteger) that));
 		}
-		if (that instanceof AbstractFractionSym) {
-			return this.add(valueOf((AbstractFractionSym) that));
+		if (that instanceof IFraction) {
+			return this.add(valueOf((IFraction) that));
 		}
 		return super.plus(that);
 	}
@@ -497,8 +497,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IInteger) {
 			return this.multiply(valueOf((IInteger) that));
 		}
-		if (that instanceof AbstractFractionSym) {
-			return this.multiply(valueOf((AbstractFractionSym) that));
+		if (that instanceof IFraction) {
+			return this.multiply(valueOf((IFraction) that));
 		}
 		return super.times(that);
 	}

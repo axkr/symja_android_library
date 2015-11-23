@@ -17,6 +17,7 @@ import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -70,8 +71,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (parm1.isZero()) {
 			return this;
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return ((AbstractFractionSym) parm1).add(this);
+		if (parm1 instanceof IFraction) {
+			return ((IFraction) parm1).add(this);
 		}
 		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
@@ -117,8 +118,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (expr instanceof BigIntegerSym) {
 			return fBigIntValue.compareTo(((BigIntegerSym) expr).fBigIntValue);
 		}
-		if (expr instanceof AbstractFractionSym) {
-			return -((AbstractFractionSym) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
+		if (expr instanceof IFraction) {
+			return -((IFraction) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = fBigIntValue.doubleValue() - ((Num) expr).getRealPart();
@@ -151,7 +152,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public IInteger div(final IInteger that) {
 		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] divideAndRemainder(final IInteger that) {
@@ -168,7 +169,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (that instanceof BigIntegerSym) {
 			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
-		if (that instanceof AbstractFractionSym) {
+		if (that instanceof IFraction) {
 			return AbstractFractionSym.valueOf(this).divideBy(that);
 		}
 		return Num.valueOf(fBigIntValue.doubleValue() / that.doubleValue());
@@ -581,9 +582,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (obj instanceof BigIntegerSym) {
 			return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) > 0;
 		}
-		if (obj instanceof AbstractFractionSym) {
-			return -((AbstractFractionSym) obj)
-					.compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) > 0;
+		if (obj instanceof IFraction) {
+			return -((IFraction) obj).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) > 0;
 		}
 		return fBigIntValue.doubleValue() > obj.doubleValue();
 	}
@@ -601,9 +601,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (obj instanceof BigIntegerSym) {
 			return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) < 0;
 		}
-		if (obj instanceof AbstractFractionSym) {
-			return -((AbstractFractionSym) obj)
-					.compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) < 0;
+		if (obj instanceof IFraction) {
+			return -((IFraction) obj).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) < 0;
 		}
 		return fBigIntValue.doubleValue() < obj.doubleValue();
 	}
@@ -740,8 +739,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (parm1.isMinusOne()) {
 			return this.negate();
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return ((AbstractFractionSym) parm1).multiply(this);
+		if (parm1 instanceof IFraction) {
+			return ((IFraction) parm1).multiply(this);
 		}
 		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
@@ -991,7 +990,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		objectOutput.writeByte(0);
 		objectOutput.writeObject(fBigIntValue);
 	}
-	
+
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}

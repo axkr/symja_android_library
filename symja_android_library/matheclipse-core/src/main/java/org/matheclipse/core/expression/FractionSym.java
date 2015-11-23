@@ -9,6 +9,7 @@ import org.apache.commons.math4.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -64,7 +65,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Rational that is equal to the absolute value of this rational.
 	 */
 	@Override
-	public AbstractFractionSym abs() {
+	public IFraction abs() {
 		return valueOf(Math.abs((long) fNumerator), fDenominator);
 	}
 
@@ -76,7 +77,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Sum of <code>this</code> and <code>other</code>.
 	 */
 	@Override
-	public AbstractFractionSym add(AbstractFractionSym other) {
+	public IFraction add(IFraction other) {
 		if (isZero()) {
 			return other;
 		}
@@ -111,8 +112,8 @@ public class FractionSym extends AbstractFractionSym {
 		if (parm1.isZero()) {
 			return this;
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return add((AbstractFractionSym) parm1);
+		if (parm1 instanceof IFraction) {
+			return add((IFraction) parm1);
 		}
 		if (parm1 instanceof IntegerSym) {
 			IntegerSym is = (IntegerSym) parm1;
@@ -147,7 +148,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Next bigger integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym ceilFraction() {
+	public IFraction ceilFraction() {
 		if (fDenominator == 1) {
 			return this;
 		}
@@ -218,14 +219,6 @@ public class FractionSym extends AbstractFractionSym {
 		return ComplexNum.valueOf(nr / dr);
 	}
 
-	@Override
-	public IInteger[] divideAndRemainder() {
-		IInteger[] result = new IInteger[2];
-		result[0] = AbstractIntegerSym.valueOf(fNumerator / fDenominator);
-		result[1] = AbstractIntegerSym.valueOf(fNumerator % fDenominator);
-		return result;
-	}
-	
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
@@ -234,7 +227,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	@Override
-	public AbstractFractionSym div(AbstractFractionSym other) {
+	public IFraction div(IFraction other) {
 		if (other instanceof BigFractionSym) {
 			return ((BigFractionSym) other).idiv(this);
 		}
@@ -255,6 +248,14 @@ public class FractionSym extends AbstractFractionSym {
 			newnum = -newnum;
 		return valueOf(newnum, newdenom);
 	}
+	
+	@Override
+	public IInteger[] divideAndRemainder() {
+		IInteger[] result = new IInteger[2];
+		result[0] = AbstractIntegerSym.valueOf(fNumerator / fDenominator);
+		result[1] = AbstractIntegerSym.valueOf(fNumerator % fDenominator);
+		return result;
+	}
 
 	@Override
 	public double doubleValue() {
@@ -266,8 +267,8 @@ public class FractionSym extends AbstractFractionSym {
 		if (this == o) {
 			return true;
 		}
-		if (o instanceof AbstractFractionSym) {
-			return ((AbstractFractionSym) o).equalsFraction(fNumerator, fDenominator);
+		if (o instanceof IFraction) {
+			return ((IFraction) o).equalsFraction(fNumerator, fDenominator);
 		}
 		return false;
 	}
@@ -305,7 +306,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym floorFraction() {
+	public IFraction floorFraction() {
 		if (fDenominator == 1) {
 			return this;
 		}
@@ -326,7 +327,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
-	public AbstractFractionSym frac() {
+	public IFraction frac() {
 		if (fDenominator == 1) {
 			return AbstractFractionSym.ZERO;
 		}
@@ -359,6 +360,14 @@ public class FractionSym extends AbstractFractionSym {
 		return buf.toString();
 	}
 
+	@Override
+	public IExpr gcd(IExpr that) {
+		if (that instanceof FractionSym) {
+			return gcd((FractionSym) that);
+		}
+		return super.gcd(that);
+	}
+
 	/**
 	 * Compute the gcd of two rationals (this and other). The gcd is the
 	 * rational number, such that dividing this and other with the gcd will
@@ -368,7 +377,7 @@ public class FractionSym extends AbstractFractionSym {
 	 *            the second rational argument.
 	 * @return the gcd of this and other.
 	 */
-	public AbstractFractionSym gcd(AbstractFractionSym other) {
+	public IFraction gcd(IFraction other) {
 		if (isZero()) {
 			return other;
 		}
@@ -386,14 +395,6 @@ public class FractionSym extends AbstractFractionSym {
 		long num = ArithmeticUtils.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
 				fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
 		return valueOf(num, denom);
-	}
-
-	@Override
-	public IExpr gcd(IExpr that) {
-		if (that instanceof FractionSym) {
-			return gcd((FractionSym) that);
-		}
-		return super.gcd(that);
 	}
 
 	@Override
@@ -463,7 +464,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Inverse of <code>this</code>.
 	 */
 	@Override
-	public AbstractFractionSym inverse() {
+	public IFraction inverse() {
 		return valueOf(fDenominator, fNumerator);
 	}
 
@@ -521,11 +522,39 @@ public class FractionSym extends AbstractFractionSym {
 	 * Return a new rational representing <code>this * other</code>.
 	 * 
 	 * @param other
+	 *            big integer to multiply.
+	 * @return Product of <code>this</code> and <code>other</code>.
+	 */
+	public IFraction mul(BigInteger other) {
+		if (other.bitLength() <=31) {
+			int oint = other.intValue();
+			if (oint == 1)
+				return this;
+			if (oint == -1)
+				return this.negate();
+			long newnum = (long) fNumerator * oint;
+			return valueOf(newnum, fDenominator);
+		}
+
+		if (this.isOne()) {
+			return valueOf(other, BigInteger.ONE);
+		}
+		if (this.isMinusOne()) {
+			return valueOf(other.negate(), BigInteger.ONE);
+		}
+
+		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
+	}
+
+	/**
+	 * Return a new rational representing <code>this * other</code>.
+	 * 
+	 * @param other
 	 *            Rational to multiply.
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	@Override
-	public AbstractFractionSym mul(AbstractFractionSym other) {
+	public IFraction mul(IFraction other) {
 		if (other.isOne()) {
 			return this;
 		}
@@ -548,34 +577,6 @@ public class FractionSym extends AbstractFractionSym {
 		return valueOf(newnum, newdenom);
 	}
 
-	/**
-	 * Return a new rational representing <code>this * other</code>.
-	 * 
-	 * @param other
-	 *            big integer to multiply.
-	 * @return Product of <code>this</code> and <code>other</code>.
-	 */
-	public AbstractFractionSym mul(BigInteger other) {
-		if (other.bitLength() <=31) {
-			int oint = other.intValue();
-			if (oint == 1)
-				return this;
-			if (oint == -1)
-				return this.negate();
-			long newnum = (long) fNumerator * oint;
-			return valueOf(newnum, fDenominator);
-		}
-
-		if (this.isOne()) {
-			return valueOf(other, BigInteger.ONE);
-		}
-		if (this.isMinusOne()) {
-			return valueOf(other.negate(), BigInteger.ONE);
-		}
-
-		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
-	}
-
 	@Override
 	public IRational multiply(IRational parm1) {
 		if (isZero() || parm1.isZero()) {
@@ -587,8 +588,8 @@ public class FractionSym extends AbstractFractionSym {
 		if (parm1.isMinusOne()) {
 			return this.negate();
 		}
-		if (parm1 instanceof AbstractFractionSym) {
-			return mul((AbstractFractionSym) parm1);
+		if (parm1 instanceof IFraction) {
+			return mul((IFraction) parm1);
 		}
 		if (parm1 instanceof IntegerSym) {
 			IntegerSym is = (IntegerSym) parm1;
@@ -606,7 +607,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return <code>-this</code>.
 	 */
 	@Override
-	public AbstractFractionSym negate() {
+	public IFraction negate() {
 		return AbstractFractionSym.valueOf(-(long) fNumerator, fDenominator);
 	}
 
