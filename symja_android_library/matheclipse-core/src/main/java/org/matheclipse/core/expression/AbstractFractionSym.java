@@ -355,9 +355,9 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		if (obj instanceof FractionSym) {
 			return compareTo((obj)) > 0;
 		}
-		if (obj instanceof AbstractIntegerSym) {
+		if (obj instanceof IInteger) {
 			return compareTo(
-					AbstractFractionSym.valueOf(((AbstractIntegerSym) obj).getBigNumerator(), BigInteger.ONE)) > 0;
+					AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) > 0;
 		}
 		return doubleValue() > obj.doubleValue();
 	}
@@ -375,9 +375,9 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		if (obj instanceof FractionSym) {
 			return compareTo((obj)) < 0;
 		}
-		if (obj instanceof AbstractIntegerSym) {
+		if (obj instanceof IInteger) {
 			return compareTo(
-					AbstractFractionSym.valueOf(((AbstractIntegerSym) obj).getBigNumerator(), BigInteger.ONE)) < 0;
+					AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) < 0;
 		}
 		return doubleValue() < obj.doubleValue();
 	}

@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -22,8 +22,7 @@ public class MoebiusMu extends AbstractTrigArg1 {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
 			try {
-				AbstractIntegerSym moebius = ((AbstractIntegerSym) arg1).moebiusMu();
-				return moebius;
+				return ((IInteger)arg1).moebiusMu(); 
 			} catch (ArithmeticException e) {
 				// integer to large?
 			}

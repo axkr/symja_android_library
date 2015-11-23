@@ -87,7 +87,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (parm1 instanceof AbstractFractionSym) {
 			return add((AbstractFractionSym) parm1);
 		}
-		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
 		return valueOf(newnum, getBigDenominator());
 	}
@@ -152,8 +152,8 @@ public class BigFractionSym extends AbstractFractionSym {
 			BigInteger valo = ((AbstractFractionSym) expr).getBigNumerator().multiply(getBigDenominator());
 			return valthis.compareTo(valo);
 		}
-		if (expr instanceof AbstractIntegerSym) {
-			return fFraction.compareTo(new BigFraction(((AbstractIntegerSym) expr).getBigNumerator(), BigInteger.ONE));
+		if (expr instanceof IInteger) {
+			return fFraction.compareTo(new BigFraction(((IInteger) expr).getBigNumerator(), BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = fFraction.doubleValue() - ((Num) expr).getRealPart();
@@ -511,7 +511,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (parm1 instanceof AbstractFractionSym) {
 			return mul((AbstractFractionSym) parm1);
 		}
-		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
 		return valueOf(newnum, getBigDenominator());
 	}

@@ -110,8 +110,8 @@ public abstract class ExprImpl implements IExpr, Serializable {
 				}
 			}
 		} else if (clazz.equals(java.math.BigInteger.class)) {
-			if (this instanceof AbstractIntegerSym) {
-				return new java.math.BigInteger(((AbstractIntegerSym) this).toByteArray());
+			if (this instanceof IInteger) {
+				return new java.math.BigInteger(((IInteger) this).toByteArray());
 			}
 		} else if (clazz.equals(String.class)) {
 			return toString();

@@ -15,6 +15,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
+import com.google.common.math.BigIntegerMath;
+
 /**
  * Compute the Bernoulli number of the first kind.
  * 
@@ -97,7 +99,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 			bernoulli[k] = BigFraction.ZERO;
 			for (int i = 0; i < k; i++) {
 				if (!bernoulli[i].equals(BigFraction.ZERO)) {
-					BigFraction bin = new BigFraction(Binomial.binomial(k + 1, k + 1 - i));
+					BigFraction bin = new BigFraction(BigIntegerMath.binomial(k+1,  k + 1 - i));
 					bernoulli[k] = bernoulli[k].subtract(bin.multiply(bernoulli[i]));
 				}
 			}

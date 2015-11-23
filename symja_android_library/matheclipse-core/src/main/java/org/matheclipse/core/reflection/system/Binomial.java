@@ -49,10 +49,6 @@ public class Binomial extends AbstractArg2 {
 		return bin;
 	}
 
-	public static BigInteger binomial(final int n, final int k) {
-		return BigIntegerMath.binomial(n, k);
-	}
-
 	public Binomial() {
 	}
 

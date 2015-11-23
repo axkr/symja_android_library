@@ -17,9 +17,9 @@ public class Mod extends AbstractArg2 {
 	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 		if (i1.isNegative()) {
-			return ((AbstractIntegerSym)(i0.negate())).mod((AbstractIntegerSym)(i1.negate())).negate();
+			return i0.negate().mod(i1.negate()).negate();
 		}
-		return ((AbstractIntegerSym) i0).mod((AbstractIntegerSym)i1);
+		return i0.mod(i1);
 	}
 
 }

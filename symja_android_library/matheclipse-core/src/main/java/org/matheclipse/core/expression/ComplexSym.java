@@ -11,6 +11,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -447,8 +448,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof ComplexSym) {
 			return this.add((ComplexSym) that);
 		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.add(valueOf((AbstractIntegerSym) that));
+		if (that instanceof IInteger) {
+			return this.add(valueOf((IInteger) that));
 		}
 		if (that instanceof AbstractFractionSym) {
 			return this.add(valueOf((AbstractFractionSym) that));
@@ -493,8 +494,8 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof ComplexSym) {
 			return multiply((ComplexSym) that);
 		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.multiply(valueOf((AbstractIntegerSym) that));
+		if (that instanceof IInteger) {
+			return this.multiply(valueOf((IInteger) that));
 		}
 		if (that instanceof AbstractFractionSym) {
 			return this.multiply(valueOf((AbstractFractionSym) that));

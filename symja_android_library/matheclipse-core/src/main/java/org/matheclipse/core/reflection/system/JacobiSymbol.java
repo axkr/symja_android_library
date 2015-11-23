@@ -8,7 +8,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
+ * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi
+ * symbol</a>
  */
 public class JacobiSymbol extends AbstractArg2 {
 
@@ -22,8 +23,7 @@ public class JacobiSymbol extends AbstractArg2 {
 				// not defined for negative arguments
 				return null;
 			}
-			AbstractIntegerSym jacobi = ((AbstractIntegerSym) i0).jacobiSymbol((AbstractIntegerSym) i1);
-			return jacobi;
+			return i0.jacobiSymbol(i1);
 		} catch (ArithmeticException e) {
 			// integer to large?
 		}

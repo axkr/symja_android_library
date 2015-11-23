@@ -42,6 +42,21 @@ public class CatalanNumber extends AbstractTrigArg1 {
 		}
 		return c.divide(n);
 	}
+	
+	public static IInteger catalanNumber(IInteger n) {
+		n = n.add(F.C1);
+		if (!(n.compareInt(0) > 0)) {
+			return F.C0;
+		}
+		IInteger i = F.C1;
+		IInteger c = F.C1;
+		final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
+		while (i.compareTo(n) < 0) {
+			c = c.multiply(temp1.subtract(i)).div(i);
+			i = i.add(F.C1);
+		}
+		return c.div(n);
+	}
 
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {

@@ -46,7 +46,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @param bigInteger
 	 * @return
 	 */
-	public static AbstractIntegerSym valueOf(final BigInteger bigInteger) {
+	public static IInteger valueOf(final BigInteger bigInteger) {
 		if (bigInteger.bitLength() <= 31) {
 			return new IntegerSym(bigInteger.intValue());
 		}
@@ -101,7 +101,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return new IntegerSym(newnum);
 	}
 
-	public static AbstractIntegerSym valueOf(final long newnum) {
+	public static IInteger valueOf(final long newnum) {
 		if (Integer.MIN_VALUE <= newnum && newnum <= Integer.MAX_VALUE) {
 			return new IntegerSym((int) newnum);
 		}
@@ -111,9 +111,9 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	}
 
 	/**
-	 * Returns the AbstractIntegerSym for the specified character sequence
-	 * stated in the specified radix. The characters must all be digits of the
-	 * specified radix, except the first character which may be a plus sign
+	 * Returns the IInteger for the specified character sequence stated in the
+	 * specified radix. The characters must all be digits of the specified
+	 * radix, except the first character which may be a plus sign
 	 * <code>'+'</code> or a minus sign <code>'-'</code> .
 	 * 
 	 * @param chars
@@ -125,7 +125,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 *             if the specified character sequence does not contain a
 	 *             parsable large integer.
 	 */
-	public static AbstractIntegerSym valueOf(final String integerString, final int radix) {
+	public static IInteger valueOf(final String integerString, final int radix) {
 		try {
 			int value = Integer.parseInt(integerString, radix);
 			return new IntegerSym(value);
@@ -168,8 +168,6 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return visitor.visit(this);
 	}
 
-	public abstract AbstractIntegerSym add(final AbstractIntegerSym that);
-
 	@Override
 	public ApcomplexNum apcomplexNumValue(long precision) {
 		return ApcomplexNum.valueOf(apcomplexValue(precision));
@@ -194,24 +192,17 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return this;
 	}
 
-	public abstract AbstractIntegerSym div(final IInteger that);
-
 	@Override
 	public IRational divideBy(IRational that) {
 		return AbstractFractionSym.valueOf(this).divideBy(that);
 	}
-
-	public abstract IAST divisors();
-
-	@Override
-	public abstract AbstractIntegerSym eabs();
 
 	public IInteger eulerPhi() throws ArithmeticException {
 		IAST ast = factorInteger();
 		IInteger phi = AbstractIntegerSym.valueOf(1);
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
-			AbstractIntegerSym q = (AbstractIntegerSym) element.arg1();
+			IInteger q = (IInteger) element.arg1();
 			int c = ((IInteger) element.arg2()).toInt();
 			if (c == 1) {
 				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
@@ -241,22 +232,20 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return this;
 	}
 
-	public abstract AbstractIntegerSym gcd(final AbstractIntegerSym that);
-
 	/** {@inheritDoc} */
 	@Override
 	public IExpr gcd(IExpr that) {
 		if (that instanceof IInteger) {
-			return gcd((AbstractIntegerSym) that);
+			return gcd((IInteger) that);
 		}
 		return F.C1;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IInteger gcd(final IInteger that) {
-		return gcd((AbstractIntegerSym) that);
-	}
+	// /** {@inheritDoc} */
+	// @Override
+	// public IInteger gcd(final IInteger that) {
+	// return gcd( that);
+	// }
 
 	@Override
 	public ISymbol head() {
@@ -302,7 +291,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @param b
 	 * @return
 	 */
-	public AbstractIntegerSym jacobiSymbol(AbstractIntegerSym b) {
+	public IInteger jacobiSymbol(IInteger b) {
 		if (isOne()) {
 			return F.C1;
 		}
@@ -313,14 +302,14 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			return b.jacobiSymbolF();
 		}
 		if (!isOdd()) {
-			AbstractIntegerSym aDIV2 = valueOf(shiftRight(1));
+			IInteger aDIV2 = shiftRight(1);
 			return aDIV2.jacobiSymbol(b).multiply(F.C2.jacobiSymbol(b));
 		}
 		return b.mod(this).jacobiSymbol(this).multiply(jacobiSymbolG(b));
 	}
 
-	protected AbstractIntegerSym jacobiSymbolF() {
-		AbstractIntegerSym a = mod(F.C8);
+	public IInteger jacobiSymbolF() {
+		IInteger a = mod(F.C8);
 		if (a.isOne()) {
 			return F.C1;
 		}
@@ -330,12 +319,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return F.CN1;
 	}
 
-	protected AbstractIntegerSym jacobiSymbolG(AbstractIntegerSym b) {
-		AbstractIntegerSym i1 = mod(F.C4);
+	public IInteger jacobiSymbolG(IInteger b) {
+		IInteger i1 = mod(F.C4);
 		if (i1.isOne()) {
 			return F.C1;
 		}
-		AbstractIntegerSym i2 = b.mod(F.C4);
+		IInteger i2 = b.mod(F.C4);
 		if (i2.isOne()) {
 			return F.C1;
 		}
@@ -347,29 +336,21 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * specified.
 	 * 
 	 */
-	public AbstractIntegerSym lcm(final AbstractIntegerSym that) {
+	public IInteger lcm(final IInteger that) {
 		if (this.isZero() || that.isZero()) {
 			return F.C0;
 		}
-		AbstractIntegerSym a = eabs();
-		AbstractIntegerSym b = that.eabs();
-		AbstractIntegerSym lcm = a.multiply(b).div(gcd(b));
+		IInteger a = eabs();
+		IInteger b = that.eabs();
+		IInteger lcm = a.multiply(b).div(gcd(b));
 		return lcm;
 	}
 
 	/** {@inheritDoc} */
-	@Override
-	public IInteger lcm(final IInteger that) {
-		return lcm((AbstractIntegerSym) that);
-	}
-
-	public abstract AbstractIntegerSym mod(final AbstractIntegerSym that);
-
-	public abstract AbstractIntegerSym modPow(final AbstractIntegerSym exp, final AbstractIntegerSym m);
-
-	public abstract AbstractIntegerSym moebiusMu();
-
-	public abstract AbstractIntegerSym multiply(AbstractIntegerSym value);
+	// @Override
+	// public IInteger lcm(final IInteger that) {
+	// return lcm((IInteger) that);
+	// }
 
 	/**
 	 * @param val
@@ -380,10 +361,10 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	}
 
 	@Override
-	public abstract AbstractIntegerSym negate();
+	public abstract IInteger negate();
 
 	@Override
-	public AbstractIntegerSym opposite() {
+	public IInteger opposite() {
 		return negate();
 	}
 
@@ -392,8 +373,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (isZero()) {
 			return that;
 		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.add((AbstractIntegerSym) that);
+		if (that instanceof IInteger) {
+			return this.add((IInteger) that);
 		}
 		if (that instanceof AbstractFractionSym) {
 			return AbstractFractionSym.valueOf(this).add((AbstractFractionSym) that);
@@ -406,7 +387,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 
 	/** {@inheritDoc} */
 	@Override
-	public final AbstractIntegerSym pow(final int exponent) throws ArithmeticException {
+	public final IInteger pow(final int exponent) throws ArithmeticException {
 		if (exponent < 0) {
 			throw new ArithmeticException("Negative exponent");
 		}
@@ -429,8 +410,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			exp >>= 1;
 		}
 
-		AbstractIntegerSym r = this;
-		AbstractIntegerSym x = r;
+		IInteger r = this;
+		IInteger x = r;
 
 		while ((exp >>= 1) > 0) {
 			x = x.multiply(x);
@@ -451,26 +432,26 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @return the primitive roots
 	 * @throws ArithmeticException
 	 */
-	public AbstractIntegerSym[] primitiveRoots() throws ArithmeticException {
-		AbstractIntegerSym phi = (AbstractIntegerSym) eulerPhi();
+	public IInteger[] primitiveRoots() throws ArithmeticException {
+		IInteger phi = (IInteger) eulerPhi();
 		int size = phi.eulerPhi().toInt();
 		if (size <= 0) {
 			return null;
 		}
 
 		IAST ast = phi.factorInteger();
-		AbstractIntegerSym d[] = new AbstractIntegerSym[ast.size() - 1];
+		IInteger d[] = new IInteger[ast.size() - 1];
 		IAST element;
 		for (int i = 1; i < ast.size(); i++) {
 			element = (IAST) ast.get(i);
-			AbstractIntegerSym q = (AbstractIntegerSym) element.arg1();
+			IInteger q = (IInteger) element.arg1();
 			d[i - 1] = phi.quotient(q);
 		}
 		int k = 0;
-		AbstractIntegerSym n = this;
-		AbstractIntegerSym m = AbstractIntegerSym.valueOf(1);
+		IInteger n = this;
+		IInteger m = AbstractIntegerSym.valueOf(1);
 
-		AbstractIntegerSym resultArray[] = new AbstractIntegerSym[size];
+		IInteger resultArray[] = new IInteger[size];
 		boolean b;
 		while (m.compareTo(n) < 0) {
 			b = m.gcd(n).compareTo(AbstractIntegerSym.valueOf(1)) == 0;
@@ -483,27 +464,9 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			m = m.add(AbstractIntegerSym.valueOf(1));
 		}
 		if (resultArray[0] == null) {
-			return new AbstractIntegerSym[0];
+			return new IInteger[0];
 		}
 		return resultArray;
-	}
-	
-	public abstract AbstractIntegerSym quotient(final AbstractIntegerSym that);
-
-	/**
-	 * @param n
-	 * @return
-	 */
-	public BigInteger shiftLeft(final int n) {
-		return getBigNumerator().shiftLeft(n);
-	}
-	
-	/**
-	 * @param n
-	 * @return
-	 */
-	public BigInteger shiftRight(final int n) {
-		return getBigNumerator().shiftRight(n);
 	}
 
 	@Override
@@ -513,7 +476,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		return this.add(that.negate());
 	}
-	
+
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
 		if (that instanceof IRational) {
@@ -521,7 +484,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		return Num.valueOf(doubleValue() - that.doubleValue());
 	}
-	
+
 	@Override
 	public IExpr times(final IExpr that) {
 		if (isZero()) {
@@ -530,8 +493,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (isOne()) {
 			return that;
 		}
-		if (that instanceof AbstractIntegerSym) {
-			return this.multiply((AbstractIntegerSym) that);
+		if (that instanceof IInteger) {
+			return this.multiply((IInteger) that);
 		}
 		if (that instanceof AbstractFractionSym) {
 			return AbstractFractionSym.valueOf(this).multiply((AbstractFractionSym) that).normalize();
@@ -541,8 +504,9 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		return super.times(that);
 	}
-	
+
 	public byte[] toByteArray() {
 		return getBigNumerator().toByteArray();
 	}
+
 }

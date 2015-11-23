@@ -61,17 +61,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	@Override
-	public AbstractIntegerSym add(final AbstractIntegerSym that) {
+	public IInteger add(final IInteger that) {
 		return valueOf(fBigIntValue.add(that.getBigNumerator()));
-	}
-
-	/**
-	 * @param val
-	 * @return
-	 */
-	@Override
-	public IInteger add(final IInteger val) {
-		return valueOf(fBigIntValue.add(val.getBigNumerator()));
 	}
 
 	@Override
@@ -82,7 +73,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (parm1 instanceof AbstractFractionSym) {
 			return ((AbstractFractionSym) parm1).add(this);
 		}
-		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
 		return valueOf(newnum);
 	}
@@ -157,23 +148,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	@Override
-	public AbstractIntegerSym div(final IInteger that) {
+	public IInteger div(final IInteger that) {
 		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
 	}
 	
-	/**
-	 * @param that
-	 * @return
-	 */
-	@Override
-	public AbstractIntegerSym mod(final IInteger that) {
-		return valueOf(fBigIntValue.mod(that.getBigNumerator()));
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] divideAndRemainder(final IInteger that) {
-		final AbstractIntegerSym[] res = new BigIntegerSym[2];
+		final IInteger[] res = new BigIntegerSym[2];
 		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.getBigNumerator());
 		res[0] = valueOf(largeRes[0]);
 		res[1] = valueOf(largeRes[1]);
@@ -241,7 +223,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public AbstractIntegerSym eabs() {
+	public IInteger eabs() {
 		return valueOf(fBigIntValue.abs());
 	}
 
@@ -342,7 +324,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IExpr exponent(IInteger base) {
-		AbstractIntegerSym b = this;
+		IInteger b = this;
 		if (sign() < 0) {
 			b = b.negate();
 		} else if (b.isZero()) {
@@ -393,7 +375,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	public IAST factorize(IAST result) {
 		// final ArrayList<IInteger> result = new ArrayList<IInteger>();
-		AbstractIntegerSym b = this;
+		IInteger b = this;
 		if (sign() < 0) {
 			b = b.multiply(AbstractIntegerSym.valueOf(-1));
 			result.add(AbstractIntegerSym.valueOf(-1));
@@ -424,7 +406,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();
-			AbstractIntegerSym is = valueOf(key);
+			IInteger is = valueOf(key);
 			for (int i = 0; i < entry.getValue(); i++) {
 				result.add(is);
 			}
@@ -460,7 +442,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * 
 	 */
 	@Override
-	public AbstractIntegerSym gcd(final AbstractIntegerSym that) {
+	public IInteger gcd(final IInteger that) {
 		return valueOf(fBigIntValue.gcd(that.getBigNumerator()));
 	}
 
@@ -685,30 +667,35 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return fBigIntValue.longValue();
 	}
 
+	/**
+	 * @param that
+	 * @return
+	 */
 	@Override
-	public AbstractIntegerSym mod(final AbstractIntegerSym that) {
+	public IInteger mod(final IInteger that) {
 		return valueOf(fBigIntValue.mod(that.getBigNumerator()));
 	}
 
-	public AbstractIntegerSym modInverse(final AbstractIntegerSym m) {
+	@Override
+	public IInteger modInverse(final IInteger m) {
 		return valueOf(fBigIntValue.modInverse(m.getBigNumerator()));
 	}
 
 	@Override
-	public AbstractIntegerSym modPow(final AbstractIntegerSym exp, final AbstractIntegerSym m) {
+	public IInteger modPow(final IInteger exp, final IInteger m) {
 		return valueOf(fBigIntValue.modPow(exp.getBigNumerator(), m.getBigNumerator()));
 	}
 
 	@Override
-	public AbstractIntegerSym moebiusMu() {
+	public IInteger moebiusMu() {
 		if (this.compareTo(AbstractIntegerSym.valueOf(1)) == 0) {
 			return AbstractIntegerSym.valueOf(1);
 		}
 		IAST ast = factorInteger();
-		AbstractIntegerSym max = AbstractIntegerSym.valueOf(1);
+		IInteger max = AbstractIntegerSym.valueOf(1);
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
-			AbstractIntegerSym c = (AbstractIntegerSym) element.arg2();
+			IInteger c = (IInteger) element.arg2();
 			if (c.compareTo(max) > 0) {
 				max = c;
 			}
@@ -728,7 +715,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	@Override
-	public AbstractIntegerSym multiply(final AbstractIntegerSym that) {
+	public IInteger multiply(final IInteger that) {
 		if (that instanceof IntegerSym) {
 			switch (((IntegerSym) that).fIntValue) {
 			case 0:
@@ -740,15 +727,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			}
 		}
 		return valueOf(fBigIntValue.multiply(that.getBigNumerator()));
-	}
-
-	/**
-	 * @param val
-	 * @return
-	 */
-	@Override
-	public IInteger multiply(final IInteger val) {
-		return valueOf(fBigIntValue.multiply(val.getBigNumerator()));
 	}
 
 	@Override
@@ -765,13 +743,13 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (parm1 instanceof AbstractFractionSym) {
 			return ((AbstractFractionSym) parm1).multiply(this);
 		}
-		AbstractIntegerSym p1 = (AbstractIntegerSym) parm1;
+		IInteger p1 = (IInteger) parm1;
 		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
 		return valueOf(newnum);
 	}
 
 	@Override
-	public AbstractIntegerSym negate() {
+	public IInteger negate() {
 		return valueOf(fBigIntValue.negate());
 	}
 
@@ -848,10 +826,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		BigIntegerSym b = this;
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes1021(b.fBigIntValue, map);
-		AbstractIntegerSym nthRoot = F.C1;
-		AbstractIntegerSym restFactors = AbstractIntegerSym.valueOf(rest);
+		IInteger nthRoot = F.C1;
+		IInteger restFactors = AbstractIntegerSym.valueOf(rest);
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			AbstractIntegerSym primeLE1021 = valueOf(entry.getKey());
+			IInteger primeLE1021 = valueOf(entry.getKey());
 			int primeCounter = entry.getValue();
 			int div = primeCounter / n;
 			if (div > 0) {
@@ -881,7 +859,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public AbstractIntegerSym quotient(final AbstractIntegerSym that) {
+	public IInteger quotient(final IInteger that) {
 		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
 	}
 
@@ -906,10 +884,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		fBigIntValue = (BigInteger) objectInput.readObject();
 	}
 
-	public AbstractIntegerSym remainder(final AbstractIntegerSym that) {
-		return valueOf(fBigIntValue.remainder(that.getBigNumerator()));
-	}
-
 	@Override
 	public IExpr remainder(final IExpr that) {
 		if (that instanceof BigIntegerSym) {
@@ -918,9 +892,31 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return this;
 	}
 
+	public IInteger remainder(final IInteger that) {
+		return valueOf(fBigIntValue.remainder(that.getBigNumerator()));
+	}
+
 	@Override
 	public IInteger round() {
 		return this;
+	}
+
+	/**
+	 * @param n
+	 * @return
+	 */
+	@Override
+	public IInteger shiftLeft(final int n) {
+		return valueOf(getBigNumerator().shiftLeft(n));
+	}
+
+	/**
+	 * @param n
+	 * @return
+	 */
+	@Override
+	public IInteger shiftRight(final int n) {
+		return valueOf(getBigNumerator().shiftRight(n));
 	}
 
 	@Override
@@ -995,9 +991,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		objectOutput.writeByte(0);
 		objectOutput.writeObject(fBigIntValue);
 	}
-
+	
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
-
 }
