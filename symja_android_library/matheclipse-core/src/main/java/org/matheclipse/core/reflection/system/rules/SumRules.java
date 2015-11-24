@@ -9,12 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface SumRules {
   final public static IAST RULES1 = List(
-    ISetDelayed(Sum(Power(i_,-1),List(i_Symbol,C1,n_Symbol)),
-      Condition(HarmonicNumber(n),FreeQ(n,i))),
-    ISetDelayed(Sum(Power(i_,$p(k,IntegerQ)),List(i_Symbol,C1,n_Symbol)),
-      Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(n,i),Negative(k)))),
-    ISetDelayed(Sum(Power(i_,k_),List(i_Symbol,C1,n_Symbol)),
-      Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(n,i),Equal(Head(k),Rational)))),
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,n_Symbol)),
       Condition(Times(c,Plus(Power(c,n),Negate(C1)),Power(Plus(c,Negate(C1)),-1)),And(FreeQ(c,i),FreeQ(n,i)))),
     ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),

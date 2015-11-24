@@ -165,7 +165,8 @@ public class Sum extends Table implements SumRules {
 	 * @param arg1
 	 *            the first argument of the <code>Sum[]</code> function.
 	 * @param list
-	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
+	 *            constructed as
+	 *            <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
 	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list) {
@@ -226,8 +227,12 @@ public class Sum extends Table implements SumRules {
 
 			if (arg1.isPower() && !F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
 				IAST powAST = (IAST) arg1;
-				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var)) {
-					// i^a,{i,n,m} ==> HurwitzZeta(-a, n)-HurwitzZeta(-a,1+m)
+				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var) && to.isFree(var)) {
+					if (from.isOne()) {
+						// i^(k),{i,1,n}) ==> HarmonicNumber(n,-k)
+						return F.HarmonicNumber(to, powAST.arg2().negate());
+					}
+					// i^k,{i,n,m} ==> HurwitzZeta(-k, n)-HurwitzZeta(-k,1+m)
 					return F.Subtract(F.HurwitzZeta(F.Negate(powAST.arg2()), from),
 							F.HurwitzZeta(F.Negate(powAST.arg2()), F.Plus(1, to)));
 				}
@@ -280,8 +285,9 @@ public class Sum extends Table implements SumRules {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
-	 * Summation#Some_summations_of_polynomial_expressions</a>.
+	 * See <a href=
+	 * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
+	 * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param powAST
 	 *            an AST of the form <code>Power[var, i_Integer]</code>
@@ -302,8 +308,9 @@ public class Sum extends Table implements SumRules {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">Wikipedia -
-	 * Summation#Some_summations_of_polynomial_expressions</a>.
+	 * See <a href=
+	 * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
+	 * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param from
 	 *            TODO
@@ -315,28 +322,42 @@ public class Sum extends Table implements SumRules {
 	public IExpr sumPowerFormula(IExpr from, final IExpr to, IInteger p) {
 		// TODO optimize if BernoulliB==0 for odd k != 1
 		// Sum[var ^ p, var] :=
-		// (var+1)^(p+1)/(p+1) + Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1), {k,1,p}]
+		// (var+1)^(p+1)/(p+1) +
+		// Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1),
+		// {k,1,p}]
 		IExpr term1 = null;
 		if (!from.isOne()) {
 			IExpr fromMinusOne = F.Plus(F.CN1, from);
 			if (p.isOne()) {
 				term1 = Times(C1D2, fromMinusOne, Plus(C1, fromMinusOne));
 			} else {
-				term1 = F.eval(ExpandAll(Plus(
-						Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-						Sum(Times(
-								Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)),
-										BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+				term1 = F
+						.eval(ExpandAll(
+								Plus(Times(
+										Power(Plus(fromMinusOne,
+												C1), Plus(p,
+														C1)),
+										Power(Plus(p, C1), CN1)), Sum(
+												Times(Times(
+														Times(Power(Plus(fromMinusOne, C1),
+																Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)),
+														BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
+												List(k, C1, p)))));
 			}
 		}
 		IExpr term2 = null;
 		if (p.isOne()) {
 			term2 = Times(C1D2, to, Plus(C1, to));
 		} else {
-			term2 = F.eval(ExpandAll(Plus(
-					Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-					Sum(Times(Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
-							Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+			term2 = F
+					.eval(ExpandAll(
+							Plus(Times(
+									Power(Plus(to, C1),
+											Plus(p, C1)),
+									Power(Plus(p, C1), CN1)), Sum(Times(
+											Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
+													Binomial(p, k)), BernoulliB(k)),
+											Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
 		}
 		if (term1 == null) {
 			return term2;
@@ -350,7 +371,7 @@ public class Sum extends Table implements SumRules {
 	 */
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.HOLDALL);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
 		IAST ruleList;
 		if ((ruleList = getRuleAST()) != null) {
 			EvalEngine.get().addRules(ruleList);

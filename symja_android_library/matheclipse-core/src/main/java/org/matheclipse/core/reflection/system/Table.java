@@ -71,7 +71,7 @@ public class Table extends AbstractFunctionEvaluator {
 	 * @param resultList
 	 *            the result list to which the generated expressions should be appended.
 	 * @param defaultValue
-	 *            the default value used in the iterator
+	 *            the default value used if the iterator is invalid
 	 * @return <code>null</code> if no evaluation is possible
 	 * @see Product
 	 * @see Sum

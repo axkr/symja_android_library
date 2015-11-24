@@ -112,6 +112,11 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int FLATORDERLESS = FLAT | ORDERLESS;
 
 	/**
+	 * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with System.out.println();
+	 */
+	public final static int DELAYED_RULE_EVALUATION = 0x00010000;
+	
+	/**
 	 * Get the current evaluator for this symbol
 	 * 
 	 * @return the evaluator which is associated to this symbol or <code>null</code> if no evaluator is associated

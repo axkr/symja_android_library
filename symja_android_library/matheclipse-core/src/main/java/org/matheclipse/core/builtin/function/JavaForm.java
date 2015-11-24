@@ -42,7 +42,7 @@ public class JavaForm extends AbstractCoreFunctionEvaluator {
 		// if (arg1.isAST()) {
 		// arg1 = PatternMatcher.evalLeftHandSide((IAST) arg1);
 		// }
-		return arg1.internalFormString(strictJava, 0);
+		return arg1.internalJavaString(strictJava, 0, false);
 	}
 
 }

@@ -19,6 +19,7 @@ import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -42,7 +43,9 @@ public class HarmonicNumber extends AbstractEvaluator {
 		IExpr arg1 = ast.arg1();
 		if (ast.size() == 3) {
 			IExpr arg2 = ast.arg2();
-			if (!arg2.isOne()) {
+			if (arg2.isOne()) {
+				return F.HarmonicNumber(arg1);
+			} else {
 				// generalized harmonic number
 				if (arg2.isInteger()) {
 					if (arg1.isInfinity()) {

@@ -270,11 +270,11 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("$b(");
 		if (fCondition != null) {
-			buffer.append(fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
 		}
 		buffer.append(')');
 		return buffer.toString();

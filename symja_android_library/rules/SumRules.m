@@ -1,15 +1,6 @@
 {
 {
 
-Sum(i_^(-1), {i_Symbol,1,n_Symbol}) := HarmonicNumber(n) 
-  /; FreeQ(n,i),
-
-Sum(i_^(k_IntegerQ), {i_Symbol,1,n_Symbol}) := HarmonicNumber(n,-k) 
-  /; FreeQ(n,i)&&Negative(k),
-
-Sum(i_^(k_), {i_Symbol,1,n_Symbol}) := HarmonicNumber(n,-k) 
-  /; FreeQ(n,i)&&Head(k)==Rational,
- 
 Sum(c_^i_, {i_Symbol,1,n_Symbol}) := c*(c^n-1)*(c-1)^(-1)
   /; FreeQ(c,i)&&FreeQ(n,i),
   

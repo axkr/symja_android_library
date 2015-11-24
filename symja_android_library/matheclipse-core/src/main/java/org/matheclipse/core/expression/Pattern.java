@@ -246,7 +246,7 @@ public class Pattern extends Blank {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators) {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("$p(");
 		String symbolStr = fSymbol.toString();
@@ -294,7 +294,7 @@ public class Pattern extends Blank {
 			} else if (fCondition == F.SymbolHead) {
 				buffer.append(", SymbolHead");
 			} else {
-				buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators));
 			}
 		}
 		if (fDefault) {

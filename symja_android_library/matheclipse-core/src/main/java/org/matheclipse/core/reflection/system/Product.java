@@ -1,22 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Product;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.m;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.s_;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.x_Symbol;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -26,19 +13,18 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.ProductRules;
 
 /**
  * Product of expressions.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">
+ * Wikipedia Multiplication</a>
  */
-public class Product extends Table {
+public class Product extends Table implements ProductRules {
 	// TODO solve initialization problem in using 'implements ProductRules {'
 	// RULES must be defined in this class at the moment!
-
-	final public static IAST RULES = List(ISetDelayed(Product(x_Symbol, List(x_, C0, m_)), C0),
-			ISetDelayed(Product(x_Symbol, List(x_, C0, m_, s_)), C0),
-			ISetDelayed(Product(x_Symbol, List(x_, C1, m_)), Condition(Factorial(m), FreeQ(x, m))));
 
 	public Product() {
 	}
@@ -64,7 +50,8 @@ public class Product extends Table {
 			return ((IAST) arg1).mapAt(prod, 1);
 		}
 
-		// arg1 = evalBlockExpandWithoutReap(arg1, determineIteratorVariables(ast));
+		// arg1 = evalBlockExpandWithoutReap(arg1,
+		// determineIteratorVariables(ast));
 
 		if (arg1.isPower()) {
 			IExpr powArg2 = arg1.getAt(2);
@@ -88,7 +75,8 @@ public class Product extends Table {
 		if (ast.size() >= 3 && argN.isList()) {
 			Iterator iterator = new Iterator((IAST) argN, engine);
 			if (iterator.isValidVariable()) {
-				if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol() && iterator.getStep().isOne()) {
+				if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol()
+						&& iterator.getStep().isOne()) {
 					final ISymbol var = iterator.getVariable();
 					final IInteger from = (IInteger) iterator.getStart();
 					final ISymbol to = (ISymbol) iterator.getMaxCount();
@@ -136,7 +124,7 @@ public class Product extends Table {
 				}
 			}
 			IAST resultList = Times();
-			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
 			if (temp == null || temp.equals(resultList)) {
 				return null;
 			}
@@ -160,6 +148,10 @@ public class Product extends Table {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
+		IAST ruleList;
+		if ((ruleList = getRuleAST()) != null) {
+			EvalEngine.get().addRules(ruleList);
+		}
 	}
 }

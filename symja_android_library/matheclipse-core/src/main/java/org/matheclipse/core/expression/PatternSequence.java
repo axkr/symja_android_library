@@ -192,14 +192,14 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	@Override
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
 			final StringBuffer buffer = new StringBuffer();
 			buffer.append("$ps(");
 			if (fSymbol == null) {
 				buffer.append("(ISymbol)null");
 				if (fCondition != null) {
-					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
 				}
 				if (fDefault) {
 					if (fCondition == null) {
@@ -210,7 +210,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 			} else {
 				buffer.append("\"" + fSymbol.toString() + "\"");
 				if (fCondition != null) {
-					buffer.append("," + fCondition.internalFormString(symbolsAsFactoryMethod, 0));
+					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
 				}
 				if (fDefault) {
 					buffer.append(",true");
