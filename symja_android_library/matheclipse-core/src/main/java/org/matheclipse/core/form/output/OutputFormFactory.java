@@ -621,10 +621,24 @@ public class OutputFormFactory {
 			}
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				append(buf, "(");
+			} else {
+				if (oper.getOperatorString() == "^") {
+					final Operator operator = getOperator(list.arg1().topHead());
+					if (operator instanceof PostfixOperator) {
+						append(buf, "(");
+					}
+				}
 			}
 			convert(buf, list.arg1(), oper.getPrecedence());
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				append(buf, ")");
+			} else {
+				if (oper.getOperatorString() == "^") {
+					final Operator operator = getOperator(list.arg1().topHead());
+					if (operator instanceof PostfixOperator) {
+						append(buf, ")");
+					}
+				}
 			}
 
 			append(buf, oper.getOperatorString());
@@ -749,14 +763,7 @@ public class OutputFormFactory {
 				return;
 			}
 			ISymbol head = list.topHead();
-			String headerStr = head.getSymbolName();
-			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
-				if (str != null) {
-					headerStr = str;
-				}
-			}
-			final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
+			final Operator operator = getOperator(head);
 			if (operator != null) {
 				if ((operator instanceof PrefixOperator) && (list.size() == 2)) {
 					convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
@@ -862,6 +869,18 @@ public class OutputFormFactory {
 			return;
 		}
 		convertString(buf, o.toString());
+	}
+
+	private Operator getOperator(ISymbol head) {
+		String headerStr = head.getSymbolName();
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
+			if (str != null) {
+				headerStr = str;
+			}
+		}
+		final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
+		return operator;
 	}
 
 	public void convertSlot(final Appendable buf, final IAST list) throws IOException {
