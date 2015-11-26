@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.basic.Alloc;
 
 public class DoubleStack {
 	private double[] stack;
@@ -8,7 +7,7 @@ public class DoubleStack {
 	int top;
 
 	public DoubleStack(final int initialCapacity) {
-		stack = Alloc.vector(initialCapacity);
+		stack = new double[initialCapacity];
 		top = -1;
 	}
 
@@ -20,7 +19,7 @@ public class DoubleStack {
 			if (newCapacity < minCapacity) {
 				newCapacity = minCapacity;
 			}
-			stack = Alloc.vector(newCapacity);
+			stack = new double[newCapacity]; 
 			System.arraycopy(oldData, 0, stack, 0, oldCapacity);
 		}
 	}

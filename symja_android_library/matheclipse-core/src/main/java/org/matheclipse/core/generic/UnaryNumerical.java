@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 import org.apache.commons.math4.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.EvalDouble;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
@@ -38,7 +37,7 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 
 	public double value(double x) {
 		double result = 0.0;
-		final double[] stack = Alloc.vector(10);
+		final double[] stack = new double[10];
 		try {
 			fVariable.pushLocalVariable(Num.valueOf(x));
 			result = EvalDouble.eval(stack, 0, fFunction);

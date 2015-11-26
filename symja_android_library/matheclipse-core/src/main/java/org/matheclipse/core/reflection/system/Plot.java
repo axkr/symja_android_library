@@ -7,7 +7,6 @@ import static org.matheclipse.core.expression.F.N;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -104,7 +103,7 @@ public class Plot extends AbstractEvaluator {
 		double y;
 
 		final UnaryNumerical hun = new UnaryNumerical(function, xVar, engine);
-		final double data[][] = Alloc.matrix(2, N + 1);
+		final double data[][] = new double[2][N+1]; 
 		double x = ad;
 
 		for (int i = 0; i < N + 1; i++) {

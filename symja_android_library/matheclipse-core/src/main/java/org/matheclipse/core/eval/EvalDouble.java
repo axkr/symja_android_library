@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
@@ -52,7 +51,7 @@ public class EvalDouble extends DoubleEvaluator {
 			int newTop = top;
 			// fast evaluation path
 			if (top + ast.size() >= stack.length) {
-				stack = Alloc.vector(ast.size() + 50);
+				stack = new double[ast.size() + 50];
 			}
 			for (int i = 1; i < ast.size(); i++) {
 				++newTop;

@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.interfaces.INumericComplex;
 import org.matheclipse.core.eval.interfaces.INumericComplexConstant;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -20,13 +19,13 @@ public class EvalComplex {
 			return evalAST(stack, top, (IAST) expr);
 		}
 		if (expr instanceof ISignedNumber) {
-			final double[] result = Alloc.vector(2);
+			final double[] result = new double[2];
 			result[0] = ((ISignedNumber) expr).doubleValue();
 			result[1] = 0.0;
 			return result;
 		}
 		if (expr instanceof ComplexNum) {
-			final double[] res = Alloc.vector(2);
+			final double[] res = new double[2];
 			res[0] = ((ComplexNum) expr).getRealPart();
 			res[1] = ((ComplexNum) expr).getImaginaryPart();
 			return res;
@@ -54,13 +53,13 @@ public class EvalComplex {
 		// slow evaluation path
 		final IExpr result = F.evaln(ast);
 		if (result instanceof ComplexNum) {
-			final double[] res = Alloc.vector(2);
+			final double[] res = new double[2];
 			res[0] = ((ComplexNum) result).getRealPart();
 			res[1] = ((ComplexNum) result).getImaginaryPart();
 			return res;
 		}
 		if (result instanceof Num) {
-			final double[] res = Alloc.vector(2);
+			final double[] res = new double[2];
 			res[0] = ((Num) result).doubleValue();
 			res[1] = 0.0;
 			return res;
@@ -72,13 +71,13 @@ public class EvalComplex {
 		if (symbol.hasLocalVariableStack()) {
 			final IExpr expr = symbol.get();
 			if (expr instanceof ISignedNumber) {
-				final double[] result = Alloc.vector(2);
+				final double[] result = new double[2];
 				result[0] = ((ISignedNumber) expr).doubleValue();
 				result[1] = 0.0;
 				return result;
 			}
 			if (expr instanceof ComplexNum) {
-				final double[] result = Alloc.vector(2);
+				final double[] result = new double[2];
 				result[0] = ((ComplexNum) expr).getRealPart();
 				result[1] = ((ComplexNum) expr).getImaginaryPart();
 				return result;
@@ -87,7 +86,7 @@ public class EvalComplex {
 		final IEvaluator module = symbol.getEvaluator();
 		if (module instanceof ISignedNumberConstant) {
 			// fast evaluation path
-			final double[] result = Alloc.vector(2);
+			final double[] result = new double[2];
 			result[0] = ((ISignedNumberConstant) module).evalReal();
 			result[1] = 0.0;
 			return result;
@@ -99,13 +98,13 @@ public class EvalComplex {
 		// slow evaluation path
 		final IExpr result = F.evaln(symbol);
 		if (result instanceof ComplexNum) {
-			final double[] res = Alloc.vector(2);
+			final double[] res = new double[2];
 			res[0] = ((ComplexNum) result).getRealPart();
 			res[1] = ((ComplexNum) result).getImaginaryPart();
 			return res;
 		}
 		if (result instanceof Num) {
-			final double[] res = Alloc.vector(2);
+			final double[] res = new double[2];
 			res[0] = ((Num) result).doubleValue();
 			res[1] = 0.0;
 			return res;

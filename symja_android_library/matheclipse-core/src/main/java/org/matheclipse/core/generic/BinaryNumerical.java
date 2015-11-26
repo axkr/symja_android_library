@@ -1,6 +1,5 @@
 package org.matheclipse.core.generic;
 
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.eval.EvalDouble;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -35,7 +34,7 @@ public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
 		try {
 			variable1.pushLocalVariable(Num.valueOf(x));
 			variable2.pushLocalVariable(Num.valueOf(y));
-			final double[] stack = Alloc.vector(10);
+			final double[] stack = new double[10];
 			result = EvalDouble.eval(stack, 0, fun);
 		} finally {
 			variable2.popLocalVariable();

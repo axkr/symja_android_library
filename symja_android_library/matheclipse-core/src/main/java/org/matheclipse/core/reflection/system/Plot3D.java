@@ -6,7 +6,6 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
 
-import org.matheclipse.core.basic.Alloc;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -53,7 +52,8 @@ public class Plot3D extends AbstractEvaluator {
 				final IExpr b = engine.evaluate(N(lst1.get(3)));
 				final IExpr c = engine.evaluate(N(lst2.get(2)));
 				final IExpr d = engine.evaluate(N(lst2.get(3)));
-				if ((!(a instanceof INum)) || (!(b instanceof INum)) || (!(c instanceof INum)) || (!(d instanceof INum))) {
+				if ((!(a instanceof INum)) || (!(b instanceof INum)) || (!(c instanceof INum))
+						|| (!(d instanceof INum))) {
 					return null;
 				}
 				final double ad = ((INum) a).getRealPart();
@@ -96,7 +96,7 @@ public class Plot3D extends AbstractEvaluator {
 
 		final BinaryNumerical hbn = new BinaryNumerical(function, xVar, yVar);
 
-		final double data[][] = Alloc.matrix(NUMBER_OF_DIVISIONS + 1, NUMBER_OF_DIVISIONS + 1);
+		final double data[][] = new double[NUMBER_OF_DIVISIONS + 1][NUMBER_OF_DIVISIONS + 1];
 		double x = ad;
 		double y;
 		double z;
