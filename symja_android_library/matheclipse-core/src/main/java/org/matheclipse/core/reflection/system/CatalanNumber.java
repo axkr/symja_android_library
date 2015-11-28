@@ -22,27 +22,12 @@ public class CatalanNumber extends AbstractTrigArg1 {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
-			return F.integer(catalanNumber(((IInteger) arg1).getBigNumerator()));
+			return catalanNumber((IInteger) arg1);
 		}
 
 		return null;
 	}
 
-	public static BigInteger catalanNumber(BigInteger n) {
-		n = n.add(BigInteger.ONE);
-		if (!(n.compareTo(BigInteger.ZERO) > 0)) {
-			return BigInteger.ZERO;
-		}
-		BigInteger i = BigInteger.ONE;
-		BigInteger c = BigInteger.ONE;
-		final BigInteger temp1 = n.shiftLeft(1).subtract(BigInteger.ONE);
-		while (i.compareTo(n) < 0) {
-			c = c.multiply(temp1.subtract(i)).divide(i);
-			i = i.add(BigInteger.ONE);
-		}
-		return c.divide(n);
-	}
-	
 	public static IInteger catalanNumber(IInteger n) {
 		n = n.add(F.C1);
 		if (!(n.compareInt(0) > 0)) {

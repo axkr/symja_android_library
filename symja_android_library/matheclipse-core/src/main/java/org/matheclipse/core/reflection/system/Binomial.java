@@ -1,10 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -19,32 +17,32 @@ import com.google.common.math.BigIntegerMath;
  */
 public class Binomial extends AbstractArg2 {
 
-	public static BigInteger binomial(final BigInteger n, final BigInteger k) {
+	public static IInteger binomial(final IInteger n, final IInteger k) {
 		// k>n : by definition --> 0
 		if (k.compareTo(n) > 0) {
-			return BigInteger.ZERO;
+			return F.C0;
 		}
-		if (k.equals(BigInteger.ZERO) || k.equals(n)) {
-			return BigInteger.ONE;
+		if (k.isZero() || k.equals(n)) {
+			return F.C1;
 		}
 
 		try {
-			int ni = NumberUtil.toInt(n);
-			int ki = NumberUtil.toInt(k);
+			int ni = n.toInt();
+			int ki = k.toInt();
 			if (ki > ni) {
-				return BigInteger.ZERO;
+				return F.C0;
 			}
-			return BigIntegerMath.binomial(ni, ki);
+			return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
 		} catch (ArithmeticException ae) {
 			//
 		}
 
-		BigInteger bin = BigInteger.ONE;
-		BigInteger i = BigInteger.ONE;
+		IInteger bin = F.C1;
+		IInteger i = F.C1;
 
 		while (!(i.compareTo(k) > 0)) {
-			bin = bin.multiply(n.subtract(i).add(BigInteger.ONE)).divide(i);
-			i = i.add(BigInteger.ONE);
+			bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
+			i = i.add(F.C1);
 		}
 		return bin;
 	}
@@ -53,10 +51,8 @@ public class Binomial extends AbstractArg2 {
 	}
 
 	@Override
-	public IExpr e2IntArg(final IInteger n0, final IInteger k0) {
-		final BigInteger n = n0.getBigNumerator();
-		final BigInteger k = k0.getBigNumerator();
-		return F.integer(binomial(n, k));
+	public IExpr e2IntArg(final IInteger n, final IInteger k) {
+		return binomial(n, k);
 	}
 
 	@Override
