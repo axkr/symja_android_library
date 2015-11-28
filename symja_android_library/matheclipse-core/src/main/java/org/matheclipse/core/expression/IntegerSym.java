@@ -690,13 +690,16 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IInteger modInverse(final IInteger m) {
-		return valueOf(getBigNumerator().modInverse(m.getBigNumerator()));
+	public IInteger modInverse(final IInteger that) {
+		if (that.isOne()){
+			return F.C0;
+		}
+		return valueOf(getBigNumerator().modInverse(that.getBigNumerator()));
 	}
 
 	@Override
-	public IInteger modPow(final IInteger exp, final IInteger m) {
-		return valueOf(getBigNumerator().modPow(exp.getBigNumerator(), m.getBigNumerator()));
+	public IInteger modPow(final IInteger exp, final IInteger that) {
+		return valueOf(getBigNumerator().modPow(exp.getBigNumerator(), that.getBigNumerator()));
 	}
 
 	@Override

@@ -1,12 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -29,20 +26,20 @@ public class PowerMod extends AbstractFunctionEvaluator {
 				return null;
 			}
 		}
+		IInteger arg1 = (IInteger) ast.get(1);
+		IInteger arg2 = (IInteger) ast.get(2);
+		IInteger arg3 = (IInteger) ast.get(3);
 		try {
-			BigInteger bigResult = powerMod(((IInteger) ast.arg1()).getBigNumerator(), ((IInteger) ast.arg2()).getBigNumerator(),
-					((IInteger) ast.arg3()).getBigNumerator());
-			return F.integer(bigResult);
+			if (arg2.isMinusOne()) {
+				return arg1.modInverse(arg3);
+			}
+			return arg1.modPow(arg2, arg3);
 		} catch (ArithmeticException ae) {
 			if (Config.SHOW_STACKTRACE) {
 				ae.printStackTrace();
 			}
 		}
 		return null;
-	}
-
-	public static BigInteger powerMod(BigInteger a, BigInteger b, BigInteger m) throws ArithmeticException {
-		return a.modPow(b, m);
 	}
 
 	@Override
