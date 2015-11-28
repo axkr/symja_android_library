@@ -10,8 +10,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Times;
 
-import java.math.BigInteger;
-
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;

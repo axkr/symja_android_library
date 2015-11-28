@@ -49,15 +49,14 @@ public class Gamma extends AbstractTrigArg1 {
 	 * @param x
 	 * @return
 	 */
-	public static BigInteger gamma(final BigInteger x) {
-		return Factorial.factorial(x.subtract(BigInteger.ONE));
+	public static IInteger gamma(final IInteger x) {
+		return Factorial.factorial(x.subtract(F.C1));
 	}
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
-			BigInteger fac = gamma(((IInteger) arg1).getBigNumerator());
-			return F.integer(fac);
+			return gamma((IInteger) arg1);
 		}
 		if (arg1.isFraction() && arg1.isPositive()) {
 			IFraction frac = (IFraction) arg1;

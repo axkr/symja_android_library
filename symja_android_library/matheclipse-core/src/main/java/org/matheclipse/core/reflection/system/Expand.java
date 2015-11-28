@@ -299,7 +299,7 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		private void addFactor(int[] j) {
 			final Permutations.KPermutationsIterable perm = new Permutations.KPermutationsIterable(j, m, m);
-			IInteger multinomial = F.integer(Multinomial.multinomial(j, n));
+			IInteger multinomial = Multinomial.multinomial(j, n);
 			final IAST times = F.Times();
 			IExpr temp;
 			for (int[] indices : perm) {

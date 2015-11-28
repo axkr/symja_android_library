@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -15,7 +15,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Returns the multinomial coefficient.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Multinomial coefficient</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Multinomial
+ * coefficient</a>
  */
 public class Multinomial extends AbstractFunctionEvaluator {
 	public Multinomial() {
@@ -40,21 +42,21 @@ public class Multinomial extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.integer(multinomial(ast));
+		return multinomial(ast);
 
 	}
 
-	public static BigInteger multinomial(final List<IExpr> ast) {
-		BigInteger[] k = new BigInteger[ast.size() - 1];
-		BigInteger n = BigInteger.ZERO;
+	public static IInteger multinomial(final List<IExpr> ast) {
+		IInteger[] k = new IInteger[ast.size() - 1];
+		IInteger n = F.C0;
 		for (int i = 1; i < ast.size(); i++) {
-			k[i - 1] = ((IInteger) ast.get(i)).getBigNumerator();
+			k[i - 1] = (IInteger) ast.get(i);
 			n = n.add(k[i - 1]);
 		}
 
-		BigInteger result = Factorial.factorial(n);
+		IInteger result = Factorial.factorial(n);
 		for (int i = 0; i < k.length; i++) {
-			result = result.divide(Factorial.factorial(k[i]));
+			result = result.div(Factorial.factorial(k[i]));
 		}
 		return result;
 	}
@@ -67,12 +69,12 @@ public class Multinomial extends AbstractFunctionEvaluator {
 	 *            the sum of the non-negative coefficients
 	 * @return
 	 */
-	public static BigInteger multinomial(final int[] indices, final int n) {
-		BigInteger bn = BigInteger.valueOf(n);
-		BigInteger result = Factorial.factorial(bn);
+	public static IInteger multinomial(final int[] indices, final int n) {
+		IInteger bn = AbstractIntegerSym.valueOf(n);
+		IInteger result = Factorial.factorial(bn);
 		for (int i = 0; i < indices.length; i++) {
 			if (indices[i] != 0) {
-				result = result.divide(Factorial.factorial(BigInteger.valueOf(indices[i])));
+				result = result.div(Factorial.factorial(AbstractIntegerSym.valueOf(indices[i])));
 			}
 		}
 		return result;
