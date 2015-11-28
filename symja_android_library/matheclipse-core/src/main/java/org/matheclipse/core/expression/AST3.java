@@ -1,5 +1,8 @@
 package org.matheclipse.core.expression;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -72,6 +75,15 @@ public class AST3 extends AST2 {
 		return arg3;
 	}
 
+	@Override
+	public Set<IExpr> asSet() {
+		Set<IExpr> set = new HashSet<IExpr>();
+		set.add(arg1);
+		set.add(arg2);
+		set.add(arg3);
+		return set;
+	}
+	
 	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
 	 * 

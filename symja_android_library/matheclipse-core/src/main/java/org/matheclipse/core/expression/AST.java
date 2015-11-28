@@ -6,7 +6,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.interfaces.IAST;
@@ -238,7 +240,7 @@ public class AST extends HMArrayList implements Externalizable {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * 
 	 * @param intialCapacity

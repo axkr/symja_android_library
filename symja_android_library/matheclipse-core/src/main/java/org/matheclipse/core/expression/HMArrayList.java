@@ -25,8 +25,10 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.RandomAccess;
+import java.util.Set;
 
 import org.matheclipse.core.builtin.constant.E;
 import org.matheclipse.core.interfaces.IAST;
@@ -170,6 +172,16 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 		return array[firstIndex + 5];
 	}
 
+	@Override
+	public Set<IExpr> asSet() {
+		int size = size();
+		Set<IExpr> set = new HashSet<IExpr>(size > 16 ? size : 16);
+		for (int i = 1; i < size; i++) {
+			set.add(array[firstIndex + i]);
+		}
+		return set;
+	}
+	
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 

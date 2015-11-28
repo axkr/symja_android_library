@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -310,6 +311,13 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 */
 	public ASTRange args();
 
+	/**
+	 * Collect all arguments of this AST in a new set.
+	 * 
+	 * @return
+	 */
+	public Set<IExpr> asSet();
+	
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not cloned).
