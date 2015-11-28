@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -33,15 +33,15 @@ public class EulerE extends AbstractTrigArg1 {
 				n /= 2;
 
 				// The list of all Euler numbers as a vector, n=0,2,4,....
-				ArrayList<BigInteger> a = new ArrayList<BigInteger>();
+				ArrayList<IInteger> a = new ArrayList<IInteger>();
 				if (a.size() == 0) {
-					a.add(BigInteger.ONE);
-					a.add(BigInteger.ONE);
-					a.add(new BigInteger("5"));
-					a.add(new BigInteger("61"));
+					a.add(F.C1);
+					a.add(F.C1);
+					a.add(F.C5);
+					a.add(AbstractIntegerSym.valueOf(61));
 				}
 
-				BigInteger eulerE = eulerE(a, n);
+				IInteger eulerE = eulerE(a, n);
 				if (n > 0) {
 					n -= 1;
 					n %= 2;
@@ -49,7 +49,7 @@ public class EulerE extends AbstractTrigArg1 {
 						eulerE = eulerE.negate();
 					}
 				}
-				return F.ZZ(eulerE);
+				return eulerE;
 			} catch (ArithmeticException e) {
 				// integer to large?
 			}
@@ -63,14 +63,14 @@ public class EulerE extends AbstractTrigArg1 {
 	 * @param n
 	 *            the zero-based index of the coefficient. n=0 for the E_0 term.
 	 */
-	protected void set(ArrayList<BigInteger> a, final int n) {
+	protected void set(ArrayList<IInteger> a, final int n) {
 		while (n >= a.size()) {
-			BigInteger val = BigInteger.ZERO;
+			IInteger val = F.C0;
 			boolean sigPos = true;
 			int thisn = a.size();
 			for (int i = thisn - 1; i > 0; i--) {
-				BigInteger f = a.get(i);
-				f = f.multiply(BigIntegerMath.binomial(2 * thisn, 2 * i));
+				IInteger f = a.get(i);
+				f = f.multiply(AbstractIntegerSym.valueOf(BigIntegerMath.binomial(2 * thisn, 2 * i)));
 				if (sigPos)
 					val = val.add(f);
 				else
@@ -78,9 +78,9 @@ public class EulerE extends AbstractTrigArg1 {
 				sigPos = !sigPos;
 			}
 			if (thisn % 2 == 0)
-				val = val.subtract(BigInteger.ONE);
+				val = val.subtract(F.C1);
 			else
-				val = val.add(BigInteger.ONE);
+				val = val.add(F.C1);
 			a.add(val);
 		}
 	}
@@ -92,7 +92,7 @@ public class EulerE extends AbstractTrigArg1 {
 	 *            the index, non-negative.
 	 * @return the E_0=E_1=1 , E_2=5, E_3=61 etc
 	 */
-	public BigInteger eulerE(ArrayList<BigInteger> a, int n) {
+	public IInteger eulerE(ArrayList<IInteger> a, int n) {
 		set(a, n);
 		return (a.get(n));
 	}
