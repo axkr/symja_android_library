@@ -1,10 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -16,16 +13,16 @@ public class Fibonacci extends AbstractTrigArg1 {
 	}
 
 	public static IInteger fibonacci(final IInteger iArg) {
-		BigInteger a = BigInteger.ONE;
-		BigInteger b = BigInteger.ZERO;
-		BigInteger c = BigInteger.ONE;
-		BigInteger d = BigInteger.ZERO;
-		BigInteger f = BigInteger.ZERO;
-		final BigInteger c2 = BigInteger.valueOf(2);
-		BigInteger temp = iArg.getBigNumerator();
+		IInteger a = F.C1;
+		IInteger b = F.C0;
+		IInteger c = F.C1;
+		IInteger d = F.C0;
+		IInteger f = F.C0;
+		final IInteger c2 = F.C2;
+		IInteger temp = iArg;
 
-		while (!NumberUtil.isZero(temp)) {
-			if (NumberUtil.isOdd(temp)) {
+		while (!temp.isZero()) {
+			if (temp.isOdd()) {
 				d = f.multiply(c);
 				f = a.multiply(c).add(f.multiply(b).add(d));
 				a = a.multiply(b).add(d);
@@ -37,10 +34,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 			temp = temp.shiftRight(1);
 		}
 
-		final IInteger i = F.integer(f);
-
-		return i;
-
+		return f;
 	}
 
 	@Override
