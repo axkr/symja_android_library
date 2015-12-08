@@ -691,8 +691,41 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public IInteger modInverse(final IInteger that) {
-		if (that.isOne()){
-			return F.C0;
+		int a = fIntValue;
+		if (a >= 0 && that instanceof IntegerSym) {
+			int b = ((IntegerSym) that).fIntValue;
+			if (b <= 0) {
+				throw new ArithmeticException("integer: modulus not positive");
+			}
+			if (a == 0) {
+				throw new ArithmeticException("integer argument not invertible.");
+			}
+			if (b == 1) {
+				return F.C0;
+			}
+			int modVal = a;
+			if (modVal == 1) {
+				return F.C1;
+			}
+			int b0 = b;
+			int x0 = 0;
+			int x1 = 1;
+			while (modVal > 1) {
+				if (b == 0) {
+					throw new ArithmeticException("integer argument not invertible.");
+				}
+				int q = modVal / b;
+				int t = b;
+				b = modVal % b;
+				modVal = t;
+				t = x0;
+				x0 = x1 - q * x0;
+				x1 = t;
+			}
+			if (x1 > 0) {
+				return AbstractIntegerSym.valueOf(x1);
+			}
+			return AbstractIntegerSym.valueOf(x1 + b0);
 		}
 		return valueOf(getBigNumerator().modInverse(that.getBigNumerator()));
 	}

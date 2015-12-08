@@ -6,9 +6,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 
-import java.math.BigInteger;
-
-import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
