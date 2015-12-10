@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -18,6 +19,8 @@ import edu.jas.arith.BigRational;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.OptimizedPolynomialList;
+import edu.jas.poly.TermOrder;
+import edu.jas.poly.TermOrderByName;
 
 public class GroebnerBasis extends AbstractFunctionEvaluator {
 
@@ -25,17 +28,30 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST lst, EvalEngine engine) {
-		if (lst.size() >= 3) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.size() >= 3) {
 			try {
-				if (lst.arg1().isVector() < 0) {
+				if (ast.arg1().isVector() < 0) {
 					return null;
 				}
-				if (lst.arg2().isVector() < 0) {
+				if (ast.arg2().isVector() < 0) {
 					return null;
 				}
-				if (lst.size() == 3) {
-					IAST vars = (IAST) lst.arg2();
+				TermOrder termOrder = TermOrderByName.Lexicographic;
+				if (ast.size() > 3) {
+					final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+					IExpr option = options.getOption("MonomialOrder");
+					if (option != null && option.isSymbol()) {
+						String optionStr = option.toString();
+						if (optionStr.equalsIgnoreCase("DegreeLexicographic")) {
+							termOrder = TermOrderByName.DegreeLexicographic;
+						} else if (optionStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
+							termOrder = TermOrderByName.DegreeReverseLexicographic;
+						}
+					}
+				}
+				if (ast.size() >= 3) {
+					IAST vars = (IAST) ast.arg2();
 					if (vars.size() <= 1) {
 						return null;
 					}
@@ -49,9 +65,10 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 						pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
 					}
 					GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
-					IAST polys = (IAST) lst.arg1();
-					List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(polys.size() - 1);
-					JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+					IAST polys = (IAST) ast.arg1();
+					List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
+							polys.size() - 1);
+					JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
 					for (int i = 1; i < polys.size(); i++) {
 						IExpr expr = F.evalExpandAll(polys.get(i));
 						GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
@@ -63,7 +80,8 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 
 					IAST resultList = F.List();
 					for (GenPolynomial<BigRational> p : opl.list) {
-						// convert rational to integer coefficients and add polynomial to result list
+						// convert rational to integer coefficients and add
+						// polynomial to result list
 						resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 					}
 					return resultList;
