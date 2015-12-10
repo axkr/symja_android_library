@@ -28,6 +28,7 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrder;
+import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.FactorFactory;
@@ -171,20 +172,20 @@ public class Factor extends AbstractFunctionEvaluator {
 
 	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas, List<IExpr> varList,
 			ISymbol head, boolean noGCDLCM) {
-		TermOrder to = new TermOrder(TermOrder.INVLEX);
+		TermOrder termOrder = TermOrderByName.Lexicographic;
 		// Object[] objects = jas.factorTerms(polyRat);
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {
 			vars[i] = varList.get(i).toString();
 		}
 		Object[] objects = JASConvert.rationalFromRationalCoefficientsFactor(new GenPolynomialRing<BigRational>(BigRational.ZERO,
-				varList.size(), to, vars), polyRat);
+				varList.size(), termOrder, vars), polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<BigRational> poly = (GenPolynomial<BigRational>) objects[2];
 
 		ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
-		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, 1, to);
+		GenPolynomialRing<Complex<BigRational>> cpfac = new GenPolynomialRing<Complex<BigRational>>(cfac, 1, termOrder);
 		GenPolynomial<Complex<BigRational>> a = PolyUtil.complexFromAny(cpfac, poly);
 		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
 		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(a);
