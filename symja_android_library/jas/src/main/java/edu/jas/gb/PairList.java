@@ -97,6 +97,13 @@ public interface PairList<C extends RingElem<C> > extends Serializable {
 
 
     /**
+     * Set the list of polynomials.
+     * @param F the polynomial list.
+     */
+    public void setList(List<GenPolynomial<C>> F);
+
+
+    /**
      * Get the number of polynomials put to the pairlist.
      * @return the number of calls to put.
      */

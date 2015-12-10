@@ -858,7 +858,6 @@ public class GenPolynomialTokenizer {
      */
     public long[] nextWeightList() throws IOException {
         List<Long> l = new ArrayList<Long>();
-        long[] w = null;
         long e;
         char first;
         int tt;
@@ -884,10 +883,11 @@ public class GenPolynomialTokenizer {
         } else {
             tok.pushBack();
         }
-        Object[] ol = l.toArray();
-        w = new long[ol.length];
+        Long[] ol = new Long[1];
+        ol = l.toArray(ol);
+        long[] w = new long[ol.length];
         for (int i = 0; i < w.length; i++) {
-            w[i] = ((Long) ol[ol.length - i - 1]).longValue();
+            w[i] = ol[ol.length - i - 1].longValue();
         }
         return w;
     }
@@ -901,7 +901,6 @@ public class GenPolynomialTokenizer {
      */
     public long[][] nextWeightArray() throws IOException {
         List<long[]> l = new ArrayList<long[]>();
-        long[][] w = null;
         long[] e;
         char first;
         int tt;
@@ -936,7 +935,7 @@ public class GenPolynomialTokenizer {
             tok.pushBack();
         }
         Object[] ol = l.toArray();
-        w = new long[ol.length][];
+        long[][] w = new long[ol.length][];
         for (int i = 0; i < w.length; i++) {
             w[i] = (long[]) ol[i];
         }
@@ -1043,9 +1042,10 @@ public class GenPolynomialTokenizer {
                     evord = TermOrder.IGRLEX;
                 } else if (tok.sval.equalsIgnoreCase("GRLEX")) {
                     evord = TermOrder.GRLEX;
+                } else if (tok.sval.equalsIgnoreCase("REVITDG")) {
+                    evord = TermOrder.REVITDG;
                 } else if (tok.sval.equalsIgnoreCase("W")) {
                     long[][] w = nextWeightArray();
-                    //int s = nextSplitIndex(); // no more
                     return new TermOrder(w);
                 }
             }

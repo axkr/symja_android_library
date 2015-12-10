@@ -162,12 +162,12 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
             xl.addFirst( pair ); // first or last ? better for d- e-GBs
             pairlist.put( g, xl );
         }
-        // System.out.println("pairlist.keys@put = " + pairlist.keySet() );  
+        //System.out.println("pairlist.keys@put = " + pairlist.keySet() );  
         P.add(  p );
         BitSet redi = new BitSet();
         redi.set( 0, l ); 
         red.add( redi );
-        //System.out.println("pairlist.set = " + red); //.get( pair.j )); //pair);
+        //System.out.println("pairlist.red = " + red); //.get( pair.j )); //pair);
         //System.out.println("pairlist.key = " + pairlist.keySet() );  
         return P.size()-1;
     }
@@ -262,6 +262,23 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      */
     public List<GenPolynomial<C>> getList() { 
         return P;
+    }
+
+
+    /**
+     * Set the list of polynomials.
+     * @param F the polynomial list.
+     */
+    public void setList(List<GenPolynomial<C>> F) { 
+        if ( ! P.isEmpty() ) {
+            throw new IllegalArgumentException("P not empty");
+        }
+        P.addAll(F);
+        for ( GenPolynomial<C> p : P ) {
+            BitSet redi = new BitSet();
+            red.add( redi );
+        }
+
     }
 
 

@@ -281,7 +281,7 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
         if (!coFac.equals(a.coFac)) {
             return false;
         }
-        if (Arrays.equals(vars, a.vars)) {
+        if (Arrays.deepEquals(vars, a.vars)) {
             return true;
         }
         return false;

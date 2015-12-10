@@ -350,14 +350,14 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             s.append(coFac.toScript().trim());
         }
         s.append(",\"" + varsToString() + "\"");
-        String to = tord.toString();
+        String to = tord.toScript();
         if (tord.getEvord() == TermOrder.INVLEX) {
-            to = ",PolyRing.lex";
+            to = "PolyRing.lex";
         }
         if (tord.getEvord() == TermOrder.IGRLEX) {
-            to = ",PolyRing.grad";
+            to = "PolyRing.grad";
         }
-        s.append(to);
+        s.append(","+to);
         s.append(")");
         return s.toString();
     }
@@ -401,7 +401,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             return false;
         }
         // same variables required ?
-        if (!Arrays.equals(vars, oring.vars)) {
+        if (!Arrays.deepEquals(vars, oring.vars)) {
             return false;
         }
         return true;

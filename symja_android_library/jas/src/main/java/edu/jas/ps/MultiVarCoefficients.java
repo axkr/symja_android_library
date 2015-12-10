@@ -61,14 +61,14 @@ public abstract class MultiVarCoefficients<C extends RingElem<C>> implements Ser
     }
 
 
-    /**
+    /*
      * Public constructor with some pre-filled caches.
      * @param pf multivariate power series ring factory.
      * @param hc pre-filled homogeneous check bit-set.
-     */
     public MultiVarCoefficients(MultiVarPowerSeriesRing<C> pf, BitSet hc) {
         this(pf.polyRing(), new HashMap<Long, GenPolynomial<C>>(), new HashSet<ExpVector>(), hc);
     }
+     */
 
 
     /**
@@ -102,14 +102,14 @@ public abstract class MultiVarCoefficients<C extends RingElem<C>> implements Ser
     }
 
 
-    /**
+    /*
      * Public constructor with pre-filled caches.
      * @param pf polynomial ring factory.
      * @param hc pre-filled homogeneous check bit-set.
-     */
     public MultiVarCoefficients(GenPolynomialRing<C> pf, BitSet hc) {
         this(pf, new HashMap<Long, GenPolynomial<C>>(), new HashSet<ExpVector>(), hc);
     }
+     */
 
 
     /**

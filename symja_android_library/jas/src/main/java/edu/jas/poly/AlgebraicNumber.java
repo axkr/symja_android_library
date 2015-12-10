@@ -143,7 +143,7 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
         } else {
             isunit = 0;
         }
-        return (u);
+        return u;
     }
 
 
