@@ -9,9 +9,14 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import edu.jas.poly.TermOrder;
+import edu.jas.poly.TermOrderByName;
+
 /**
- * Managing <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which could be used
- * for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
+ * Managing <i>Options</i> used in evaluation of function symbols (i.e.
+ * <code>Modulus-&gt;n</code> is an option which could be used for an integer
+ * <code>n</code> in a function like
+ * <code>Factor(polynomial, Modulus-&gt;2)</code>.
  * 
  */
 public class Options {
@@ -20,15 +25,20 @@ public class Options {
 	private IAST fCurrentOptionsList;
 
 	/**
-	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which
-	 * could be used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
+	 * Construct special <i>Options</i> used in evaluation of function symbols
+	 * (i.e. <code>Modulus-&gt;n</code> is an option which could be used for an
+	 * integer <code>n</code> in a function like
+	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
 	 * 
 	 * @param symbol
-	 *            the options symbol for determining &quot;default option values&quot;
+	 *            the options symbol for determining &quot;default option
+	 *            values&quot;
 	 * @param currentOptionsList
-	 *            the AST where the option could be defined starting at position <code>startIndex</code>
+	 *            the AST where the option could be defined starting at position
+	 *            <code>startIndex</code>
 	 * @param startIndex
-	 *            the index from which tolook for options defined in <code>currentOptionsList</code>
+	 *            the index from which tolook for options defined in
+	 *            <code>currentOptionsList</code>
 	 */
 	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex) {
 		// get the List of pre-defined options:
@@ -48,11 +58,14 @@ public class Options {
 	}
 
 	/**
-	 * Construct <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which could be
-	 * used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
+	 * Construct <i>Options</i> used in evaluation of function symbols (i.e.
+	 * <code>Modulus-&gt;n</code> is an option which could be used for an
+	 * integer <code>n</code> in a function like
+	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
 	 * 
 	 * @param symbol
-	 *            the options symbol for determining &quot;default option values&quot;
+	 *            the options symbol for determining &quot;default option
+	 *            values&quot;
 	 * @param optionExpr
 	 *            the value which should be defined for the option
 	 */
@@ -69,11 +82,13 @@ public class Options {
 	}
 
 	/**
-	 * Get the option from the internal options list and check if it's <code>true</code> or <code>false</code>.
+	 * Get the option from the internal options list and check if it's
+	 * <code>true</code> or <code>false</code>.
 	 * 
 	 * @param optionString
 	 *            the option string
-	 * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code> otherwise.
+	 * @return <code>true</code> if the option is set to <code>True</code> or
+	 *         <code>false</code> otherwise.
 	 */
 	public boolean isOption(final String optionString) {
 		IExpr temp = getOption(optionString);
@@ -88,7 +103,8 @@ public class Options {
 	 * 
 	 * @param optionString
 	 *            the option string
-	 * @return the found option value or <code>null</code> if the option is not available
+	 * @return the found option value or <code>null</code> if the option is not
+	 *         available
 	 */
 	public IExpr getOption(final String optionString) {
 		IAST rule = null;
@@ -165,6 +181,20 @@ public class Options {
 			result = (IAST) F.eval(ReplaceAll(result, fDefaultOptionsList));
 		}
 		return result;
+	}
+
+	public TermOrder getMonomialOrder(final IAST ast, final TermOrder defaultTermOrder) {
+		TermOrder termOrder = defaultTermOrder;
+		IExpr option = getOption("MonomialOrder");
+		if (option != null && option.isSymbol()) {
+			String optionStr = option.toString();
+			if (optionStr.equalsIgnoreCase("DegreeLexicographic")) {
+				termOrder = TermOrderByName.DegreeLexicographic;
+			} else if (optionStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
+				termOrder = TermOrderByName.DegreeReverseLexicographic;
+			}
+		}
+		return termOrder;
 	}
 
 }

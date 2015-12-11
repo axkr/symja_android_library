@@ -40,15 +40,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				TermOrder termOrder = TermOrderByName.Lexicographic;
 				if (ast.size() > 3) {
 					final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
-					IExpr option = options.getOption("MonomialOrder");
-					if (option != null && option.isSymbol()) {
-						String optionStr = option.toString();
-						if (optionStr.equalsIgnoreCase("DegreeLexicographic")) {
-							termOrder = TermOrderByName.DegreeLexicographic;
-						} else if (optionStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
-							termOrder = TermOrderByName.DegreeReverseLexicographic;
-						}
-					}
+					termOrder = options.getMonomialOrder(ast, termOrder);
 				}
 				if (ast.size() >= 3) {
 					IAST vars = (IAST) ast.arg2();
