@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.reflection.system.Subsets;
 import org.matheclipse.core.reflection.system.Subsets.KSubsetsList;
 
-import com.google.common.math.BigIntegerMath;
+import com.google.common.math.IntMath;
 
 /**
  * IInteger implementation which uses an internal <code>int</code> value
@@ -450,7 +450,11 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger gcd(final IInteger that) {
 		if (that instanceof IntegerSym) {
-			return valueOf(ArithmeticUtils.gcd(fIntValue, ((IntegerSym) that).fIntValue));
+			try {
+				return valueOf(ArithmeticUtils.gcd(fIntValue, ((IntegerSym) that).fIntValue));
+			} catch (RuntimeException ex) {
+				//
+			}
 		}
 		return valueOf(getBigNumerator().gcd(that.getBigNumerator()));
 	}
@@ -680,11 +684,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger mod(final IInteger that) {
 		if (that instanceof IntegerSym) {
-			int result = fIntValue % ((IntegerSym) that).fIntValue;
-			if (result < 0) {
-				result += ((IntegerSym) that).fIntValue;
-			}
-			return new IntegerSym(result);
+			return new IntegerSym(IntMath.mod(fIntValue, ((IntegerSym) that).fIntValue));
 		}
 		return valueOf(getBigNumerator().mod(that.getBigNumerator()));
 	}
@@ -991,7 +991,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 *             if this integer is negative.
 	 */
 	public IInteger sqrt() throws ArithmeticException {
-		return valueOf(BigIntegerMath.sqrt(getBigNumerator(), RoundingMode.UNNECESSARY));
+		return valueOf(IntMath.sqrt(fIntValue, RoundingMode.UNNECESSARY));
 	}
 
 	@Override

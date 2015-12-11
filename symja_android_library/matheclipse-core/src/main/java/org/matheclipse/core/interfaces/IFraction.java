@@ -77,4 +77,6 @@ public interface IFraction extends IRational {
 	 *             if {@code 0^0} is given.
 	 */
 	public IFraction pow(final long exp) throws ArithmeticException;
+	
+	public IFraction sub(IFraction parm1);
 }

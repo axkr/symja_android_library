@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -491,7 +493,7 @@ public class NumberUtil {
 		}
 		return false; // number out of range exception
 	}
-	
+
 	/**
 	 * Test if a long value is a perfect square (i.e. its square root is another
 	 * integer). See <a href=
@@ -582,5 +584,54 @@ public class NumberUtil {
 			BigInteger gcd = significand.gcd(coefficient);
 			return new BigInteger[] { significand.divide(gcd), coefficient.divide(gcd) };
 		}
+	}
+
+	public static int checkPositive(@Nullable String role, int x) {
+		if (x <= 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
+		}
+		return x;
+	}
+
+	public static long checkPositive(@Nullable String role, long x) {
+		if (x <= 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
+		}
+		return x;
+	}
+
+	public static BigInteger checkPositive(@Nullable String role, BigInteger x) {
+		if (x.signum() <= 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be > 0");
+		}
+		return x;
+	}
+
+	public static int checkNonNegative(@Nullable String role, int x) {
+		if (x < 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
+		}
+		return x;
+	}
+
+	public static long checkNonNegative(@Nullable String role, long x) {
+		if (x < 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
+		}
+		return x;
+	}
+
+	public static BigInteger checkNonNegative(@Nullable String role, BigInteger x) {
+		if (x.signum() < 0) {
+			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
+		}
+		return x;
+	}
+
+	public static double checkNonNegative(@Nullable String role, double x) {
+		if (!(x >= 0)) { // not x < 0, to work with NaN.
+			throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
+		}
+		return x;
 	}
 }

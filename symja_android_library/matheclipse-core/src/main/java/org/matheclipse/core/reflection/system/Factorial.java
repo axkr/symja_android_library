@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.math.BigIntegerMath;
+import com.google.common.math.LongMath;
 
 /**
  * Returns the factorial of an integer n
@@ -27,11 +28,12 @@ public class Factorial extends AbstractTrigArg1 {
 	public IExpr e1DblArg(final double arg1) {
 		double d = org.apache.commons.math4.special.Gamma.gamma(arg1 + 1.0);
 		return F.num(d);
-	} 
+	}
 
 	public static IInteger factorial(final IInteger x) {
 		try {
 			int ni = x.toInt();
+
 			BigInteger result;
 			if (ni < 0) {
 				result = BigIntegerMath.factorial(-1 * ni);
@@ -40,6 +42,9 @@ public class Factorial extends AbstractTrigArg1 {
 					result = result.multiply(BigInteger.valueOf(-1L));
 				}
 			} else {
+				if (ni <= 20) {
+					return AbstractIntegerSym.valueOf(LongMath.factorial(ni));
+				}
 				result = BigIntegerMath.factorial(ni);
 			}
 			return AbstractIntegerSym.valueOf(result);

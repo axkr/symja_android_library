@@ -21,6 +21,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import com.google.common.math.LongMath;
+
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
  * 
