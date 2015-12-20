@@ -1108,8 +1108,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	private IAST evalSetAttributeArg(IAST ast, int i, IAST argI, IAST resultList, boolean noEvaluation, int level) {
-		IExpr expr;
-		expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
+		IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
 		if (expr != null) {
 			if (resultList == null) {
 				resultList = ast.setAtClone(i, expr);
