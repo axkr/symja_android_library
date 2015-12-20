@@ -850,6 +850,30 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
 
 
     /**
+     * Generate univariate polynomial in a given variable with given exponent.
+     * @param x the name of the variable.
+     * @param e the exponent of the variable.
+     * @return x^e as univariate polynomial.
+     */
+   public GenPolynomial<C> univariate(String x, long e) {
+        if (vars == null) { // should not happen
+            throw new IllegalArgumentException("no variables defined for polynomial ring");
+        }
+        if (x == null || x.isEmpty()) {
+            throw new IllegalArgumentException("no variable name given");
+        }
+        int i;
+        for ( i = 0 ; i < vars.length; i++ ) {
+             if (x.equals(vars[i])) { // use HashMap or TreeMap
+                 break;
+             }
+        }
+        if (i >= vars.length) {
+            throw new IllegalArgumentException("variable not defined in polynomial ring");
+        }
+        return univariate(0, nvar - i - 1, e);
+   }
+    /**
      * Extend variables. Used e.g. in module embedding. Extend number of
      * variables by i.
      * @param i number of variables to extend.
