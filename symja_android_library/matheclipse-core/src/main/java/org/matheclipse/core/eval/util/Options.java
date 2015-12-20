@@ -187,12 +187,26 @@ public class Options {
 		TermOrder termOrder = defaultTermOrder;
 		IExpr option = getOption("MonomialOrder");
 		if (option != null && option.isSymbol()) {
-			String optionStr = option.toString();
-			if (optionStr.equalsIgnoreCase("DegreeLexicographic")) {
-				termOrder = TermOrderByName.DegreeLexicographic;
-			} else if (optionStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
-				termOrder = TermOrderByName.DegreeReverseLexicographic;
-			}
+			String orderStr = option.toString();
+			termOrder = getMonomialOrder(orderStr, termOrder);
+		}
+		return termOrder;
+	}
+
+	public static TermOrder getMonomialOrder(String orderStr, TermOrder defaultTermOrder) {
+		TermOrder termOrder = defaultTermOrder;
+		if (orderStr.equalsIgnoreCase("Lexicographic")) {
+			termOrder = TermOrderByName.Lexicographic;
+		} else if (orderStr.equalsIgnoreCase("NegativeLexicographic")) {
+			termOrder = TermOrderByName.NegativeLexicographic;
+		} else if (orderStr.equalsIgnoreCase("DegreeLexicographic")) {
+			termOrder = TermOrderByName.DegreeLexicographic;
+		} else if (orderStr.equalsIgnoreCase("DegreeReverseLexicographic")) {
+			termOrder = TermOrderByName.DegreeReverseLexicographic;
+		} else if (orderStr.equalsIgnoreCase("NegativeDegreeLexicographic")) {
+			termOrder = TermOrderByName.NegativeDegreeLexicographic;
+		} else if (orderStr.equalsIgnoreCase("NegativeDegreeReverseLexicographic")) {
+			termOrder = TermOrderByName.NegativeDegreeReverseLexicographic;
 		}
 		return termOrder;
 	}

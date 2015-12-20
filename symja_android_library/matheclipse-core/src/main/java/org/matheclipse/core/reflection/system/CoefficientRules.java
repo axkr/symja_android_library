@@ -29,13 +29,14 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Get the list of monomials of a polynomial expression.
+ * Get exponent vectors and coefficients of monomials of a polynomial
+ * expression.
  * 
  * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
  */
-public class MonomialList extends AbstractFunctionEvaluator {
+public class CoefficientRules extends AbstractFunctionEvaluator {
 
-	public MonomialList() {
+	public CoefficientRules() {
 	}
 
 	@Override
@@ -60,8 +61,8 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		try {
 			if (ast.size() > 3) {
 				if (ast.arg3() instanceof IStringX) {
-					String orderStr = ast.arg3().toString(); // NegativeLexicographic
-					termOrder = Options.getMonomialOrder(orderStr, termOrder);
+					String orderStr = ast.arg3().toString();  
+					termOrder = Options.getMonomialOrder(orderStr, termOrder); 
 				}
 				final Options options = new Options(ast.topHead(), ast, 2);
 				IExpr option = options.getOption("Modulus");
@@ -80,7 +81,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the monomial list of a univariate polynomial.
+	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -92,28 +93,21 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		IAST list = F.List();
+		IAST resultList = F.List();
 		for (Monomial<IExpr> monomial : polyExpr) {
+			IAST ruleList = F.List();
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IAST monomTimes = F.Times(coeff);
-			long lExp;
-			ISymbol variable;
 			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0) {
-					variable = (ISymbol) variablesList.get(i);
-					monomTimes.add(F.Power(variable, F.integer(lExp)));
-				}
+				ruleList.add(F.integer(exp.getVal(i)));
 			}
-			list.add(monomTimes);
+			resultList.add(F.Rule(ruleList, coeff));
 		}
-		return list;
+		return resultList;
 	}
 
 	/**
-	 * Get the monomial list of a univariate polynomial with coefficients
-	 * reduced by a modulo value.
+	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -130,23 +124,17 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
 			JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
 			GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-			IAST list = F.List();
+			IAST resultList = F.List();
 			for (Monomial<ModLong> monomial : polyExpr) {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
-				IAST monomTimes = F.Times(F.integer(coeff.getVal()));
-				long lExp;
-				ISymbol variable;
+				IAST ruleList = F.List();
 				for (int i = 0; i < exp.length(); i++) {
-					lExp = exp.getVal(i);
-					if (lExp != 0) {
-						variable = (ISymbol) variablesList.get(i);
-						monomTimes.add(F.Power(variable, F.integer(lExp)));
-					}
+					ruleList.add(F.integer(exp.getVal(i)));
 				}
-				list.add(monomTimes);
+				resultList.add(F.Rule(ruleList, F.integer(coeff.getVal())));
 			}
-			return list;
+			return resultList;
 		} catch (ArithmeticException ae) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {

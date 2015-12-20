@@ -54,7 +54,7 @@ public class AST2Expr {
 			"AtomQ", "Attributes", "Begin", "BeginPackage", "BernoulliB", "Binomial", "Blank", "Block", "Boole",
 			"BooleanConvert", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "CatalanNumber",
 			"Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT", "ChessboardDistance", "Chop", "Clear",
-			"ClearAll", "Coefficient", "CoefficientList", "Colon", "Collect", "Complement", "Compile", "Complex",
+			"ClearAll", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Complement", "Compile", "Complex",
 			"ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate",
 			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",
 			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement",
