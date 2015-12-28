@@ -1302,13 +1302,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *         <code>True</code> and <code>false</code> in all other cases
 	 */
 	public final boolean evalTrue(final IExpr expr) {
+		if (expr.isTrue()) {
+			return true;
+		}
+		if (expr.isFalse()) {
+			return false;
+		}
 		try {
-			if (expr.isTrue()) {
-				return true;
-			}
-			if (expr.isFalse()) {
-				return false;
-			}
 			return evaluate(expr).isTrue();
 		} catch (MathException fce) {
 			if (Config.DEBUG) {
