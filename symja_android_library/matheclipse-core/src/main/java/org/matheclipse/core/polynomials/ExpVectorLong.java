@@ -9,8 +9,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 
 /**
- * ExpVectorLong implements exponent vectors for polynomials using arrays of long as storage unit. This class is used by
- * ExpVectorLong internally, there is no need to use this class directly.
+ * ExpVectorLong implements exponent vectors for polynomials using arrays of
+ * long as storage unit. This class is used by ExpVectorLong internally, there
+ * is no need to use this class directly.
  * 
  */
 public final class ExpVectorLong {
@@ -29,7 +30,8 @@ public final class ExpVectorLong {
 	 *            length of exponent vector.
 	 */
 	public ExpVectorLong(int n) {
-		this(new long[n]);
+		super();
+		val = new long[n];
 	}
 
 	/**
@@ -62,7 +64,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Constructor for ExpVectorLong. Converts a String representation to an ExpVectorLong. Accepted format = (1,2,3,4,5,6,7).
+	 * Constructor for ExpVectorLong. Converts a String representation to an
+	 * ExpVectorLong. Accepted format = (1,2,3,4,5,6,7).
 	 * 
 	 * @param s
 	 *            String representation.
@@ -179,14 +182,16 @@ public final class ExpVectorLong {
 	 * Is this structure finite or infinite.
 	 * 
 	 * @return true if this structure is finite, else false.
-	 * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true because of finite set of values in each index.
+	 * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true
+	 *      because of finite set of values in each index.
 	 */
 	public boolean isFinite() {
 		return true;
 	}
 
 	/**
-	 * Standard variable names. Generate standard names for variables, i.e. x0 to x(n-1).
+	 * Standard variable names. Generate standard names for variables, i.e. x0
+	 * to x(n-1).
 	 * 
 	 * @return standard names.
 	 */
@@ -195,7 +200,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Generate variable names. Generate names for variables, i.e. prefix0 to prefix(n-1).
+	 * Generate variable names. Generate names for variables, i.e. prefix0 to
+	 * prefix(n-1).
 	 * 
 	 * @param prefix
 	 *            name prefix.
@@ -206,7 +212,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Standard variable names. Generate standard names for variables, i.e. x0 to x(n-1).
+	 * Standard variable names. Generate standard names for variables, i.e. x0
+	 * to x(n-1).
 	 * 
 	 * @param n
 	 *            size of names array
@@ -217,7 +224,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Generate variable names. Generate names for variables from given prefix. i.e. prefix0 to prefix(n-1).
+	 * Generate variable names. Generate names for variables from given prefix.
+	 * i.e. prefix0 to prefix(n-1).
 	 * 
 	 * @param n
 	 *            size of names array.
@@ -247,7 +255,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend this by i elements and set val[j] to e.
+	 * Extend variables. Used e.g. in module embedding. Extend this by i
+	 * elements and set val[j] to e.
 	 * 
 	 * @param i
 	 *            number of elements to extend.
@@ -259,17 +268,19 @@ public final class ExpVectorLong {
 	 */
 
 	public ExpVectorLong extend(int i, int j, long e) {
-		long[] w = new long[val.length + i];
+		ExpVectorLong result = valueOf(val.length + i);
+		long[] w = result.val;
 		System.arraycopy(val, 0, w, i, val.length);
 		if (j >= i) {
 			throw new IllegalArgumentException("i " + i + " <= j " + j + " invalid");
 		}
 		w[j] = e;
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
-	 * Extend lower variables. Extend this by i lower elements and set val[j] to e.
+	 * Extend lower variables. Extend this by i lower elements and set val[j] to
+	 * e.
 	 * 
 	 * @param i
 	 *            number of elements to extend.
@@ -281,17 +292,19 @@ public final class ExpVectorLong {
 	 */
 
 	public ExpVectorLong extendLower(int i, int j, long e) {
-		long[] w = new long[val.length + i];
+		ExpVectorLong result = valueOf(val.length + i);
+		long[] w = result.val;
 		System.arraycopy(val, 0, w, 0, val.length);
 		if (j >= i) {
 			throw new IllegalArgumentException("i " + i + " <= j " + j + " invalid");
 		}
 		w[val.length + j] = e;
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
-	 * Contract variables. Used e.g. in module embedding. Contract this to len elements.
+	 * Contract variables. Used e.g. in module embedding. Contract this to len
+	 * elements.
 	 * 
 	 * @param i
 	 *            position of first element to be copied.
@@ -304,9 +317,10 @@ public final class ExpVectorLong {
 		if (i + len > val.length) {
 			throw new IllegalArgumentException("len " + len + " > val.len " + val.length);
 		}
-		long[] w = new long[len];
+		ExpVectorLong result = valueOf(len);
+		long[] w = result.val;
 		System.arraycopy(val, i, w, 0, len);
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
@@ -316,15 +330,17 @@ public final class ExpVectorLong {
 	 */
 
 	public ExpVectorLong reverse() {
-		long[] w = new long[val.length];
+		ExpVectorLong result = valueOf(val.length);
+		long[] w = result.val;
 		for (int i = 0; i < val.length; i++) {
 			w[i] = val[val.length - 1 - i];
 		}
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
-	 * Reverse lower j variables. Used e.g. in opposite rings. Reverses the first j-1 variables, the rest is unchanged.
+	 * Reverse lower j variables. Used e.g. in opposite rings. Reverses the
+	 * first j-1 variables, the rest is unchanged.
 	 * 
 	 * @param j
 	 *            index of first variable reversed.
@@ -335,7 +351,8 @@ public final class ExpVectorLong {
 		if (j <= 0 || j > val.length) {
 			return this;
 		}
-		long[] w = new long[val.length];
+		ExpVectorLong result = valueOf(val.length);
+		long[] w = result.val;
 		// copy first
 		for (int i = 0; i < j; i++) {
 			w[i] = val[i];
@@ -344,13 +361,12 @@ public final class ExpVectorLong {
 		for (int i = j; i < val.length; i++) {
 			w[i] = val[val.length + j - 1 - i];
 		}
-		// System.out.println("val = " + Arrays.toString(val));
-		// System.out.println("w   = " + Arrays.toString(w));
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
-	 * Reverse upper j variables. Reverses the last j-1 variables, the rest is unchanged.
+	 * Reverse upper j variables. Reverses the last j-1 variables, the rest is
+	 * unchanged.
 	 * 
 	 * @param j
 	 *            index of first variable not reversed.
@@ -360,7 +376,8 @@ public final class ExpVectorLong {
 		if (j <= 0 || j > val.length) {
 			return this;
 		}
-		long[] w = new long[val.length];
+		ExpVectorLong result = valueOf(val.length);
+		long[] w = result.val;
 		for (int i = 0; i < j; i++) {
 			w[i] = val[j - 1 - i];
 		}
@@ -368,7 +385,7 @@ public final class ExpVectorLong {
 		for (int i = j; i < val.length; i++) {
 			w[i] = val[i];
 		}
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
@@ -387,10 +404,11 @@ public final class ExpVectorLong {
 		if (val.length == 0) {
 			return Vl;
 		}
-		long[] w = new long[val.length + Vl.val.length];
+		ExpVectorLong result = valueOf(val.length + Vl.val.length);
+		long[] w = result.val;
 		System.arraycopy(val, 0, w, 0, val.length);
 		System.arraycopy(Vl.val, 0, w, val.length, Vl.val.length);
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
@@ -402,12 +420,13 @@ public final class ExpVectorLong {
 	 */
 
 	public ExpVectorLong permutation(List<Integer> P) {
-		long[] w = new long[val.length];
+		ExpVectorLong result = valueOf(val.length);
+		long[] w = result.val;
 		int j = 0;
 		for (Integer i : P) {
 			w[j++] = val[i];
 		}
-		return new ExpVectorLong(w);
+		return result;
 	}
 
 	/**
@@ -562,12 +581,14 @@ public final class ExpVectorLong {
 		}
 		ExpVectorLong b = (ExpVectorLong) B;
 		int t = this.invLexCompareTo(b);
-		// System.out.println("equals: this = " + this + " B = " + B + " t = " + t);
+		// System.out.println("equals: this = " + this + " B = " + B + " t = " +
+		// t);
 		return (0 == t);
 	}
 
 	/**
-	 * hashCode. Optimized for small exponents, i.e. &le; 2<sup>4</sup> and small number of variables, i.e. &le; 8.
+	 * hashCode. Optimized for small exponents, i.e. &le; 2<sup>4</sup> and
+	 * small number of variables, i.e. &le; 8.
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -592,7 +613,8 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong abs() {
 		long[] u = val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			if (u[i] >= 0L) {
 				w[i] = u[i];
@@ -600,8 +622,7 @@ public final class ExpVectorLong {
 				w[i] = -u[i];
 			}
 		}
-		return new ExpVectorLong(w);
-		// return EVABS(this);
+		return result; 
 	}
 
 	/**
@@ -612,12 +633,12 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong negate() {
 		long[] u = val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			w[i] = -u[i];
 		}
-		return new ExpVectorLong(w);
-		// return EVNEG(this);
+		return result;
 	}
 
 	/**
@@ -630,12 +651,12 @@ public final class ExpVectorLong {
 	public ExpVectorLong sum(ExpVectorLong V) {
 		long[] u = val;
 		long[] v = ((ExpVectorLong) V).val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			w[i] = u[i] + v[i];
 		}
-		return new ExpVectorLong(w);
-		// return EVSUM(this, V);
+		return result;
 	}
 
 	/**
@@ -648,12 +669,12 @@ public final class ExpVectorLong {
 	public ExpVectorLong subtract(ExpVectorLong V) {
 		long[] u = val;
 		long[] v = ((ExpVectorLong) V).val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			w[i] = u[i] - v[i];
 		}
-		return new ExpVectorLong(w);
-		// return EVDIF(this, V);
+		return result;
 	}
 
 	/**
@@ -677,7 +698,8 @@ public final class ExpVectorLong {
 	/**
 	 * ExpVectorLong signum.
 	 * 
-	 * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is negative and at least one entry is positive.
+	 * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is
+	 *         negative and at least one entry is positive.
 	 */
 
 	public int signum() {
@@ -763,12 +785,12 @@ public final class ExpVectorLong {
 	public ExpVectorLong lcm(ExpVectorLong V) {
 		long[] u = val;
 		long[] v = ((ExpVectorLong) V).val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			w[i] = (u[i] >= v[i] ? u[i] : v[i]);
 		}
-		return new ExpVectorLong(w);
-		// return EVLCM(this, V);
+		return result;
 	}
 
 	/**
@@ -781,12 +803,12 @@ public final class ExpVectorLong {
 	public ExpVectorLong gcd(ExpVectorLong V) {
 		long[] u = val;
 		long[] v = ((ExpVectorLong) V).val;
-		long[] w = new long[u.length];
+		ExpVectorLong result = valueOf(u.length);
+		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
 			w[i] = (u[i] <= v[i] ? u[i] : v[i]);
 		}
-		return new ExpVectorLong(w);
-		// return EVGCD(this, V);
+		return result;
 	}
 
 	/**
@@ -818,7 +840,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * ExpVectorLong multiple test. Test if this is component wise greater or equal to V.
+	 * ExpVectorLong multiple test. Test if this is component wise greater or
+	 * equal to V.
 	 * 
 	 * @param V
 	 * @return true if this is a multiple of V, else false.
@@ -860,7 +883,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse lexicographical compare part. Compare entries between begin and end (-1).
+	 * Inverse lexicographical compare part. Compare entries between begin and
+	 * end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -884,7 +908,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse graded lexicographical compare part. Compare entries between begin and end (-1).
+	 * Inverse graded lexicographical compare part. Compare entries between
+	 * begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -908,7 +933,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse inverse lexicographical compare part. Compare entries between begin and end (-1).
+	 * Reverse inverse lexicographical compare part. Compare entries between
+	 * begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -932,7 +958,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse inverse graded lexicographical compare part. Compare entries between begin and end (-1).
+	 * Reverse inverse graded lexicographical compare part. Compare entries
+	 * between begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -958,7 +985,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse weighted lexicographical compare part. Compare entries between begin and end (-1).
+	 * Inverse weighted lexicographical compare part. Compare entries between
+	 * begin and end (-1).
 	 * 
 	 * @param w
 	 *            weight array.
@@ -1323,4 +1351,13 @@ public final class ExpVectorLong {
 		// return EVIWLC(w, this, V, begin, end);
 	}
 
+	/**
+	 * Creates an empty ExpVectorLong.
+	 * 
+	 * @param n
+	 *            length of exponent vector.
+	 */
+	public static ExpVectorLong valueOf(int n) {
+		return new ExpVectorLong(n);
+	}
 }
