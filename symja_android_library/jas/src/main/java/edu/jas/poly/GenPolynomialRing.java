@@ -351,13 +351,13 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         }
         s.append(",\"" + varsToString() + "\"");
         String to = tord.toScript();
-        if (tord.getEvord() == TermOrder.INVLEX) {
-            to = "PolyRing.lex";
-        }
-        if (tord.getEvord() == TermOrder.IGRLEX) {
-            to = "PolyRing.grad";
-        }
-        s.append(","+to);
+        //if (tord.getEvord() == TermOrder.INVLEX) {
+        //    to = "PolyRing.lex";
+        //}
+        //if (tord.getEvord() == TermOrder.IGRLEX) {
+        //    to = "PolyRing.grad";
+        //}
+        s.append("," + to);
         s.append(")");
         return s.toString();
     }
@@ -679,6 +679,23 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
 
 
     /**
+     * Copy polynomial list.
+     * @param L polynomial list
+     * @return a copy of L in this ring.
+     */
+    public List<GenPolynomial<C>> copy(List<GenPolynomial<C>> L) {
+        if (L == null) {
+            return L;
+        }
+        List<GenPolynomial<C>> R = new ArrayList<GenPolynomial<C>>(L.size());
+        for ( GenPolynomial<C> a : L ) {
+	    R.add( copy(a) );
+        }
+        return R;
+    }
+
+
+    /**
      * Parse a polynomial with the use of GenPolynomialTokenizer.
      * @param s String.
      * @return GenPolynomial from s.
@@ -708,6 +725,42 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
             p = ZERO;
         }
         return p;
+    }
+
+
+    /**
+     * Generate univariate polynomial in a given variable with given exponent.
+     * @param x the name of a variable.
+     * @return x as univariate polynomial.
+     */
+    public GenPolynomial<C> univariate(String x) {
+        return univariate(x, 1L);
+    }
+
+
+    /**
+     * Generate univariate polynomial in a given variable with given exponent.
+     * @param x the name of the variable.
+     * @param e the exponent of the variable.
+     * @return x^e as univariate polynomial.
+     */
+    public GenPolynomial<C> univariate(String x, long e) {
+        if (vars == null) { // should not happen
+            throw new IllegalArgumentException("no variables defined for polynomial ring");
+        }
+        if (x == null || x.isEmpty()) {
+            throw new IllegalArgumentException("no variable name given");
+        }
+        int i;
+        for ( i = 0 ; i < vars.length; i++ ) {
+            if (x.equals(vars[i])) { // use HashMap or TreeMap
+                break;
+            }
+        }
+        if (i >= vars.length) {
+            throw new IllegalArgumentException("variable '" + x + "' not defined in polynomial ring");
+        }
+        return univariate(0, nvar - i - 1, e);
     }
 
 
@@ -849,30 +902,6 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
     }
 
 
-    /**
-     * Generate univariate polynomial in a given variable with given exponent.
-     * @param x the name of the variable.
-     * @param e the exponent of the variable.
-     * @return x^e as univariate polynomial.
-     */
-   public GenPolynomial<C> univariate(String x, long e) {
-        if (vars == null) { // should not happen
-            throw new IllegalArgumentException("no variables defined for polynomial ring");
-        }
-        if (x == null || x.isEmpty()) {
-            throw new IllegalArgumentException("no variable name given");
-        }
-        int i;
-        for ( i = 0 ; i < vars.length; i++ ) {
-             if (x.equals(vars[i])) { // use HashMap or TreeMap
-                 break;
-             }
-        }
-        if (i >= vars.length) {
-            throw new IllegalArgumentException("variable not defined in polynomial ring");
-        }
-        return univariate(0, nvar - i - 1, e);
-   }
     /**
      * Extend variables. Used e.g. in module embedding. Extend number of
      * variables by i.

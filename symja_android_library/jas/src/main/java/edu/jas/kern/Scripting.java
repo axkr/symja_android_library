@@ -21,6 +21,14 @@ public class Scripting {
     private static Lang script = Lang.Python;
 
 
+    public static enum CAS {
+        JAS, Math, Sage, Singular
+    };
+
+
+    private static CAS cas = CAS.JAS;
+
+
     private static int precision = -1; // == fraction output
 
 
@@ -45,6 +53,27 @@ public class Scripting {
     public static Lang setLang(Lang s) {
         Lang o = script;
         script = s;
+        return o;
+    }
+
+
+    /**
+     * Get CAS for Order which is in effect.
+     * @return CAS which is to be used for toScript().
+     */
+    public static CAS getCAS() {
+        return cas;
+    }
+
+
+    /**
+     * Set CAS for order.
+     * @param s CAS which is to be used for toScript()
+     * @return old CAS setting.
+     */
+    public static CAS setCAS(CAS s) {
+        CAS o = cas;
+        cas = s;
         return o;
     }
 

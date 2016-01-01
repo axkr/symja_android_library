@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -276,7 +278,7 @@ Iterable<Monomial<C>> {
     public String toString(String[] v) {
         StringBuffer s = new StringBuffer();
         if (PrettyPrint.isTrue()) {
-            if (val.size() == 0) {
+            if (val.isEmpty()) {
                 s.append("0");
             } else {
                 // s.append( "( " );
@@ -316,7 +318,7 @@ Iterable<Monomial<C>> {
             }
         } else {
             s.append(this.getClass().getSimpleName() + "[ ");
-            if (val.size() == 0) {
+            if (val.isEmpty()) {
                 s.append("0");
             } else {
                 boolean first = true;
@@ -420,7 +422,7 @@ Iterable<Monomial<C>> {
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return (val.size() == 0);
+        return val.isEmpty();
     }
 
 
@@ -601,8 +603,9 @@ Iterable<Monomial<C>> {
      * @return first map entry.
      */
     public Map.Entry<ExpVector, C> leadingMonomial() {
-        if (val.size() == 0)
+        if (val.isEmpty()) {
             return null;
+        }
         Iterator<Map.Entry<ExpVector, C>> ai = val.entrySet().iterator();
         return ai.next();
     }
@@ -613,7 +616,7 @@ Iterable<Monomial<C>> {
      * @return first exponent.
      */
     public ExpVector leadingExpVector() {
-        if (val.size() == 0) {
+        if (val.isEmpty()) {
             return null; // ring.evzero? needs many changes 
         }
         return val.firstKey();
@@ -625,8 +628,8 @@ Iterable<Monomial<C>> {
      * @return last exponent.
      */
     public ExpVector trailingExpVector() {
-        if (val.size() == 0) {
-            return ring.evzero; // or null ?;
+        if (val.isEmpty()) {
+            return null; //ring.evzero; // or null ?;
         }
         return val.lastKey();
     }
@@ -637,7 +640,7 @@ Iterable<Monomial<C>> {
      * @return first coefficient.
      */
     public C leadingBaseCoefficient() {
-        if (val.size() == 0) {
+        if (val.isEmpty()) {
             return ring.coFac.getZERO();
         }
         return val.get(val.firstKey());
@@ -694,8 +697,8 @@ Iterable<Monomial<C>> {
      * @return maximal degree in the variable i.
      */
     public long degree(int i) {
-        if (val.size() == 0) {
-            return 0; // 0 or -1 ?;
+        if (val.isEmpty()) {
+            return -1L; // 0 or -1 ?;
         }
         int j;
         if (i >= 0) {
@@ -719,8 +722,8 @@ Iterable<Monomial<C>> {
      * @return maximal degree in any variables.
      */
     public long degree() {
-        if (val.size() == 0) {
-            return 0; // 0 or -1 ?;
+        if (val.isEmpty()) {
+            return -1L; // 0 or -1 ?;
         }
         long deg = 0;
         for (ExpVector e : val.keySet()) {
@@ -738,8 +741,8 @@ Iterable<Monomial<C>> {
      * @return total degree in any variables.
      */
     public long totalDegree() {
-        if (val.size() == 0) {
-            return 0; // 0 or -1 ?;
+        if (val.isEmpty()) {
+            return -1L; // 0 or -1 ?;
         }
         long deg = 0;
         for (ExpVector e : val.keySet()) {
@@ -753,18 +756,114 @@ Iterable<Monomial<C>> {
 
 
     /**
+     * Weight degree.
+     * @return weight degree in all variables.
+     */
+    public long weightDegree() {
+        long[][] w = ring.tord.getWeight();
+        if (w == null || w.length == 0) {
+            return totalDegree(); // assume weight 1 
+        }
+        if (val.isEmpty()) {
+            return -1L; // 0 or -1 ?;
+        }
+        long deg = 0;
+        for (ExpVector e : val.keySet()) {
+            long d = e.weightDeg(w);
+            if (d > deg) {
+                deg = d;
+            }
+        }
+        return deg;
+    }
+
+
+    /**
+     * Leading weight polynomial.
+     * @return polynomial with terms of maximal weight degree.
+     */
+    public GenPolynomial<C> leadingWeightPolynomial() {
+        if (val.isEmpty()) {
+            return ring.getZERO();
+        }
+        long[][] w = ring.tord.getWeight();
+        long maxw;
+        if (w == null || w.length == 0) {
+            maxw = totalDegree(); // assume weights = 1
+        } else {
+            maxw = weightDegree();
+        }
+        GenPolynomial<C> wp = new GenPolynomial<C>(ring);
+        for (Map.Entry<ExpVector,C> m : val.entrySet()) {
+            ExpVector e = m.getKey();
+            long d = e.weightDeg(w);
+            if (d >= maxw) {
+                wp.val.put(e, m.getValue());
+            }
+        }
+        return wp;
+    }
+
+
+    /**
+     * Is GenPolynomial&lt;C&gt; homogeneous with respect to a weight.
+     * @return true, if this is weight homogeneous, else false.
+     */
+    public boolean isWeightHomogeneous() {
+        if (val.size() <= 1) {
+            return true;
+        }
+        long[][] w = ring.tord.getWeight();
+        if (w == null || w.length == 0) {
+            return isHomogeneous(); // assume weights = 1
+        }
+        long deg = -1;
+        for (ExpVector e : val.keySet()) {
+            if (deg < 0) {
+                deg = e.weightDeg(w);
+            } else if (deg != e.weightDeg(w)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
      * Maximal degree vector.
      * @return maximal degree vector of all variables.
      */
     public ExpVector degreeVector() {
-        ExpVector deg = ring.evzero;
-        if (val.size() == 0) {
-            return deg;
+        if (val.isEmpty()) {
+            return null; //deg;
         }
+        ExpVector deg = ring.evzero;
         for (ExpVector e : val.keySet()) {
             deg = deg.lcm(e);
         }
         return deg;
+    }
+
+
+    /**
+     * Delta of exponent vectors.
+     * @return list of u-v, where u = lt() and v != u in this.
+     */
+    public List<ExpVector> deltaExpVectors() {
+        List<ExpVector> de = new ArrayList<ExpVector>(val.size());
+        if (val.isEmpty()) {
+            return de; 
+        }
+        ExpVector u = null;
+        for (ExpVector e : val.keySet()) {
+            if ( u == null ) {
+                u = e;
+            } else {
+                ExpVector v = u.subtract(e);
+                de.add(v);
+            }
+        }
+        return de;
     }
 
 

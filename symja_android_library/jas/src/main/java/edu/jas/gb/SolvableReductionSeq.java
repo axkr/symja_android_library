@@ -74,7 +74,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
             }
         }
         l = j;
-        ExpVector e, f;
+        ExpVector e; //, f;
         C a, b;
         boolean mt = false;
         GenSolvablePolynomial<C> R = Ap.ring.getZERO().copy();
@@ -101,7 +101,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                 S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
             } else {
-                f = e;
+                //f = e;
                 e = e.subtract(htl[i]);
                 //logger.debug("red div = " + e);
                 Q = p[i].multiplyLeft(e);
@@ -122,7 +122,7 @@ public class SolvableReductionSeq<C extends RingElem<C>> extends SolvableReducti
                     logger.info("g1.equals(g2): R        = " + R);
                     logger.info("g1.equals(g2): Sp       = " + Sp);
                     logger.info("g1.equals(g2): S        = " + S);
-                    throw new RuntimeException("g1.equals(g2): " + g1 + ", a = " + a  + ", b = " + b);
+                    throw new RuntimeException("g1.equals(g2): " + g1 + ", a = " + a + ", b = " + b);
                 }
             }
         }

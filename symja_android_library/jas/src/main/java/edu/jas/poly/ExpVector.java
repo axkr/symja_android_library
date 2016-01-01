@@ -202,7 +202,7 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      * Get the exponent vector.
      * @return val.
      */
-    /*package*/abstract long[] getVal();
+    public abstract long[] getVal();
 
 
     /**
@@ -696,7 +696,6 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
         //long e = 
         V.setVal(i, d);
         return V;
-        //return EVSU(this, i, d);
     }
 
 
@@ -737,7 +736,6 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
             w[i] = e;
         }
         return create(w);
-        //return new ExpVector( w );
     }
 
 
@@ -896,6 +894,13 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
 
 
     /**
+     * ExpVector dependent variables.
+     * @return number of indices where val has positive exponents.
+     */
+    public abstract int dependentVariables();
+
+
+    /**
      * ExpVector dependency on variables.
      * @return array of indices where val has positive exponents.
      */
@@ -931,7 +936,6 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      */
     public boolean divides(ExpVector V) {
         return V.multipleOf(this);
-        //return EVMT(V, this);
     }
 
 

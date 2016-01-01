@@ -138,7 +138,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
      * @param Pp recursive polynomial list.
      * @return nf(Ap) with respect to Pp.
      */
-    @SuppressWarnings({ "cast", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public GenSolvablePolynomial<GenPolynomial<C>> leftNormalformRecursive(
                     List<GenSolvablePolynomial<GenPolynomial<C>>> Pp,
                     GenSolvablePolynomial<GenPolynomial<C>> Ap) {

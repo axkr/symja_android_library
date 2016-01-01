@@ -160,7 +160,7 @@ public final class ExpVectorInteger extends ExpVector
      * @return val as long.
      */
     @Override
-    /*package*/long[] getVal() {
+    public long[] getVal() {
         long v[] = new long[val.length];
         for (int i = 0; i < val.length; i++) {
             v[i] = val[i];
@@ -612,18 +612,28 @@ public final class ExpVectorInteger extends ExpVector
 
 
     /**
+     * ExpVector dependent variables.
+     * @return number of indices where val has positive exponents.
+     */
+    public int dependentVariables() {
+        int l = 0;
+        for (int i = 0; i < val.length; i++) {
+            if (val[i] > 0) {
+                l++;
+            }
+        }
+        return l;
+    }
+
+
+    /**
      * ExpVector dependency on variables.
      * @return array of indices where val has positive exponents.
      */
     @Override
     public int[] dependencyOnVariables() {
         int[] u = val;
-        int l = 0;
-        for (int i = 0; i < u.length; i++) {
-            if (u[i] > 0) {
-                l++;
-            }
-        }
+        int l = dependentVariables();
         int[] dep = new int[l];
         if (l == 0) {
             return dep;
@@ -703,6 +713,12 @@ public final class ExpVectorInteger extends ExpVector
     public int invLexCompareTo(ExpVector V, int begin, int end) {
         int[] u = val;
         int[] v = ((ExpVectorInteger) V).val;
+        if (begin < 0) {
+            begin = 0;;
+        }
+        if (end >= val.length) {
+            end = val.length;
+        }
         int t = 0;
         for (int i = begin; i < end; i++) {
             if (u[i] > v[i])
@@ -768,6 +784,12 @@ public final class ExpVectorInteger extends ExpVector
     public int invGradCompareTo(ExpVector V, int begin, int end) {
         int[] u = val;
         int[] v = ((ExpVectorInteger) V).val;
+        if (begin < 0) {
+            begin = 0;;
+        }
+        if (end >= val.length) {
+            end = val.length;
+        }
         int t = 0;
         int i;
         for (i = begin; i < end; i++) {
@@ -833,6 +855,12 @@ public final class ExpVectorInteger extends ExpVector
     public int revInvLexCompareTo(ExpVector V, int begin, int end) {
         int[] u = val;
         int[] v = ((ExpVectorInteger) V).val;
+        if (begin < 0) {
+            begin = 0;;
+        }
+        if (end >= val.length) {
+            end = val.length;
+        }
         int t = 0;
         for (int i = end - 1; i >= begin; i--) {
             if (u[i] > v[i])
@@ -898,6 +926,12 @@ public final class ExpVectorInteger extends ExpVector
     public int revInvGradCompareTo(ExpVector V, int begin, int end) {
         int[] u = val;
         int[] v = ((ExpVectorInteger) V).val;
+        if (begin < 0) {
+            begin = 0;;
+        }
+        if (end >= val.length) {
+            end = val.length;
+        }
         int t = 0;
         int i;
         for (i = end - 1; i >= begin; i--) {
@@ -987,6 +1021,12 @@ public final class ExpVectorInteger extends ExpVector
     public int invWeightCompareTo(long[][] w, ExpVector V, int begin, int end) {
         int[] u = val;
         int[] v = ((ExpVectorInteger) V).val;
+        if (begin < 0) {
+            begin = 0;;
+        }
+        if (end >= val.length) {
+            end = val.length;
+        }
         int t = 0;
         int i;
         for (i = begin; i < end; i++) {

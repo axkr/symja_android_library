@@ -164,6 +164,7 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
         }
         int z = commonZeroTest(groebnerBasis);
         if (z != 0) {
+            logger.error("use Groebner Walk algorithm");
             throw new IllegalArgumentException("ideal(G) not zero dimensional, dim =  " + z);
         }
         //Polynomial ring of input Groebnerbasis G

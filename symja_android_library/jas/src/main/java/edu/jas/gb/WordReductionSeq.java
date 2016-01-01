@@ -374,7 +374,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 Word[] elr = e.divideWord(htl[i]);
                 e = elr[0];
                 Word f = elr[1];
-                if (false) {
+                if (debug) {
                     logger.info("redRec divideWord: e = " + e + ", f = " + f);
                 }
                 if (f.isONE()) {
@@ -499,7 +499,7 @@ public class WordReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 Word[] elr = e.divideWord(htl[i]);
                 e = elr[0];
                 Word f = elr[1];
-                if (false) {
+                if (debug) {
                     logger.info("redRec divideWord: e = " + e + ", f = " + f);
                 }
                 if (e.isONE()) {

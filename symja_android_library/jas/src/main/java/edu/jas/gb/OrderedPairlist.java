@@ -4,44 +4,63 @@
 
 package edu.jas.gb;
 
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
-import edu.jas.poly.GenSolvablePolynomialRing;
-
 import edu.jas.structure.RingElem;
 
+
 /**
- * Pair list management.
- * The original Buchberger algorithm with criterions following 
- * Winkler in SAC-1, Kredel in ALDES/SAC-2, Kredel in MAS.
- * Implemented using GenPolynomial, TreeMap and BitSet.
+ * Pair list management. The original Buchberger algorithm with criterions
+ * following Winkler in SAC-1, Kredel in ALDES/SAC-2, Kredel in MAS. Implemented
+ * using GenPolynomial, TreeMap and BitSet.
  * @author Heinz Kredel
  */
 
-public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
+public class OrderedPairlist<C extends RingElem<C>> implements PairList<C> {
+
 
     protected final List<GenPolynomial<C>> P;
-    protected final SortedMap<ExpVector,LinkedList<Pair<C>>> pairlist;
+
+
+    protected final SortedMap<ExpVector, LinkedList<Pair<C>>> pairlist;
+
+
     protected final List<BitSet> red;
+
+
     protected final GenPolynomialRing<C> ring;
+
+
     protected final Reduction<C> reduction;
+
+
     protected boolean oneInGB = false;
+
+
     protected boolean useCriterion4 = true;
+
+
     protected int putCount;
+
+
     protected int remCount;
+
+
     protected final int moduleVars;
+
 
     private static final Logger logger = Logger.getLogger(OrderedPairlist.class);
 
@@ -53,7 +72,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         moduleVars = 0;
         ring = null;
         P = null;
-        pairlist = null; 
+        pairlist = null;
         red = null;
         reduction = null;
         putCount = 0;
@@ -66,7 +85,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * @param r polynomial factory.
      */
     public OrderedPairlist(GenPolynomialRing<C> r) {
-        this(0,r);
+        this(0, r);
     }
 
 
@@ -79,12 +98,12 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         moduleVars = m;
         ring = r;
         P = new ArrayList<GenPolynomial<C>>();
-        pairlist = new TreeMap<ExpVector,LinkedList<Pair<C>>>( ring.tord.getAscendComparator() );
+        pairlist = new TreeMap<ExpVector, LinkedList<Pair<C>>>(ring.tord.getAscendComparator());
         //pairlist = new TreeMap( to.getSugarComparator() );
         red = new ArrayList<BitSet>();
         putCount = 0;
         remCount = 0;
-        if ( !ring.isCommutative() ) {//ring instanceof GenSolvablePolynomialRing ) {
+        if (!ring.isCommutative()) {//ring instanceof GenSolvablePolynomialRing ) {
             useCriterion4 = false;
         }
         reduction = new ReductionSeq<C>();
@@ -106,7 +125,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * @param r polynomial ring.
      */
     public PairList<C> create(int m, GenPolynomialRing<C> r) {
-        return new OrderedPairlist<C>(m,r);
+        return new OrderedPairlist<C>(m, r);
     }
 
 
@@ -117,13 +136,13 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
     public String toString() {
         StringBuffer s = new StringBuffer(this.getClass().getSimpleName() + "(");
         //s.append("polys="+P.size());
-        s.append("#put="+putCount);
-        s.append(", #rem="+remCount);
-        if ( pairlist != null && pairlist.size() != 0 ) {
-            s.append(", size="+pairlist.size());
+        s.append("#put=" + putCount);
+        s.append(", #rem=" + remCount);
+        if (pairlist != null && pairlist.size() != 0) {
+            s.append(", size=" + pairlist.size());
         }
         if (moduleVars > 0) {
-            s.append(", modv="+moduleVars);
+            s.append(", modv=" + moduleVars);
         }
         s.append(")");
         return s.toString();
@@ -135,41 +154,41 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * @param p polynomial.
      * @return the index of the added polynomial.
      */
-    public synchronized int put(GenPolynomial<C> p) { 
+    public synchronized int put(GenPolynomial<C> p) {
         putCount++;
-        if ( oneInGB ) { 
-            return P.size()-1;
+        if (oneInGB) {
+            return P.size() - 1;
         }
         ExpVector e = p.leadingExpVector();
         int l = P.size();
-        for ( int j = 0; j < l; j++ ) {
+        for (int j = 0; j < l; j++) {
             GenPolynomial<C> pj = P.get(j);
-            ExpVector f = pj.leadingExpVector(); 
-            if ( moduleVars > 0 ) {
-                if ( !reduction.moduleCriterion( moduleVars, e, f) ) {
+            ExpVector f = pj.leadingExpVector();
+            if (moduleVars > 0) {
+                if (!reduction.moduleCriterion(moduleVars, e, f)) {
                     continue; // skip pair
                 }
             }
-            ExpVector g =  e.lcm( f );
-            Pair<C> pair = new Pair<C>( pj, p, j, l);
+            ExpVector g = e.lcm(f);
+            Pair<C> pair = new Pair<C>(pj, p, j, l);
             //System.out.println("pair.new      = " + pair);
             //multiple pairs under same keys -> list of pairs
-            LinkedList<Pair<C>> xl = pairlist.get( g );
-            if ( xl == null ) {
+            LinkedList<Pair<C>> xl = pairlist.get(g);
+            if (xl == null) {
                 xl = new LinkedList<Pair<C>>();
             }
             //xl.addLast( pair ); // first or last ?
-            xl.addFirst( pair ); // first or last ? better for d- e-GBs
-            pairlist.put( g, xl );
+            xl.addFirst(pair); // first or last ? better for d- e-GBs
+            pairlist.put(g, xl);
         }
         //System.out.println("pairlist.keys@put = " + pairlist.keySet() );  
-        P.add(  p );
+        P.add(p);
         BitSet redi = new BitSet();
-        redi.set( 0, l ); 
-        red.add( redi );
+        redi.set(0, l);
+        red.add(redi);
         //System.out.println("pairlist.red = " + red); //.get( pair.j )); //pair);
         //System.out.println("pairlist.key = " + pairlist.keySet() );  
-        return P.size()-1;
+        return P.size() - 1;
     }
 
 
@@ -178,7 +197,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * @param F polynomial list.
      * @return the index of the last added polynomial.
      */
-    public int put(List<GenPolynomial<C>> F) { 
+    public int put(List<GenPolynomial<C>> F) {
         int i = 0;
         for (GenPolynomial<C> p : F) {
             i = put(p);
@@ -192,58 +211,57 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Appy the criterions 3 and 4 to see if the S-polynomial is required.
      * @return the next pair if one exists, otherwise null.
      */
-    public synchronized Pair<C> removeNext() { 
-        if ( oneInGB ) {
+    public synchronized Pair<C> removeNext() {
+        if (oneInGB) {
             return null;
         }
-        Iterator< Map.Entry<ExpVector,LinkedList<Pair<C>>> > ip 
-            = pairlist.entrySet().iterator();
+        Iterator<Map.Entry<ExpVector, LinkedList<Pair<C>>>> ip = pairlist.entrySet().iterator();
 
         Pair<C> pair = null;
         boolean c = false;
         int i, j;
 
-        while ( !c && ip.hasNext() )  {
-            Map.Entry<ExpVector,LinkedList<Pair<C>>> me = ip.next();
-            ExpVector g =  me.getKey();
+        while (!c && ip.hasNext()) {
+            Map.Entry<ExpVector, LinkedList<Pair<C>>> me = ip.next();
+            ExpVector g = me.getKey();
             LinkedList<Pair<C>> xl = me.getValue();
-            if ( logger.isInfoEnabled() ) {
+            if (logger.isInfoEnabled()) {
                 logger.info("g  = " + g);
             }
             pair = null;
-            while ( !c && xl.size() > 0 ) {
+            while (!c && xl.size() > 0) {
                 pair = xl.removeFirst();
                 // xl is also modified in pairlist 
-                i = pair.i; 
-                j = pair.j; 
+                i = pair.i;
+                j = pair.j;
                 // System.out.println("pair(" + j + "," +i+") ");
-                if ( useCriterion4 ) {
-                    c = reduction.criterion4( pair.pi, pair.pj, g ); 
+                if (useCriterion4) {
+                    c = reduction.criterion4(pair.pi, pair.pj, g);
                 } else {
                     c = true;
                 }
                 //System.out.println("c4_o  = " + c);  
-                if ( c ) {
-                    c = criterion3( i, j, g );
+                if (c) {
+                    c = criterion3(i, j, g);
                     //System.out.println("c3_o  = " + c); 
                 }
-                red.get( j ).clear(i); // set(i,false) jdk1.4
+                red.get(j).clear(i); // set(i,false) jdk1.4
             }
-            if ( xl.size() == 0 ) {
-                ip.remove(); 
+            if (xl.size() == 0) {
+                ip.remove();
                 // = pairlist.remove( g );
             }
         }
-        if ( ! c ) {
+        if (!c) {
             pair = null;
         } else {
-            pair.maxIndex(P.size()-1);
+            pair.maxIndex(P.size() - 1);
             remCount++; // count only real pairs
-            if ( logger.isDebugEnabled() ) {
+            if (logger.isDebugEnabled()) {
                 logger.info("pair(" + pair.j + "," + pair.i + ")");
             }
         }
-        return pair; 
+        return pair;
     }
 
 
@@ -251,7 +269,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Test if there is possibly a pair in the list.
      * @return true if a next pair could exist, otherwise false.
      */
-    public synchronized boolean hasNext() { 
+    public synchronized boolean hasNext() {
         return pairlist.size() > 0;
     }
 
@@ -260,7 +278,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Get the list of polynomials.
      * @return the polynomial list.
      */
-    public List<GenPolynomial<C>> getList() { 
+    public List<GenPolynomial<C>> getList() {
         return P;
     }
 
@@ -269,14 +287,14 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Set the list of polynomials.
      * @param F the polynomial list.
      */
-    public void setList(List<GenPolynomial<C>> F) { 
-        if ( ! P.isEmpty() ) {
+    public void setList(List<GenPolynomial<C>> F) {
+        if (!P.isEmpty()) {
             throw new IllegalArgumentException("P not empty");
         }
         P.addAll(F);
-        for ( GenPolynomial<C> p : P ) {
+        for (int i = 0; i < P.size(); i++) {
             BitSet redi = new BitSet();
-            red.add( redi );
+            red.add(redi);
         }
 
     }
@@ -295,7 +313,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Get the number of polynomials put to the pairlist.
      * @return the number of calls to put.
      */
-    public synchronized int putCount() { 
+    public synchronized int putCount() {
         return putCount;
     }
 
@@ -304,7 +322,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Get the number of required pairs removed from the pairlist.
      * @return the number of non null pairs delivered.
      */
-    public synchronized int remCount() { 
+    public synchronized int remCount() {
         return remCount;
     }
 
@@ -314,12 +332,12 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * @param one polynomial. (no more required)
      * @return the index of the last polynomial.
      */
-    public synchronized int putOne(GenPolynomial<C> one) { 
-        if ( one == null ) {
-            return P.size()-1;
+    public synchronized int putOne(GenPolynomial<C> one) {
+        if (one == null) {
+            return P.size() - 1;
         }
-        if ( ! one.isONE() ) {
-            return P.size()-1;
+        if (!one.isONE()) {
+            return P.size() - 1;
         }
         return putOne();
     }
@@ -329,7 +347,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * Put the ONE-Polynomial to the pairlist.
      * @return the index of the last polynomial.
      */
-    public synchronized int putOne() { 
+    public synchronized int putOne() {
         putCount++;
         oneInGB = true;
         pairlist.clear();
@@ -337,7 +355,7 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
         P.add(ring.getONE());
         red.clear();
         logger.info("outOne " + this.toString());
-        return P.size()-1;
+        return P.size() - 1;
     }
 
 
@@ -345,36 +363,33 @@ public class OrderedPairlist<C extends RingElem<C> > implements PairList<C> {
      * GB criterium 3.
      * @return true if the S-polynomial(i,j) is required.
      */
-    public boolean criterion3(int i, int j, ExpVector eij) {  
+    public boolean criterion3(int i, int j, ExpVector eij) {
         // assert i < j;
-        boolean s = red.get( j ).get(i); 
-        if ( ! s ) { 
-            logger.warn("c3.s false for " + j + " " + i); 
+        boolean s = red.get(j).get(i);
+        if (!s) {
+            logger.warn("c3.s false for " + j + " " + i);
             return s;
         }
         // now s = true;
-        for ( int k = 0; k < P.size(); k++ ) {
+        for (int k = 0; k < P.size(); k++) {
             // System.out.println("i , k , j "+i+" "+k+" "+j); 
-            if ( i != k && j != k ) {
-                GenPolynomial<C> A = P.get( k );
+            if (i != k && j != k) {
+                GenPolynomial<C> A = P.get(k);
                 ExpVector ek = A.leadingExpVector();
                 boolean m = eij.multipleOf(ek);
-                if ( m ) {
-                    if ( k < i ) {
+                if (m) {
+                    if (k < i) {
                         // System.out.println("k < i "+k+" "+i); 
-                        s =    red.get( i ).get(k) 
-                            || red.get( j ).get(k); 
-                    } else if ( i < k && k < j ) {
+                        s = red.get(i).get(k) || red.get(j).get(k);
+                    } else if (i < k && k < j) {
                         // System.out.println("i < k < j "+i+" "+k+" "+j); 
-                        s =    red.get( k ).get(i) 
-                            || red.get( j ).get(k); 
-                    } else if ( j < k ) {
+                        s = red.get(k).get(i) || red.get(j).get(k);
+                    } else if (j < k) {
                         //System.out.println("j < k "+j+" "+k); 
-                        s =    red.get( k ).get(i) 
-                            || red.get( k ).get(j); 
+                        s = red.get(k).get(i) || red.get(k).get(j);
                     }
                     //System.out.println("s."+k+" = " + s); 
-                    if ( ! s ) {
+                    if (!s) {
                         return s;
                     }
                 }

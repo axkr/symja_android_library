@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -508,6 +510,40 @@ public class PolynomialList<C extends RingElem<C>> implements Comparable<Polynom
             }
         }
         return true;
+    }
+
+
+    /**
+     * Union of the delta of exponent vectors of all polynomials.
+     * @return list of u-v, where u = lt() and v != u in p in list.
+     */
+    public SortedSet<ExpVector> deltaExpVectors() {
+        SortedSet<ExpVector> de = new TreeSet<ExpVector>(ring.tord.getAscendComparator());
+        if (list.isEmpty()) {
+            return de; 
+        }
+        for (GenPolynomial<C> p : list) {
+            List<ExpVector> pe = p.deltaExpVectors();
+            de.addAll(pe);
+        }
+        return de;
+    }
+
+
+    /**
+     * Leading weight polynomials.
+     * @return list of polynomials with terms of maximal weight degree.
+     */
+    public List<GenPolynomial<C>> leadingWeightPolynomials() {
+        List<GenPolynomial<C>> lw = new ArrayList<GenPolynomial<C>>(list.size());
+        if (list.isEmpty()) {
+            return lw; 
+        }
+        for (GenPolynomial<C> p : list) {
+            GenPolynomial<C> pw = p.leadingWeightPolynomial();
+            lw.add(pw);
+        }
+        return lw;
     }
 
 }

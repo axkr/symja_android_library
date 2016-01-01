@@ -7,7 +7,7 @@ package edu.jas.gb;
 
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.Collections;
+// import java.util.Collections;
 
 import org.apache.log4j.Logger;
 
@@ -82,12 +82,12 @@ public class GroebnerBaseSeqIter<C extends RingElem<C>> extends GroebnerBaseAbst
     public List<GenPolynomial<C>> GB(int modv, List<GenPolynomial<C>> F) {
         List<GenPolynomial<C>> G = normalizeZerosOnes(F);
         G = PolyUtil.<C> monic(G);
-        // sort, no reverse
-        G = OrderedPolynomialList.<C> sort(G);
-        //no: Collections.reverse(G);
         if (G.size() <= 1) {
             return G;
         }
+        // sort, no reverse
+        G = OrderedPolynomialList.<C> sort(G);
+        //no: Collections.reverse(G);
         logger.info("G-sort = " + G);
         List<GenPolynomial<C>> Gp = new ArrayList<GenPolynomial<C>>();
         for (GenPolynomial<C> p : G) {
