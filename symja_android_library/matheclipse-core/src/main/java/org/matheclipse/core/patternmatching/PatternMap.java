@@ -285,7 +285,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	/**
 	 * Set all pattern values to <code>null</code>;
 	 */
-	protected void initPattern() {
+	protected final void initPattern() {
 		Arrays.fill(fPatternValuesArray, null);
 	}
 
