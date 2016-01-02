@@ -15,8 +15,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.Predicate;
-
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -38,9 +36,6 @@ public class JASModInteger {
 	private final TermOrder fTermOrder;
 	private final GenPolynomialRing<ModLong> fPolyFactory;
 
-	// private final GenPolynomialRing<edu.jas.arith.BigInteger>
-	// fBigIntegerPolyFactory;
-
 	private final List<? extends IExpr> fVariables;
 
 	public JASModInteger(IExpr variable, ModLongRing ringFactory) {
@@ -54,9 +49,6 @@ public class JASModInteger {
 		}
 		this.fTermOrder = new TermOrder(TermOrder.INVLEX);
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		// this.fBigIntegerPolyFactory = new
-		// GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
-		// fVariables.size(), fTermOrder, vars);
 	}
 
 	public JASModInteger(final List<? extends IExpr> variablesList, ModLongRing ringFactory) {
@@ -72,9 +64,6 @@ public class JASModInteger {
 		}
 		this.fTermOrder = termOrder;
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
-		// this.fBigIntegerPolyFactory = new
-		// GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
-		// fVariables.size(), fTermOrder, vars);
 	}
 
 	public GenPolynomial<ModLong> expr2JAS(final IExpr exprPoly) throws JASConversionException {
@@ -193,7 +182,6 @@ public class JASModInteger {
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
 						return fPolyFactory.valueOf(e);
-						// return fPolyFactory.getONE().multiply(e);
 					}
 				}
 			}
@@ -208,17 +196,6 @@ public class JASModInteger {
 		} else if (exprPoly instanceof IInteger) {
 			return fPolyFactory
 					.fromInteger((java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
-			// } else if (exprPoly instanceof IFraction) {
-			// return fraction2Poly((IFraction) exprPoly);
-			// } else if (exprPoly instanceof INum && numeric2Rational) {
-			// IFraction frac = F.fraction(((INum) exprPoly).getRealPart());
-			// return fraction2Poly(frac);
-			// } else if (exprPoly instanceof IComplexNum && numeric2Rational) {
-			// if (F.isZero(((IComplexNum) exprPoly).getImaginaryPart())) {
-			// // the imaginary part is zero
-			// IFraction frac = F.fraction(((INum) exprPoly).getRealPart());
-			// return fraction2Poly(frac);
-			// }
 		}
 		throw new ClassCastException(exprPoly.toString());
 	}
@@ -229,13 +206,7 @@ public class JASModInteger {
 		BigRational nr = new BigRational(n);
 		BigRational dr = new BigRational(d);
 		BigRational r = nr.divide(dr);
-		// if (fRingFactory instanceof ComplexRing) {
-		// ComplexRing ring = (ComplexRing) fRingFactory;
-		// Complex<BigRational> c = new Complex<BigRational>(ring, r);
-		// return new GenPolynomial(fPolyFactory, c);
-		// } else {
 		return new GenPolynomial(fPolyFactory, r);
-		// }
 	}
 
 	private GenPolynomial<ModLong> expr2IExprPoly(final IExpr exprPoly) throws ArithmeticException, ClassCastException {
@@ -324,14 +295,7 @@ public class JASModInteger {
 			ExpVector exp = monomial.exponent();
 			IInteger coeffValue = F.integer(coeff.getVal());
 			IAST monomTimes = F.Times();
-			monomialToExpr(coeffValue, exp, monomTimes);
-			// long lExp;
-			// for (int i = 0; i < exp.length(); i++) {
-			// lExp = exp.getVal(i);
-			// if (lExp != 0) {
-			// monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
-			// }
-			// }
+			monomialToExpr(coeffValue, exp, monomTimes); 
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);

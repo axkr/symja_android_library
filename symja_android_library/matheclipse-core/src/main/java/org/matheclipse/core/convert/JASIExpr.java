@@ -1,7 +1,6 @@
 package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -97,7 +96,6 @@ public class JASIExpr {
 		this.fNumericFunction = numericFunction;
 		this.fRingFactory = ringFactory;
 		this.fVariables = variablesList;
-		// Collections.reverse(this.fVariables);
 		final int size = fVariables.size();
 		String[] vars = new String[size];
 		for (int i = 0; i < size; i++) {
@@ -226,25 +224,7 @@ public class JASIExpr {
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), ix, exponent);
 						return fPolyFactory.getONE().multiply(e);
-					}
-					// for (int i = 0; i < fVariables.size(); i++) {
-					// if (fVariables.get(i).equals(expr)) {
-					// int exponent = -1;
-					// try {
-					// exponent = Validate.checkPowerExponent(ast);
-					// } catch (WrongArgumentType e) {
-					// //
-					// }
-					// if (exponent < 0) {
-					// throw new ArithmeticException(
-					// "JASConvert:expr2Poly - invalid exponent: " +
-					// ast.arg2().toString());
-					// }
-					// ExpVector e = ExpVector.create(fVariables.size(), i,
-					// exponent);
-					// return fPolyFactory.getONE().multiply(e);
-					// }
-					// }
+					} 
 				}
 			} else if (fNumericFunction) {
 				if (ast.isNumericFunction()) {
@@ -314,30 +294,12 @@ public class JASIExpr {
 			return F.C0;
 		}
 
-		// boolean getVar = variable == null;
 		IAST result = F.Plus();
 		for (Monomial<IExpr> monomial : poly) {
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
-			monomialToExpr(coeff, exp, monomTimes);
-			// if (!coeff.isOne()) {
-			// monomTimes.add(coeff);
-			// }
-			// long lExp;
-			// for (int i = 0; i < exp.length(); i++) {
-			// lExp = exp.getVal(i);
-			// if (lExp != 0L) {
-			// if (getVar) {
-			// variable = fVariables.get(i);
-			// }
-			// if (lExp == 1L) {
-			// monomTimes.add(variable);
-			// } else {
-			// monomTimes.add(F.Power(variable, F.integer(lExp)));
-			// }
-			// }
-			// }
+			monomialToExpr(coeff, exp, monomTimes); 
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);

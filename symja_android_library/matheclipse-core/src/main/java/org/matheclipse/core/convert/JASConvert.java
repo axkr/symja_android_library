@@ -279,39 +279,16 @@ public class JASConvert<C extends RingElem<C>> {
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
 			monomialToExpr(coeff, exp, monomTimes);
-			// if (coeff.getVal().equals(edu.jas.arith.BigInteger.ONE)) {
-			// monomTimes = F.Times();
-			// } else {
-			// IInteger coeffValue = F.integer(coeff.getVal());
-			// monomTimes = F.Times(coeffValue);
-			// }
-			// long lExp;
-			// for (int i = 0; i < exp.length(); i++) {
-			// lExp = exp.getVal(i);
-			// if (lExp != 0) {
-			// if (lExp == 1L) {
-			// monomTimes.add(fVariables.get(fVariables.size() - i - 1));
-			// } else {
-			// monomTimes.add(F.Power(fVariables.get(fVariables.size() - i - 1),
-			// F.integer(lExp)));
-			// }
-			// }
-			// }
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
-		// if (result.size() == 2) {
-		// return result.arg1();
-		// } else {
-		// return result;
-		// }
 	}
 
 	public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp, IAST monomTimes) {
 		if (!coeff.getVal().equals(edu.jas.arith.BigInteger.ONE)) {
 			IInteger coeffValue = F.integer(coeff.getVal());
 			monomTimes.add(coeffValue);
-		} 
+		}
 		return expVectorToExpr(exp, monomTimes);
 	}
 
@@ -356,31 +333,8 @@ public class JASConvert<C extends RingElem<C>> {
 			IAST monomTimes = F.Times();
 			monomialToExpr(coeff, exp, monomTimes);
 			result.add(monomTimes.getOneIdentity(F.C1));
-			// BigRational re = coeff.getRe();
-			// BigRational im = coeff.getIm();
-			// IAST monomTimes = F.Times(F.complex(F.fraction(re.numerator(),
-			// re.denominator()),
-			// F.fraction(im.numerator(), im.denominator())));
-			// long lExp;
-			// for (int i = 0; i < exp.length(); i++) {
-			// lExp = exp.getVal(i);
-			// if (lExp != 0) {
-			// monomTimes.add(F.Power(fVariables.get(fVariables.size() - i - 1),
-			// F.integer(lExp)));
-			// }
-			// }
-			// if (monomTimes.size() == 2) {
-			// result.add(monomTimes.arg1());
-			// } else {
-			// result.add(monomTimes);
-			// }
 		}
 		return result.getOneIdentity(F.C0);
-		// if (result.size() == 2) {
-		// return result.arg1();
-		// } else {
-		// return result;
-		// }
 	}
 
 	public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp, IAST monomTimes) {
@@ -389,24 +343,6 @@ public class JASConvert<C extends RingElem<C>> {
 		monomTimes.add(
 				F.complex(F.fraction(re.numerator(), re.denominator()), F.fraction(im.numerator(), im.denominator())));
 		return expVectorToExpr(exp, monomTimes);
-//		long lExp;
-//		ExpVector leer = fPolyFactory.evzero;
-//		for (int i = 0; i < exp.length(); i++) {
-//			lExp = exp.getVal(i);
-//			if (lExp != 0) {
-//				int ix = leer.varIndex(i);
-//				if (ix >= 0) {
-//					if (lExp == 1L) {
-//						monomTimes.add(fVariables.get(ix));
-//					} else {
-//						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
-//					}
-//				} else {
-//					return false;
-//				}
-//			}
-//		}
-//		return true;
 	}
 
 	/**
@@ -480,15 +416,9 @@ public class JASConvert<C extends RingElem<C>> {
 				GenPolynomial<BigRational> v = ap.getVal();
 				IAST times = F.Times();
 
-				// AlgebraicNumber<BigRational> arGen = ar.getGenerator();
-				// sb.append(" ## over " + ap.factory() + "\n");
-
 				if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {
 					IAST rootOf = F.ast(F.RootOf);
 					rootOf.add(rationalPoly2Expr(ar.modul));
-					// rootOf.add(variable);
-					// sb.append("sum_(" + ar.getGenerator() + " in ");
-					// sb.append("rootOf(" + ar.modul + ") ) ");
 					times.add(rootOf);
 
 					throw new UnsupportedOperationException("JASConvert#logIntegral2Expr()");
@@ -503,44 +433,6 @@ public class JASConvert<C extends RingElem<C>> {
 		return plus;
 	}
 
-	// public IAST modIntegerPoly2Expr(final GenPolynomial<ModInteger> poly)
-	// throws ArithmeticException, ClassCastException {
-	// if (poly.length() == 0) {
-	// return F.Plus(F.C0);
-	// }
-	// IAST result = F.Plus();
-	// for (Monomial<ModInteger> monomial : poly) {
-	// ModInteger coeff = monomial.coefficient();
-	// ExpVector exp = monomial.exponent();
-	// IInteger coeffValue = F.integer(coeff.getVal());
-	// IAST monomTimes = F.Times(coeffValue);
-	// long lExp;
-	// for (int i = 0; i < exp.length(); i++) {
-	// lExp = exp.getVal(i);
-	// if (lExp != 0) {
-	// monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
-	// }
-	// }
-	// result.add(monomTimes);
-	// }
-	// return result;
-	// }
-
-	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
-	 * 
-	 * @param poly
-	 *            a JAS polynomial
-	 * @return
-	 * @throws ArithmeticException
-	 * @throws ClassCastException
-	 */
-	// public IAST poly2Expr(final GenPolynomial<BigRational> poly) throws
-	// ArithmeticException, ClassCastException {
-	// return poly2Expr(poly, null);
-	// }
-
 	/**
 	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
 	 * polynomial to a MathEclipse AST with head <code>Plus</code>
@@ -554,33 +446,16 @@ public class JASConvert<C extends RingElem<C>> {
 	 */
 	public IAST rationalPoly2Expr(final GenPolynomial<BigRational> poly)
 			throws ArithmeticException, ClassCastException {
-		// public IAST poly2Expr(final GenPolynomial<BigRational> poly, IExpr
-		// variable)
-		// throws ArithmeticException, ClassCastException {
 		if (poly.length() == 0) {
 			return F.Plus(F.C0);
 		}
 
-		// boolean getVar = variable == null;
 		IAST result = F.Plus();
 		for (Monomial<BigRational> monomial : poly) {
 			BigRational coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
 			monomialToExpr(coeff, exp, monomTimes);
-			// IFraction coeffValue = F.fraction(coeff.numerator(),
-			// coeff.denominator());
-			// IAST monomTimes = F.Times(coeffValue);
-			// long lExp;
-			// for (int i = 0; i < exp.length(); i++) {
-			// lExp = exp.getVal(i);
-			// if (lExp != 0) {
-			// if (getVar) {
-			// variable = fVariables.get(fVariables.size() - i - 1);
-			// }
-			// monomTimes.add(F.Power(variable, F.integer(lExp)));
-			// }
-			// }
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result;
@@ -592,24 +467,6 @@ public class JASConvert<C extends RingElem<C>> {
 			monomTimes.add(coeffValue);
 		}
 		return expVectorToExpr(exp, monomTimes);
-//		long lExp;
-//		ExpVector leer = fPolyFactory.evzero;
-//		for (int i = 0; i < exp.length(); i++) {
-//			lExp = exp.getVal(i);
-//			if (lExp != 0) {
-//				int ix = leer.varIndex(i);
-//				if (ix >= 0) {
-//					if (lExp == 1L) {
-//						monomTimes.add(fVariables.get(ix));
-//					} else {
-//						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
-//					}
-//				} else {
-//					return false;
-//				}
-//			}
-//		}
-//		return true;
 	}
 
 	public IAST polyAlgebraicNumber2Expr(final GenPolynomial<AlgebraicNumber<BigRational>> poly)
@@ -623,27 +480,12 @@ public class JASConvert<C extends RingElem<C>> {
 			return F.Plus(F.C0);
 		} else {
 			IAST result = F.Plus();
-			// String symbolName = poly.factory().getVars()[0];
-			// IExpr sym = F.$s(symbolName);
 			for (Map.Entry<ExpVector, AlgebraicNumber<BigRational>> m : val.entrySet()) {
 				AlgebraicNumber<BigRational> coeff = m.getValue();
 				IAST monomTimes = F.Times();
 				ExpVector exp = m.getKey();
 				monomialToExpr(coeff, exp, monomTimes);
-				result.add(monomTimes.getOneIdentity(F.C1));
-				// if (!coeff.isONE() || exp.isZERO()) {
-				// monomTimes.add(algebraicNumber2Expr(coeff, sym));
-				// }
-				// if (exp != null && sym != null) {
-				// long lExp = exp.getVal(0);
-				// if (lExp != 0) {
-				// monomTimes.add(F.Power(sym, F.integer(lExp)));
-				// }
-				// }
-				// if (monomTimes.size() > 1) {
-				// result.add(monomTimes);
-				// }
-
+				result.add(monomTimes.getOneIdentity(F.C1)); 
 			}
 			return result;
 		}
@@ -654,30 +496,10 @@ public class JASConvert<C extends RingElem<C>> {
 		if (!coeff.getVal().equals(edu.jas.arith.BigInteger.ONE)) {
 			monomTimes.add(algebraicNumber2Expr(coeff));
 		}
-		return expVectorToExpr(exp, monomTimes);
-//		long lExp;
-//		ExpVector leer = fPolyFactory.evzero;
-//		for (int i = 0; i < exp.length(); i++) {
-//			lExp = exp.getVal(i);
-//			if (lExp != 0) {
-//				int ix = leer.varIndex(i);
-//				if (ix >= 0) {
-//					if (lExp == 1L) {
-//						monomTimes.add(fVariables.get(ix));
-//					} else {
-//						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
-//					}
-//				} else {
-//					return false;
-//				}
-//			}
-//		}
-//		return true;
+		return expVectorToExpr(exp, monomTimes); 
 	}
 
-	public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)// ,
-																				// IExpr
-																				// variable)
+	public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff) 
 			throws ArithmeticException, ClassCastException {
 		GenPolynomial<BigRational> val = coeff.val;
 		return rationalPoly2Expr(val); // , variable);
@@ -716,31 +538,6 @@ public class JASConvert<C extends RingElem<C>> {
 		return sum;
 	}
 
-	// public IAST rationalPoly2Expr(final GenPolynomial<BigRational> poly)
-	// throws ArithmeticException, ClassCastException {
-	// if (poly.length() == 0) {
-	// return F.Plus(F.C0);
-	// }
-	// IAST result = F.Plus();
-	// for (Monomial<BigRational> monomial : poly) {
-	// BigRational coeff = monomial.coefficient();
-	// ExpVector exp = monomial.exponent();
-	// IFraction coeffValue = F.fraction(coeff.numerator(),
-	// coeff.denominator());
-	// IAST monomTimes = F.Times(coeffValue);
-	// long lExp;
-	// for (int i = 0; i < exp.length(); i++) {
-	// lExp = exp.getVal(i);
-	// if (lExp != 0) {
-	// monomTimes.add(F.Power(fVariables.get(fVariables.size() - i - 1),
-	// F.integer(lExp)));
-	// }
-	// }
-	// result.add(monomTimes);
-	// }
-	// return result;
-	// }
-
 	public static ModIntegerRing option2ModIntegerRing(ISignedNumber option) {
 		// TODO convert to long value
 		long longValue = option.toLong();
@@ -769,7 +566,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 *  * Conversion of BigRational to BigInteger. result =
+	 *  
+	 * Conversion of BigRational to BigInteger. result =
 	 * (num/gcd)*(lcm/denom).
 	 */
 	static class RatToRatFactor implements UnaryFunctor<BigRational, BigRational> {
@@ -780,7 +578,7 @@ public class JASConvert<C extends RingElem<C>> {
 
 		public RatToRatFactor(java.math.BigInteger gcd, java.math.BigInteger lcm) {
 			this.gcd = gcd;
-			this.lcm = lcm; // .getVal();
+			this.lcm = lcm;  
 		}
 
 		public BigRational eval(BigRational c) {
