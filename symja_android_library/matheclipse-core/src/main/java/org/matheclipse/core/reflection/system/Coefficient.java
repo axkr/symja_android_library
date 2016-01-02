@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -18,7 +19,8 @@ import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient</a>
+ * See: <a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia -
+ * Coefficient</a>
  */
 public class Coefficient extends AbstractFunctionEvaluator {
 
@@ -91,7 +93,8 @@ public class Coefficient extends AbstractFunctionEvaluator {
 			}
 			ExpVectorLong expArr = new ExpVectorLong(exponents);
 			IExpr expr = F.evalExpandAll(ast.arg1());
-			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1);
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
+					listOfVariables.size() - 1);
 			ExprPolynomial poly = ring.create(expr, true);
 			// Polynomial poly = new Polynomial(expr, listOfVariables);
 			// if (poly.isPolynomial()) {

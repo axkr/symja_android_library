@@ -98,8 +98,9 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 			IAST ruleList = F.List();
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			for (int i = 0; i < exp.length(); i++) {
-				ruleList.add(F.integer(exp.getVal(i)));
+			int len = exp.length();
+			for (int i = 0; i < len; i++) {
+				ruleList.add(F.integer(exp.getVal(len-i-1)));
 			}
 			resultList.add(F.Rule(ruleList, coeff));
 		}
@@ -129,8 +130,9 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
 				IAST ruleList = F.List();
-				for (int i = 0; i < exp.length(); i++) {
-					ruleList.add(F.integer(exp.getVal(i)));
+				int len = exp.length();
+				for (int i = 0; i < len; i++) {
+					ruleList.add(F.integer(exp.getVal(len-i-1)));
 				}
 				resultList.add(F.Rule(ruleList, F.integer(coeff.getVal())));
 			}

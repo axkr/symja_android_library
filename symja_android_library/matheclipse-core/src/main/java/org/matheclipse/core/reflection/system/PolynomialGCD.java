@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.TreeSet;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
@@ -11,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -20,27 +23,38 @@ import edu.jas.arith.BigInteger;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 /**
  * Greatest common divisor of two polynomials. See: <a href=
- * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common divisor of two
- * polynomials</a>
+ * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >
+ * Wikipedia:Greatest common divisor of two polynomials</a>
  */
 public class PolynomialGCD extends AbstractFunctionEvaluator {
 
 	public PolynomialGCD() {
 	}
 
+	public static void main(String[] args) {
+		GenPolynomialRing<BigInteger> fPolyFactory = new GenPolynomialRing<BigInteger>(BigInteger.ZERO, 2,
+				TermOrderByName.Lexicographic, new String[] { "x", "a" });
+		GenPolynomial<BigInteger> poly = fPolyFactory.univariate("x", 1L);
+		poly = poly.subtract(fPolyFactory.univariate("a", 1L));
+		System.out.println(poly.toString());
+		poly = poly.monic();
+		System.out.println(poly.toString());
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		VariablesSet eVar = new VariablesSet(ast.arg1());
-		for (int i = 2; i < ast.size(); i++) {
-			eVar.addVarList(ast.get(i));
-		}
+		VariablesSet eVar = new VariablesSet();
+		eVar.addVarList(ast, 1);
+		
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3 && ast.last().isRuleAST()) {
 			return gcdWithOption(ast, expr, eVar);
@@ -77,11 +91,13 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	private IExpr modulusGCD(final IAST ast, IExpr expr, VariablesSet eVar, IExpr option) {
 		try {
 			// found "Modulus" option => use ModIntegerRing
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			// ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
-			// JASConvert<ModInteger> jas = new JASConvert<ModInteger>(r.toList(), modIntegerRing);
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// ModIntegerRing modIntegerRing =
+			// JASConvert.option2ModIntegerRing((ISignedNumber) option);
+			// JASConvert<ModInteger> jas = new
+			// JASConvert<ModInteger>(r.toList(), modIntegerRing);
 			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
-			JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
+			JASModInteger jas = new JASModInteger(eVar.getArrayList(), modIntegerRing);
 			GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 			GenPolynomial<ModLong> temp;
 			GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);

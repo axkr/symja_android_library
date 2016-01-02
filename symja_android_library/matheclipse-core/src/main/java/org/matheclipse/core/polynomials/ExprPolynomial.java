@@ -2168,7 +2168,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		Validate.checkSize(ring.getVars(), 2);
 
 		long exp;
-		if (ring.tord.getEvord() == ExprTermOrder.IGRLEX) {
+		if (ring.tord.getEvord() == ExprTermOrder.IGRLEX || ring.tord.getEvord() == ExprTermOrder.REVILEX) {
 			long lastDegree = degree();
 			IExpr[] exprs = new IExpr[(int) lastDegree + 1];
 			for (int i = 0; i < exprs.length; i++) {
@@ -2228,22 +2228,11 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * 
 	 * @return
 	 */
-	public IExpr getExpr() {
-		return getExpr(null);
-	}
-
-	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
-	 * 
-	 * @param variable
-	 * @return
-	 */
-	public IExpr getExpr(IExpr variable) {
+	public IExpr getExpr( ) {
 		if (length() == 0) {
 			return F.C0;
 		}
 
-		boolean getVar = variable == null;
 		IAST result = F.Plus();
 		IAST vars = ring.vars;
 		for (ExprMonomial monomial : this) {
@@ -2254,12 +2243,15 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 				monomTimes.add(coeff);
 			}
 			long lExp;
+			int ix;
+			IExpr variable;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0L) {
-					if (getVar) {
-						variable = vars.get(i + 1);
-					}
+//					if (getVar) {
+						ix=exp.varIndex(i);
+						variable = vars.get(ix + 1);
+//					}
 					if (lExp == 1L) {
 						monomTimes.add(variable);
 					} else {

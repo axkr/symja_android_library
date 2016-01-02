@@ -1,6 +1,7 @@
 package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -96,8 +97,10 @@ public class JASIExpr {
 		this.fNumericFunction = numericFunction;
 		this.fRingFactory = ringFactory;
 		this.fVariables = variablesList;
-		String[] vars = new String[fVariables.size()];
-		for (int i = 0; i < fVariables.size(); i++) {
+		// Collections.reverse(this.fVariables);
+		final int size = fVariables.size();
+		String[] vars = new String[size];
+		for (int i = 0; i < size; i++) {
 			vars[i] = fVariables.get(i).toString();
 		}
 		this.fTermOrder = termOrder;
@@ -207,8 +210,10 @@ public class JASIExpr {
 				return result;
 			} else if (ast.isPower()) {
 				final IExpr expr = ast.arg1();
-				for (int i = 0; i < fVariables.size(); i++) {
-					if (fVariables.get(i).equals(expr)) {
+				if (expr instanceof ISymbol) {
+					ExpVector leer = fPolyFactory.evzero;
+					int ix = leer.indexVar(expr.toString(), fPolyFactory.getVars());
+					if (ix >= 0) {
 						int exponent = -1;
 						try {
 							exponent = Validate.checkPowerExponent(ast);
@@ -219,9 +224,27 @@ public class JASIExpr {
 							throw new ArithmeticException(
 									"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 						}
-						ExpVector e = ExpVector.create(fVariables.size(), i, exponent);
+						ExpVector e = ExpVector.create(fVariables.size(), ix, exponent);
 						return fPolyFactory.getONE().multiply(e);
 					}
+					// for (int i = 0; i < fVariables.size(); i++) {
+					// if (fVariables.get(i).equals(expr)) {
+					// int exponent = -1;
+					// try {
+					// exponent = Validate.checkPowerExponent(ast);
+					// } catch (WrongArgumentType e) {
+					// //
+					// }
+					// if (exponent < 0) {
+					// throw new ArithmeticException(
+					// "JASConvert:expr2Poly - invalid exponent: " +
+					// ast.arg2().toString());
+					// }
+					// ExpVector e = ExpVector.create(fVariables.size(), i,
+					// exponent);
+					// return fPolyFactory.getONE().multiply(e);
+					// }
+					// }
 				}
 			} else if (fNumericFunction) {
 				if (ast.isNumericFunction()) {
@@ -229,11 +252,11 @@ public class JASIExpr {
 				}
 			}
 		} else if (exprPoly instanceof ISymbol) {
-			for (int i = 0; i < fVariables.size(); i++) {
-				if (fVariables.get(i).equals(exprPoly)) {
-					ExpVector e = ExpVector.create(fVariables.size(), i, 1L);
-					return fPolyFactory.getONE().multiply(e);
-				}
+			ExpVector leer = fPolyFactory.evzero;
+			int ix = leer.indexVar(exprPoly.toString(), fPolyFactory.getVars());
+			if (ix >= 0) {
+				ExpVector e = ExpVector.create(fVariables.size(), ix, 1L);
+				return fPolyFactory.getONE().multiply(e);
 			}
 			if (fNumericFunction) {
 				if (exprPoly.isNumericFunction()) {
@@ -248,7 +271,7 @@ public class JASIExpr {
 		} else if (exprPoly instanceof IFraction) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		}
-		if (exprPoly.isFree(t->fVariables.contains(t), true)) {
+		if (exprPoly.isFree(t -> fVariables.contains(t), true)) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		} else {
 			for (int i = 0; i < fVariables.size(); i++) {
@@ -291,32 +314,57 @@ public class JASIExpr {
 			return F.C0;
 		}
 
-		boolean getVar = variable == null;
+		// boolean getVar = variable == null;
 		IAST result = F.Plus();
 		for (Monomial<IExpr> monomial : poly) {
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
-			if (!coeff.isOne()) {
-				monomTimes.add(coeff);
-			}
-			long lExp;
-			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0L) {
-					if (getVar) {
-						variable = fVariables.get(i);
-					}
-					if (lExp == 1L) {
-						monomTimes.add(variable);
-					} else {
-						monomTimes.add(F.Power(variable, F.integer(lExp)));
-					}
-				}
-			}
+			monomialToExpr(coeff, exp, monomTimes);
+			// if (!coeff.isOne()) {
+			// monomTimes.add(coeff);
+			// }
+			// long lExp;
+			// for (int i = 0; i < exp.length(); i++) {
+			// lExp = exp.getVal(i);
+			// if (lExp != 0L) {
+			// if (getVar) {
+			// variable = fVariables.get(i);
+			// }
+			// if (lExp == 1L) {
+			// monomTimes.add(variable);
+			// } else {
+			// monomTimes.add(F.Power(variable, F.integer(lExp)));
+			// }
+			// }
+			// }
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
+	}
+
+	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IAST monomTimes) {
+		long lExp;
+		ExpVector leer = fPolyFactory.evzero;
+		if (!coeff.isOne()) {
+			monomTimes.add(coeff);
+		}
+		for (int i = 0; i < exp.length(); i++) {
+			lExp = exp.getVal(i);
+			if (lExp != 0) {
+				int ix = leer.varIndex(i);
+				if (ix >= 0) {
+					if (lExp == 1L) {
+						monomTimes.add(fVariables.get(ix));
+					} else {
+						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**

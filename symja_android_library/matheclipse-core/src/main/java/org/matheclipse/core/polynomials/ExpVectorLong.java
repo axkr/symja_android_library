@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * ExpVectorLong implements exponent vectors for polynomials using arrays of
@@ -1360,4 +1361,31 @@ public final class ExpVectorLong {
 	public static ExpVectorLong valueOf(int n) {
 		return new ExpVectorLong(n);
 	}
+
+
+    /**
+     * Get the array index of a variable at index.
+     * @param idx index of the variable
+     * @return array index of the variable.
+     */
+    public int varIndex(int idx) {
+        return length() - idx - 1;
+    }
+
+
+    /**
+     * Get the index of a variable.
+     * @param x variable name to be searched.
+     * @param vars array of names of variables
+     * @return index of x in vars.
+     */
+    public int indexVar(IExpr x, IAST vars) {
+    	int len = vars.size();
+        for (int i = 1; i < len; i++) {
+            if (x.equals(vars.get(i))) {
+                return len - i - 1;
+            }
+        }
+        return -1; // not found
+    }
 }

@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -69,7 +70,8 @@ public class Factor extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree) throws JASConversionException {
+	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
+			throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
@@ -77,7 +79,8 @@ public class Factor extends AbstractFunctionEvaluator {
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+				.getImplementation(edu.jas.arith.BigInteger.ONE);
 		SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
 		if (factorSquareFree) {
 			map = factorAbstract.squarefreeFactors(poly);// factors(poly);
@@ -92,19 +95,25 @@ public class Factor extends AbstractFunctionEvaluator {
 			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
 				continue;
 			}
-			result.add(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			if (entry.getValue() == 1L) {
+				result.add(jas.integerPoly2Expr(entry.getKey()));
+			} else {
+				result.add(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			}
 		}
 		return result;
 	}
 
-	public static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree) throws JASConversionException {
+	public static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
+			throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 		Object[] objects = jas.factorTerms(polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+				.getImplementation(edu.jas.arith.BigInteger.ONE);
 		SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
 		if (factorSquareFree) {
 			map = factorAbstract.squarefreeFactors(poly);// factors(poly);
@@ -160,26 +169,28 @@ public class Factor extends AbstractFunctionEvaluator {
 	 * @param head
 	 *            the head of the result AST
 	 * @param noGCDLCM
-	 * @param numeric2Rational TODO
+	 * @param numeric2Rational
+	 *            TODO
 	 * @return
 	 * @throws JASConversionException
 	 */
-	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM, boolean numeric2Rational) throws JASConversionException {
+	public static IAST factorComplex(IExpr expr, List<IExpr> varList, ISymbol head, boolean noGCDLCM,
+			boolean numeric2Rational) throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
 		return factorComplex(polyRat, jas, varList, head, noGCDLCM);
 	}
 
-	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas, List<IExpr> varList,
-			ISymbol head, boolean noGCDLCM) {
+	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
+			List<IExpr> varList, ISymbol head, boolean noGCDLCM) {
 		TermOrder termOrder = TermOrderByName.Lexicographic;
 		// Object[] objects = jas.factorTerms(polyRat);
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {
 			vars[i] = varList.get(i).toString();
 		}
-		Object[] objects = JASConvert.rationalFromRationalCoefficientsFactor(new GenPolynomialRing<BigRational>(BigRational.ZERO,
-				varList.size(), termOrder, vars), polyRat);
+		Object[] objects = JASConvert.rationalFromRationalCoefficientsFactor(
+				new GenPolynomialRing<BigRational>(BigRational.ZERO, varList.size(), termOrder, vars), polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<BigRational> poly = (GenPolynomial<BigRational>) objects[2];

@@ -323,17 +323,42 @@ public class JASModInteger {
 			ModLong coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IInteger coeffValue = F.integer(coeff.getVal());
-			IAST monomTimes = F.Times(coeffValue);
-			long lExp;
-			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0) {
-					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
-				}
-			}
+			IAST monomTimes = F.Times();
+			monomialToExpr(coeffValue, exp, monomTimes);
+			// long lExp;
+			// for (int i = 0; i < exp.length(); i++) {
+			// lExp = exp.getVal(i);
+			// if (lExp != 0) {
+			// monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
+			// }
+			// }
 			result.add(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
+	}
+
+	public boolean monomialToExpr(IInteger coeff, ExpVector exp, IAST monomTimes) {
+		long lExp;
+		ExpVector leer = fPolyFactory.evzero;
+		if (!coeff.isOne()) {
+			monomTimes.add(coeff);
+		}
+		for (int i = 0; i < exp.length(); i++) {
+			lExp = exp.getVal(i);
+			if (lExp != 0) {
+				int ix = leer.varIndex(i);
+				if (ix >= 0) {
+					if (lExp == 1L) {
+						monomTimes.add(fVariables.get(ix));
+					} else {
+						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	public static ModLongRing option2ModLongRing(ISignedNumber option) {

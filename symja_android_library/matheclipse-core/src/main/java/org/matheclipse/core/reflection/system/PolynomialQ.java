@@ -47,7 +47,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 
 	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables, boolean numericFunction) {
 		IExpr expr = F.evalExpandAll(polnomialExpr);
-		int termOrder = ExprTermOrder.LEX;
+		int termOrder = ExprTermOrder.INVLEX;
 		ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1, new ExprTermOrder(termOrder),
 				true);
 		try {

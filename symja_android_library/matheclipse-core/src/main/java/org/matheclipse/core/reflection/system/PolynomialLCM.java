@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -36,10 +37,10 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
-		VariablesSet eVar = new VariablesSet(ast.arg1());
-		for (int i = 2; i < ast.size(); i++) {
-			eVar.addVarList(ast.get(i));
-		}
+		
+		VariablesSet eVar = new VariablesSet();
+		eVar.addVarList(ast, 1);
+		
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3) {

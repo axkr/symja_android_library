@@ -27,7 +27,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 
 	@Override
 	public void addNonFractionalPart(GenPolynomial<BigRational> genPolynomial) {
-		IExpr temp = F.eval(jas.poly2Expr(genPolynomial, null));
+		IExpr temp = F.eval(jas.rationalPoly2Expr(genPolynomial));
 		if (temp.isAST()) {
 			((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 		}
@@ -43,10 +43,10 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
 		if (j == 1) {
 			temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly),
-					F.Power(jas.poly2Expr(Di_1.multiply(BigRational.valueOf(lcm)), null), F.CN1)));
+					F.Power(jas.rationalPoly2Expr(Di_1.multiply(BigRational.valueOf(lcm))), F.CN1)));
 		} else {
 			temp = F.eval(F.Times(F.integer(gcd), jas.integerPoly2Expr(poly), F.Power(F.integer(lcm), F.integer(-1L)),
-					F.Power(jas.poly2Expr(Di_1, null), F.integer(j * (-1L)))));
+					F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
 		}
 		if (!temp.isZero()) {
 			if (temp.isAST()) {

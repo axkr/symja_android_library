@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -91,13 +92,14 @@ public class VariablesSet {
 	/**
 	 * The set of all collected variables.
 	 */
-	private final Set<ISymbol> fVariablesSet = new TreeSet<ISymbol>();
+	private final Set<ISymbol> fVariablesSet;
 
 	/**
 	 * Constructor for an empty instance.
 	 */
 	public VariablesSet() {
 		super();
+		fVariablesSet = new TreeSet<ISymbol>();
 	}
 
 	/**
@@ -105,8 +107,18 @@ public class VariablesSet {
 	 */
 	public VariablesSet(final IExpr expression) {
 		super();
+		fVariablesSet = new TreeSet<ISymbol>();
 		expression.accept(new VariablesVisitor(fVariablesSet));
 	}
+
+	/**
+	 * Determine the variable symbols from a Symja expression.
+	 */
+//	public VariablesSet(final IExpr expression, final Comparator<IExpr> comparator) {
+//		super();
+//		fVariablesSet = new TreeSet<ISymbol>();
+//		expression.accept(new VariablesVisitor(fVariablesSet));
+//	}
 
 	/**
 	 * Add the symbol to the set of variables.
@@ -126,6 +138,21 @@ public class VariablesSet {
 	 */
 	public void addVarList(final IExpr expression) {
 		expression.accept(new VariablesVisitor(fVariablesSet));
+	}
+	
+	/**
+	 * Add the variables of the given expression
+	 * 
+	 * @param expression
+	 */
+	public void addVarList(final IAST rest, int fromIndex) {
+		for (int i = 2; i < rest.size(); i++) {
+			IExpr temp =rest.get(i);
+			if (temp.isRuleAST()) {
+				return;
+			}
+			temp.accept(new VariablesVisitor(fVariablesSet));
+		}
 	}
 
 	/**

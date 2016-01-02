@@ -1,3 +1,7 @@
+/*
+ * $Id$
+ */
+
 package org.matheclipse.core.polynomials;
 
 
@@ -8,6 +12,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import edu.jas.kern.Scripting;
+
+
 /**
  * Term order class for ordered polynomials. Implements the most used term
  * orders: graded, lexicographical, weight aray and block orders. For the
@@ -15,16 +22,26 @@ import org.apache.log4j.Logger;
  * href="http://doi.acm.org/10.1145/43882.43887">Kredel,
  * "Admissible term orderings used in computer algebra systems"</a> and <a
  * href="http://doi.acm.org/10.1145/70936.70941">Sit,
- * "Some comments on term-ordering in Gr&oumlbner basis computations"</a>.
+ * "Some comments on term-ordering in Gr&ouml;bner basis computations"</a>.
  * <b>Note: </b> the naming is not quite easy to understand: in case of doubt
  * use the term orders with "I" in the name, like IGRLEX (the default) or
- * INVLEX. Not all algorithms may work with all term orders, so watch your step.
- * This class does not jet implement orders by linear forms over Q[t]. Objects
- * of this class are immutable.
+ * INVLEX. Not all algorithms may work with all term orders since not all are
+ * well-founded, so watch your step. This class does not implement orders by
+ * linear forms over Q[t]. Objects of this class are immutable.
  * 
+ * @author Heinz Kredel
  */
+
 public final class ExprTermOrder implements Serializable {
 
+
+    private static final Logger logger = Logger.getLogger(ExprTermOrder.class);
+
+
+    private final boolean debug = logger.isDebugEnabled();
+
+
+    // ExprTermOrder index values
 
     public static final int LEX = 1;
 
@@ -55,10 +72,13 @@ public final class ExprTermOrder implements Serializable {
 
     //public final static int DEFAULT_EVORD = INVLEX;
 
+
+    // instance variables
+
     private final int evord;
 
 
-    // for split termorders
+    // for split ExprTermOrders
     private final int evord2;
 
 
@@ -72,12 +92,6 @@ public final class ExprTermOrder implements Serializable {
 
 
     private final int evend2;
-
-
-    private static final Logger logger = Logger.getLogger(ExprTermOrder.class);
-
-
-    private final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -105,7 +119,7 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * Comparator for ExpVectorLongs.
+     * Comparator for ExpVectors.
      */
     public static abstract class EVComparator implements Comparator<ExpVectorLong>, Serializable {
 
@@ -226,9 +240,9 @@ public final class ExprTermOrder implements Serializable {
             };
             break;
         }
-		default: {
+        default: {
             horder = null;
-        } 
+        }
         }
         if (horder == null) {
             throw new IllegalArgumentException("invalid term order: " + evord);
@@ -307,16 +321,6 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * Constructor for default split order.
-     * @param r max number of exponents to compare.
-     * @param split index.
-     */
-    public ExprTermOrder(int r, int split) {
-        this(DEFAULT_EVORD, DEFAULT_EVORD, r, split);
-    }
-
-
-    /**
      * Constructor for given split order.
      * @param ev1 requested term order indicator for first block.
      * @param ev2 requested term order indicator for second block.
@@ -337,9 +341,10 @@ public final class ExprTermOrder implements Serializable {
         evend1 = split; // excluded
         evbeg2 = split;
         evend2 = r;
-        if (evbeg2 > evend2) {
+        if (evbeg2 < 0 || evbeg2 > evend2) {
             throw new IllegalArgumentException("invalid term order split, r = " + r + ", split = " + split);
         }
+        //System.out.println("evbeg2 " + evbeg2 + ", evend2 " + evend2);
         switch (evord) { // horder = new EVhorder();
         case ExprTermOrder.LEX: {
             switch (evord2) {
@@ -1276,6 +1281,60 @@ public final class ExprTermOrder implements Serializable {
     }
 
 
+    /*
+     * Constructor for default split order.
+     * @param r max number of exponents to compare.
+     * @param split index.
+    public ExprTermOrder(int r, int split) {
+        this(DEFAULT_EVORD, DEFAULT_EVORD, r, split);
+    }
+     */
+
+
+    /**
+     * Create block term order at split index.
+     * @param s split index.
+     * @return block ExprTermOrder with split index.
+     */
+    public ExprTermOrder blockOrder(int s) {
+        return blockOrder(s, Integer.MAX_VALUE);
+    }
+
+
+    /**
+     * Create block term order at split index.
+     * @param s split index.
+     * @param len length of ExpVectors to compare
+     * @return block ExprTermOrder with split index.
+     */
+    public ExprTermOrder blockOrder(int s, int len) {
+        return new ExprTermOrder(evord, evord, len, s);
+    }
+
+
+    /**
+     * Create block term order at split index.
+     * @param s split index.
+     * @param t second term order.
+     * @return block ExprTermOrder with split index.
+     */
+    public ExprTermOrder blockOrder(int s, ExprTermOrder t) {
+        return blockOrder(s, t, Integer.MAX_VALUE);
+    }
+
+
+    /**
+     * Create block term order at split index.
+     * @param s split index.
+     * @param t second term order.
+     * @param len length of ExpVectors to compare
+     * @return block ExprTermOrder with split index.
+     */
+    public ExprTermOrder blockOrder(int s, ExprTermOrder t, int len) {
+        return new ExprTermOrder(evord, t.evord, len, s);
+    }
+
+
     /**
      * Get the first defined order indicator.
      * @return evord.
@@ -1357,7 +1416,7 @@ public final class ExprTermOrder implements Serializable {
         if (!t) {
             return t;
         }
-        if (!Arrays.equals(weight, b.weight)) {
+        if (!Arrays.deepEquals(weight, b.weight)) {
             return false;
         }
         return true;
@@ -1385,26 +1444,26 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * String representation of weight vector.
-     * @see java.lang.Object#toString()
+     * String representation of weight matrix.
+     * @return string representation of weight matrix.
      */
     public String weightToString() {
         StringBuffer erg = new StringBuffer();
         if (weight != null) {
-            erg.append("weight(");
+            erg.append("(");
             for (int j = 0; j < weight.length; j++) {
+                if (j > 0) {
+                    erg.append(",");
+                }
                 long[] wj = weight[j];
                 erg.append("(");
                 for (int i = 0; i < wj.length; i++) {
-                    erg.append("" + wj[wj.length - i - 1]);
-                    if (i < wj.length - 1) {
+                    if (i > 0) {
                         erg.append(",");
                     }
+                    erg.append(String.valueOf(wj[wj.length - 1 - i]));
                 }
                 erg.append(")");
-                if (j < weight.length - 1) {
-                    erg.append(",");
-                }
             }
             erg.append(")");
         }
@@ -1413,109 +1472,242 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * String representation of TermOrder.
-     * @see java.lang.Object#toString()
+     * Script representation of weight matrix.
+     * @return script representation of weight matrix.
      */
-    @Override
-    public String toString() {
+    public String weightToScript() {
+        // cases Python and Ruby
         StringBuffer erg = new StringBuffer();
         if (weight != null) {
-            erg.append("W(");
+            erg.append("[");
             for (int j = 0; j < weight.length; j++) {
-                long[] wj = weight[j];
-                erg.append("(");
-                for (int i = 0; i < wj.length; i++) {
-                    erg.append("" + wj[wj.length - i - 1]);
-                    if (i < wj.length - 1) {
-                        erg.append(",");
-                    }
-                }
-                erg.append(")");
-                if (j < weight.length - 1) {
+                if (j > 0) {
                     erg.append(",");
                 }
+                long[] wj = weight[j];
+                erg.append("[");
+                for (int i = 0; i < wj.length; i++) {
+                    if (i > 0) {
+                        erg.append(",");
+                    }
+                    erg.append(String.valueOf(wj[wj.length - 1 - i]));
+                }
+                erg.append("]");
             }
-            erg.append(")");
+            erg.append("]");
+        }
+        return erg.toString();
+    }
+
+
+    /**
+     * String representation of ExprTermOrder.
+     * @return script representation of ExprTermOrder.
+     */
+    public String toScript() {
+        // cases Python and Ruby
+        if (weight != null) {
+            StringBuffer erg = new StringBuffer();
+            //erg.append("ExprTermOrder( ");
+            erg.append(weightToScript());
             if (evend1 == evend2) {
+                //erg.append(" )");
                 return erg.toString();
             }
             erg.append("[" + evbeg1 + "," + evend1 + "]");
             erg.append("[" + evbeg2 + "," + evend2 + "]");
+            //erg.append(" )");
             return erg.toString();
         }
-        switch (evord) {
-        case LEX:
-            erg.append("LEX");
-            break;
-        case INVLEX:
-            erg.append("INVLEX");
-            break;
-        case GRLEX:
-            erg.append("GRLEX");
-            break;
-        case IGRLEX:
-            erg.append("IGRLEX");
-            break;
-        case REVLEX:
-            erg.append("REVLEX");
-            break;
-        case REVILEX:
-            erg.append("REVILEX");
-            break;
-        case REVTDEG:
-            erg.append("REVTDEG");
-            break;
-        case REVITDG:
-            erg.append("REVITDG");
-            break;
-        default:
-            erg.append("invalid(" + evord + ")");
-            break;
+        return toScriptPlain();
+    }
+
+
+    /**
+     * String representation of ExprTermOrder.
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        if (weight != null) {
+            StringBuffer erg = new StringBuffer();
+            erg.append("W( ");
+            erg.append(weightToString());
+            if (evend1 == evend2) {
+                erg.append(" )");
+                return erg.toString();
+            }
+            erg.append("[" + evbeg1 + "," + evend1 + "]");
+            erg.append("[" + evbeg2 + "," + evend2 + "]");
+            erg.append(" )");
+            return erg.toString();
         }
+        return toStringPlain();
+    }
+
+
+    /**
+     * String representation of ExprTermOrder without prefix and weight matrix.
+     */
+    public String toStringPlain() {
+        StringBuffer erg = new StringBuffer();
+        if (weight != null) {
+            return erg.toString();
+        }
+        erg.append(toScriptOrder(evord)); // JAS only
         if (evord2 <= 0) {
             return erg.toString();
         }
         erg.append("[" + evbeg1 + "," + evend1 + "]");
-        switch (evord2) {
-        case LEX:
-            erg.append("LEX");
-            break;
-        case INVLEX:
-            erg.append("INVLEX");
-            break;
-        case GRLEX:
-            erg.append("GRLEX");
-            break;
-        case IGRLEX:
-            erg.append("IGRLEX");
-            break;
-        case REVLEX:
-            erg.append("REVLEX");
-            break;
-        case REVILEX:
-            erg.append("REVILEX");
-            break;
-        case REVTDEG:
-            erg.append("REVTDEG");
-            break;
-        case REVITDG:
-            erg.append("REVITDG");
-            break;
-        default:
-            erg.append("invalid(" + evord2 + ")");
-            break;
-        }
+        erg.append(toScriptOrder(evord2)); // JAS only
         erg.append("[" + evbeg2 + "," + evend2 + "]");
         return erg.toString();
     }
 
 
     /**
-     * Extend variables. Used e.g. in module embedding. Extend TermOrder by k
+     * Script representation of ExprTermOrder without prefix and weight matrix.
+     */
+    public String toScriptPlain() {
+        StringBuffer erg = new StringBuffer();
+        if (weight != null) {
+            return toScript();
+        }
+        erg.append("Order");
+        switch (Scripting.getLang()) {
+        case Ruby:
+            erg.append("::");
+            break;
+        case Python:
+        default:
+            erg.append(".");
+        }
+        erg.append(toScriptOrder(evord));
+        if (evord2 <= 0) {
+            return erg.toString();
+        }
+        if (evord == evord2) {
+            erg.append(".blockOrder(" + evend1 + ")");
+            return erg.toString();
+        }
+        erg.append(".blockOrder(");
+        erg.append(evend1 + ",");
+        erg.append("Order");
+        switch (Scripting.getLang()) {
+        case Ruby:
+            erg.append("::");
+            break;
+        case Python:
+        default:
+            erg.append(".");
+        }
+        erg.append(toScriptOrder(evord2));
+        erg.append(")");
+        return erg.toString();
+    }
+
+
+    /**
+     * Script and String representation of ExprTermOrder name.
+     */
+    public String toScriptOrder(int ev) {
+        switch (Scripting.getCAS()) {
+        case Math:
+            switch (ev) {
+            case LEX:
+                return "NegativeReverseLexicographic";
+            case INVLEX:
+                return "ReverseLexicographic";
+            case GRLEX:
+                return "NegativeDegreeReverseLexicographic";
+            case IGRLEX:
+                return "DegreeReverseLexicographic";
+            case REVLEX:
+                return "NegativeLexicographic";
+            case REVILEX:
+                return "Lexicographic";
+            case REVTDEG:
+                return "NegativeDegreeLexicographic";
+            case REVITDG:
+                return "DegreeLexicographic";
+            default:
+                return "invalid(" + ev + ")";
+            }
+        case Sage:
+            switch (ev) {
+            case LEX:
+                return "negrevlex";
+            case INVLEX:
+                return "invlex";
+            case GRLEX:
+                return "negdegrevlex";
+            case IGRLEX:
+                return "degrevlex";
+            case REVLEX:
+                return "neglex";
+            case REVILEX:
+                return "lex";
+            case REVTDEG:
+                return "negdeglex";
+            case REVITDG:
+                return "deglex";
+            default:
+                return "invalid(" + ev + ")";
+            }
+        case Singular:
+            switch (ev) {
+            //case LEX: // missing
+            //return "negrevlex";
+            case INVLEX:
+                return "rp";
+            case GRLEX:
+                return "ds";
+            case IGRLEX:
+                return "dp";
+            case REVLEX:
+                return "ls";
+            case REVILEX:
+                return "lp";
+            case REVTDEG:
+                return "Ds";
+            case REVITDG:
+                return "Dp";
+            default:
+                return "invalid(" + ev + ")";
+            }
+        case JAS:
+        default:
+            switch (ev) {
+            case LEX:
+                return "LEX";
+            case INVLEX:
+                return "INVLEX";
+            case GRLEX:
+                return "GRLEX";
+            case IGRLEX:
+                return "IGRLEX";
+            case REVLEX:
+                return "REVLEX";
+            case REVILEX:
+                return "REVILEX";
+            case REVTDEG:
+                return "REVTDEG";
+            case REVITDG:
+                return "REVITDG";
+            default:
+                return "invalid(" + ev + ")";
+            }
+        }
+        //return "invalid(" + ev + ")";
+    }
+
+
+    /**
+     * Extend variables. Used e.g. in module embedding. Extend ExprTermOrder by k
      * elements. <b>Note:</b> todo distinguish TOP and POT orders.
      * @param r current number of variables.
      * @param k number of variables to extend.
-     * @return extended TermOrder.
+     * @return extended ExprTermOrder.
      */
     public ExprTermOrder extend(int r, int k) {
         if (weight != null) {
@@ -1540,9 +1732,9 @@ public final class ExprTermOrder implements Serializable {
             return new ExprTermOrder(w);
         }
         if (evord2 != 0) {
-            logger.debug("warn: TermOrder is already extended");
+            logger.debug("warn: ExprTermOrder is already extended");
             if (debug) {
-                throw new IllegalArgumentException("TermOrder is already extended: " + this);
+                throw new IllegalArgumentException("ExprTermOrder is already extended: " + this);
             }
             return new ExprTermOrder(evord, evord2, r + k, evend1 + k);
         }
@@ -1554,11 +1746,11 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * Extend lower variables. Extend TermOrder by k elements. <b>Note:</b> todo
+     * Extend lower variables. Extend ExprTermOrder by k elements. <b>Note:</b> todo
      * distinguish TOP and POT orders.
      * @param r current number of variables.
      * @param k number of variables to extend.
-     * @return extended TermOrder.
+     * @return extended ExprTermOrder.
      */
     public ExprTermOrder extendLower(int r, int k) {
         if (weight != null) {
@@ -1584,7 +1776,7 @@ public final class ExprTermOrder implements Serializable {
         }
         if (evord2 != 0) {
             if (debug) {
-                logger.warn("TermOrder is already extended");
+                logger.warn("ExprTermOrder is already extended");
             }
             return new ExprTermOrder(evord, evord2, r + k, evend1 + k);
         }
@@ -1596,11 +1788,11 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * Contract variables. Used e.g. in module embedding. Contract TermOrder to
+     * Contract variables. Used e.g. in module embedding. Contract ExprTermOrder to
      * non split status.
      * @param k position of first element to be copied.
      * @param len new length.
-     * @return contracted TermOrder.
+     * @return contracted ExprTermOrder.
      */
     public ExprTermOrder contract(int k, int len) {
         if (weight != null) {
@@ -1615,7 +1807,7 @@ public final class ExprTermOrder implements Serializable {
         }
         if (evord2 == 0) {
             if (debug) {
-                logger.warn("TermOrder is already contracted");
+                logger.warn("ExprTermOrder is already contracted");
             }
             return new ExprTermOrder(evord);
         }
@@ -1638,7 +1830,7 @@ public final class ExprTermOrder implements Serializable {
 
     /**
      * Reverse variables. Used e.g. in opposite rings.
-     * @return TermOrder for reversed variables.
+     * @return ExprTermOrder for reversed variables.
      */
     public ExprTermOrder reverse() {
         return reverse(false);
@@ -1648,7 +1840,7 @@ public final class ExprTermOrder implements Serializable {
     /**
      * Reverse variables. Used e.g. in opposite rings.
      * @param partial true for partialy reversed term orders.
-     * @return TermOrder for reversed variables.
+     * @return ExprTermOrder for reversed variables.
      */
     public ExprTermOrder reverse(boolean partial) {
         ExprTermOrder t;
@@ -1744,7 +1936,7 @@ public final class ExprTermOrder implements Serializable {
 
 
     /**
-     * Permutation of the termorder.
+     * Permutation of the ExprTermOrder.
      * @param P permutation.
      * @return P(a).
      */
@@ -1765,6 +1957,29 @@ public final class ExprTermOrder implements Serializable {
             tord = new ExprTermOrder(w);
         }
         return tord;
+    }
+
+
+    /**
+     * Weight ExprTermOrder with reversed weight vectors.
+     * @param w weight matrix
+     * @return ExprTermOrder with reversed weight vectors
+     */
+    public static ExprTermOrder reverseWeight(long[][] w) {
+        if (w == null) {
+            logger.warn("null weight matrix ignored");
+            return new ExprTermOrder();
+        }
+        long[][] wr = new long[w.length][];
+        for (int j = 0; j < w.length; j++) {
+            long[] wj = w[j];
+            long[] wrj = new long[wj.length];
+            for (int i = 0; i < wj.length; i++) {
+                wrj[i] = wj[wj.length - 1 - i];
+            }
+            wr[j] = wrj;
+        }
+        return new ExprTermOrder(wr);
     }
 
 }

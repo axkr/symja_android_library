@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;
@@ -93,21 +94,15 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		IAST list = F.List();
-		for (Monomial<IExpr> monomial : polyExpr) {
-			IExpr coeff = monomial.coefficient();
-			ExpVector exp = monomial.exponent();
-			IAST monomTimes = F.Times(coeff);
-			long lExp;
-			ISymbol variable;
-			for (int i = 0; i < exp.length(); i++) {
-				lExp = exp.getVal(i);
-				if (lExp != 0) {
-					variable = (ISymbol) variablesList.get(i);
-					monomTimes.add(F.Power(variable, F.integer(lExp)));
-				}
-			}
+		
+		for (Map.Entry<ExpVector, IExpr> monomial : polyExpr.getMap().entrySet()) {
+			IExpr coeff = monomial.getValue();
+			ExpVector exp = monomial.getKey();
+			IAST monomTimes = F.Times();
+			jas.monomialToExpr(coeff, exp, monomTimes);
 			list.add(monomTimes);
-		}
+        }
+		
 		return list;
 	}
 
@@ -134,16 +129,8 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			for (Monomial<ModLong> monomial : polyExpr) {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
-				IAST monomTimes = F.Times(F.integer(coeff.getVal()));
-				long lExp;
-				ISymbol variable;
-				for (int i = 0; i < exp.length(); i++) {
-					lExp = exp.getVal(i);
-					if (lExp != 0) {
-						variable = (ISymbol) variablesList.get(i);
-						monomTimes.add(F.Power(variable, F.integer(lExp)));
-					}
-				}
+				IAST monomTimes = F.Times();
+				jas.monomialToExpr(F.integer(coeff.getVal()), exp, monomTimes);
 				list.add(monomTimes);
 			}
 			return list;

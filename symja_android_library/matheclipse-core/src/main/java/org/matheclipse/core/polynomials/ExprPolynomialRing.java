@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ExprRingFactory;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -128,7 +127,7 @@ public class ExprPolynomialRing {
 	 *            names for the variables.
 	 */
 	public ExprPolynomialRing(IAST listOfVariables) {
-		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1, new ExprTermOrder());
+		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1, ExprTermOrderByName.Lexicographic);
 	}
 
 	/**
@@ -154,7 +153,7 @@ public class ExprPolynomialRing {
 	 *            number of variables.
 	 */
 	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n) {
-		this(cf, listOfVariables, n, new ExprTermOrder());
+		this(cf, listOfVariables, n, ExprTermOrderByName.Lexicographic);
 	}
 
 	/**
@@ -282,12 +281,11 @@ public class ExprPolynomialRing {
 	 * @return
 	 */
 	public ExprPolynomial create(final IExpr exprPoly, boolean coefficient) throws ArithmeticException, ClassCastException {
-		for (int i = 1; i < vars.size(); i++) {
-			if (vars.get(i).equals(exprPoly)) {
-				ExpVectorLong e = new ExpVectorLong(vars.size() - 1, i - 1, 1L);
-				return getOne().multiply(e);
-			}
-		}
+		int ix = evzero.indexVar(exprPoly, getVars());
+		if (ix >= 0) {
+			ExpVectorLong e = new ExpVectorLong(vars.size() - 1, ix, 1L);
+			return getOne().multiply(e);
+		} 
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
 			ExprPolynomial result = getZero();
@@ -312,21 +310,37 @@ public class ExprPolynomialRing {
 				return result;
 			} else if (ast.isPower()) {
 				final IExpr expr = ast.arg1();
-				for (int i = 1; i < vars.size(); i++) {
-					if (vars.get(i).equals(expr)) {
-						int exponent = -1;
-						try {
-							exponent = Validate.checkPowerExponent(ast);
-						} catch (WrongArgumentType e) {
-							//
-						}
-						if (exponent < 0) {
-							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
-						}
-						ExpVectorLong e = new ExpVectorLong(vars.size() - 1, i - 1, exponent);
-						return getOne().multiply(e);
+				ix = evzero.indexVar(expr, getVars());
+				if (ix >= 0) {
+					int exponent = -1;
+					try {
+						exponent = Validate.checkPowerExponent(ast);
+					} catch (WrongArgumentType e) {
+						//
 					}
+					if (exponent < 0) {
+						throw new ArithmeticException(
+								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+					}
+					ExpVectorLong e = new ExpVectorLong(vars.size() - 1, ix, exponent);
+					return getOne().multiply(e);
 				}
+				
+//				for (int i = 1; i < vars.size(); i++) {
+//					if (vars.get(i).equals(expr)) {
+//						int exponent = -1;
+//						try {
+//							exponent = Validate.checkPowerExponent(ast);
+//						} catch (WrongArgumentType e) {
+//							//
+//						}
+//						if (exponent < 0) {
+//							throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+//						}
+//						ExpVectorLong e = new ExpVectorLong(vars.size() - 1, i - 1, exponent);
+//						return getOne().multiply(e);
+//					}
+//				}
 			}
 			if (coefficient) {
 				return new ExprPolynomial(this, ast);
