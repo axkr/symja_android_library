@@ -53,12 +53,17 @@ public class Expand extends AbstractFunctionEvaluator {
 				// (a+b)*(c+d)...
 
 				IExpr[] temp = Apart.getFractionalPartsTimes(ast, false, false, true);
+				IExpr tempExpr;
 				if (temp == null) {
 					return setExpanded(expandTimes(ast));
 				}
 				if (temp[0].isOne()) {
 					if (temp[1].isTimes()) {
-						return setExpanded(PowerOp.power(expandTimes((IAST) temp[1]), F.CN1));
+						tempExpr = expandTimes((IAST) temp[1]);
+						if (tempExpr != null) {
+							return setExpanded(PowerOp.power(tempExpr, F.CN1));
+						}
+						return null;
 					}
 					if (temp[1].isPower() || temp[1].isPlus()) {
 						IExpr denom = expandAST((IAST) temp[1]);
@@ -73,17 +78,27 @@ public class Expand extends AbstractFunctionEvaluator {
 					return setExpanded(expandTimes(ast));
 				}
 
+				boolean evaled = false;
 				if (temp[0].isTimes()) {
-					temp[0] = expandTimes((IAST) temp[0]);
+					tempExpr = expandTimes((IAST) temp[0]);
+					if (tempExpr != null) {
+						temp[0] = tempExpr;
+						evaled = true;
+					}
 				}
 				if (expandNegativePowers) {
 					if (temp[1].isTimes()) {
-						temp[1] = expandTimes((IAST) temp[1]);
+						tempExpr = expandTimes((IAST) temp[1]);
+						if (tempExpr != null) {
+							temp[1] = tempExpr;
+							evaled = true;
+						}
 					} else {
 						if (temp[1].isPower() || temp[1].isPlus()) {
 							IExpr denom = expandAST((IAST) temp[1]);
 							if (denom != null) {
 								temp[1] = denom;
+								evaled = true;
 							}
 						}
 					}
@@ -93,7 +108,10 @@ public class Expand extends AbstractFunctionEvaluator {
 				if (distributePlus && temp[0].isPlus()) {
 					return setExpanded(PlusOp.plus(((IAST) temp[0]).mapAt(F.Times(null, powerAST), 1)));
 				}
-				return setExpanded(TimesOp.times(temp[0], powerAST));
+				if (evaled) {
+					return setExpanded(TimesOp.times(temp[0], powerAST));
+				}
+				return null;
 			} else if (ast.isPlus()) {
 				return setExpanded(expandPlus(ast));
 			}
@@ -137,7 +155,8 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the range Integer.MIN_VALUE to Integer.MAX_VALUE.
+		 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in
+		 * the range Integer.MIN_VALUE to Integer.MAX_VALUE.
 		 * 
 		 * @param powerAST
 		 * @return
@@ -167,8 +186,9 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Expand a polynomial power with the multinomial theorem. See <a
-		 * href="http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia - Multinomial theorem</a>
+		 * Expand a polynomial power with the multinomial theorem. See
+		 * <a href="http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia
+		 * - Multinomial theorem</a>
 		 * 
 		 * @param plusAST
 		 * @param n
@@ -192,19 +212,31 @@ public class Expand extends AbstractFunctionEvaluator {
 		private IExpr expandTimes(final IAST timesAST) {
 			IExpr result = timesAST.arg1();
 
-			if (result.isPower()) {
-				result = result.optional(expandPowerNull((IAST) result));
-			}
 			IExpr temp;
+			boolean evaled = false;
+			if (result.isPower()) {
+				temp = expandPowerNull((IAST) result);
+				if (temp != null) {
+					result = temp;
+					evaled = true;
+				}
+
+			}
+
 			for (int i = 2; i < timesAST.size(); i++) {
 				temp = timesAST.get(i);
 				if (temp.isPower()) {
 					temp = expandPowerNull((IAST) temp);
 					if (temp == null) {
 						temp = timesAST.get(i);
+					} else {
+						evaled = true;
 					}
 				}
 				result = expandTimesBinary(result, temp);
+			}
+			if (evaled == false && timesAST.equals(result)) {
+				return null;
 			}
 			return result;
 		}
@@ -259,7 +291,8 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>IAST</code>. After that add the
+		 * Evaluate <code>expr1 * expr2</code> and expand the resulting
+		 * expression, if it's an <code>IAST</code>. After that add the
 		 * resulting expression to the <code>PlusOp</code>
 		 * 
 		 * @param result

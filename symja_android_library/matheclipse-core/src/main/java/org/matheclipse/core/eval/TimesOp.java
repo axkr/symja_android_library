@@ -19,6 +19,9 @@ public class TimesOp {
 	 */
 	public static IExpr times(IAST timesAST) {
 		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(timesAST);
+		if (temp == null) {
+			temp = timesAST;
+		}
 		IExpr expr = Times.CONST.evaluate(temp, null);
 		if (expr == null) {
 			return timesAST.getOneIdentity(F.C0);

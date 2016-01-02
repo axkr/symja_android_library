@@ -41,7 +41,7 @@ public class EvalAttributes {
 				return result;
 			}
 		}
-		ast.setEvalFlags(IAST.IS_FLATTENED);
+		ast.addEvalFlags(IAST.IS_FLATTENED);
 		return null;
 	}
 

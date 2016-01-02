@@ -10,10 +10,14 @@ import org.matheclipse.core.reflection.system.Plus;
 
 /**
  * <p>
- * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and returning the result, with the
- * <code>getSum()</code> method, if <code>isEvaled()</code> returns <code>true</code>.
+ * Plus operator for adding multiple arguments with the
+ * <code>plus(argument)</code> method and returning the result, with the
+ * <code>getSum()</code> method, if <code>isEvaled()</code> returns
+ * <code>true</code>.
  * </p>
- * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic Simplification</a>
+ * See:
+ * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments
+ * in Hash-coded Algebraic Simplification</a>
  * 
  */
 public class PlusOp {
@@ -26,7 +30,8 @@ public class PlusOp {
 	 * Constructor.
 	 * 
 	 * @param size
-	 *            the approximated size of the resulting <code>Plus()</code> AST.
+	 *            the approximated size of the resulting <code>Plus()</code>
+	 *            AST.
 	 */
 	public PlusOp(final int size) {
 		plusMap = new HashMap<IExpr, IExpr>(size + 5 + size / 10);
@@ -35,7 +40,8 @@ public class PlusOp {
 	}
 
 	/**
-	 * Add or merge the <code>key, value</code> pair into the given <code>plusMap</code>.
+	 * Add or merge the <code>key, value</code> pair into the given
+	 * <code>plusMap</code>.
 	 * 
 	 * @param key
 	 *            the key expression
@@ -65,7 +71,8 @@ public class PlusOp {
 	}
 
 	/**
-	 * Get the current evaluated result of the summation as a <code>Plus()</code> expression with respecting the
+	 * Get the current evaluated result of the summation as a
+	 * <code>Plus()</code> expression with respecting the
 	 * <code>OneIdentity</code> attribute.
 	 * 
 	 * @return
@@ -128,7 +135,8 @@ public class PlusOp {
 	 * Add an argument <code>arg</code> to this <code>Plus()</code> expression.
 	 * 
 	 * @param arg
-	 * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>null</code> otherwise.
+	 * @return <code>F.Indeterminate</code> if the result is indeterminated,
+	 *         <code>null</code> otherwise.
 	 */
 	public IExpr plus(final IExpr arg) {
 		if (arg.isASTSizeGE(F.Plus, 2)) {
@@ -234,7 +242,8 @@ public class PlusOp {
 	}
 
 	/**
-	 * Add the elements of the given <code>ast</code> from position <code>1</code> up to position <code>pos</code> exclusive.
+	 * Add the elements of the given <code>ast</code> from position
+	 * <code>1</code> up to position <code>pos</code> exclusive.
 	 * 
 	 * @param ast
 	 * @param position
@@ -250,7 +259,7 @@ public class PlusOp {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Evaluate <code>Plus(a1, a2,...)</code>.
 	 * 
@@ -260,6 +269,9 @@ public class PlusOp {
 	 */
 	public static IExpr plus(IAST plusAST) {
 		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(plusAST);
+		if (temp == null) {
+			temp = plusAST;
+		}
 		IExpr expr = Plus.CONST.evaluate(temp, null);
 		if (expr == null) {
 			return plusAST.getOneIdentity(F.C0);

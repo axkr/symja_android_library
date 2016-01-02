@@ -42,13 +42,20 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			return null;
 		}
 		IAST ast = expr;
+		IAST tempAST = null;
 		if (ast.isAST()) {
 			if ((ast.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
-				ast = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
+				tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
+				if (tempAST != null) {
+					ast = tempAST;
+				}
 			}
 		}
-		if (expr.isAllExpanded()) {
-			return expr;
+		if (ast.isAllExpanded()) {
+			if (ast != expr) {
+				return ast;
+			}
+			return null;
 		}
 		IAST result = null;
 		IExpr temp = null;
@@ -65,8 +72,16 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			}
 		}
 		if (result == null) {
-			return setAllExpanded(Expand.expand(ast, patt, expandNegativePowers, distributePlus), expandNegativePowers,
-					distributePlus);
+			temp = Expand.expand(ast, patt, expandNegativePowers, distributePlus);
+			if (temp != null) {
+				setAllExpanded(temp, expandNegativePowers, distributePlus);
+			} else {
+				if (ast != expr) {
+					setAllExpanded(ast, expandNegativePowers, distributePlus);
+					return ast;
+				}
+			}
+			return temp;
 		}
 		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);
 		if (temp != null) {
@@ -77,7 +92,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 
 	private static IExpr setAllExpanded(IExpr expr, boolean expandNegativePowers, boolean distributePlus) {
 		if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
-			((IAST) expr).setEvalFlags(IAST.IS_ALL_EXPANDED);
+			((IAST) expr).addEvalFlags(IAST.IS_ALL_EXPANDED);
 		}
 		return expr;
 	}

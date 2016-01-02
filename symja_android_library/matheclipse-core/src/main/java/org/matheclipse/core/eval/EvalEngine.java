@@ -878,7 +878,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	public IAST evalFlatOrderlessAttributesRecursive(IAST ast) {
+	public IAST evalFlatOrderlessAttributesRecursive(final IAST ast) {
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 		// final Predicate<IExpr> isPattern = Predicates.isPattern();
@@ -952,7 +952,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvalAttributes.sort(ast);
 		}
-		return ast;
+		return null;
 	}
 
 	/**
