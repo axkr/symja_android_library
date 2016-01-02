@@ -9,7 +9,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
- * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical disjunction</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical
+ * disjunction</a>
  * 
  */
 public class Or extends AbstractFunctionEvaluator {
@@ -32,6 +33,16 @@ public class Or extends AbstractFunctionEvaluator {
 		IAST result = ast.clone();
 		int index = 1;
 		for (int i = 1; i < ast.size(); i++) {
+			temp = ast.get(i);
+			if (temp.isTrue()) {
+				return F.True;
+			}
+			if (temp.isFalse()) {
+				result.remove(index);
+				evaled = true;
+				continue;
+			}
+
 			temp = engine.evaluateNull(ast.get(i));
 			if (temp == null) {
 				temp = ast.get(i);

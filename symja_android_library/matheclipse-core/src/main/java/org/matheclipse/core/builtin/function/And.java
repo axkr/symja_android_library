@@ -10,10 +10,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * 
  * 
- * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical
+ * conjunction</a>
  * 
  * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And</a>
+ * See the online Symja function reference: <a href=
+ * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And
+ * </a>
  * </p>
  */
 public class And extends AbstractFunctionEvaluator {
@@ -35,6 +38,16 @@ public class And extends AbstractFunctionEvaluator {
 		int[] notSymbols = new int[ast.size()];
 
 		for (int i = 1; i < ast.size(); i++) {
+			temp = ast.get(i);
+			if (temp.isFalse()) {
+				return F.False;
+			}
+			if (temp.isTrue()) {
+				result.remove(index);
+				evaled = true;
+				continue;
+			}
+
 			temp = engine.evaluateNull(ast.get(i));
 			if (temp == null) {
 				temp = ast.get(i);
