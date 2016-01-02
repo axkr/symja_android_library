@@ -1,7 +1,7 @@
 package org.matheclipse.combinatoric;
 
 /**
- * Partition a set and visit all steps of the algorithm with a <code>IStepVisitor</code>
+ * Partition a set and visit all steps of the algorithm with an <code>IStepVisitor</code>
  * 
  * @see IStepVisitor
  */
