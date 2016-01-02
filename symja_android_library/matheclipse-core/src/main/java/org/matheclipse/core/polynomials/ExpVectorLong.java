@@ -1379,7 +1379,7 @@ public final class ExpVectorLong {
      * @param vars array of names of variables
      * @return index of x in vars.
      */
-    public int indexVar(IExpr x, IAST vars) {
+    public static int indexVar(IExpr x, IAST vars) {
     	int len = vars.size();
         for (int i = 1; i < len; i++) {
             if (x.equals(vars.get(i))) {
