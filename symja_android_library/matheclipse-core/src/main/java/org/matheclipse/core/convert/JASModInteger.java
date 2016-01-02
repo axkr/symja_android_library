@@ -23,6 +23,7 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrder;
+import edu.jas.poly.TermOrderByName;
 
 /**
  * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
@@ -47,12 +48,12 @@ public class JASModInteger {
 		for (int i = 0; i < fVariables.size(); i++) {
 			vars[i] = fVariables.get(i).toString();
 		}
-		this.fTermOrder = new TermOrder(TermOrder.INVLEX);
+		this.fTermOrder = TermOrderByName.Lexicographic;
 		this.fPolyFactory = new GenPolynomialRing<ModLong>(fRingFactory, fVariables.size(), fTermOrder, vars);
 	}
 
 	public JASModInteger(final List<? extends IExpr> variablesList, ModLongRing ringFactory) {
-		this(variablesList, ringFactory, new TermOrder(TermOrder.INVLEX));
+		this(variablesList, ringFactory, TermOrderByName.Lexicographic);
 	}
 
 	public JASModInteger(final List<? extends IExpr> variablesList, ModLongRing ringFactory, TermOrder termOrder) {
