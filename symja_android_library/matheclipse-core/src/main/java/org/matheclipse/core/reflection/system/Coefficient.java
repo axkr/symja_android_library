@@ -7,7 +7,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -30,7 +29,8 @@ public class Coefficient extends AbstractFunctionEvaluator {
 	private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
 		for (int j = 1; j < list.size(); j++) {
 			if (list.get(j).equals(expr)) {
-				exponents[j - 1] = value;
+				int ix = ExpVectorLong.indexVar(expr, list);
+				exponents[ix] = value;
 				return true;
 			}
 		}
@@ -96,8 +96,6 @@ public class Coefficient extends AbstractFunctionEvaluator {
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
 					listOfVariables.size() - 1);
 			ExprPolynomial poly = ring.create(expr, true);
-			// Polynomial poly = new Polynomial(expr, listOfVariables);
-			// if (poly.isPolynomial()) {
 			return poly.coefficient(expArr);
 			// }
 		} catch (Exception ae) {
