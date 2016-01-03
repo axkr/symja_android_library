@@ -68,7 +68,7 @@ public class JASConvert<C extends RingElem<C>> {
 		for (int i = 0; i < fVariables.size(); i++) {
 			vars[i] = fVariables.get(i).toString();
 		}
-		this.fTermOrder = new TermOrder(TermOrder.INVLEX);
+		this.fTermOrder = TermOrderByName.Lexicographic;
 		this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
 		this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
 				fVariables.size(), fTermOrder, vars);
