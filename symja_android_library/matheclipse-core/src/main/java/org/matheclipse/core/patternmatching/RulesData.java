@@ -34,7 +34,7 @@ public class RulesData implements Serializable {
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 	private Multimap<Integer, IPatternMatcher> fSimplePatternDownRules;
 	private Multimap<Integer, IPatternMatcher> fSimpleOrderlesPatternDownRules;
-	private TreeSet<IPatternMatcher> fPatternDownRules;
+	private Set<IPatternMatcher> fPatternDownRules;
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private Multimap<Integer, IPatternMatcher> fSimplePatternUpRules;
 	final private Context context;
@@ -402,7 +402,7 @@ public class RulesData implements Serializable {
 		return fEqualUpRules;
 	}
 
-	private TreeSet<IPatternMatcher> getPatternDownRules() {
+	private Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
 			fPatternDownRules = new TreeSet<IPatternMatcher>();
 		}
