@@ -16,14 +16,20 @@ import java.util.function.Function;
 
 import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
+import edu.jas.poly.ExpVector;
+import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.NotInvertibleException;
 
 /**
- * GenPolynomial generic polynomials implementing RingElem. n-variate ordered polynomials over C. Objects of this class are intended
- * to be immutable. The implementation is based on TreeMap respectively SortedMap from exponents to coefficients. Only the
- * coefficients are modeled with generic types, the exponents are fixed to ExpVectorLong with long entries (this will eventually be
- * changed in the future). C can also be a non integral domain, e.g. a ModInteger, i.e. it may contain zero divisors, since
- * multiply() does now check for zeros. <b>Note:</b> multiply() now checks for wrong method dispatch for GenSolvablePolynomial.
+ * GenPolynomial generic polynomials implementing RingElem. n-variate ordered
+ * polynomials over C. Objects of this class are intended to be immutable. The
+ * implementation is based on TreeMap respectively SortedMap from exponents to
+ * coefficients. Only the coefficients are modeled with generic types, the
+ * exponents are fixed to ExpVectorLong with long entries (this will eventually
+ * be changed in the future). C can also be a non integral domain, e.g. a
+ * ModInteger, i.e. it may contain zero divisors, since multiply() does now
+ * check for zeros. <b>Note:</b> multiply() now checks for wrong method dispatch
+ * for GenSolvablePolynomial.
  * 
  * @param <C>
  *            coefficient type
@@ -39,7 +45,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	/**
 	 * The data structure for polynomials.
 	 */
-	protected final SortedMap<ExpVectorLong, IExpr> val; // do not change to TreeMap
+	protected final SortedMap<ExpVectorLong, IExpr> val; // do not change to
+															// TreeMap
 
 	private static final Logger logger = Logger.getLogger(ExprPolynomial.class);
 
@@ -172,8 +179,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Put an ExpVectorLong to coefficient entry into the internal map of this GenPolynomial. <b>Note:</b> Do not use this method
-	 * unless you are constructing a new polynomial. this is modified and breaks the immutability promise of this class.
+	 * Put an ExpVectorLong to coefficient entry into the internal map of this
+	 * GenPolynomial. <b>Note:</b> Do not use this method unless you are
+	 * constructing a new polynomial. this is modified and breaks the
+	 * immutability promise of this class.
 	 * 
 	 * @param c
 	 *            coefficient.
@@ -193,8 +202,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Remove an ExpVectorLong to coefficient entry from the internal map of this GenPolynomial. <b>Note:</b> Do not use this method
-	 * unless you are constructing a new polynomial. this is modified and breaks the immutability promise of this class.
+	 * Remove an ExpVectorLong to coefficient entry from the internal map of
+	 * this GenPolynomial. <b>Note:</b> Do not use this method unless you are
+	 * constructing a new polynomial. this is modified and breaks the
+	 * immutability promise of this class.
 	 * 
 	 * @param e
 	 *            exponent.
@@ -214,8 +225,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Put an a sorted map of exponents to coefficients into the internal map of this GenPolynomial. <b>Note:</b> Do not use this
-	 * method unless you are constructing a new polynomial. this is modified and breaks the immutability promise of this class.
+	 * Put an a sorted map of exponents to coefficients into the internal map of
+	 * this GenPolynomial. <b>Note:</b> Do not use this method unless you are
+	 * constructing a new polynomial. this is modified and breaks the
+	 * immutability promise of this class.
 	 * 
 	 * @param vals
 	 *            sorted map of exponents and coefficients.
@@ -298,7 +311,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 					ExpVectorLong e = m.getKey();
 					if (!c.isOne() || e.isZero()) {
 						String cs = c.toString();
-						// if (c instanceof GenPolynomial || c instanceof AlgebraicNumber) {
+						// if (c instanceof GenPolynomial || c instanceof
+						// AlgebraicNumber) {
 						if (cs.indexOf("-") >= 0 || cs.indexOf("+") >= 0) {
 							s.append("( ");
 							s.append(cs);
@@ -363,9 +377,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			s.append("( ");
 		}
 		IAST v = ring.vars;
-//		if (v == null) {
-//			v = ExprPolynomialRing.newVars("x", ring.nvar);
-//		}
+		// if (v == null) {
+		// v = ExprPolynomialRing.newVars("x", ring.nvar);
+		// }
 		boolean first = true;
 		for (Map.Entry<ExpVectorLong, IExpr> m : val.entrySet()) {
 			IExpr c = m.getValue();
@@ -460,7 +474,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	/**
 	 * Is GenPolynomial&lt;C&gt; a constant.
 	 * 
-	 * @return If this is a constant polynomial then true is returned, else false.
+	 * @return If this is a constant polynomial then true is returned, else
+	 *         false.
 	 */
 	public boolean isConstant() {
 		if (val.size() != 1) {
@@ -548,7 +563,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			ExpVectorLong be = bie.getKey();
 			s = ae.compareTo(be);
 			if (s != 0) {
-				// System.out.println("s = " + s + ", " + ring.toScript(ae) + ", " + ring.toScript(be));
+				// System.out.println("s = " + s + ", " + ring.toScript(ae) + ",
+				// " + ring.toScript(be));
 				return s;
 			}
 			if (c == 0) {
@@ -616,11 +632,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		if (val.size() == 0) {
 			return null; // ring.evzero? needs many changes
 		}
-		if (ring.tord.getEvord() == ExprTermOrder.LEX) {
-			return val.lastKey();
-		} else {
-			return val.firstKey();
-		}
+		return val.firstKey();
 	}
 
 	/**
@@ -632,11 +644,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		if (val.size() == 0) {
 			return ring.evzero; // or null ?;
 		}
-		if (ring.tord.getEvord() == ExprTermOrder.LEX) {
-			return val.firstKey();
-		} else {
-			return val.lastKey();
-		}
+		return val.lastKey();
 	}
 
 	/**
@@ -648,19 +656,16 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		if (val.size() == 0) {
 			return ring.coFac.getZERO();
 		}
-		if (ring.tord.getEvord() == ExprTermOrder.LEX) {
-			return val.get(val.lastKey());
-		} else {
-			return val.get(val.firstKey());
-		}
+		return val.get(val.firstKey());
 	}
 
 	/**
 	 * Trailing base coefficient.
 	 * 
 	 * @return coefficient of constant term.
+	 * @deprecated for comparability with JAS only
 	 */
-	public IExpr trailingBaseCoefficient() {
+	private IExpr trailingBaseCoefficient() {
 		IExpr c = val.get(ring.evzero);
 		if (c == null) {
 			return ring.coFac.getZERO();
@@ -765,6 +770,79 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
+     * Weight degree.
+     * @return weight degree in all variables.
+     */
+    public long weightDegree() {
+        long[][] w = ring.tord.getWeight();
+        if (w == null || w.length == 0) {
+            return totalDegree(); // assume weight 1 
+        }
+        if (val.isEmpty()) {
+            return -1L; // 0 or -1 ?;
+        }
+        long deg = 0;
+        for (ExpVectorLong e : val.keySet()) {
+            long d = e.weightDeg(w);
+            if (d > deg) {
+                deg = d;
+            }
+        }
+        return deg;
+    }
+
+
+    /**
+     * Leading weight polynomial.
+     * @return polynomial with terms of maximal weight degree.
+     */
+    public ExprPolynomial leadingWeightPolynomial() {
+        if (val.isEmpty()) {
+            return ring.getZero();
+        }
+        long[][] w = ring.tord.getWeight();
+        long maxw;
+        if (w == null || w.length == 0) {
+            maxw = totalDegree(); // assume weights = 1
+        } else {
+            maxw = weightDegree();
+        }
+        ExprPolynomial wp = new ExprPolynomial(ring);
+        for (Map.Entry<ExpVectorLong,IExpr> m : val.entrySet()) {
+            ExpVectorLong e = m.getKey();
+            long d = e.weightDeg(w);
+            if (d >= maxw) {
+                wp.val.put(e, m.getValue());
+            }
+        }
+        return wp;
+    }
+
+
+    /**
+     * Is GenPolynomial&lt;C&gt; homogeneous with respect to a weight.
+     * @return true, if this is weight homogeneous, else false.
+     */
+    public boolean isWeightHomogeneous() {
+        if (val.size() <= 1) {
+            return true;
+        }
+        long[][] w = ring.tord.getWeight();
+        if (w == null || w.length == 0) {
+            return isHomogeneous(); // assume weights = 1
+        }
+        long deg = -1;
+        for (ExpVectorLong e : val.keySet()) {
+            if (deg < 0) {
+                deg = e.weightDeg(w);
+            } else if (deg != e.weightDeg(w)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+	/**
 	 * Maximal degree vector.
 	 * 
 	 * @return maximal degree vector of all variables.
@@ -851,7 +929,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial addition. This method is not very efficient, since this is copied.
+	 * GenPolynomial addition. This method is not very efficient, since this is
+	 * copied.
 	 * 
 	 * @param a
 	 *            coefficient.
@@ -884,7 +963,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial addition. This method is not very efficient, since this is copied.
+	 * GenPolynomial addition. This method is not very efficient, since this is
+	 * copied.
 	 * 
 	 * @param a
 	 *            coefficient.
@@ -1006,7 +1086,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial subtraction. This method is not very efficient, since this is copied.
+	 * GenPolynomial subtraction. This method is not very efficient, since this
+	 * is copied.
 	 * 
 	 * @param a
 	 *            coefficient.
@@ -1035,7 +1116,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial subtract. This method is not very efficient, since this is copied.
+	 * GenPolynomial subtract. This method is not very efficient, since this is
+	 * copied.
 	 * 
 	 * @param a
 	 *            coefficient.
@@ -1329,9 +1411,11 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			return this;
 		}
 		assert (ring.nvar == S.ring.nvar);
-		// if (this instanceof GenSolvablePolynomial && S instanceof GenSolvablePolynomial) {
+		// if (this instanceof GenSolvablePolynomial && S instanceof
+		// GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
+		// logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying
+		// to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
 		// return T.multiply(Sp);
@@ -1383,7 +1467,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		}
 		// if (this instanceof GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// logger.debug("warn: wrong method dispatch in JRE multiply(s) - trying to fix");
+		// logger.debug("warn: wrong method dispatch in JRE multiply(s) - trying
+		// to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// return T.multiply(s);
 		// }
@@ -1401,7 +1486,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial monic, i.e. leadingCoefficient == 1. If leadingCoefficient is not invertible returns this unmodified.
+	 * GenPolynomial monic, i.e. leadingCoefficient == 1. If leadingCoefficient
+	 * is not invertible returns this unmodified.
 	 * 
 	 * @return monic(this).
 	 */
@@ -1419,7 +1505,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial multiplication. Product with ring element and exponent vector.
+	 * GenPolynomial multiplication. Product with ring element and exponent
+	 * vector.
 	 * 
 	 * @param s
 	 *            coefficient.
@@ -1439,7 +1526,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		}
 		// if (this instanceof GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// logger.debug("warn: wrong method dispatch in JRE multiply(s,e) - trying to fix");
+		// logger.debug("warn: wrong method dispatch in JRE multiply(s,e) -
+		// trying to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// return T.multiply(s, e);
 		// }
@@ -1471,7 +1559,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		}
 		// if (this instanceof GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// logger.debug("warn: wrong method dispatch in JRE multiply(e) - trying to fix");
+		// logger.debug("warn: wrong method dispatch in JRE multiply(e) - trying
+		// to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// return T.multiply(e);
 		// }
@@ -1501,7 +1590,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial division. Division by coefficient ring element. Fails, if exact division is not possible.
+	 * GenPolynomial division. Division by coefficient ring element. Fails, if
+	 * exact division is not possible.
 	 * 
 	 * @param s
 	 *            coefficient.
@@ -1538,12 +1628,14 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial division with remainder. Fails, if exact division by leading base coefficient is not possible. Meaningful only
-	 * for univariate polynomials over fields, but works in any case.
+	 * GenPolynomial division with remainder. Fails, if exact division by
+	 * leading base coefficient is not possible. Meaningful only for univariate
+	 * polynomials over fields, but works in any case.
 	 * 
 	 * @param S
 	 *            nonzero GenPolynomial with invertible leading coefficient.
-	 * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt; deg(S) or remiander = 0.
+	 * @return [ quotient , remainder ] with this = quotient * S + remainder and
+	 *         deg(remainder) &lt; deg(S) or remiander = 0.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
 	public ExprPolynomial[] quotientRemainder(ExprPolynomial S) {
@@ -1580,12 +1672,14 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial division with remainder. Fails, if exact division by leading base coefficient is not possible. Meaningful only
-	 * for univariate polynomials over fields, but works in any case.
+	 * GenPolynomial division with remainder. Fails, if exact division by
+	 * leading base coefficient is not possible. Meaningful only for univariate
+	 * polynomials over fields, but works in any case.
 	 * 
 	 * @param S
 	 *            nonzero GenPolynomial with invertible leading coefficient.
-	 * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt; deg(S) or remiander = 0.
+	 * @return [ quotient , remainder ] with this = quotient * S + remainder and
+	 *         deg(remainder) &lt; deg(S) or remiander = 0.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 * @deprecated use quotientRemainder()
 	 */
@@ -1595,8 +1689,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial division. Fails, if exact division by leading base coefficient is not possible. Meaningful only for univariate
-	 * polynomials over fields, but works in any case.
+	 * GenPolynomial division. Fails, if exact division by leading base
+	 * coefficient is not possible. Meaningful only for univariate polynomials
+	 * over fields, but works in any case.
 	 * 
 	 * @param S
 	 *            nonzero GenPolynomial with invertible leading coefficient.
@@ -1604,9 +1699,11 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
 	public ExprPolynomial divide(ExprPolynomial S) {
-		// if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
+		// if (this instanceof GenSolvablePolynomial || S instanceof
+		// GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// // logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
+		// // logger.debug("warn: wrong method dispatch in JRE multiply(S) -
+		// trying to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
 		// return T.quotientRemainder(Sp)[0];
@@ -1615,8 +1712,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial remainder. Fails, if exact division by leading base coefficient is not possible. Meaningful only for univariate
-	 * polynomials over fields, but works in any case.
+	 * GenPolynomial remainder. Fails, if exact division by leading base
+	 * coefficient is not possible. Meaningful only for univariate polynomials
+	 * over fields, but works in any case.
 	 * 
 	 * @param S
 	 *            nonzero GenPolynomial with invertible leading coefficient.
@@ -1624,9 +1722,11 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
 	public ExprPolynomial remainder(ExprPolynomial S) {
-		// if (this instanceof GenSolvablePolynomial || S instanceof GenSolvablePolynomial) {
+		// if (this instanceof GenSolvablePolynomial || S instanceof
+		// GenSolvablePolynomial) {
 		// // throw new RuntimeException("wrong method dispatch in JRE ");
-		// // logger.debug("warn: wrong method dispatch in JRE multiply(S) - trying to fix");
+		// // logger.debug("warn: wrong method dispatch in JRE multiply(S) -
+		// trying to fix");
 		// GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
 		// GenSolvablePolynomial<C> Sp = (GenSolvablePolynomial<C>) S;
 		// return T.quotientRemainder(Sp)[1];
@@ -1660,7 +1760,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial greatest common divisor. Only for univariate polynomials over fields.
+	 * GenPolynomial greatest common divisor. Only for univariate polynomials
+	 * over fields.
 	 * 
 	 * @param S
 	 *            GenPolynomial.
@@ -1688,7 +1789,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial extended greatest comon divisor. Only for univariate polynomials over fields.
+	 * GenPolynomial extended greatest comon divisor. Only for univariate
+	 * polynomials over fields.
 	 * 
 	 * @param S
 	 *            GenPolynomial.
@@ -1762,7 +1864,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial half extended greatest comon divisor. Only for univariate polynomials over fields.
+	 * GenPolynomial half extended greatest comon divisor. Only for univariate
+	 * polynomials over fields.
 	 * 
 	 * @param S
 	 *            GenPolynomial.
@@ -1813,7 +1916,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial inverse. Required by RingElem. Throws not invertible exception.
+	 * GenPolynomial inverse. Required by RingElem. Throws not invertible
+	 * exception.
 	 */
 	public ExprPolynomial inverse() {
 		if (isUnit()) { // only possible if ldbcf is unit
@@ -1824,7 +1928,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * GenPolynomial modular inverse. Only for univariate polynomials over fields.
+	 * GenPolynomial modular inverse. Only for univariate polynomials over
+	 * fields.
 	 * 
 	 * @param m
 	 *            GenPolynomial.
@@ -1847,7 +1952,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend all ExpVectorLongs by i elements and multiply by x_j^k.
+	 * Extend variables. Used e.g. in module embedding. Extend all
+	 * ExpVectorLongs by i elements and multiply by x_j^k.
 	 * 
 	 * @param pfac
 	 *            extended polynomial ring factory (by i variables).
@@ -1878,7 +1984,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Extend lower variables. Used e.g. in module embedding. Extend all ExpVectorLongs by i lower elements and multiply by x_j^k.
+	 * Extend lower variables. Used e.g. in module embedding. Extend all
+	 * ExpVectorLongs by i lower elements and multiply by x_j^k.
 	 * 
 	 * @param pfac
 	 *            extended polynomial ring factory (by i variables).
@@ -1909,15 +2016,18 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Contract variables. Used e.g. in module embedding. Remove i elements of each ExpVectorLong.
+	 * Contract variables. Used e.g. in module embedding. Remove i elements of
+	 * each ExpVectorLong.
 	 * 
 	 * @param pfac
 	 *            contracted polynomial ring factory (by i variables).
-	 * @return Map of exponents and contracted polynomials. <b>Note:</b> could return SortedMap
+	 * @return Map of exponents and contracted polynomials. <b>Note:</b> could
+	 *         return SortedMap
 	 */
 	public Map<ExpVectorLong, ExprPolynomial> contract(ExprPolynomialRing pfac) {
 		ExprPolynomial zero = pfac.getZero(); // not pfac.coFac;
-		ExprTermOrder t = new ExprTermOrder(ExprTermOrder.INVLEX);
+		ExprTermOrder t = ExprTermOrderByName.Lexicographic;// new
+															// ExprTermOrder(ExprTermOrder.INVLEX);
 		Map<ExpVectorLong, ExprPolynomial> B = new TreeMap<ExpVectorLong, ExprPolynomial>(t.getAscendComparator());
 		if (this.isZero()) {
 			return B;
@@ -1940,7 +2050,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Contract variables to coefficient polynomial. Remove i elements of each ExpVectorLong, removed elements must be zero.
+	 * Contract variables to coefficient polynomial. Remove i elements of each
+	 * ExpVectorLong, removed elements must be zero.
 	 * 
 	 * @param pfac
 	 *            contracted polynomial ring factory (by i variables).
@@ -1960,8 +2071,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Extend univariate to multivariate polynomial. This is an univariate polynomial in variable i of the polynomial ring, it is
-	 * extended to the given polynomial ring.
+	 * Extend univariate to multivariate polynomial. This is an univariate
+	 * polynomial in variable i of the polynomial ring, it is extended to the
+	 * given polynomial ring.
 	 * 
 	 * @param pfac
 	 *            extended polynomial ring factory.
@@ -2159,8 +2271,8 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Get the coefficients of a univariate polynomial up to n degree. Throws WrongNumberOfArguments if the polynomial is not
-	 * univariate.
+	 * Get the coefficients of a univariate polynomial up to n degree. Throws
+	 * WrongNumberOfArguments if the polynomial is not univariate.
 	 * 
 	 * @return the coefficients of a univariate polynomial up to n degree
 	 */
@@ -2199,8 +2311,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Derivative of a polynomial. This method assumes that the polynomial is univariate. Throws WrongNumberOfArguments if the
-	 * polynomial is not univariate.
+	 * Derivative of a polynomial. This method assumes that the polynomial is
+	 * univariate. Throws WrongNumberOfArguments if the polynomial is not
+	 * univariate.
 	 * 
 	 * @return the derivative polynomia if the polynomial isn't univariate
 	 */
@@ -2224,11 +2337,12 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
+	 * polynomial to a MathEclipse AST with head <code>Plus</code>
 	 * 
 	 * @return
 	 */
-	public IExpr getExpr( ) {
+	public IExpr getExpr() {
 		if (length() == 0) {
 			return F.C0;
 		}
@@ -2248,10 +2362,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0L) {
-//					if (getVar) {
-						ix=exp.varIndex(i);
-						variable = vars.get(ix + 1);
-//					}
+					// if (getVar) {
+					ix = exp.varIndex(i);
+					variable = vars.get(ix + 1);
+					// }
 					if (lExp == 1L) {
 						monomTimes.add(variable);
 					} else {
