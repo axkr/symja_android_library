@@ -592,8 +592,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * GenPolynomial signum.
 	 * 
 	 * @return sign(ldcf(this)).
+	 * @deprecated for comparability with JAS only
 	 */
-	public int signum() {
+	@Deprecated
+	private int signum() {
 		if (this.isZero()) {
 			return 0;
 		}
@@ -665,6 +667,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * @return coefficient of constant term.
 	 * @deprecated for comparability with JAS only
 	 */
+	@Deprecated
 	private IExpr trailingBaseCoefficient() {
 		IExpr c = val.get(ring.evzero);
 		if (c == null) {
