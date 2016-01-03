@@ -522,4 +522,11 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return getBigNumerator().toByteArray();
 	}
 
+	public double getImaginary() {
+		return 0.0;
+	}
+
+	public double getReal() {
+		return doubleValue();
+	}
 }

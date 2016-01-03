@@ -290,16 +290,11 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	// public float floatValue() {
 	// return fComplex.floatValue();
 	// }
-	/**
-	 * @return
-	 */
+
 	public double getImaginary() {
 		return fComplex.getImaginary();
 	}
 
-	/**
-	 * @return
-	 */
 	public double getReal() {
 		return fComplex.getReal();
 	}

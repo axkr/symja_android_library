@@ -272,16 +272,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	// public float floatValue() {
 	// return fComplex.floatValue();
 	// }
-	/**
-	 * @return
-	 */
+ 
 	public double getImaginary() {
 		return fApcomplex.imag().doubleValue();
 	}
-
-	/**
-	 * @return
-	 */
+ 
 	public double getReal() {
 		return fApcomplex.real().doubleValue();
 	}

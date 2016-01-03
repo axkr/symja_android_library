@@ -520,4 +520,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		tb.append(')');
 		return tb.toString();
 	}
+	
+	public double getImaginary() {
+		return _imaginary.doubleValue();
+	}
+
+	public double getReal() {
+		return _real.doubleValue();
+	}
 }

@@ -548,4 +548,12 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 		return super.times(that);
 	}
+	
+	public double getImaginary() {
+		return 0.0;
+	}
+
+	public double getReal() {
+		return doubleValue();
+	}
 }

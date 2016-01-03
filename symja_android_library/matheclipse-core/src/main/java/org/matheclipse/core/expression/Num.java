@@ -636,4 +636,12 @@ public class Num extends ExprImpl implements INum {
 		// double precision complex number
 		return ComplexNum.valueOf(doubleValue(), 0.0);
 	}
+	
+	public double getImaginary() {
+		return 0.0;
+	}
+
+	public double getReal() {
+		return doubleValue();
+	}
 }

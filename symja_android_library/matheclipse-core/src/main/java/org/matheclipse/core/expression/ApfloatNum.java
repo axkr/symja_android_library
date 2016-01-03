@@ -506,4 +506,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 	public ComplexNum complexNumValue() {
 		return ComplexNum.valueOf(fApfloat.doubleValue());
 	}
+
+	public double getImaginary() {
+		return 0.0;
+	}
+
+	public double getReal() {
+		return doubleValue();
+	}
 }

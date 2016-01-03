@@ -111,7 +111,21 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public ISignedNumber getRe();
+	
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public double getReal();
 
+	/**
+	 * Returns the imaginary part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public double getImaginary();
+	
 	public INumber opposite();
 
 }
