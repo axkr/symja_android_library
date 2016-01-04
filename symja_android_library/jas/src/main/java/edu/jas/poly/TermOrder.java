@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TermOrder.java 5391 2016-01-04 13:46:50Z kredel $
  */
 
 package edu.jas.poly;
@@ -46,6 +46,9 @@ public final class TermOrder implements Serializable {
     public static final int LEX = 1;
 
 
+    public final static int MIN_EVORD = LEX;
+
+
     public static final int INVLEX = 2;
 
 
@@ -65,6 +68,15 @@ public final class TermOrder implements Serializable {
 
 
     public static final int REVITDG = 8;
+
+
+    public static final int ITDEGLEX = 9;
+
+
+    public static final int REVITDEG = 10;
+
+
+    public final static int MAX_EVORD = REVITDEG;
 
 
     public final static int DEFAULT_EVORD = IGRLEX;
@@ -141,7 +153,7 @@ public final class TermOrder implements Serializable {
      * @param evord requested term order indicator / enumerator.
      */
     public TermOrder(int evord) {
-        if (evord < LEX || REVITDG < evord) {
+        if (evord < MIN_EVORD || MAX_EVORD < evord) {
             throw new IllegalArgumentException("invalid term order: " + evord);
         }
         this.evord = evord;
@@ -240,6 +252,28 @@ public final class TermOrder implements Serializable {
             };
             break;
         }
+        case TermOrder.ITDEGLEX: {
+            horder = new EVComparator() {
+
+
+                @Override
+                public int compare(ExpVector e1, ExpVector e2) {
+                    return -ExpVector.EVITDEGLC(e1, e2); // okay +/-
+                }
+            };
+            break;
+        }
+        case TermOrder.REVITDEG: {
+            horder = new EVComparator() {
+
+
+                @Override
+                public int compare(ExpVector e1, ExpVector e2) {
+                    return ExpVector.EVRLITDEGC(e1, e2); // okay +/-
+                }
+            };
+            break;
+        }
         default: {
             horder = null;
         }
@@ -328,11 +362,11 @@ public final class TermOrder implements Serializable {
      * @param split index.
      */
     public TermOrder(int ev1, int ev2, int r, int split) {
-        if (ev1 < LEX || REVITDG < ev1) {
-            throw new IllegalArgumentException("invalid term order: " + ev1);
+        if (ev1 < MIN_EVORD || MAX_EVORD-2 < ev1) {
+            throw new IllegalArgumentException("invalid split term order 1: " + ev1);
         }
-        if (ev2 < LEX || REVITDG < ev2) {
-            throw new IllegalArgumentException("invalid term order: " + ev2);
+        if (ev2 < MIN_EVORD || MAX_EVORD-2 < ev2) {
+            throw new IllegalArgumentException("invalid split term order 2: " + ev2);
         }
         this.evord = ev1;
         this.evord2 = ev2;
@@ -1620,13 +1654,13 @@ public final class TermOrder implements Serializable {
                 return "ReverseLexicographic";
             case GRLEX:
                 return "NegativeDegreeReverseLexicographic";
-            case IGRLEX:
+            case ITDEGLEX: //IGRLEX:
                 return "DegreeReverseLexicographic";
             case REVLEX:
                 return "NegativeLexicographic";
             case REVILEX:
                 return "Lexicographic";
-            case REVTDEG:
+            case REVITDEG: //REVTDEG:
                 return "NegativeDegreeLexicographic";
             case REVITDG:
                 return "DegreeLexicographic";
@@ -1641,13 +1675,13 @@ public final class TermOrder implements Serializable {
                 return "invlex";
             case GRLEX:
                 return "negdegrevlex";
-            case IGRLEX:
+            case ITDEGLEX: //IGRLEX:
                 return "degrevlex";
             case REVLEX:
                 return "neglex";
             case REVILEX:
                 return "lex";
-            case REVTDEG:
+            case REVITDEG: //REVTDEG:
                 return "negdeglex";
             case REVITDG:
                 return "deglex";
@@ -1662,13 +1696,13 @@ public final class TermOrder implements Serializable {
                 return "rp";
             case GRLEX:
                 return "ds";
-            case IGRLEX:
+            case ITDEGLEX: //IGRLEX:
                 return "dp";
             case REVLEX:
                 return "ls";
             case REVILEX:
                 return "lp";
-            case REVTDEG:
+            case REVITDEG: //REVTDEG:
                 return "Ds";
             case REVITDG:
                 return "Dp";
@@ -1694,6 +1728,10 @@ public final class TermOrder implements Serializable {
                 return "REVTDEG";
             case REVITDG:
                 return "REVITDG";
+            case ITDEGLEX:
+                return "ITDEGLEX";
+            case REVITDEG:
+                return "REVITDEG";
             default:
                 return "invalid(" + ev + ")";
             }
@@ -1907,7 +1945,7 @@ public final class TermOrder implements Serializable {
         case REVITDG:
             i = IGRLEX;
             break;
-        default:
+        default: // REVITDEG, ITDEGLEX
             logger.error("can not revert " + evord);
             break;
         }

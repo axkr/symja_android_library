@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExpVectorInteger.java 5391 2016-01-04 13:46:50Z kredel $
  */
 
 package edu.jas.poly;
@@ -962,6 +962,88 @@ public final class ExpVectorInteger extends ExpVector
         }
         return t;
         //return EVRIGLC(this, V, begin, end);
+    }
+
+
+    /**
+     * ExpVector inverse total degree lexicographical compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    @Override
+    public int invTdegCompareTo(ExpVector V) {
+        int[] u = val;
+        int[] v = ((ExpVectorInteger) V).val;
+        int t = 0;
+        int i;
+        for (i = 0; i < u.length; i++) {
+            if (u[i] < v[i]) {
+                t = 1;
+                break;
+            }
+            if (u[i] > v[i]) {
+                t = -1;
+                break;
+            }
+        }
+        if (t == 0) {
+            return t;
+        }
+        int up = 0;
+        int vp = 0;
+        for (int j = i; j < u.length; j++) {
+            up += u[j];
+            vp += v[j];
+        }
+        if (up > vp) {
+            t = 1;
+        } else {
+            if (up < vp) {
+                t = -1;
+            }
+        }
+        return t;
+    }
+
+
+    /**
+     * ExpVector reverse lexicographical inverse total degree compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    @Override
+    public int revLexInvTdegCompareTo(ExpVector V) {
+        int[] u = val;
+        int[] v = ((ExpVectorInteger) V).val;
+        int t = 0;
+        int i;
+        for (i = u.length - 1; i >= 0; i--) {
+            if (u[i] < v[i]) {
+                t = 1;
+                break;
+            }
+            if (u[i] > v[i]) {
+                t = -1;
+                break;
+            }
+        }
+        if (t == 0) {
+            return t;
+        }
+        int up = 0;
+        int vp = 0;
+        for (int j = i; j >= 0; j--) {
+            up += u[j];
+            vp += v[j];
+        }
+        if (up > vp) {
+            t = 1; 
+        } else {
+            if (up < vp) {
+                t = -1;
+            }
+        }
+        return t;
     }
 
 

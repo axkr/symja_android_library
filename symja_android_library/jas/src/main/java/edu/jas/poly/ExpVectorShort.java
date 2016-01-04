@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExpVectorShort.java 5391 2016-01-04 13:46:50Z kredel $
  */
 
 package edu.jas.poly;
@@ -962,6 +962,28 @@ public final class ExpVectorShort extends ExpVector
         }
         return t;
         //return EVRIGLC(this, V, begin, end);
+    }
+
+
+    /**
+     * ExpVector inverse total degree lexicographical compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    @Override
+    public int invTdegCompareTo(ExpVector V) {
+        throw new UnsupportedOperationException("not implemented for short ExpVector");
+    }
+
+
+    /**
+     * ExpVector reverse lexicographical inverse total degree compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    @Override
+    public int revLexInvTdegCompareTo(ExpVector V) {
+        throw new UnsupportedOperationException("not implemented for short ExpVector");
     }
 
 

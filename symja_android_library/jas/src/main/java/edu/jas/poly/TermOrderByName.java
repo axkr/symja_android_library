@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TermOrderByName.java 5391 2016-01-04 13:46:50Z kredel $
  */
 
 package edu.jas.poly;
@@ -85,6 +85,18 @@ public class TermOrderByName {
 
 
     /**
+     * TermOrder named ITDEGLEX.
+     */
+    public static final TermOrder ITDEGLEX = new TermOrder(TermOrder.ITDEGLEX);
+
+
+    /**
+     * TermOrder named REVITDEG.
+     */
+    public static final TermOrder REVITDEG = new TermOrder(TermOrder.REVITDEG);
+
+
+    /**
      * Default TermOrder.
      */
     public final static TermOrder DEFAULT = new TermOrder(TermOrder.DEFAULT_EVORD);
@@ -113,7 +125,7 @@ public class TermOrderByName {
     /**
      * TermOrder name NegativeDegreeLexicographic of Math like CAS.
      */
-    public final static TermOrder NegativeDegreeLexicographic = REVTDEG;
+    public final static TermOrder NegativeDegreeLexicographic = REVITDEG; // was REVTDEG;
 
 
     /**
@@ -125,7 +137,7 @@ public class TermOrderByName {
     /**
      * TermOrder name DegreeReverseLexicographic of Math like CAS.
      */
-    public final static TermOrder DegreeReverseLexicographic = IGRLEX;
+    public final static TermOrder DegreeReverseLexicographic = ITDEGLEX; // was IGRLEX;
 
 
     /**
