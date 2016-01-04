@@ -27,13 +27,13 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 		if (leftHandSide.isList()) {
 			// thread over lists
 			try {
-				rightHandSide = F.eval(rightHandSide);
+				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}
 			IExpr temp = EvalEngine.threadASTListArgs(F.Set(leftHandSide, rightHandSide));
 			if (temp != null) {
-				return F.eval(temp);
+				return engine.evaluate(temp);
 			}
 			return null;
 		}

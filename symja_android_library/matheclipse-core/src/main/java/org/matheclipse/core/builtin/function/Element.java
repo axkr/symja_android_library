@@ -22,10 +22,10 @@ public class Element extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		final IExpr arg2 = F.eval(ast.arg2());
+		final IExpr arg2 = engine.evaluate(ast.arg2());
 		ISymbol truthValue;
 		if (arg2.isSymbol()) {
-			final IExpr arg1 = F.eval(ast.arg1());
+			final IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST(F.Alternatives)) {
 				IAST list = (IAST) arg1;
 				for (int i = 1; i < list.size(); i++) {

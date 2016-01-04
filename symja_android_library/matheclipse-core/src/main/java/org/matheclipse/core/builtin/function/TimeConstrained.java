@@ -24,7 +24,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg2 = engine.evaluate(ast.arg2());
 		long seconds = 0L;
 		try {
 			if (arg2.isSignedNumber()) {

@@ -18,7 +18,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		if (F.evalTrue(ast.arg2())) {
+		if (engine.evalTrue(ast.arg2())) {
 			return F.eval(ast.arg1());
 		}
 		if (engine.isEvalLHSMode()) {
@@ -36,7 +36,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 	 * @return
 	 */
 	public static boolean checkCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
-		if (F.evalTrue(arg2)) {
+		if (engine.evalTrue(arg2)) {
 			if (arg1.isCondition()) {
 				return checkCondition(arg1.getAt(1), arg1.getAt(2), engine);
 			} else if (arg2.isModule()) {

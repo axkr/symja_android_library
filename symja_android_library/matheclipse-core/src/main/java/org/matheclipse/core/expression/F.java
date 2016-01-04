@@ -2374,7 +2374,9 @@ public class F {
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#eval(IExpr)
+	 * @deprecated use EvalEngine#evaluate()
 	 */
+	@Deprecated
 	public static IExpr eval(IExpr a) {
 		return EvalEngine.eval(a);
 	}
@@ -2388,9 +2390,10 @@ public class F {
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#eval(IExpr)
+	 * @deprecated use EvalEngine#evalQuiet();
 	 */
 	public static IExpr evalQuiet(IExpr a) {
-		return EvalEngine.evalQuiet(a);
+		return EvalEngine.get().evalQuiet(a);
 	}
 
 	/**
@@ -2403,9 +2406,11 @@ public class F {
 	 * @return the evaluated object or <code>null</code> if no evaluation was
 	 *         possible
 	 * @see EvalEngine#eval(IExpr)
+	 * @deprecated use EvalEngine#evalQuietNull()
 	 */
+	@Deprecated
 	public static IExpr evalQuietNull(IExpr a) {
-		return EvalEngine.evalQuietNull(a);
+		return EvalEngine.get().evalQuietNull(a);
 	}
 
 	/**
@@ -2585,60 +2590,14 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 1 argument and evaluate it.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible.
-	 */
-	public static IExpr evalNull(final ISymbol head, final IExpr a0) {
-		final IAST ast = ast(head);
-		ast.add(a0);
-		return EvalEngine.evalNull(ast);
-	}
-
-	/**
-	 * Create a function with 2 arguments and evaluate it.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @param a1
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible.
-	 */
-	public static IExpr evalNull(final ISymbol head, final IExpr a0, final IExpr a1) {
-		final IAST ast = ast(head);
-		ast.add(a0);
-		ast.add(a1);
-		return EvalEngine.evalNull(ast);
-	}
-
-	/**
-	 * Create a function with 3 arguments and evaluate it.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @param a1
-	 * @param a2
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible.
-	 */
-	public static IExpr evalNull(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
-		final IAST ast = ast(head);
-		ast.add(a0);
-		ast.add(a1);
-		ast.add(a2);
-		return EvalEngine.evalNull(ast);
-	}
-
-	/**
 	 * Evaluate the given expression and test if the result equals the symbol
 	 * <code>True</code>.
 	 * 
 	 * @param expr
 	 * @return
+	 * @deprecated use EvalEngine#evalTrue()
 	 */
+	@Deprecated
 	public static boolean evalTrue(IExpr expr) {
 		return EvalEngine.get().evalTrue(expr);
 	}

@@ -22,9 +22,9 @@ public class Append extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		IAST arg1AST = Validate.checkASTType(arg1);
-		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg2 = engine.evaluate(ast.arg2());
 		return arg1AST.appendClone(arg2);
 	}
 

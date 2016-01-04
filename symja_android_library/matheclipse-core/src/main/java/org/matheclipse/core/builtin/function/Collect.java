@@ -16,11 +16,13 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
- * <code>Collect(expr, variable)</code> - collect subexpressions in expr which belong to the same variable.
+ * <code>Collect(expr, variable)</code> - collect subexpressions in expr which
+ * belong to the same variable.
  * 
  * <p>
- * See the online Symja function reference: <a
- * href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Collect">Collect</a>
+ * See the online Symja function reference: <a href=
+ * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Collect">
+ * Collect</a>
  * </p>
  */
 public class Collect extends AbstractFunctionEvaluator {
@@ -39,11 +41,11 @@ public class Collect extends AbstractFunctionEvaluator {
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
 			if (!arg2.isList()) {
-				return collectSingleVariable(arg1, arg2, F.List(), 1, head);
+				return collectSingleVariable(arg1, arg2, F.List(), 1, head, engine);
 			}
 			IAST list = (IAST) arg2;
 			if (list.size() > 1) {
-				return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2, head);
+				return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2, head, engine);
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -53,7 +55,8 @@ public class Collect extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos, IExpr head) {
+	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos, IExpr head,
+			EvalEngine engine) {
 		if (arg1.isAST()) {
 			Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
 			IAST poly = (IAST) arg1;
@@ -65,11 +68,12 @@ public class Collect extends AbstractFunctionEvaluator {
 				// collect next pattern in sub-expressions
 				IAST result = F.Plus();
 				if (rest.size() > 1) {
-					result.add(collectSingleVariable(rest, list.get(pos), list, pos + 1, head));
+					result.add(collectSingleVariable(rest, list.get(pos), list, pos + 1, head, engine));
 				}
 				for (Entry<IExpr, IAST> entry : map.entrySet()) {
-					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0), list.get(pos), list, pos + 1, head);
-					result.add(F.Times(entry.getKey(), temp)); 
+					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0), list.get(pos), list,
+							pos + 1, head, engine);
+					result.add(F.Times(entry.getKey(), temp));
 				}
 				return result;
 			}
@@ -79,12 +83,12 @@ public class Collect extends AbstractFunctionEvaluator {
 				IExpr coefficient;
 				for (int i = 1; i < rest.size(); i++) {
 					simplifyAST.set(1, rest.get(i));
-					coefficient = F.eval(simplifyAST);
+					coefficient = engine.evaluate(simplifyAST);
 					rest.set(i, coefficient);
 				}
 				for (IExpr key : map.keySet()) {
 					simplifyAST.set(1, map.get(key));
-					coefficient = F.eval(simplifyAST);
+					coefficient = engine.evaluate(simplifyAST);
 					if (coefficient.isPlus()) {
 						rest.add(F.Times(key).addOneIdentity((IAST) coefficient));
 					} else {

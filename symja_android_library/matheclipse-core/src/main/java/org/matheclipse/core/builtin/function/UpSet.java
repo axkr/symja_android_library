@@ -26,13 +26,13 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 		if (leftHandSide.isList()) {
 			// thread over lists
 			try {
-				rightHandSide = F.eval(rightHandSide);
+				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}
 			IExpr temp = EvalEngine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide));
 			if (temp != null) {
-				return F.eval(temp);
+				return engine.evaluate(temp);
 			}
 		}
 		Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);

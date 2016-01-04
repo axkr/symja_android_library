@@ -49,7 +49,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		Validate.checkSize(ast, 2);
 
 		try {
-			IExpr arg1 = EvalEngine.evalNull(ast.arg1());
+			IExpr arg1 = engine.evaluateNull(ast.arg1());
 			if (arg1 != null) {
 				IExpr temp = evalFloor(arg1);
 				if (temp == null) {

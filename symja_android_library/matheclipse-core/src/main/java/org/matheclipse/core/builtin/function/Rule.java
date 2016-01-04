@@ -22,7 +22,7 @@ public class Rule extends AbstractFunctionEvaluator {
 		if (leftHandSide.isAST()) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
-		IExpr arg2 = EvalEngine.evalNull(ast.arg2());
+		IExpr arg2 = engine.evaluateNull(ast.arg2());
 		if (arg2 == null) {
 			if (leftHandSide.equals(ast.arg1())) {
 				return null;

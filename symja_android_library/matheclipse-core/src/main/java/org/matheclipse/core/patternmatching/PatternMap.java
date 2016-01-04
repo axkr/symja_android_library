@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -338,17 +339,18 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 			temp = expr;
 		}
 		IAST test = F.unaryAST1(patternTest, null);
+		EvalEngine engine = EvalEngine.get();
 		if (temp.isSequence()) {
 			for (int i = 1; i < ((IAST) temp).size(); i++) {
 				test.set(1, ((IAST) temp).get(i));
-				if (!F.evalTrue(test)) {
+				if (!engine.evalTrue(test)) {
 					return false;
 				}
 			}
 			return true;
 		}
 		test.set(1, temp);
-		if (!F.evalTrue(test)) {
+		if (!engine.evalTrue(test)) {
 			return false;
 		}
 		return true;

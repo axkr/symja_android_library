@@ -30,27 +30,29 @@ public class Resultant extends AbstractFunctionEvaluator {
 		IExpr b = F.evalExpandAll(ast.arg2());
 		ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 		try {
-			ExprPolynomial aPolynomial = ring.create(a);
-		} catch (Exception ex) {
+			// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+			ring.create(a);
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
 		}
 		try {
-			ExprPolynomial bPolynomial = ring.create(b);
-			return F.Together(resultant(a, b, x));
-		} catch (Exception ex) {
+			// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+			ring.create(b);
+			return F.Together(resultant(a, b, x, engine));
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(ast, b, 2, "Polynomial expected!");
 		}
 	}
 
-	public IExpr resultant(IExpr a, IExpr b, ISymbol x) {
+	public IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
 		IExpr aExp = F.eval(F.Exponent(a, x));
 		IExpr bExp = F.eval(F.Exponent(b, x));
 		if (b.isFree(x)) {
 			return F.Power(b, aExp);
 		}
 		IExpr abExp = aExp.times(bExp);
-		if (F.evalTrue(F.Less(aExp, bExp))) {
-			return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x));
+		if (engine.evalTrue(F.Less(aExp, bExp))) {
+			return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x, engine));
 		}
 
 		IExpr r = F.eval(F.PolynomialRemainder(a, b, x));
@@ -58,7 +60,7 @@ public class Resultant extends AbstractFunctionEvaluator {
 		if (!r.isZero()) {
 			rExp = F.eval(F.Exponent(r, x));
 		}
-		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)), resultant(b, r, x));
+		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)), resultant(b, r, x, engine));
 	}
 
 	// public static IExpr resultant(IAST result, IAST resultListDiff) {

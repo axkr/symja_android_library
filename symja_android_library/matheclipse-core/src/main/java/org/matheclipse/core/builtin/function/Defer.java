@@ -24,7 +24,7 @@ public class Defer extends AbstractCoreFunctionEvaluator {
 			return null;
 		}
 		Validate.checkSize(ast, 2);
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 
 		return arg1;
 	}

@@ -32,7 +32,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 		
 		IAST evaledAST = ast.clone();
 		for (int i = 1; i < evaledAST.size(); i++) {
-			evaledAST.set(i, F.eval(evaledAST.get(i)));
+			evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
 		}
 		int lastIndex = evaledAST.size() - 1;
 		boolean heads = false;

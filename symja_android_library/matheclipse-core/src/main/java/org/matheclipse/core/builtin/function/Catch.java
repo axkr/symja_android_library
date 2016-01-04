@@ -24,7 +24,7 @@ public class Catch  extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		try {
-			return F.eval(ast.arg1());
+			return engine.evaluate(ast.arg1());
 		} catch (final ThrowException e) {
 			return e.getValue();
 		}

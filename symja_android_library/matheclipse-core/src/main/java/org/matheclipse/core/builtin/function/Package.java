@@ -83,7 +83,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 			engine.setPackageMode(true);
 			// evaluate the new converted rules
 			for (int i = 1; i < resultList.size(); i++) {
-				EvalEngine.eval(resultList.get(i));
+				engine.evaluate(resultList.get(i));
 			}
 		} finally {
 			engine.setPackageMode(false);

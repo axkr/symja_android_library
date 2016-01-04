@@ -27,8 +27,7 @@ public class ListQ extends AbstractCoreFunctionEvaluator implements Predicate<IE
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		final IExpr temp = F.eval(ast.arg1());
-		return F.bool(test(temp));
+		return F.bool(test( engine.evaluate(ast.arg1()) ));
 	}
 
 	@Override

@@ -116,7 +116,7 @@ public class Sum extends Table implements SumRules {
 			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
 				if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
 
-					temp = definiteSum(arg1, iterator, (IAST) argN);
+					temp = definiteSum(arg1, iterator, (IAST) argN, engine);
 					if (temp != null) {
 						if (ast.size() == 3) {
 							return temp;
@@ -169,7 +169,7 @@ public class Sum extends Table implements SumRules {
 	 *            <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list) {
+	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
 		IExpr arg1 = expr;
 		final IExpr from = iterator.getStart();
@@ -182,7 +182,7 @@ public class Sum extends Table implements SumRules {
 			if (from.isZero()) {
 				return F.Times(Plus(to, C1), arg1);
 			}
-			if (!F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
+			if (!engine.evalTrue(F.Greater(C1, from)) && !engine.evalTrue(F.Greater(from, to))) {
 				return F.Times(Plus(C1, F.Negate(from), to), arg1);
 			}
 		} else {
@@ -213,7 +213,7 @@ public class Sum extends Table implements SumRules {
 				}
 			}
 
-			if (!F.evalTrue(F.Greater(C0, from)) && !F.evalTrue(F.Greater(from, to))) {
+			if (!engine.evalTrue(F.Greater(C0, from)) && !engine.evalTrue(F.Greater(from, to))) {
 				IExpr temp = null;
 				if (arg1.isPower()) {
 					temp = sumPower((IAST) arg1, var, from, to);
@@ -225,7 +225,7 @@ public class Sum extends Table implements SumRules {
 				}
 			}
 
-			if (arg1.isPower() && !F.evalTrue(F.Greater(C1, from)) && !F.evalTrue(F.Greater(from, to))) {
+			if (arg1.isPower() && !engine.evalTrue(F.Greater(C1, from)) && !engine.evalTrue(F.Greater(from, to))) {
 				IAST powAST = (IAST) arg1;
 				if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var) && to.isFree(var)) {
 					if (from.isOne()) {
@@ -241,7 +241,7 @@ public class Sum extends Table implements SumRules {
 		if (from.isPositive()) {
 			IExpr temp1 = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
 			if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
-				IExpr temp2 = F.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
+				IExpr temp2 = engine.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
 				if (temp2 != null && !temp2.isComplexInfinity()) {
 					return F.Subtract(temp2, temp1);
 				}

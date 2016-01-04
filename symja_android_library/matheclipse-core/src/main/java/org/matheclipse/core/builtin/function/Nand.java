@@ -28,7 +28,7 @@ public class Nand extends AbstractFunctionEvaluator {
 		boolean evaled = false;
 
 		for (int i = 1; i < ast.size(); i++) {
-			IExpr temp = F.eval(ast.get(i));
+			IExpr temp = engine.evaluate(ast.get(i));
 			if (temp.isFalse()) {
 				return F.True;
 			} else if (temp.isTrue()) {

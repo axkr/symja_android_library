@@ -49,7 +49,7 @@ public class Re extends AbstractEvaluator {
 				if (directedInfininty.isInfinity()) {
 					return F.CInfinity;
 				}
-				IExpr re = F.eval(F.Re(directedInfininty.arg1()));
+				IExpr re = engine.evaluate(F.Re(directedInfininty.arg1()));
 				if (re.isNumber()) {
 					if (re.isZero()) {
 						return F.C0;
@@ -92,8 +92,8 @@ public class Re extends AbstractEvaluator {
 					return rePowerComplex(x, a, b);
 				}
 				// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-				IExpr a = F.eval(F.Re(astPower.arg2()));
-				IExpr b = F.eval(F.Im(astPower.arg2()));
+				IExpr a = engine.evaluate(F.Re(astPower.arg2()));
+				IExpr b = engine.evaluate(F.Im(astPower.arg2()));
 				return rePowerComplex(x, a, b);
 			}
 		}

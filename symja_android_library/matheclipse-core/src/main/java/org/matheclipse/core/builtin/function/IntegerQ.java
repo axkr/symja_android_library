@@ -22,7 +22,7 @@ public class IntegerQ extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		final IExpr temp = F.eval(ast.arg1());
+		final IExpr temp = engine.evaluate(ast.arg1());
 		if (temp.isList()) {
 			// thread over list
 			return ((IAST) temp).mapAt(F.IntegerQ(null),1);

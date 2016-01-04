@@ -24,11 +24,12 @@ public class Do extends AbstractCoreFunctionEvaluator {
 	public static class DoIterator {
 
 		final List<? extends IIterator<IExpr>> fIterList;
-
+		final EvalEngine fEngine;
 		int fIndex;
 
-		public DoIterator(final List<? extends IIterator<IExpr>> iterList) {
+		public DoIterator(final List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
 			fIterList = iterList;
+			fEngine = engine;
 			fIndex = 0;
 		}
 
@@ -41,7 +42,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 						while (iter.hasNext()) {
 							try {
 								iter.next();
-								F.eval(input);
+								fEngine.evaluate(input);
 							} catch (final ReturnException e) {
 								return e.getValue();
 							} catch (final BreakException e) {
@@ -73,7 +74,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 			for (int i = 2; i < ast.size(); i++) {
 				iterList.add(new Iterator((IAST) ast.get(i), engine));
 			}
-			final DoIterator generator = new DoIterator(iterList);
+			final DoIterator generator = new DoIterator(iterList, engine);
 			return generator.doIt(ast.arg1());
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs

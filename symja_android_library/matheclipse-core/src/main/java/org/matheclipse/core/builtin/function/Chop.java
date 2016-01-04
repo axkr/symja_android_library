@@ -31,7 +31,7 @@ public class Chop extends AbstractCoreFunctionEvaluator {
 			delta = ((INum) ast.arg2()).getRealPart();
 		}
 		try {
-			arg1 = F.eval(arg1);
+			arg1 = engine.evaluate(arg1);
 			if (arg1.isAST()) {
 				IAST list = (IAST) arg1;
 				// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}

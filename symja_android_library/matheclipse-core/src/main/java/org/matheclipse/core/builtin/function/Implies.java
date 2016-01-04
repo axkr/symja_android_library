@@ -20,22 +20,22 @@ public class Implies extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		
-		IExpr arg1=F.eval(ast.arg1());
-		if (arg1.isTrue()){
+
+		IExpr arg1 = engine.evaluate(ast.arg1());
+		if (arg1.isTrue()) {
 			return ast.arg2();
 		}
-		if (arg1.isFalse()){
+		if (arg1.isFalse()) {
 			return F.True;
 		}
-		IExpr arg2=F.eval(ast.arg2());
-		if (arg2.isTrue()){
+		IExpr arg2 = engine.evaluate(ast.arg2());
+		if (arg2.isTrue()) {
 			return F.True;
 		}
-		if (arg2.isFalse()){
+		if (arg2.isFalse()) {
 			return F.Not(arg1);
 		}
-		if (arg1.equals(arg2)){
+		if (arg1.equals(arg2)) {
 			return F.True;
 		}
 		return null;

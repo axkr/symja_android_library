@@ -27,7 +27,7 @@ public class SetAttributes extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		
 		if (ast.arg1().isSymbol()) {
-			IExpr arg2 = F.eval(ast.arg2());
+			IExpr arg2 = engine.evaluate(ast.arg2());
 			final ISymbol sym = ((ISymbol) ast.arg1());
 			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {

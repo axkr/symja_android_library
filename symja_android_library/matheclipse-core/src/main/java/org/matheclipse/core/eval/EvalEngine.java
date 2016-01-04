@@ -52,23 +52,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            the expression which should be evaluated
 	 * @return the evaluated object
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
+	 * @deprecated use EvalEngine#evaluate()
 	 */
+	@Deprecated
 	public static final IExpr eval(final IExpr expr) {
 		return instance.get().evaluate(expr);
-	}
-
-	/**
-	 * Evaluate an expression. If evaluation is not possible return
-	 * <code>null</code>.
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible
-	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
-	 */
-	public static final IExpr evalNull(final IExpr expr) {
-		return (instance.get()).evaluateNull(expr);
 	}
 
 	/**
@@ -81,14 +69,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return the evaluated object
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
-	public static final IExpr evalQuiet(final IExpr expr) {
-		EvalEngine engine = instance.get();
-		boolean quiet = engine.isQuietMode();
+	public final IExpr evalQuiet(final IExpr expr) {
+		boolean quiet = isQuietMode();
 		try {
-			engine.setQuietMode(true);
-			return engine.evaluate(expr);
+			setQuietMode(true);
+			return evaluate(expr);
 		} finally {
-			engine.setQuietMode(quiet);
+			setQuietMode(quiet);
 		}
 	}
 
@@ -103,14 +90,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *         possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
-	public static final IExpr evalQuietNull(final IExpr expr) {
-		EvalEngine engine = instance.get();
-		boolean quiet = engine.isQuietMode();
+	public final IExpr evalQuietNull(final IExpr expr) {
+		boolean quiet = isQuietMode();
 		try {
-			engine.setQuietMode(true);
-			return engine.evaluateNull(expr);
+			setQuietMode(true);
+			return evaluateNull(expr);
 		} finally {
-			engine.setQuietMode(quiet);
+			setQuietMode(quiet);
 		}
 	}
 
