@@ -149,8 +149,9 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 			}
 			if (result != null) {
-				return PlusOp.plus(result);
+				return setExpanded(PlusOp.plus(result));
 			}
+			setExpanded(ast);
 			return null;
 		}
 
@@ -236,8 +237,10 @@ public class Expand extends AbstractFunctionEvaluator {
 				result = expandTimesBinary(result, temp);
 			}
 			if (evaled == false && timesAST.equals(result)) {
+				setExpanded(timesAST);
 				return null;
 			}
+			setExpanded(result);
 			return result;
 		}
 
