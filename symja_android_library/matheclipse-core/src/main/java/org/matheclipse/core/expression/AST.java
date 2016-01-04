@@ -260,8 +260,8 @@ public class AST extends HMArrayList implements Externalizable {
 		return ast;
 	}
 
-	protected static AST newInstance(final IAST ast, int endPosition) {
-		AST result = new AST(5, false);
+	protected static AST newInstance(final int intialCapacity, final IAST ast, int endPosition) {
+		AST result = new AST(intialCapacity, false);
 		result.addAll(ast, 0, endPosition);
 		return result;
 	}

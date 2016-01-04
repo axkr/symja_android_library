@@ -342,9 +342,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST copyUntil(int index) {
-		return AST.newInstance(this, index);
+		return AST.newInstance(index, this, index);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final IAST copyUntil(final int intialCapacity, int index) {
+		return AST.newInstance(index, this, index);
+	}
+	
 	@Override
 	public IAST clone() {
 		AbstractAST ast = null;

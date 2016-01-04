@@ -317,7 +317,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public Set<IExpr> asSet();
-	
+
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not cloned).
@@ -347,6 +347,16 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @param position
 	 */
 	public IAST copyUntil(int position);
+
+	/**
+	 * Create a copy of this <code>AST</code>, which contains the same head and
+	 * all elements up to the given <code>position</code> (exclusive).
+	 * 
+	 * @param intialCapacity
+	 *            the initial capacity of elements
+	 * @param position
+	 */
+	public IAST copyUntil(final int intialCapacity, int position);
 
 	/**
 	 * Calls <code>get(position).equals(expr)</code>.

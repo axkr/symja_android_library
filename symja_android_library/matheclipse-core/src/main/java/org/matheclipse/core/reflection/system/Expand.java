@@ -12,6 +12,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
+import com.google.common.math.LongMath;
+
 public class Expand extends AbstractFunctionEvaluator {
 	private static class Expander {
 
@@ -138,7 +140,7 @@ public class Expand extends AbstractFunctionEvaluator {
 					IExpr temp = expand((IAST) arg, pattern, expandNegativePowers, false);
 					if (temp != null) {
 						if (result == null) {
-							result = ast.copyUntil(i);
+							result = ast.copyUntil(ast.size(), i);
 						}
 						result.add(temp);
 						continue;
@@ -204,7 +206,12 @@ public class Expand extends AbstractFunctionEvaluator {
 				return F.C1;
 			}
 
-			final IAST expandedResult = F.Plus();
+			int k = plusAST.size() - 1;
+			long numberOfTerms = LongMath.binomial(n + k - 1, n);
+			if (numberOfTerms > (long) Integer.MAX_VALUE) {
+				throw new ArithmeticException("");
+			}
+			final IAST expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
 			Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
 			part.partition();
 			return PlusOp.plus(expandedResult);
@@ -267,7 +274,11 @@ public class Expand extends AbstractFunctionEvaluator {
 		 * @return
 		 */
 		private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
-			IAST result = F.Plus();
+			long numberOfTerms = (plusAST0.size() - 1) * (plusAST0.size() - 1);
+			if (numberOfTerms > (long) Integer.MAX_VALUE) {
+				throw new ArithmeticException("");
+			}
+			final IAST result = F.ast(F.Plus, (int) numberOfTerms, false);
 			for (int i = 1; i < plusAST0.size(); i++) {
 				for (int j = 1; j < plusAST1.size(); j++) {
 					// evaluate to flatten out Times() exprs
@@ -285,7 +296,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		 * @return
 		 */
 		private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-			IAST result = F.Plus();
+			final IAST result = F.ast(F.Plus, plusAST.size() - 1, false);
 			for (int i = 1; i < plusAST.size(); i++) {
 				// evaluate to flatten out Times() exprs
 				evalAndExpandAST(expr1, plusAST.get(i), result);
