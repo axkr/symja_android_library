@@ -39,7 +39,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 		}
 		// TODO implement &quot;TimeConstrained&quot; mode
 		try {
-			return F.eval(ast.arg1());
+			return engine.evaluate(ast.arg1());
 		} catch (final MathException e) {
 			throw e;
 		} catch (final Throwable th) {

@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.function;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -13,8 +14,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.Function;
-
 public class NestList extends AbstractCoreFunctionEvaluator {
 
 	public NestList() {
@@ -24,24 +23,25 @@ public class NestList extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
-		return evaluateNestList(ast, List());
+		return evaluateNestList(ast, List(), engine);
 	}
 
-	public static IExpr evaluateNestList(final IAST ast, final IAST resultList) {
-		IExpr arg3 = F.eval(ast.arg3());
+	public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+		IExpr arg3 = engine.evaluate(ast.arg3());
 		if (arg3.isInteger()) {
 			final int n = Validate.checkIntType(arg3);
-			nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList);
+			nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList, engine);
 			return resultList;
 		}
 		return null;
 	}
 
-	public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn, final Collection<IExpr> resultList) {
+	public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
+			final Collection<IExpr> resultList, EvalEngine engine) {
 		IExpr temp = expr;
 		resultList.add(temp);
 		for (int i = 0; i < n; i++) {
-			temp = F.eval(fn.apply(temp));
+			temp = engine.evaluate(fn.apply(temp));
 			resultList.add(temp);
 		}
 	}

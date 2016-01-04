@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -21,17 +20,17 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
-		return evaluateNestList(ast, List());
+		return evaluateNestList(ast, List(), engine);
 	}
 
-	public static IExpr evaluateNestList(final IAST ast, final IAST resultList) {
+	public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
 
 		try {
-			IExpr temp = F.eval(ast.arg3());
+			IExpr temp = engine.evaluate(ast.arg3());
 			if (temp.isAST()) {
 				final IAST list = (IAST) temp;
-				IExpr arg1 = F.eval(ast.arg1());
-				IExpr arg2 = F.eval(ast.arg2());
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
 				foldLeft(arg2, list, 1, list.size(), new BinaryMap(arg1), resultList);
 				return resultList;
 			}
@@ -47,9 +46,11 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-	 * Fold the list from <code>start</code> index including to <code>end</code> index excluding into the
-	 * <code>resultCollection</code>. If the <i>binaryFunction</i> returns <code>null</code>, the left element will be added to the
-	 * result list, otherwise the result will be <i>folded</i> again with the next element in the list.
+	 * Fold the list from <code>start</code> index including to <code>end</code>
+	 * index excluding into the <code>resultCollection</code>. If the
+	 * <i>binaryFunction</i> returns <code>null</code>, the left element will be
+	 * added to the result list, otherwise the result will be <i>folded</i>
+	 * again with the next element in the list.
 	 * 
 	 * @param list
 	 * @param start

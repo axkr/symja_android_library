@@ -20,10 +20,10 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 		
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		IAST arg1AST = Validate.checkASTType(arg1);
-		IExpr arg2 = F.eval(ast.arg2());
-		IExpr arg3 = F.eval(ast.arg3());
+		IExpr arg2 = engine.evaluate(ast.arg2());
+		IExpr arg3 = engine.evaluate(ast.arg3());
 		if (arg3.isInteger()) {
 			try {
 				int i = Validate.checkIntType(arg3,  Integer.MIN_VALUE);

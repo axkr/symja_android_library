@@ -16,15 +16,17 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class AddTo extends AbstractFunctionEvaluator {
 	static class AddToFunction implements Function<IExpr, IExpr> {
+		final EvalEngine engine;
 		final IExpr value;
 
-		public AddToFunction(final IExpr value) {
+		public AddToFunction(final IExpr value, EvalEngine engine) {
+			this.engine = engine;
 			this.value = value;
 		}
 
 		@Override
 		public IExpr apply(final IExpr assignedValue) {
-			return F.eval(F.Plus(assignedValue, value));
+			return engine.evaluate(F.Plus(assignedValue, value));
 		}
 
 	}
@@ -36,8 +38,8 @@ public class AddTo extends AbstractFunctionEvaluator {
 	 *            the value which is assigned in this statement (i.e. <code>variable += value</code>)
 	 * @return
 	 */
-	protected Function<IExpr, IExpr> getFunction(IExpr value) {
-		return new AddToFunction(value);
+	protected Function<IExpr, IExpr> getFunction(IExpr value, EvalEngine engine) {
+		return new AddToFunction(value, engine);
 	}
 
 	public AddTo() {
@@ -52,8 +54,8 @@ public class AddTo extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		ISymbol sym = Validate.checkSymbolType(ast, 1);
-		IExpr arg2 = F.eval(ast.arg2());
-		IExpr[] results = sym.reassignSymbolValue(getFunction(F.eval(arg2)), getFunctionSymbol());
+		IExpr arg2 = engine.evaluate(ast.arg2());
+		IExpr[] results = sym.reassignSymbolValue(getFunction(engine.evaluate(arg2), engine), getFunctionSymbol());
 		if (results != null) {
 			return results[1];
 		} 

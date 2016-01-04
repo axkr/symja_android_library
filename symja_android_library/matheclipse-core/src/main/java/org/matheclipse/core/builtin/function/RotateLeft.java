@@ -17,7 +17,7 @@ public class RotateLeft extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IAST result = F.ast(arg1.head());
 			if (ast.size() == 2) {
@@ -26,7 +26,7 @@ public class RotateLeft extends AbstractCoreFunctionEvaluator {
 				// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
 				return result;
 			} else {
-				IExpr arg2 = F.eval(ast.arg2());
+				IExpr arg2 = engine.evaluate(ast.arg2());
 				if (arg2.isInteger()) {
 					int n = Validate.checkIntType(arg2);
 

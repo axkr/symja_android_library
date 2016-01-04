@@ -20,7 +20,7 @@ public class Rest extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		final IAST sublist = Validate.checkASTType(arg1);
 
 		if (sublist.size() > 1) {

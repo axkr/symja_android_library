@@ -20,15 +20,16 @@ public class NestWhile extends NestWhileList {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
-		return nestWhile(ast.arg2(), F.eval(ast.arg3()), Functors.append(F.ast(ast.arg1())));
+		return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), Functors.append(F.ast(ast.arg1())), engine);
 	}
 
-	public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn) {
+	public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
+			EvalEngine engine) {
 		IExpr temp = expr;
 		Predicate<IExpr> predicate = Predicates.isTrue(test);
 
 		while (predicate.test(temp)) {
-			temp = F.eval(fn.apply(temp));
+			temp = engine.evaluate(fn.apply(temp));
 		}
 		return temp;
 

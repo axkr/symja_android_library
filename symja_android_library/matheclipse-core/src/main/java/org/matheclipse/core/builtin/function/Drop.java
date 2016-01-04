@@ -24,8 +24,8 @@ public class Drop extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		final IExpr arg1 = F.eval(ast.arg1());
-		final IExpr arg2 = F.eval(ast.arg2());
+		final IExpr arg1 = engine.evaluate(ast.arg1());
+		final IExpr arg2 = engine.evaluate(ast.arg2());
 		try {
 			if (arg1.isAST()) {
 				final ISequence sequ = Sequence.createSequence(arg2);

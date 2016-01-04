@@ -17,17 +17,17 @@ public class Fold extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
-		return evaluateNestList(ast);
+		return evaluateNestList(ast, engine);
 	}
 
-	public static IExpr evaluateNestList(final IAST ast) {
+	public static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
 
 		try {
-			IExpr temp = F.eval(ast.arg3());
+			IExpr temp = engine.evaluate(ast.arg3());
 			if (temp.isAST()) {
 				final IAST list = (IAST) temp;
-				IExpr arg1 = F.eval(ast.arg1());
-				IExpr arg2 = F.eval(ast.arg2());
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				IExpr arg2 = engine.evaluate(ast.arg2());
 				return list.args().foldLeft(new BinaryMap(arg1), arg2);
 			}
 		} catch (final ArithmeticException e) {

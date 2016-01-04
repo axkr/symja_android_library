@@ -26,11 +26,12 @@ public class MessageName extends AbstractFunctionEvaluator {
 		if (!ast.arg1().isSymbol()) {
 			throw new WrongArgumentType(ast, ast.arg1(), 1, "");
 		}
-		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg2 = engine.evaluate(ast.arg2());
 		if (arg2 instanceof IStringX || arg2.isSymbol()) {
 			return null;
 		}
-		if (!ast.arg2().isAST(F.Set, 3)) { // instanceof IStringX) && !ast.arg2().isSymbol()) {
+		if (!ast.arg2().isAST(F.Set, 3)) { // instanceof IStringX) &&
+											// !ast.arg2().isSymbol()) {
 			throw new WrongArgumentType(ast, ast.arg2(), 2, "");
 		}
 		// Assignemnt of the message is handled in Set() function

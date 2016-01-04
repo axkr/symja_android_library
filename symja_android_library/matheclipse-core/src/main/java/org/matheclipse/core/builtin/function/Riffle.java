@@ -17,8 +17,8 @@ public class Riffle extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		IExpr arg1 = F.eval(ast.arg1());
-		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg1 = engine.evaluate(ast.arg1());
+		IExpr arg2 = engine.evaluate(ast.arg2());
 		if (arg1.isAST()) {
 			IAST list = (IAST) arg1;
 			if (arg2.isAST()) {

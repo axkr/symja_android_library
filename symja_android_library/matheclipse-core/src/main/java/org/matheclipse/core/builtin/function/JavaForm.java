@@ -26,10 +26,10 @@ public class JavaForm extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		boolean strictJava = false;
 		if (ast.size() == 3) {
-			IExpr arg2 = F.eval(ast.arg2());
+			IExpr arg2 = engine.evaluate(ast.arg2());
 			final Options options = new Options(ast.topHead(), arg2);
 			strictJava = options.isOption("Strict");
 		}

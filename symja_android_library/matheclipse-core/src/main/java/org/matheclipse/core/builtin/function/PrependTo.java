@@ -37,7 +37,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 		ISymbol sym = Validate.checkSymbolType(ast, 1);
-		IExpr arg2 = F.eval(ast.arg2());
+		IExpr arg2 = engine.evaluate(ast.arg2());
 		Function<IExpr, IExpr> function = new PrependToFunction(arg2);
 		IExpr[] results = sym.reassignSymbolValue(function, F.PrependTo);
 		if (results != null) {

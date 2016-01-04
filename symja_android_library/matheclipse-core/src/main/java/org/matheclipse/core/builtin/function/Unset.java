@@ -24,7 +24,7 @@ public class Unset extends AbstractCoreFunctionEvaluator {
 			// thread over lists
 			IExpr temp = EvalEngine.threadASTListArgs(F.Unset(leftHandSide));
 			if (temp != null) {
-				return F.eval(temp);
+				return engine.evaluate(temp);
 			}
 		}
 		removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);

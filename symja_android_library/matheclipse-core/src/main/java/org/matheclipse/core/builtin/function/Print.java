@@ -27,7 +27,7 @@ public class Print extends AbstractCoreFunctionEvaluator {
 			final StringBuilder buf = new StringBuilder();
 			IExpr temp;
 			for (int i = 1; i < ast.size(); i++) {
-				temp = F.eval(ast.get(i));
+				temp = engine.evaluate(ast.get(i));
 				if (temp instanceof IStringX) {
 					buf.append(temp.toString());
 				} else {

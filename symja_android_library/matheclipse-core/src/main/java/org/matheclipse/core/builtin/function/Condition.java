@@ -19,7 +19,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		if (engine.evalTrue(ast.arg2())) {
-			return F.eval(ast.arg1());
+			return engine.evaluate(ast.arg1());
 		}
 		if (engine.isEvalLHSMode()) {
 			return null;

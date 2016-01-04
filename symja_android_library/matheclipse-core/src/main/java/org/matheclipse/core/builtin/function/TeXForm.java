@@ -24,7 +24,7 @@ public class TeXForm extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
-		IExpr arg1 = F.eval(ast.arg1());
+		IExpr arg1 = engine.evaluate(ast.arg1());
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(arg1, stw);
 		return F.stringx(stw.toString());
