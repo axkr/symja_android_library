@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -9,8 +11,6 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
-
-import java.util.function.Function;
 
 /**
  * @see Map
@@ -46,14 +46,14 @@ public class Scan extends Map {
 
 				ast.arg2().accept(level);
 				for (int i = 1; i < result.size(); i++) {
-					F.eval(result.get(i));
+					engine.evaluate(result.get(i));
 				}
 
 			} else {
 				if (ast.arg2().isAST()) {
-					F.eval(((IAST) ast.arg2()).map(Functors.append(arg1)));
+					engine.evaluate(((IAST) ast.arg2()).map(Functors.append(arg1)));
 				} else {
-					F.eval(ast.arg2());
+					engine.evaluate(ast.arg2());
 				}
 			}
 			return F.Null;

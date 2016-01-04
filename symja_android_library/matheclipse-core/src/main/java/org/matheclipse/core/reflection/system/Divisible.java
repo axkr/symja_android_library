@@ -23,7 +23,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 			return ((IAST) ast.arg1()).mapAt(F.List(), ast, 1);
 		}
 
-		IExpr result = F.eval(F.Divide(ast.arg1(), ast.arg2()));
+		IExpr result = engine.evaluate(F.Divide(ast.arg1(), ast.arg2()));
 		if (result.isNumber()) {
 			if (result.isComplex()) {
 				IComplex comp = (IComplex) result;

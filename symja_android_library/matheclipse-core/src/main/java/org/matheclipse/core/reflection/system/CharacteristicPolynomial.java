@@ -27,7 +27,7 @@ public class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 		if (dim != null && dim[0] == dim[1]) {
 			// a matrix with square dimensions
 			final IExpr[] valuesForIdentityMatrix = { F.C0, ast.arg2() };
-			return F.eval(F.Det(F.Subtract(ast.arg1(), IdentityMatrix
+			return engine.evaluate(F.Det(F.Subtract(ast.arg1(), IdentityMatrix
 					.diagonalMatrix(valuesForIdentityMatrix, dim[0]))));
 		}
 

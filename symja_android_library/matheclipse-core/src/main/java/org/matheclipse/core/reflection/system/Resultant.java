@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -30,13 +29,15 @@ public class Resultant extends AbstractFunctionEvaluator {
 		IExpr b = F.evalExpandAll(ast.arg2());
 		ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 		try {
-			// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+			// check if a is a polynomial otherwise check ArithmeticException,
+			// ClassCastException
 			ring.create(a);
 		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
 		}
 		try {
-			// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+			// check if b is a polynomial otherwise check ArithmeticException,
+			// ClassCastException
 			ring.create(b);
 			return F.Together(resultant(a, b, x, engine));
 		} catch (RuntimeException ex) {
@@ -45,8 +46,8 @@ public class Resultant extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
-		IExpr aExp = F.eval(F.Exponent(a, x));
-		IExpr bExp = F.eval(F.Exponent(b, x));
+		IExpr aExp = engine.evaluate(F.Exponent(a, x));
+		IExpr bExp = engine.evaluate(F.Exponent(b, x));
 		if (b.isFree(x)) {
 			return F.Power(b, aExp);
 		}
@@ -55,12 +56,13 @@ public class Resultant extends AbstractFunctionEvaluator {
 			return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x, engine));
 		}
 
-		IExpr r = F.eval(F.PolynomialRemainder(a, b, x));
+		IExpr r = engine.evaluate(F.PolynomialRemainder(a, b, x));
 		IExpr rExp = r;
 		if (!r.isZero()) {
-			rExp = F.eval(F.Exponent(r, x));
+			rExp = engine.evaluate(F.Exponent(r, x));
 		}
-		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)), resultant(b, r, x, engine));
+		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
+				resultant(b, r, x, engine));
 	}
 
 	// public static IExpr resultant(IAST result, IAST resultListDiff) {
