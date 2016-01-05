@@ -350,13 +350,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public final IAST copyUntil(final int intialCapacity, int index) {
 		return AST.newInstance(index, this, index);
 	}
-	
+
 	@Override
 	public IAST clone() {
 		AbstractAST ast = null;
 		try {
 			ast = (AbstractAST) super.clone();
 			ast.fEvalFlags = 0;
+			ast.hashValue = 0;
 		} catch (CloneNotSupportedException e) {
 		}
 		return ast;
