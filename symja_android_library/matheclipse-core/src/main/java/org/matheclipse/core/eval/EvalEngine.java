@@ -31,7 +31,6 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.reflection.system.Plus;
@@ -930,13 +929,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if ((result = EvalAttributes.flatten(ast)) != null) {
 				resultList = result;
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					EvalAttributes.sort(ast);
+					EvalAttributes.sort(resultList);
 				}
 				return resultList;
 			}
 		}
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			EvalAttributes.sort(ast);
+			if (EvalAttributes.sort(ast)) {
+				return ast;
+			}
+			// TODO testSystem081 fails if we return null then sort() gives
+			// false?
+			return ast;
 		}
 		return null;
 	}
@@ -1616,14 +1620,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *             if a parsing error occurs
 	 */
 	final public IExpr parse(String expression) {
-//		final ExprParser parser = new ExprParser(this, fRelaxedSyntax);
-//		return parser.parse(expression);
-		 final Parser parser = new Parser(fRelaxedSyntax);
-		 final ASTNode node = parser.parse(expression);
-		 if (fRelaxedSyntax) {
-		 return AST2Expr.CONST_LC.convert(node, this);
-		 }
-		 return AST2Expr.CONST.convert(node, this);
+		// final ExprParser parser = new ExprParser(this, fRelaxedSyntax);
+		// return parser.parse(expression);
+		final Parser parser = new Parser(fRelaxedSyntax);
+		final ASTNode node = parser.parse(expression);
+		if (fRelaxedSyntax) {
+			return AST2Expr.CONST_LC.convert(node, this);
+		}
+		return AST2Expr.CONST.convert(node, this);
 	}
 
 	/**
