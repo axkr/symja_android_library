@@ -42,7 +42,6 @@ public class Expand extends AbstractFunctionEvaluator {
 		}
 
 		public IExpr expandAST(final IAST ast) {
-
 			if (isPatternFree(ast)) {
 				return null;
 			}
@@ -50,34 +49,36 @@ public class Expand extends AbstractFunctionEvaluator {
 				return null;
 			}
 			if (ast.isPower()) {
-				return setExpanded(expandPowerNull(ast));
+				return expandPowerNull(ast);
 			} else if (ast.isTimes()) {
 				// (a+b)*(c+d)...
 
 				IExpr[] temp = Apart.getFractionalPartsTimes(ast, false, false, true);
 				IExpr tempExpr;
 				if (temp == null) {
-					return setExpanded(expandTimes(ast));
+					return expandTimes(ast);
 				}
 				if (temp[0].isOne()) {
 					if (temp[1].isTimes()) {
 						tempExpr = expandTimes((IAST) temp[1]);
 						if (tempExpr != null) {
-							return setExpanded(PowerOp.power(tempExpr, F.CN1));
+							return PowerOp.power(tempExpr, F.CN1);
 						}
+						addExpanded(ast);
 						return null;
 					}
 					if (temp[1].isPower() || temp[1].isPlus()) {
 						IExpr denom = expandAST((IAST) temp[1]);
 						if (denom != null) {
-							return setExpanded(PowerOp.power(denom, F.CN1));
+							return PowerOp.power(denom, F.CN1);
 						}
 					}
+					addExpanded(ast);
 					return null;
 				}
 
 				if (temp[1].isOne()) {
-					return setExpanded(expandTimes(ast));
+					return expandTimes(ast);
 				}
 
 				boolean evaled = false;
@@ -108,21 +109,23 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 				IExpr powerAST = PowerOp.power(temp[1], F.CN1);
 				if (distributePlus && temp[0].isPlus()) {
-					return setExpanded(PlusOp.plus(((IAST) temp[0]).mapAt(F.Times(null, powerAST), 1)));
+					return addExpanded(PlusOp.plus(((IAST) temp[0]).mapAt(F.Times(null, powerAST), 1)));
 				}
 				if (evaled) {
-					return setExpanded(TimesOp.times(temp[0], powerAST));
+					return addExpanded(TimesOp.times(temp[0], powerAST));
 				}
+				addExpanded(ast);
 				return null;
 			} else if (ast.isPlus()) {
-				return setExpanded(expandPlus(ast));
+				return expandPlus(ast);
 			}
+			addExpanded(ast);
 			return null;
-		}
+		} 
 
-		private IExpr setExpanded(IExpr expr) {
+		private IExpr addExpanded(IExpr expr) {
 			if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
-				((IAST) expr).setEvalFlags(IAST.IS_EXPANDED);
+				((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
 			}
 			return expr;
 		}
@@ -151,9 +154,9 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 			}
 			if (result != null) {
-				return setExpanded(PlusOp.plus(result));
+				return PlusOp.plus(result);
 			}
-			setExpanded(ast);
+			addExpanded(ast);
 			return null;
 		}
 
@@ -171,20 +174,20 @@ public class Expand extends AbstractFunctionEvaluator {
 					IAST plusAST = (IAST) powerAST.arg1();
 					if (exp < 0) {
 						if (expandNegativePowers) {
-							if (exp == (-1)) {
-								return powerAST;
-							}
 							exp *= (-1);
 							return PowerOp.power(expandPower(plusAST, exp), F.CN1);
 						}
+						addExpanded(powerAST);
 						return null;
 					}
 					return expandPower(plusAST, exp);
 
 				} catch (WrongArgumentType e) {
+					addExpanded(powerAST);
 					return null;
 				}
 			}
+			addExpanded(powerAST);
 			return null;
 		}
 
@@ -200,6 +203,11 @@ public class Expand extends AbstractFunctionEvaluator {
 		 */
 		private IExpr expandPower(final IAST plusAST, final int n) {
 			if (n == 1) {
+				IExpr temp=expandPlus(plusAST);
+				if (temp!=null){
+					return temp;
+				}
+				addExpanded(plusAST);
 				return plusAST;
 			}
 			if (n == 0) {
@@ -244,10 +252,9 @@ public class Expand extends AbstractFunctionEvaluator {
 				result = expandTimesBinary(result, temp);
 			}
 			if (evaled == false && timesAST.equals(result)) {
-				setExpanded(timesAST);
+				addExpanded(timesAST);
 				return null;
 			}
-			setExpanded(result);
 			return result;
 		}
 
