@@ -39,7 +39,7 @@ public class ContinuedFraction extends AbstractEvaluator {
 		if (arg1 instanceof INum) {
 			arg1 = F.fraction(((INum) arg1).getRealPart());
 		} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
-			IExpr num = F.evaln(arg1);
+			IExpr num = engine.evalN(arg1);
 			if (num instanceof INum) {
 				arg1 = F.fraction(((INum) num).getRealPart());
 			}

@@ -81,7 +81,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function,
 			EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
-		function = F.eval(function);
+		function = engine.evaluate(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
 		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
 		if (method.isSymbolName("Bisection")) {

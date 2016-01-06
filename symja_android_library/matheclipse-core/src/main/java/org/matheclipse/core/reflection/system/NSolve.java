@@ -23,8 +23,6 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 */
 	private static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
 
-		
-
 		final static public int LINEAR = 0;
 		final static public int OTHERS = 2;
 		final static public int POLYNOMIAL = 1;
@@ -41,7 +39,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 
 		final IAST vars;
 
-		public ExprAnalyzer(IExpr expr, IAST vars) {
+		public ExprAnalyzer(IExpr expr, IAST vars, EvalEngine engine) {
 			super();
 			this.expr = expr;
 			this.numer = expr;
@@ -49,10 +47,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 			if (this.expr.isAST()) {
 				this.expr = Together.together((IAST) this.expr);
 				// split expr into numerator and denominator
-				this.denom = F.eval(F.Denominator(this.expr));
+				this.denom = engine.evaluate(F.Denominator(this.expr));
 				if (!this.denom.isOne()) {
 					// search roots for the numerator expression
-					this.numer = F.eval(F.Numerator(this.expr));
+					this.numer = engine.evaluate(F.Numerator(this.expr));
 				}
 			}
 			this.vars = vars;
@@ -115,7 +113,6 @@ public class NSolve extends AbstractFunctionEvaluator {
 			return 0;
 		}
 
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -166,7 +163,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 				return false;
 			return true;
 		}
-		
+
 		/**
 		 * @return the expr
 		 */
@@ -315,7 +312,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			result = prime * result + ((vars == null) ? 0 : vars.hashCode());
 			return result;
 		}
-		
+
 		/**
 		 * Return <code>true</code> if the expression is linear.
 		 * 
@@ -373,8 +370,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 * @param vector
 	 * @return <code>null</code> if the solution couldn't be found
 	 */
-	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix, IAST vector)
-			throws NoSolution {
+	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
+			IAST vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -387,12 +384,12 @@ public class NSolve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PossibleZeroQ.possibleZeroQ(expr)) {
+					if (!PossibleZeroQ.possibleZeroQ(expr, engine)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}
 			} else if (exprAnalyzer.getNumberOfVars() == 1 && exprAnalyzer.isLinearOrPolynomial()) {
-				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer);
+				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
 				if (listOfRules != null) {
 					boolean evaled = false;
 					++currEquation;
@@ -409,8 +406,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 								IExpr expr = analyzerList.get(i).getExpr();
 								IExpr temp = expr.replaceAll(listOfRules.getAST(k));
 								if (temp != null) {
-									expr = F.eval(temp);
-									exprAnalyzer = new ExprAnalyzer(expr, vars);
+									expr = engine.evaluate(temp);
+									exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 									exprAnalyzer.analyze();
 								} else {
 									// reuse old analyzer; expression hasn't
@@ -420,7 +417,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector);
+								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector,
+										engine);
 								if (subResultList != null) {
 									evaled = true;
 									for (IExpr expr : subResultList) {
@@ -446,8 +444,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 				}
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			} else if (exprAnalyzer.isLinear()) {
-				matrix.add(F.eval(exprAnalyzer.getRow()));
-				vector.add(F.eval(F.Negate(exprAnalyzer.getValue())));
+				matrix.add(engine.evaluate(exprAnalyzer.getRow()));
+				vector.add(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
 			} else {
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			}
@@ -463,12 +461,12 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 * @param vars
 	 * @return
 	 */
-	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer) {
+	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
 		IExpr expr = exprAnalyzer.getNumerator();
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), true);
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), true, engine);
 			if (temp != null) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
@@ -498,7 +496,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
 		// collect linear and univariate polynomial equations:
 		for (IExpr expr : termsEqualZeroList) {
-			exprAnalyzer = new ExprAnalyzer(expr, vars);
+			exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 			exprAnalyzer.analyze();
 			analyzerList.add(exprAnalyzer);
 		}
@@ -506,11 +504,11 @@ public class NSolve extends AbstractFunctionEvaluator {
 		IAST vector = F.List();
 		try {
 			IAST resultList = F.List();
-			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector);
+			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
 
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
-				IExpr temp = F.eval(F.LinearSolve(matrix, vector));
+				IExpr temp = engine.evaluate(F.LinearSolve(matrix, vector));
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					IAST list = F.List();

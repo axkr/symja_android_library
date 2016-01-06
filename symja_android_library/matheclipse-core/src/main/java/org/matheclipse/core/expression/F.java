@@ -2584,7 +2584,9 @@ public class F {
 	 * 
 	 * @param a0
 	 * @return
+	 * @deprecated use EvalEngine#evaln() instead
 	 */
+	@Deprecated
 	public static IExpr evaln(final IExpr a0) {
 		return eval(N, a0);
 	}
@@ -3418,7 +3420,6 @@ public class F {
 	 * @return
 	 */
 	public static IAST N(final IExpr a0) {
-
 		return unaryAST1(N, a0);
 	}
 

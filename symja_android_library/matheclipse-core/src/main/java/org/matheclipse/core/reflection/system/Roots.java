@@ -46,10 +46,10 @@ public class Roots extends AbstractFunctionEvaluator {
 		if (ast.size() != 2) {
 			return null;
 		}
-		return roots(ast, false);
+		return roots(ast, false, engine);
 	}
 
-	protected static IAST roots(final IAST ast, boolean numericSolutions) {
+	protected static IAST roots(final IAST ast, boolean numericSolutions, EvalEngine engine) {
 		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
@@ -62,13 +62,13 @@ public class Roots extends AbstractFunctionEvaluator {
 			expr = Together.together((IAST) expr);
 
 			// split expr into numerator and denominator
-			denom = F.eval(F.Denominator(expr));
+			denom = engine.evaluate(F.Denominator(expr));
 			if (!denom.isOne()) {
 				// search roots for the numerator expression
-				expr = F.eval(F.Numerator(expr));
+				expr = engine.evaluate(F.Numerator(expr));
 			}
 		}
-		return rootsOfVariable(expr, denom, variables, numericSolutions);
+		return rootsOfVariable(expr, denom, variables, numericSolutions, engine);
 	}
 
 	/**
@@ -112,7 +112,7 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	}
 
-	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables, boolean numericSolutions) {
+	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables, boolean numericSolutions, EvalEngine engine) {
 		IAST result = null;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
@@ -132,7 +132,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				if (quarticResultList != null) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						if (numericSolutions) {
-							result.add(F.chopExpr(F.evaln(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
+							result.add(F.chopExpr(engine.evalN(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
 						} else {
 							result.add(quarticResultList.get(j));
 						}
@@ -162,7 +162,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				int i = 1;
 				while (i < result.size()) {
 					IExpr temp = denom.replaceAll(F.Rule(variables.arg1(), result.get(i)));
-					if (temp != null && F.eval(temp).isZero()) {
+					if (temp != null && engine.evaluate(temp).isZero()) {
 						result.remove(i);
 						continue;
 					}

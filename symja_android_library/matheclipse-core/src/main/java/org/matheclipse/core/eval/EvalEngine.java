@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -1342,6 +1343,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
+	final public IExpr evalN(final IExpr expr) {
+		return evaluate(F.N(expr));
+	}
+	
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr and evaluate
 	 * it.

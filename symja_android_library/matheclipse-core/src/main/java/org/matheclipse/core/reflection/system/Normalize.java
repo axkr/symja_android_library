@@ -23,7 +23,7 @@ public class Normalize extends AbstractEvaluator {
 			normFunction = ast.arg2();
 		}
 		IExpr arg1 = ast.arg1();
-		IExpr norm = F.eval(F.unaryAST1(normFunction, ast.arg1()));
+		IExpr norm = engine.evaluate(F.unaryAST1(normFunction, ast.arg1()));
 		if (norm.isZero()) {
 			return arg1;
 		}

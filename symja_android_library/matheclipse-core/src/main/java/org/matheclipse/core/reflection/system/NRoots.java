@@ -19,9 +19,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Determine the numerical roots of a univariate polynomial
  * 
- * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
- * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
- * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+ * See Wikipedia entries for:
+ * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
+ * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
+ * function</a> and
+ * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
  * 
  * @see Roots
  */
@@ -35,19 +37,19 @@ public class NRoots extends AbstractFunctionEvaluator {
 		if (ast.size() != 2) {
 			return null;
 		}
-		IExpr temp = roots(ast);
+		IExpr temp = roots(ast, engine);
 		if (temp == null || !temp.isList()) {
 			return null;
 		}
 		IAST list = (IAST) temp;
 		IAST result = F.List();
 		for (int i = 1; i < list.size(); i++) {
-			result.add(F.evaln(list.get(i)));
+			result.add(engine.evalN(list.get(i)));
 		}
 		return result;
 	}
 
-	protected static IAST roots(final IAST ast) {
+	protected static IAST roots(final IAST ast, EvalEngine engine) {
 		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
@@ -73,10 +75,10 @@ public class NRoots extends AbstractFunctionEvaluator {
 			expr = Together.together((IAST) expr);
 
 			// split expr into numerator and denominator
-			denom = F.eval(F.Denominator(expr));
+			denom = engine.evaluate(F.Denominator(expr));
 			if (!denom.isOne()) {
 				// search roots for the numerator expression
-				expr = F.eval(F.Numerator(expr));
+				expr = engine.evaluate(F.Numerator(expr));
 			}
 		}
 		return rootsOfVariable(expr, denom);
@@ -143,7 +145,9 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * See <a href= "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" >http
+	 * See <a href=
+	 * "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" >
+	 * http
 	 * ://stackoverflow.com/questions/13328676/c-solving-cubic-equations</a>
 	 * 
 	 * @param a

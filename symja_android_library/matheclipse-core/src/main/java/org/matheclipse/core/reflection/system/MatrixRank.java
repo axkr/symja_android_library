@@ -29,7 +29,7 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 		try {
 			Validate.checkSize(ast, 2);
 
-			IExpr arg1 = F.eval(ast.arg1());
+			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isMatrix() != null) {
 				final IAST astMatrix = (IAST) arg1;
 				matrix = Convert.list2Matrix(astMatrix);

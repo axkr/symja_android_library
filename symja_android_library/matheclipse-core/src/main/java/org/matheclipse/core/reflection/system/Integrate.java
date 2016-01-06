@@ -99,11 +99,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 				if (xList.isVector() == 3) {
 					// Integrate[f[x], {x,a,b}]
 					IAST clone = holdallAST.setAtClone(2, xList.arg1());
-					IExpr temp = F.eval(clone);
+					IExpr temp = engine.evaluate(clone);
 					if (temp.isFreeAST(F.Integrate)) {
 						// F(b)-F(a)
-						IExpr Fb = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
-						IExpr Fa = F.eval(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
+						IExpr Fb = engine.evaluate(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
+						IExpr Fa = engine.evaluate(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
 									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
@@ -331,7 +331,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 				}
 			} else {
-				IExpr fx = F.eval(F.Expand(ast.arg1()));
+				IExpr fx = engine.evaluate(F.Expand(ast.arg1()));
 				if (fx.isPlus()) {
 					// Integrate[a_+b_+...,x_] ->
 					// Integrate[a,x]+Integrate[b,x]+...

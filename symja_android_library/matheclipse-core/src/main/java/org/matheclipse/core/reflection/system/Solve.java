@@ -71,19 +71,21 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IAST fPlusAST;
 
 		final IAST vars;
+		final EvalEngine engine;
 
-		public ExprAnalyzer(IExpr expr, IAST vars) {
+		public ExprAnalyzer(IExpr expr, IAST vars, EvalEngine engine) {
 			super();
+			this.engine = engine;
 			this.fExpr = expr;
 			this.fNumer = expr;
 			this.fDenom = F.C1;
 			if (this.fExpr.isAST()) {
 				this.fExpr = Together.together((IAST) this.fExpr);
 				// split expr into numerator and denominator
-				this.fDenom = F.eval(F.Denominator(this.fExpr));
+				this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
 				if (!this.fDenom.isOne()) {
 					// search roots for the numerator expression
-					this.fNumer = F.eval(F.Numerator(this.fExpr));
+					this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
 				} else {
 					this.fNumer = this.fExpr;
 				}
@@ -168,7 +170,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						IFraction arg2 = (IFraction) function.arg2();
 						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
 						// if (plus.isFree(Predicates.in(vars), true)) {
-						return F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+						return engine.evaluate(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
 						// } else {
 						// IInteger numer = arg2.getNumerator();
 						// IInteger denom = arg2.getDenominator();
@@ -219,7 +221,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (inverseFunction != null) {
 						// rewrite fNumer
 						inverseFunction.add(arg1);
-						return F.eval(F.Subtract(ast.arg1(), inverseFunction));
+						return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 					}
 				}
 
@@ -227,7 +229,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				int position = vars.findFirstEquals(ast.arg1());
 				if (position > 0) {
 					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
-					return F.eval(F.Subtract(ast.arg1(), inverseFunction));
+					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
 			}
@@ -546,7 +548,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return <code>null</code> if the solution couldn't be found
 	 */
 	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
-			IAST vector) throws NoSolution {
+			IAST vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -559,12 +561,12 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PossibleZeroQ.possibleZeroQ(expr)) {
+					if (!PossibleZeroQ.possibleZeroQ(expr, engine)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}
 			} else if (exprAnalyzer.getNumberOfVars() == 1 && exprAnalyzer.isLinearOrPolynomial()) {
-				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer);
+				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
 				if (listOfRules != null) {
 					boolean evaled = false;
 					++currEquation;
@@ -581,8 +583,8 @@ public class Solve extends AbstractFunctionEvaluator {
 								IExpr expr = analyzerList.get(i).getExpr();
 								IExpr temp = expr.replaceAll(listOfRules.getAST(k));
 								if (temp != null) {
-									expr = F.eval(temp);
-									exprAnalyzer = new ExprAnalyzer(expr, vars);
+									expr = engine.evaluate(temp);
+									exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 									exprAnalyzer.simplifyAndAnalyze();
 								} else {
 									// reuse old analyzer; expression hasn't
@@ -592,7 +594,8 @@ public class Solve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector);
+								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector,
+										engine);
 								if (subResultList != null) {
 									evaled = true;
 									for (IExpr expr : subResultList) {
@@ -618,8 +621,8 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			} else if (exprAnalyzer.isLinear()) {
-				matrix.add(F.eval(exprAnalyzer.getRow()));
-				vector.add(F.eval(F.Negate(exprAnalyzer.getValue())));
+				matrix.add(engine.evaluate(exprAnalyzer.getRow()));
+				vector.add(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
 			} else {
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			}
@@ -635,12 +638,12 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param vars
 	 * @return
 	 */
-	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer) {
+	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
 		IExpr expr = exprAnalyzer.getNumerator();
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode());
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
 			if (temp != null) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
@@ -676,7 +679,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						"Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
 				return null;
 			}
-			exprAnalyzer = new ExprAnalyzer(expr, vars);
+			exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
 		}
@@ -684,7 +687,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST vector = F.List();
 		try {
 			IAST resultList = F.List();
-			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector);
+			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				// IExpr temp = F.eval(F.RowReduce(augmentedMatrix));
