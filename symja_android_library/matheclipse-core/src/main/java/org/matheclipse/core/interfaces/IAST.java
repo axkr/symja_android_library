@@ -141,7 +141,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	/**
 	 * This expression is an already evaled expression
 	 */
-	public final int IS_EVALED = 0x0800;
+	public final int IS_FLAT_ORDERLESS_EVALED = 0x0800;
 
 	/**
 	 * This expression is already evaluated by Expand() function

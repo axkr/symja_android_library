@@ -191,17 +191,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					listLength = ((IAST) ast.get(i)).size() - 1;
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						ast.setEvalFlags(IAST.IS_LISTABLE_THREADED);
+						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return null;
 					}
 				}
 			}
 		}
 		if ((listLength != 0) && ((result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength)) != null)) {
-			result.setEvalFlags(IAST.IS_LISTABLE_THREADED);
+			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
-		ast.setEvalFlags(IAST.IS_LISTABLE_THREADED);
+		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 		return null;
 	}
 
@@ -530,7 +530,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 					if ((evaledExpr = evalLoop(ast.arg1())) != null) {
 						resultList = ast.setAtClone(1, evaledExpr);
-						resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						if (astSize == 2) {
 							return resultList;
 						}
@@ -554,7 +554,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						if ((evaledExpr = evalLoop(ast.get(i))) != null) {
 							if (resultList == null) {
 								resultList = ast.clone();
-								resultList.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+								resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 							}
 							resultList.set(i, evaledExpr);
 						}
@@ -863,7 +863,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
+	/**
+	 * Evaluate the Flat and Orderless attributes of the given <code>ast</code>
+	 * recursively.
+	 * 
+	 * @param ast
+	 * @return
+	 */
 	public IAST evalFlatOrderlessAttributesRecursive(final IAST ast) {
+		if (ast.isEvalFlagOn(IAST.IS_FLAT_ORDERLESS_EVALED)) {
+			return null;
+		}
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 		// final Predicate<IExpr> isPattern = Predicates.isPattern();
@@ -913,6 +923,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 							EvalAttributes.sort(resultList);
 						}
+						resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 						return resultList;
 					}
 				}
@@ -920,6 +931,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					EvalAttributes.sort(resultList);
 				}
 			}
+			resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 			return resultList;
 		}
 
@@ -931,11 +943,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					EvalAttributes.sort(resultList);
 				}
+				resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return resultList;
 			}
 		}
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			if (EvalAttributes.sort(ast)) {
+				ast.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return ast;
 			}
 			// TODO testSystem081 fails if we return null then sort() gives

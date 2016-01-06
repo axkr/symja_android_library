@@ -117,11 +117,14 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	/**
 	 * 
-	 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic Simplification</a>
+	 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">
+	 * Experiments in Hash-coded Algebraic Simplification</a>
 	 * 
 	 * @param ast
-	 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
-	 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
+	 *            the abstract syntax tree (AST) of the form
+	 *            <code>Plus(...)</code> which should be evaluated
+	 * @return the evaluated object or <code>null</code>, if evaluation isn't
+	 *         possible
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -129,20 +132,17 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		if (size == 1) {
 			return F.C0;
 		}
-		if (ast.isEvalFlagOff(IAST.IS_EVALED)) {
-			if (size > 2) {
-				PlusOp plusOp = new PlusOp(size);
-				for (int i = 1; i < size; i++) {
-					final IExpr temp = plusOp.plus(ast.get(i));
-					if (temp != null) {
-						return temp;
-					}
-				}
-				if (plusOp.isEvaled()) {
-					return plusOp.getSum();
+		if (size > 2) {
+			PlusOp plusOp = new PlusOp(size);
+			for (int i = 1; i < size; i++) {
+				final IExpr temp = plusOp.plus(ast.get(i));
+				if (temp != null) {
+					return temp;
 				}
 			}
-			ast.addEvalFlags(IAST.IS_EVALED);
+			if (plusOp.isEvaled()) {
+				return plusOp.getSum();
+			}
 		}
 
 		if (size > 2) {
@@ -158,7 +158,8 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		symbol.setAttributes(
+				ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
 		ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
@@ -168,9 +169,12 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), Times(C1D2, Pi));
 		// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]", "Pi/2");
 		ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), Times(C1D2, Pi));
-		// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2", "Positive[x]&&(y==1/x)");
-		ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), Times(C1D2, Pi), And(Positive(x), Equal(y, Power(x, CN1))));
-		// ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]", "-Pi/2", "Positive[x]&&(y==1/x)");
+		// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2",
+		// "Positive[x]&&(y==1/x)");
+		ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), Times(C1D2, Pi),
+				And(Positive(x), Equal(y, Power(x, CN1))));
+		// ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
+		// "-Pi/2", "Positive[x]&&(y==1/x)");
 		ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1, ArcTan(y_)), Times(CN1D2, Pi),
 				And(Positive(x), Equal(y, Power(x, CN1))));
 		// ORDERLESS_MATCHER.setUpHashRule("Cosh[x_]^2", "-Sinh[x_]^2", "1");
