@@ -29,7 +29,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 						if (temp != null) {
 							if (evaledAST == null) {
 								evaledAST = ast.clone();
-								evaledAST.setEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+								evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 							}
 							evaledAST.set(i, temp);
 						}
