@@ -16,8 +16,6 @@ import java.util.function.Function;
 
 import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
-import edu.jas.poly.ExpVector;
-import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.NotInvertibleException;
 
 /**

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExprTermOrderByName.java 5391 2016-01-04 13:46:50Z kredel $
  */
 
 package org.matheclipse.core.polynomials;
@@ -39,7 +39,7 @@ public class ExprTermOrderByName {
     /**
      * ExprTermOrder named LEX.
      */
-    public static final ExprTermOrder LEX = new  ExprTermOrder(ExprTermOrder.LEX);
+    public static final ExprTermOrder LEX = new ExprTermOrder(ExprTermOrder.LEX);
 
 
     /**
@@ -85,6 +85,18 @@ public class ExprTermOrderByName {
 
 
     /**
+     * ExprTermOrder named ITDEGLEX.
+     */
+    public static final ExprTermOrder ITDEGLEX = new ExprTermOrder(ExprTermOrder.ITDEGLEX);
+
+
+    /**
+     * ExprTermOrder named REVITDEG.
+     */
+    public static final ExprTermOrder REVITDEG = new ExprTermOrder(ExprTermOrder.REVITDEG);
+
+
+    /**
      * Default ExprTermOrder.
      */
     public final static ExprTermOrder DEFAULT = new ExprTermOrder(ExprTermOrder.DEFAULT_EVORD);
@@ -113,7 +125,7 @@ public class ExprTermOrderByName {
     /**
      * ExprTermOrder name NegativeDegreeLexicographic of Math like CAS.
      */
-    public final static ExprTermOrder NegativeDegreeLexicographic = REVTDEG;
+    public final static ExprTermOrder NegativeDegreeLexicographic = REVITDEG; // was REVTDEG;
 
 
     /**
@@ -125,7 +137,7 @@ public class ExprTermOrderByName {
     /**
      * ExprTermOrder name DegreeReverseLexicographic of Math like CAS.
      */
-    public final static ExprTermOrder DegreeReverseLexicographic = IGRLEX;
+    public final static ExprTermOrder DegreeReverseLexicographic = ITDEGLEX; // was IGRLEX;
 
 
     /**

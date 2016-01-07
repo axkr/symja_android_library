@@ -972,6 +972,26 @@ public final class ExpVectorLong {
 		return U.revInvGradCompareTo(V, begin, end);
 	}
 
+	 /**
+     * Inverse total degree lexicographical compare.
+     * @param U
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    public static int EVITDEGLC(ExpVectorLong U, ExpVectorLong V) {
+        return U.invTdegCompareTo(V);
+    }
+
+    /**
+     * Reverse lexicographical inverse total degree compare.
+     * @param U
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    public static int EVRLITDEGC(ExpVectorLong U, ExpVectorLong V) {
+        return U.revLexInvTdegCompareTo(V);
+    }
+    
 	/**
 	 * Inverse weighted lexicographical compare.
 	 * 
@@ -1262,6 +1282,85 @@ public final class ExpVectorLong {
 	}
 
 	/**
+     * ExpVector inverse total degree lexicographical compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    public int invTdegCompareTo(ExpVectorLong V) {
+        long[] u = val;
+        long[] v = ((ExpVectorLong) V).val;
+        int t = 0;
+        int i;
+        for (i = 0; i < u.length; i++) {
+            if (u[i] < v[i]) {
+                t = 1;
+                break;
+            }
+            if (u[i] > v[i]) {
+                t = -1;
+                break;
+            }
+        }
+        if (t == 0) {
+            return t;
+        }
+        long up = 0;
+        long vp = 0;
+        for (int j = i; j < u.length; j++) {
+            up += u[j];
+            vp += v[j];
+        }
+        if (up > vp) {
+            t = 1;
+        } else {
+            if (up < vp) {
+                t = -1;
+            }
+        }
+        return t;
+    }
+
+
+    /**
+     * ExpVector reverse lexicographical inverse total degree compareTo.
+     * @param V
+     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+     */
+    public int revLexInvTdegCompareTo(ExpVectorLong V) {
+        long[] u = val;
+        long[] v = ((ExpVectorLong) V).val;
+        int t = 0;
+        int i;
+        for (i = u.length - 1; i >= 0; i--) {
+            if (u[i] < v[i]) {
+                t = 1;
+                break;
+            }
+            if (u[i] > v[i]) {
+                t = -1;
+                break;
+            }
+        }
+        if (t == 0) {
+            return t;
+        }
+        long up = 0;
+        long vp = 0;
+        for (int j = i; j >= 0; j--) {
+            up += u[j];
+            vp += v[j];
+        }
+        if (up > vp) {
+            t = 1; 
+        } else {
+            if (up < vp) {
+                t = -1;
+            }
+        }
+        return t;
+    }
+    
+	/**
 	 * ExpVectorLong inverse weighted lexicographical compareTo.
 	 * 
 	 * @param w
@@ -1269,7 +1368,6 @@ public final class ExpVectorLong {
 	 * @param V
 	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
 	 */
-
 	public int invWeightCompareTo(long[][] w, ExpVectorLong V) {
 		long[] u = val;
 		long[] v = ((ExpVectorLong) V).val;
