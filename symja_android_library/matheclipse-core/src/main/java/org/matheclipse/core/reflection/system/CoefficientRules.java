@@ -19,6 +19,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -45,13 +48,15 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		VariablesSet eVar;
+		IAST symbolList = F.List();
 		List<ISymbol> varList;
 		if (ast.size() == 2) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
+			eVar.appendToList(symbolList);
 			varList = eVar.getArrayList();
 		} else {
-			IAST symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
+			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 			varList = new ArrayList<ISymbol>(symbolList.size() - 1);
 			for (int i = 1; i < symbolList.size(); i++) {
 				varList.add((ISymbol) symbolList.get(i));
@@ -61,16 +66,23 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 		try {
 			if (ast.size() > 3) {
 				if (ast.arg3() instanceof IStringX) {
-					String orderStr = ast.arg3().toString();  
-					termOrder = Options.getMonomialOrder(orderStr, termOrder); 
+					String orderStr = ast.arg3().toString();
+					termOrder = Options.getMonomialOrder(orderStr, termOrder);
 				}
 				final Options options = new Options(ast.topHead(), ast, 2);
 				IExpr option = options.getOption("Modulus");
 				if (option != null && option.isSignedNumber()) {
-					return monomialListModulus(expr, varList, termOrder, option);
+					return coefficientRulesModulus(expr, varList, termOrder, option);
 				}
 			}
-			return monomialList(expr, varList, termOrder);
+
+			if (MonomialList.USE_JAS_POLYNOMIAL) {
+				return coefficientRules(expr, varList, termOrder);
+			} else {
+				ExprPolynomialRing ring = new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+				ExprPolynomial poly = ring.create(expr);
+				return poly.coefficientRules();
+			}
 		} catch (JASConversionException jce) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {
@@ -81,7 +93,8 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
+	 * Get exponent vectors and coefficients of monomials of a polynomial
+	 * expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -89,7 +102,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 *            the JAS term ordering
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	public static IAST monomialList(IExpr polynomial, final List<ISymbol> variablesList, final TermOrder termOrder)
+	public static IAST coefficientRules(IExpr polynomial, final List<ISymbol> variablesList, final TermOrder termOrder)
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
@@ -100,7 +113,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 			ExpVector exp = monomial.exponent();
 			int len = exp.length();
 			for (int i = 0; i < len; i++) {
-				ruleList.add(F.integer(exp.getVal(len-i-1)));
+				ruleList.add(F.integer(exp.getVal(len - i - 1)));
 			}
 			resultList.add(F.Rule(ruleList, coeff));
 		}
@@ -108,7 +121,8 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
+	 * Get exponent vectors and coefficients of monomials of a polynomial
+	 * expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -118,8 +132,8 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 *            the &quot;Modulus&quot; option
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	private static IAST monomialListModulus(IExpr polynomial, List<ISymbol> variablesList, final TermOrder termOrder,
-			IExpr option) throws JASConversionException {
+	private static IAST coefficientRulesModulus(IExpr polynomial, List<ISymbol> variablesList,
+			final TermOrder termOrder, IExpr option) throws JASConversionException {
 		try {
 			// found "Modulus" option => use ModIntegerRing
 			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -132,7 +146,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 				IAST ruleList = F.List();
 				int len = exp.length();
 				for (int i = 0; i < len; i++) {
-					ruleList.add(F.integer(exp.getVal(len-i-1)));
+					ruleList.add(F.integer(exp.getVal(len - i - 1)));
 				}
 				resultList.add(F.Rule(ruleList, F.integer(coeff.getVal())));
 			}

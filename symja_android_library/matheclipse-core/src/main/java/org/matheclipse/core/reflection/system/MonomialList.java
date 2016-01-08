@@ -20,6 +20,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrder;
 
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
@@ -35,6 +38,10 @@ import edu.jas.poly.TermOrderByName;
  * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
  */
 public class MonomialList extends AbstractFunctionEvaluator {
+	/**
+	 * Use the JAS library to represent the polynomials
+	 */
+	public final static boolean USE_JAS_POLYNOMIAL = true;
 
 	public MonomialList() {
 	}
@@ -45,13 +52,15 @@ public class MonomialList extends AbstractFunctionEvaluator {
 
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		VariablesSet eVar;
+		IAST symbolList = F.List();
 		List<ISymbol> varList;
 		if (ast.size() == 2) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
+			eVar.appendToList(symbolList);
 			varList = eVar.getArrayList();
 		} else {
-			IAST symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
+			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 			varList = new ArrayList<ISymbol>(symbolList.size() - 1);
 			for (int i = 1; i < symbolList.size(); i++) {
 				varList.add((ISymbol) symbolList.get(i));
@@ -70,7 +79,13 @@ public class MonomialList extends AbstractFunctionEvaluator {
 					return monomialListModulus(expr, varList, termOrder, option);
 				}
 			}
-			return monomialList(expr, varList, termOrder);
+			if (USE_JAS_POLYNOMIAL) {
+				return monomialList(expr, varList, termOrder);
+			} else {
+				ExprPolynomialRing ring = new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+				ExprPolynomial poly = ring.create(expr);
+				return poly.monomialList();
+			}
 		} catch (JASConversionException jce) {
 			// toInt() conversion failed
 			if (Config.DEBUG) {
@@ -89,20 +104,20 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	 *            the JAS term ordering
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	public static IAST monomialList(IExpr polynomial, final List<ISymbol> variablesList, final TermOrder termOrder)
+	private static IAST monomialList(IExpr polynomial, final List<ISymbol> variablesList, final TermOrder termOrder)
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		IAST list = F.List();
-		
+
 		for (Map.Entry<ExpVector, IExpr> monomial : polyExpr.getMap().entrySet()) {
 			IExpr coeff = monomial.getValue();
 			ExpVector exp = monomial.getKey();
 			IAST monomTimes = F.Times();
 			jas.monomialToExpr(coeff, exp, monomTimes);
 			list.add(monomTimes);
-        }
-		
+		}
+
 		return list;
 	}
 

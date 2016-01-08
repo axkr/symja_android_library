@@ -7,7 +7,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -16,6 +18,9 @@ import java.util.function.Function;
 
 import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
+import edu.jas.poly.ExpVector;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
 import edu.jas.structure.NotInvertibleException;
 
 /**
@@ -771,78 +776,79 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-     * Weight degree.
-     * @return weight degree in all variables.
-     */
-    public long weightDegree() {
-        long[][] w = ring.tord.getWeight();
-        if (w == null || w.length == 0) {
-            return totalDegree(); // assume weight 1 
-        }
-        if (val.isEmpty()) {
-            return -1L; // 0 or -1 ?;
-        }
-        long deg = 0;
-        for (ExpVectorLong e : val.keySet()) {
-            long d = e.weightDeg(w);
-            if (d > deg) {
-                deg = d;
-            }
-        }
-        return deg;
-    }
+	 * Weight degree.
+	 * 
+	 * @return weight degree in all variables.
+	 */
+	public long weightDegree() {
+		long[][] w = ring.tord.getWeight();
+		if (w == null || w.length == 0) {
+			return totalDegree(); // assume weight 1
+		}
+		if (val.isEmpty()) {
+			return -1L; // 0 or -1 ?;
+		}
+		long deg = 0;
+		for (ExpVectorLong e : val.keySet()) {
+			long d = e.weightDeg(w);
+			if (d > deg) {
+				deg = d;
+			}
+		}
+		return deg;
+	}
 
+	/**
+	 * Leading weight polynomial.
+	 * 
+	 * @return polynomial with terms of maximal weight degree.
+	 */
+	public ExprPolynomial leadingWeightPolynomial() {
+		if (val.isEmpty()) {
+			return ring.getZero();
+		}
+		long[][] w = ring.tord.getWeight();
+		long maxw;
+		if (w == null || w.length == 0) {
+			maxw = totalDegree(); // assume weights = 1
+		} else {
+			maxw = weightDegree();
+		}
+		ExprPolynomial wp = new ExprPolynomial(ring);
+		for (Map.Entry<ExpVectorLong, IExpr> m : val.entrySet()) {
+			ExpVectorLong e = m.getKey();
+			long d = e.weightDeg(w);
+			if (d >= maxw) {
+				wp.val.put(e, m.getValue());
+			}
+		}
+		return wp;
+	}
 
-    /**
-     * Leading weight polynomial.
-     * @return polynomial with terms of maximal weight degree.
-     */
-    public ExprPolynomial leadingWeightPolynomial() {
-        if (val.isEmpty()) {
-            return ring.getZero();
-        }
-        long[][] w = ring.tord.getWeight();
-        long maxw;
-        if (w == null || w.length == 0) {
-            maxw = totalDegree(); // assume weights = 1
-        } else {
-            maxw = weightDegree();
-        }
-        ExprPolynomial wp = new ExprPolynomial(ring);
-        for (Map.Entry<ExpVectorLong,IExpr> m : val.entrySet()) {
-            ExpVectorLong e = m.getKey();
-            long d = e.weightDeg(w);
-            if (d >= maxw) {
-                wp.val.put(e, m.getValue());
-            }
-        }
-        return wp;
-    }
+	/**
+	 * Is GenPolynomial&lt;C&gt; homogeneous with respect to a weight.
+	 * 
+	 * @return true, if this is weight homogeneous, else false.
+	 */
+	public boolean isWeightHomogeneous() {
+		if (val.size() <= 1) {
+			return true;
+		}
+		long[][] w = ring.tord.getWeight();
+		if (w == null || w.length == 0) {
+			return isHomogeneous(); // assume weights = 1
+		}
+		long deg = -1;
+		for (ExpVectorLong e : val.keySet()) {
+			if (deg < 0) {
+				deg = e.weightDeg(w);
+			} else if (deg != e.weightDeg(w)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-
-    /**
-     * Is GenPolynomial&lt;C&gt; homogeneous with respect to a weight.
-     * @return true, if this is weight homogeneous, else false.
-     */
-    public boolean isWeightHomogeneous() {
-        if (val.size() <= 1) {
-            return true;
-        }
-        long[][] w = ring.tord.getWeight();
-        if (w == null || w.length == 0) {
-            return isHomogeneous(); // assume weights = 1
-        }
-        long deg = -1;
-        for (ExpVectorLong e : val.keySet()) {
-            if (deg < 0) {
-                deg = e.weightDeg(w);
-            } else if (deg != e.weightDeg(w)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
 	/**
 	 * Maximal degree vector.
 	 * 
@@ -2243,29 +2249,55 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
-	 * Get the monomials of a polynomial
+	 * Get the coefficient rules of a polynomial <code>List()</code> form
+	 * 
+	 * @return the monomials of a polynomial
+	 */
+	public IAST coefficientRules() {
+		IAST result = F.List();
+		for (Map.Entry<ExpVectorLong, IExpr> monomial : val.entrySet()) {
+			IAST ruleList = F.List();
+			IExpr coeff = monomial.getValue();
+			ExpVectorLong exp = monomial.getKey();
+			int len = exp.length();
+			for (int i = 0; i < len; i++) {
+				ruleList.add(F.integer(exp.getVal(len - i - 1)));
+			}
+			result.add(F.Rule(ruleList, coeff));
+		}
+		return result;
+	}
+
+	/**
+	 * Get the monomials of a polynomial in <code>List()</code> form
 	 * 
 	 * @return the monomials of a polynomial
 	 */
 	public IAST monomialList() {
 		IAST result = F.List();
-		for (ExpVectorLong expArray : val.keySet()) {
-			IAST times = F.Times();
-			times.add(val.get(expArray));
-			appendToExpr(times, expArray, ring.vars);
-			result.add(times);
+		for (Map.Entry<ExpVectorLong, IExpr> monomial : val.entrySet()) {
+			// IExpr coeff = monomial.getValue();
+			ExpVectorLong exp = monomial.getKey();
+			IAST monomTimes = F.Times();
+			monomTimes.add(val.get(exp));
+			appendToExpr(monomTimes, exp, ring.vars);
+			result.add(monomTimes);
 		}
 		return result;
 	}
 
 	private void appendToExpr(IAST times, ExpVectorLong expArray, IAST variables) {
 		long[] arr = expArray.getVal();
+		ExpVectorLong leer = ring.evzero;
 		for (int i = 0; i < arr.length; i++) {
 			if (arr[i] != 0L) {
-				if (arr[i] == 1L) {
-					times.add(variables.get(i + 1));
-				} else {
-					times.add(F.Power(variables.get(i + 1), arr[i]));
+				int ix = leer.varIndex(i);
+				if (ix >= 0) {
+					if (arr[i] == 1L) {
+						times.add(variables.get(ix + 1));
+					} else {
+						times.add(F.Power(variables.get(ix + 1), arr[i]));
+					}
 				}
 			}
 		}

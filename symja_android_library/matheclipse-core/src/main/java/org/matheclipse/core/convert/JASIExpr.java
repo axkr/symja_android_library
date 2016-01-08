@@ -308,10 +308,10 @@ public class JASIExpr {
 
 	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IAST monomTimes) {
 		long lExp;
-		ExpVector leer = fPolyFactory.evzero;
 		if (!coeff.isOne()) {
 			monomTimes.add(coeff);
 		}
+		ExpVector leer = fPolyFactory.evzero;
 		for (int i = 0; i < exp.length(); i++) {
 			lExp = exp.getVal(i);
 			if (lExp != 0) {
