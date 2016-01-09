@@ -18,7 +18,6 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -44,21 +43,7 @@ import org.matheclipse.parser.client.math.MathException;
  * The main evaluation algorithms for the .Symja computer algebra system
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
-	/**
-	 * Evaluate an expression. If evaluation is not possible return the input
-	 * object.
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @return the evaluated object
-	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
-	 * @deprecated use EvalEngine#evaluate()
-	 */
-	@Deprecated
-	public static final IExpr eval(final IExpr expr) {
-		return instance.get().evaluate(expr);
-	}
-
+	
 	/**
 	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
 	 * possible return the input object. In &quot;quiet mode&quot; all warnings

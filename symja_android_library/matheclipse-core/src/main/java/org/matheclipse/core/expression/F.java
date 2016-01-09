@@ -2373,12 +2373,12 @@ public class F {
 	 * @param a
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evaluate(IExpr)
 	 * @deprecated use EvalEngine#evaluate()
 	 */
 	@Deprecated
 	public static IExpr eval(IExpr a) {
-		return EvalEngine.eval(a);
+		return EvalEngine.get().evaluate(a);
 	}
 
 	/**
@@ -2389,7 +2389,7 @@ public class F {
 	 * @param a
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evalQuiet(IExpr)
 	 * @deprecated use EvalEngine#evalQuiet();
 	 */
 	public static IExpr evalQuiet(IExpr a) {
@@ -2405,7 +2405,7 @@ public class F {
 	 *            the expression which should be evaluated
 	 * @return the evaluated object or <code>null</code> if no evaluation was
 	 *         possible
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()
 	 */
 	@Deprecated
@@ -2423,7 +2423,7 @@ public class F {
 	public static IExpr eval(final ISymbol head, final IExpr a0) {
 		final IAST ast = ast(head);
 		ast.add(a0);
-		return EvalEngine.eval(ast);
+		return EvalEngine.get().evaluate(ast);
 	}
 
 	/**
@@ -2438,7 +2438,7 @@ public class F {
 		final IAST ast = ast(head);
 		ast.add(a0);
 		ast.add(a1);
-		return EvalEngine.eval(ast);
+		return EvalEngine.get().evaluate(ast);
 	}
 
 	/**
@@ -2455,7 +2455,7 @@ public class F {
 		ast.add(a0);
 		ast.add(a1);
 		ast.add(a2);
-		return EvalEngine.eval(ast);
+		return EvalEngine.get().evaluate(ast);
 	}
 
 	/**
@@ -2485,23 +2485,23 @@ public class F {
 	 * @param a
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evaluate(IExpr)
 	 */
 	public static IExpr evalExpand(IExpr a) {
-		IExpr result = EvalEngine.eval(a);
+		IExpr result = EvalEngine.get().evaluate(a);
 		if (result.isAST()) {
 			IAST ast = (IAST) result;
 			if (ast.isPlus()) {
 				for (int i = 1; i < ast.size(); i++) {
 					IExpr temp = ast.get(i);
 					if (temp.isTimes() || temp.isPower() || temp.isPlus()) {
-						return EvalEngine.eval(Expand(result));
+						return EvalEngine.get().evaluate(Expand(result));
 					}
 				}
 				return ast;
 			}
 			if (ast.isTimes() || ast.isPower()) {
-				return EvalEngine.eval(Expand(result));
+				return EvalEngine.get().evaluate(Expand(result));
 			}
 		}
 		return result;
@@ -2519,7 +2519,7 @@ public class F {
 	 * @param distributePlus
 	 *            TODO
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evaluate(IExpr)
 	 */
 	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
 		if (a.isAST()) {
@@ -2542,10 +2542,10 @@ public class F {
 	 * @param a
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evaluate(IExpr)
 	 */
 	public static IExpr evalExpandAll(IExpr a) {
-		return EvalEngine.eval(ExpandAll(a));
+		return EvalEngine.get().evaluate(ExpandAll(a));
 	}
 
 	/**
@@ -2560,7 +2560,7 @@ public class F {
 	 * @param distributePlus
 	 *            TODO
 	 * @return the evaluated expression
-	 * @see EvalEngine#eval(IExpr)
+	 * @see EvalEngine#evaluate(IExpr)
 	 */
 	public static IExpr expandAll(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
 		if (a.isAST()) {
