@@ -75,6 +75,9 @@ public class Factor extends AbstractFunctionEvaluator {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+		if (polyRat.length() <= 1) {
+			return expr;
+		}
 		Object[] objects = jas.factorTerms(polyRat);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
@@ -101,7 +104,9 @@ public class Factor extends AbstractFunctionEvaluator {
 				result.add(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
 			}
 		}
-		return result;
+		// IExpr temp = result.getOneIdentity(F.C0);
+		// System.out.println(expr.toString() + " ==> " + temp.toString());
+		return result.getOneIdentity(F.C0);
 	}
 
 	public static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
@@ -143,8 +148,8 @@ public class Factor extends AbstractFunctionEvaluator {
 	 * @return
 	 * @throws JASConversionException
 	 */
-	public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree, final EvalEngine engine)
-			throws JASConversionException {
+	public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree,
+			final EvalEngine engine) throws JASConversionException {
 		final Options options = new Options(ast.topHead(), ast, 2, engine);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
