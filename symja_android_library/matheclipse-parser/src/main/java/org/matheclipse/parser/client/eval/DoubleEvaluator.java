@@ -282,6 +282,11 @@ public class DoubleEvaluator {
 		//
 		// Functions with 1 argument
 		//
+		FUNCTION_DOUBLE_MAP.put("Abs", new IDouble1Function() {
+			public double evaluate(double arg1) {
+				return Math.abs(arg1);
+			}
+		});
 		FUNCTION_DOUBLE_MAP.put("ArcCos", new IDouble1Function() {
 			public double evaluate(double arg1) {
 				return Math.acos(arg1);

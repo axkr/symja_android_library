@@ -199,6 +199,11 @@ public class ComplexEvalVisitor extends AbstractASTVisitor<Complex, ComplexVaria
 		//
 		// Functions with 1 argument
 		//
+		FUNCTION_MAP.put("Abs", new IComplex1Function() {
+			public Complex evaluate(Complex arg1) {
+				return new Complex(arg1.abs());
+			}
+		});
 		FUNCTION_MAP.put("ArcCos", new IComplex1Function() {
 			public Complex evaluate(Complex arg1) {
 				return arg1.acos();// acos(arg1);
