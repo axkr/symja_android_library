@@ -420,7 +420,7 @@ public class Functors {
 	 * @throws WrongArgumentType
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
-		IAST astRules = F.List();
+		IAST astRules = F.ListC(strRules.length);
 		final Parser parser = new Parser();
 		final EvalEngine engine = EvalEngine.get();
 		for (String str : strRules) {

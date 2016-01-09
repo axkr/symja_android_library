@@ -26,18 +26,20 @@ public class Convert {
 	}
 
 	public static IExpr doubleToExprTranspose(final double[][] dd) {
-		final IAST list = List();
 		try {
-			for (int j = 0; j < dd[0].length; j++) {
-				final IAST row = List();
-				for (int i = 0; i < dd.length; i++) {
+			int dd0Len = dd[0].length;
+			int ddLen = dd.length;
+			final IAST list = F.ListC(dd0Len);
+			for (int j = 0; j < dd0Len; j++) {
+				final IAST row = F.ListC(ddLen);
+				for (int i = 0; i < ddLen; i++) {
 					row.add(F.num(dd[i][j]));
 				}
 				list.add(row);
 			}
 			list.addEvalFlags(IAST.IS_MATRIX);
 			return list;
-		} catch (final Throwable ex) {
+		} catch (final Exception ex) {
 		}
 		return null;
 	}
@@ -48,10 +50,12 @@ public class Convert {
 	 * @param listMatrix
 	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
 	 * @throws WrongArgumentType
-	 *             if not all elements are convertable to a <code>double</code> value.
+	 *             if not all elements are convertable to a <code>double</code>
+	 *             value.
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static RealMatrix list2RealMatrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
+	public static RealMatrix list2RealMatrix(final IAST listMatrix)
+			throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null) {
 			return null;
 		}
@@ -77,7 +81,8 @@ public class Convert {
 		// return null;
 		// }
 		// for (int j = 1; j < colSize + 1; j++) {
-		// elements[i - 1][j - 1] = ((ISignedNumber) currInRow.get(j)).doubleValue();
+		// elements[i - 1][j - 1] = ((ISignedNumber)
+		// currInRow.get(j)).doubleValue();
 		// }
 		// }
 		return new Array2DRowRealMatrix(elements);
@@ -96,10 +101,10 @@ public class Convert {
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IAST out = F.List();
+		final IAST out = F.ListC(rowSize);
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.List();
+			currOutRow = F.ListC(colSize);
 			out.add(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				currOutRow.add(F.num(matrix.getEntry(i, j)));
@@ -115,10 +120,12 @@ public class Convert {
 	 * @param listVector
 	 * @return a RealVector or <code>null</code> if the given list is no matrix.
 	 * @throws WrongArgumentType
-	 *             if not all elements are convertable to a <code>double</code> value.
+	 *             if not all elements are convertable to a <code>double</code>
+	 *             value.
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static RealVector list2RealVector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
+	public static RealVector list2RealVector(final IAST listVector)
+			throws ClassCastException, IndexOutOfBoundsException {
 		final Object header = listVector.head();
 		if (header != F.List) {
 			return null;
@@ -154,7 +161,8 @@ public class Convert {
 	}
 
 	/**
-	 * Converts a PolynomialFunction to the (polynomial) expression representation.
+	 * Converts a PolynomialFunction to the (polynomial) expression
+	 * representation.
 	 * 
 	 * @param pf
 	 *            the polynomial function
@@ -169,7 +177,8 @@ public class Convert {
 	}
 
 	/**
-	 * Converts an array of coefficients into the (polynomial) expression representation.
+	 * Converts an array of coefficients into the (polynomial) expression
+	 * representation.
 	 * 
 	 * @param coefficients
 	 *            the coefficients of the polynomial function
@@ -241,8 +250,8 @@ public class Convert {
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldMatrix list2Matrix(final IAST listMatrix, final IAST listVector) throws ClassCastException,
-			IndexOutOfBoundsException {
+	public static FieldMatrix list2Matrix(final IAST listMatrix, final IAST listVector)
+			throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null || listVector == null) {
 			return null;
 		}
@@ -262,7 +271,7 @@ public class Convert {
 		final int rowSize = listMatrix.size() - 1;
 		final int colSize = currInRow.size() - 1;
 
-		final IExpr[][] elements = new IExpr[rowSize][colSize+1];
+		final IExpr[][] elements = new IExpr[rowSize][colSize + 1];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
 			if (currInRow.head() != F.List) {
@@ -307,10 +316,10 @@ public class Convert {
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IAST out = F.List();
+		final IAST out = F.ListC(rowSize);
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.List();
+			currOutRow = F.ListC(colSize);
 			out.add(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j);
@@ -342,7 +351,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.List();
+		final IAST out = F.ListC(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.add(vector.getEntry(i));
 		}
@@ -351,17 +360,21 @@ public class Convert {
 	}
 
 	/**
-	 * Convert an expression into a JScience polynomial. Throws different exceptions if the conversion is not possible:<br>
+	 * Convert an expression into a JScience polynomial. Throws different
+	 * exceptions if the conversion is not possible:<br>
 	 * 
 	 * @param exprPoly
-	 *            an expression which should be converted into a JScience polynomial
+	 *            an expression which should be converted into a JScience
+	 *            polynomial
 	 * @param variables
 	 *            a list of the variables which could occur in the polynomial
 	 * @return the corresponding JScience polynomial
 	 * @throws ArithmeticException
-	 *             if the exponent of a <code>Power</code> expression doesn't fit into a Java <code>int</code>
+	 *             if the exponent of a <code>Power</code> expression doesn't
+	 *             fit into a Java <code>int</code>
 	 * @throws ClassCastException
-	 *             if the expression is an AST with an unsuitable head (i.e. no <code>Plus, Times, Power</code> head)
+	 *             if the expression is an AST with an unsuitable head (i.e. no
+	 *             <code>Plus, Times, Power</code> head)
 	 */
 	// public static Polynomial<IExpr> expr2Polynomial(final IExpr exprPoly,
 	// final List<IExpr> variables) throws ArithmeticException,

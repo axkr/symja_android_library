@@ -16,7 +16,7 @@ import java.math.BigInteger;
  * Converts objects into an IExpr expression
  * 
  */
-public class Object2Expr {  
+public class Object2Expr {
 
 	/**
 	 * Converts the following J<va objects into an IExpr expression
@@ -83,17 +83,18 @@ public class Object2Expr {
 				list = List();
 			} else {
 				final ISymbol head = F.$s(lst.get(0).toString());
-				list = F.ast(head);
+				int size = lst.size();
+				list = F.ast(head, size, false);
 
-				for (int i = 1; i < lst.size(); i++) {
+				for (int i = 1; i < size; i++) {
 					list.add(convert(lst.get(i)));
 				}
 			}
 			return list;
 		}
 		if (obj instanceof Object[]) {
-			final IAST list = List();
 			final Object[] array = (Object[]) obj;
+			final IAST list = F.ListC(array.length);
 			for (int i = 0; i < array.length; i++) {
 				list.add(convert(array[i]));
 			}
@@ -107,9 +108,9 @@ public class Object2Expr {
 		}
 		if (obj instanceof double[][]) {
 			final double[][] dd = (double[][]) obj;
-			final IAST list = List();
+			final IAST list = F.ListC(dd.length);
 			for (int i = 0; i < dd.length; i++) {
-				final IAST row = List();
+				final IAST row = F.ListC(dd[i].length);
 				for (int j = 0; j < dd[i].length; j++) {
 					row.add(F.num(dd[i][j]));
 				}
@@ -121,8 +122,8 @@ public class Object2Expr {
 			return AST.newInstance(F.List, (org.apache.commons.math4.complex.Complex[]) obj);
 		}
 		if (obj instanceof boolean[]) {
-			final IAST list = List();
 			final boolean[] array = (boolean[]) obj;
+			final IAST list = F.ListC(array.length);
 			for (int i = 0; i < array.length; i++) {
 				if (array[i]) {
 					list.add(F.True);

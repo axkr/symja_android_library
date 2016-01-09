@@ -113,7 +113,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 		if (level.isIncludeHeads()) {
 			headOffset = 0;
 		}
-		Position.position(list, cloneList, resultList, level, matcher, pos, headOffset);
+		position(list, cloneList, resultList, level, matcher, pos, headOffset);
 		return resultList;
 	}
 

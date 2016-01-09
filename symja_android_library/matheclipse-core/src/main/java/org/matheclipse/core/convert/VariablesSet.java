@@ -1,16 +1,14 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -214,7 +212,7 @@ public class VariablesSet {
 	 */
 	public IAST getVarList() {
 		final Iterator<ISymbol> iter = fVariablesSet.iterator();
-		final IAST list = List();
+		final IAST list = F.ListC(fVariablesSet.size());
 		while (iter.hasNext()) {
 			list.add(iter.next());
 		}

@@ -25,7 +25,7 @@ public class UnitVector extends AbstractFunctionEvaluator {
 			int n = Validate.checkIntType(ast, 1);
 			int k = Validate.checkIntType(ast, 2);
 			if (k <= n) {
-				IAST vector = F.List();
+				IAST vector = F.ListC(n);
 				for (int i = 0; i < n; i++) {
 					vector.add(F.C0);
 				}

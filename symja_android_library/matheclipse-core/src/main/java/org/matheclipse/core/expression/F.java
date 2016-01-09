@@ -3213,6 +3213,18 @@ public class F {
 		return ast(List);
 	}
 
+	/**
+	 * Create a new <code>List</code> with the given <code>capacity</code>.
+	 * 
+	 * @param capacity
+	 *            the assumed number of arguments (+ 1 for the header expression
+	 *            is added internally).
+	 * @return
+	 */
+	public static IAST ListC(int capacity) {
+		return ast(List, capacity, false);
+	}
+
 	public static IAST List(final double... numbers) {
 		INum a[] = new INum[numbers.length];
 		for (int i = 0; i < numbers.length; i++) {

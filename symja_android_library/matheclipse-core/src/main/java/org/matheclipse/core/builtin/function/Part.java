@@ -64,7 +64,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST lst = (IAST) arg2;
-			final IAST result = F.List();
+			final IAST result = F.ListC(lst.size());
 
 			for (int i = 1; i < lst.size(); i++) {
 				final IExpr expr = lst.get(i);

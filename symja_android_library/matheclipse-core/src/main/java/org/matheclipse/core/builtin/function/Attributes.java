@@ -34,57 +34,46 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 
 			if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
 				result.add(F.Flat);
-
 			}
 
 			if ((attributea & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
 				result.add(F.Listable);
-
 			}
 
 			if ((attributea & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
 				result.add(F.OneIdentity);
-
 			}
 
 			if ((attributea & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
 				result.add(F.Orderless);
-
 			}
 
 			if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
 				result.add(F.HoldAll);
-
 			}
 
 			if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
 				result.add(F.HoldFirst);
-
 			}
 
 			if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
 				result.add(F.HoldRest);
-
 			}
 
 			if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
 				result.add(F.NHoldAll);
-
 			}
 
 			if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
 				result.add(F.NHoldFirst);
-
 			}
 
 			if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
 				result.add(F.NHoldRest);
-
 			}
 
 			if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
 				result.add(F.NumericFunction);
-
 			}
 			return result;
 		}

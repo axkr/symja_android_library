@@ -116,10 +116,10 @@ public class ExprField implements Field<ExprFieldElement> {
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IAST out = F.List();
+		final IAST out = F.ListC(rowSize);
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.List();
+			currOutRow = F.ListC(colSize);
 			out.add(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j).getExpr();
@@ -146,7 +146,7 @@ public class ExprField implements Field<ExprFieldElement> {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.List();
+		final IAST out = F.ListC(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.add(vector.getEntry(i).getExpr());
 		}
