@@ -44,7 +44,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3) {
-			final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+			final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 			IExpr option = options.getOption("Modulus");
 			if (option != null && option.isSignedNumber()) {
 				try {

@@ -4,7 +4,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Options;
 import static org.matheclipse.core.expression.F.ReplaceAll;
 
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -24,6 +24,8 @@ public class Options {
 
 	private IAST fCurrentOptionsList;
 
+	private final EvalEngine fEngine;
+
 	/**
 	 * Construct special <i>Options</i> used in evaluation of function symbols
 	 * (i.e. <code>Modulus-&gt;n</code> is an option which could be used for an
@@ -40,9 +42,10 @@ public class Options {
 	 *            the index from which tolook for options defined in
 	 *            <code>currentOptionsList</code>
 	 */
-	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex) {
+	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final EvalEngine engine) {
+		fEngine = engine;
 		// get the List of pre-defined options:
-		final IExpr temp = F.eval(Options(symbol));
+		final IExpr temp = fEngine.evaluate(Options(symbol));
 		if ((temp != null) && (temp instanceof IAST) && temp.isList()) {
 			fDefaultOptionsList = (IAST) temp;
 		} else {
@@ -69,9 +72,10 @@ public class Options {
 	 * @param optionExpr
 	 *            the value which should be defined for the option
 	 */
-	public Options(final ISymbol symbol, final IExpr optionExpr) {
+	public Options(final ISymbol symbol, final IExpr optionExpr, final EvalEngine engine) {
+		fEngine = engine;
 		// get the List of pre-defined options:
-		final IExpr temp = F.eval(Options(symbol));
+		final IExpr temp = fEngine.evaluate(Options(symbol));
 		if ((temp != null) && (temp instanceof IAST) && temp.isList()) {
 			fDefaultOptionsList = (IAST) temp;
 		} else {
@@ -175,10 +179,10 @@ public class Options {
 	public IAST replaceAll(final IAST options) {
 		IAST result = options.clone();
 		if (fCurrentOptionsList != null) {
-			result = (IAST) F.eval(ReplaceAll(result, fCurrentOptionsList));
+			result = (IAST) fEngine.evaluate(ReplaceAll(result, fCurrentOptionsList));
 		}
 		if (fDefaultOptionsList != null) {
-			result = (IAST) F.eval(ReplaceAll(result, fDefaultOptionsList));
+			result = (IAST) fEngine.evaluate(ReplaceAll(result, fDefaultOptionsList));
 		}
 		return result;
 	}

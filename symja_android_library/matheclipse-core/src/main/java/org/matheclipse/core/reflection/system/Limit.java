@@ -483,7 +483,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 		int direction = DIRECTION_AUTOMATIC; // no direction as default
 		if (ast.size() == 4) {
-			final Options options = new Options(ast.topHead(), ast, 2);
+			final Options options = new Options(ast.topHead(), ast, 2, engine);
 			IExpr option = options.getOption("Direction");
 			if (option != null) {
 				if (option.isOne()) {

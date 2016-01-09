@@ -30,7 +30,7 @@ public class JavaForm extends AbstractCoreFunctionEvaluator {
 		boolean strictJava = false;
 		if (ast.size() == 3) {
 			IExpr arg2 = engine.evaluate(ast.arg2());
-			final Options options = new Options(ast.topHead(), arg2);
+			final Options options = new Options(ast.topHead(), arg2, engine);
 			strictJava = options.isOption("Strict");
 		}
 		String resultStr = javaForm(arg1, strictJava);

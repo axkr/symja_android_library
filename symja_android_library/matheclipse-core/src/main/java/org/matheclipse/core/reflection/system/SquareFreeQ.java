@@ -58,7 +58,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 
 			if (ast.size() == 3) {
-				return F.bool(isSquarefreeWithOption(ast, expr, varList));
+				return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));
 			}
 			return F.bool(isSquarefree(expr, varList));
 		} catch (JASConversionException e) {
@@ -77,8 +77,8 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 		return factorAbstract.isSquarefree(poly);
 	}
 
-	public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList) throws JASConversionException {
-		final Options options = new Options(lst.topHead(), lst, 2);
+	public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList, final EvalEngine engine) throws JASConversionException {
+		final Options options = new Options(lst.topHead(), lst, 2, engine);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
 

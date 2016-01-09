@@ -25,7 +25,7 @@ public class Map extends AbstractFunctionEvaluator {
 
 		int lastIndex = ast.size() - 1;
 		boolean heads = false;
-		final Options options = new Options(ast.topHead(), ast, lastIndex);
+		final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
 		IExpr option = options.getOption("Heads");
 		if (option != null) {
 			lastIndex--;

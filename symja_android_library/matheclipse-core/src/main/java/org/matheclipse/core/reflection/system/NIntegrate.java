@@ -48,7 +48,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		int maxIterations = DEFAULT_MAX_ITERATIONS;
 		if (ast.size() >= 4) { // && ast.arg3().isSymbol()) {
 			// method = (ISymbol) ast.arg3();
-			final Options options = new Options(ast.topHead(), ast, 3);
+			final Options options = new Options(ast.topHead(), ast, 3, engine);
 			IExpr option = options.getOption("Method");
 			if (option != null && option.isSymbol()) {
 				method = (ISymbol) option;

@@ -58,7 +58,7 @@ public class Factor extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 
 			if (ast.size() == 3) {
-				return factorWithOption(ast, expr, varList, false);
+				return factorWithOption(ast, expr, varList, false, engine);
 			}
 			return factor(expr, varList, false);
 
@@ -143,9 +143,9 @@ public class Factor extends AbstractFunctionEvaluator {
 	 * @return
 	 * @throws JASConversionException
 	 */
-	public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree)
+	public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList, boolean factorSquareFree, final EvalEngine engine)
 			throws JASConversionException {
-		final Options options = new Options(ast.topHead(), ast, 2);
+		final Options options = new Options(ast.topHead(), ast, 2, engine);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
 			return factorModulus(expr, varList, factorSquareFree, option);

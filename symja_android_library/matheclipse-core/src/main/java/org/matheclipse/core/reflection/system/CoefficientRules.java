@@ -69,7 +69,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 					String orderStr = ast.arg3().toString();
 					termOrder = Options.getMonomialOrder(orderStr, termOrder);
 				}
-				final Options options = new Options(ast.topHead(), ast, 2);
+				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Modulus");
 				if (option != null && option.isSignedNumber()) {
 					return coefficientRulesModulus(expr, varList, termOrder, option);

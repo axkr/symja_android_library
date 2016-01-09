@@ -48,7 +48,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
 		if (ast.size() == 5) {
 			List<IExpr> varList = r.toList();
-			final Options options = new Options(ast.topHead(), ast, 4);
+			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr option = options.getOption("Modulus");
 			if (option != null && option.isSignedNumber()) {
 				try {

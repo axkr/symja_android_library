@@ -36,7 +36,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 		}
 		int lastIndex = evaledAST.size() - 1;
 		boolean heads = false;
-		final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex);
+		final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex, engine);
 		IExpr option = options.getOption("Heads");
 		if (option != null) {
 			lastIndex--;

@@ -21,7 +21,7 @@ public class MemberQ extends AbstractCoreFunctionEvaluator {
 
 		boolean heads = false;
 		if (ast.size() > 3) {
-			final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+			final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 			// IExpr option = options.getOption("Heads");
 			if (options.isOption("Heads")) {
 				heads = true;

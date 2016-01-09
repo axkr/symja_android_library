@@ -73,7 +73,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 					String orderStr = ast.arg3().toString(); // NegativeLexicographic
 					termOrder = Options.getMonomialOrder(orderStr, termOrder);
 				}
-				final Options options = new Options(ast.topHead(), ast, 2);
+				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Modulus");
 				if (option != null && option.isSignedNumber()) {
 					return monomialListModulus(expr, varList, termOrder, option);

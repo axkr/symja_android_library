@@ -37,7 +37,7 @@ public class FactorSquareFree extends Factor {
 			List<IExpr> varList = r.toList();
 
 			if (ast.size() == 3) {
-				return factorWithOption(ast, expr, varList, true);
+				return factorWithOption(ast, expr, varList, true, engine);
 			}
 			return factor(expr, varList, true);
 

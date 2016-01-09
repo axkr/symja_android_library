@@ -39,7 +39,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				}
 				TermOrder termOrder = TermOrderByName.Lexicographic;
 				if (ast.size() > 3) {
-					final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+					final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 					termOrder = options.getMonomialOrder(ast, termOrder);
 				}
 				if (ast.size() >= 3) {

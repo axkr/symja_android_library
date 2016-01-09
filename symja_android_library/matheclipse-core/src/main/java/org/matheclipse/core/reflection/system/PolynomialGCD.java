@@ -57,7 +57,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3 && ast.last().isRuleAST()) {
-			return gcdWithOption(ast, expr, eVar);
+			return gcdWithOption(ast, expr, eVar, engine);
 		}
 		try {
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -79,8 +79,8 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar) {
-		final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+	private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
+		final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 		IExpr option = options.getOption("Modulus");
 		if (option != null && option.isSignedNumber()) {
 			return modulusGCD(ast, expr, eVar, option);

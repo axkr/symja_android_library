@@ -135,7 +135,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 		if (ast.arg1().isAST()) {
 			boolean assumptions = false;
 			if (ast.size() == 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.size() - 1);
+				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 				IExpr option = options.getOption(Assumptions);
 				if (option != null && option.isTrue()) {
 					// found "Assumptions -> True"

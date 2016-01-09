@@ -41,7 +41,7 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 		IExpr arg2 = F.evalExpandAll(ast.arg2());
 
 		if (ast.size() == 5) {
-			final Options options = new Options(ast.topHead(), ast, 4);
+			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr option = options.getOption("Modulus");
 			if (option != null && option.isSignedNumber()) {
 				IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
