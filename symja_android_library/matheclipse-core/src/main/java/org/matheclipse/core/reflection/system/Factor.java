@@ -73,14 +73,12 @@ public class Factor extends AbstractFunctionEvaluator {
 	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
 			throws JASConversionException {
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-
 		GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
 		if (polyRat.length() <= 1) {
 			return expr;
 		}
+		
 		Object[] objects = jas.factorTerms(polyRat);
-		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
 		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
 				.getImplementation(edu.jas.arith.BigInteger.ONE);
@@ -91,6 +89,8 @@ public class Factor extends AbstractFunctionEvaluator {
 			map = factorAbstract.factors(poly);
 		}
 		IAST result = F.Times();
+		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
 			result.add(F.fraction(gcd, lcm));
 		}
