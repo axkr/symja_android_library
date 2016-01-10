@@ -1114,6 +1114,11 @@ public class F {
 	public final static IFraction CN1D4 = AbstractFractionSym.valueOf(-1, 4);
 
 	/**
+	 * Constant double &quot;1.0&quot;
+	 */
+	public final static INum CND1 = Num.valueOf(-1.0);
+	
+	/**
 	 * Constant double &quot;0.0&quot;
 	 */
 	public final static INum CD0 = Num.valueOf(0.0);
