@@ -3305,6 +3305,14 @@ public class F {
 		return binaryAST2(Log, a0, a1);
 	}
 
+	/**
+	 * @return <code>Log[10, a0]</code>
+	 */
+	public static IAST Log10(final IExpr a0) {
+
+		return binaryAST2(Log, F.C10, a0);
+	}
+
 	public static IAST Map(final IExpr a0) {
 
 		return unaryAST1(Map, a0);
