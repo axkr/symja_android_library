@@ -11,11 +11,15 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
+ * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less
+ * equal 103000000.
  * 
- * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/dafis/javaprimes</a><br />
- * <a href="http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">stackoverflow.
- * com - Calculating and printing the nth prime number</a>
+ * See:
+ * <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/dafis/
+ * javaprimes</a><br />
+ * <a href=
+ * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
+ * stackoverflow. com - Calculating and printing the nth prime number</a>
  */
 public class Prime extends AbstractFunctionEvaluator {
 
@@ -120,6 +124,7 @@ public class Prime extends AbstractFunctionEvaluator {
 				return null;
 			}
 		}
+
 		return null;
 	}
 
