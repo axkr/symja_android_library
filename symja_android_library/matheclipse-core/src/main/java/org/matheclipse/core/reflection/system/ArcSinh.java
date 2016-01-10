@@ -3,12 +3,15 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.ArcSinh;
 import static org.matheclipse.core.expression.F.Negate;
 
+import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,7 +24,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
  */
-public class ArcSinh extends AbstractTrigArg1 implements ArcSinhRules {
+public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules {
 
 	@Override
 	public IAST getRuleAST() {
@@ -44,6 +47,20 @@ public class ArcSinh extends AbstractTrigArg1 implements ArcSinhRules {
 		return null;
 	}
 
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		double val = FastMath.asinh(arg1);
+		return F.num(val);
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return FastMath.asinh(stack[top]);
+	}
+	
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.asinh(arg1));
