@@ -1,12 +1,13 @@
 package org.matheclipse.core.reflection.system;
-
-import org.matheclipse.commons.math.linear.BlockFieldMatrix;
-import org.matheclipse.commons.math.linear.FieldMatrix;
-import org.matheclipse.commons.math.linear.FieldVector;
+ 
+import org.apache.commons.math4.linear.BlockFieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -18,10 +19,10 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		FieldMatrix matrix0;
-		FieldMatrix matrix1;
-		FieldVector vector0;
-		FieldVector vector1;
+		FieldMatrix<IExpr> matrix0;
+		FieldMatrix<IExpr> matrix1;
+		FieldVector<IExpr> vector0;
+		FieldVector<IExpr> vector1;
 		IAST res;
 		try {
 			IAST list;
@@ -46,7 +47,7 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 					list = (IAST) o1;
 					matrix1 = Convert.list2Matrix(list);
 					IExpr[] av = vector0.toArray();
-					BlockFieldMatrix m = new BlockFieldMatrix(1, av.length);
+					BlockFieldMatrix<IExpr> m = new BlockFieldMatrix<IExpr>(ExprField.CONST, 1, av.length);
 					m.setRow(0, vector0.toArray());
 					return Convert.matrix2List(m.multiply(matrix1));
 				} else if (o1.isVector() != (-1)) {

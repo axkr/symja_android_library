@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,7 +24,7 @@ public class LinearSolve extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		try {
-			FieldMatrix augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
+			FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
 			return RowReduce.rowReduced2List(augmentedMatrix, engine);
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {

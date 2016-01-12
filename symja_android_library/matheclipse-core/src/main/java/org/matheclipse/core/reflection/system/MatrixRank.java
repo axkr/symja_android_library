@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -25,7 +25,7 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		FieldMatrix matrix;
+		FieldMatrix<IExpr> matrix;
 		try {
 			Validate.checkSize(ast, 2);
 

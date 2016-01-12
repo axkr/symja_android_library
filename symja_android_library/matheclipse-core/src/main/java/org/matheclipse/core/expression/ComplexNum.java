@@ -115,11 +115,11 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public IComplexNum add(final IComplexNum val) {
-		return newInstance(fComplex.add(((ComplexNum) val).fComplex));
+		return newInstance(fComplex.sum(((ComplexNum) val).fComplex));
 	}
 
 	public ComplexNum add(final ComplexNum that) {
-		return newInstance(fComplex.add(that.fComplex));
+		return newInstance(fComplex.sum(that.fComplex));
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
@@ -152,7 +152,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public Complex add(final Complex that) {
-		return fComplex.add(that);
+		return fComplex.sum(that);
 	}
 
 	/** {@inheritDoc} */
@@ -408,7 +408,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ComplexNum) {
-			return newInstance(fComplex.add(((ComplexNum) that).fComplex));
+			return newInstance(fComplex.sum(((ComplexNum) that).fComplex));
 		}
 		if (that instanceof ApcomplexNum) {
 			ApcomplexNum acn = (ApcomplexNum) that;

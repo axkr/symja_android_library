@@ -50,7 +50,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 
 		// (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
 		Complex result = Complex.I.divide(new Complex(2.0)).multiply(
-				Complex.ONE.subtract(c).log().subtract(Complex.ONE.add(c).log()));
+				Complex.ONE.subtract(c).log().subtract(Complex.ONE.sum(c).log()));
 		return F.complexNum(result);
 	}
 

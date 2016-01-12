@@ -1,13 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.BlockFieldMatrix;
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.BlockFieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -22,8 +23,8 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		FieldMatrix matrix;
-		FieldMatrix resultMatrix;
+		FieldMatrix<IExpr> matrix;
+		FieldMatrix<IExpr> resultMatrix;
 		try {
 			matrix = Convert.list2Matrix((IAST) ast.arg1());
 			final int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
@@ -35,7 +36,7 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 				return ast.arg1();
 			}
 			if (p == 0) {
-				resultMatrix = new BlockFieldMatrix(matrix.getRowDimension(), matrix.getColumnDimension());
+				resultMatrix = new BlockFieldMatrix<IExpr>(ExprField.CONST, matrix.getRowDimension(), matrix.getColumnDimension());
 				int min = matrix.getRowDimension();
 				if (min > matrix.getColumnDimension()) {
 					min = matrix.getColumnDimension();

@@ -8,8 +8,13 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.math4.Field;
+import org.apache.commons.math4.FieldElement;
 import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.exception.MathArithmeticException;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ExprField;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -69,7 +74,7 @@ import edu.jas.structure.GcdRingElem;
  * </pre>
  * 
  */
-public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable {
+public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, FieldElement<IExpr> {
 
 	public final static int ASTID = 1024;
 
@@ -1345,4 +1350,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	public IExpr $up(final IExpr that);
+	
+	default public IExpr multiply(int n) {
+		return times(F.integer(n)); 
+	}
+
+	default public IExpr reciprocal() throws MathArithmeticException {
+		return inverse(); 
+	}
+
+	default public Field<IExpr> getField() {
+		return ExprField.CONST;
+	}
 }

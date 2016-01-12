@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -30,7 +30,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		FieldMatrix matrix;
+		FieldMatrix<IExpr> matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
@@ -60,7 +60,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	 */
 	public static IAST rowReduced2List(FieldMatrix matrix, EvalEngine engine) {
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
-		FieldMatrix rowReduced = ref.getRowReducedMatrix();
+		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
 		int rows = rowReduced.getRowDimension();
 		int cols = rowReduced.getColumnDimension();
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
@@ -96,7 +96,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	 */
 	public static IAST rowReduced2RulesList(FieldMatrix matrix, IAST variableList, IAST resultList) {
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
-		FieldMatrix rowReduced = ref.getRowReducedMatrix();
+		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
 		int size = variableList.size() - 1;
 		int rows = rowReduced.getRowDimension();
 		int cols = rowReduced.getColumnDimension();

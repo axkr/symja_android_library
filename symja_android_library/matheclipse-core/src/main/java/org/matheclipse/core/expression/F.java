@@ -2379,9 +2379,7 @@ public class F {
 	 *            the expression which should be evaluated
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
-	 * @deprecated use EvalEngine#evaluate()
 	 */
-	@Deprecated
 	public static IExpr eval(IExpr a) {
 		return EvalEngine.get().evaluate(a);
 	}

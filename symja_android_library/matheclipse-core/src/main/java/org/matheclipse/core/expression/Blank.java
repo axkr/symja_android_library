@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.apache.commons.math4.Field;
+import org.apache.commons.math4.exception.MathArithmeticException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
@@ -317,4 +319,5 @@ public class Blank extends ExprImpl implements IPattern {
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
+
 }

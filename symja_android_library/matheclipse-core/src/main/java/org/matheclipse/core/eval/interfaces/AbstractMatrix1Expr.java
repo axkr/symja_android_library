@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.RealMatrix;
-import org.matheclipse.commons.math.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,7 +19,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		FieldMatrix matrix;
+		FieldMatrix<IExpr> matrix;
 		try {
 
 			int[] dim = ast.arg1().isMatrix();
@@ -52,7 +52,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		final IAST list = (IAST) ast.arg1();
 		try {
 			if (engine.isApfloat()) {
-				FieldMatrix fieldMatrix = Convert.list2Matrix(list);
+				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
 				if (fieldMatrix != null) {
 					return matrixEval(fieldMatrix);
 				}
@@ -63,7 +63,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		} catch (final WrongArgumentType e) {
 			// WrongArgumentType occurs in list2RealMatrix(),
 			// if the matrix elements aren't pure numerical values
-			FieldMatrix fieldMatrix = Convert.list2Matrix(list);
+			FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
 			return matrixEval(fieldMatrix);
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -74,7 +74,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public abstract IExpr matrixEval(FieldMatrix matrix);
+	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
 
 	public abstract IExpr realMatrixEval(RealMatrix matrix);
 }

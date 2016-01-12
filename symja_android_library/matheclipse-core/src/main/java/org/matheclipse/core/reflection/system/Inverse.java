@@ -1,11 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
 import org.apache.commons.math4.linear.DecompositionSolver;
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math4.linear.FieldDecompositionSolver;
+import org.apache.commons.math4.linear.FieldLUDecomposition;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.LUDecomposition;
-import org.matheclipse.commons.math.linear.FieldDecompositionSolver;
-import org.matheclipse.commons.math.linear.FieldLUDecomposition;
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 
 /**

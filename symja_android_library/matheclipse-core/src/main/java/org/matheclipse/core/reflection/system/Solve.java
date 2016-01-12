@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.function.Predicate;
 
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -691,7 +691,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				// IExpr temp = F.eval(F.RowReduce(augmentedMatrix));
-				FieldMatrix augmentedMatrix = Convert.list2Matrix(matrix, vector);
+				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
 				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList);
 			}
 

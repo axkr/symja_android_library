@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -25,14 +25,14 @@ public class NullSpace extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		FieldMatrix matrix;
+		FieldMatrix<IExpr> matrix;
 		try {
 			Validate.checkSize(ast, 2);
 
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
 			FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-			FieldMatrix nullspace = fmw.getNullSpace(F.CN1);
+			FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
 			if (nullspace == null) {
 				return F.List();
 			}

@@ -272,13 +272,13 @@ public class PolynomialsUtils {
 				final BigFraction ckPrev = ck;
 				ck = coefficients.get(startK + i);
 				ckm1 = coefficients.get(startKm1 + i);
-				coefficients.add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
+				coefficients.add(ck.multiply(ai[0]).sum(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
 			}
 
 			// degree k coefficient
 			final BigFraction ckPrev = ck;
 			ck = coefficients.get(startK + k);
-			coefficients.add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])));
+			coefficients.add(ck.multiply(ai[0]).sum(ckPrev.multiply(ai[1])));
 
 			// degree k+1 coefficient
 			coefficients.add(ck.multiply(ai[1]));

@@ -1,20 +1,22 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.List;
-
 import org.apache.commons.math4.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math4.linear.Array2DRowFieldMatrix;
 import org.apache.commons.math4.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.linear.ArrayFieldVector;
 import org.apache.commons.math4.linear.ArrayRealVector;
+import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldVector;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.apache.commons.math4.linear.RealVector;
-import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
-import org.matheclipse.commons.math.linear.ArrayFieldVector;
-import org.matheclipse.commons.math.linear.FieldMatrix;
-import org.matheclipse.commons.math.linear.FieldVector;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
+//import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
+//import org.matheclipse.commons.math.linear.ArrayFieldVector;
+//import org.matheclipse.commons.math.linear.FieldMatrix;
+//import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -68,7 +70,7 @@ public class Convert {
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			double[][] array = new double[0][0];
-			return new Array2DRowRealMatrix(array);
+			return new Array2DRowRealMatrix(array, false);
 		}
 		// final int rowSize = listMatrix.size() - 1;
 		// final int colSize = currInRow.size() - 1;
@@ -85,7 +87,7 @@ public class Convert {
 		// currInRow.get(j)).doubleValue();
 		// }
 		// }
-		return new Array2DRowRealMatrix(elements);
+		return new Array2DRowRealMatrix(elements, false);
 	}
 
 	/**
@@ -137,7 +139,7 @@ public class Convert {
 		// elements[i] = ((ISignedNumber) listVector.get(i + 1)).doubleValue();
 		// }
 		final double[] elements = Expr2Object.toDoubleVector(listVector);
-		return new ArrayRealVector(elements);
+		return new ArrayRealVector(elements, false);
 	}
 
 	/**
@@ -211,7 +213,7 @@ public class Convert {
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldMatrix list2Matrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
+	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null) {
 			return null;
 		}
@@ -223,7 +225,7 @@ public class Convert {
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
-			return new Array2DRowFieldMatrix(array);
+			return new Array2DRowFieldMatrix<IExpr>(array, false);
 		}
 		final int rowSize = listMatrix.size() - 1;
 		final int colSize = currInRow.size() - 1;
@@ -238,7 +240,7 @@ public class Convert {
 				elements[i - 1][j - 1] = currInRow.get(j);
 			}
 		}
-		return new Array2DRowFieldMatrix(elements);
+		return new Array2DRowFieldMatrix<IExpr>(elements, false);
 	}
 
 	/**
@@ -250,7 +252,7 @@ public class Convert {
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldMatrix list2Matrix(final IAST listMatrix, final IAST listVector)
+	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix, final IAST listVector)
 			throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null || listVector == null) {
 			return null;
@@ -266,7 +268,7 @@ public class Convert {
 		if (currInRow.size() == 1) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
-			return new Array2DRowFieldMatrix(array);
+			return new Array2DRowFieldMatrix<IExpr>(array, false);
 		}
 		final int rowSize = listMatrix.size() - 1;
 		final int colSize = currInRow.size() - 1;
@@ -282,10 +284,10 @@ public class Convert {
 			}
 			elements[i - 1][colSize] = listVector.get(i);
 		}
-		return new Array2DRowFieldMatrix(elements);
+		return new Array2DRowFieldMatrix<IExpr>(elements, false);
 	}
 
-	public static FieldVector list2Vector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
+	public static FieldVector<IExpr> list2Vector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
 		if (listVector == null) {
 			return null;
 		}
@@ -300,7 +302,7 @@ public class Convert {
 		for (int i = 0; i < rowSize; i++) {
 			elements[i] = listVector.get(i + 1);
 		}
-		return new ArrayFieldVector(elements);
+		return new ArrayFieldVector<IExpr>(elements, false);
 	}
 
 	/**
@@ -309,7 +311,7 @@ public class Convert {
 	 * @param matrix
 	 * @return
 	 */
-	public static IAST matrix2List(final FieldMatrix matrix) {
+	public static IAST matrix2List(final FieldMatrix<IExpr> matrix) {
 		if (matrix == null) {
 			return null;
 		}
@@ -345,7 +347,7 @@ public class Convert {
 	 * @param vector
 	 * @return
 	 */
-	public static IAST vector2List(final FieldVector vector) {
+	public static IAST vector2List(final FieldVector<IExpr> vector) {
 		if (vector == null) {
 			return null;
 		}
@@ -358,81 +360,5 @@ public class Convert {
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;
 	}
-
-	/**
-	 * Convert an expression into a JScience polynomial. Throws different
-	 * exceptions if the conversion is not possible:<br>
-	 * 
-	 * @param exprPoly
-	 *            an expression which should be converted into a JScience
-	 *            polynomial
-	 * @param variables
-	 *            a list of the variables which could occur in the polynomial
-	 * @return the corresponding JScience polynomial
-	 * @throws ArithmeticException
-	 *             if the exponent of a <code>Power</code> expression doesn't
-	 *             fit into a Java <code>int</code>
-	 * @throws ClassCastException
-	 *             if the expression is an AST with an unsuitable head (i.e. no
-	 *             <code>Plus, Times, Power</code> head)
-	 */
-	// public static Polynomial<IExpr> expr2Polynomial(final IExpr exprPoly,
-	// final List<IExpr> variables) throws ArithmeticException,
-	// ClassCastException {
-	// if (exprPoly instanceof IAST) {
-	// final IAST ast = (IAST) exprPoly;
-	// Polynomial<IExpr> result = null;
-	// Polynomial<IExpr> p = null;
-	// if (ast.isASTSizeGE(F.Plus, 2)) {
-	// IExpr expr = ast.arg1();
-	// result = expr2Polynomial(expr, variables);
-	// for (int i = 2; i < ast.size(); i++) {
-	// checkCanceled();
-	// expr = ast.get(i);
-	// p = expr2Polynomial(expr, variables);
-	// result = result.plus(p);
-	// }
-	// return result;
-	// } else if (ast.isASTSizeGE(F.Times, 2)) {
-	// IExpr expr = ast.arg1();
-	// result = expr2Polynomial(expr, variables);
-	// for (int i = 2; i < ast.size(); i++) {
-	// checkCanceled();
-	// expr = ast.get(i);
-	// p = expr2Polynomial(expr, variables);
-	// result = result.times(p);
-	// }
-	// return result;
-	// } else if (ast.isAST(F.Power, 3)) {
-	// final IExpr expr = ast.arg1();
-	// for (int i = 0; i < variables.size(); i++) {
-	// checkCanceled();
-	// if (variables.get(i).equals(expr)) {
-	// return Polynomial.valueOf(F.C1, (ISymbol) expr).pow(
-	// ((IInteger) ast.arg2()).toInt());
-	// }
-	// }
-	// return Constant.valueOf((IExpr) ast);
-	// }
-	// } else if (exprPoly instanceof ISymbol) {
-	// for (int i = 0; i < variables.size(); i++) {
-	// checkCanceled();
-	// if (variables.get(i).equals(exprPoly)) {
-	// return Polynomial.valueOf(F.C1, (ISymbol) exprPoly);
-	// }
-	// }
-	// }
-	//
-	// // check if this expression contains any variable
-	// for (int i = 0; i < variables.size(); i++) {
-	// checkCanceled();
-	// if (!exprPoly.isFree(variables.get(i))) {
-	// throw new ClassCastException();
-	// }
-	// }
-	//
-	// return Constant.valueOf(exprPoly);
-	//
-	// }
-
+ 
 }

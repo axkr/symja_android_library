@@ -2,8 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.matheclipse.commons.math.linear.FieldLUDecomposition;
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.FieldLUDecomposition;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,13 +23,13 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		FieldMatrix matrix;
+		FieldMatrix<IExpr> matrix;
 		try {
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
-			final FieldLUDecomposition lu = new FieldLUDecomposition(matrix);
-			final FieldMatrix lMatrix = lu.getL();
-			final FieldMatrix uMatrix = lu.getU();
+			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+			final FieldMatrix<IExpr> lMatrix = lu.getL();
+			final FieldMatrix<IExpr> uMatrix = lu.getU();
 			final int[] iArr = lu.getPivot();
 			// final int permutationCount = lu.getPermutationCount();
 			final IAST iList = List();

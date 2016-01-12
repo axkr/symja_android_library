@@ -114,7 +114,7 @@ public class HarmonicNumber extends AbstractEvaluator {
 			 * add 1/i for i=2..n
 			 */
 			for (int i = 2; i <= n; i++) {
-				a = a.add(new BigFraction(1, i));
+				a = a.sum(new BigFraction(1, i));
 			}
 			return a;
 		}

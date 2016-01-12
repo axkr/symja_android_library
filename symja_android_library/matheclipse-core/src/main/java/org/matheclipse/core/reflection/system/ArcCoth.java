@@ -61,7 +61,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 		Complex c = arg1.reciprocal();
 
 		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
-		Complex result = new Complex(0.5).multiply(Complex.ONE.add(c).log().subtract(Complex.ONE.subtract(c).log()));
+		Complex result = new Complex(0.5).multiply(Complex.ONE.sum(c).log().subtract(Complex.ONE.subtract(c).log()));
 		return F.complexNum(result);
 	}
 

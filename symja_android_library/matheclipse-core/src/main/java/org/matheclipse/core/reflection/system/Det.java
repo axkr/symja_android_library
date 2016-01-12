@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math4.linear.FieldLUDecomposition;
+import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.LUDecomposition;
-import org.matheclipse.commons.math.linear.FieldLUDecomposition;
-import org.matheclipse.commons.math.linear.FieldMatrix;
+import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,7 +21,7 @@ public class Det extends AbstractMatrix1Expr {
 	}
 
 	@Override
-	public IExpr matrixEval(final FieldMatrix matrix) {
+	public IExpr matrixEval(final FieldMatrix<IExpr> matrix) {
 		if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
 			// 2x2 matrix
 			IExpr[] row1 = matrix.getRow(0);
@@ -40,7 +40,7 @@ public class Det extends AbstractMatrix1Expr {
 						(row1[2].multiply(row2[0].multiply(row3[1])))).subtract(
 						(row1[2].multiply(row2[1].multiply(row3[0])))));
 		}
-		final FieldLUDecomposition lu = new FieldLUDecomposition(matrix);
+		final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
 		return F.evalExpand(lu.getDeterminant());
 	}
 

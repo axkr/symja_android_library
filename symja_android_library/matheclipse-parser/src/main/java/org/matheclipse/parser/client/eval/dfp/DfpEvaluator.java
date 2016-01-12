@@ -171,13 +171,13 @@ public class DfpEvaluator {
 
 	class PlusFunction implements IDfpFunction, IDfp2Function {
 		public Dfp evaluate(Dfp arg1, Dfp arg2) {
-			return arg1.add(arg2);
+			return arg1.sum(arg2);
 		}
 
 		public Dfp evaluate(DfpEvaluator engine, FunctionNode function) {
 			Dfp result = fDfpField.getZero();
 			for (int i = 1; i < function.size(); i++) {
-				result = result.add(engine.evaluateNode(function.getNode(i)));
+				result = result.sum(engine.evaluateNode(function.getNode(i)));
 			}
 			return result;
 		}
