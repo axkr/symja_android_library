@@ -22,7 +22,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr apply(final IExpr symbolValue) {
 			if (!symbolValue.isAST()) {
-				return null;
+				return F.UNEVALED;
 			}
 			return ((IAST) symbolValue).addAtClone(1, value);
 		}

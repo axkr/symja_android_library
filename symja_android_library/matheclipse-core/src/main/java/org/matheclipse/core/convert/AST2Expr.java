@@ -301,22 +301,22 @@ public class AST2Expr {
 				return rewriteLessGreaterAST(ast, compareHead);
 			} else if (head.equals(F.PatternHead)) {
 				final IExpr expr = Pattern.CONST.evaluate(ast, engine);
-				if (expr != null) {
+				if (expr.isPresent()) {
 					return expr;
 				}
 			} else if (head.equals(F.BlankHead)) {
 				final IExpr expr = Blank.CONST.evaluate(ast, engine);
-				if (expr != null) {
+				if (expr.isPresent()) {
 					return expr;
 				}
 			} else if (head.equals(F.Complex)) {
 				final IExpr expr = Complex.CONST.evaluate(ast, engine);
-				if (expr != null) {
+				if (expr.isPresent()) {
 					return expr;
 				}
 			} else if (head.equals(F.Rational)) {
 				final IExpr expr = Rational.CONST.evaluate(ast, engine);
-				if (expr != null) {
+				if (expr.isPresent()) {
 					return expr;
 				}
 			}

@@ -40,7 +40,7 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 				return null;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

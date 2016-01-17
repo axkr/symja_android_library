@@ -80,7 +80,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

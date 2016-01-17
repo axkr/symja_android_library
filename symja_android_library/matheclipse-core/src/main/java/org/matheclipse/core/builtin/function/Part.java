@@ -43,7 +43,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 				return getPart((IAST) arg1, evaledAST, 2, engine);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	private IExpr getPart(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {

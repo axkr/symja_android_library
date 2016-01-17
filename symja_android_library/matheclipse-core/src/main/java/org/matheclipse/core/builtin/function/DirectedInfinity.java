@@ -38,7 +38,7 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 				engine.setNumericMode(numericMode);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	} 
 
 	public static IExpr timesInf(IAST inf, IExpr a2) {

@@ -76,7 +76,7 @@ public class Rational extends AbstractCoreFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
  
 }

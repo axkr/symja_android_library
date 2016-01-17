@@ -22,7 +22,7 @@ public class Throw extends AbstractCoreFunctionEvaluator {
 		}
 		Validate.checkSize(ast, 2);
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

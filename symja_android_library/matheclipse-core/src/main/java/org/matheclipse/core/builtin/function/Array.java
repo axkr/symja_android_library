@@ -124,7 +124,7 @@ public class Array  extends AbstractCoreFunctionEvaluator {
 		} catch (final ArithmeticException e) {
 			// the toInt() function throws ArithmeticExceptions
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

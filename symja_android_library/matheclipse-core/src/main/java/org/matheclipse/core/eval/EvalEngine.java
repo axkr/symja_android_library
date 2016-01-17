@@ -574,9 +574,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this).orElse(null);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this).orElse(null);
 			}
 		} else {
 			symbol = ast.topHead();
@@ -664,9 +664,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this).orElse(null);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this).orElse(null);
 			}
 
 		} else {

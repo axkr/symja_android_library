@@ -70,7 +70,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 		} catch (final ArithmeticException e) {
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

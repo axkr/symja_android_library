@@ -63,7 +63,7 @@ public class Complex extends AbstractCoreFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

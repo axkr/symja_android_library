@@ -27,6 +27,6 @@ public class First extends AbstractCoreFunctionEvaluator {
 			return sublist.arg1();
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

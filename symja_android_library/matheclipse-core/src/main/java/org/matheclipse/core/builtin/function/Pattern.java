@@ -31,7 +31,7 @@ public class Pattern extends AbstractCoreFunctionEvaluator {
 			// // }
 			// }
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

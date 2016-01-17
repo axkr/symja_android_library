@@ -41,7 +41,7 @@ public class Drop extends AbstractCoreFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

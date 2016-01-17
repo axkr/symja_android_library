@@ -40,7 +40,8 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
+			EvalEngine engine) throws RuleCreationError {
 		final Object[] result = new Object[2];
 
 		if (leftHandSide.isAST()) {
@@ -57,21 +58,7 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 		result[0] = null; // IPatternMatcher
 		result[1] = rightHandSide;
 
-		// if (leftHandSide.isSymbol()) {
-		// final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-		//
-		// if (lhsSymbol.hasLocalVariableStack()) {
-		// lhsSymbol.set(rightHandSide);
-		// return result;
-		// } else {
-		// result[0] = lhsSymbol.putUpRule(F.UpSet, true, leftHandSide,
-		// rightHandSide);
-		// return result;
-		// }
-		// }
-
 		IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-		// if (leftHandSide.isAST()) {
 		for (int i = 1; i < lhsAST.size(); i++) {
 			IExpr temp = lhsAST.get(i);
 			if (temp instanceof IPatternObject) {
@@ -86,9 +73,6 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 			result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET, false, lhsAST, rightHandSide);
 		}
 		return result;
-		// }
-		//
-		// throw new RuleCreationError(leftHandSide);
 	}
 
 	@Override

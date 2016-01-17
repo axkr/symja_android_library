@@ -28,7 +28,7 @@ public class Blank extends AbstractCoreFunctionEvaluator {
 		if (ast.size() == 2) {
 			return F.$b(ast.arg1());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

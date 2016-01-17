@@ -29,28 +29,18 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 	}
 
 	@Override
-	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
+	public Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide, boolean packageMode,
+			EvalEngine engine) throws RuleCreationError {
 		final Object[] result = new Object[2];
 
-		if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
+		if (leftHandSide.isAST()
+				&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
 			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 		}
 		result[0] = null;
 		result[1] = rightHandSide;
-		// if (leftHandSide.isSymbol()) {
-		// final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-		// if (lhsSymbol.hasLocalVariableStack()) {
-		// lhsSymbol.set(rightHandSide);
-		// return result;
-		// } else {
-		// result[0] = lhsSymbol.putUpRule(F.UpSetDelayed, true, leftHandSide,
-		// rightHandSide);
-		// return result;
-		// }
-		// }
 
 		IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
-		// if (leftHandSide.isAST()) {
 
 		for (int i = 1; i < lhsAST.size(); i++) {
 			IExpr temp = lhsAST.get(i);
@@ -66,9 +56,6 @@ public class UpSetDelayed extends AbstractCoreFunctionEvaluator implements ICrea
 			result[0] = lhsSymbol.putUpRule(ISymbol.RuleType.UPSET_DELAYED, false, lhsAST, rightHandSide);
 		}
 		return result;
-		// }
-
-		// throw new RuleCreationError(leftHandSide);
 	}
 
 	@Override

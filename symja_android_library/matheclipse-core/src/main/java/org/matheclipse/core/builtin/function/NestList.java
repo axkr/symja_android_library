@@ -33,7 +33,7 @@ public class NestList extends AbstractCoreFunctionEvaluator {
 			nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList, engine);
 			return resultList;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,

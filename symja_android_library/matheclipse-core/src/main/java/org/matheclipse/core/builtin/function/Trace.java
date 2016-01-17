@@ -29,11 +29,7 @@ public class Trace extends AbstractCoreFunctionEvaluator {
 			matcher = engine.evalPatternMatcher(ast.arg2());
 		}
 
-		IAST traceList = engine.evalTrace(temp, matcher, F.List());
-		return traceList;
-		// final IAST holdList = F.ast(F.Hold);
-		// holdList.add(traceList);
-		// return holdList;
+		return engine.evalTrace(temp, matcher, F.List());
 	}
 
 	@Override

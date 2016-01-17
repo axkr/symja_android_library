@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.generic.interfaces.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
@@ -37,7 +38,7 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 		} catch (final ArithmeticException e) {
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

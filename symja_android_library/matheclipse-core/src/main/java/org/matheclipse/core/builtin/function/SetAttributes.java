@@ -149,7 +149,7 @@ public class SetAttributes extends AbstractCoreFunctionEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -25,6 +26,6 @@ public class Last extends AbstractCoreFunctionEvaluator {
 				return list.last();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 }

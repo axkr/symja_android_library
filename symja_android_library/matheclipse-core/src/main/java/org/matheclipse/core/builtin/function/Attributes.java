@@ -77,6 +77,6 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 }

@@ -23,14 +23,14 @@ public class Element extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		final IExpr arg2 = engine.evaluate(ast.arg2());
-		ISymbol truthValue;
+		IExpr truthValue;
 		if (arg2.isSymbol()) {
 			final IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST(F.Alternatives)) {
 				IAST list = (IAST) arg1;
 				for (int i = 1; i < list.size(); i++) {
 					truthValue = assumeDomain(arg1, (ISymbol) arg2);
-					if (truthValue != null) {
+					if (truthValue.isPresent()) {
 						return truthValue;
 					}
 				}
@@ -39,10 +39,10 @@ public class Element extends AbstractCoreFunctionEvaluator {
 				return assumeDomain(arg1, (ISymbol) arg2);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
-	private ISymbol assumeDomain(final IExpr arg1, final ISymbol arg2) {
+	private IExpr assumeDomain(final IExpr arg1, final ISymbol arg2) {
 		if (arg2.equals(F.Algebraics)) {
 			ISymbol truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
 			if (truthValue != null) {
@@ -79,7 +79,7 @@ public class Element extends AbstractCoreFunctionEvaluator {
 				return truthValue;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

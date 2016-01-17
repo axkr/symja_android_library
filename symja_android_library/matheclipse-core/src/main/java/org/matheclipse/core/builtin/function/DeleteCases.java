@@ -71,7 +71,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 				return deleteCases((IAST) arg1, matcher);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static IAST deleteCases(final IAST ast, final IPatternMatcher matcher) {
