@@ -23,19 +23,27 @@ public class Together extends AbstractFunctionEvaluator {
 		}
 		if (temp.isAST()) {
 			IExpr result = togetherPlusTimesPower((IAST) temp);
-			if (result != null) {
+			if (result.isPresent()) {
 				return F.eval(result);
 			}
 		}
 		return temp;
 	}
 
-	private static IAST togetherForEach(final IAST ast, IAST result) {
+	/**
+	 * Calls <code>Together</code> for each argument of the <code>ast</code>.
+	 * 
+	 * @param ast
+	 * @return <code>F.UNEVALED</code> if the <code>ast</code> couldn't be
+	 *         evaluated.
+	 */
+	private static IAST togetherForEach(final IAST ast) {
+		IAST result = F.UNEVALED;
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isAST()) {
 				IExpr temp = togetherNull((IAST) ast.get(i));
-				if (temp != null) {
-					if (result == null) {
+				if (temp.isPresent()) {
+					if (!result.isPresent()) {
 						result = ast.clone();
 					}
 					result.set(i, temp);
@@ -46,10 +54,12 @@ public class Together extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
+	 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code>
+	 * afterwards with the result..
 	 * 
 	 * @param ast
-	 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
+	 * @return <code>null</code> couldn't be transformed by
+	 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
 	 */
 	private static IExpr togetherNull(IAST ast) {
 		boolean evaled = false;
@@ -61,19 +71,26 @@ public class Together extends AbstractFunctionEvaluator {
 		}
 		if (temp.isAST()) {
 			IExpr result = togetherPlusTimesPower((IAST) temp);
-			if (result != null) {
+			if (result.isPresent()) {
 				return F.eval(result);
 			}
 		}
 		if (evaled) {
 			return temp;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
+	/**
+	 * 
+	 * @param plusAST
+	 *            a <code>Plus[...]</code> expresion
+	 * @return <code>null</code> couldn't be transformed by
+	 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
+	 */
 	private static IExpr togetherPlus(IAST plusAST) {
 		if (plusAST.size() <= 2) {
-			return null;
+			return F.UNEVALED;
 		}
 		IAST numerator = F.ast(F.Plus, plusAST.size(), false);
 		IAST denominator = F.ast(F.Times, plusAST.size(), false);
@@ -95,7 +112,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 		}
 		if (!evaled) {
-			return null;
+			return F.UNEVALED;
 		}
 		IAST ni;
 		for (int i = 1; i < plusAST.size(); i++) {
@@ -120,7 +137,7 @@ public class Together extends AbstractFunctionEvaluator {
 			i++;
 		}
 		if (denominator.size() == 1) {
-			return null;
+			return F.UNEVALED;
 		}
 
 		IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
@@ -136,7 +153,7 @@ public class Together extends AbstractFunctionEvaluator {
 					}
 					return F.Times(result[0], result[1], pInv);
 				}
-				return null;
+				return F.UNEVALED;
 			} catch (JASConversionException jce) {
 				if (Config.DEBUG) {
 					jce.printStackTrace();
@@ -149,37 +166,36 @@ public class Together extends AbstractFunctionEvaluator {
 
 	private static IExpr togetherPlusTimesPower(final IAST ast) {
 		if (ast.isPlus()) {
-			IAST result = null;
-			result = togetherForEach(ast, result);
-			if (result != null) {
-				return result.optional(togetherPlus(result));
+			IAST result = togetherForEach(ast);
+			if (result.isPresent()) {
+				return togetherPlus(result).orElse(result);
 			}
 			return togetherPlus(ast);
 		} else if (ast.isTimes() || ast.isPower()) {
 			try {
-				IAST result = null;
+				IAST result = F.UNEVALED;
 				if (ast.isTimes()) {
-					result = togetherForEach(ast, result);
+					result = togetherForEach(ast);
 				} else {
 					// Power
 					if (ast.arg1().isAST()) {
 						IExpr temp = togetherNull((IAST) ast.arg1());
-						if (temp != null) {
-							if (result == null) {
+						if (temp.isPresent()) {
+							if (!result.isPresent()) {
 								result = ast.clone();
 							}
 							result.set(1, temp);
 						}
 					}
 				}
-				if (result != null) {
+				if (result.isPresent()) {
 					IExpr temp = F.eval(result);
 					if (temp.isTimes() || temp.isPower()) {
 						return temp.optional(Cancel.cancelPowerTimes(temp));
 					}
 					return temp;
 				}
-				return Cancel.cancelPowerTimes(ast);
+				return F.UNEVALED.optional(Cancel.cancelPowerTimes(ast));
 			} catch (JASConversionException jce) {
 				// if (Config.DEBUG) {
 				jce.printStackTrace();
@@ -187,7 +203,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	public Together() {
@@ -198,11 +214,8 @@ public class Together extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isAtom()) {
-			return arg1;
-		}
 		if (arg1.isPlusTimesPower()) {
-			return arg1.optional(togetherNull((IAST) arg1));
+			return togetherNull((IAST) arg1).orElse(arg1);
 		}
 		return arg1;
 	}

@@ -25,7 +25,7 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 			try {
 				engine.setNumericMode(false);
 				IExpr temp = engine.evalLoop(ast.arg1());
-				if (temp != null) {
+				if (temp.isPresent()) {
 					if (temp.isIndeterminate()) {
 						return F.CComplexInfinity;
 					}

@@ -76,7 +76,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				return null;
 			}
 			IExpr arg1 = engine.evaluateNull(holdallAST.arg1());
-			if (arg1 != null) {
+			if (arg1.isPresent()) {
 				evaled = true;
 			} else {
 				arg1 = holdallAST.arg1();
@@ -89,7 +89,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 
 			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());
-			if (arg2 != null) {
+			if (arg2.isPresent()) {
 				evaled = true;
 			} else {
 				arg2 = holdallAST.arg2();

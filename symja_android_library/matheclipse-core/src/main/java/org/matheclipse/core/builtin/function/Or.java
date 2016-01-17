@@ -44,20 +44,21 @@ public class Or extends AbstractFunctionEvaluator {
 			}
 
 			temp = engine.evaluateNull(ast.get(i));
-			if (temp == null) {
-				temp = ast.get(i);
-			} else {
+			if (temp.isPresent()) {
+				if (temp.isTrue()) {
+					return F.True;
+				}
+				if (temp.isFalse()) {
+					result.remove(index);
+					evaled = true;
+					continue;
+				}
 				result.set(index, temp);
 				evaled = true;
+			} else {
+				temp = ast.get(i);
 			}
-			if (temp.isTrue()) {
-				return F.True;
-			}
-			if (temp.isFalse()) {
-				result.remove(index);
-				evaled = true;
-				continue;
-			}
+
 			if (temp.isSymbol()) {
 				symbols[i] = ast.get(i).hashCode();
 			} else if (temp.isNot()) {

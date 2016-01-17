@@ -48,21 +48,22 @@ public class And extends AbstractFunctionEvaluator {
 				continue;
 			}
 
-			temp = engine.evaluateNull(ast.get(i));
-			if (temp == null) {
-				temp = ast.get(i);
-			} else {
+			temp = engine.evaluateNull(temp);
+			if (temp.isPresent()) {
+				if (temp.isFalse()) {
+					return F.False;
+				}
+				if (temp.isTrue()) {
+					result.remove(index);
+					evaled = true;
+					continue;
+				}
 				result.set(index, temp);
 				evaled = true;
+			} else {
+				temp = ast.get(i);
 			}
-			if (temp.isFalse()) {
-				return F.False;
-			}
-			if (temp.isTrue()) {
-				result.remove(index);
-				evaled = true;
-				continue;
-			}
+			
 			if (temp.isSymbol()) {
 				symbols[i] = ast.get(i).hashCode();
 			} else if (temp.isNot()) {

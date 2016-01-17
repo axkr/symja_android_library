@@ -126,7 +126,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 		// ApfloatNum.DOUBLE_PRECISION) {
 		// return Num.valueOf(fApfloat.doubleValue());
 		// }
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

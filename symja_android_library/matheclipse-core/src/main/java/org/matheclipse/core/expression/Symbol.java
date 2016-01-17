@@ -68,12 +68,14 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	private transient IEvaluator fEvaluator;
 
 	/**
-	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this
+	 * symbol.
 	 */
 	private transient RulesData fRulesData;
 
 	/**
-	 * The pattern matching &quot;up value&quot; rules associated with this symbol.
+	 * The pattern matching &quot;up value&quot; rules associated with this
+	 * symbol.
 	 */
 	// private transient UpRulesData fUpRulesData;
 
@@ -256,7 +258,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
 		if (hasLocalVariableStack()) {
-			return get();
+			return IExpr.ofNullable(get());
 		}
 		IExpr result;
 		if ((result = evalDownRule(engine, this)) != null) {
@@ -264,15 +266,19 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		final IEvaluator module = getEvaluator();
 		if (module instanceof ISymbolEvaluator) {
+			IExpr temp;
 			if (engine.isNumericMode()) {
 				if (engine.isApfloat()) {
-					return ((ISymbolEvaluator) module).apfloatEval(this, engine);
+					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
+				} else {
+					temp = ((ISymbolEvaluator) module).numericEval(this);
 				}
-				return ((ISymbolEvaluator) module).numericEval(this);
+			} else {
+				temp = ((ISymbolEvaluator) module).evaluate(this);
 			}
-			return ((ISymbolEvaluator) module).evaluate(this);
+			return IExpr.ofNullable(temp);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/** {@inheritDoc} */
@@ -404,15 +410,16 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule, final IExpr leftHandSide,
-			final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY, packageMode);
+	public final IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule,
+			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
+				packageMode);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
-			final IExpr rightHandSide, final int priority, boolean packageMode) {
+	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
 		EvalEngine evalEngine = EvalEngine.get();
 		if (!packageMode) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
@@ -453,14 +460,15 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
+	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide,
+			IExpr rightHandSide) {
 		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
-			final IExpr rightHandSide, final int priority) {
+	public final IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {
 			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
@@ -493,8 +501,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -578,7 +587,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isValue() {
-		return evaluate(EvalEngine.get()) != null;
+		return evaluate(EvalEngine.get()).isPresent();
 	}
 
 	/** {@inheritDoc} */
@@ -691,7 +700,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
-			if (fSymbolName.length() == 1) {// && Character.isLowerCase(fSymbolName.charAt(0))) {
+			if (fSymbolName.length() == 1) {// &&
+											// Character.isLowerCase(fSymbolName.charAt(0)))
+											// {
 				char ch = fSymbolName.charAt(0);
 				if ('a' <= ch && ch <= 'z') {
 					return fSymbolName;
@@ -701,7 +712,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 				}
 			}
 			if (Config.RUBI_CONVERT_SYMBOLS) {
-				if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0) && Character.isLowerCase(fSymbolName.charAt(1))) {
+				if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
+						&& Character.isLowerCase(fSymbolName.charAt(1))) {
 					char ch = fSymbolName.charAt(1);
 					if ('a' <= ch && ch <= 'z') {
 						return "p" + ch;

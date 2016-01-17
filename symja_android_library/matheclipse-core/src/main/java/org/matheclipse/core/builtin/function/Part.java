@@ -26,7 +26,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					int astSize = ast.size();
 					for (int i = 2; i < astSize; i++) {
 						temp = engine.evalLoop(ast.get(i));
-						if (temp != null) {
+						if (temp.isPresent()) {
 							if (evaledAST == null) {
 								evaledAST = ast.clone();
 								evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);

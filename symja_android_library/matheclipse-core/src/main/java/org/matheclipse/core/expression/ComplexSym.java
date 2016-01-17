@@ -227,7 +227,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			return numericNumber();
 		}
 		final INumber cTemp = normalize();
-		return (cTemp == this) ? null : cTemp;
+		return (cTemp == this) ? F.UNEVALED : cTemp;
 	}
 
 	@Override

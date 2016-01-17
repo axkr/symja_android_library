@@ -103,7 +103,7 @@ public class Num extends ExprImpl implements INum {
 		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

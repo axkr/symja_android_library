@@ -197,11 +197,6 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public IExpr evaluate(EvalEngine engine) {
-		return null;
-	}
-
-	@Override
 	public ElemFactory<IExpr> factory() {
 		throw new UnsupportedOperationException(toString());
 	}

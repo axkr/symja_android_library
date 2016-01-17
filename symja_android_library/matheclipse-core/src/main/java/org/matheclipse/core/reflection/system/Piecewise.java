@@ -57,7 +57,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 				continue;
 			}
 			cond = engine.evaluateNull(cond);
-			if (cond == null) {
+			if (!cond.isPresent()) {
 				noBoolean = true;
 				result.add(F.List(row.arg1(), row.arg2()));
 				continue;

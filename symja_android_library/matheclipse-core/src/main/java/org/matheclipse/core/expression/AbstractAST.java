@@ -608,22 +608,22 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public final IExpr evaluate(EvalEngine engine) {
+	public IExpr evaluate(EvalEngine engine) {
 		if (Config.DEBUG) {
 			System.out.println(toString());
 		}
 		// Util.checkCanceled();
 		if (Config.SHOW_CONSOLE) {
-			IExpr temp = engine.evalAST(this);
+			IExpr temp = IExpr.ofNullable(engine.evalAST(this));
 			if ((topHead().getAttributes() & ISymbol.CONSOLE_OUTPUT) == ISymbol.CONSOLE_OUTPUT) {
-				if (temp != null) {
+				if (temp.isPresent()) {
 					System.out.println(toString());
 					System.out.println(" => " + temp.toString());
 				}
 			}
 			return temp;
 		} else {
-			return engine.evalAST(this);
+			return IExpr.ofNullable(engine.evalAST(this));
 		}
 
 	}
@@ -1198,13 +1198,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isAST() {
+	public boolean isAST() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isAST(final IExpr header) {
+	public boolean isAST(final IExpr header) {
 		return isSameHead(header);
 	}
 
@@ -2775,7 +2775,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public final String toString() {
+	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
 			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this);

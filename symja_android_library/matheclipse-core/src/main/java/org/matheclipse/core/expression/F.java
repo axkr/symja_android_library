@@ -90,9 +90,13 @@ public class F {
 
 	};
 
-	// public final static ISymbol Ans =
-	// initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ans" : "Ans",
-	// new org.matheclipse.core.builtin.constant.Ans());
+	/**
+	 * The constant object which indicates in the evaluation process that no
+	 * evaluation was possible (i.e. no further definition was found to create a
+	 * new expression from the existing one).
+	 */
+	public static ASTUnevaluated UNEVALED = new ASTUnevaluated();
+	
 	public final static ISymbol Catalan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
 	public final static ISymbol ComplexInfinity = initFinalSymbol(
@@ -2406,7 +2410,7 @@ public class F {
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>null</code> if no evaluation was
+	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation was
 	 *         possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()

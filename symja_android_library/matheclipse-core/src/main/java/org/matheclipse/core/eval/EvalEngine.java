@@ -43,7 +43,7 @@ import org.matheclipse.parser.client.math.MathException;
  * The main evaluation algorithms for the .Symja computer algebra system
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
-	
+
 	/**
 	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
 	 * possible return the input object. In &quot;quiet mode&quot; all warnings
@@ -66,13 +66,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return <code>null</code>. In &quot;quiet mode&quot; all warnings
-	 * would be suppressed.
+	 * possible return <code>F.UNEVALED</code>. In &quot;quiet mode&quot; all
+	 * warnings would be suppressed.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 *         was possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
 	public final IExpr evalQuietNull(final IExpr expr) {
@@ -514,7 +514,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					} else {
 						fNumericMode = localNumericMode;
 					}
-					if ((evaledExpr = evalLoop(ast.arg1())) != null) {
+					if ((evaledExpr = evalLoop(ast.arg1())).isPresent()) {
 						resultList = ast.setAtClone(1, evaledExpr);
 						resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						if (astSize == 2) {
@@ -537,7 +537,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						fNumericMode = localNumericMode;
 					}
 					for (int i = 2; i < astSize; i++) {
-						if ((evaledExpr = evalLoop(ast.get(i))) != null) {
+						if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
 							if (resultList == null) {
 								resultList = ast.clone();
 								resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
@@ -563,7 +563,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * attributes.
 	 * 
 	 * @param ast
-	 * @return
+	 * @return <code>null</code> if no evaluation happened
 	 */
 	public IExpr evalAST(IAST ast) {
 		IExpr head = ast.head();
@@ -600,8 +600,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private IExpr evalASTArg1(final IAST ast) {
 		// special case ast.size() == 2
 		// head == ast[0] --- arg1 == ast[1]
-		IExpr result;
-		if ((result = evalLoop(ast.head())) != null) {
+		IExpr result = evalLoop(ast.head());
+		if (result.isPresent()) {
 			// set the new evaluated header !
 			return ast.apply(result);
 		}
@@ -680,7 +680,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param symbol
 	 * @param ast
-	 * @return
+	 * @return <code>null</code> if no evaluation happened
 	 */
 	private IExpr evalASTBuiltinFunction(final ISymbol symbol, final IAST ast) {
 		final int attr = symbol.getAttributes();
@@ -750,7 +750,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		// first evaluate the header !
 		IExpr result = evalLoop(head);
-		if (result != null) {
+		if (result.isPresent()) {
 			return ast.apply(result);
 		}
 
@@ -947,11 +947,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * Evaluate an object, if evaluation is not possible return
-	 * <code>null</code>.
+	 * <code>F.UNEVALED</code>.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated expression or <code>null</code> is evasluation
+	 * @return the evaluated expression or <code>F.UNEVALED</code> if evaluation
 	 *         isn't possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
@@ -970,7 +970,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 
 			IExpr temp = expr.evaluate(this);
-			if (temp != null) {
+			if (temp.isPresent()) {
 
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
@@ -986,7 +986,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				long iterationCounter = 1;
 				do {
 					temp = result.evaluate(this);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 						// System.out.println(expr.toString());
 						// }
@@ -1003,14 +1003,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 							IterationLimitExceeded.throwIt(iterationCounter, result);
 						}
 					}
-				} while (temp != null);
+				} while (temp.isPresent());
 				// System.out.println("(0):" + expr.toString());
 				// System.out.println("(" + iterationCounter + ") --> " +
 				// result.toString());
 				return result;
 
 			}
-			return null;
+			return F.UNEVALED;
 		} finally {
 			if (fTraceMode) {
 				fTraceStack.tearDown(fRecursionCounter);
@@ -1075,7 +1075,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param symbol
 	 * @param ast
-	 * @return
+	 * @return <code>null</code> if no evaluation happened
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST ast) {
 		IExpr result;
@@ -1204,7 +1204,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				IAST f = resultList != null ? resultList : ast;
 				if (f.isNumericFunction()) {
 					IExpr temp = evalLoop(f);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 				}
@@ -1331,7 +1331,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	final public IExpr evalN(final IExpr expr) {
 		return evaluate(F.N(expr));
 	}
-	
+
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr and evaluate
 	 * it.
@@ -1349,12 +1349,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * 
 	 * Evaluate an object and reset the numeric mode to the value before the
-	 * evaluation step. If evaluation is not possible return <code>null</code>.
+	 * evaluation step. If evaluation is not possible return
+	 * <code>F.UNEVALED</code>.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return the evaluated object or <code>null</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 *         was possible
 	 */
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;
@@ -1377,7 +1378,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	@Override
 	public final IExpr evalWithoutNumericReset(final IExpr expr) {
 		IExpr temp = evalLoop(expr);
-		return temp == null ? expr : temp;
+		return temp.isPresent() ? temp : expr;
 	}
 
 	private IAST flattenSequences(final IAST ast) {

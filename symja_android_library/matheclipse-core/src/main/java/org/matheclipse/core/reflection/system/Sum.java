@@ -242,7 +242,7 @@ public class Sum extends Table implements SumRules {
 			IExpr temp1 = F.evalQuiet(F.Sum(arg1, F.List(var, C0, from.minus(F.C1))));
 			if (!temp1.isComplexInfinity() && temp1.isFreeAST(F.Sum)) {
 				IExpr temp2 = engine.evalQuietNull(F.Sum(arg1, F.List(var, C0, to)));
-				if (temp2 != null && !temp2.isComplexInfinity()) {
+				if (temp2.isPresent() && !temp2.isComplexInfinity()) {
 					return F.Subtract(temp2, temp1);
 				}
 			}

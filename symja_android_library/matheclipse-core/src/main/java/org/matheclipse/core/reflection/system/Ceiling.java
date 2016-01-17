@@ -51,7 +51,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 
 		try {
 			IExpr arg1 = engine.evaluateNull(ast.arg1());
-			if (arg1 != null) {
+			if (arg1.isPresent()) {
 				IExpr temp = evalCeiling(arg1);
 				if (temp == null) {
 					return F.Ceiling(arg1);
