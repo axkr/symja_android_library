@@ -2,14 +2,12 @@ package org.matheclipse.core.expression;
 
 import java.util.AbstractList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -37,7 +35,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1281,12 +1278,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isBlank() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isComplex() {
 		return false;
 	}
@@ -1307,12 +1298,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isCondition() {
 		return isSameHead(F.Condition, 3);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isConstant() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -1356,12 +1341,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return isSameHead(F.DirectedInfinity, 1, 2);
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isE() {
-		return false;
-	}
-
 	@Override
 	public final boolean isEmpty() {
 		return size() == 0;
@@ -1388,12 +1367,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 		}
 		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isFalse() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -1504,12 +1477,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isIndeterminate() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isInfinity() {
 		return this.equals(F.CInfinity);
 	}
@@ -1576,12 +1543,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isLEOrdered(final IExpr obj) {
-		return compareTo(obj) <= 0;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
@@ -1605,12 +1566,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isLog() {
 		return isSameHead(F.Log, 2);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isLTOrdered(final IExpr obj) {
-		return compareTo(obj) < 0;
 	}
 
 	/** {@inheritDoc} */
@@ -1657,13 +1612,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isMember(final IExpr pattern, boolean heads) {
-		final IPatternMatcher matcher = new PatternMatcher(pattern);
-		return isMember(matcher, heads);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isMember(Predicate<IExpr> predicate, boolean heads) {
 		if (predicate.test(this)) {
 			return true;
@@ -1677,12 +1625,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				return true;
 			}
 		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isMinusOne() {
 		return false;
 	}
 
@@ -1805,18 +1747,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isNumEqualRational(IRational value) throws ArithmeticException {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isNumeric() {
 		return false;
 	}
@@ -1854,24 +1784,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNumIntValue() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isOne() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isONE() {
-		return isOne();
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isOr() {
 		return isSameHeadSizeGE(F.Or, 3);
 	}
@@ -1884,32 +1796,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPattern() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPatternDefault() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isPatternExpr() {
 		return (fEvalFlags & CONTAINS_PATTERN_EXPR) != NO_FLAG;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPatternSequence() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPi() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -2013,18 +1901,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isPower() {
 		return isSameHead(F.Power, 3);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isRational() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isRationalValue(IRational value) {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -2170,11 +2046,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return isSameHead(F.SlotSequence, 2) && arg1().isInteger();
 	}
 
-	@Override
-	public final boolean isSymbol() {
-		return false;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isTan() {
@@ -2191,12 +2062,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isTimes() {
 		return isSameHeadSizeGE(F.Times, 3);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isTrue() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -2235,12 +2100,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isVariable() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
 			return size() - 1;
@@ -2262,17 +2121,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			return dim;
 		}
 		return -1;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isZero() {
-		return false;
-	}
-
-	@Override
-	public final boolean isZERO() {
-		return isZero();
 	}
 
 	/**
