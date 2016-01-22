@@ -47,7 +47,11 @@ public class Num extends ExprImpl implements INum {
 	// fDouble = value;
 	// }
 
-	private Num(final double value) {
+	Num( ) {
+		fDouble = 0.0;
+	}
+	
+	Num(final double value) {
 		fDouble = value;
 	}
 

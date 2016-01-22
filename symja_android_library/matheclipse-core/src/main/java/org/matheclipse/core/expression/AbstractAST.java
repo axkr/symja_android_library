@@ -2328,12 +2328,11 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 					return (37 * head().hashCode() + arg1().hashCode());
 				}
 				return (17 * head().hashCode() + size());
-			} else {
-				if (arg1() instanceof IAST) {
-					return (31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size());
-				}
-				return (37 * head().hashCode() + arg1().hashCode() + size());
 			}
+			if (arg1() instanceof IAST) {
+				return (31 * head().hashCode() + ((IAST) arg1()).head().hashCode() + size());
+			}
+			return (37 * head().hashCode() + arg1().hashCode() + size());
 		}
 		if (size() == 1) {
 			return (17 * head().hashCode());

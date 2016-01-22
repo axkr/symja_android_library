@@ -32,7 +32,7 @@ import org.matheclipse.parser.client.ast.Pattern2Node;
 import org.matheclipse.parser.client.ast.Pattern3Node;
 import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
-import org.matheclipse.parser.client.ast.SymbolNode;
+import org.matheclipse.parser.client.ast.SymbolNode; 
 
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
