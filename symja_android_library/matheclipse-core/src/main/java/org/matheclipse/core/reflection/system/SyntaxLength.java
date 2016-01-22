@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -17,18 +18,19 @@ import org.matheclipse.parser.client.SyntaxError;
 public class SyntaxLength extends AbstractFunctionEvaluator {
 
 	public SyntaxLength() {
-	} 
+	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast,2);
+		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
 			return null;
 		}
 
 		final String str = ast.arg1().toString();
 		try {
-			new Parser().parse(str);
+			ExprParser parser = new ExprParser(EvalEngine.get());
+			parser.parse(str);
 		} catch (final SyntaxError e) {
 			return F.integer(e.getStartOffset());
 		}

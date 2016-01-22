@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -167,10 +168,12 @@ public class EvalUtilities extends MathMLUtilities {
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression = null;
-		ASTNode node;
+		// ASTNode node;
 		if (inputExpression != null) {
-			node = fEvalEngine.parseNode(inputExpression);
-			parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+			ExprParser parser = new ExprParser(EvalEngine.get());
+			parsedExpression = parser.parse(inputExpression);
+			// node = fEvalEngine.parseNode(inputExpression);
+			// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 			return parsedExpression.internalFormString(false, 0);
 		}
 		return "";

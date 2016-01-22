@@ -3,17 +3,19 @@ package org.matheclipse.core.patternmatching;
 import java.util.List;
 
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.visit.HashValueVisitor;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
- * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
+ * Match two arguments of an <code>Orderless</code> AST into a new resulting
+ * expression.
  * 
  * @see HashedPatternRules
  */
@@ -27,7 +29,8 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>OP[lhs1Str, lhs2Str, ....] := OP[rhsStr, ...]</code>
+	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
+	 * <code>OP[lhs1Str, lhs2Str, ....] := OP[rhsStr, ...]</code>
 	 * 
 	 * @param lhs1Str
 	 * @param lhs2Str
@@ -40,33 +43,42 @@ public class HashedOrderlessMatcher {
 
 	public void defineHashRule(final String lhs1Str, final String lhs2Str, final BinaryFunctorImpl<IExpr> function)
 			throws SyntaxError {
-		final Parser parser = new Parser();
-		ASTNode parsedAST = parser.parse(lhs1Str);
-		final IExpr lhs1 = AST2Expr.CONST.convert(parsedAST);
-		parsedAST = parser.parse(lhs2Str);
-		final IExpr lhs2 = AST2Expr.CONST.convert(parsedAST);
+		ExprParser parser = new ExprParser(EvalEngine.get());
+		IExpr lhs1 = parser.parse(lhs1Str);
+		// final Parser parser = new Parser();
+		// ASTNode parsedAST = parser.parse(lhs1Str);
+		// final IExpr lhs1 = AST2Expr.CONST.convert(parsedAST);
+		IExpr lhs2 = parser.parse(lhs2Str);
+		// parsedAST = parser.parse(lhs2Str);
+		// final IExpr lhs2 = AST2Expr.CONST.convert(parsedAST);
 		defineHashRule(lhs1, lhs2, function);
 	}
 
-	public void defineHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr, final String conditionStr)
-			throws SyntaxError {
-		final Parser parser = new Parser();
-		ASTNode parsedAST = parser.parse(lhs1Str);
-		final IExpr lhs1 = AST2Expr.CONST.convert(parsedAST);
-		parsedAST = parser.parse(lhs2Str);
-		final IExpr lhs2 = AST2Expr.CONST.convert(parsedAST);
-		parsedAST = parser.parse(rhsStr);
-		final IExpr rhs = AST2Expr.CONST.convert(parsedAST);
+	public void defineHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr,
+			final String conditionStr) throws SyntaxError {
+		ExprParser parser = new ExprParser(EvalEngine.get());
+		IExpr lhs1 = parser.parse(lhs1Str);
+		// final Parser parser = new Parser();
+		// ASTNode parsedAST = parser.parse(lhs1Str);
+		// final IExpr lhs1 = AST2Expr.CONST.convert(parsedAST);
+		IExpr lhs2 = parser.parse(lhs2Str);
+		// parsedAST = parser.parse(lhs2Str);
+		// final IExpr lhs2 = AST2Expr.CONST.convert(parsedAST);
+		IExpr rhs = parser.parse(rhsStr);
+		// parsedAST = parser.parse(rhsStr);
+		// final IExpr rhs = AST2Expr.CONST.convert(parsedAST);
 		IExpr condition = null;
 		if (conditionStr != null) {
-			parsedAST = parser.parse(conditionStr);
-			condition = AST2Expr.CONST.convert(parsedAST);
+			condition = parser.parse(conditionStr);
+			// parsedAST = parser.parse(conditionStr);
+			// condition = AST2Expr.CONST.convert(parsedAST);
 		}
 		defineHashRule(lhs1, lhs2, rhs, condition);
 	}
 
 	/**
-	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>. <code>OP[lhs1, lhs2, ....] := OP[rhs, ...]</code>
+	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
+	 * <code>OP[lhs1, lhs2, ....] := OP[rhs, ...]</code>
 	 * 
 	 * @param lhs1
 	 * @param lhs2
@@ -122,7 +134,8 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST with the defined <code>HashedPatternRules</code>.
+	 * Evaluate an <code>Orderless</code> AST with the defined
+	 * <code>HashedPatternRules</code>.
 	 * 
 	 * @param orderlessAST
 	 * @return
@@ -155,7 +168,7 @@ public class HashedOrderlessMatcher {
 			OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues) {
 		boolean evaled = false;
 		IAST result = orderlessAST.copyHead();
-		for (int i = 0; i < hashValues.length-1; i++) {
+		for (int i = 0; i < hashValues.length - 1; i++) {
 			if (hashValues[i] == 0) {
 				// already used entry
 				continue;
@@ -165,8 +178,8 @@ public class HashedOrderlessMatcher {
 					// already used entry
 					continue;
 				}
-				final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap.get(AbstractHashedPatternRules.calculateHashcode(
-						hashValues[i], hashValues[j]));
+				final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap
+						.get(AbstractHashedPatternRules.calculateHashcode(hashValues[i], hashValues[j]));
 				if (hashRuleList != null) {
 					for (AbstractHashedPatternRules hashRule : hashRuleList) {
 

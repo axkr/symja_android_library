@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.convert.AST2Expr;
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -9,11 +10,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.Parser;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
-
-import java.util.function.Predicate;
 
 /**
  * Returns <code>True</code>, if the given expression is a string which has the
@@ -28,7 +26,7 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		
+
 		if (!(ast.arg1() instanceof IStringX)) {
 			return F.False;
 		}
@@ -43,9 +41,11 @@ public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<Stri
 	@Override
 	public boolean test(final String str) {
 		try {
-			final Parser fParser = new Parser();
-			final ASTNode parsedAST = fParser.parse(str);
-			final IExpr parsedExpression = AST2Expr.CONST.convert(parsedAST);
+			ExprParser fParser = new ExprParser(EvalEngine.get());
+			final IExpr parsedExpression = fParser.parse(str);
+			// final Parser fParser = new Parser();
+			// final ASTNode parsedAST = fParser.parse(str);
+			// final IExpr parsedExpression = AST2Expr.CONST.convert(parsedAST);
 			if (parsedExpression != null) {
 				return true;
 			}

@@ -6,17 +6,18 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Convert an expression into presentation MathML output
  * 
- * See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html">Chracters ordered by Unicode</a>
+ * See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html">
+ * Chracters ordered by Unicode</a>
  * 
  */
 public class MathMLUtilities {
 	protected final EvalEngine fEvalEngine;
-
 
 	protected MathMLFormFactory fMathMLFactory;
 
@@ -37,11 +38,13 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Constructor for an object which converts an expression into presentation MathML output
+	 * Constructor for an object which converts an expression into presentation
+	 * MathML output
 	 * 
 	 * @param evalEngine
 	 * @param mathMTagPrefix
-	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for the MathML output.
+	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix
+	 *            for the MathML output.
 	 * @param mathMLHeader
 	 *            print MathML header in output
 	 */
@@ -58,7 +61,6 @@ public class MathMLUtilities {
 		fMSIE = mathMTagPrefix;
 		fMathMLHeader = mathMLHeader;
 	}
-	
 
 	/**
 	 * Get the current evaluation engine.
@@ -70,18 +72,21 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes
+	 * the result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
 	 */
 	synchronized public void toMathML(final String inputExpression, final Writer out) {
 		IExpr parsedExpression = null;
-		ASTNode node;
+		// ASTNode node;
 		if (inputExpression != null) {
 			try {
-				node = fEvalEngine.parseNode(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+				ExprParser parser = new ExprParser(EvalEngine.get());
+				parsedExpression = parser.parse(inputExpression);
+				// node = fEvalEngine.parseNode(inputExpression);
+				// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 			} catch (final Throwable e) {
 				return;
 				// parsedExpression == null ==> fError occured
@@ -91,7 +96,8 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the
+	 * result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
@@ -127,11 +133,13 @@ public class MathMLUtilities {
 
 	synchronized public void toJava(final String inputExpression, final Writer out, boolean strictJava) {
 		IExpr parsedExpression = null;
-		ASTNode node;
+		// ASTNode node;
 		if (inputExpression != null) {
 			try {
-				node = fEvalEngine.parseNode(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+				ExprParser parser = new ExprParser(EvalEngine.get());
+				parsedExpression = parser.parse(inputExpression);
+				// node = fEvalEngine.parseNode(inputExpression);
+				// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 				out.write(parsedExpression.internalFormString(strictJava, 0));
 			} catch (final Throwable e) {
 				return;
@@ -141,8 +149,8 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects the
-	 * EvalEngine in this class.
+	 * Assign the associated EvalEngine to the current thread. Every subsequent
+	 * action evaluation in this thread affects the EvalEngine in this class.
 	 */
 	public void startRequest() {
 		EvalEngine.set(fEvalEngine);

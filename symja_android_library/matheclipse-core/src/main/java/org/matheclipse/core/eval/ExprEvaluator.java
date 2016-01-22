@@ -5,12 +5,11 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -29,8 +28,10 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
-	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no
+	 * output history for the <code>Out()</code> function is stored in the
+	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
+	 * result.
 	 * 
 	 */
 	public ExprEvaluator() {
@@ -38,31 +39,41 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
-	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no
+	 * output history for the <code>Out()</code> function is stored in the
+	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
+	 * result.
 	 * 
 	 * @param outListDisabled
-	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the
-	 *            last calculations will be saved and the <code>Out()</code> function (or <code>$ans</code> variable or the
-	 *            <code>%</code> operator) will be unevaluated.
+	 *            if <code>false</code> create a
+	 *            <code>LastCalculationsHistory(historyCapacity)</code>,
+	 *            otherwise no history of the last calculations will be saved
+	 *            and the <code>Out()</code> function (or <code>$ans</code>
+	 *            variable or the <code>%</code> operator) will be unevaluated.
 	 * @param historyCapacity
-	 *            the number of last entries of the calculations which should be stored.
+	 *            the number of last entries of the calculations which should be
+	 *            stored.
 	 */
 	public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
 		this(new EvalEngine(true, outListDisabled), outListDisabled, historyCapacity);
 	}
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code> function is
-	 * stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no
+	 * output history for the <code>Out()</code> function is stored in the
+	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
+	 * result.
 	 * 
 	 * @parm engine
 	 * @param outListDisabled
-	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the
-	 *            last calculations will be saved and the <code>Out()</code> function (or <code>$ans</code> variable or the
-	 *            <code>%</code> operator) will be unevaluated.
+	 *            if <code>false</code> create a
+	 *            <code>LastCalculationsHistory(historyCapacity)</code>,
+	 *            otherwise no history of the last calculations will be saved
+	 *            and the <code>Out()</code> function (or <code>$ans</code>
+	 *            variable or the <code>%</code> operator) will be unevaluated.
 	 * @param historyCapacity
-	 *            the number of last entries of the calculations which should be stored.
+	 *            the number of last entries of the calculations which should be
+	 *            stored.
 	 */
 	public ExprEvaluator(EvalEngine engine, boolean outListDisabled, int historyCapacity) {
 		this.fVariableMap = new IdentityHashMap<ISymbol, IExpr>();
@@ -85,7 +96,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable on the local variable stack without assigning a value.
+	 * Define a given variable on the local variable stack without assigning a
+	 * value.
 	 * 
 	 * @param variable
 	 * @param value
@@ -105,7 +117,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a value for a given variable name. The value is evauate before it's assigned to the local variable
+	 * Define a value for a given variable name. The value is evauate before
+	 * it's assigned to the local variable
 	 * 
 	 * @param variable
 	 * @param value
@@ -123,7 +136,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable name on the local variable stack without assigning a value.
+	 * Define a given variable name on the local variable stack without
+	 * assigning a value.
 	 * 
 	 * @param variableName
 	 * @param value
@@ -163,7 +177,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Reevaluate the last <code>expression</code> (possibly after a new variable assignment).
+	 * Reevaluate the last <code>expression</code> (possibly after a new
+	 * variable assignment).
 	 * 
 	 * @return
 	 * @throws SyntaxError
@@ -176,7 +191,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the input object.
+	 * Evaluate an expression for the given &quot;local variables list&quot;. If
+	 * evaluation is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
@@ -193,7 +209,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a double value
+	 * Parse the given <code>expression String</code> and evaluate it to a
+	 * double value
 	 * 
 	 * @param expression
 	 * @return
@@ -216,8 +233,9 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Returns the expression value to which the specified variableName is mapped, or {@code null} if this map contains no mapping
-	 * for the variableName.
+	 * Returns the expression value to which the specified variableName is
+	 * mapped, or {@code null} if this map contains no mapping for the
+	 * variableName.
 	 * 
 	 * @param variableName
 	 * @return
@@ -234,27 +252,32 @@ public class ExprEvaluator {
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression = null;
-		ASTNode node;
+		// ASTNode node;
 		if (inputExpression != null) {
-			node = engine.parseNode(inputExpression);
-			parsedExpression = AST2Expr.CONST.convert(node, engine);
+			ExprParser parser = new ExprParser(EvalEngine.get());
+			parsedExpression = parser.parse(inputExpression);
+			// node = engine.parseNode(inputExpression);
+			// parsedExpression = AST2Expr.CONST.convert(node, engine);
 			return parsedExpression.internalFormString(false, 0);
 		}
 		return "";
 	}
 
 	/**
-	 * Converts the inputExpression string into a Scala expression and writes the result to the given <code>Writer</code>string.
+	 * Converts the inputExpression string into a Scala expression and writes
+	 * the result to the given <code>Writer</code>string.
 	 * 
 	 * @param inputExpression
 	 * @param out
 	 */
 	public String toScalaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression = null;
-		ASTNode node;
+		// ASTNode node;
 		if (inputExpression != null) {
-			node = engine.parseNode(inputExpression);
-			parsedExpression = AST2Expr.CONST.convert(node, engine);
+			ExprParser parser = new ExprParser(EvalEngine.get());
+			parsedExpression = parser.parse(inputExpression);
+			// node = engine.parseNode(inputExpression);
+			// parsedExpression = AST2Expr.CONST.convert(node, engine);
 			return parsedExpression.internalScalaString(false, 0);
 		}
 		return "";

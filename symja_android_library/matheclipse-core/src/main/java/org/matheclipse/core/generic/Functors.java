@@ -18,9 +18,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
 
 public class Functors {
 	private static class AppendFunctor implements Function<IExpr, IExpr> {
@@ -421,11 +421,13 @@ public class Functors {
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
 		IAST astRules = F.ListC(strRules.length);
-		final Parser parser = new Parser();
+		ExprParser parser = new ExprParser(EvalEngine.get());
+		// final Parser parser = new Parser();
 		final EvalEngine engine = EvalEngine.get();
 		for (String str : strRules) {
-			final ASTNode parsedAST = parser.parse(str);
-			IExpr expr = AST2Expr.CONST.convert(parsedAST, engine);
+			IExpr expr = parser.parse(str);
+			// final ASTNode parsedAST = parser.parse(str);
+			// IExpr expr = AST2Expr.CONST.convert(parsedAST, engine);
 			expr = engine.evaluate(expr);
 			astRules.add(expr);
 		}

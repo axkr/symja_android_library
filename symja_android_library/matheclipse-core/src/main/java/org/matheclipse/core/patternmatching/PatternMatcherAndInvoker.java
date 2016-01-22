@@ -7,11 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.core.parser.ExprParser;
 
 public class PatternMatcherAndInvoker extends PatternMatcher {
 	/**
@@ -66,9 +65,13 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	 */
 	public PatternMatcherAndInvoker(final String leftHandSide, IFunctionEvaluator instance, final String methodName) {
 		this.fInstance = instance;
-		Parser parser = new Parser();
-		ASTNode node = parser.parse(leftHandSide);
-		IExpr lhs = AST2Expr.CONST.convert(node);
+		
+		final ExprParser parser = new ExprParser(EvalEngine.get());
+		IExpr lhs =  parser.parse(leftHandSide);
+		
+//		Parser parser = new Parser();
+//		ASTNode node = parser.parse(leftHandSide);
+//		IExpr lhs = AST2Expr.CONST.convert(node);
 		fLhsPatternExpr = lhs;
 		init(fLhsPatternExpr);
 		initInvoker(instance, methodName);

@@ -35,8 +35,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.reflection.system.Plus;
 import org.matheclipse.core.reflection.system.Times;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -1665,15 +1663,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @throws org.matheclipse.parser.client.SyntaxError
 	 *             if a parsing error occurs
 	 */
-	final public ASTNode parseNode(String expression) {
-		if (fRelaxedSyntax) {
-			final Parser parser = new Parser(fRelaxedSyntax);
-			return parser.parse(expression);
-		} else {
-			final Parser parser = new Parser();
-			return parser.parse(expression);
-		}
-	}
+//	final public ASTNode parseNode(String expression) {
+//		if (fRelaxedSyntax) {
+//			final Parser parser = new Parser(fRelaxedSyntax);
+//			return parser.parse(expression);
+//		} else {
+//			final Parser parser = new Parser();
+//			return parser.parse(expression);
+//		}
+//	}
 
 	/**
 	 * Print a message to the <code>Out</code> stream, if the engine is not in
