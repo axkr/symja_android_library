@@ -85,10 +85,10 @@ public class MathUtils {
 	 * @throws MathException
 	 */
 	public static double integrate(String method, String fun, String v, String aS, String bS) throws MathException {
-		EvalDouble parser = new EvalDouble(true);
+		ExprEvaluator parser = new ExprEvaluator();
 		double a, b;
 		try {
-			a = parser.evaluate(aS);
+			a = parser.evaluateDoube(aS);
 		} catch (MathException e) {
 			// throw new ParseError(context.getString(R.string.invalidStart) +
 			// e.getMessage(), e.context);
@@ -96,7 +96,7 @@ public class MathUtils {
 		}
 		try {
 			// b = parser.parse(bS).getVal();
-			b = parser.evaluate(bS);
+			b = parser.evaluateDoube(bS);
 		} catch (MathException e) {
 			// throw new ParseError(context.getString(R.string.invalidEnd) +
 			// e.getMessage(), e.context);
