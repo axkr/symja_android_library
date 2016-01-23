@@ -374,7 +374,7 @@ public class DoubleEvaluator {
 
 	private ASTNode fNode;
 
-	private final boolean fRelaxedSyntax;
+	protected final boolean fRelaxedSyntax;
 
 	private final ASTNodeFactory fASTFactory;
 
