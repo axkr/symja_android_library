@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -209,8 +210,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a
-	 * double value
+	 * Parse the given <code>expression String</code> and evaluate it to an
+	 * IExpr value
 	 * 
 	 * @param expression
 	 * @return
@@ -226,6 +227,28 @@ public class ExprEvaluator {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Parse the given <code>expression String</code> and evaluate it to a
+	 * double value
+	 * 
+	 * @param expression
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public double evaluateDoube(final String inputExpression) {
+		if (inputExpression != null) {
+			engine.reset();
+			fExpr = engine.parse(inputExpression);
+			if (fExpr != null) {
+				IExpr temp = evaluate(F.N(fExpr));
+				if (temp.isSignedNumber()) {
+					return ((ISignedNumber) temp).doubleValue();
+				}
+			}
+		}
+		return Double.NaN;
 	}
 
 	public EvalEngine getEvalEngine() {
