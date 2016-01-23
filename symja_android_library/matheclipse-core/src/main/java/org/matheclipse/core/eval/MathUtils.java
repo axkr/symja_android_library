@@ -2,14 +2,12 @@ package org.matheclipse.core.eval;
 
 import java.io.ByteArrayOutputStream;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.reflection.system.NIntegrate;
-import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.eval.DoubleVariable;
 import org.matheclipse.parser.client.math.MathException;
@@ -73,7 +71,8 @@ public class MathUtils {
 	 * Integrate a function numerically.
 	 * 
 	 * @param method
-	 *            the following methods are possible: LegendreGauss, Simpson, Romberg, Trapezoid
+	 *            the following methods are possible: LegendreGauss, Simpson,
+	 *            Romberg, Trapezoid
 	 * @param fun
 	 *            the function which should be integrated
 	 * @param v
@@ -698,38 +697,28 @@ public class MathUtils {
 	}
 
 	/**
-	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if <code>function</code> unequals <code>null</code>, replace
-	 * all occurences of symbol <code>x</code> in the function with the parsed expression. After that evaluate the given expression.
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
+	 * <code>function</code> unequals <code>null</code>, replace all occurences
+	 * of symbol <code>x</code> in the function with the parsed expression.
+	 * After that evaluate the given expression.
 	 * 
 	 * @param function
 	 * @return
 	 */
 	public static IExpr parse(String evalStr, IAST function) {
-		ASTNode node;
-
 		try {
-			Parser p = new Parser(true);
+			ExprParser p = new ExprParser(EvalEngine.get(), true);
 			// throws MathException exception, if syntax isn't valid
-			node = p.parse(evalStr);
+			return p.parse(evalStr);
 
 		} catch (MathException e1) {
 			try {
-				Parser p = new Parser();
+				ExprParser p = new ExprParser(EvalEngine.get(), false);
 				// throws MathException exception, if syntax isn't valid
-				node = p.parse(evalStr);
+				return p.parse(evalStr);
 			} catch (Exception e2) {
 				return null;
 			}
 		}
-		try {
-			IExpr expr = AST2Expr.CONST_LC.convert(node);
-			if (function != null) {
-				expr = function.replaceAll(F.Rule(F.x, expr));
-			}
-			return expr;
-		} catch (final RuntimeException re) {
-		} catch (final Exception e) {
-		}
-		return null;
 	}
 }
