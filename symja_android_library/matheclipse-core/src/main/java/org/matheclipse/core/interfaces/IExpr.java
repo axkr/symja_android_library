@@ -1630,8 +1630,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * The <code>ExprNull.NOEVAL#optional()</code> method always returns
-	 * <code>that</code>. Otherwise this method returns <code>that</code> if
-	 * <code>that!=null</code> or <code>this</code> if <code>that==null</code>
+	 * <code>that</code>. All other objects which implement this method returns
+	 * <code>that</code> if <code>that!=null</code> or <code>this</code> if
+	 * <code>that==null</code>
 	 * 
 	 * @param that
 	 * @return <code>that</code> if <code>that!=null</code> or <code>this</code>
