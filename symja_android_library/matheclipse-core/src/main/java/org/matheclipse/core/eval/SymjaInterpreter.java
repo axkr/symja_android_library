@@ -3,16 +3,13 @@ package org.matheclipse.core.eval;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.Parser;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -36,28 +33,28 @@ public class SymjaInterpreter extends EvalUtilities {
 			this.outStream = new PrintStream(out);
 		}
 		fEvalEngine.setOutPrintStream(outStream);
-	} 
+	}
 
 	public String interpreter(String function) {
 		String evalStr = codeString;
-		ASTNode node;
-
+		IExpr expr;
+		EvalEngine engine = EvalEngine.get();
 		try {
-			Parser p = new Parser(true);
+			ExprParser p = new ExprParser(engine, true);
 			// throws SyntaxError exception, if syntax isn't valid
 			if (function != null) {
 				evalStr = function + "(" + codeString + ")";
 			}
-			node = p.parse(evalStr);
+			expr = p.parse(evalStr);
 
 		} catch (SyntaxError e1) {
 			try {
-				Parser p = new Parser();
+				ExprParser p = new ExprParser(engine);
 				// throws SyntaxError exception, if syntax isn't valid
 				if (function != null) {
 					evalStr = function + "[" + codeString + "]";
 				}
-				node = p.parse(evalStr);
+				expr = p.parse(evalStr);
 			} catch (Exception e2) {
 				outStream.println(e2.getMessage());
 				return "";
@@ -66,7 +63,6 @@ public class SymjaInterpreter extends EvalUtilities {
 		IExpr result;
 		final StringBuilder buf = new StringBuilder();
 		try {
-			IExpr expr = AST2Expr.CONST_LC.convert(node);
 			result = evaluate(expr);
 			OutputFormFactory.get(true).convert(buf, result);
 			return buf.toString();
@@ -94,18 +90,18 @@ public class SymjaInterpreter extends EvalUtilities {
 	 */
 	public String interpreter(IAST function) {
 		String evalStr = codeString;
-		ASTNode node;
-
+		IExpr expr;
+		EvalEngine engine = EvalEngine.get();
 		try {
-			Parser p = new Parser(true);
+			ExprParser p = new ExprParser(engine, true);
 			// throws SyntaxError exception, if syntax isn't valid
-			node = p.parse(evalStr);
+			expr = p.parse(evalStr);
 
 		} catch (SyntaxError e1) {
 			try {
-				Parser p = new Parser();
+				ExprParser p = new ExprParser(engine);
 				// throws SyntaxError exception, if syntax isn't valid
-				node = p.parse(evalStr);
+				expr = p.parse(evalStr);
 			} catch (Exception e2) {
 				outStream.println(e2.getMessage());
 				return "";
@@ -114,7 +110,6 @@ public class SymjaInterpreter extends EvalUtilities {
 		IExpr result;
 		final StringBuilder buf = new StringBuilder();
 		try {
-			IExpr expr = AST2Expr.CONST_LC.convert(node);
 			if (function != null) {
 				expr = function.replaceAll(F.Rule(F.Slot1, expr));
 			}

@@ -2,12 +2,10 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.core.parser.ExprParser;
 
 /**
  * Convert an expression into TeX output
@@ -18,35 +16,36 @@ public class TeXUtilities {
 
 	protected TeXFormFactory fTeXFactory;
 
-	Parser fParser;
+	ExprParser fParser;
 
 	/**
 	 * 
 	 * @param evalEngine
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use '(...)' instead of '[...]' to parenthesize the arguments of a function.
+	 *            if <code>true</code> use '(...)' instead of '[...]' to
+	 *            parenthesize the arguments of a function.
 	 */
 	public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
 		// set the thread local instance
 		EvalEngine.set(evalEngine);
 		fTeXFactory = new TeXFormFactory();
-		fParser = new Parser(relaxedSyntax);
+		fParser = new ExprParser(evalEngine, relaxedSyntax);
 	}
 
 	/**
-	 * Converts the inputExpression string into a TeX expression and writes the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a TeX expression and writes the
+	 * result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
 	 */
 	synchronized public void toTeX(final String inputExpression, final Writer out) {
 		IExpr parsedExpression = null;
-		ASTNode node;
 		if (inputExpression != null) {
 			try {
-				node = fParser.parse(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node);
+				parsedExpression = fParser.parse(inputExpression);
+				// parsedExpression = AST2Expr.CONST.convert(node);
 			} catch (final Throwable e) {
 				// parsedExpression == null ==> fError occured
 			}
@@ -55,7 +54,8 @@ public class TeXUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a TeX expression and writes the result to the given <code>Writer</code>
+	 * Converts the objectExpression into a TeX expression and writes the result
+	 * to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out

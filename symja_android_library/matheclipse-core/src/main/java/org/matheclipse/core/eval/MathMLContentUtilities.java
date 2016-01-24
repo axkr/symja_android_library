@@ -5,6 +5,7 @@ import java.io.Writer;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.mathml.MathMLContentFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -18,7 +19,7 @@ public class MathMLContentUtilities {
 
 	protected MathMLContentFormFactory fMathMLFactory;
 
-	Parser fParser;
+	ExprParser fParser;
 
 	public MathMLContentUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
 		fEvalEngine = evalEngine;
@@ -27,22 +28,21 @@ public class MathMLContentUtilities {
 
 		fMathMLFactory = new MathMLContentFormFactory();
 
-		fParser = new Parser(relaxedSyntax);
+		fParser = new ExprParser(evalEngine, relaxedSyntax);
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes
+	 * the result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
 	 */
 	synchronized public void toMathML(final String inputExpression, final Writer out) {
 		IExpr parsedExpression = null;
-		ASTNode node;
 		if (inputExpression != null) {
 			try {
-				node = fParser.parse(inputExpression);
-				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+				parsedExpression = fParser.parse(inputExpression);
 			} catch (final Throwable e) {
 				return;
 				// parsedExpression == null ==> fError occured
@@ -52,7 +52,8 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the
+	 * result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
@@ -75,25 +76,26 @@ public class MathMLContentUtilities {
 		}
 	}
 
-//	synchronized public void toJava(final String inputExpression, final Writer out, boolean strictJava) {
-//		IExpr parsedExpression = null;
-//		ASTNode node;
-//		if (inputExpression != null) {
-//			try {
-//				node = fParser.parse(inputExpression);
-//				parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-//				out.write(JavaForm.javaForm(parsedExpression, strictJava));
-//				// out.write(parsedExpression.internalFormString(strictJava, 0));
-//			} catch (final Throwable e) {
-//				return;
-//				// parsedExpression == null ==> fError occured
-//			}
-//		}
-//	}
+	// synchronized public void toJava(final String inputExpression, final
+	// Writer out, boolean strictJava) {
+	// IExpr parsedExpression = null;
+	// ASTNode node;
+	// if (inputExpression != null) {
+	// try {
+	// node = fParser.parse(inputExpression);
+	// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
+	// out.write(JavaForm.javaForm(parsedExpression, strictJava));
+	// // out.write(parsedExpression.internalFormString(strictJava, 0));
+	// } catch (final Throwable e) {
+	// return;
+	// // parsedExpression == null ==> fError occured
+	// }
+	// }
+	// }
 
 	/**
-	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects the
-	 * EvalEngine in this class.
+	 * Assign the associated EvalEngine to the current thread. Every subsequent
+	 * action evaluation in this thread affects the EvalEngine in this class.
 	 */
 	public void startRequest() {
 		EvalEngine.set(fEvalEngine);
