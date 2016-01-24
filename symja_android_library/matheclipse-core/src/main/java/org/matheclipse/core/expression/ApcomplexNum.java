@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 
+import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -20,8 +21,9 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Apcomplex</code> value to represent
- * a numeric complex floating-point number.
+ * <code>IComplexNum</code> implementation which wraps a
+ * <code>org.apache.commons.math3.complex.Apcomplex</code> value to represent a
+ * numeric complex floating-point number.
  */
 public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
@@ -42,7 +44,8 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	/**
-	 * Create a <code>ApcomplexNum</code> complex number from the real and imaginary <code>BigInteger</code> parts.
+	 * Create a <code>ApcomplexNum</code> complex number from the real and
+	 * imaginary <code>BigInteger</code> parts.
 	 * 
 	 * @param realNumerator
 	 *            the real numbers numerator part
@@ -72,7 +75,8 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public static final ApcomplexNum I = new ApcomplexNum(Apcomplex.I);
 
 	/** A complex number representing "NaN + NaNi" */
-	// public static final ApfloatComplexNum NaN = valueOf(Double.NaN, Double.NaN);
+	// public static final ApfloatComplexNum NaN = valueOf(Double.NaN,
+	// Double.NaN);
 
 	/** A complex number representing "1.0 + 0.0i" */
 	public static final ApcomplexNum ONE = new ApcomplexNum(Apcomplex.ONE);
@@ -199,8 +203,10 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		// if (engine.isNumericMode() && engine.getNumericPrecision() <= ApfloatNum.DOUBLE_PRECISION) {
-		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
+		// if (engine.isNumericMode() && engine.getNumericPrecision() <=
+		// ApfloatNum.DOUBLE_PRECISION) {
+		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(),
+		// fApcomplex.imag().doubleValue());
 		// }
 		if (fApcomplex.imag().equals(Apfloat.ZERO)) {
 			return ApfloatNum.valueOf(fApcomplex.real());
@@ -263,6 +269,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
+
 	// public Object export() {
 	// return fComplex.export();
 	// }
@@ -272,11 +279,11 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	// public float floatValue() {
 	// return fComplex.floatValue();
 	// }
- 
+
 	public double getImaginary() {
 		return fApcomplex.imag().doubleValue();
 	}
- 
+
 	public double getReal() {
 		return fApcomplex.real().doubleValue();
 	}
@@ -375,7 +382,8 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertApcomplex(sb, this.apcomplexValue(), Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+			OutputFormFactory.get().convertApcomplex(sb, this.apcomplexValue(), Integer.MIN_VALUE,
+					OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 		}
@@ -403,8 +411,9 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -423,8 +432,8 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		return fApcomplex;
 	}
 
-	public org.matheclipse.parser.client.math.Complex getCMComplex() {
-		return new org.matheclipse.parser.client.math.Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
+	public Complex getCMComplex() {
+		return new Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 	}
 
 	/** {@inheritDoc} */

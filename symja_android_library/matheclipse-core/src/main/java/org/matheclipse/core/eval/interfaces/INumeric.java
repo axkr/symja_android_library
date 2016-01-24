@@ -6,7 +6,7 @@ public interface INumeric {
 	 *
 	 * @return
 	 *
-	 * @see org.matheclipse.core.eval.EvalDouble
+	 * @see org.matheclipse.core.eval.DoubleStackEvaluator
 	 */
 	double evalReal(double[] stack, int top, int size);
 }

@@ -6,7 +6,7 @@ public interface ISignedNumberConstant {
 	 *
 	 * @return
 	 *
-	 * @see org.matheclipse.core.eval.EvalDouble
+	 * @see org.matheclipse.core.eval.DoubleStackEvaluator
 	 */
 	double evalReal();
 }

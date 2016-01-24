@@ -838,7 +838,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 
-			return expr.optional(evaluate(expr));
+			return evaluate(expr);
 		} finally {
 			// pop all local variables from local variable stack
 			for (int i = 0; i < variables.size(); i++) {

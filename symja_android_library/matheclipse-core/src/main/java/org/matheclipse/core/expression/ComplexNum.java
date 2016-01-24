@@ -604,8 +604,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return fComplex;
 	}
 
-	public org.matheclipse.parser.client.math.Complex getCMComplex() {
-		return new org.matheclipse.parser.client.math.Complex(fComplex.getReal(), fComplex.getImaginary());
+	public Complex getCMComplex() {
+		return new Complex(fComplex.getReal(), fComplex.getImaginary());
 	}
 
 	/** {@inheritDoc} */
