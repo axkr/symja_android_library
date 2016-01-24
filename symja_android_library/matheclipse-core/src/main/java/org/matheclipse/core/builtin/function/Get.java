@@ -8,7 +8,6 @@ import java.io.Reader;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
@@ -21,8 +20,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.core.parser.ExprParser;
 
 /**
  * Get[{&lt;file name&gt;}}
@@ -80,17 +78,18 @@ public class Get extends AbstractFunctionEvaluator {
 				builder.append(record);
 				builder.append('\n');
 			}
-			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-			final List<ASTNode> node = parser.parsePackage(builder.toString());
+			final ExprParser parser = new ExprParser(engine, engine.isRelaxedSyntax(), true);
+			final List<IExpr> node = parser.parsePackage(builder.toString());
 
 			IExpr temp;
 			int i = 0;
-			AST2Expr ast2Expr = AST2Expr.CONST;
-			if (engine.isRelaxedSyntax()) {
-				ast2Expr = AST2Expr.CONST_LC;
-			}
+			// AST2Expr ast2Expr = AST2Expr.CONST;
+			// if (engine.isRelaxedSyntax()) {
+			// ast2Expr = AST2Expr.CONST_LC;
+			// }
 			while (i < node.size()) {
-				temp = ast2Expr.convert(node.get(i++), engine);
+				temp = node.get(i++); // ast2Expr.convert(node.get(i++),
+										// engine);
 				if (temp.isAST()) {
 					IAST ast = (IAST) temp;
 					IExpr head = temp.head();
@@ -130,17 +129,18 @@ public class Get extends AbstractFunctionEvaluator {
 		}
 	}
 
-	private static int addContextToPath(ContextPath contextPath, final List<ASTNode> node, int i, final EvalEngine engine,
+	private static int addContextToPath(ContextPath contextPath, final List<IExpr> node, int i, final EvalEngine engine,
 			ISymbol endSymbol) {
 		ContextPath path = engine.getContextPath();
 		try {
 			engine.setContextPath(contextPath);
-			AST2Expr ast2Expr = AST2Expr.CONST;
-			if (engine.isRelaxedSyntax()) {
-				ast2Expr = AST2Expr.CONST_LC;
-			}
+			// AST2Expr ast2Expr = AST2Expr.CONST;
+			// if (engine.isRelaxedSyntax()) {
+			// ast2Expr = AST2Expr.CONST_LC;
+			// }
 			while (i < node.size()) {
-				IExpr temp = ast2Expr.convert(node.get(i++), engine);
+				IExpr temp = node.get(i++);// ast2Expr.convert(node.get(i++),
+											// engine);
 				if (temp.isAST()) {
 					IExpr head = temp.head();
 					IAST ast = (IAST) temp;
