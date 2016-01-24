@@ -83,7 +83,7 @@ public class ExprParser extends ExprScanner {
 	private final EvalEngine fEngine;
 
 	public ExprParser(final EvalEngine engine) {
-		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, false, false);
+		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, engine.isRelaxedSyntax(), false);
 	}
 
 	/**
