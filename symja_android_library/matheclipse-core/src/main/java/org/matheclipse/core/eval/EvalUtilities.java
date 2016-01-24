@@ -4,13 +4,10 @@ import java.io.Writer;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -114,21 +111,23 @@ public class EvalUtilities extends MathMLUtilities {
 		if (inputExpression != null) {
 			EvalEngine.set(evalEngine);
 			boolean SIMPLE_SYNTAX = true;
-			ASTNode node = null;
+			// ASTNode node = null;
+			IExpr parsedExpression;
 			try {
-				Parser parser = new Parser(SIMPLE_SYNTAX);
-				node = parser.parse(inputExpression);
+				ExprParser parser = new ExprParser(evalEngine, SIMPLE_SYNTAX);
+				parsedExpression = parser.parse(inputExpression);
 			} catch (SyntaxError se1) {
 				try {
 					SIMPLE_SYNTAX = false;
-					Parser parser = new Parser(SIMPLE_SYNTAX);
-					node = parser.parse(inputExpression);
+					ExprParser parser = new ExprParser(evalEngine, SIMPLE_SYNTAX);
+					parsedExpression = parser.parse(inputExpression);
 				} catch (SyntaxError se2) {
 					throw se1;
 				}
 			}
-			if (node != null) {
-				IExpr parsedExpression = AST2Expr.CONST.convert(node, evalEngine);
+			if (parsedExpression != null) {
+				// IExpr parsedExpression = AST2Expr.CONST.convert(node,
+				// evalEngine);
 				if (parsedExpression != null) {
 					evalEngine.reset();
 					IExpr temp = evalEngine.evaluate(parsedExpression);
