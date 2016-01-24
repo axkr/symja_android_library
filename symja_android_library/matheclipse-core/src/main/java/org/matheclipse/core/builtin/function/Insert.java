@@ -37,7 +37,6 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}
-				return null;
 			}
 		}
 		return F.UNEVALED;

@@ -74,7 +74,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					final int indx = Validate.checkIntType(lst, i, Integer.MIN_VALUE);
 					ires = getIndex(arg1, indx);
 					if (ires == null) {
-						return null;
+						return F.UNEVALED;
 					}
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
@@ -92,7 +92,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			return result;
 		}
 		engine.printMessage("Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

@@ -3,7 +3,7 @@ package org.matheclipse.core.builtin.function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * MessageName[{&lt;file name&gt;}}
  * 
  */
-public class MessageName extends AbstractFunctionEvaluator {
+public class MessageName extends AbstractCoreFunctionEvaluator {
 
 	public MessageName() {
 	}
@@ -28,7 +28,7 @@ public class MessageName extends AbstractFunctionEvaluator {
 		}
 		IExpr arg2 = engine.evaluate(ast.arg2());
 		if (arg2 instanceof IStringX || arg2.isSymbol()) {
-			return null;
+			return F.UNEVALED;
 		}
 		if (!ast.arg2().isAST(F.Set, 3)) { // instanceof IStringX) &&
 											// !ast.arg2().isSymbol()) {

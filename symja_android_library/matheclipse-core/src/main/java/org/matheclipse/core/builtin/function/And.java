@@ -1,7 +1,8 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -19,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </a>
  * </p>
  */
-public class And extends AbstractFunctionEvaluator {
+public class And extends AbstractCoreFunctionEvaluator {
 	public And() {
 	}
 
@@ -30,15 +31,23 @@ public class And extends AbstractFunctionEvaluator {
 		}
 
 		boolean evaled = false;
-		IAST result = ast.clone();
+
 		int index = 1;
 		IExpr temp;
 		IExpr sym;
-		int[] symbols = new int[ast.size()];
-		int[] notSymbols = new int[ast.size()];
 
-		for (int i = 1; i < ast.size(); i++) {
-			temp = ast.get(i);
+		IAST flattenedAST = EvalAttributes.flatten(ast);
+		if (flattenedAST == null) {
+			flattenedAST = ast;
+		} else {
+			evaled = true;
+		}
+
+		IAST result = flattenedAST.clone();
+		int[] symbols = new int[flattenedAST.size()];
+		int[] notSymbols = new int[flattenedAST.size()];
+		for (int i = 1; i < flattenedAST.size(); i++) {
+			temp = flattenedAST.get(i);
 			if (temp.isFalse()) {
 				return F.False;
 			}
@@ -61,11 +70,11 @@ public class And extends AbstractFunctionEvaluator {
 				result.set(index, temp);
 				evaled = true;
 			} else {
-				temp = ast.get(i);
+				temp = flattenedAST.get(i);
 			}
-			
+
 			if (temp.isSymbol()) {
-				symbols[i] = ast.get(i).hashCode();
+				symbols[i] = flattenedAST.get(i).hashCode();
 			} else if (temp.isNot()) {
 				sym = ((IAST) temp).getAt(1);
 				if (sym.isSymbol()) {
@@ -84,13 +93,17 @@ public class And extends AbstractFunctionEvaluator {
 				}
 			}
 		}
+		if (result.size() == 2) {
+			return result.arg1();
+		}
 		if (evaled) {
 			if (result.size() == 1) {
 				return F.True;
 			}
+
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -11,8 +13,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
- 
-import java.util.function.Function;
 /** 
  * <p>
  * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">Cases</a>

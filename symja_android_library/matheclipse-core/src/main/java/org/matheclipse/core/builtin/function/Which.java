@@ -30,7 +30,7 @@ public class Which extends AbstractCoreFunctionEvaluator {
 				continue;
 			}
 			if (i==1) {
-				return null;
+				return F.UNEVALED;
 			}
 			return F.ast(ast, ast.head(), true, i, ast.size());
 		}

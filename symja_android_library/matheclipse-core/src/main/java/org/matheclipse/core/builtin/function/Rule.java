@@ -4,13 +4,14 @@ import static org.matheclipse.core.expression.F.Rule;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
-public class Rule extends AbstractFunctionEvaluator {
+public class Rule extends AbstractCoreFunctionEvaluator {
 
 	public Rule() {
 	}
@@ -25,7 +26,7 @@ public class Rule extends AbstractFunctionEvaluator {
 		IExpr arg2 = engine.evaluateNull(ast.arg2());
 		if (!arg2.isPresent()) {
 			if (leftHandSide.equals(ast.arg1())) {
-				return null;
+				return F.UNEVALED;
 			}
 			return Rule(leftHandSide, ast.arg2());
 		}

@@ -172,7 +172,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr numericEval(IAST functionList, EvalEngine engine) {
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

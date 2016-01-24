@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * 
  */
-public class Implies extends AbstractFunctionEvaluator {
+public class Implies extends AbstractCoreFunctionEvaluator {
 	public Implies() {
 	}
 
@@ -38,7 +38,7 @@ public class Implies extends AbstractFunctionEvaluator {
 		if (arg1.equals(arg2)) {
 			return F.True;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

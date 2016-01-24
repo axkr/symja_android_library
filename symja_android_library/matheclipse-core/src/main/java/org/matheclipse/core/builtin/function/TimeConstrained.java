@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -31,11 +30,11 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 				seconds = ((ISignedNumber) arg2).toLong();
 			} else {
 				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
-				return null;
+				return F.UNEVALED;
 			}
 		} catch (ArithmeticException ae) {
 			engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
-			return null;
+			return F.UNEVALED;
 		}
 		// TODO implement &quot;TimeConstrained&quot; mode
 		try {

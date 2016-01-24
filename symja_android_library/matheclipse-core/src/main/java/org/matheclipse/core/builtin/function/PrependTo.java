@@ -44,7 +44,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 			return results[1];
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

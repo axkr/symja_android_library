@@ -50,7 +50,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
 						return position((IAST) arg1, arg2, level);
 					}
-					return null;
+					return F.UNEVALED;
 				}
 				final IExpr arg3 = engine.evaluate(ast.arg3());
 				final LevelSpec level = new LevelSpecification(arg3, true);

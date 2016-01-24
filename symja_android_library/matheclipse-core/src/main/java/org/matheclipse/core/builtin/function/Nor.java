@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * 
  */
-public class Nor extends AbstractFunctionEvaluator {
+public class Nor extends AbstractCoreFunctionEvaluator {
 	public Nor() {
 	}
 
@@ -46,10 +46,9 @@ public class Nor extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
-	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.HOLDALL);
 	}

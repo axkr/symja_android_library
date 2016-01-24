@@ -28,10 +28,11 @@ public class Timing extends AbstractEvaluator {
 		if (ast.size() == 2) {
 			final long begin = System.currentTimeMillis();
 			final IExpr result = engine.evaluate(ast.arg1());
-			return List(Times(AbstractFractionSym.valueOf((System.currentTimeMillis() - begin), 1000L), F.Second), result);
+			return List(Times(AbstractFractionSym.valueOf((System.currentTimeMillis() - begin), 1000L), F.Second),
+					result);
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

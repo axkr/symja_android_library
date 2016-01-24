@@ -15,7 +15,7 @@ public class Compile extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (!ToggleFeature.COMPILE) {
-			return null;
+			return F.UNEVALED;
 		}
 		engine.printMessage("Compile: Compile() function not implemented! ");
 		return F.Null;

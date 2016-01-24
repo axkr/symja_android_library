@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.function;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -8,8 +10,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
- 
-import java.util.function.Function;
 
 /**
  * Count the number of elements in an expression which match the given pattern.

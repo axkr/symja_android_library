@@ -4,13 +4,14 @@ import static org.matheclipse.core.expression.F.RuleDelayed;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
-public class RuleDelayed extends AbstractFunctionEvaluator {
+public class RuleDelayed extends AbstractCoreFunctionEvaluator {
 
 	public RuleDelayed() {
 	}
@@ -26,7 +27,7 @@ public class RuleDelayed extends AbstractFunctionEvaluator {
 			return RuleDelayed(leftHandSide, ast.arg2());
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

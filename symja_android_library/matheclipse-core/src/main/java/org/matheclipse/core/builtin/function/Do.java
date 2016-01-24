@@ -59,7 +59,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 				}
 				return F.Null;
 			}
-			return null;
+			return F.UNEVALED;
 		}
 	}
 

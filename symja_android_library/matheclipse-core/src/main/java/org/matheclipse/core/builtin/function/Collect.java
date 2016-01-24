@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -25,7 +25,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
  * Collect</a>
  * </p>
  */
-public class Collect extends AbstractFunctionEvaluator {
+public class Collect extends AbstractCoreFunctionEvaluator {
 
 	public Collect() {
 	}
@@ -36,7 +36,7 @@ public class Collect extends AbstractFunctionEvaluator {
 		try {
 			IExpr head = null;
 			if (ast.size() == 4) {
-				head = ast.arg3();
+				head = engine.evaluate(ast.arg3());
 			}
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
@@ -52,7 +52,7 @@ public class Collect extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos, IExpr head,

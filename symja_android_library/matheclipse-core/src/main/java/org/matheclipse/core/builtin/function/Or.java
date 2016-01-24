@@ -1,7 +1,8 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -13,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * disjunction</a>
  * 
  */
-public class Or extends AbstractFunctionEvaluator {
+public class Or extends AbstractCoreFunctionEvaluator {
 
 	public Or() {
 	}
@@ -24,16 +25,23 @@ public class Or extends AbstractFunctionEvaluator {
 			return F.False;
 		}
 
+		boolean evaled = false;
+		IAST flattendedAST = EvalAttributes.flatten(ast);
+		if (flattendedAST == null) {
+			flattendedAST = ast;
+		} else {
+			evaled = true;
+		}
+
+		IAST result = flattendedAST.clone();
 		IExpr temp;
 		IExpr sym;
-		int[] symbols = new int[ast.size()];
-		int[] notSymbols = new int[ast.size()];
-
-		boolean evaled = false;
-		IAST result = ast.clone();
+		int[] symbols = new int[flattendedAST.size()];
+		int[] notSymbols = new int[flattendedAST.size()];
 		int index = 1;
-		for (int i = 1; i < ast.size(); i++) {
-			temp = ast.get(i);
+
+		for (int i = 1; i < flattendedAST.size(); i++) {
+			temp = flattendedAST.get(i);
 			if (temp.isTrue()) {
 				return F.True;
 			}
@@ -43,7 +51,7 @@ public class Or extends AbstractFunctionEvaluator {
 				continue;
 			}
 
-			temp = engine.evaluateNull(ast.get(i));
+			temp = engine.evaluateNull(flattendedAST.get(i));
 			if (temp.isPresent()) {
 				if (temp.isTrue()) {
 					return F.True;
@@ -56,11 +64,11 @@ public class Or extends AbstractFunctionEvaluator {
 				result.set(index, temp);
 				evaled = true;
 			} else {
-				temp = ast.get(i);
+				temp = flattendedAST.get(i);
 			}
 
 			if (temp.isSymbol()) {
-				symbols[i] = ast.get(i).hashCode();
+				symbols[i] = flattendedAST.get(i).hashCode();
 			} else if (temp.isNot()) {
 				sym = ((IAST) temp).getAt(1);
 				if (sym.isSymbol()) {
@@ -79,13 +87,16 @@ public class Or extends AbstractFunctionEvaluator {
 				}
 			}
 		}
+		if (result.size() == 2) {
+			return result.arg1();
+		}
 		if (evaled) {
 			if (result.size() == 1) {
 				return F.False;
 			}
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class Unevaluated extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (!ToggleFeature.UNEVALUATED) {
-			return null;
+			return F.UNEVALED;
 		}
 
 		Validate.checkSize(ast, 2);

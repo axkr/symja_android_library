@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -26,7 +26,7 @@ import org.matheclipse.core.parser.ExprParser;
  * Get[{&lt;file name&gt;}}
  * 
  */
-public class Get extends AbstractFunctionEvaluator {
+public class Get extends AbstractCoreFunctionEvaluator {
 
 	public Get() {
 	}
@@ -54,8 +54,8 @@ public class Get extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public IExpr numericEval(IAST functionList, EvalEngine engine) {
-		return null;
+	public IExpr numericEval(IAST ast, EvalEngine engine) {
+		return evaluate(ast, engine);
 	}
 
 	@Override
