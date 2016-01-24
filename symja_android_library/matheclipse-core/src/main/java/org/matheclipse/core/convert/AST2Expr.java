@@ -32,7 +32,7 @@ import org.matheclipse.parser.client.ast.Pattern2Node;
 import org.matheclipse.parser.client.ast.Pattern3Node;
 import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
-import org.matheclipse.parser.client.ast.SymbolNode; 
+import org.matheclipse.parser.client.ast.SymbolNode;
 
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
@@ -54,10 +54,10 @@ public class AST2Expr {
 			"AtomQ", "Attributes", "Begin", "BeginPackage", "BernoulliB", "Binomial", "Blank", "Block", "Boole",
 			"BooleanConvert", "BooleanMinimize", "Break", "Cancel", "CartesianProduct", "Cases", "CatalanNumber",
 			"Catch", "Ceiling", "CharacteristicPolynomial", "ChebyshevT", "ChessboardDistance", "Chop", "Clear",
-			"ClearAll", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Complement", "Compile", "Complex",
-			"ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition", "Conjugate",
-			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",
-			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement",
+			"ClearAll", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Complement",
+			"Compile", "Complex", "ComplexExpand", "ComplexInfinity", "ComposeList", "CompoundExpression", "Condition",
+			"Conjugate", "ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos",
+			"Cosh", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Cross", "Csc", "Csch", "Curl", "Decrement",
 			"Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth",
 			"Derivative", "Det", "DiagonalMatrix", "DigitQ", "Dimensions", "DirectedInfinity", "Direction",
 			"Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop",
@@ -77,32 +77,32 @@ public class AST2Expr {
 			"KOrderlessPartitions", "KPartitions", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform",
 			"LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearProgramming",
 			"LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogIntegral",
-			"LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAll", "MapThread", "MatchQ", "MathMLForm",
-			"MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MessageName",
-			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Names", "Nand", "Negative",
-			"Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform", "NIntegrate",
-			"NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not",
-			"NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order",
-			"OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition",
-			"Pattern", "PatternTest", "Permutations", "Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer", "PolyGamma",
-			"PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
-			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power",
-			"PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime", "PrimeQ",
-			"PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger", "RandomReal",
-			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated",
-			"RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest",
-			"Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "RootOf", "Roots", "Surd", "RotateLeft",
-			"RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech", "Select",
-			"Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Show", "Sign", "SignCmp",
-			"Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve",
-			"Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin",
-			"StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom",
-			"Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh", "Taylor",
-			"TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
-			"Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce",
-			"TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector",
-			"UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
+			"LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAt", "MapAll", "MapThread", "MatchQ",
+			"MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ",
+			"MessageName", "Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "Names", "Nand",
+			"Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform",
+			"NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm",
+			"Not", "NRoots", "NSolve", "NullSpace", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or",
+			"Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part",
+			"Partition", "Pattern", "PatternTest", "Permutations", "Piecewise", "Plot", "Plot3D", "Plus", "Pochhammer",
+			"PolyGamma", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ",
+			"PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
+			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo",
+			"Prime", "PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog", "Quiet", "Quotient", "RandomInteger",
+			"RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine",
+			"Repeated", "RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated",
+			"Rest", "Resultant", "Return", "Reverse", "Riffle", "RootIntervals", "RootOf", "Roots", "Surd",
+			"RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "Scan", "Sec", "Sech",
+			"Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Show", "Sign",
+			"SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral",
+			"Solve", "Sort", "Sow", "Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop",
+			"StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
+			"SubtractFrom", "Sum", "Superscript", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh",
+			"Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing",
+			"ToCharacterCode", "Together", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand",
+			"TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep",
+			"UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix",
+			"Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
