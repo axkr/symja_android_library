@@ -55,13 +55,13 @@ public class HarmonicNumber extends AbstractEvaluator {
 							return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)), BernoulliB(Times(C2, v)),
 									Power(Times(C2, Factorial(Times(C2, v))), CN1));
 						}
-						return null;
+						return F.UNEVALED;
 					}
 				}
 				if (arg1.isInteger()) {
 					int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 					if (n < 0) {
-						return null;
+						return F.UNEVALED;
 					}
 					if (n == 0) {
 						return C0;
@@ -72,14 +72,14 @@ public class HarmonicNumber extends AbstractEvaluator {
 					}
 					return result;
 				}
-				return null;
+				return F.UNEVALED;
 			}
 		}
 		if (arg1.isInteger()) {
 
 			int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 			if (n < 0) {
-				return null;
+				return F.UNEVALED;
 			}
 			if (n == 0) {
 				return C0;
@@ -91,7 +91,7 @@ public class HarmonicNumber extends AbstractEvaluator {
 			return fraction(harmonicNumber(n));
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

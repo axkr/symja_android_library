@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -23,7 +24,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 
 		for (int i = 1; i < ast.size(); i++) {
 			if (!(ast.get(i).isInteger())) {
-				return null;
+				return F.UNEVALED;
 			}
 		}
 		IInteger arg1 = (IInteger) ast.get(1);
@@ -39,7 +40,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 				ae.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

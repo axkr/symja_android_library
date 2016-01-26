@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,7 +22,7 @@ public class ToUnicode extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
-			return null;
+			return F.UNEVALED;
 		}
 		
 		return StringX.valueOf(toUnicodeString(ast.arg1().toString(), "UTF-8"));

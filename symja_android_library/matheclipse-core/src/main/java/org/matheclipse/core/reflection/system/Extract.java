@@ -42,7 +42,7 @@ public class Extract extends AbstractFunctionEvaluator {
 		// LevelSpec level = new LevelSpecification(f, (IExpr) ast.arg3());
 		// return extract((IAST) ast.arg1(), ast.arg2(), level);
 		// }
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static IExpr extract(final IAST list, final IAST position) {

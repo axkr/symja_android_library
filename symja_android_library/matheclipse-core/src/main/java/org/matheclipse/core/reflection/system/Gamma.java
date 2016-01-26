@@ -34,7 +34,7 @@ public class Gamma extends AbstractTrigArg1 {
 		if (ast.size() == 2) {
 			return evaluateArg1(ast.arg1());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

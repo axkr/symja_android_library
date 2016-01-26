@@ -177,7 +177,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 			if (ast.get(i).isList()) {
 				la.add((IAST) ast.get(i));
 			} else {
-				return null;
+				return F.UNEVALED;
 			}
 		}
 		CartesianProductList cpi = new CartesianProductList(la, F.List());

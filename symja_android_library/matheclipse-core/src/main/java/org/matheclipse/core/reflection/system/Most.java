@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -21,8 +22,7 @@ public class Most extends AbstractFunctionEvaluator {
 		if (sublist.size() > 1) {
 			return sublist.removeAtClone(sublist.size() - 1);
 		}
-
-		return null;
+		return F.UNEVALED;
 	}
 
 }

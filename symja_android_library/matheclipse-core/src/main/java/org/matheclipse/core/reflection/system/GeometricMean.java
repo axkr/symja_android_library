@@ -21,7 +21,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 		if (arg1.size() > 1) {
 			return SymbolicStatUtils.geometricMean(arg1);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

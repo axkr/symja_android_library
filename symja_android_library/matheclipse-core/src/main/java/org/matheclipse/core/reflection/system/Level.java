@@ -48,7 +48,7 @@ public class Level extends AbstractFunctionEvaluator {
 
 			return resultList;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

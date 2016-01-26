@@ -73,7 +73,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		try {
 			engine.setNumericMode(false);
 			if (holdallAST.size() < 3) {
-				return null;
+				return F.UNEVALED;
 			}
 			IExpr arg1 = engine.evaluateNull(holdallAST.arg1());
 			if (arg1.isPresent()) {
@@ -107,12 +107,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
 									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
-							return null;
+							return F.UNEVALED;
 						}
 						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
 									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
-							return null;
+							return F.UNEVALED;
 						}
 						return F.Subtract(Fb, Fa);
 					}
@@ -148,7 +148,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IAST fx = (IAST) arg1;
 					if (fx.topHead().equals(x)) {
 						// issue #91
-						return null;
+						return F.UNEVALED;
 					}
 					// if (astArg1.isTimes()) {
 					// IAST freeTimes = F.Times();

@@ -27,7 +27,7 @@ public class Complement extends AbstractFunctionEvaluator {
 			final IAST arg2 = ((IAST) ast.arg2());
 			return complement(arg1, arg2);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static IExpr complement(final IAST arg1, final IAST arg2) {

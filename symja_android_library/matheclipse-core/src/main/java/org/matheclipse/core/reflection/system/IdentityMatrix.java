@@ -28,7 +28,7 @@ public class IdentityMatrix extends AbstractFunctionEvaluator {
 			final IExpr[] valueArray = { F.C0, F.C1 };
 			return diagonalMatrix(valueArray, indx);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

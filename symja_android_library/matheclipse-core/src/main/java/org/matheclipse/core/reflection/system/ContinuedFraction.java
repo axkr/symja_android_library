@@ -72,7 +72,7 @@ public class ContinuedFraction extends AbstractEvaluator {
 
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

@@ -41,7 +41,7 @@ public class NextPrime extends AbstractFunctionEvaluator {
 			return F.integer(temp);
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

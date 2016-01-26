@@ -4,6 +4,7 @@ import org.apache.commons.math4.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -24,7 +25,7 @@ public class RandomSample extends AbstractFunctionEvaluator {
 			return shuffle((IAST) ast.arg1());
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static IAST shuffle(IAST list) {

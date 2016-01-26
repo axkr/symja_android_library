@@ -34,7 +34,7 @@ public class ReplaceRepeated extends AbstractEvaluator {
 		} catch (WrongArgumentType wat) {
 			engine.printMessage(wat.getMessage());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

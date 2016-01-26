@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -45,7 +46,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

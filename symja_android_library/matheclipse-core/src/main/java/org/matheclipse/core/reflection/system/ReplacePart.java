@@ -54,7 +54,7 @@ public class ReplacePart extends AbstractEvaluator {
 		} catch (WrongArgumentType wat) {
 			engine.printMessage(wat.getMessage());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

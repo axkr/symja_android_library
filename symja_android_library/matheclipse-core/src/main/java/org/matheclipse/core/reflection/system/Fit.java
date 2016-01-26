@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -73,6 +74,6 @@ public class Fit extends AbstractFunctionEvaluator {
 			return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

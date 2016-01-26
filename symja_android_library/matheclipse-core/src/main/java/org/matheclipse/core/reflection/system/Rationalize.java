@@ -39,7 +39,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

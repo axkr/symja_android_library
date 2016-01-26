@@ -65,12 +65,12 @@ public class Coefficient extends AbstractFunctionEvaluator {
 					try {
 						value = ii.toLong();
 					} catch (ArithmeticException ae) {
-						return null;
+						return F.UNEVALED;
 					}
 				}
 
 				if (!setExponent(listOfVariables, a1, exponents, value)) {
-					return null;
+					return F.UNEVALED;
 				}
 			}
 		} else {

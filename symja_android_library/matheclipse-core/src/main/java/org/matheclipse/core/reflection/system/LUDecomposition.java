@@ -55,7 +55,7 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	} 
 
 }

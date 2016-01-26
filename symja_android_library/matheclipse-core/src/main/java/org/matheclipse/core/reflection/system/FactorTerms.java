@@ -33,7 +33,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			} else if (ast.arg2().isList()) {
 				variableList = (IAST) ast.arg2();
 			} else {
-				return null;
+				return F.UNEVALED;
 			}
 		} else {
 			if (ast.size() == 2) {
@@ -41,14 +41,14 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 				eVar = new VariablesSet(ast.arg1());
 				if (!eVar.isSize(1)) {
 					// only possible for univariate polynomials
-					return null;
+					return F.UNEVALED;
 				}
 				variableList = eVar.getVarList();
 			}
 		}
 		if (variableList.size() != 2) {
 			// FactorTerms only possible for univariate polynomials
-			return null;
+			return F.UNEVALED;
 		}
 		ASTRange r = new ASTRange(variableList, 1);
 		IExpr expr = F.evalExpandAll(ast.arg1());
@@ -74,7 +74,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			// e.printStackTrace();
 			// }
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

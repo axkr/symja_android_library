@@ -23,7 +23,7 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
-			return null;
+			return F.UNEVALED;
 		}
 		
 		IAST resultList = List();

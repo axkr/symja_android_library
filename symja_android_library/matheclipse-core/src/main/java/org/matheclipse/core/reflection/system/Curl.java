@@ -35,7 +35,7 @@ public class Curl extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 }

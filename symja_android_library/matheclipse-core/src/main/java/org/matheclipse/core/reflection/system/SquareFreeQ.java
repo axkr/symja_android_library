@@ -40,7 +40,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isRational()) {
 			// check for integers not implemented yet
-			return null;
+			return F.UNEVALED;
 		}
 		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (eVar.isSize(0)) {
@@ -66,7 +66,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static boolean isSquarefree(IExpr expr, List<IExpr> varList) throws JASConversionException {

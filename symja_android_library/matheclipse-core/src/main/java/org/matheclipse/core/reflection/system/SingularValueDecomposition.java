@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -58,7 +59,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 }

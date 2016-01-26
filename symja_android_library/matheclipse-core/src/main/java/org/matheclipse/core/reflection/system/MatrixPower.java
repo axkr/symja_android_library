@@ -29,7 +29,7 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 			matrix = Convert.list2Matrix((IAST) ast.arg1());
 			final int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			if (p < 0) {
-				return null;
+				return F.UNEVALED;
 			}
 			if (p == 1) {
 				((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
@@ -67,6 +67,6 @@ public class MatrixPower extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 }

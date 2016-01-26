@@ -40,12 +40,12 @@ public class Plot extends AbstractEvaluator {
 				final IExpr a = engine.evaluate(N(lst.get(2)));
 				final IExpr b = engine.evaluate(N(lst.get(3)));
 				if ((!(a instanceof INum)) || (!(b instanceof INum))) {
-					return null;
+					return F.UNEVALED;
 				}
 				final double ad = ((INum) a).getRealPart();
 				final double bd = ((INum) b).getRealPart();
 				if (bd <= ad) {
-					return null;
+					return F.UNEVALED;
 				}
 				double y0d = 0.0f;
 				double y1d = 0.0f;

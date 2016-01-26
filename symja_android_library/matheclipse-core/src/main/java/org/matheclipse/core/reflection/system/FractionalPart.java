@@ -39,7 +39,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		if (negExpr != null) {
 			return Negate(FractionalPart(negExpr));
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	private IExpr signedNumberFractionalPart(INumber arg1) {

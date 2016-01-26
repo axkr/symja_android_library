@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -45,7 +46,7 @@ public class Cross extends AbstractFunctionEvaluator {
 				return List(Negate(v1.arg2()), v1.arg1());
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

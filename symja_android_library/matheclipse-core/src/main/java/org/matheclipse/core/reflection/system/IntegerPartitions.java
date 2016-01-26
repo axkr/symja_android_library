@@ -172,7 +172,7 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

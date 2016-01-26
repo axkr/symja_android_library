@@ -62,7 +62,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public IExpr evalCeiling(IExpr arg1) {

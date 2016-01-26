@@ -28,7 +28,7 @@ public class Xor extends AbstractFunctionEvaluator {
 				result = !result;
 			} else if (ast.get(i).isFalse()) {
 			} else {
-				return null;
+				return F.UNEVALED;
 			}
 		} 
 

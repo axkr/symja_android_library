@@ -86,7 +86,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

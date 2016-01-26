@@ -109,7 +109,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 			}
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

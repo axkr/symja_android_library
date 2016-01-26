@@ -32,7 +32,7 @@ public class ComposeList extends AbstractEvaluator {
 		} catch (final ArithmeticException e) {
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

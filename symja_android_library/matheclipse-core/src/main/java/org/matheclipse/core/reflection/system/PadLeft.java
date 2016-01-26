@@ -31,7 +31,7 @@ public class PadLeft extends AbstractFunctionEvaluator {
 				return padLeftAtom(arg1, n, F.C0);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {

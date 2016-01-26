@@ -148,7 +148,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		if (size > 2) {
 			return evaluateHashs(ast);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

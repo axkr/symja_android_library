@@ -19,7 +19,7 @@ public class RandomReal extends AbstractFunctionEvaluator {
 			return F.num(r);
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 }

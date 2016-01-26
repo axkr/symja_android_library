@@ -41,10 +41,10 @@ public class InterpolatingFunction extends AbstractEvaluator {
 						}
 					}
 				}
-				return null;
+				return F.UNEVALED;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	private double interpolate(RealMatrix matrix, double interpolationX) {

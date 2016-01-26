@@ -273,7 +273,7 @@ public class PlusOp {
 			temp = plusAST;
 		}
 		IExpr expr = Plus.CONST.evaluate(temp, null);
-		if (expr == null) {
+		if (expr == null || !expr.isPresent()) {
 			return plusAST.getOneIdentity(F.C0);
 		}
 		return expr;
@@ -289,7 +289,7 @@ public class PlusOp {
 	public static IExpr plus(IExpr a1, IExpr a2) {
 		IAST plus = F.Plus(a1, a2);
 		IExpr expr = Plus.CONST.evaluate(plus, null);
-		if (expr == null) {
+		if (expr == null||!expr.isPresent()) {
 			return plus;
 		}
 		return expr;

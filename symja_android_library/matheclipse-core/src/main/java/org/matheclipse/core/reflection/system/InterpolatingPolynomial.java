@@ -114,7 +114,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 				return polynomial;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

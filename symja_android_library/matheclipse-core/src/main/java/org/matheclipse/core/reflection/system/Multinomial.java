@@ -35,10 +35,10 @@ public class Multinomial extends AbstractFunctionEvaluator {
 		}
 		for (int i = 1; i < ast.size(); i++) {
 			if (!(ast.get(i).isInteger())) {
-				return null;
+				return F.UNEVALED;
 			}
 			if (((IInteger) ast.get(i)).isNegative()) {
-				return null;
+				return F.UNEVALED;
 			}
 		}
 

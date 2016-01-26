@@ -170,7 +170,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		IExpr arg2 = ast.arg2();
 		if (!arg2.isSymbol()) {
-			return null;
+			return F.UNEVALED;
 		} 
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		try {

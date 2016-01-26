@@ -49,7 +49,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	} 
 	
 	/**

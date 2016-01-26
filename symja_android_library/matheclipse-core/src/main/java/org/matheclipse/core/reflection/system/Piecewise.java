@@ -86,7 +86,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

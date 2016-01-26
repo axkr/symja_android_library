@@ -97,7 +97,7 @@ public class Re extends AbstractEvaluator {
 				return rePowerComplex(x, a, b);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

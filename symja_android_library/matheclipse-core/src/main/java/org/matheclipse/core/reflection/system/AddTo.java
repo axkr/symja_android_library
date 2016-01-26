@@ -59,7 +59,7 @@ public class AddTo extends AbstractFunctionEvaluator {
 		if (results != null) {
 			return results[1];
 		} 
-		return null;
+		return F.UNEVALED;
 	}
 	
 	@Override

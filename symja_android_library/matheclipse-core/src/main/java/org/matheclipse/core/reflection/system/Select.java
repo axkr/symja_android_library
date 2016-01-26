@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,7 +29,7 @@ public class Select extends AbstractEvaluator {
 				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2), resultLimit);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

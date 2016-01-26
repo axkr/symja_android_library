@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -26,9 +26,9 @@ public class UpperCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!(ast.arg1() instanceof IStringX)) {
-			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+			throw new WrongArgumentType(ast, ast.arg1(), 1);
 		}
-		
+
 		return F.bool(test(ast.arg1()));
 	}
 

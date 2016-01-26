@@ -40,7 +40,7 @@ public class UnitStep extends AbstractEvaluator implements INumeric {
 						continue;
 					}
 				}
-				return null;
+				return F.UNEVALED;
 			}
 		}
 		return F.C1;

@@ -38,7 +38,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 			}
 			return F.False;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

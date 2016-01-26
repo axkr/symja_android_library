@@ -38,7 +38,7 @@ public class EuclidianDistance extends AbstractEvaluator {
 				return F.Sqrt(plusAST);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

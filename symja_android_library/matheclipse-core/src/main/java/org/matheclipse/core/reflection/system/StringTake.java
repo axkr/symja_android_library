@@ -27,6 +27,6 @@ public class StringTake extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

@@ -98,11 +98,11 @@ public class Inner extends AbstractFunctionEvaluator {
 			}
 			IExpr head2 = list2.head();
 			if (!list1.head().equals(head2)) {
-				return null;
+				return F.UNEVALED;
 			}
 			InnerAlgorithm ic = new InnerAlgorithm(f, list1, list2, g);
 			return ic.inner();
 		}
-		return null;
+		return F.UNEVALED;
 	}
 }

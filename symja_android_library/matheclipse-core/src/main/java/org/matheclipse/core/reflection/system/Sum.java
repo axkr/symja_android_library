@@ -101,7 +101,7 @@ public class Sum extends Table implements SumRules {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
 				if (temp == null || temp.equals(resultList)) {
-					return null;
+					return F.UNEVALED;
 				}
 				if (ast.size() == 3) {
 					return temp;
@@ -144,7 +144,7 @@ public class Sum extends Table implements SumRules {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {

@@ -44,7 +44,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() != 2) {
-			return null;
+			return F.UNEVALED;
 		}
 		return roots(ast, false, engine);
 	}

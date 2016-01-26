@@ -518,7 +518,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					}
 					resultList.add(list);
 				} else {
-					return null;
+					return F.UNEVALED;
 				}
 			}
 
@@ -527,7 +527,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}
-			return null;
+			return F.UNEVALED;
 		}
 	}
 }

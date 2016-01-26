@@ -40,7 +40,7 @@ public class SquaredEuclidianDistance extends AbstractEvaluator {
 				return plusAST;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

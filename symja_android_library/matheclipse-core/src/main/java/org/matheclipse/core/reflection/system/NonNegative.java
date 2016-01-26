@@ -25,7 +25,7 @@ public class NonNegative extends AbstractEvaluator {
 		if (ast.arg1().isNumber()) {
 			return F.False;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

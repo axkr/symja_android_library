@@ -89,7 +89,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 				jce.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

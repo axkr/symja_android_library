@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -13,7 +14,7 @@ public class NonCommutativeMultiply extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST lst, EvalEngine engine) {
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

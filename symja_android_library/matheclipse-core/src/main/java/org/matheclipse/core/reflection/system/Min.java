@@ -59,7 +59,7 @@ public class Min extends AbstractFunctionEvaluator {
 		if (f.size() > 1) {
 			f.add(1, min1);
 			if (!evaled) {
-				return null;
+				return F.UNEVALED;
 			}
 			return f;
 		} else {

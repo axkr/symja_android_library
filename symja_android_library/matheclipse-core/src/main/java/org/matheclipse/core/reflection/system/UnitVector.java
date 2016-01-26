@@ -32,7 +32,7 @@ public class UnitVector extends AbstractFunctionEvaluator {
 				vector.set(k, F.C1);
 				return vector;
 			}
-			return null;
+			return F.UNEVALED;
 		} 
 		
 		if (ast.arg1().isInteger()) {
@@ -44,7 +44,7 @@ public class UnitVector extends AbstractFunctionEvaluator {
 				return F.List(F.C0, F.C1);
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

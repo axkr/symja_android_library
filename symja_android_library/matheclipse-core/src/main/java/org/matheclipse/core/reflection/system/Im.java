@@ -107,7 +107,7 @@ public class Im extends AbstractEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

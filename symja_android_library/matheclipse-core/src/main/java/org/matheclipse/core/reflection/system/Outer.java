@@ -58,12 +58,12 @@ public class Outer extends AbstractFunctionEvaluator {
 		for (int i = 2; i < ast.size(); i++) {
 			IExpr list = ast.get(i);
 			if (!list.isAST()) {
-				return null;
+				return F.UNEVALED;
 			}
 			if (head == null) {
 				head = list.head();
 			} else if (!head.equals(list.head())) {
-				return null;
+				return F.UNEVALED;
 			}
 		}
 		OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);

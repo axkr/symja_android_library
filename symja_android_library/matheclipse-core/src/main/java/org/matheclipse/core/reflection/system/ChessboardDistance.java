@@ -40,7 +40,7 @@ public class ChessboardDistance extends AbstractEvaluator  {
 				return maxAST;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	} 
 
 }

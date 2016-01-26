@@ -48,7 +48,7 @@ public class NullSpace extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 }

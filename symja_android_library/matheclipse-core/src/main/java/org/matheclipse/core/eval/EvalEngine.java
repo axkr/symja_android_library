@@ -718,7 +718,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-				if (result != null) {
+				if (result != null && result != F.UNEVALED) {
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
@@ -1240,10 +1240,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			EvalAttributes.sort(ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
-					return Plus.CONST.evaluate(ast, null);
+					IExpr temp = Plus.CONST.evaluate(ast, null);
+					if (temp != null && temp.isPresent()) {
+						return temp;
+					}
+					return null;
 				}
 				if (ast.isTimes()) {
-					return Times.CONST.evaluate(ast, null);
+					IExpr temp =  Times.CONST.evaluate(ast, null);
+					if (temp != null && temp.isPresent()) {
+						return temp;
+					}
+					return null;
 				}
 			}
 		}
@@ -1663,15 +1671,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @throws org.matheclipse.parser.client.SyntaxError
 	 *             if a parsing error occurs
 	 */
-//	final public ASTNode parseNode(String expression) {
-//		if (fRelaxedSyntax) {
-//			final Parser parser = new Parser(fRelaxedSyntax);
-//			return parser.parse(expression);
-//		} else {
-//			final Parser parser = new Parser();
-//			return parser.parse(expression);
-//		}
-//	}
+	// final public ASTNode parseNode(String expression) {
+	// if (fRelaxedSyntax) {
+	// final Parser parser = new Parser(fRelaxedSyntax);
+	// return parser.parse(expression);
+	// } else {
+	// final Parser parser = new Parser();
+	// return parser.parse(expression);
+	// }
+	// }
 
 	/**
 	 * Print a message to the <code>Out</code> stream, if the engine is not in

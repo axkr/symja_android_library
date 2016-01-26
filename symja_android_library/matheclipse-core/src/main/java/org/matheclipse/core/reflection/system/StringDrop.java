@@ -27,6 +27,6 @@ public class StringDrop extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

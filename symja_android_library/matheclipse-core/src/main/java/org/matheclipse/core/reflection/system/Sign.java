@@ -51,7 +51,7 @@ public class Sign extends AbstractEvaluator {
 		if (number != null) {
 			return numberSign(number);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public IExpr numberSign(INumber arg1) {

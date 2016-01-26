@@ -75,7 +75,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#round() may throw ArithmeticException
 		}
-		return null;
+		return F.UNEVALED;
 	}
  
 	@Override

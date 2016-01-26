@@ -116,16 +116,16 @@ public class Prime extends AbstractFunctionEvaluator {
 			try {
 				long nthPrime = ((IInteger) ast.arg1()).toLong();
 				if (nthPrime > 103000000L) {
-					return null;
+					return F.UNEVALED;
 				}
 				return F.integer(nthPrime(nthPrime));
 			} catch (RuntimeException ae) {
 				ae.printStackTrace();
-				return null;
+				return F.UNEVALED;
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

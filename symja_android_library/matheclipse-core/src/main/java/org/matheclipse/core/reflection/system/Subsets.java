@@ -188,7 +188,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList, final int offset) {

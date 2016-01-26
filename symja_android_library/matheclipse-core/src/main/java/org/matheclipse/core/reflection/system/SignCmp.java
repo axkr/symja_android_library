@@ -31,7 +31,7 @@ public class SignCmp extends AbstractEvaluator {
 			final int signum = number.complexSign();
 			return F.integer(signum);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

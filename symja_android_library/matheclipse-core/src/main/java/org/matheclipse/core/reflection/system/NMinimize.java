@@ -55,7 +55,7 @@ public class NMinimize extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars, IExpr objectiveFunction) {

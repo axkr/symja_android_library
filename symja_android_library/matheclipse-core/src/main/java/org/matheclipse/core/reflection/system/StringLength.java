@@ -21,7 +21,7 @@ public class StringLength extends AbstractFunctionEvaluator {
 		if (ast.arg1() instanceof IStringX) {
 			return F.integer(ast.arg1().toString().length());
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

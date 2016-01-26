@@ -74,7 +74,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

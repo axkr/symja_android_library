@@ -48,7 +48,7 @@ public class Partition extends AbstractFunctionEvaluator {
 				return result;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

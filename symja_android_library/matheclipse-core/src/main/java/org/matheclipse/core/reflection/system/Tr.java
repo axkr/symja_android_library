@@ -40,7 +40,7 @@ public class Tr extends AbstractEvaluator {
 			}
 			return tr;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

@@ -60,7 +60,7 @@ public class ReplaceList extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (!ToggleFeature.REPLACE_LIST) {
-			return null;
+			return F.UNEVALED;
 		}
 
 		Validate.checkRange(ast, 3, 4);

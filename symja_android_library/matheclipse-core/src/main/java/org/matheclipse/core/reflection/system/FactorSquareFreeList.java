@@ -47,7 +47,7 @@ public class FactorSquareFreeList extends Factor {
 				jce.printStackTrace();
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

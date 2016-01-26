@@ -318,7 +318,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 
 	@Override

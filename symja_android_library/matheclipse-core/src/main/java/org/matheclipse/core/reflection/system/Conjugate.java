@@ -57,7 +57,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 				return result;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	/**

@@ -36,7 +36,7 @@ public class MapAt extends AbstractFunctionEvaluator {
 				return null;
 			}
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

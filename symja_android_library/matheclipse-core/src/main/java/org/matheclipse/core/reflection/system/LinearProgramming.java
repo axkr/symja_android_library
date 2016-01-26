@@ -52,7 +52,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 				IAST arg2 = (IAST) ast.arg2();
 				IAST arg3 = (IAST) ast.arg3();
 				if (arg2.size() != arg3.size()) {
-					return null;
+					return F.UNEVALED;
 				}
 				double[] arg2D;
 				double[] arg3D;
@@ -99,6 +99,6 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 			// }
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

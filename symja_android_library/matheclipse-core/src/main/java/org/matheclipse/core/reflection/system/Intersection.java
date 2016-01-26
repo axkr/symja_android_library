@@ -41,7 +41,7 @@ public class Intersection extends AbstractFunctionEvaluator {
 			((IAST) ast.arg1()).args().intersection(result, ((IAST) ast.arg2()).args());
 			return result.args().sort(ExprComparator.CONS);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

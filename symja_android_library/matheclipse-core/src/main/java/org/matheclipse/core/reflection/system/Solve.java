@@ -677,7 +677,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (expr.isMember(predicate, true)) {
 				engine.printMessage(
 						"Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
-				return null;
+				return F.UNEVALED;
 			}
 			exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 			exprAnalyzer.simplifyAndAnalyze();
@@ -701,7 +701,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}
-			return null;
+			return F.UNEVALED;
 		}
 	}
 }

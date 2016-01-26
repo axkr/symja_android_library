@@ -34,14 +34,14 @@ public class Norm extends AbstractEvaluator {
 								arg2.inverse());
 					}
 				}
-				return null;
+				return F.UNEVALED;
 			}
 			return F.Sqrt(((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Sqr(F.Abs(F.Null)), F.Null)));
 		}
 		if (arg1.isNumber()) {
 			if (ast.size() == 3) {
  				IExpr arg2 = ast.arg2();
-				return null;
+ 				return F.UNEVALED;
 			}
 			// absolute Value of a number
 			return ((INumber) arg1).eabs();
@@ -49,12 +49,12 @@ public class Norm extends AbstractEvaluator {
 		if (arg1.isNumericFunction()) {
 			if (ast.size() == 3) {
 				IExpr arg2 = ast.arg2();
-				return null;
+				return F.UNEVALED;
 			}
 			// absolute Value
 			return F.Abs(arg1);
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }

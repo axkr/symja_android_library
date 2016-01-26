@@ -43,7 +43,7 @@ public class Transpose extends AbstractEvaluator {
 			transposedMatrix.addEvalFlags(IAST.IS_MATRIX);
 			return transposedMatrix;
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 	protected IExpr transform(final IExpr expr) {

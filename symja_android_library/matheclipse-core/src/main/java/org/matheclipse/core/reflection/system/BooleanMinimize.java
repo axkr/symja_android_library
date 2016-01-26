@@ -39,10 +39,10 @@ public class BooleanMinimize extends AbstractFunctionEvaluator {
 				if (Config.DEBUG) {
 					bfc.printStackTrace();
 				}
-				return null;
+				return F.UNEVALED;
 			}
 		}
 
-		return null;
+		return F.UNEVALED;
 	}
 }

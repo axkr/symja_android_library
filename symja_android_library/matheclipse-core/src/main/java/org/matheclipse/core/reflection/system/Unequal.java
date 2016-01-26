@@ -50,7 +50,7 @@ public class Unequal extends Equal {
 						return F.False;
 					}
 					if (b == COMPARE_RESULT.UNDEFINED) {
-						return null;
+						return F.UNEVALED;
 					}
 				}
 				i++;
@@ -58,7 +58,7 @@ public class Unequal extends Equal {
 			return F.True;
 
 		}
-		return null;
+		return F.UNEVALED;
 	}
 
 }
