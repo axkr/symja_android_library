@@ -31,7 +31,7 @@ public class Break extends AbstractCoreFunctionEvaluator {
 		}
 		Validate.checkSize(ast, 1);
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

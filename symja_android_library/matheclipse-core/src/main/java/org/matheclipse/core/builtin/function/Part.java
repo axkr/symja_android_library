@@ -43,7 +43,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 				return getPart((IAST) arg1, evaledAST, 2, engine);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private IExpr getPart(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
@@ -74,7 +74,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					final int indx = Validate.checkIntType(lst, i, Integer.MIN_VALUE);
 					ires = getIndex(arg1, indx);
 					if (ires == null) {
-						return F.UNEVALED;
+						return F.NIL;
 					}
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
@@ -92,7 +92,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			return result;
 		}
 		engine.printMessage("Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

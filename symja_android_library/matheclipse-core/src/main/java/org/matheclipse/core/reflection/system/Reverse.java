@@ -21,7 +21,7 @@ public class Reverse extends AbstractFunctionEvaluator {
 			((IAST) functionList.arg1()).args().reverse(result);
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

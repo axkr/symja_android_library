@@ -22,11 +22,11 @@ public class Taylor extends AbstractFunctionEvaluator {
 			final int lowerLimit = Validate.checkIntType(list, 2, Integer.MIN_VALUE);
 			if (lowerLimit != 0) {
 				// TODO support other cases than 0
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			final int upperLimit = Validate.checkIntType(list, 3, Integer.MIN_VALUE);
 			if (upperLimit < 0) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			IAST fadd = F.Plus();
 			fadd.add(F.ReplaceAll(ast.arg1(), F.Rule(list.arg1(), list.arg2())));
@@ -41,6 +41,6 @@ public class Taylor extends AbstractFunctionEvaluator {
 			return fadd;
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

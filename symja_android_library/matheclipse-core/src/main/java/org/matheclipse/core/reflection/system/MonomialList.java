@@ -92,7 +92,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				jce.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

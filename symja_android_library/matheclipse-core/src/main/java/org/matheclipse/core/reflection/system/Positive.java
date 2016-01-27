@@ -25,7 +25,7 @@ public class Positive extends AbstractEvaluator {
 		if (ast.arg1().isNumber()) {
 			return F.False;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

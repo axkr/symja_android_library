@@ -38,7 +38,7 @@ public class Implies extends AbstractCoreFunctionEvaluator {
 		if (arg1.equals(arg2)) {
 			return F.True;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

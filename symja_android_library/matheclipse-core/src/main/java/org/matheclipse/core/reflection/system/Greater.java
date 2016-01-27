@@ -170,7 +170,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			return result;
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

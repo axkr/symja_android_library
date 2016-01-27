@@ -36,11 +36,11 @@ public class Delete extends AbstractCoreFunctionEvaluator {
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}
-				return F.UNEVALED;
+				return F.NIL;
 			}
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

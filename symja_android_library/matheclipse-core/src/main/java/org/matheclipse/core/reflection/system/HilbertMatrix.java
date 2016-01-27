@@ -43,7 +43,7 @@ public class HilbertMatrix extends AbstractFunctionEvaluator {
 			rowSize = Validate.checkIntType(ast, 1);
 			columnSize = Validate.checkIntType(ast, 2);
 		} else {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 
 		final IAST resultList = F.List();

@@ -38,7 +38,7 @@ public class Together extends AbstractFunctionEvaluator {
 	 *         evaluated.
 	 */
 	private static IAST togetherForEach(final IAST ast) {
-		IAST result = F.UNEVALED;
+		IAST result = F.NIL;
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isAST()) {
 				IExpr temp = togetherNull((IAST) ast.get(i));
@@ -78,7 +78,7 @@ public class Together extends AbstractFunctionEvaluator {
 		if (evaled) {
 			return temp;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class Together extends AbstractFunctionEvaluator {
 	 */
 	private static IExpr togetherPlus(IAST plusAST) {
 		if (plusAST.size() <= 2) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IAST numerator = F.ast(F.Plus, plusAST.size(), false);
 		IAST denominator = F.ast(F.Times, plusAST.size(), false);
@@ -112,7 +112,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 		}
 		if (!evaled) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IAST ni;
 		for (int i = 1; i < plusAST.size(); i++) {
@@ -137,7 +137,7 @@ public class Together extends AbstractFunctionEvaluator {
 			i++;
 		}
 		if (denominator.size() == 1) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 
 		IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
@@ -153,7 +153,7 @@ public class Together extends AbstractFunctionEvaluator {
 					}
 					return F.Times(result[0], result[1], pInv);
 				}
-				return F.UNEVALED;
+				return F.NIL;
 			} catch (JASConversionException jce) {
 				if (Config.DEBUG) {
 					jce.printStackTrace();
@@ -173,7 +173,7 @@ public class Together extends AbstractFunctionEvaluator {
 			return togetherPlus(ast);
 		} else if (ast.isTimes() || ast.isPower()) {
 			try {
-				IAST result = F.UNEVALED;
+				IAST result = F.NIL;
 				if (ast.isTimes()) {
 					result = togetherForEach(ast);
 				} else {
@@ -195,7 +195,7 @@ public class Together extends AbstractFunctionEvaluator {
 					}
 					return temp;
 				}
-				return F.UNEVALED.optional(Cancel.cancelPowerTimes(ast));
+				return F.NIL.optional(Cancel.cancelPowerTimes(ast));
 			} catch (JASConversionException jce) {
 				// if (Config.DEBUG) {
 				jce.printStackTrace();
@@ -203,7 +203,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public Together() {

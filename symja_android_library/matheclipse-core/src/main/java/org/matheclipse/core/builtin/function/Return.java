@@ -24,7 +24,7 @@ public class Return extends AbstractCoreFunctionEvaluator {
 		}
 		Validate.checkRange(ast, 1, 2);
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

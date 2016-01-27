@@ -32,10 +32,10 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		if (ast.size() >= 3) {
 			try {
 				if (ast.arg1().isVector() < 0) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				if (ast.arg2().isVector() < 0) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				TermOrder termOrder = TermOrderByName.Lexicographic;
 				if (ast.size() > 3) {
@@ -45,7 +45,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				if (ast.size() >= 3) {
 					IAST vars = (IAST) ast.arg2();
 					if (vars.size() <= 1) {
-						return F.UNEVALED;
+						return F.NIL;
 					}
 					List<ISymbol> varList = new ArrayList<ISymbol>(vars.size() - 1);
 					String[] pvars = new String[vars.size() - 1];
@@ -61,7 +61,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 					// } else {
 					for (int i = 1; i < vars.size(); i++) {
 						if (!vars.get(i).isSymbol()) {
-							return F.UNEVALED;
+							return F.NIL;
 						}
 						varList.add((ISymbol) vars.get(i));
 						pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
@@ -95,7 +95,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

@@ -59,7 +59,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 				}
 				return F.Null;
 			}
-			return F.UNEVALED;
+			return F.NIL;
 		}
 	}
 
@@ -80,7 +80,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

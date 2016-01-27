@@ -61,7 +61,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() may throw ArithmeticException
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public IExpr evalFloor(IExpr arg1) {

@@ -21,7 +21,7 @@ public class Defer extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (!ToggleFeature.DEFER) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = engine.evaluate(ast.arg1());

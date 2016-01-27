@@ -43,7 +43,7 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

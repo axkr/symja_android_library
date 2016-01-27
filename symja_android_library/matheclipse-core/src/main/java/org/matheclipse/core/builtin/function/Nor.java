@@ -46,7 +46,7 @@ public class Nor extends AbstractCoreFunctionEvaluator {
 			}
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public void setUp(final ISymbol symbol) {

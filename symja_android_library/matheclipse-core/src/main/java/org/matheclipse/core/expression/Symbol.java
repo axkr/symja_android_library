@@ -278,7 +278,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			}
 			return IExpr.ofNullable(temp);
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */

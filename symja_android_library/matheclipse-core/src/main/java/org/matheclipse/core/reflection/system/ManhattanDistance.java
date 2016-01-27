@@ -42,7 +42,7 @@ public class ManhattanDistance extends AbstractEvaluator {
 				return plusAST;
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

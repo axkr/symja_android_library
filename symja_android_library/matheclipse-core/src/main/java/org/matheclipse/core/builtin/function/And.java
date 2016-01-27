@@ -103,7 +103,7 @@ public class And extends AbstractCoreFunctionEvaluator {
 
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

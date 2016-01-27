@@ -39,7 +39,7 @@ public class Union extends AbstractFunctionEvaluator {
 			((IAST) ast.arg1()).args().union(result, ((IAST) ast.arg2()).args());
 			return result.args().sort(ExprComparator.CONS);
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

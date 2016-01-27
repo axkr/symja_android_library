@@ -27,7 +27,7 @@ public class Riffle extends AbstractCoreFunctionEvaluator {
 				return riffleAtom(list, arg2);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IExpr riffleAtom(IAST arg1, IExpr arg2) {

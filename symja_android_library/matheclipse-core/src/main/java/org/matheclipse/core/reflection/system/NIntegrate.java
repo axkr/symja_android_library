@@ -93,7 +93,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			}
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

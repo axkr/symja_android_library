@@ -194,7 +194,7 @@ public class Replace extends AbstractEvaluator {
 		} catch (WrongArgumentType wat) {
 			engine.printMessage(wat.getMessage());
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

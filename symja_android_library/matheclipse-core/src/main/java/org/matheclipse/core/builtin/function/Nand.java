@@ -46,7 +46,7 @@ public class Nand extends AbstractCoreFunctionEvaluator {
 			}
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

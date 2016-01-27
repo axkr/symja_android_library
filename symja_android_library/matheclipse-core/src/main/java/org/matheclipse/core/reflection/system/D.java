@@ -120,7 +120,7 @@ public class D extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() < 3) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 
 		IExpr fx = ast.arg1();
@@ -156,7 +156,7 @@ public class D extends AbstractFunctionEvaluator {
 				return fx;
 
 			}
-			return F.UNEVALED;
+			return F.NIL;
 
 		}
 
@@ -249,7 +249,7 @@ public class D extends AbstractFunctionEvaluator {
 
 						}
 					}
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				return getDerivativeArg1(x, listArg1.arg1(), header);
 			} else if (listArg1.size() == 3) {
@@ -258,7 +258,7 @@ public class D extends AbstractFunctionEvaluator {
 
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

@@ -25,7 +25,7 @@ public class RandomSample extends AbstractFunctionEvaluator {
 			return shuffle((IAST) ast.arg1());
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IAST shuffle(IAST list) {

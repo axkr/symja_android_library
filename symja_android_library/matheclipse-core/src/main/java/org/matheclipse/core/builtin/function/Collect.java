@@ -52,7 +52,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos, IExpr head,

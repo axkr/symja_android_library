@@ -30,7 +30,7 @@ public class Module extends AbstractCoreFunctionEvaluator {
 			return evalModule(lst, arg2, engine);
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

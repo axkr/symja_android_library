@@ -22,7 +22,7 @@ public class Most extends AbstractFunctionEvaluator {
 		if (sublist.size() > 1) {
 			return sublist.removeAtClone(sublist.size() - 1);
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

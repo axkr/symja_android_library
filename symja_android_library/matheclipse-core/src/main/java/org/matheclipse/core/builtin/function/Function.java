@@ -40,7 +40,7 @@ public class Function extends AbstractCoreFunctionEvaluator {
 			}
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private Map<IExpr, IExpr> getRulesMap(final IAST symbolSlots, final IAST ast) {

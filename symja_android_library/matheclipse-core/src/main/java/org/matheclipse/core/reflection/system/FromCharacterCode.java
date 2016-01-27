@@ -42,7 +42,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 			return StringX.valueOf(ch);
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

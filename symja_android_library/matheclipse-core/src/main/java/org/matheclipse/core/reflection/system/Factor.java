@@ -67,7 +67,7 @@ public class Factor extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree)

@@ -226,7 +226,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (engine.isNumericMode()) {
 			return numericNumber();
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

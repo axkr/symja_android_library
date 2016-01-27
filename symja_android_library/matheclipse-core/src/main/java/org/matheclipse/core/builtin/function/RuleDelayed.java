@@ -27,7 +27,7 @@ public class RuleDelayed extends AbstractCoreFunctionEvaluator {
 			return RuleDelayed(leftHandSide, ast.arg2());
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

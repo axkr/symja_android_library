@@ -236,11 +236,11 @@ public class Permutations extends AbstractFunctionEvaluator {
 			int k = f.size() - 1;
 			if (ast.size() == 3) {
 				if (!ast.arg2().isInteger()) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				k = Validate.checkIntType(ast, 2);
 				if (k > f.size() - 1) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 			}
 			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()), 1);
@@ -250,7 +250,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			return result;
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

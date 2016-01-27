@@ -29,7 +29,7 @@ public class Nest extends AbstractCoreFunctionEvaluator {
 			final int n = Validate.checkIntType(arg3);
 			return nest(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), engine);
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IExpr nest(final IExpr expr, final int n, final Function<IExpr, IExpr> fn, EvalEngine engine) {

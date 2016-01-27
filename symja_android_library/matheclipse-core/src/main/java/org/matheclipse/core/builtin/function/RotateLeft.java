@@ -37,7 +37,7 @@ public class RotateLeft extends AbstractCoreFunctionEvaluator {
 			}
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

@@ -35,7 +35,7 @@ public class RandomInteger extends AbstractFunctionEvaluator {
 			return F.integer(r);
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

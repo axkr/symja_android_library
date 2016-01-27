@@ -30,7 +30,7 @@ public class Divergence extends AbstractFunctionEvaluator {
 			return divergenceValue;
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

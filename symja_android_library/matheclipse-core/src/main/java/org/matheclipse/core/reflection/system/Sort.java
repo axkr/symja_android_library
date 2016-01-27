@@ -36,6 +36,6 @@ public class Sort extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

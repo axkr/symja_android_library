@@ -60,7 +60,7 @@ public class Max extends AbstractFunctionEvaluator {
 		if (f.size() > 1) {
 			f.add(1, max1);
 			if (!evaled) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			return f;
 		} else {

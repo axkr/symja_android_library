@@ -17,7 +17,7 @@ import org.apache.commons.math4.exception.MathArithmeticException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.expression.ASTUnevaluated;
+import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -115,7 +115,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         is non-null, otherwise an empty {@code Optional}
 	 */
 	public static IExpr ofNullable(IExpr value) {
-		return value == null ? F.UNEVALED : value;
+		return value == null ? F.NIL : value;
 	}
 
 	/**
@@ -275,7 +275,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         is not possible (i.e. the evaluation doesn't change the object).
 	 */
 	default IExpr evaluate(EvalEngine engine) {
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**
@@ -1637,7 +1637,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return <code>that</code> if <code>that!=null</code> or <code>this</code>
 	 *         in all other cases.
-	 * @see ASTUnevaluated#optional(IExpr)
+	 * @see NILPointer#optional(IExpr)
 	 */
 	public IExpr optional(final IExpr that);
 

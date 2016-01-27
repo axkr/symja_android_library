@@ -43,7 +43,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private IAST createSinglePartition(final IAST listArg0, final ISymbol sym, final int[] permutationsIndex,

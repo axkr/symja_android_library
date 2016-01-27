@@ -63,7 +63,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

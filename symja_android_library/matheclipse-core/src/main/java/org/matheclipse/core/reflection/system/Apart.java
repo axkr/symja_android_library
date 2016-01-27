@@ -69,7 +69,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			return arg1;
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

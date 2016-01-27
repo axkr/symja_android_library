@@ -452,6 +452,6 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

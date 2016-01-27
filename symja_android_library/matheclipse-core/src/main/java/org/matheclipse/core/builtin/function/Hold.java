@@ -14,7 +14,7 @@ public class Hold extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		return F.UNEVALED;
+		return F.NIL;
 	}
  
 	@Override

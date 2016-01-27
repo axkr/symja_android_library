@@ -44,7 +44,7 @@ public class DeleteDuplicates extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

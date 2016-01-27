@@ -59,7 +59,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

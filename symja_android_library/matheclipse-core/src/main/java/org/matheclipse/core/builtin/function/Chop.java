@@ -46,7 +46,7 @@ public class Chop extends AbstractCoreFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

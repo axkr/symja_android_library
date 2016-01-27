@@ -39,11 +39,11 @@ public class PolynomialQuotient extends PolynomialQuotientRemainder {
 				}
 				return result[0];
 			}
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IExpr[] result = quotientRemainder(arg1, arg2, variable);
 		if (result == null) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		return result[0];
 	}

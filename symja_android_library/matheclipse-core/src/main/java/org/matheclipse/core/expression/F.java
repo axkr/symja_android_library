@@ -91,12 +91,12 @@ public class F {
 	};
 
 	/**
-	 * The constant object which indicates in the evaluation process that no
-	 * evaluation was possible (i.e. no further definition was found to create a
-	 * new expression from the existing one).
+	 * The constant object <code>NIL</code> (not in list) indicates in the
+	 * evaluation process that no evaluation was possible (i.e. no further
+	 * definition was found to create a new expression from the existing one).
 	 */
-	public static ASTUnevaluated UNEVALED = new ASTUnevaluated();
-	
+	public static NILPointer NIL = new NILPointer();
+
 	public final static ISymbol Catalan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
 	public final static ISymbol ComplexInfinity = initFinalSymbol(
@@ -1121,7 +1121,7 @@ public class F {
 	 * Constant double &quot;1.0&quot;
 	 */
 	public final static INum CND1 = Num.valueOf(-1.0);
-	
+
 	/**
 	 * Constant double &quot;0.0&quot;
 	 */
@@ -2410,8 +2410,8 @@ public class F {
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 *         was possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()
 	 */

@@ -26,7 +26,7 @@ public class Rule extends AbstractCoreFunctionEvaluator {
 		IExpr arg2 = engine.evaluateNull(ast.arg2());
 		if (!arg2.isPresent()) {
 			if (leftHandSide.equals(ast.arg1())) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			return Rule(leftHandSide, ast.arg2());
 		}

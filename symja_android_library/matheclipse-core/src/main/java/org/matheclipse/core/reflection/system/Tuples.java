@@ -50,7 +50,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 				// because of toInt() method
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

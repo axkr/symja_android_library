@@ -74,6 +74,6 @@ public class Fit extends AbstractFunctionEvaluator {
 			return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), (ISymbol) ast.arg3());
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

@@ -18,7 +18,7 @@ public class Join extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 		if (ast.args().any(AtomQ.CONST)) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		final IAST result = F.List();
 		for (int i = 1; i < ast.size(); i++) {

@@ -67,7 +67,7 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 		} catch (ArithmeticException ae) {
 			// because of toInt() method
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

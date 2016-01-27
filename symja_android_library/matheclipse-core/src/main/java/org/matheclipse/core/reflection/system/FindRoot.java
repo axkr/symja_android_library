@@ -75,7 +75,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function,

@@ -38,7 +38,7 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 		} catch (final ArithmeticException e) {
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

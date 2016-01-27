@@ -34,7 +34,7 @@ public class Take extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public IAST take(final IAST list, final int level, final ISequence[] sequ) {

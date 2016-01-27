@@ -32,7 +32,7 @@ public class Timing extends AbstractEvaluator {
 					result);
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

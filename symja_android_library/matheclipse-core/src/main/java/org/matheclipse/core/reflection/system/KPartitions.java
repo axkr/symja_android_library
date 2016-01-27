@@ -218,6 +218,6 @@ public class KPartitions extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

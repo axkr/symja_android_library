@@ -46,7 +46,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

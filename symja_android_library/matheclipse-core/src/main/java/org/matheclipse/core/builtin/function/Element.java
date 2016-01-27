@@ -39,7 +39,7 @@ public class Element extends AbstractCoreFunctionEvaluator {
 				return assumeDomain(arg1, (ISymbol) arg2);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private IExpr assumeDomain(final IExpr arg1, final ISymbol arg2) {
@@ -79,7 +79,7 @@ public class Element extends AbstractCoreFunctionEvaluator {
 				return truthValue;
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

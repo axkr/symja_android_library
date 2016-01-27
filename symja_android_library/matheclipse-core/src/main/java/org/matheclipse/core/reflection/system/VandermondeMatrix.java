@@ -47,6 +47,6 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 			return matrix;
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

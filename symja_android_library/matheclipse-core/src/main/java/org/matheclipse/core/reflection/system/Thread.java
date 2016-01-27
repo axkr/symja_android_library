@@ -20,7 +20,7 @@ public class Thread extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		if (!(ast.arg1().isAST())) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		// LevelSpec level = null;
 		// if (functionList.size() == 4) {
@@ -36,7 +36,7 @@ public class Thread extends AbstractFunctionEvaluator {
 		if (list.size() > 1) {
 			return threadList(list, head, list.head());
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

@@ -46,7 +46,7 @@ public class Cross extends AbstractFunctionEvaluator {
 				return List(Negate(v1.arg2()), v1.arg1());
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

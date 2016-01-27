@@ -27,7 +27,7 @@ public class FromContinuedFraction extends AbstractEvaluator {
 		}
 		IAST list = (IAST) ast.arg1();
 		if (list.size() < 2) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		int size = list.size() - 1;
 		IExpr result = list.get(size--);

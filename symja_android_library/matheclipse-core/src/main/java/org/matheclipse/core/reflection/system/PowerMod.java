@@ -24,7 +24,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 
 		for (int i = 1; i < ast.size(); i++) {
 			if (!(ast.get(i).isInteger())) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 		}
 		IInteger arg1 = (IInteger) ast.get(1);
@@ -40,7 +40,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 				ae.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

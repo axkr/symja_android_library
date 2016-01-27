@@ -47,7 +47,7 @@ public class MatrixRank extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	} 
 
 	@Override

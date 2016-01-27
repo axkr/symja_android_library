@@ -54,17 +54,17 @@ public class Plot3D extends AbstractEvaluator {
 				final IExpr d = engine.evaluate(N(lst2.get(3)));
 				if ((!(a instanceof INum)) || (!(b instanceof INum)) || (!(c instanceof INum))
 						|| (!(d instanceof INum))) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				final double ad = ((INum) a).getRealPart();
 				final double bd = ((INum) b).getRealPart();
 				final double cd = ((INum) c).getRealPart();
 				final double dd = ((INum) d).getRealPart();
 				if (bd <= ad) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				if (dd <= cd) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				// double y0d = -10.0f;
 				// double y1d = 10.0f;

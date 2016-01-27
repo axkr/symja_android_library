@@ -85,7 +85,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 
 					}
 				}
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			if (ast.head().isAST(F.Derivative, 3)) {
 				// Derivative(n, m)
@@ -105,10 +105,10 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 
 					}
 				}
-				return F.UNEVALED;
+				return F.NIL;
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

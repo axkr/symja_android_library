@@ -29,14 +29,14 @@ public class IntegerExponent extends AbstractFunctionEvaluator {
 			if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
 				base = (IInteger) arg2;
 			} else {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 		}
 		IExpr arg1 = ast.arg1();
 		if (arg1.isInteger()) {
 			return ((IInteger) arg1).exponent(base);
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

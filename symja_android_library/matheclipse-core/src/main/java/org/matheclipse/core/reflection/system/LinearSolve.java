@@ -37,7 +37,7 @@ public class LinearSolve extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

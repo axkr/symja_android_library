@@ -35,11 +35,11 @@ public class NRoots extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() != 2) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IExpr temp = roots(ast, engine);
 		if (temp == null || !temp.isList()) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IAST list = (IAST) temp;
 		IAST result = F.List();

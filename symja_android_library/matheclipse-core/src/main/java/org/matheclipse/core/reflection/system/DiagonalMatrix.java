@@ -45,7 +45,7 @@ public class DiagonalMatrix extends AbstractFunctionEvaluator {
 
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 
 	}
 

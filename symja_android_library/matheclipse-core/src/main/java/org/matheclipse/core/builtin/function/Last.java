@@ -26,6 +26,6 @@ public class Last extends AbstractCoreFunctionEvaluator {
 				return list.last();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

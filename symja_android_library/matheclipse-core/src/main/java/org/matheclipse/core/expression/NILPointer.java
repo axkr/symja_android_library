@@ -10,26 +10,28 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * A class which indicates in the evaluation process that no evaluation was
- * possible (i.e. no further definition was found to create a new expression
- * from the existing one).
+ * The class <code>NILPointer</code> implements the constant object
+ * <code>F#NIL</code> (not in list), which indicates in the evaluation process
+ * that no evaluation was possible (i.e. no further definition was found to
+ * create a new expression from the existing one).
  * 
- * @see F#UNEVALED
+ * @see F#NIL
  */
-public class ASTUnevaluated extends AbstractAST {
+public class NILPointer extends AbstractAST {
 
 	private static final long serialVersionUID = -3552302876858011292L;
 
 	private final static int SIZE = 0;
 
 	/**
-	 * A class which indicates in the evaluation process that no evaluation was
-	 * possible (i.e. no further definition was found to create a new expression
-	 * from the existing one).
+	 * The class <code>NILPointer</code> implements the constant object
+	 * <code>F#NIL</code> (not in list), which indicates in the evaluation
+	 * process that no evaluation was possible (i.e. no further definition was
+	 * found to create a new expression from the existing one).
 	 * 
-	 * @see F#UNEVALED
+	 * @see F#NIL
 	 */
-	protected ASTUnevaluated() {
+	protected NILPointer() {
 	}
 
 	@Override

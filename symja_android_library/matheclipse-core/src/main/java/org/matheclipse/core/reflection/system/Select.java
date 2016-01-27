@@ -29,7 +29,7 @@ public class Select extends AbstractEvaluator {
 				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2), resultLimit);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

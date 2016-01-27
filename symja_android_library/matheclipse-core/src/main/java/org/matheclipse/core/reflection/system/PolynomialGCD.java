@@ -76,7 +76,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {

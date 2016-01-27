@@ -211,7 +211,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		if (fApcomplex.imag().equals(Apfloat.ZERO)) {
 			return ApfloatNum.valueOf(fApcomplex.real());
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

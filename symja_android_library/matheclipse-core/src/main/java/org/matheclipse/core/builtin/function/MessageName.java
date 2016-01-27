@@ -28,7 +28,7 @@ public class MessageName extends AbstractCoreFunctionEvaluator {
 		}
 		IExpr arg2 = engine.evaluate(ast.arg2());
 		if (arg2 instanceof IStringX || arg2.isSymbol()) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		if (!ast.arg2().isAST(F.Set, 3)) { // instanceof IStringX) &&
 											// !ast.arg2().isSymbol()) {

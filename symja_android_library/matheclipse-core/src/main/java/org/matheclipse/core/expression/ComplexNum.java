@@ -214,7 +214,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (F.isZero(getImaginaryPart())) {
 			return F.num(getRealPart());
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

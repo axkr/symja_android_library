@@ -50,7 +50,7 @@ public class AppendTo extends AbstractCoreFunctionEvaluator {
 		if (results != null) {
 			return results[1];
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

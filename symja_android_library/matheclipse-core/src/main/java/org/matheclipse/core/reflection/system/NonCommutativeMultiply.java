@@ -14,7 +14,7 @@ public class NonCommutativeMultiply extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST lst, EvalEngine engine) {
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

@@ -33,11 +33,11 @@ public class PolynomialRemainder extends PolynomialQuotientRemainder {
 			if (option != null && option.isSignedNumber()) {
 				IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 				if (result == null) {
-					return F.UNEVALED;
+					return F.NIL;
 				}
 				return result[1];
 			}
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		IExpr[] result = quotientRemainder(arg1, arg2, variable);
 		if (result == null) {

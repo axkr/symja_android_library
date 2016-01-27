@@ -30,7 +30,7 @@ public class Names extends AbstractFunctionEvaluator {
 		if (ast.arg1() instanceof IStringX) {
 			return getNamesByPrefix(ast.arg1().toString());
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IAST getNamesByPrefix(String name) {

@@ -37,7 +37,7 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 		} catch (ArithmeticException ae) {
 			// ISignedNumber#floor() or #ceil() may throw ArithmeticException
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	private IExpr signedNumberIntegerPart(ISignedNumber arg1) {

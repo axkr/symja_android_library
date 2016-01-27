@@ -34,10 +34,10 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 		for (int i = 1; i < ast.size(); i++) {
 			arg = ast.get(i);
 			if (!arg.isInteger()) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			if (!((IInteger) arg).isPositive()) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 		}
 		// all arguments are positive integers now
@@ -76,7 +76,7 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 				ae.printStackTrace();
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	/**

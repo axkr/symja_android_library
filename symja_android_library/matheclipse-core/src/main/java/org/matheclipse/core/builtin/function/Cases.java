@@ -147,7 +147,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 				return cases((IAST) arg1, arg2);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	public static IAST cases(final IAST ast, final IExpr pattern) {

@@ -718,7 +718,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-				if (result != null && result != F.UNEVALED) {
+				if (result != null && result != F.NIL) {
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
@@ -1008,7 +1008,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return result;
 
 			}
-			return F.UNEVALED;
+			return F.NIL;
 		} finally {
 			if (fTraceMode) {
 				fTraceStack.tearDown(fRecursionCounter);

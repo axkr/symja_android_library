@@ -27,7 +27,7 @@ public class Rest extends AbstractCoreFunctionEvaluator {
 			return sublist.removeAtClone(1);
 		}
  
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

@@ -22,7 +22,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 			return engine.evaluate(ast.arg1());
 		}
 		if (engine.isEvalLHSMode()) {
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		throw new ConditionException(ast);
 	}

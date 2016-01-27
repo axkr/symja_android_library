@@ -33,7 +33,7 @@ public class Refine extends AbstractCoreFunctionEvaluator {
 				engine.setAssumptions(null);
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

@@ -35,7 +35,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 			if (temp != null) {
 				return engine.evaluate(temp);
 			}
-			return F.UNEVALED;
+			return F.NIL;
 		}
 		Object[] result;
 		result = createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);

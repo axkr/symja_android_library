@@ -45,7 +45,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 			}
 			return arg1;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

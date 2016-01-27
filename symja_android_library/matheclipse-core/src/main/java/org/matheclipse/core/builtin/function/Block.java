@@ -29,7 +29,7 @@ public class Block extends AbstractCoreFunctionEvaluator {
 			return engine.evalBlock(ast.arg2(), blockVariablesList);
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

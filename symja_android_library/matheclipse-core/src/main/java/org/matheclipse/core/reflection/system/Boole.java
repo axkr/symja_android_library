@@ -31,7 +31,7 @@ public class Boole extends AbstractFunctionEvaluator {
 				return F.C0;
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

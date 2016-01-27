@@ -27,7 +27,7 @@ public class Negative extends AbstractEvaluator {
 		if (arg1.isNumber()) {
 			return F.False;
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

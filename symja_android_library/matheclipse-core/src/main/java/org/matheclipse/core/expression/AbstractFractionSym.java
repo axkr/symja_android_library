@@ -268,7 +268,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return numericNumber();
 		}
 		final INumber cTemp = normalize();
-		return (cTemp == this) ? F.UNEVALED : cTemp;
+		return (cTemp == this) ? F.NIL : cTemp;
 	}
 
 	@Override

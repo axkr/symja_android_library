@@ -31,6 +31,6 @@ public class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 					.diagonalMatrix(valuesForIdentityMatrix, dim[0]))));
 		}
 
-		return F.UNEVALED;
+		return F.NIL;
 	}
 }

@@ -41,7 +41,7 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 		if (negExpr != null) {
 			return Plus(Negate(Pi), ArcCos(negExpr));
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

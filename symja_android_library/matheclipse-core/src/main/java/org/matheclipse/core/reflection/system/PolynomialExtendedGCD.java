@@ -70,7 +70,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 						e.printStackTrace();
 					}
 				}
-				return F.UNEVALED;
+				return F.NIL;
 			}
 		}
 
@@ -105,7 +105,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 				// }
 			}
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override

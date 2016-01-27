@@ -37,7 +37,7 @@ public class VectorAngle extends AbstractFunctionEvaluator {
 		if (dim1 > (-1) && dim2 > (-1)) {
 			return ArcCos(Divide(Dot(arg1, arg2), Times(Norm(arg1), Norm(arg2))));
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 }

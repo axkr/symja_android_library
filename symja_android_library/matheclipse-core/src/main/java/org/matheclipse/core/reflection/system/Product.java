@@ -126,7 +126,7 @@ public class Product extends Table implements ProductRules {
 			IAST resultList = Times();
 			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
 			if (temp == null || temp.equals(resultList)) {
-				return F.UNEVALED;
+				return F.NIL;
 			}
 			if (ast.size() == 3) {
 				return temp;
@@ -138,7 +138,7 @@ public class Product extends Table implements ProductRules {
 			}
 
 		}
-		return F.UNEVALED;
+		return F.NIL;
 	}
 
 	@Override
