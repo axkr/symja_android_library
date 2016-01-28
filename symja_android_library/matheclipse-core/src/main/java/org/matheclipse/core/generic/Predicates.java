@@ -1,7 +1,5 @@
 package org.matheclipse.core.generic;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
@@ -25,7 +23,7 @@ public class Predicates {
 		private final IAST target;
 
 		private InASTPredicate(IAST target) {
-			this.target = checkNotNull(target);
+			this.target = target;
 		}
 
 		public boolean test(IExpr t) {
@@ -72,8 +70,9 @@ public class Predicates {
 		protected final IAST fAST;
 
 		/**
-		 * Define an unary AST with the header <code>head</code>. The <code>apply()</code> method evaluates the created AST with the
-		 * given expression and checks if the result equals <code>True</code>.
+		 * Define an unary AST with the header <code>head</code>. The
+		 * <code>apply()</code> method evaluates the created AST with the given
+		 * expression and checks if the result equals <code>True</code>.
 		 * 
 		 * @param engine
 		 *            the evaluation engine
@@ -86,7 +85,8 @@ public class Predicates {
 		}
 
 		/**
-		 * Check if the evaluation of an unary AST object gives <code>True</code>, by setting the first argument of the AST to
+		 * Check if the evaluation of an unary AST object gives
+		 * <code>True</code>, by setting the first argument of the AST to
 		 * <code>arg</code>.
 		 * 
 		 */
@@ -99,9 +99,11 @@ public class Predicates {
 	}
 
 	/**
-	 * Check if the evaluation of the <code>expr</code> object gives <code>True</code>. If <code>expr</code> is a symbol, which has
-	 * an assigned <code>Predicate</code> evaluator object, the predicate will be returned. Otherwise a <code>IsUnaryTrue</code>
-	 * predicate will be returned.
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
+	 * assigned <code>Predicate</code> evaluator object, the predicate will be
+	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
+	 * returned.
 	 * 
 	 * @param expr
 	 * @return
@@ -112,9 +114,11 @@ public class Predicates {
 	}
 
 	/**
-	 * Check if the evaluation of the <code>expr</code> object gives <code>True</code>. If <code>expr</code> is a symbol, which has
-	 * an assigned <code>Predicate</code> evaluator object, the predicate will be returned. Otherwise a <code>IsUnaryTrue</code>
-	 * predicate will be returned.
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
+	 * assigned <code>Predicate</code> evaluator object, the predicate will be
+	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
+	 * returned.
 	 * 
 	 * @param engine
 	 * @param head
@@ -132,9 +136,10 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is one of the arguments of the given
-	 * <code>ast</code>. It does not defensively copy the collection passed in, so future changes to it will alter the behavior of
-	 * the predicate.
+	 * Returns a predicate that evaluates to {@code true} if the object
+	 * reference being tested is one of the arguments of the given
+	 * <code>ast</code>. It does not defensively copy the collection passed in,
+	 * so future changes to it will alter the behavior of the predicate.
 	 * 
 	 * @param ast
 	 *            the AST those arguments may contain the function input
@@ -144,9 +149,10 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is one of the arguments of the given
-	 * <code>ast</code>. It does not defensively copy the collection passed in, so future changes to it will alter the behavior of
-	 * the predicate.
+	 * Returns a predicate that evaluates to {@code true} if the object
+	 * reference being tested is one of the arguments of the given
+	 * <code>ast</code>. It does not defensively copy the collection passed in,
+	 * so future changes to it will alter the behavior of the predicate.
 	 * 
 	 * @param expr
 	 *            the expr which may match the function input
@@ -156,7 +162,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the object reference being tested is free of the arguments of the given
+	 * Returns a predicate that evaluates to {@code true} if the object
+	 * reference being tested is free of the arguments of the given
 	 * <code>ast</code>. Calls <code>IExpr#isFree(expr, true)</code>.
 	 * 
 	 * @param expr
@@ -172,7 +179,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the input is an <code>instanceof IPattern</code>.
+	 * Returns a predicate that evaluates to {@code true} if the input is an
+	 * <code>instanceof IPattern</code>.
 	 * 
 	 * @return
 	 */
@@ -186,7 +194,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if <code>input.isNumber()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if
+	 * <code>input.isNumber()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -200,7 +209,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if <code>input.isNumeric()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if
+	 * <code>input.isNumeric()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -214,7 +224,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if <code>input.isSignedNumber()</code> gives {@code true}.
+	 * Returns a predicate that evaluates to {@code true} if
+	 * <code>input.isSignedNumber()</code> gives {@code true}.
 	 * 
 	 * @return
 	 */
@@ -228,7 +239,8 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the <code>input</code> is an AST list, which contains one of the given
+	 * Returns a predicate that evaluates to {@code true} if the
+	 * <code>input</code> is an AST list, which contains one of the given
 	 * <b>header elements</b> at index position <code>0</code>.
 	 * 
 	 */

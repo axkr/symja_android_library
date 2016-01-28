@@ -1,10 +1,7 @@
 package org.matheclipse.core.expression;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.Externalizable;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
