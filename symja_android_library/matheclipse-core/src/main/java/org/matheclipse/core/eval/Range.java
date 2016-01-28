@@ -5,7 +5,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.generic.interfaces.BiFunction;
@@ -14,15 +15,12 @@ import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
-import com.google.common.collect.Sets;
-
 /**
  * Create a range for a given <code>List</code> instance
  * 
  */
 public class Range implements Iterable<IExpr> {
+	 
 	static class RangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;
 
@@ -546,53 +544,6 @@ public class Range implements Iterable<IExpr> {
 		return -1;
 	}
 
-	/**
-	 * Create the (unordered) intersection set from both ranges. Multiple equal
-	 * values in both ranges.
-	 * 
-	 * @param result
-	 * @param secondRange
-	 * @return
-	 */
-	public Collection<IExpr> intersection(Collection<IExpr> result, final Range secondList) {
-		if ((size() == 0) && (secondList.size() == 0)) {
-			return result;
-		}
-		Set<IExpr> set1 = Sets.newHashSet(this);
-		Set<IExpr> set2 = Sets.newHashSet(secondList);
-		Set<IExpr> set3 = Sets.intersection(set1, set2);
-		for (IExpr IExpr : set3) {
-			result.add(IExpr);
-		}
-		// final HashMap<IExpr, MutuableInteger> rangeElementMap = new
-		// HashMap<IExpr,
-		// MutuableInteger>();
-		// IExpr elem;
-		// MutuableInteger counter;
-		// for (int i = fStart; i < fEnd; i++) {
-		// elem = fList.get(i);
-		// counter = rangeElementMap.get(elem);
-		// if (counter == null) {
-		// rangeElementMap.put(elem, new MutuableInteger(1));
-		// } else {
-		// counter.inc();
-		// }
-		// }
-		//
-		// for (int i = secondList.fStart; i < secondList.fEnd; i++) {
-		// elem = secondList.get(i);
-		// counter = rangeElementMap.get(elem);
-		// if (counter != null) {
-		// result.add(elem);
-		// counter.dec();
-		// if (counter.intValue() == 0) {
-		// rangeElementMap.remove(elem);
-		// }
-		// }
-		// }
-		return result;
-	}
-
 	public Iterator<IExpr> iterator() {
 		return new RangeIterator(this);
 	}
@@ -888,26 +839,5 @@ public class Range implements Iterable<IExpr> {
 		}
 		return list;
 	}
-
-	/**
-	 * Create the (unordered) union set from both ranges. Multiple equal values
-	 * in the given ranges are reduced to one value in the result.
-	 * 
-	 * @param result
-	 * @param secondRange
-	 * @return
-	 */
-	public Collection<IExpr> union(final Collection<IExpr> result, final Range secondList) {
-		if ((size() == 0) && (secondList.size() == 0)) {
-			return result;
-		}
-		Set<IExpr> set1 = Sets.newHashSet(this);
-		Set<IExpr> set2 = Sets.newHashSet(secondList);
-		Set<IExpr> set3 = Sets.union(set1, set2);
-		for (IExpr IExpr : set3) {
-			result.add(IExpr);
-		}
-		return result;
-	}
-
+ 
 }
