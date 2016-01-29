@@ -132,8 +132,8 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger[] nthRootSplit(int n);
 
-	public IInteger pow(int exponent);
-
+	public IInteger pow(final long exp) throws ArithmeticException;
+	
 	public IInteger[] primitiveRoots() throws ArithmeticException;
 
 	public IInteger quotient(final IInteger that);

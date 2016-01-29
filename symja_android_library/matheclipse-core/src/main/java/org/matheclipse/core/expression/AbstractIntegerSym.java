@@ -18,8 +18,6 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-import com.google.common.math.LongMath;
-
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
  * 
@@ -395,8 +393,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 
 	/** {@inheritDoc} */
 	@Override
-	public final IInteger pow(final int exponent) throws ArithmeticException {
-		if (exponent < 0) {
+	public final IInteger pow(final long exponent) throws ArithmeticException {
+		if (exponent < 0L) {
 			throw new ArithmeticException("Negative exponent");
 		}
 		if (exponent == 0L) {
@@ -408,12 +406,9 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			return this;
 		}
 		long exp = exponent;
-		if (exponent < 0) {
-			exp *= -1;
-		}
-		int b2pow = 0;
+		long b2pow = 0;
 
-		while ((exp & 1) == 0) {
+		while ((exp & 1) == 0L) {
 			b2pow++;
 			exp >>= 1;
 		}
@@ -421,14 +416,14 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		IInteger r = this;
 		IInteger x = r;
 
-		while ((exp >>= 1) > 0) {
+		while ((exp >>= 1) > 0L) {
 			x = x.multiply(x);
 			if ((exp & 1) != 0) {
 				r = r.multiply(x);
 			}
 		}
 
-		while (b2pow-- > 0) {
+		while (b2pow-- > 0L) {
 			r = r.multiply(r);
 		}
 		return r;
@@ -519,10 +514,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return getBigNumerator().toByteArray();
 	}
 
+	@Override
 	public double getImaginary() {
 		return 0.0;
 	}
 
+	@Override
 	public double getReal() {
 		return doubleValue();
 	}

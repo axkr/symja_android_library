@@ -19,8 +19,9 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	public IInteger ceil();
 
 	public int compareInt(final int value);
-	
+
 	public IRational divideBy(IRational parm1);
+
 	/**
 	 * Check if this number equals the given fraction
 	 * <code>numerator/denominator</code> number.
@@ -33,7 +34,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return
 	 */
 	public boolean equalsFraction(final int numerator, final int denominator);
-	
+
 	/**
 	 * Return the factors paired with their exponents for integer and fractional
 	 * numbers. For factors of the denominator part of fractional numbers the
@@ -81,11 +82,11 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return denominator
 	 */
 	public IInteger getNumerator();
-	
+
 	public IRational multiply(IRational parm1);
-	
+
 	public IRational negate();
-	
+
 	/**
 	 * Return the normalized form of this number (i.e. if the denominator part
 	 * equals one, return the numerator part as an integer number).
@@ -93,7 +94,18 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * @return
 	 */
 	public INumber normalize();
+
+	/**
+	 * Returns this number raised at the specified exponent.
+	 * 
+	 * @param exp
+	 *            the exponent.
+	 * @return <code>this<sup>exp</sup></code>
+	 * @throws ArithmeticException
+	 *             if {@code 0^0} is given.
+	 */
+	public IRational pow(final long exp) throws ArithmeticException;
 	
 	public IRational subtract(IRational parm1);
-	
+
 }

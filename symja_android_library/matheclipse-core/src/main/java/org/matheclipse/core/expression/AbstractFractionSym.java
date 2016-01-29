@@ -502,6 +502,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 *            Rational to subtract.
 	 * @return Difference of <code>this</code> and <code>other</code>.
 	 */
+	@Override
 	public IFraction sub(IFraction other) {
 		return add(other.negate());
 	}
@@ -549,10 +550,12 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		return super.times(that);
 	}
 	
+	@Override
 	public double getImaginary() {
 		return 0.0;
 	}
 
+	@Override
 	public double getReal() {
 		return doubleValue();
 	}
