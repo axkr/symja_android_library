@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -45,14 +46,14 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 	}
 
 	public IExpr e1DblArg(final double d) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1ComplexArg(final Complex c) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr evaluateArg1(final IExpr arg1) {
-		return null;
+		return F.NIL;
 	}
 }

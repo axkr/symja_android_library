@@ -92,7 +92,7 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 		} catch (ArithmeticException ae) {
 			// toLong() method failed
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public static BinaryFunctorImpl<IExpr> getFunction() {
@@ -153,6 +153,6 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 				return F.Plus(Log(negExpr), Times(CI, F.Pi));
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 }

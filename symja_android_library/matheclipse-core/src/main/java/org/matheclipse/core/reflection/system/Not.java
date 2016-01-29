@@ -40,7 +40,7 @@ public class Not extends AbstractArg1 {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

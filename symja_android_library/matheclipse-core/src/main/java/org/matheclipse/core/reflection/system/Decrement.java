@@ -28,9 +28,9 @@ public class Decrement extends AbstractArg1 {
 			if (results != null) {
 				return getResult(results[0], results[1]);
 			}
-			return null;
+			return F.NIL;
 		} 
-		return null;
+		return F.NIL;
 	}
 
 	protected Function<IExpr, IExpr> getFunction() {

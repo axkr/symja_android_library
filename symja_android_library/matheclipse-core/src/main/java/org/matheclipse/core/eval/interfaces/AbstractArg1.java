@@ -28,7 +28,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 
 		final IExpr arg1 = ast.arg1();
 		final IExpr result = e1ObjArg(arg1);
-		if (result != null) {
+		if (result.isPresent()) {
 			return result;
 		}
 
@@ -65,19 +65,19 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 			}
 		} 
 
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1ObjArg(final IExpr o) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1DblArg(final double d) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1ApfloatArg(final Apfloat d) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1ComplexArg(final Complex c) {
@@ -85,27 +85,27 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 	}
 	
 	public IExpr e1ApcomplexArg(final Apcomplex c) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1IntArg(final IInteger i) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1FraArg(final IFraction f) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1ComArg(final IComplex c) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1SymArg(final ISymbol s) {
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr e1FunArg(final IAST f) {
-		return null;
+		return F.NIL;
 	}
 
 }

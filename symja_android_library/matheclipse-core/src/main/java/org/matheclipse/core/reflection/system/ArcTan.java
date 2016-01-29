@@ -46,7 +46,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 		if (imPart != null) {
 			return F.Times(F.CI, F.ArcTanh(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
