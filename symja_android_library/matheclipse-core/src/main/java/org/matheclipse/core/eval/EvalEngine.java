@@ -718,7 +718,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-				if (result != null && result != F.NIL) {
+				if (result != null && result.isPresent()) {
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
@@ -1241,14 +1241,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
 					IExpr temp = Plus.CONST.evaluate(ast, null);
-					if (temp != null && temp.isPresent()) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 					return null;
 				}
 				if (ast.isTimes()) {
 					IExpr temp =  Times.CONST.evaluate(ast, null);
-					if (temp != null && temp.isPresent()) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 					return null;

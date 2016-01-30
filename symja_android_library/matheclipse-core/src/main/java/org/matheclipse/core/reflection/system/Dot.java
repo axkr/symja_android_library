@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.expression.ExprField;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -23,7 +24,6 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 		FieldMatrix<IExpr> matrix1;
 		FieldVector<IExpr> vector0;
 		FieldVector<IExpr> vector1;
-		IAST res;
 		try {
 			IAST list;
 
@@ -33,12 +33,15 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 				if (o1.isMatrix() != null) {
 					list = (IAST) o1;
 					matrix1 = Convert.list2Matrix(list);
-					res = Convert.matrix2List(matrix0.multiply(matrix1));
-					return res;
+					return Convert.matrix2List(matrix0.multiply(matrix1));
 				} else if (o1.isVector() != (-1)) {
 					list = (IAST) o1;
 					vector1 = Convert.list2Vector(list);
-					return Convert.vector2List(matrix0.operate(vector1));
+					IAST res = Convert.vector2List(matrix0.operate(vector1));
+					if (res==null){
+						return F.NIL;
+					}
+					return res;
 				}
 			} else if (o0.isVector() != (-1)) {
 				list = (IAST) o0;
@@ -66,12 +69,12 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
-		return evaluate(ast, null);
+		return evaluate(ast, engine);
 	}
 
 	@Override

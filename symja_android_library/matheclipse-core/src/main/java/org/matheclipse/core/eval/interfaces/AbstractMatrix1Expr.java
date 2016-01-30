@@ -7,6 +7,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -41,7 +42,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -56,7 +57,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				if (fieldMatrix != null) {
 					return matrixEval(fieldMatrix);
 				}
-				return null;
+				return F.NIL;
 			}
 			matrix = Convert.list2RealMatrix(list);
 			return realMatrixEval(matrix);
@@ -71,7 +72,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);

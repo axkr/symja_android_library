@@ -71,7 +71,7 @@ public class Plot extends AbstractEvaluator {
 					for (int i = 1; i < list.size(); i++) {
 						temp = plotLine(ad, bd, y0d, y1d, list.get(2), (ISymbol) lst.get(1), engine);
 
-						if (temp != null) {
+						if (temp != null && temp.isPresent()) {
 							line.add(temp);
 							primitives.add(line);
 						}
@@ -97,13 +97,25 @@ public class Plot extends AbstractEvaluator {
 		return F.Null;
 	}
 
+	/**
+	 * 
+	 * @param ad
+	 * @param bd
+	 * @param y0d
+	 * @param y1d
+	 * @param function
+	 * @param xVar
+	 * @param engine
+	 * @return <code>F.NIL</code> is no conversion of the data into an
+	 *         <code>IExpr</code> was possible
+	 */
 	public IExpr plotLine(final double ad, final double bd, final double y0d, final double y1d, final IExpr function,
 			final ISymbol xVar, final EvalEngine engine) {
 		final double step = (bd - ad) / N;
 		double y;
 
 		final UnaryNumerical hun = new UnaryNumerical(function, xVar, engine);
-		final double data[][] = new double[2][N+1]; 
+		final double data[][] = new double[2][N + 1];
 		double x = ad;
 
 		for (int i = 0; i < N + 1; i++) {
@@ -128,7 +140,7 @@ public class Plot extends AbstractEvaluator {
 			x += step;
 		}
 		return Convert.doubleToExprTranspose(data);
-	} 
+	}
 
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.HOLDALL);

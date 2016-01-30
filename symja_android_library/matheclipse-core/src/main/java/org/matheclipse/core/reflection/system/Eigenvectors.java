@@ -48,6 +48,6 @@ public class Eigenvectors extends AbstractMatrix1Expr {
 
 	@Override
 	public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
-		return null;
+		return F.NIL;
 	}
 }

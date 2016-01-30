@@ -7,6 +7,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -37,7 +38,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	@Override

@@ -14,7 +14,7 @@ public class PowerOp {
 	 */
 	public static IExpr power(IExpr base, IExpr exponent) {
 		IExpr expr = Power.CONST.binaryOperator(base, exponent);
-		if (expr == null) {
+		if (!expr.isPresent()) {
 			return F.Power(base, exponent);
 		}
 		return expr;

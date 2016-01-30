@@ -23,7 +23,7 @@ public class TimesOp {
 			temp = timesAST;
 		}
 		IExpr expr = Times.CONST.evaluate(temp, null);
-		if (expr == null || !expr.isPresent()) {
+		if (!expr.isPresent()) {
 			return timesAST.getOneIdentity(F.C0);
 		}
 		return expr;
@@ -47,7 +47,7 @@ public class TimesOp {
 	public static IExpr timesNull(IExpr a1, IExpr a2) {
 		IAST times = F.Times(a1, a2);
 		IExpr temp = Times.CONST.evaluate(times, null);
-		if (temp != null && temp.isPresent()) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 		return null;

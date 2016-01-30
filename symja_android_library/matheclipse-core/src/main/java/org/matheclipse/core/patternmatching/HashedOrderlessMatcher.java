@@ -2,15 +2,14 @@ package org.matheclipse.core.patternmatching;
 
 import java.util.List;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.visit.HashValueVisitor;
-import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
@@ -151,7 +150,7 @@ public class HashedOrderlessMatcher {
 				v.setUp();
 			}
 			IAST result = evaluateHashedValues(orderlessAST, fPatternHashRuleMap, hashValues);
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 		}
@@ -161,7 +160,7 @@ public class HashedOrderlessMatcher {
 			}
 			return evaluateHashedValues(orderlessAST, fHashRuleMap, hashValues);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static IAST evaluateHashedValues(final IAST orderlessAST,
@@ -238,7 +237,7 @@ public class HashedOrderlessMatcher {
 			}
 			return result;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,

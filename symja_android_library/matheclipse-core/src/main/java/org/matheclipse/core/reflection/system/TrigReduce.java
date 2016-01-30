@@ -48,7 +48,7 @@ public class TrigReduce extends AbstractEvaluator {
 		public IExpr visit(IAST ast) {
 			if (ast.isTimes()) {
 				IAST result = ORDERLESS_MATCHER.evaluate(ast);
-				if (result != null) {
+				if (result.isPresent()) {
 					return result;
 				}
 			} else if (ast.isPower()) {

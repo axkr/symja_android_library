@@ -53,7 +53,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 	@Override
 	public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 		if (i0.isZero()) {
 			// all other cases see e2ObjArg
-			return null;
+			return F.NIL;
 		}
 
 		try {
@@ -88,7 +88,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		} catch (ArithmeticException ae) {
 
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -162,14 +162,14 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 			if (arg1.isNumber()) {
 				IExpr temp = e2NumberDirectedInfinity((INumber) arg1, directedInfinity);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			} else {
 				IExpr a1 = F.evaln(arg1);
 				if (a1.isNumber()) {
 					IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 				}
@@ -211,7 +211,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.C0;
 			}
 
-			return null;
+			return F.NIL;
 		}
 
 		if (arg2.isZero()) {
@@ -343,7 +343,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -388,7 +388,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			}
 			break;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -438,7 +438,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					a = a.pow(exp);
 					b = b.pow(exp);
 				} catch (ArithmeticException e) {
-					return null;
+					return F.NIL;
 				}
 			}
 
@@ -462,7 +462,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					return Times(fraction(new_numer[0], new_denom[0]), Power(p0, new_root));
 				} else {
 					if (a.isOne()) {
-						return null;
+						return F.NIL;
 					}
 					IRational p0 = null;
 					if (b.isOne()) {
@@ -478,7 +478,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			} else {
 				if (new_denom != null) {
 					if (b.isOne()) {
-						return null;
+						return F.NIL;
 					}
 					IRational p0 = null;
 					if (new_denom[1].isOne()) {
@@ -493,7 +493,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				}
 			}
 
-			return null;
+			return F.NIL;
 		}
 		return f0.power(f1);
 	}
@@ -562,7 +562,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Plus(temp, F.Times(F.CI, temp));
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */

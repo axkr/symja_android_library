@@ -65,7 +65,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		IExpr temp = null;
+		IExpr temp = F.NIL;
 		if (o0.equals(F.Indeterminate) || o1.equals(F.Indeterminate)) {
 			return F.Indeterminate;
 		}
@@ -104,7 +104,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		} else if (o1.isDirectedInfinity()) {
 			temp = eInfinity((IAST) o1, o0);
 		}
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 
@@ -188,7 +188,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static IExpr eInfinity(IAST inf, IExpr o1) {
@@ -231,7 +231,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
 			}
 		} 
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -247,7 +247,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 		if (size > 2) {
 			IAST temp = evaluateHashs(ast);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 		}
@@ -272,12 +272,12 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 				tres = binaryOperator(temp, ast.get(i));
 
-				if (tres == null) {
+				if (!tres.isPresent()) {
 
 					for (int j = i + 1; j < ast.size(); j++) {
 						tres = binaryOperator(temp, ast.get(j));
 
-						if (tres != null) {
+						if (tres.isPresent()) {
 							evaled = true;
 							temp = tres;
 
@@ -287,7 +287,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 						}
 					}
 
-					if (tres == null) {
+					if (!tres.isPresent()) {
 						result.add(temp);
 						if (i == ast.size() - 1) {
 							result.add(ast.get(i));

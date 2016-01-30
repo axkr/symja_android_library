@@ -27,6 +27,13 @@ public class Convert {
 	private Convert() {
 	}
 
+	/**
+	 * Convert a matrix of double values to a transposed Symja matrix of
+	 * <code>List[List[...], ...]</code>.
+	 * 
+	 * @param dd
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
 	public static IExpr doubleToExprTranspose(final double[][] dd) {
 		try {
 			int dd0Len = dd[0].length;
@@ -43,7 +50,7 @@ public class Convert {
 			return list;
 		} catch (final Exception ex) {
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -94,11 +101,11 @@ public class Convert {
 	 * Converts a RealMatrix to the list expression representation.
 	 * 
 	 * @param matrix
-	 * @return
+	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IAST realMatrix2List(final RealMatrix matrix) {
 		if (matrix == null) {
-			return null;
+			return F.NIL;
 		}
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
@@ -146,11 +153,11 @@ public class Convert {
 	 * Convert a RealVector to a IAST list.
 	 * 
 	 * @param vector
-	 * @return
+	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IAST realVector2List(final RealVector vector) {
 		if (vector == null) {
-			return null;
+			return F.NIL;
 		}
 		final int rowSize = vector.getDimension();
 
@@ -186,7 +193,7 @@ public class Convert {
 	 *            the coefficients of the polynomial function
 	 * @param sym
 	 *            the name of the polynomial functions variable
-	 * @return
+	 * @return 
 	 */
 	public static IExpr polynomialFunction2Expr(double[] coefficients, ISymbol sym) {
 		if (coefficients[0] == 0.0) {
@@ -213,7 +220,8 @@ public class Convert {
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
-	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix) throws ClassCastException, IndexOutOfBoundsException {
+	public static FieldMatrix<IExpr> list2Matrix(final IAST listMatrix)
+			throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null) {
 			return null;
 		}
@@ -287,7 +295,8 @@ public class Convert {
 		return new Array2DRowFieldMatrix<IExpr>(elements, false);
 	}
 
-	public static FieldVector<IExpr> list2Vector(final IAST listVector) throws ClassCastException, IndexOutOfBoundsException {
+	public static FieldVector<IExpr> list2Vector(final IAST listVector)
+			throws ClassCastException, IndexOutOfBoundsException {
 		if (listVector == null) {
 			return null;
 		}
@@ -309,11 +318,11 @@ public class Convert {
 	 * Converts a FieldMatrix to the list expression representation.
 	 * 
 	 * @param matrix
-	 * @return
+	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IAST matrix2List(final FieldMatrix<IExpr> matrix) {
 		if (matrix == null) {
-			return null;
+			return F.NIL;
 		}
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
@@ -345,11 +354,11 @@ public class Convert {
 	 * Convert a FieldVector to a IAST list.
 	 * 
 	 * @param vector
-	 * @return
+	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
 	public static IAST vector2List(final FieldVector<IExpr> vector) {
 		if (vector == null) {
-			return null;
+			return F.NIL;
 		}
 		final int rowSize = vector.getDimension();
 
@@ -360,5 +369,5 @@ public class Convert {
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;
 	}
- 
+
 }

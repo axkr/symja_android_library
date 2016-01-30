@@ -28,7 +28,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
 			while (i < size) {
 				tres = binaryOperator(temp, ast.get(i));
-				if (tres == null) {
+				if (!tres.isPresent()) {
 					result.add(temp);
 					if (i == size - 1) {
 						result.add(ast.get(i));
@@ -54,7 +54,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 }

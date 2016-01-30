@@ -7,6 +7,7 @@ import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.LUDecomposition;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
+import org.matheclipse.core.expression.F;
 
 /**
  * Invert a matrix

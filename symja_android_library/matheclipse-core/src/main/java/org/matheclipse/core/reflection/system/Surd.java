@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.Power;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -59,7 +58,7 @@ public class Surd extends AbstractArg2 implements INumeric {
 			}
 			return Power(o, ((IInteger) r).inverse());
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

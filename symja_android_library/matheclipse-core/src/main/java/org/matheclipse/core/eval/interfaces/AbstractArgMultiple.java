@@ -23,7 +23,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() == 3) {
 			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 			return evaluateHashs(ast);
@@ -41,12 +41,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 				tres = binaryOperator(temp, ast.get(i));
 
-				if (tres == null) {
+				if (!tres.isPresent()) {
 
 					for (int j = i + 1; j < ast.size(); j++) {
 						tres = binaryOperator(temp, ast.get(j));
 
-						if (tres != null) {
+						if (tres.isPresent()) {
 							evaled = true;
 							temp = tres;
 
@@ -56,7 +56,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 						}
 					}
 
-					if (tres == null) {
+					if (!tres.isPresent()) {
 						result.add(temp);
 						if (i == ast.size() - 1) {
 							result.add(ast.get(i));
@@ -91,7 +91,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		if (ast.size() > 2) {
 			return evaluateHashs(ast); 
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public HashedOrderlessMatcher getHashRuleMap() {
@@ -101,7 +101,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	public IAST evaluateHashs(final IAST ast) {
 		HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
 		if (hashRuleMap == null) {
-			return null;
+			return F.NIL;
 		}
 		return hashRuleMap.evaluate(ast);
 	}
@@ -160,7 +160,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
 	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
-		IExpr result = null;
+		IExpr result = F.NIL;
 		if (o0 instanceof INum) {
 			// use specialized methods for numeric mode
 			if (o1 instanceof INum) {
@@ -176,7 +176,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					result = e2DblComArg(F.complexNum(((INum) o0).getRealPart()), (IComplexNum) o1);
 				}
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 			return e2ObjArg(o0, o1);
@@ -193,7 +193,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					result = e2DblComArg((IComplexNum) o0, F.complexNum(((INum) o1).getRealPart()));
 				}
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 			return e2ObjArg(o0, o1);
@@ -210,7 +210,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			} else if (o1 instanceof IComplexNum) {
 				result = e2DblComArg((IComplexNum) o0, (IComplexNum) o1);
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 			return e2ObjArg(o0, o1);
@@ -223,7 +223,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			} else if (o0.isFraction()) {
 				result = e2DblComArg(F.complexNum((IFraction) o0), (IComplexNum) o1);
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 			return e2ObjArg(o0, o1);
@@ -258,7 +258,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			}
 		}
 		result = e2ObjArg(o0, o1);
-		if (result != null) {
+		if (result.isPresent()) {
 			return result;
 		}
 
@@ -278,7 +278,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	@Override

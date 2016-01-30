@@ -136,7 +136,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 			PlusOp plusOp = new PlusOp(size);
 			for (int i = 1; i < size; i++) {
 				final IExpr temp = plusOp.plus(ast.get(i));
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}

@@ -60,7 +60,7 @@ public class Binomial extends AbstractArg2 {
 		if (k.isInteger()) {
 			if (n.isInteger()) {
 				// use e2IntArg() method
-				return null;
+				return F.NIL;
 			}
 			IInteger ki = (IInteger) k;
 			if (ki.isOne()) {
@@ -94,6 +94,6 @@ public class Binomial extends AbstractArg2 {
 			// case k*2 > n : Binomial[n, k] -> Binomial[n, n-k]
 			return F.Binomial(n, F.Subtract(n, k));
 		}
-		return null;
+		return F.NIL;
 	}
 }

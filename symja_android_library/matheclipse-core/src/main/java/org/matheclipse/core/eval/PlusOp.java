@@ -136,7 +136,7 @@ public class PlusOp {
 	 * 
 	 * @param arg
 	 * @return <code>F.Indeterminate</code> if the result is indeterminated,
-	 *         <code>null</code> otherwise.
+	 *         <code>F.NIL</code> otherwise.
 	 */
 	public IExpr plus(final IExpr arg) {
 		if (arg.isASTSizeGE(F.Plus, 2)) {
@@ -155,7 +155,7 @@ public class PlusOp {
 				}
 				numberValue = F.CComplexInfinity;
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
 		}
 
@@ -167,7 +167,7 @@ public class PlusOp {
 						evaled = true;
 					}
 				}
-				return null;
+				return F.NIL;
 			}
 			if (arg.isInfinity()) {
 				numberValue = infinityPlus(numberValue);
@@ -175,35 +175,35 @@ public class PlusOp {
 					return F.Indeterminate;
 				}
 				evaled = true;
-				return null;
+				return F.NIL;
 			} else if (arg.isNegativeInfinity()) {
 				numberValue = negativeInfinityPlus(numberValue);
 				if (numberValue.isIndeterminate()) {
 					return F.Indeterminate;
 				}
 				evaled = true;
-				return null;
+				return F.NIL;
 			} else if (arg.isComplexInfinity()) {
 				if (numberValue.isDirectedInfinity()) {
 					return F.Indeterminate;
 				}
 				numberValue = F.CComplexInfinity;
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
 		} else if (arg.isNumber()) {
 			if (arg.isZero()) {
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
 			if (numberValue == null) {
 				numberValue = arg;
-				return null;
+				return F.NIL;
 			}
 			if (numberValue.isNumber()) {
 				numberValue = numberValue.plus(arg);
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
 			if (numberValue.isInfinity()) {
 				numberValue = infinityPlus(arg);
@@ -211,7 +211,7 @@ public class PlusOp {
 					return F.Indeterminate;
 				}
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
 			if (numberValue.isNegativeInfinity()) {
 				numberValue = negativeInfinityPlus(arg);
@@ -219,26 +219,26 @@ public class PlusOp {
 					return F.Indeterminate;
 				}
 				evaled = true;
-				return null;
+				return F.NIL;
 			}
-			return null;
+			return F.NIL;
 		} else if (arg.isTimes()) {
 			IAST timesAST = (IAST) arg;
 			if (timesAST.arg1().isNumber()) {
 				if (addMerge(timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
 					evaled = true;
 				}
-				return null;
+				return F.NIL;
 			}
 			if (addMerge(timesAST, F.C1)) {
 				evaled = true;
 			}
-			return null;
+			return F.NIL;
 		}
 		if (addMerge(arg, F.C1)) {
 			evaled = true;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -253,11 +253,11 @@ public class PlusOp {
 		for (int i = 1; i < pos; i++) {
 			// recursive call to plus()
 			final IExpr temp = plus(ast.get(i));
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -273,7 +273,7 @@ public class PlusOp {
 			temp = plusAST;
 		}
 		IExpr expr = Plus.CONST.evaluate(temp, null);
-		if (expr == null || !expr.isPresent()) {
+		if (!expr.isPresent()) {
 			return plusAST.getOneIdentity(F.C0);
 		}
 		return expr;
@@ -289,7 +289,7 @@ public class PlusOp {
 	public static IExpr plus(IExpr a1, IExpr a2) {
 		IAST plus = F.Plus(a1, a2);
 		IExpr expr = Plus.CONST.evaluate(plus, null);
-		if (expr == null||!expr.isPresent()) {
+		if (!expr.isPresent()) {
 			return plus;
 		}
 		return expr;
