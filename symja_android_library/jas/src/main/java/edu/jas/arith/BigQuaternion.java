@@ -60,7 +60,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
     private static final Logger logger = Logger.getLogger(BigQuaternion.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

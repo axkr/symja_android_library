@@ -40,7 +40,7 @@ public abstract class SolvableSyzygyAbstract<C extends GcdRingElem<C>> implement
     private static final Logger logger = Logger.getLogger(SolvableSyzygyAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -44,7 +44,7 @@ public abstract class GroebnerBaseAbstract<C extends RingElem<C>> implements Gro
     private static final Logger logger = Logger.getLogger(GroebnerBaseAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -30,7 +30,7 @@ public class ProductRing<C extends RingElem<C>> implements RingFactory<Product<C
     private static final Logger logger = Logger.getLogger(ProductRing.class);
 
 
-    //private boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

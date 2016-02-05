@@ -94,8 +94,10 @@ public class FactorFactory {
      * @param fac BigInteger.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings("unused")
     public static FactorAbstract<BigInteger> getImplementation(BigInteger fac) {
+        if (fac == null) {
+            throw new IllegalArgumentException("fac == null not supported");
+        }
         return new FactorInteger<ModLong>();
     }
 
@@ -106,8 +108,10 @@ public class FactorFactory {
      * @param fac BigRational.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings("unused")
     public static FactorAbstract<BigRational> getImplementation(BigRational fac) {
+        if (fac == null) {
+            throw new IllegalArgumentException("fac == null not supported");
+        }
         return new FactorRational();
     }
 

@@ -33,7 +33,7 @@ public class SyzygySeq<C extends GcdRingElem<C>> extends SyzygyAbstract<C> {
     private static final Logger logger = Logger.getLogger(SyzygySeq.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

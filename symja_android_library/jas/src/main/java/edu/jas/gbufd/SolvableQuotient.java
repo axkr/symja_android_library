@@ -30,7 +30,7 @@ public class SolvableQuotient<C extends GcdRingElem<C>> implements GcdRingElem<S
     private static final Logger logger = Logger.getLogger(SolvableQuotient.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

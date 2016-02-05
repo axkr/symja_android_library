@@ -17,7 +17,7 @@ public class ArrayUtil {
 
 
     //private static final Logger logger = Logger.getLogger(ArrayUtil.class);
-    // private static boolean debug = logger.isDebugEnabled();
+    // private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -44,7 +44,7 @@ public class PolyUtil {
     private static final Logger logger = Logger.getLogger(PolyUtil.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -1994,25 +1994,6 @@ public class PolyUtil {
             }
         }
         return B;
-    }
-
-
-    /**
-     * Evaluate all variables.
-     * @param <C> coefficient type.
-     * @param cfac coefficient ring factory.
-     * @param dfac polynomial ring in n variables. C[x_1, x_2, ..., x_n]
-     *            factory.
-     * @param A polynomial to be evaluated.
-     * @param a = (a_1, a_2, ..., a_n) a tuple of values to evaluate at.
-     * @return A(a_1, a_2, ..., a_n).
-     * @deprecated use evaluateAll() with three arguments
-     */
-    @Deprecated
-    @SuppressWarnings("unused")
-    public static <C extends RingElem<C>> C evaluateAll(RingFactory<C> cfac, GenPolynomialRing<C> dfac,
-                    GenPolynomial<C> A, List<C> a) {
-        return evaluateAll(cfac, A, a);
     }
 
 

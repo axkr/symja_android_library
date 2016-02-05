@@ -29,7 +29,7 @@ public class FactorRational extends FactorAbsolute<BigRational> {
     private static final Logger logger = Logger.getLogger(FactorRational.class);
 
 
-    private final boolean debug = logger.isInfoEnabled();
+    private static final boolean debug = logger.isInfoEnabled();
 
 
     /**

@@ -32,7 +32,7 @@ public class GroebnerBaseRational<C extends BigRational> extends GroebnerBaseAbs
     private static final Logger logger = Logger.getLogger(GroebnerBaseRational.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     public final GroebnerBaseAbstract<BigInteger> bba;

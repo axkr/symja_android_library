@@ -29,7 +29,7 @@ public class MultiplicativeSetCoPrime<C extends GcdRingElem<C>> extends Multipli
     private static final Logger logger = Logger.getLogger(MultiplicativeSetCoPrime.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

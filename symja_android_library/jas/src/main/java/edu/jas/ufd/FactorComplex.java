@@ -38,7 +38,7 @@ public class FactorComplex<C extends GcdRingElem<C>> extends FactorAbsolute<Comp
     private static final Logger logger = Logger.getLogger(FactorComplex.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -135,7 +135,7 @@ public class PolynomialTaylorFunction<C extends RingElem<C>> implements TaylorFu
      * @return this(a).
      */
     public C evaluate(List<C> a) {
-        return PolyUtil.<C> evaluateAll(pol.ring.coFac, pol.ring, pol, a);
+        return PolyUtil.<C> evaluateAll(pol.ring.coFac, pol, a);
     }
 
 }

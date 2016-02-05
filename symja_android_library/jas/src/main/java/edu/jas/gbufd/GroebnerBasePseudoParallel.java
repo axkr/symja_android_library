@@ -44,7 +44,7 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
     private static final Logger logger = Logger.getLogger(GroebnerBasePseudoParallel.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

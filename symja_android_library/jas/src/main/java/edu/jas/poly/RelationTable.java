@@ -57,7 +57,7 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
     private static final Logger logger = Logger.getLogger(RelationTable.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -114,7 +114,7 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             logger.info("keySet != :  a = " + table.keySet() + ", b = " + tab.table.keySet());
             return false;
         }
-        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+        for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
             List<Integer> k = me.getKey();
             List a = me.getValue();
             List b = tab.table.get(k);
@@ -214,7 +214,7 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         //int h = ring.hashCode(); // infinite recursion
         int h = 0; //table.hashCode();
         h = table.keySet().hashCode();
-        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+        for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
             //List<Integer> k = me.getKey();
             List a = me.getValue();
             int t1 = fromListDeg2HashCode(a);
@@ -242,7 +242,7 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         StringBuffer s = new StringBuffer("RelationTable[");
         boolean first = true;
-        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
+        for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
             List<Integer> k = me.getKey();
             if (first) {
                 first = false;
@@ -283,8 +283,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         if (PrettyPrint.isTrue()) {
             boolean first = true;
-            for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
-                List<Integer> k = me.getKey();
+            for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
+                //List<Integer> k = me.getKey();
                 if (first) {
                     first = false;
                     s.append("\n");
@@ -312,8 +312,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
             }
         } else {
             boolean first = true;
-            for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
-                List<Integer> k = me.getKey();
+            for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
+                //List<Integer> k = me.getKey();
                 if (first) {
                     first = false;
                 } else {
@@ -361,8 +361,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
         List v;
         StringBuffer s = new StringBuffer("[");
         boolean first = true;
-        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
-            List<Integer> k = me.getKey();
+        for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
+            //List<Integer> k = me.getKey();
             if (first) {
                 first = false;
                 s.append("");
@@ -940,8 +940,8 @@ public class RelationTable<C extends RingElem<C>> implements Serializable {
     public List<GenSolvablePolynomial<C>> relationList() {
         List<GenSolvablePolynomial<C>> rels = new ArrayList<GenSolvablePolynomial<C>>();
         //C one = ring.getONECoefficient();
-        for (Map.Entry<List<Integer>,List> me : table.entrySet()) {
-            List<Integer> k = me.getKey();
+        for (Map.Entry<List<Integer>, List> me : table.entrySet()) {
+            //List<Integer> k = me.getKey();
             List v = me.getValue();
             for (Iterator jt = v.iterator(); jt.hasNext();) {
                 ExpVectorPair ep = (ExpVectorPair) jt.next();

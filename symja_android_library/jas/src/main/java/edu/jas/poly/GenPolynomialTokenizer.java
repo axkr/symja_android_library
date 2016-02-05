@@ -50,7 +50,7 @@ public class GenPolynomialTokenizer {
     private static final Logger logger = Logger.getLogger(GenPolynomialTokenizer.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private String[] vars;

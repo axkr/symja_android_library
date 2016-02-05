@@ -29,7 +29,7 @@ public class ModSolvableGroebnerBaseSeq<C extends GcdRingElem<C>> extends ModSol
     //private static final Logger logger = Logger.getLogger(ModSolvableGroebnerBaseSeq.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

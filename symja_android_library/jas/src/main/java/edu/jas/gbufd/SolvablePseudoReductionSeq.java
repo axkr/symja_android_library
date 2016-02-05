@@ -35,7 +35,7 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
     private static final Logger logger = Logger.getLogger(SolvablePseudoReductionSeq.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -551,10 +551,12 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
      * @param Pp recursive polynomial list.
      * @return nf(Ap) with respect to Pp. <b>Note: </b> not implemented;
      */
-    @SuppressWarnings("unused")
     public GenSolvablePolynomial<GenPolynomial<C>> rightNormalformRecursive(
                     List<GenSolvablePolynomial<GenPolynomial<C>>> Pp,
                     GenSolvablePolynomial<GenPolynomial<C>> Ap) {
+        if (Pp == null || Ap == null) {
+            throw new IllegalArgumentException("Pp or Ap == null not supported");
+        }
         throw new UnsupportedOperationException(); // TODO
     }
 
@@ -570,9 +572,11 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
      * @return nf(Pp,Ap), the normal form of Ap wrt. Pp. <b>Note: </b> not
      *         implemented;
      */
-    @SuppressWarnings("unused")
     public GenSolvablePolynomial<C> rightNormalform(List<GenSolvablePolynomial<C>> row,
                     List<GenSolvablePolynomial<C>> Pp, GenSolvablePolynomial<C> Ap) {
+        if (row == null || Pp == null || Ap == null) {
+            throw new IllegalArgumentException("row, Pp or Ap == null not supported");
+        }
         throw new UnsupportedOperationException(); // TODO
     }
 
@@ -584,9 +588,11 @@ public class SolvablePseudoReductionSeq<C extends GcdRingElem<C>> extends Solvab
      * @return ( nf(Ap), mf ) with respect to Pp and mf as multiplication factor
      *         for Ap. <b>Note: </b> not implemented;
      */
-    @SuppressWarnings("unused")
     public PseudoReductionEntry<C> rightNormalformFactor(List<GenSolvablePolynomial<C>> Pp,
                     GenSolvablePolynomial<C> Ap) {
+        if (Pp == null || Ap == null) {
+            throw new IllegalArgumentException("Pp or Ap == null not supported");
+        }
         throw new UnsupportedOperationException(); // TODO
     }
 

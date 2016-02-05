@@ -45,7 +45,7 @@ public abstract class FactorAbstract<C extends GcdRingElem<C>> implements Factor
     private static final Logger logger = Logger.getLogger(FactorAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

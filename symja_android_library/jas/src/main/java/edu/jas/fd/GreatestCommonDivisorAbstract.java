@@ -37,7 +37,7 @@ public abstract class GreatestCommonDivisorAbstract<C extends GcdRingElem<C>> im
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorAbstract.class);
 
 
-    private final boolean debug = true; // logger.isDebugEnabled();
+    private static final boolean debug = true; // logger.isDebugEnabled();
 
 
     /**

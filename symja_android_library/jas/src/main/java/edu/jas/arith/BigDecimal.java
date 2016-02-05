@@ -614,18 +614,6 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
 
 
     /**
-     * BigDecimal compute quotient and remainder.
-     * @param S BigDecimal.
-     * @return BigDecimal[] { q, r } with q = this/S and r = rem(this,S).
-     * @deprecated use quotientRemainder()
-     */
-    @Deprecated
-    public BigDecimal[] divideAndRemainder(BigDecimal S) {
-        return quotientRemainder(S);
-    }
-
-
-    /**
      * BigDecimal greatest common divisor.
      * @param S BigDecimal.
      * @return gcd(this,S).

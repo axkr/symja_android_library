@@ -247,6 +247,9 @@ class ZeroSubSetIterator<E> implements Iterator<List<E>> {
      */
     public ZeroSubSetIterator(List<E> set) {
         hasNext = true;
+        if (set == null || set.size() == 0) {
+            hasNext = false;
+        }
     }
 
 

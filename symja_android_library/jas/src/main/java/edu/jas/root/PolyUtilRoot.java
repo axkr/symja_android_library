@@ -34,7 +34,7 @@ public class PolyUtilRoot {
     private static final Logger logger = Logger.getLogger(PolyUtilRoot.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

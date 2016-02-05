@@ -409,25 +409,6 @@ public class HenselMultUtil {
      * @param C integer polynomial
      * @param Cp GenPolynomial mod p^k
      * @param F = [f_0,...,f_{n-1}] list of monic modular polynomials.
-     * @param k approximation exponent.
-     * @param L = [g_0,...,g_{n-1}] list of lifted modular polynomials.
-     * @return true if C = prod_{0,...,n-1} g_i mod p^k, else false.
-     * @deprecated use isHenselLift() without parameter k 
-     */
-    @Deprecated
-    public static <MOD extends GcdRingElem<MOD> & Modular> boolean isHenselLift(GenPolynomial<BigInteger> C,
-                    GenPolynomial<MOD> Cp, List<GenPolynomial<MOD>> F, long k, List<GenPolynomial<MOD>> L) {
-        return isHenselLift(C,Cp,F,L);
-    } 
-
-
-    /**
-     * Modular Hensel lifting algorithm on coefficients test. Let p =
-     * f_i.ring.coFac.modul() and assume C == prod_{0,...,n-1} f_i mod p with
-     * gcd(f_i,f_j) == 1 mod p for i != j
-     * @param C integer polynomial
-     * @param Cp GenPolynomial mod p^k
-     * @param F = [f_0,...,f_{n-1}] list of monic modular polynomials.
      * @param L = [g_0,...,g_{n-1}] list of lifted modular polynomials.
      * @return true if C = prod_{0,...,n-1} g_i mod p^k, else false.
      */

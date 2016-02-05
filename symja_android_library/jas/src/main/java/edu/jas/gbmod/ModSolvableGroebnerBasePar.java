@@ -26,7 +26,7 @@ public class ModSolvableGroebnerBasePar<C extends GcdRingElem<C>> extends ModSol
     //private static final Logger logger = Logger.getLogger(ModSolvableGroebnerBasePar.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

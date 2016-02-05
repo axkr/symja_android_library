@@ -29,7 +29,7 @@ public class SquarefreeRingChar0<C extends GcdRingElem<C>> extends SquarefreeAbs
     private static final Logger logger = Logger.getLogger(SquarefreeRingChar0.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

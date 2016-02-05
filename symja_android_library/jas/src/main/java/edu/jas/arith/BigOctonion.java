@@ -48,7 +48,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
     private static final Logger logger = Logger.getLogger(BigOctonion.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

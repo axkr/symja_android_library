@@ -34,7 +34,7 @@ public class QuotientRing<C extends GcdRingElem<C>> implements RingFactory<Quoti
     private static final Logger logger = Logger.getLogger(QuotientRing.class);
 
 
-    //private boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

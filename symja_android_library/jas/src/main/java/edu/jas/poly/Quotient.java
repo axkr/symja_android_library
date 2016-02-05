@@ -23,7 +23,7 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>>, Q
     private static final Logger logger = Logger.getLogger(Quotient.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

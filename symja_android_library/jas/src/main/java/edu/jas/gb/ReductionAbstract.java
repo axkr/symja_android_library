@@ -30,7 +30,7 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
     private static final Logger logger = Logger.getLogger(ReductionAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

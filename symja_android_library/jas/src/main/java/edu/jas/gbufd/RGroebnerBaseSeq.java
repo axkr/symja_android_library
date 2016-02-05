@@ -31,7 +31,7 @@ public class RGroebnerBaseSeq<C extends RegularRingElem<C>> extends GroebnerBase
     private static final Logger logger = Logger.getLogger(RGroebnerBaseSeq.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

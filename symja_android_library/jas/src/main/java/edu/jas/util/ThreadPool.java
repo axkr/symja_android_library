@@ -67,7 +67,7 @@ public class ThreadPool {
     private static final Logger logger = Logger.getLogger(ThreadPool.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -322,7 +322,7 @@ class PoolThread extends Thread {
     private static final Logger logger = Logger.getLogger(PoolThread.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     volatile boolean isWorking = false;

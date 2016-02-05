@@ -28,7 +28,7 @@ public class FactorQuotient<C extends GcdRingElem<C>> extends FactorAbstract<Quo
     private static final Logger logger = Logger.getLogger(FactorQuotient.class);
 
 
-    //private final boolean debug = logger.isInfoEnabled();
+    //private static final boolean debug = logger.isInfoEnabled();
 
 
     /**

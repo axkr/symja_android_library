@@ -34,7 +34,7 @@ public class ChannelFactory extends Thread {
     private static final Logger logger = Logger.getLogger(ChannelFactory.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

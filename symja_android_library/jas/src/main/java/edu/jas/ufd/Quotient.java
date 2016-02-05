@@ -25,7 +25,7 @@ public class Quotient<C extends GcdRingElem<C>> implements GcdRingElem<Quotient<
     private static final Logger logger = Logger.getLogger(Quotient.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

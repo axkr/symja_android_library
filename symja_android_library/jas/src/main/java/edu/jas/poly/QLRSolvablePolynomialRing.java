@@ -48,7 +48,7 @@ public class QLRSolvablePolynomialRing<C extends GcdRingElem<C> & QuotPair<GenPo
 
     private static final Logger logger = Logger.getLogger(QLRSolvablePolynomialRing.class);
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

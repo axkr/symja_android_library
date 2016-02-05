@@ -525,19 +525,6 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
 
 
     /**
-     * BigInteger compute quotient and remainder. Throws an exception, if S ==
-     * 0.
-     * @param S BigInteger.
-     * @return BigInteger[] { q, r } with this = q S + r and 0 &le; r &lt; |S|.
-     * @deprecated use quotientRemainder()
-     */
-    @Deprecated
-    public BigInteger[] divideAndRemainder(BigInteger S) {
-        return quotientRemainder(S);
-    }
-
-
-    /**
      * Integer quotient and remainder. A and B are integers, B ne 0. Q is the
      * quotient, integral part of A/B, and R is the remainder A-B*Q. Throws an
      * exception, if B == 0.

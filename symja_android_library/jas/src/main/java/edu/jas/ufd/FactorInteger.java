@@ -49,7 +49,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
     private static final Logger logger = Logger.getLogger(FactorInteger.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -953,13 +953,14 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             // determine leading coefficient polynomials for factors
             lf = new ArrayList<GenPolynomial<BigInteger>>();
             lpx = lprr.ring.getONE();
-            for (GenPolynomial<BigInteger> unused : ufactors) {
+            for (int i = 0; i < ufactors.size(); i++) {
                 lf.add(lprr.ring.getONE());
             }
             //System.out.println("lf = " + lf);             
             if (!isMonic || !pecw.isONE()) {
                 if (lfacs.size() > 0 && lfacs.get(0).isConstant()) {
-                    GenPolynomial<BigInteger> unused = lfacs.remove(0);
+                    //GenPolynomial<BigInteger> unused = 
+                    lfacs.remove(0);
                     //BigInteger xxi = xx.leadingBaseCoefficient();
                     //System.out.println("xx = " + xx + " == ped = " +ped);
                 }

@@ -35,7 +35,7 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorModular.class);
 
 
-    private final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
+    private static final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
 
 
     /*

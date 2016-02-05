@@ -10,6 +10,8 @@ import java.util.SortedMap;
 import java.util.Iterator;
 
 import edu.jas.structure.RingElem;
+import edu.jas.structure.Element;
+import edu.jas.structure.ElemFactory;
 
 import edu.jas.poly.ExpVector;
 
@@ -20,8 +22,7 @@ import edu.jas.poly.ExpVector;
  * Adaptor for Map.Entry.
  * @author Heinz Kredel
  */
-
-public final class Monomial<C extends RingElem<C> > {
+public final class Monomial<C extends RingElem<C>> implements Element<Monomial<C>> {
 
     /** 
      * Exponent of monomial.
@@ -72,6 +73,16 @@ public final class Monomial<C extends RingElem<C> > {
         return c;
     }
 
+
+    /**
+     * Clone this Element.
+     * @return Creates and returns a copy of this Element.
+     */
+    public Monomial<C> copy() {
+        return new Monomial<C>(e,c);
+    }
+
+
     /**
      * String representation of Monomial.
      * @see java.lang.Object#toString()
@@ -79,6 +90,65 @@ public final class Monomial<C extends RingElem<C> > {
     @Override
     public String toString() {
         return c.toString() + " " + e.toString();
+    }
+
+
+    /**
+     * Script representation of Monomial.
+     * @see edu.jas.structure.Element#toScript()
+     */
+    @Override
+    public String toScript() {
+        if (c.isZERO()) {
+            return "0";
+        }
+        StringBuffer sb = new StringBuffer();
+        if (!c.isONE()) {
+            sb.append(c.toScript());
+            sb.append(" * ");
+        }
+        sb.append(e.toScript());
+        return sb.toString();
+    }
+
+
+    /**
+     * Get a scripting compatible string representation of the factory.
+     * @return script compatible representation for this ElemFactory.
+     * @see edu.jas.structure.Element#toScriptFactory()
+     */
+    @Override
+    public String toScriptFactory() {
+        // Python and Ruby case
+        return ""; // TODO
+    }
+
+
+    /**
+     * Get the corresponding element factory.
+     * @return null, factory for this Element.
+     * @see edu.jas.structure.Element#factory()
+     */
+    public ElemFactory<Monomial<C>> factory() {
+        return null; // TODO
+    }
+
+
+    /**
+     * Monomial comparison.
+     * @param S Monomial.
+     * @return SIGN(this-S).
+     */
+    @Override
+    public int compareTo(Monomial<C> S) {
+        if (S == null) {
+            return 1;
+        }
+        int s = e.compareTo(S.e);
+        if (s != 0) {
+            return s;
+        }
+        return c.compareTo(S.c);
     }
 
 }

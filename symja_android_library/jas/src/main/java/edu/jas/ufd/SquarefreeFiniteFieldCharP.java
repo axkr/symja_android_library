@@ -32,7 +32,7 @@ public class SquarefreeFiniteFieldCharP<C extends GcdRingElem<C>> extends Square
     private static final Logger logger = Logger.getLogger(SquarefreeFiniteFieldCharP.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -32,7 +32,7 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
     private static final Logger logger = Logger.getLogger(PseudoReductionSeq.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -81,8 +81,8 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
             }
         }
         l = j;
-        ExpVector e;
-        C a;
+        ExpVector e, f;
+        C a, b;
         boolean mt = false;
         GenPolynomial<C> R = Ap.ring.getZERO().copy();
 
@@ -104,17 +104,24 @@ public class PseudoReductionSeq<C extends RingElem<C>> extends ReductionAbstract
                 S.doRemoveFromMap(e, a);
                 //System.out.println(" S = " + S);
             } else {
-                e = e.subtract(htl[i]);
+                f = e.subtract(htl[i]);
                 //logger.info("red div = " + e);
                 @SuppressWarnings("cast")
                 C c = (C) lbc[i];
                 if (a.remainder(c).isZERO()) { //c.isUnit() ) {
-                    a = a.divide(c);
-                    S = S.subtractMultiple(a, e, p[i]);
+                    b = a.divide(c);
+                    GenPolynomial<C> Sp = S.subtractMultiple(b, f, p[i]);
+                    if (e.equals(Sp.leadingExpVector())) { // TODO: avoid
+                        logger.info("degree not descending: S = " + S + ", Sp = " + Sp);
+                        R = R.multiply(c);
+                        //S = S.multiply(c);
+                        Sp = S.scaleSubtractMultiple(c, a, f, p[i]);
+                    }
+                    S = Sp;                    
                 } else {
                     R = R.multiply(c);
                     //S = S.multiply(c);
-                    S = S.scaleSubtractMultiple(c, a, e, p[i]);
+                    S = S.scaleSubtractMultiple(c, a, f, p[i]);
                 }
                 //Q = p[i].multiply(a, e);
                 //S = S.subtract(Q);

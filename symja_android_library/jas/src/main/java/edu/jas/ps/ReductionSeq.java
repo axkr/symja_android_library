@@ -31,7 +31,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
     private static final Logger logger = Logger.getLogger(ReductionSeq.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

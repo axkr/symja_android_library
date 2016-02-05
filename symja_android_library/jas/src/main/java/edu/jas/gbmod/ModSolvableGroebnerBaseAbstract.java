@@ -33,7 +33,7 @@ public abstract class ModSolvableGroebnerBaseAbstract<C extends RingElem<C>> imp
     private static final Logger logger = Logger.getLogger(ModSolvableGroebnerBaseAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

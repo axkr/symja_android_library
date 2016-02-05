@@ -34,7 +34,7 @@ public abstract class WordGroebnerBaseAbstract<C extends RingElem<C>> implements
     private static final Logger logger = Logger.getLogger(WordGroebnerBaseAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

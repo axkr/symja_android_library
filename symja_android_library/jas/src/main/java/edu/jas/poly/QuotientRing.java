@@ -30,7 +30,7 @@ public class QuotientRing<C extends RingElem<C>> implements RingFactory<Quotient
     private static final Logger logger = Logger.getLogger(QuotientRing.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

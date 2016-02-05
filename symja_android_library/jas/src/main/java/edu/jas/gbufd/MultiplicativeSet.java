@@ -27,7 +27,7 @@ public class MultiplicativeSet<C extends GcdRingElem<C>> implements Serializable
     private static final Logger logger = Logger.getLogger(MultiplicativeSet.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

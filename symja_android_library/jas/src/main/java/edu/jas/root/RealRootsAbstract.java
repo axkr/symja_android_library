@@ -33,7 +33,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
     private static final Logger logger = Logger.getLogger(RealRootsAbstract.class);
 
 
-    //private static boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

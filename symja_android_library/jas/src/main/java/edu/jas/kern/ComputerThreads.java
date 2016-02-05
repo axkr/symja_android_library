@@ -29,7 +29,7 @@ public class ComputerThreads {
     private static final Logger logger = Logger.getLogger(ComputerThreads.class);
 
 
-    // private boolean debug = logger.isInfoEnabled(); //logger.isInfoEnabled();
+    // private static final boolean debug = logger.isInfoEnabled(); //logger.isInfoEnabled();
 
 
     /**

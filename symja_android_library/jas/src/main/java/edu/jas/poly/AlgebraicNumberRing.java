@@ -51,7 +51,7 @@ public class AlgebraicNumberRing<C extends RingElem<C>> implements RingFactory<A
     private static final Logger logger = Logger.getLogger(AlgebraicNumberRing.class);
 
 
-    //  private final boolean debug = logger.isDebugEnabled();
+    //  private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -546,7 +546,7 @@ class AlgebraicNumberIterator<C extends RingElem<C>> implements Iterator<Algebra
     private static final Logger logger = Logger.getLogger(AlgebraicNumberIterator.class);
 
 
-    //  private final boolean debug = logger.isDebugEnabled();
+    //  private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -39,7 +39,7 @@ public abstract class SolvableGroebnerBaseAbstract<C extends RingElem<C>> implem
     private static final Logger logger = Logger.getLogger(SolvableGroebnerBaseAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -29,7 +29,7 @@ public class DReductionSeq<C extends RingElem<C>> extends ReductionAbstract<C> i
     private static final Logger logger = Logger.getLogger(DReductionSeq.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

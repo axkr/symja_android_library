@@ -32,7 +32,7 @@ public class CharacteristicSetWu<C extends GcdRingElem<C>> implements Characteri
     private static final Logger logger = Logger.getLogger(CharacteristicSetWu.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

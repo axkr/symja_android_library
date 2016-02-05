@@ -29,7 +29,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorSubres.class);
 
 
-    private boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

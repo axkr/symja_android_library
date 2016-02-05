@@ -20,7 +20,7 @@ public class Power<C extends RingElem<C>> {
     private static final Logger logger = Logger.getLogger(Power.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private final RingFactory<C> fac;
@@ -88,6 +88,10 @@ public class Power<C extends RingElem<C>> {
         C b = a;
         if (n.compareTo(java.math.BigInteger.ONE) == 0) {
             return b;
+        }
+        if (n.bitLength() <= 63) {
+            long l = n.longValue();
+            return positivePower(a, l);
         }
         C p = a;
         java.math.BigInteger i = n.subtract(java.math.BigInteger.ONE);
@@ -264,6 +268,10 @@ public class Power<C extends RingElem<C>> {
         }
         if (n.compareTo(java.math.BigInteger.ONE) == 0) {
             return b;
+        }
+        if (n.bitLength() <= 63) {
+            long l = n.longValue();
+            return modPower(fac, a, l, m);
         }
         C p = fac.getONE();
         java.math.BigInteger i = n;

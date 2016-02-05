@@ -149,17 +149,6 @@ final class GBTransportMessPairIndex extends GBTransportMess {
      * GBTransportMessPairIndex.
      * @param i first index.
      * @param j second index.
-     */
-    @Deprecated
-    public GBTransportMessPairIndex(int i, int j) {
-        this(i, j, 0);
-    }
-
-
-    /**
-     * GBTransportMessPairIndex.
-     * @param i first index.
-     * @param j second index.
      * @param s maximal index.
      */
     public GBTransportMessPairIndex(int i, int j, int s) {

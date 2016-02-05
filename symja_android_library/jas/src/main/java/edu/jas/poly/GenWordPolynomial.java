@@ -49,7 +49,7 @@ public final class GenWordPolynomial<C extends RingElem<C>> implements RingElem<
     private static final Logger logger = Logger.getLogger(GenWordPolynomial.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     // protected GenWordPolynomial() { ring = null; val = null; } // don't use

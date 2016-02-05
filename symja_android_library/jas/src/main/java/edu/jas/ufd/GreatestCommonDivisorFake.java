@@ -23,7 +23,7 @@ public class GreatestCommonDivisorFake<C extends GcdRingElem<C>> extends Greates
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorFake.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

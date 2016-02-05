@@ -25,7 +25,7 @@ public class ExecutableServer extends Thread {
     private static final Logger logger = Logger.getLogger(ExecutableServer.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -249,7 +249,7 @@ class Executor extends Thread /*implements Runnable*/{
 
     private static final Logger logger = Logger.getLogger(Executor.class);
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     protected final SocketChannel channel;

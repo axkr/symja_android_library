@@ -48,7 +48,7 @@ public class FactorRealAlgebraic<C extends GcdRingElem<C> & Rational> extends
     private static final Logger logger = Logger.getLogger(FactorRealAlgebraic.class);
 
 
-    //private final boolean debug = logger.isInfoEnabled();
+    //private static final boolean debug = logger.isInfoEnabled();
 
 
     /**

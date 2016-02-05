@@ -527,18 +527,6 @@ public class Complex<C extends RingElem<C>> implements StarRingElem<Complex<C>>,
 
 
     /**
-     * Complex number quotient and remainder.
-     * @param S Complex.
-     * @return Complex[] { q, r } with q = this/S and r = rem(this,S).
-     * @deprecated use quotientRemainder()
-     */
-    @Deprecated
-    public Complex<C>[] divideAndRemainder(Complex<C> S) {
-        return quotientRemainder(S);
-    }
-
-
-    /**
      * Complex number greatest common divisor.
      * @param S Complex<C>.
      * @return gcd(this,S).

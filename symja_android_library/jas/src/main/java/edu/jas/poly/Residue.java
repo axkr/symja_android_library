@@ -23,7 +23,7 @@ public class Residue<C extends RingElem<C>> implements RingElem<Residue<C>> {
     private static final Logger logger = Logger.getLogger(Residue.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

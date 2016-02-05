@@ -54,7 +54,7 @@ Iterable<Monomial<C>> {
     private static final Logger logger = Logger.getLogger(GenPolynomial.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     // protected GenPolynomial() { ring = null; val = null; } // don't use
@@ -1636,22 +1636,6 @@ Iterable<Monomial<C>> {
         ret[0] = q;
         ret[1] = r;
         return ret;
-    }
-
-
-    /**
-     * GenPolynomial division with remainder. Fails, if exact division by
-     * leading base coefficient is not possible. Meaningful only for univariate
-     * polynomials over fields, but works in any case.
-     * @param S nonzero GenPolynomial with invertible leading coefficient.
-     * @return [ quotient , remainder ] with this = quotient * S + remainder and
-     *         deg(remainder) &lt; deg(S) or remiander = 0.
-     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
-     * @deprecated use quotientRemainder()
-     */
-    @Deprecated
-    public GenPolynomial<C>[] divideAndRemainder(GenPolynomial<C> S) {
-        return quotientRemainder(S);
     }
 
 

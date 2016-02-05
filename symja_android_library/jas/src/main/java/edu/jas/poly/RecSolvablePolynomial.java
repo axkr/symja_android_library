@@ -36,7 +36,7 @@ public class RecSolvablePolynomial<C extends RingElem<C>> extends GenSolvablePol
     private static final Logger logger = Logger.getLogger(RecSolvablePolynomial.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

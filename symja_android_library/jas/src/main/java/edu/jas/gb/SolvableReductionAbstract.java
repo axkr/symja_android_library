@@ -30,7 +30,7 @@ public abstract class SolvableReductionAbstract<C extends RingElem<C>> implement
     private static final Logger logger = Logger.getLogger(SolvableReductionAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

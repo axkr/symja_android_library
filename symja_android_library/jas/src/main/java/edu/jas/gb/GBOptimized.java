@@ -27,7 +27,7 @@ public class GBOptimized<C extends GcdRingElem<C>> extends GroebnerBaseAbstract<
     private static final Logger logger = Logger.getLogger(GBOptimized.class);
 
 
-    private final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
+    private static final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
 
 
     /**

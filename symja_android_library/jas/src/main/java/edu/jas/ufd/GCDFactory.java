@@ -165,8 +165,10 @@ public class GCDFactory {
      * @param fac BigInteger.
      * @return gcd algorithm implementation.
      */
-    @SuppressWarnings("unused")
     public static GreatestCommonDivisorAbstract<BigInteger> getProxy(BigInteger fac) {
+        if (fac == null) {
+            throw new IllegalArgumentException("fac == null not supported");
+        }
         GreatestCommonDivisorAbstract<BigInteger> ufd1, ufd2;
         ufd1 = new GreatestCommonDivisorSubres<BigInteger>();
         ufd2 = new GreatestCommonDivisorModular<ModLong>(); // dummy type
@@ -179,8 +181,10 @@ public class GCDFactory {
      * @param fac BigRational.
      * @return gcd algorithm implementation.
      */
-    @SuppressWarnings("unused")
     public static GreatestCommonDivisorAbstract<BigRational> getImplementation(BigRational fac) {
+        if (fac == null) {
+            throw new IllegalArgumentException("fac == null not supported");
+        }
         GreatestCommonDivisorAbstract<BigRational> ufd;
         ufd = new GreatestCommonDivisorPrimitive<BigRational>();
         return ufd;
@@ -193,6 +197,9 @@ public class GCDFactory {
      * @return gcd algorithm implementation.
      */
     public static GreatestCommonDivisorAbstract<BigRational> getProxy(BigRational fac) {
+        if (fac == null) {
+            throw new IllegalArgumentException("fac == null not supported");
+        }
         GreatestCommonDivisorAbstract<BigRational> ufd1, ufd2;
         ufd1 = new GreatestCommonDivisorSubres<BigRational>();
         ufd2 = new GreatestCommonDivisorSimple<BigRational>();

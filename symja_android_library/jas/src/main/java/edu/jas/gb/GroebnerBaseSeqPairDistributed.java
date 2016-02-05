@@ -34,6 +34,7 @@ import edu.jas.util.ThreadPool;
  * if new polynomials appear.
  * @param <C> coefficient type
  * @author Heinz Kredel
+ * @deprecated no direct alternative, use GroebnerBaseDistributedEC
  */
 @Deprecated
 public class GroebnerBaseSeqPairDistributed<C extends RingElem<C>> extends GroebnerBaseAbstract<C> {
@@ -237,7 +238,7 @@ public class GroebnerBaseSeqPairDistributed<C extends RingElem<C>> extends Groeb
         Terminator fin = new Terminator(threads);
         ReducerServerSeqPair<C> R;
         for (int i = 0; i < threads; i++) {
-            R = new ReducerServerSeqPair<C>(fin, cf, theList, G, pairlist);
+            R = new ReducerServerSeqPair<C>(fin, cf, theList, pairlist);
             pool.addJob(R);
         }
         logger.debug("main loop waiting");
@@ -414,7 +415,7 @@ class ReducerServerSeqPair<C extends RingElem<C>> implements Runnable {
 
 
     ReducerServerSeqPair(Terminator fin, ChannelFactory cf, DistHashTable<Integer, GenPolynomial<C>> dl,
-                    List<GenPolynomial<C>> G, CriticalPairList<C> L) {
+                    CriticalPairList<C> L) {
         pool = fin;
         this.cf = cf;
         theList = dl;

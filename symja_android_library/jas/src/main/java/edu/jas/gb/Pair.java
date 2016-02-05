@@ -29,21 +29,6 @@ public class Pair<C extends RingElem<C> > extends AbstractPair<C>
 
     /**
      * Pair constructor.
-     * @param a polynomial i (must be castable to GenPolynomial&lt;C&gt;).
-     * @param b polynomial j.
-     * @param i first index.
-     * @param j second index.
-     * @deprecated obsolete since Java 1.5
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public Pair(Object a, GenPolynomial<C> b, int i, int j) {
-        this( (GenPolynomial<C>)a, b, i, j); 
-    }
-
-
-    /**
-     * Pair constructor.
      * @param a polynomial i.
      * @param b polynomial j.
      * @param i first index.

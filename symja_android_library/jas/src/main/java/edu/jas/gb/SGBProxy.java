@@ -30,7 +30,7 @@ public class SGBProxy<C extends GcdRingElem<C>> extends SolvableGroebnerBaseAbst
     private static final Logger logger = Logger.getLogger(SGBProxy.class);
 
 
-    private final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
+    private static final boolean debug = logger.isDebugEnabled(); //logger.isInfoEnabled();
 
 
     /**

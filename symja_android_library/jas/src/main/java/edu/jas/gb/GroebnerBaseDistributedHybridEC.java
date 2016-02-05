@@ -42,10 +42,10 @@ import edu.jas.util.ThreadPool;
 public class GroebnerBaseDistributedHybridEC<C extends RingElem<C>> extends GroebnerBaseAbstract<C> {
 
 
-    public static final Logger logger = Logger.getLogger(GroebnerBaseDistributedHybridEC.class);
+    private static final Logger logger = Logger.getLogger(GroebnerBaseDistributedHybridEC.class);
 
 
-    public final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**
@@ -555,10 +555,10 @@ public class GroebnerBaseDistributedHybridEC<C extends RingElem<C>> extends Groe
 class HybridReducerServerEC<C extends RingElem<C>> implements Runnable {
 
 
-    public static final Logger logger = Logger.getLogger(HybridReducerServerEC.class);
+    private static final Logger logger = Logger.getLogger(HybridReducerServerEC.class);
 
 
-    public final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private final Terminator finner;
@@ -776,10 +776,10 @@ class HybridReducerServerEC<C extends RingElem<C>> implements Runnable {
 class HybridReducerReceiverEC<C extends RingElem<C>> extends Thread {
 
 
-    public static final Logger logger = Logger.getLogger(HybridReducerReceiverEC.class);
+    private static final Logger logger = Logger.getLogger(HybridReducerReceiverEC.class);
 
 
-    public final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private final DistHashTable<Integer, GenPolynomial<C>> theList;
@@ -963,7 +963,7 @@ class HybridReducerClientEC<C extends RingElem<C>> implements Runnable {
     private static final Logger logger = Logger.getLogger(HybridReducerClientEC.class);
 
 
-    public final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private final TaggedSocketChannel pairChannel;

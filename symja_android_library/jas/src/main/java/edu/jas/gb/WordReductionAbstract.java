@@ -32,7 +32,7 @@ public abstract class WordReductionAbstract<C extends RingElem<C>> implements Wo
     private static final Logger logger = Logger.getLogger(WordReductionAbstract.class);
 
 
-    //private final boolean debug = logger.isDebugEnabled();
+    //private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

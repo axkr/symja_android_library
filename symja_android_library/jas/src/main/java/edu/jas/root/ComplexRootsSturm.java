@@ -33,7 +33,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
     private static final Logger logger = Logger.getLogger(ComplexRootsSturm.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -38,7 +38,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
     private static final Logger logger = Logger.getLogger(ComplexRootsAbstract.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

@@ -1,5 +1,5 @@
 /*
- * $Id: TermOrder.java 5391 2016-01-04 13:46:50Z kredel $
+ * $Id$
  */
 
 package edu.jas.poly;
@@ -38,7 +38,7 @@ public final class TermOrder implements Serializable {
     private static final Logger logger = Logger.getLogger(TermOrder.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     // TermOrder index values
@@ -362,10 +362,10 @@ public final class TermOrder implements Serializable {
      * @param split index.
      */
     public TermOrder(int ev1, int ev2, int r, int split) {
-        if (ev1 < MIN_EVORD || MAX_EVORD-2 < ev1) {
+        if (ev1 < MIN_EVORD || MAX_EVORD - 2 < ev1) {
             throw new IllegalArgumentException("invalid split term order 1: " + ev1);
         }
-        if (ev2 < MIN_EVORD || MAX_EVORD-2 < ev2) {
+        if (ev2 < MIN_EVORD || MAX_EVORD - 2 < ev2) {
             throw new IllegalArgumentException("invalid split term order 2: " + ev2);
         }
         this.evord = ev1;

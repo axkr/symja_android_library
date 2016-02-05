@@ -47,7 +47,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
     private static final Logger logger = Logger.getLogger(ElementaryIntegration.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     /**

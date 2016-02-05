@@ -34,7 +34,7 @@ public class GroebnerBaseQuotient<C extends GcdRingElem<C>> extends GroebnerBase
     private static final Logger logger = Logger.getLogger(GroebnerBaseQuotient.class);
 
 
-    private final boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     public final GroebnerBaseAbstract<GenPolynomial<C>> bba;

@@ -31,7 +31,7 @@ public class DistHashTable<K, V> extends AbstractMap<K, V> /* implements Map<K,V
     private static final Logger logger = Logger.getLogger(DistHashTable.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     protected final SortedMap<K, V> theList;
@@ -403,7 +403,7 @@ class DHTListener<K, V> extends Thread {
     private static final Logger logger = Logger.getLogger(DHTListener.class);
 
 
-    private static boolean debug = logger.isDebugEnabled();
+    private static final boolean debug = logger.isDebugEnabled();
 
 
     private final SocketChannel channel;
