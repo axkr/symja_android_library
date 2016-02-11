@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
@@ -28,12 +30,12 @@ public class EvalAttributes {
 	 * @param ast
 	 *            the <code>AST</code> whose elements should be flattened.
 	 * 
-	 * @return returns the flattened list
+	 * @return returns the flattened list or <code>F.NIL</code>
 	 */
-	public static IAST flatten(final IAST ast) {
+	public static IAST flatten(@Nonnull final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
 			// already flattened
-			return null;
+			return F.NIL;
 		}
 		final ISymbol sym = ast.topHead();
 		if (ast.isAST(sym)) {
@@ -44,7 +46,7 @@ public class EvalAttributes {
 			}
 		}
 		ast.addEvalFlags(IAST.IS_FLATTENED);
-		return null;
+		return F.NIL;
 	}
 
 	/**

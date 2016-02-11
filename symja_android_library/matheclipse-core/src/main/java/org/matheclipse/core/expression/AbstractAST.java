@@ -2089,13 +2089,13 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		EvalEngine engine = EvalEngine.get();
 		ISymbol symbol = topHead();
 		IExpr result = engine.evalAttributes(symbol, this);
-		if (result != null) {
+		if (result.isPresent()) {
 			if (result.isAST(symbol)) {
-				return engine.evalRules(symbol, (IAST) result) != null;
+				return engine.evalRules(symbol, (IAST) result).isPresent();
 			}
 			return false;
 		}
-		return engine.evalRules(symbol, this) != null;
+		return engine.evalRules(symbol, this).isPresent();
 	}
 
 	/** {@inheritDoc} */

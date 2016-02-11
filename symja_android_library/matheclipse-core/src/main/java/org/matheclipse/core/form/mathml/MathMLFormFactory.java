@@ -267,7 +267,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			IAST temp;
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative
-				if ((temp = EvalAttributes.flatten(f)) != null) {
+				if ((temp = EvalAttributes.flatten(f)).isPresent()) {
 					ast = temp;
 				}
 			}

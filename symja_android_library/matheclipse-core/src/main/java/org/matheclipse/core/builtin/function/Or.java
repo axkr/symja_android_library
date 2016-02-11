@@ -26,22 +26,22 @@ public class Or extends AbstractCoreFunctionEvaluator {
 		}
 
 		boolean evaled = false;
-		IAST flattendedAST = EvalAttributes.flatten(ast);
-		if (flattendedAST == null) {
-			flattendedAST = ast;
-		} else {
+		IAST flattenedAST = EvalAttributes.flatten(ast);
+		if (flattenedAST.isPresent()) {
 			evaled = true;
+		} else {
+			flattenedAST = ast;
 		}
 
-		IAST result = flattendedAST.clone();
+		IAST result = flattenedAST.clone();
 		IExpr temp;
 		IExpr sym;
-		int[] symbols = new int[flattendedAST.size()];
-		int[] notSymbols = new int[flattendedAST.size()];
+		int[] symbols = new int[flattenedAST.size()];
+		int[] notSymbols = new int[flattenedAST.size()];
 		int index = 1;
 
-		for (int i = 1; i < flattendedAST.size(); i++) {
-			temp = flattendedAST.get(i);
+		for (int i = 1; i < flattenedAST.size(); i++) {
+			temp = flattenedAST.get(i);
 			if (temp.isTrue()) {
 				return F.True;
 			}
@@ -51,7 +51,7 @@ public class Or extends AbstractCoreFunctionEvaluator {
 				continue;
 			}
 
-			temp = engine.evaluateNull(flattendedAST.get(i));
+			temp = engine.evaluateNull(flattenedAST.get(i));
 			if (temp.isPresent()) {
 				if (temp.isTrue()) {
 					return F.True;
@@ -64,11 +64,11 @@ public class Or extends AbstractCoreFunctionEvaluator {
 				result.set(index, temp);
 				evaled = true;
 			} else {
-				temp = flattendedAST.get(i);
+				temp = flattenedAST.get(i);
 			}
 
 			if (temp.isSymbol()) {
-				symbols[i] = flattendedAST.get(i).hashCode();
+				symbols[i] = flattenedAST.get(i).hashCode();
 			} else if (temp.isNot()) {
 				sym = ((IAST) temp).getAt(1);
 				if (sym.isSymbol()) {

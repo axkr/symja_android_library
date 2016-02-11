@@ -37,10 +37,10 @@ public class And extends AbstractCoreFunctionEvaluator {
 		IExpr sym;
 
 		IAST flattenedAST = EvalAttributes.flatten(ast);
-		if (flattenedAST == null) {
-			flattenedAST = ast;
-		} else {
+		if (flattenedAST.isPresent()) {
 			evaled = true;
+		} else {
+			flattenedAST = ast;
 		}
 
 		IAST result = flattenedAST.clone();

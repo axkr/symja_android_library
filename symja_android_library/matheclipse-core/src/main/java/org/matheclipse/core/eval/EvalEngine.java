@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -581,7 +583,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		IExpr result = evalAttributes(symbol, ast);
-		if (result != null) {
+		if (result.isPresent()) {
 			return result;
 		}
 		// System.out.println(ast.toString());
@@ -607,7 +609,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 
-		if ((result = flattenSequences(ast)) != null) {
+		if ((result = flattenSequences(ast)).isPresent()) {
 			return result;
 		}
 
@@ -653,7 +655,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return evalASTBuiltinFunction(symbol, ast);
 	}
 
-	public IExpr evalASTAttributes(IAST ast) {
+	private IExpr evalASTAttributes(IAST ast) {
 		IExpr head = ast.head();
 		ISymbol symbol = null;
 		if (head instanceof ISymbol) {
@@ -678,7 +680,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param symbol
 	 * @param ast
-	 * @return <code>null</code> if no evaluation happened
+	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	private IExpr evalASTBuiltinFunction(final ISymbol symbol, final IAST ast) {
 		final int attr = symbol.getAttributes();
@@ -690,11 +692,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// Cos,...)
 				if (!(symbol.equals(F.Set) || symbol.equals(F.SetDelayed) || symbol.equals(F.UpSet)
 						|| symbol.equals(F.UpSetDelayed))) {
-					return null;
+					return F.NIL;
 				}
 			} else {
 				if ((ISymbol.NUMERICFUNCTION & attr) != ISymbol.NUMERICFUNCTION) {
-					return null;
+					return F.NIL;
 				}
 			}
 		}
@@ -728,7 +730,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -738,7 +740,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param ast
 	 * @return
 	 */
-	public IExpr evalAttributes(ISymbol symbol, IAST ast) {
+	public IExpr evalAttributes(@Nonnull ISymbol symbol, @Nonnull IAST ast) {
 		IExpr head = ast.head();
 
 		final int astSize = ast.size();
@@ -755,7 +757,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (astSize != 1) {
 			final int attr = symbol.getAttributes();
 
-			if ((result = flattenSequences(ast)) != null) {
+			if ((result = flattenSequences(ast)).isPresent()) {
 				return result;
 			}
 
@@ -764,7 +766,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			IAST flattened = null;
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
-				if ((flattened = EvalAttributes.flatten(ast)) != null) {
+				if ((flattened = EvalAttributes.flatten(ast)).isPresent()) {
 					IAST resultList = evalArgs(flattened, attr);
 					if (resultList != null) {
 						return resultList;
@@ -793,7 +795,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		return null;
+		return F.NIL;
 
 	}
 
@@ -902,7 +904,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
 					IAST result;
-					if ((result = EvalAttributes.flatten(resultList)) != null) {
+					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
 						resultList = result;
 						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 							EvalAttributes.sort(resultList);
@@ -922,7 +924,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
 			IAST result;
-			if ((result = EvalAttributes.flatten(ast)) != null) {
+			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
 				resultList = result;
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 					EvalAttributes.sort(resultList);
@@ -953,7 +955,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *         isn't possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
-	public IExpr evalLoop(final IExpr expr) {
+	public IExpr evalLoop(@Nonnull final IExpr expr) {
 		if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
 			if (Config.DEBUG) {
 				System.out.println(expr.toString());
@@ -1034,7 +1036,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            the object which should be evaluated
 	 * @return the evaluated object
 	 */
-	public final IExpr evalPattern(final IExpr expr) {
+	public final IExpr evalPattern(@Nonnull final IExpr expr) {
 		boolean numericMode = fNumericMode;
 		try {
 			if (expr.isFreeOfPatterns()) {
@@ -1063,7 +1065,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            the object which should be evaluated
 	 * @return an <code>IPatterMatcher</code> cretaed from the given expression.
 	 */
-	public final IPatternMatcher evalPatternMatcher(final IExpr expr) {
+	public final IPatternMatcher evalPatternMatcher(@Nonnull final IExpr expr) {
 		IExpr temp = evalPattern(expr);
 		return new PatternMatcher(temp);
 	}
@@ -1213,7 +1215,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
 					IAST result;
-					if ((result = EvalAttributes.flatten(resultList)) != null) {
+					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
 						return result.optional(evalSetOrderless(result, attr, noEvaluation, level));
 					}
 				}
@@ -1228,7 +1230,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
 			IAST result;
-			if ((result = EvalAttributes.flatten(ast)) != null) {
+			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
 				return result.optional(evalSetOrderless(result, attr, noEvaluation, level));
 			}
 		}
@@ -1247,7 +1249,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					return null;
 				}
 				if (ast.isTimes()) {
-					IExpr temp =  Times.CONST.evaluate(ast, null);
+					IExpr temp = Times.CONST.evaluate(ast, null);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -1388,16 +1390,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	private IAST flattenSequences(final IAST ast) {
-		IAST seqResult = null;
+		IAST seqResult = F.NIL;
 		final int astSize = ast.size();
 		for (int i = 1; i < astSize; i++) {
 			if (ast.get(i).isSequence()) {
 				IAST seq = (IAST) ast.get(i);
-				if (seqResult == null) {
+				if (!seqResult.isPresent()) {
 					seqResult = ast.copyUntil(i);
 				}
 				seqResult.addAll(seq, 1, seq.size());
-			} else if (seqResult != null) {
+			} else if (seqResult.isPresent()) {
 				seqResult.add(ast.get(i));
 			}
 		}
