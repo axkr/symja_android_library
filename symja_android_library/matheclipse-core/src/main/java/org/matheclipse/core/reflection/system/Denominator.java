@@ -60,7 +60,7 @@ public class Denominator extends AbstractEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

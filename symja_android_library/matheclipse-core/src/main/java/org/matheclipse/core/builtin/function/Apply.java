@@ -40,7 +40,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 		boolean heads = false;
 		final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex, engine);
 		IExpr option = options.getOption("Heads");
-		if (option != null) {
+		if (option.isPresent()) {
 			lastIndex--;
 			if (option.isTrue()) {
 				heads = true;

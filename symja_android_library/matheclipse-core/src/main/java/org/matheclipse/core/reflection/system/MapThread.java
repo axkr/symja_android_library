@@ -24,11 +24,7 @@ public class MapThread extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr apply(final IExpr firstArg) {
 			if (firstArg.isAST()) {
-				IExpr result = Thread.threadList((IAST) firstArg, F.List, fConstant);
-				if (result == null) {
-					return firstArg;
-				}
-				return result;
+				return Thread.threadList((IAST) firstArg, F.List, fConstant).orElse(firstArg);
 			}
 			return firstArg;
 		}

@@ -30,7 +30,7 @@ public class PolynomialRemainder extends PolynomialQuotientRemainder {
 		if (ast.size() == 5) {
 			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr option = options.getOption("Modulus");
-			if (option != null && option.isSignedNumber()) {
+			if (option.isSignedNumber()) {
 				IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 				if (result == null) {
 					return F.NIL;
@@ -41,7 +41,7 @@ public class PolynomialRemainder extends PolynomialQuotientRemainder {
 		}
 		IExpr[] result = quotientRemainder(arg1, arg2, variable);
 		if (result == null) {
-			return null;
+			return F.NIL;
 		}
 		return result[1];
 	}

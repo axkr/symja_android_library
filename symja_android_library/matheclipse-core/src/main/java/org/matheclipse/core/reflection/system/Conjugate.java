@@ -26,7 +26,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 
 		IExpr arg1 = ast.arg1();
 		IExpr temp = conjugate(arg1);
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 		if (arg1.isPlus() || arg1.isTimes()) {
@@ -35,7 +35,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 			int i = 1;
 			while (i < clone.size()) {
 				temp = conjugate(clone.get(i));
-				if (temp != null) {
+				if (temp.isPresent()) {
 					clone.remove(i);
 					if (result == null) {
 						result = ((IAST) arg1).copyHead();
@@ -64,7 +64,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 	 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
 	 * 
 	 * @param arg1
-	 * @return <code>null</code> if the evaluation wasn't possible
+	 * @return <code>F.NIL</code> if the evaluation wasn't possible
 	 */
 	private IExpr conjugate(IExpr arg1) {
 		if (arg1.isNumber()) {
@@ -89,7 +89,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 		if (arg1.isIndeterminate()) {
 			return F.Indeterminate;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

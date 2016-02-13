@@ -29,8 +29,8 @@ public class Extract extends AbstractFunctionEvaluator {
 				final int arg2Size = arg2.size();
 				for (int i = 1; i < arg2Size; i++) {
 					IExpr temp = extract(arg1, arg2.getAST(i));
-					if (temp == null) {
-						return null;
+					if (!temp.isPresent()) {
+						return F.NIL;
 					}
 					result.add(temp);
 				}
@@ -38,10 +38,6 @@ public class Extract extends AbstractFunctionEvaluator {
 			}
 			return extract(arg1, arg2);
 		}
-		// if (ast.size() == 4 && ast.arg1().isAST()) {
-		// LevelSpec level = new LevelSpecification(f, (IExpr) ast.arg3());
-		// return extract((IAST) ast.arg1(), ast.arg2(), level);
-		// }
 		return F.NIL;
 	}
 
@@ -55,7 +51,7 @@ public class Extract extends AbstractFunctionEvaluator {
 			// NestedFinding.position(list, resultList, pos, 1);
 			// return resultList;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -64,12 +60,14 @@ public class Extract extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Traverse all <code>list</code> element's and filter out the elements in the given <code>positions</code> list.
+	 * Traverse all <code>list</code> element's and filter out the elements in
+	 * the given <code>positions</code> list.
 	 * 
 	 * @param list
 	 * @param positions
 	 * @param positionConverter
-	 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position objects in
+	 *            the <code>positionConverter</code> creates an <code>int</code>
+	 *            value from the given position objects in
 	 *            <code>positions</code>.
 	 * @param headOffsez
 	 */
@@ -82,7 +80,7 @@ public class Extract extends AbstractFunctionEvaluator {
 		for (int i = headOffset; i <= posSize; i++) {
 			p = positionConverter.toInt(positions.get(i));
 			if (temp == null || temp.size() <= p || p < 0) {
-				return null;
+				return F.NIL;
 			}
 			expr = temp.get(p);
 			if (expr.isAST()) {

@@ -30,9 +30,11 @@ import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 /**
- * Evaluate the partial fraction decomposition of a univariate polynomial fraction.
+ * Evaluate the partial fraction decomposition of a univariate polynomial
+ * fraction.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia - Partial fraction decomposition</a>
+ * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia -
+ * Partial fraction decomposition</a>
  */
 public class Apart extends AbstractFunctionEvaluator {
 
@@ -73,13 +75,14 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and
-	 * denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial
+	 * fraction decomposition of the numerator and denominator parts.
 	 * 
 	 * @deprecated untested at the moment
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
+	 * @return <code>null</code> if the partial fraction decomposition wasn't
+	 *         constructed
 	 */
 	@Deprecated
 	public static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
@@ -145,12 +148,13 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator and
-	 * denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial
+	 * fraction decomposition of the numerator and denominator parts.
 	 * 
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
+	 * @return <code>null</code> if the partial fraction decomposition wasn't
+	 *         constructed
 	 */
 	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
 		try {
@@ -206,7 +210,8 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating
+	 * positive and negative powers.
 	 * 
 	 * @param arg
 	 * @return the numerator and denominator expression
@@ -223,10 +228,12 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating
+	 * positive and negative powers.
 	 * 
 	 * @param arg
-	 * @return the numerator and denominator expression or <code>null</code> if no denominator was found.
+	 * @return the numerator and denominator expression or <code>null</code> if
+	 *         no denominator was found.
 	 */
 	public static IExpr[] getFractionalParts(final IExpr arg) {
 		IExpr[] parts = null;
@@ -244,7 +251,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		} else {
 			if (arg.isAST()) {
 				IAST denomForm = Denominator.getDenominatorForm((IAST) arg);
-				if (denomForm != null) {
+				if (denomForm.isPresent()) {
 					parts = new IExpr[2];
 					parts[0] = F.C1;
 					parts[1] = denomForm;
@@ -256,22 +263,25 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Return the numerator and denominator for the given <code>Times[...]</code> AST, by separating positive and negative powers.
+	 * Return the numerator and denominator for the given
+	 * <code>Times[...]</code> AST, by separating positive and negative powers.
 	 * 
 	 * @param timesAST
 	 *            a times expression (a*b*c....)
 	 * @param splitNumeratorOne
-	 *            split a fractional number into numerator and denominator, only if the numerator is 1, if <code>true</code>, ignore
+	 *            split a fractional number into numerator and denominator, only
+	 *            if the numerator is 1, if <code>true</code>, ignore
 	 *            <code>splitFractionalNumbers</code> parameter.
 	 * @param splitFractionalNumbers
 	 *            split a fractional number into numerator and denominator
 	 * @param useDenominatorForm
 	 *            try to find a denminator form (Example: Csc[x] gives Sin[x])
-	 * @return the numerator and denominator expression and an optional fractional number (maybe <code>null</code>), if
-	 *         splitNumeratorOne is <code>true</code>.
+	 * @return the numerator and denominator expression and an optional
+	 *         fractional number (maybe <code>null</code>), if splitNumeratorOne
+	 *         is <code>true</code>.
 	 */
-	public static IExpr[] getFractionalPartsTimes(final IAST timesAST, boolean splitNumeratorOne, boolean splitFractionalNumbers,
-			boolean useDenominatorForm) {
+	public static IExpr[] getFractionalPartsTimes(final IAST timesAST, boolean splitNumeratorOne,
+			boolean splitFractionalNumbers, boolean useDenominatorForm) {
 		IExpr[] result = new IExpr[3];
 		result[2] = null;
 		IAST numerator = F.Times();
@@ -286,7 +296,7 @@ public class Apart extends AbstractFunctionEvaluator {
 				argAST = (IAST) arg;
 				if (useDenominatorForm && argAST.size() == 2) {
 					IAST denomForm = Denominator.getDenominatorForm(argAST);
-					if (denomForm != null) {
+					if (denomForm.isPresent()) {
 						denominator.add(denomForm);
 						evaled = true;
 						continue;
@@ -347,7 +357,8 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Return the denominator for the given <code>Power[...]</code> AST, by separating positive and negative powers.
+	 * Return the denominator for the given <code>Power[...]</code> AST, by
+	 * separating positive and negative powers.
 	 * 
 	 * @param powerAST
 	 *            a power expression (a^b)
@@ -366,7 +377,7 @@ public class Apart extends AbstractFunctionEvaluator {
 					// positive integer
 					IAST function = (IAST) powerAST.arg1();
 					IAST denomForm = Denominator.getDenominatorForm(function);
-					if (denomForm != null) {
+					if (denomForm.isPresent()) {
 						return F.Power(denomForm, sn);
 					}
 				}

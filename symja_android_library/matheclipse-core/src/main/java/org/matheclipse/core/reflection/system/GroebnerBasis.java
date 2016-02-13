@@ -49,16 +49,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 					}
 					List<ISymbol> varList = new ArrayList<ISymbol>(vars.size() - 1);
 					String[] pvars = new String[vars.size() - 1];
-					// if (termOrder.getEvord() == TermOrder.REVITDG) {
-					// for (int i = 1; i < vars.size(); i++) {
-					// if (!vars.get(i).isSymbol()) {
-					// return null;
-					// }
-					// varList.add((ISymbol) vars.get(pvars.length-i+1));
-					// pvars[pvars.length-i] = ((ISymbol)
-					// vars.get(i)).toString();
-					// }
-					// } else {
+				 
 					for (int i = 1; i < vars.size(); i++) {
 						if (!vars.get(i).isSymbol()) {
 							return F.NIL;
@@ -66,7 +57,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 						varList.add((ISymbol) vars.get(i));
 						pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
 					}
-					// }
+					 
 					GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
 					IAST polys = (IAST) ast.arg1();
 					List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(

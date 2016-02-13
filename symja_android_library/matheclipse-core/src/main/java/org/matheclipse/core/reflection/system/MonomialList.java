@@ -75,7 +75,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				}
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option != null && option.isSignedNumber()) {
+				if (option.isSignedNumber()) {
 					return monomialListModulus(expr, varList, termOrder, option);
 				}
 			}
@@ -155,7 +155,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				ae.printStackTrace();
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

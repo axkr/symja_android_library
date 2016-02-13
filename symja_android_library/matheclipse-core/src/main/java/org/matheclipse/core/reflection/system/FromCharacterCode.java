@@ -20,7 +20,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() != 2) {
-			return null;
+			return F.NIL;
 		}
 
 		if (ast.arg1().isList()) {
@@ -32,7 +32,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 					ch = (char) Validate.checkIntType(list, i);
 					buffer.append(ch);
 				} else {
-					return null;
+					return F.NIL;
 				}
 			}
 			return StringX.valueOf(buffer);
@@ -61,6 +61,6 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 		} catch (final UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return F.NIL;
 	}
 }

@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -27,7 +28,7 @@ public class Out extends AbstractArg1 {
 		} catch (final Exception ae) {
 
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -43,7 +44,7 @@ public class Out extends AbstractArg1 {
 		} catch (final Exception ae) {
 
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

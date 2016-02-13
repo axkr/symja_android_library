@@ -127,17 +127,6 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 		return Math.cos(stack[top]);
 	}
 
-	// public IExpr evalInteger(IInteger i) {
-	// if (i.equals(F.C0)) {
-	// return F.C1;
-	// }
-	// return null;
-	// }
-
-	// public void setUp(ISymbol symbol) throws SyntaxError {
-	// super.setUp(symbol);
-	// createRuleFromMethodName(symbol, "Cos[x_Integer]", "evalInteger");
-	// }
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

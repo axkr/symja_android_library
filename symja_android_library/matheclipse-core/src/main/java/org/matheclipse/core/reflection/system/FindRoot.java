@@ -48,11 +48,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
 			IExpr optionMaxIterations = options.getOption("MaxIterations");
-			if (optionMaxIterations != null && optionMaxIterations.isSignedNumber()) {
+			if (optionMaxIterations.isSignedNumber()) {
 				maxIterations = ((ISignedNumber) optionMaxIterations).toInt();
 			}
 			IExpr optionMethod = options.getOption("Method");
-			if (optionMethod != null && optionMethod.isSymbol()) {
+			if (optionMethod.isSymbol()) {
 				method = ((ISymbol) optionMethod);
 			} else {
 				if (ast.arg3().isSymbol()) {

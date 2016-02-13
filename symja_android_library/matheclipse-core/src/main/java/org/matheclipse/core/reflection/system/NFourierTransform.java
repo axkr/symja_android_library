@@ -29,7 +29,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 		if (ast.size() > 4) {
 			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr optionFourierParameters = options.getOption("FourierParameters");
-			if (optionFourierParameters != null && optionFourierParameters.isList()) {
+			if (optionFourierParameters.isList()) {
 				// analyze the parameters, if they are correct
 			}
 		}

@@ -152,18 +152,18 @@ public class Factor extends AbstractFunctionEvaluator {
 			final EvalEngine engine) throws JASConversionException {
 		final Options options = new Options(ast.topHead(), ast, 2, engine);
 		IExpr option = options.getOption("Modulus");
-		if (option != null && option.isSignedNumber()) {
+		if (option.isSignedNumber()) {
 			return factorModulus(expr, varList, factorSquareFree, option);
 		}
 		option = options.getOption("GaussianIntegers");
-		if (option != null && option.isTrue()) {
+		if (option.isTrue()) {
 			return factorComplex(expr, varList, F.Times, false, false);
 		}
 		option = options.getOption("Extension");
-		if (option != null && option.equals(F.CI)) {
+		if (option.equals(F.CI)) {
 			return factorComplex(expr, varList, F.Times, false, false);
 		}
-		return null; // no evaluation
+		return F.NIL; // no evaluation
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class Factor extends AbstractFunctionEvaluator {
 				ae.printStackTrace();
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing, GenPolynomial<ModLong> poly,

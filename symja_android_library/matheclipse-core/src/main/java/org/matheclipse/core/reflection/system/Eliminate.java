@@ -237,7 +237,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 */
 	private static IAST checkEquations(final IAST ast, int position) {
 		IAST equalList = F.List();
-		IAST eqns = null;
+		IAST eqns = F.NIL;
 		IAST eq;
 		if (ast.get(position).isList()) {
 			eqns = (IAST) ast.get(position);
@@ -271,7 +271,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            an <code>Equal()</code> expression.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>null</code> if we can't find an equation for the given
+	 * @return <code>F.NIL</code> if we can't find an equation for the given
 	 *         <code>variable</code>.
 	 */
 	private static IExpr eliminateAnalyze(IAST equalAST, ISymbol variable) {
@@ -280,7 +280,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		Predicate<IExpr> predicate = Predicates.in(variable);
 		boolean boolArg1 = arg1.isFree(predicate, true);
 		boolean boolArg2 = arg2.isFree(predicate, true);
-		IExpr result = null;
+		IExpr result = F.NIL;
 		if (!boolArg1 && boolArg2) {
 			result = extractVariable(arg1, arg2, predicate, variable);
 		} else if (boolArg1 && !boolArg2) {
@@ -299,7 +299,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            <code>variabe</code>.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>null</code> if we can't find an equation for the given
+	 * @return <code>F.NIL</code> if we can't find an equation for the given
 	 *         <code>variable</code>.
 	 */
 	public static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
@@ -308,7 +308,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			IAST ast = (IAST) exprWithVariable;
 			if (ast.size() == 2) {
 				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
-				if (inverseFunction != null) {
+				if (inverseFunction.isPresent()) {
 					// example: Sin(f(x)) == y -> f(x) == ArcSin(y)
 					inverseFunction.add(exprWithoutVariable);
 					return extractVariable(ast.arg1(), inverseFunction, predicate, variable);
@@ -329,7 +329,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					}
 					if (plusClone.size() == 1) {
 						// no change for given expression
-						return null;
+						return F.NIL;
 					}
 					IExpr value = F.Subtract(exprWithoutVariable, plusClone);
 					return extractVariable(rest.getOneIdentity(F.C0), value, predicate, variable);
@@ -348,7 +348,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					}
 					if (timesClone.size() == 1) {
 						// no change for given expression
-						return null;
+						return F.NIL;
 					}
 					IExpr value = F.Divide(exprWithoutVariable, timesClone);
 					return extractVariable(rest.getOneIdentity(F.C1), value, predicate, variable);
@@ -367,7 +367,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		} else if (exprWithVariable.equals(variable)) {
 			return exprWithoutVariable;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public Eliminate() {
@@ -381,7 +381,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            list of <code>Equal()</code> terms
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>null</code> if we can't eliminate an equation from the list
+	 * @return <code>F.NIL</code> if we can't eliminate an equation from the list
 	 *         for the given <code>variabe</code>
 	 */
 	public IAST eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, ISymbol variable) {
@@ -392,7 +392,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			exprAnalyzer = analyzerList.get(i);
 			equalAST = exprAnalyzer.getExpr();
 			IExpr variableExpr = eliminateAnalyze(equalAST, variable);
-			if (variableExpr != null) {
+			if (variableExpr.isPresent()) {
 				variableExpr = F.eval(variableExpr);
 				IExpr temp;
 				IExpr expr;
@@ -412,7 +412,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */
@@ -442,7 +442,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				Collections.sort(analyzerList);
 
 				temp = eliminateOneVariable(analyzerList, variable);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result = temp;
 				} else {
 					return result;

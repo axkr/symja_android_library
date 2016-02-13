@@ -44,7 +44,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	 *            symbol of the comparator operator for which the simplification was started
 	 * @param oppositeHead
 	 *            opposite of the symbol of the comparator operator for which the comparison was started
-	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
 	 */
 	final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
 		IExpr lhs;
@@ -80,7 +80,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			IExpr result = simplifyCompare(arg1, arg2);
-			if (result != null) {
+			if (result.isPresent()) {
 				// the result may return an AST with an "opposite header" (i.e. Less instead of Greater)
 				return result;
 			}

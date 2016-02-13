@@ -80,7 +80,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 	public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList, final EvalEngine engine) throws JASConversionException {
 		final Options options = new Options(lst.topHead(), lst, 2, engine);
 		IExpr option = options.getOption("Modulus");
-		if (option != null && option.isSignedNumber()) {
+		if (option.isSignedNumber()) {
 
 			// found "Modulus" option => use ModIntegerRing
 			ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber)option);
@@ -91,7 +91,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 			return factorAbstract.isSquarefree(poly);
 		}
 		// option = options.getOption("GaussianIntegers");
-		// if (option != null && option.equals(F.True)) {
+		// if (option.equals(F.True)) {
 		// try {
 		// ComplexRing<edu.jas.arith.BigInteger> fac = new
 		// ComplexRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ONE);

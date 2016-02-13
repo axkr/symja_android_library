@@ -74,7 +74,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 			INum num = (INum) arg1;
 			return F.num(num.getRealPart() % 1);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

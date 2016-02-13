@@ -125,7 +125,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 		} else if (arg1 > 0) {
 			return F.CD0;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

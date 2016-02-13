@@ -50,11 +50,11 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			// method = (ISymbol) ast.arg3();
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
 			IExpr option = options.getOption("Method");
-			if (option != null && option.isSymbol()) {
+			if (option.isSymbol()) {
 				method = (ISymbol) option;
 			}
 			option = options.getOption("MaxPoints");
-			if (option != null && option.isSignedNumber()) {
+			if (option.isSignedNumber()) {
 				try {
 					maxPoints = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
@@ -62,7 +62,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				}
 			}
 			option = options.getOption("MaxIterations");
-			if (option != null && option.isSignedNumber()) {
+			if (option.isSignedNumber()) {
 				try {
 					maxIterations = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {

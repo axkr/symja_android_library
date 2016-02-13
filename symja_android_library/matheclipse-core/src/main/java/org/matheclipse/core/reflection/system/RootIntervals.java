@@ -53,7 +53,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 			VariablesSet eVar = new VariablesSet(arg);
 			if (!eVar.isSize(1)) {
 				// only possible for univariate polynomials
-				return null;
+				return F.NIL;
 			}
 			IExpr expr = F.evalExpandAll(arg);
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -104,7 +104,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

@@ -27,8 +27,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 		if (result.isNumber()) {
 			if (result.isComplex()) {
 				IComplex comp = (IComplex) result;
-				// NOTE: compare with operator == because of possible null values
-				if (isSignedNumberDivisible(comp.getRe()) == F.True && isSignedNumberDivisible(comp.getIm()) == F.True) {
+				if (isSignedNumberDivisible(comp.getRe()).isTrue() && isSignedNumberDivisible(comp.getIm()).isTrue()) {
 					return F.True;
 				}
 				return F.False;
@@ -42,7 +41,8 @@ public class Divisible extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Return F.True or F.False if result is divisible. Return <code>null</code>, if the result could not be determined.
+	 * Return F.True or F.False if result is divisible. Return
+	 * <code>F.NIL</code>, if the result could not be determined.
 	 * 
 	 * @param result
 	 * @return
@@ -57,7 +57,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 				result.toLong();
 				return F.True;
 			} catch (ArithmeticException ae) {
-				return null;
+				return F.NIL;
 			}
 		}
 		return F.False;

@@ -28,7 +28,7 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 			return Num.valueOf(org.apache.commons.math4.special.Erf.erfInv(arg1));
 		} catch (final MaxCountExceededException e) {
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

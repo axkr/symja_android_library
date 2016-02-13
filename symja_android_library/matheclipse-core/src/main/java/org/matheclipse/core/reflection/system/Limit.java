@@ -505,7 +505,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (ast.size() == 4) {
 			final Options options = new Options(ast.topHead(), ast, 2, engine);
 			IExpr option = options.getOption("Direction");
-			if (option != null) {
+			if (option.isPresent()) {
 				if (option.isOne()) {
 					direction = DIRECTION_FROM_SMALLER_VALUES;
 				} else if (option.isMinusOne()) {

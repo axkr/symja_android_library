@@ -125,7 +125,7 @@ public class Product extends Table implements ProductRules {
 			}
 			IAST resultList = Times();
 			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
-			if (temp == null || temp.equals(resultList)) {
+			if (!temp.isPresent() || temp.equals(resultList)) {
 				return F.NIL;
 			}
 			if (ast.size() == 3) {

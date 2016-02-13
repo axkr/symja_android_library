@@ -64,7 +64,7 @@ public class Fit extends AbstractFunctionEvaluator {
 			} else {
 				int rowSize = ast.arg1().isVector();
 				if (rowSize < 0) {
-					return null;
+					return F.NIL;
 				}
 				final double[] elements = Expr2Object.toDoubleVector((IAST) ast.arg1());
 				for (int i = 0; i < elements.length; i++) {

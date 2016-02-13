@@ -65,7 +65,7 @@ public class Sign extends AbstractEvaluator {
 			IComplexNum c = (IComplexNum) arg1;
 			return c.divide(F.num(c.dabs()));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public class D extends AbstractFunctionEvaluator {
 			}
 			return F.Times(F.D(a1, x), fDerivParam);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class D extends AbstractFunctionEvaluator {
 			}
 			return F.Times(F.D(a1, x), fDerivParam);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

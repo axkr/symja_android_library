@@ -26,7 +26,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 				IAST list = (IAST) arg1;
 				for (int i = 1; i < list.size(); i++) {
 					if (!list.get(i).isAST()){
-						return null;
+						return F.NIL;
 					}
 				}
 				IAST result = F.List();

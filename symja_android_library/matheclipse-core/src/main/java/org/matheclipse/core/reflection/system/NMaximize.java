@@ -11,6 +11,7 @@ import org.apache.commons.math4.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -40,7 +41,7 @@ public class NMaximize extends NMinimize {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

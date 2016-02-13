@@ -61,7 +61,7 @@ public class Thread extends AbstractFunctionEvaluator {
 				} else {
 					if (listLength != ((IAST) list.get(i)).size() - 1) {
 						listLength = 0;
-						return null;
+						return F.NIL;
 						// for loop
 					}
 				}

@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.Options;
 import static org.matheclipse.core.expression.F.ReplaceAll;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -95,11 +96,7 @@ public class Options {
 	 *         <code>false</code> otherwise.
 	 */
 	public boolean isOption(final String optionString) {
-		IExpr temp = getOption(optionString);
-		if (temp != null) {
-			return temp.isTrue();
-		}
-		return false;
+		return getOption(optionString).isTrue(); 
 	}
 
 	/**
@@ -107,7 +104,7 @@ public class Options {
 	 * 
 	 * @param optionString
 	 *            the option string
-	 * @return the found option value or <code>null</code> if the option is not
+	 * @return the found option value or <code>F.NIL</code> if the option is not
 	 *         available
 	 */
 	public IExpr getOption(final String optionString) {
@@ -140,7 +137,7 @@ public class Options {
 
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr getOption(final ISymbol option) {
@@ -173,7 +170,7 @@ public class Options {
 
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IAST replaceAll(final IAST options) {
@@ -189,7 +186,7 @@ public class Options {
 	public TermOrder getMonomialOrder(final IAST ast, final TermOrder defaultTermOrder) {
 		TermOrder termOrder = defaultTermOrder;
 		IExpr option = getOption("MonomialOrder");
-		if (option != null && option.isSymbol()) {
+		if (option.isSymbol()) {
 			String orderStr = option.toString();
 			termOrder = getMonomialOrder(orderStr, termOrder);
 		}

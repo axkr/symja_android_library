@@ -33,7 +33,6 @@ public class MapAt extends AbstractFunctionEvaluator {
 					return ((IAST) arg2).setAtCopy(n, Functors.append(arg1Function).apply(((IAST) arg2).get(n)));
 				}
 			} catch (RuntimeException ae) {
-				return null;
 			}
 		}
 		return F.NIL;

@@ -71,7 +71,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 				}
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option != null && option.isSignedNumber()) {
+				if (option.isSignedNumber()) {
 					return coefficientRulesModulus(expr, varList, termOrder, option);
 				}
 			}

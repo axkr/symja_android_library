@@ -41,9 +41,9 @@ public class TrigExpand extends AbstractEvaluator {
 
 		IExpr temp = ast.arg1();
 		IExpr result = temp;
-		while (temp != null) {
+		while (temp.isPresent()) {
 			result = evalExpandAll(temp);
-			temp = null;
+			temp = F.NIL;
 			if (result.isAST() && ((IAST) result).size() == 2) {
 				if (result.getAt(1).isPlus()) {
 					if (result.isSin()) {
@@ -74,7 +74,7 @@ public class TrigExpand extends AbstractEvaluator {
 					}
 				}
 			}
-			if (temp != null) {
+			if (temp.isPresent()) {
 				result = temp;
 			}
 		}
@@ -83,7 +83,7 @@ public class TrigExpand extends AbstractEvaluator {
 
 	private IExpr expandSinPlus(IAST plusAST, int startPosition) {
 		if (startPosition > plusAST.size() - 2) {
-			return null;
+			return F.NIL;
 		}
 		IAST result = Plus();
 		if (startPosition == plusAST.size() - 2) {
@@ -98,7 +98,7 @@ public class TrigExpand extends AbstractEvaluator {
 
 	private IExpr expandCosPlus(IAST plusAST, int startPosition) {
 		if (startPosition > plusAST.size() - 2) {
-			return null;
+			return F.NIL;
 		}
 		IAST result = Plus();
 		if (startPosition == plusAST.size() - 2) {

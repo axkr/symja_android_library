@@ -14,7 +14,7 @@ public class Reverse extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 		if (functionList.size() != 2) {
-			return null;
+			return F.NIL;
 		}
 		if (!functionList.arg1().isAtom()) {
 			final IAST result = F.ast(functionList.arg1().head());

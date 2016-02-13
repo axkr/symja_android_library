@@ -30,7 +30,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 			return Num.valueOf(org.apache.commons.math4.special.Erf.erf(arg1));
 		} catch (final MaxCountExceededException e) {
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

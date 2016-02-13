@@ -83,7 +83,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 				int[] dim = list.isMatrix();
 				if (dim != null && dim[1] == 2) {
 					if (dim[1] != 2) {
-						return null;
+						return F.NIL;
 					}
 					for (int i = 0; i < n; i++) {
 						IAST row = list.getAST(i + 1);

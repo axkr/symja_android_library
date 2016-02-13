@@ -50,7 +50,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 			List<IExpr> varList = r.toList();
 			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr option = options.getOption("Modulus");
-			if (option != null && option.isSignedNumber()) {
+			if (option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
 					ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);

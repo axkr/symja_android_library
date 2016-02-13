@@ -41,7 +41,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 			if (ast.size() == 4) {
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Heads");
-				if (option != null) {
+				if (option.isPresent()) {
 					if (option.isTrue()) {
 						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
 						return position((IAST) arg1, arg2, level);

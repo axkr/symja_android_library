@@ -38,7 +38,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		IExpr temp = roots(ast, engine);
-		if (temp == null || !temp.isList()) {
+		if (!temp.isList()) {
 			return F.NIL;
 		}
 		IAST list = (IAST) temp;
@@ -118,7 +118,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static IAST quadratic(double a, double b, double c) {

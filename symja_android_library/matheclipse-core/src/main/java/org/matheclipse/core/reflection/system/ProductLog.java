@@ -59,11 +59,6 @@ public class ProductLog extends AbstractArg12 implements ProductLogRules {
 		return F.complexNum(ApcomplexMath.w(arg1));
 	}
 
-	// public IExpr e1ObjArg(final IExpr o) {
-	// System.out.println(o);
-	// return null;
-	// }
-
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

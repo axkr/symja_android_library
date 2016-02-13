@@ -49,29 +49,6 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
 
-	// public static IExpr evalPlusNumbers(IAST ast) {
-	// IAST result = F.Plus();
-	// IExpr num;
-	// if (!ast.arg1().isNumber()) {
-	// return null;
-	// }
-	// if (!ast.arg2().isNumber()) {
-	// return null;
-	// }
-	// num = ast.arg1().plus(ast.arg2());
-	// result.add(num);
-	// for (int i = 3; i < ast.size(); i++) {
-	// if (num.isNumber() && ast.get(i).isNumber()) {
-	// num = num.plus(ast.get(i));
-	// } else {
-	// result.addAll(ast, i, ast.size());
-	// result.set(1, num);
-	// return result;
-	// }
-	// }
-	// return num;
-	// }
-
 	public Plus() {
 
 	}

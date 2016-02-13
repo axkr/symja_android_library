@@ -26,7 +26,8 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			final int n = listArg0.size() - 1;
 			final int k = ((IInteger) ast.arg2()).getBigNumerator().intValue();
 			final IAST result = F.ast(F.List);
-			final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(listArg0, n, 1);
+			final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
+					listArg0, n, 1);
 			final KPartitions.KPartitionsIterable partitionIterator = new KPartitions.KPartitionsIterable(n, k);
 			IAST partition;
 
@@ -35,7 +36,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 				// second generate all partitions:
 				for (int partitionsIndex[] : partitionIterator) {
 					partition = createSinglePartition(listArg0, sym, permutationsIndex, partitionsIndex);
-					if (partition != null) {
+					if (partition.isPresent()) {
 						result.add(partition);
 					}
 				}
@@ -70,8 +71,9 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			} else {
 				for (int m = partitionStartIndex; m < partitionsIndex[i]; m++) {
 					if (m + 1 < partitionsIndex[i]) {
-						if ((listArg0.get(permutationsIndex[m + 1] + 1)).isLTOrdered(listArg0.get(permutationsIndex[m] + 1))) {
-							return null;
+						if ((listArg0.get(permutationsIndex[m + 1] + 1))
+								.isLTOrdered(listArg0.get(permutationsIndex[m] + 1))) {
+							return F.NIL;
 						}
 					}
 					partitionElement.add(listArg0.get(permutationsIndex[m] + 1));
@@ -94,8 +96,9 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 		} else {
 			for (int m = partitionStartIndex; m < n; m++) {
 				if (m + 1 < n) {
-					if ((listArg0.get(permutationsIndex[m + 1] + 1)).isLTOrdered(listArg0.get(permutationsIndex[m] + 1))) {
-						return null;
+					if ((listArg0.get(permutationsIndex[m + 1] + 1))
+							.isLTOrdered(listArg0.get(permutationsIndex[m] + 1))) {
+						return F.NIL;
 					}
 				}
 				partitionElement.add(listArg0.get(permutationsIndex[m] + 1));

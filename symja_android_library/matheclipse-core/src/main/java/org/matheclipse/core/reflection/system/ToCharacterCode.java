@@ -26,9 +26,7 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		
-		IAST resultList = List();
-		resultList = (IAST) toCharacterCode(ast.arg1().toString(), "UTF-8", resultList);
-		return resultList;
+		return toCharacterCode(ast.arg1().toString(), "UTF-8", List());
 	}
 
 	@Override
@@ -36,7 +34,7 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
-	public static List<IExpr> toCharacterCode(final String unicodeInput, final String inputEncoding, final List<IExpr> list) {
+	public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding, final IAST list) {
 		try {
 			final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 			int characterCode;
@@ -48,6 +46,6 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 		} catch (final UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return F.NIL;
 	}
 }

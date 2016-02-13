@@ -22,7 +22,7 @@ public class StringJoin extends AbstractFunctionEvaluator {
 			if (ast.get(i) instanceof IStringX) {
 				buf.append(ast.get(i).toString());
 			} else {
-				return null;
+				return F.NIL;
 			}
 		}
 		return F.stringx(buf.toString());

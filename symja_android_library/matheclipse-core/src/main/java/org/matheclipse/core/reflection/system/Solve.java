@@ -160,7 +160,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (expr.isAST()) {
 					IAST function = (IAST) expr;
 					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
-					if (inverseFunction != null) {
+					if (inverseFunction.isPresent()) {
 						IExpr temp = rewriteInverseFunction(plusAST, i);
 						if (temp.isPresent()) {
 							return temp;
@@ -219,7 +219,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				int position = vars.findFirstEquals(ast.arg1());
 				if (position > 0) {
 					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
-					if (inverseFunction != null) {
+					if (inverseFunction.isPresent()) {
 						// rewrite fNumer
 						inverseFunction.add(arg1);
 						return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));

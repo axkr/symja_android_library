@@ -117,7 +117,7 @@ public class Replace extends AbstractEvaluator {
 			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 			engine.printMessage(wat.getMessage());
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules, IExpr exprLevelSpecification,

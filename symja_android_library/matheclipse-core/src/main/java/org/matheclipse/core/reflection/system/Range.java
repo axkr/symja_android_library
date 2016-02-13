@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.TableGenerator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryRangeFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -37,7 +38,7 @@ public class Range extends AbstractEvaluator {
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

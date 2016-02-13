@@ -46,7 +46,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 		if (ast.size() > 3) {
 			final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 			IExpr option = options.getOption("Modulus");
-			if (option != null && option.isSignedNumber()) {
+			if (option.isSignedNumber()) {
 				try {
 					// found "Modulus" option => use ModIntegerRing
 					ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -66,7 +66,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 					if (Config.DEBUG) {
 						e.printStackTrace();
 					}
-					return null;
+					return F.NIL;
 				}
 			}
 		}

@@ -169,16 +169,6 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	public static IExpr derivative(int n, int m, ISymbol symbol) {
 		IAST listKey = F.List(symbol, F.integer(n), F.integer(m));
 		return DERIVATIVE_N_M_MAP.get(listKey);
-		// if (result != null) {
-		// // replace Slot[2] with the integer number
-		// IAST slotsList = F.List(null, null, df, dg);
-		// IExpr temp = result.replaceSlots(slotsList);
-		// if (temp != null) {
-		// return temp;
-		// }
-		// return result;
-		// }
-		// return null;
 	}
 
 	@Override

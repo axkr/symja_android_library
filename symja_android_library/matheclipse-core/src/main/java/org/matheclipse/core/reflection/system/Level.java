@@ -25,7 +25,7 @@ public class Level extends AbstractFunctionEvaluator {
 		boolean heads = false;
 		final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
 		IExpr option = options.getOption("Heads");
-		if (option != null) {
+		if (option.isPresent()) {
 			lastIndex--;
 			if (option.isTrue()) {
 				heads = true;

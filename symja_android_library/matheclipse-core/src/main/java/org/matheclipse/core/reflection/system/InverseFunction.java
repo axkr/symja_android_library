@@ -87,7 +87,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 				return F.ast(inverseSymbol);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

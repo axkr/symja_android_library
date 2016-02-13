@@ -41,7 +41,7 @@ public class Table extends AbstractFunctionEvaluator {
 	 *            the result list to which the generated expressions should be appended.
 	 * @param defaultValue
 	 *            the default value used in the iterator
-	 * @return <code>null</code> if no evaluation is possible
+	 * @return <code>F.NIL</code> if no evaluation is possible
 	 */
 	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue) {
 		try {
@@ -60,7 +60,7 @@ public class Table extends AbstractFunctionEvaluator {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class Table extends AbstractFunctionEvaluator {
 	 *            the result list to which the generated expressions should be appended.
 	 * @param defaultValue
 	 *            the default value used if the iterator is invalid
-	 * @return <code>null</code> if no evaluation is possible
+	 * @return <code>F.NIL</code> if no evaluation is possible
 	 * @see Product
 	 * @see Sum
 	 */
@@ -88,7 +88,7 @@ public class Table extends AbstractFunctionEvaluator {
 			// the iterators are generated only from IASTs
 		} catch (final NoEvalException e) {
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

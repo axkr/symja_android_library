@@ -119,7 +119,7 @@ public class ConstantArray extends AbstractEvaluator {
 		} catch (final ArithmeticException e) {
 			// the toInt() function throws ArithmeticExceptions
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

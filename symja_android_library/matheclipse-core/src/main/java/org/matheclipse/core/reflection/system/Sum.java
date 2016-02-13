@@ -53,9 +53,9 @@ public class Sum extends Table implements SumRules {
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
 			arg1 = F.expand(arg1, false, false);
-			if (arg1 == null) {
-				arg1 = ast.arg1();
-			}
+//			if (arg1 == null) {
+//				arg1 = ast.arg1();
+//			}
 		}
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtCopy(1, null);
@@ -73,7 +73,7 @@ public class Sum extends Table implements SumRules {
 			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-				if (temp != null && !temp.equals(resultList)) {
+				if (temp.isPresent() && !temp.equals(resultList)) {
 					if (ast.size() == 3) {
 						return temp;
 					} else {
@@ -90,7 +90,7 @@ public class Sum extends Table implements SumRules {
 		if (arg1.isTimes()) {
 			if (variablesSet.size() > 0) {
 				temp = collectConstantFactors(ast, (IAST) arg1, variablesSet);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}
@@ -117,7 +117,7 @@ public class Sum extends Table implements SumRules {
 				if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
 
 					temp = definiteSum(arg1, iterator, (IAST) argN, engine);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						if (ast.size() == 3) {
 							return temp;
 						}
@@ -132,7 +132,7 @@ public class Sum extends Table implements SumRules {
 
 		} else if (argN.isSymbol()) {
 			temp = indefiniteSum(arg1, (ISymbol) argN);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				if (ast.size() == 3) {
 					return temp;
 				} else {
@@ -156,7 +156,7 @@ public class Sum extends Table implements SumRules {
 			reducedSum.set(1, restAST.getOneIdentity(F.C1));
 			return F.Times(filterAST.getOneIdentity(F.C0), reducedSum);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -214,13 +214,13 @@ public class Sum extends Table implements SumRules {
 			}
 
 			if (!engine.evalTrue(F.Greater(C0, from)) && !engine.evalTrue(F.Greater(from, to))) {
-				IExpr temp = null;
+				IExpr temp = F.NIL;
 				if (arg1.isPower()) {
 					temp = sumPower((IAST) arg1, var, from, to);
 				} else if (arg1.equals(var)) {
 					temp = sumPowerFormula(from, to, F.C1);
 				}
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}
@@ -247,7 +247,7 @@ public class Sum extends Table implements SumRules {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -281,7 +281,7 @@ public class Sum extends Table implements SumRules {
 		} else if (arg1.equals(var)) {
 			return sumPowerFormula(F.C1, var, F.C1);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -304,7 +304,7 @@ public class Sum extends Table implements SumRules {
 				return sumPowerFormula(from, to, p);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -325,7 +325,7 @@ public class Sum extends Table implements SumRules {
 		// (var+1)^(p+1)/(p+1) +
 		// Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1),
 		// {k,1,p}]
-		IExpr term1 = null;
+		IExpr term1=F.NIL;
 		if (!from.isOne()) {
 			IExpr fromMinusOne = F.Plus(F.CN1, from);
 			if (p.isOne()) {
@@ -345,7 +345,7 @@ public class Sum extends Table implements SumRules {
 												List(k, C1, p)))));
 			}
 		}
-		IExpr term2 = null;
+		IExpr term2;
 		if (p.isOne()) {
 			term2 = Times(C1D2, to, Plus(C1, to));
 		} else {
@@ -359,7 +359,7 @@ public class Sum extends Table implements SumRules {
 													Binomial(p, k)), BernoulliB(k)),
 											Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
 		}
-		if (term1 == null) {
+		if (!term1.isPresent()) {
 			return term2;
 		}
 		return Subtract(term2, term1);
