@@ -45,7 +45,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 			cond = row.arg2();
 			if (cond.isTrue()) {
 				if (!evaluated && i == matrix.size() - 1) {
-					return null;
+					return F.NIL;
 				}
 				if (noBoolean) {
 					result.add(F.List(row.arg1(), F.True));

@@ -56,7 +56,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations
 	 * 
 	 * @param matrix
-	 * @return <code>null</code> if the linear system is inconsistent and has no solution
+	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no solution
 	 */
 	public static IAST rowReduced2List(FieldMatrix matrix, EvalEngine engine) {
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
@@ -67,7 +67,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
 				engine.printMessage("Row reduced linear equations have no solution.");
-				return null;
+				return F.NIL;
 			}
 		}
 		IAST list = F.List();

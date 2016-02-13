@@ -192,12 +192,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (fx.size() == 2 && x.equals(fx.arg1())) {
 							IExpr head = fx.head();
 							IExpr temp = integrate1ArgumentFunctions(head, x);
-							if (temp != null) {
+							if (temp.isPresent()) {
 								return temp;
 							}
 						}
 						result = integrateByRubiRules(ast);
-						if (result != null) {
+						if (result.isPresent()) {
 							return result;
 						}
 					}
@@ -208,7 +208,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 								if (fxExpanded.isPolynomial(x)) {
 									if (arg1.isTimes()) {
 										result = integrateByRubiRules(ast);
-										if (result != null) {
+										if (result.isPresent()) {
 											return result;
 										}
 									}
@@ -224,7 +224,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
 							IExpr head = arg1AST.head();
 							IExpr temp = integrate1ArgumentFunctions(head, x);
-							if (temp != null) {
+							if (temp.isPresent()) {
 								return temp;
 							}
 						}
@@ -271,7 +271,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							}
 
 							IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-							if (temp != null) {
+							if (temp.isPresent()) {
 								return temp;
 							}
 						}
@@ -290,7 +290,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 										// try Rubi rules first
 										if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
 											result = integrateByRubiRules(ast);
-											if (result != null) {
+											if (result.isPresent()) {
 												return result;
 											}
 											calledRubi = true;
@@ -307,14 +307,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 										}
 										if (parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
 											result = integrateByRubiRules(ast);
-											if (result != null) {
+											if (result.isPresent()) {
 												return result;
 											}
 											calledRubi = true;
 										}
 										if (arg1AST.isTimes()) {
 											result = integratePolynomialByParts(ast, arg1AST, x);
-											if (result != null) {
+											if (result.isPresent()) {
 												return result;
 											}
 										}
@@ -349,7 +349,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		if (evaled) {
 			return ast;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private IExpr integrate1ArgumentFunctions(final IExpr head, final ISymbol x) {
@@ -463,7 +463,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			// Log(Cosh(x))
 			return F.Log(F.Cosh(x));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -474,7 +474,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 *            an IAST which is a <code>Times(...)</code> expression
 	 * @param arg2
 	 *            the symbol to get the indefinite integral for.
-	 * @return <code>null</code> if no trigonometric funtion could be found.
+	 * @return <code>F.NIL</code> if no trigonometric funtion could be found.
 	 */
 	private IExpr integrateTimesTrigFunctions(final IAST timesAST, ISymbol arg2) {
 		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
@@ -491,7 +491,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				return ((IAST) fx).mapAt(F.Integrate(null, arg2), 1);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -499,7 +499,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
+	 * @return <code>false</code> if the polynomials degree > 2 and number of
 	 *         variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
@@ -524,7 +524,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
+	 * @return <code>false</code> if the polynomials degree > 2 and number of
 	 *         variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
@@ -550,7 +550,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * @param parts
 	 * @param variableList
-	 * @return <code>null</code> if the partial fraction decomposition wasn't
+	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't
 	 *         constructed
 	 */
 	// private static IAST integrateByPartialFractions(IExpr[] parts, ISymbol x)
@@ -765,7 +765,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	// e.printStackTrace();
 	// }
 	// }
-	// return null;
+	// return F.NIL;
 	// }
 
 	/**
@@ -790,7 +790,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// confLICTS WITH RUBI 4.5 INTEGRATION RULES
 		// ONLY call integrateBy Parts for simple Times() expression
 		if (f.isOne() || g.isOne()) {
-			return null;
+			return F.NIL;
 		}
 		return integrateByParts(f, g, symbol);
 	}
@@ -809,16 +809,17 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
 					|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")
 					|| head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
-				return F.Integrate.evalDownRule(EvalEngine.get(), ast);
+				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
+				if (temp!=null){
+					return temp;
+				}
 			}
 		} catch (AbortException ae) {
 			if (Config.DEBUG) {
 				ae.printStackTrace();
 			}
-			return null;
 		}
-		// System.out.println(ast.toString());
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -849,12 +850,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
 			if (!firstIntegrate.isFreeAST(Integrate)) {
-				return null;
+				return F.NIL;
 			}
 			IExpr gDerived = F.eval(F.D(g, x));
 			IExpr second2Integrate = F.eval(F.Integrate(F.Times(gDerived, firstIntegrate), x));
 			if (!second2Integrate.isFreeAST(Integrate)) {
-				return null;
+				return F.NIL;
 			}
 			return F.eval(F.Subtract(F.Times(g, firstIntegrate), second2Integrate));
 		} catch (RecursionLimitExceeded rle) {
@@ -862,7 +863,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		} finally {
 			engine.setRecursionLimit(limit);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

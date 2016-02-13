@@ -153,11 +153,11 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
 	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result, otherwise
-	 * return <code>null</code>.
+	 * return <code>F.NIL</code>.
 	 * 
 	 * @param function
 	 *            applys the function to a <code>double</code> value, resulting in an object of type {@code IExpr}.
-	 * @return the resulting expression from the function or <code>null</code>.
+	 * @return the resulting expression from the function or <code>F.NIL</code>.
 	 * @see org.matheclipse.core.reflection.system.Abs
 	 * @see org.matheclipse.core.reflection.system.Ceiling
 	 * @see org.matheclipse.core.reflection.system.Floor

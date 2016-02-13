@@ -51,7 +51,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			VariablesSet eVar = new VariablesSet(arg1);
 			if (!eVar.isSize(1)) {
 				// partial fraction only possible for univariate polynomials
-				return null;
+				return F.NIL;
 			}
 			variableList = eVar.getVarList();
 		}

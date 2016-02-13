@@ -721,10 +721,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-				// if (result == null) {
-				// System.out.println(ast);
-				// throw new NullPointerException();
-				// }
+//				if (result == null) {
+//					System.out.println(ast);
+//					throw new NullPointerException();
+//				}
 				if (result != null && result.isPresent()) {
 					return result;
 				}

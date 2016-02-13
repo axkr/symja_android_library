@@ -968,7 +968,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
