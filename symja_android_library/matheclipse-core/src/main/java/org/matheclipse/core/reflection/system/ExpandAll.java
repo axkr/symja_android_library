@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -21,7 +22,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			patt = ast.arg2();
 		}
 		if (arg1.isAST()) {
-			return arg1.optional(expandAll((IAST) arg1, patt, true, false));
+			return expandAll((IAST) arg1, patt, true, false).orElse(arg1);
 		}
 		return arg1;
 	}
@@ -35,18 +36,18 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 	 * @param distributePlus
 	 *            TODO
 	 * @param ast
-	 * @return <code>null</code> if the expression couldn't be expanded.
+	 * @return <code>F.NIL</code> if the expression couldn't be expanded.
 	 */
 	public static IExpr expandAll(final IAST expr, IExpr patt, boolean expandNegativePowers, boolean distributePlus) {
 		if (patt != null && expr.isFree(patt, true)) {
-			return null;
+			return F.NIL;
 		}
 		IAST ast = expr;
-		IAST tempAST = null;
+		IAST tempAST = F.NIL;
 		if (ast.isAST()) {
 			if ((ast.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
 				tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
-				if (tempAST != null) {
+				if (tempAST.isPresent()) {
 					ast = tempAST;
 				}
 			}
@@ -55,36 +56,37 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			if (ast != expr) {
 				return ast;
 			}
-			return null;
+			return F.NIL;
 		}
-		IAST result = null;
-		IExpr temp = null;
+		IAST result = F.NIL;
+		IExpr temp = F.NIL;
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isAST()) {
 				temp = expandAll((IAST) ast.get(i), patt, expandNegativePowers, distributePlus);
-				if (temp != null) {
-					if (result == null) {
-						result = ast.setAtCopy(i, temp);
-					} else {
+				if (temp.isPresent()) {
+					if (result.isPresent()) {
 						result.set(i, temp);
+					} else {
+						result = ast.setAtCopy(i, temp);
 					}
 				}
 			}
 		}
-		if (result == null) {
+		if (!result.isPresent()) {
 			temp = Expand.expand(ast, patt, expandNegativePowers, distributePlus);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				setAllExpanded(temp, expandNegativePowers, distributePlus);
+				return temp;
 			} else {
 				if (ast != expr) {
 					setAllExpanded(ast, expandNegativePowers, distributePlus);
 					return ast;
 				}
 			}
-			return temp;
+			return F.NIL;
 		}
 		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return setAllExpanded(temp, expandNegativePowers, distributePlus);
 		}
 		return setAllExpanded(result, expandNegativePowers, distributePlus);

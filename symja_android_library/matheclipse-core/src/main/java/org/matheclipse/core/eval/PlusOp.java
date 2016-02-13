@@ -269,7 +269,7 @@ public class PlusOp {
 	 */
 	public static IExpr plus(IAST plusAST) {
 		IAST temp = EvalEngine.get().evalFlatOrderlessAttributesRecursive(plusAST);
-		if (temp == null) {
+		if (!temp.isPresent()) {
 			temp = plusAST;
 		}
 		IExpr expr = Plus.CONST.evaluate(temp, null);

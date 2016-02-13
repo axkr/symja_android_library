@@ -18,7 +18,7 @@ public class Together extends AbstractFunctionEvaluator {
 
 	public static IExpr together(IAST ast) {
 		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
-		if (temp == null) {
+		if (!temp.isPresent()) {
 			temp = ast;
 		}
 		if (temp.isAST()) {
@@ -63,7 +63,7 @@ public class Together extends AbstractFunctionEvaluator {
 	private static IExpr togetherNull(IAST ast) {
 		boolean evaled = false;
 		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
-		if (temp == null) {
+		if (!temp.isPresent()) {
 			temp = ast;
 		} else {
 			evaled = true;

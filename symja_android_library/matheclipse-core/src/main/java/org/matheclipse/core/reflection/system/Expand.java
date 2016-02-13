@@ -43,10 +43,10 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		public IExpr expandAST(final IAST ast) {
 			if (isPatternFree(ast)) {
-				return null;
+				return F.NIL;
 			}
 			if (ast.isExpanded() && expandNegativePowers && !distributePlus) {
-				return null;
+				return F.NIL;
 			}
 			if (ast.isPower()) {
 				return expandPowerNull(ast);
@@ -61,20 +61,20 @@ public class Expand extends AbstractFunctionEvaluator {
 				if (temp[0].isOne()) {
 					if (temp[1].isTimes()) {
 						tempExpr = expandTimes((IAST) temp[1]);
-						if (tempExpr != null) {
+						if (tempExpr.isPresent()) {
 							return PowerOp.power(tempExpr, F.CN1);
 						}
 						addExpanded(ast);
-						return null;
+						return F.NIL;
 					}
 					if (temp[1].isPower() || temp[1].isPlus()) {
 						IExpr denom = expandAST((IAST) temp[1]);
-						if (denom != null) {
+						if (denom.isPresent()) {
 							return PowerOp.power(denom, F.CN1);
 						}
 					}
 					addExpanded(ast);
-					return null;
+					return F.NIL;
 				}
 
 				if (temp[1].isOne()) {
@@ -84,7 +84,7 @@ public class Expand extends AbstractFunctionEvaluator {
 				boolean evaled = false;
 				if (temp[0].isTimes()) {
 					tempExpr = expandTimes((IAST) temp[0]);
-					if (tempExpr != null) {
+					if (tempExpr.isPresent()) {
 						temp[0] = tempExpr;
 						evaled = true;
 					}
@@ -92,14 +92,14 @@ public class Expand extends AbstractFunctionEvaluator {
 				if (expandNegativePowers) {
 					if (temp[1].isTimes()) {
 						tempExpr = expandTimes((IAST) temp[1]);
-						if (tempExpr != null) {
+						if (tempExpr.isPresent()) {
 							temp[1] = tempExpr;
 							evaled = true;
 						}
 					} else {
 						if (temp[1].isPower() || temp[1].isPlus()) {
 							IExpr denom = expandAST((IAST) temp[1]);
-							if (denom != null) {
+							if (denom.isPresent()) {
 								temp[1] = denom;
 								evaled = true;
 							}
@@ -115,13 +115,13 @@ public class Expand extends AbstractFunctionEvaluator {
 					return addExpanded(TimesOp.times(temp[0], powerAST));
 				}
 				addExpanded(ast);
-				return null;
+				return F.NIL;
 			} else if (ast.isPlus()) {
 				return expandPlus(ast);
 			}
 			addExpanded(ast);
-			return null;
-		} 
+			return F.NIL;
+		}
 
 		private IExpr addExpanded(IExpr expr) {
 			if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
@@ -133,31 +133,31 @@ public class Expand extends AbstractFunctionEvaluator {
 		/**
 		 * 
 		 * @param ast
-		 * @return <code>null</code> if no evaluation is possible
+		 * @return <code>F.NIL</code> if no evaluation is possible
 		 */
 		public IExpr expandPlus(final IAST ast) {
-			IAST result = null;
+			IAST result = F.NIL;
 			for (int i = 1; i < ast.size(); i++) {
 				final IExpr arg = ast.get(i);
 				if (arg.isAST()) {
 					IExpr temp = expand((IAST) arg, pattern, expandNegativePowers, false);
-					if (temp != null) {
-						if (result == null) {
+					if (temp.isPresent()) {
+						if (!result.isPresent()) {
 							result = ast.copyUntil(ast.size(), i);
 						}
 						result.add(temp);
 						continue;
 					}
 				}
-				if (result != null) {
+				if (result.isPresent()) {
 					result.add(arg);
 				}
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return PlusOp.plus(result);
 			}
 			addExpanded(ast);
-			return null;
+			return F.NIL;
 		}
 
 		/**
@@ -178,17 +178,17 @@ public class Expand extends AbstractFunctionEvaluator {
 							return PowerOp.power(expandPower(plusAST, exp), F.CN1);
 						}
 						addExpanded(powerAST);
-						return null;
+						return F.NIL;
 					}
 					return expandPower(plusAST, exp);
 
 				} catch (WrongArgumentType e) {
 					addExpanded(powerAST);
-					return null;
+					return F.NIL;
 				}
 			}
 			addExpanded(powerAST);
-			return null;
+			return F.NIL;
 		}
 
 		/**
@@ -203,8 +203,8 @@ public class Expand extends AbstractFunctionEvaluator {
 		 */
 		private IExpr expandPower(final IAST plusAST, final int n) {
 			if (n == 1) {
-				IExpr temp=expandPlus(plusAST);
-				if (temp!=null){
+				IExpr temp = expandPlus(plusAST);
+				if (temp.isPresent()) {
 					return temp;
 				}
 				addExpanded(plusAST);
@@ -232,7 +232,7 @@ public class Expand extends AbstractFunctionEvaluator {
 			boolean evaled = false;
 			if (result.isPower()) {
 				temp = expandPowerNull((IAST) result);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result = temp;
 					evaled = true;
 				}
@@ -243,7 +243,7 @@ public class Expand extends AbstractFunctionEvaluator {
 				temp = timesAST.get(i);
 				if (temp.isPower()) {
 					temp = expandPowerNull((IAST) temp);
-					if (temp == null) {
+					if (!temp.isPresent()) {
 						temp = timesAST.get(i);
 					} else {
 						evaled = true;
@@ -253,7 +253,7 @@ public class Expand extends AbstractFunctionEvaluator {
 			}
 			if (evaled == false && timesAST.equals(result)) {
 				addExpanded(timesAST);
-				return null;
+				return F.NIL;
 			}
 			return result;
 		}
@@ -322,7 +322,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
 			IExpr arg = TimesOp.times(expr1, expr2);
 			if (arg.isAST()) {
-				result.add(arg.optional(expandAST((IAST) arg)));
+				result.add( expandAST((IAST) arg).orElse(arg));
 				return;
 			}
 			result.add(arg);
@@ -414,7 +414,7 @@ public class Expand extends AbstractFunctionEvaluator {
 	 * @param patt
 	 * @param distributePlus
 	 *            TODO
-	 * @return <code>null</code> if the expression couldn't be expanded.
+	 * @return <code>F.NIL</code> if the expression couldn't be expanded.
 	 */
 	public static IExpr expand(final IAST ast, IExpr patt, boolean expandNegativePowers, boolean distributePlus) {
 		Expander expander = new Expander(patt, expandNegativePowers, distributePlus);
@@ -435,7 +435,7 @@ public class Expand extends AbstractFunctionEvaluator {
 			if (ast.size() > 2) {
 				patt = ast.arg2();
 			}
-			return arg1.optional(expand(arg1, patt, false, true));
+			return expand(arg1, patt, false, true).orElse(arg1);
 		}
 
 		return ast.arg1();

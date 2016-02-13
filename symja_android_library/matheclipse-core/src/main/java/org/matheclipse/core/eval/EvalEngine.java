@@ -768,9 +768,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			// ONEIDENTITY is checked in the evalASTArg1() method!
 
-			IAST flattened = null;
+			
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
+				IAST flattened;
 				if ((flattened = EvalAttributes.flatten(ast)).isPresent()) {
 					IAST resultList = evalArgs(flattened, attr);
 					if (resultList.isPresent()) {
@@ -859,16 +860,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * recursively.
 	 * 
 	 * @param ast
-	 * @return
+	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
 	public IAST evalFlatOrderlessAttributesRecursive(final IAST ast) {
 		if (ast.isEvalFlagOn(IAST.IS_FLAT_ORDERLESS_EVALED)) {
-			return null;
+			return F.NIL;
 		}
 		final ISymbol symbol = ast.topHead();
 		final int attr = symbol.getAttributes();
 		// final Predicate<IExpr> isPattern = Predicates.isPattern();
-		IAST resultList = null;
+		IAST resultList = F.NIL;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 			final int astSize = ast.size();
@@ -880,7 +881,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					if (ast.arg1().isAST()) {
 						IAST temp = (IAST) ast.arg1();
 						expr = evalFlatOrderlessAttributesRecursive(temp);
-						if (expr != null) {
+						if (expr.isPresent()) {
 							resultList = ast.setAtCopy(1, expr);
 						} else {
 							expr = ast.arg1();
@@ -894,8 +895,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					if (ast.get(i).isAST()) {
 						IAST temp = (IAST) ast.get(i);
 						IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
-						if (expr != null) {
-							if (resultList == null) {
+						if (expr.isPresent()) {
+							if (!resultList.isPresent()) {
 								resultList = ast.copy();
 							}
 							resultList.set(i, expr);
@@ -904,7 +905,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		if (resultList != null) {
+		if (resultList.isPresent()) {
 			if (resultList.size() > 2) {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
@@ -947,7 +948,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			// false?
 			return ast;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

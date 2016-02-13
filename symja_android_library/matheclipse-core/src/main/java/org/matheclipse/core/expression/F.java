@@ -2410,8 +2410,8 @@ public class F {
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.NIL</code> if no evaluation
-	 *         was possible
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was
+	 *         possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()
 	 */
@@ -2532,11 +2532,11 @@ public class F {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
 			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			if (ast == null) {
+			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			return a.optional(org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers,
-					distributePlus));
+			return org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers, distributePlus)
+					.orElse(a);
 		}
 		return a;
 	}
@@ -2573,12 +2573,12 @@ public class F {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
 			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
-			if (ast == null) {
+			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
 			IExpr temp = org.matheclipse.core.reflection.system.ExpandAll.expandAll(ast, null, expandNegativePowers,
 					distributePlus);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 			return ast;

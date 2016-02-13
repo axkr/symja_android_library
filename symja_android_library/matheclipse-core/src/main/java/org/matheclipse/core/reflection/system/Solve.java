@@ -101,7 +101,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * numerator expression, if it has linear, polynomial or other form.
 		 */
 		protected void simplifyAndAnalyze() {
-			IExpr temp = null;
+			IExpr temp = F.NIL;
 			if (fNumer.isPlus()) {
 				temp = rewritePlusWithInverseFunctions((IAST) fNumer);
 			} else if (fNumer.isTimes() && !fNumer.isFree(Predicates.in(vars), true)) {
@@ -109,7 +109,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			} else if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
 				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
 			}
-			if (temp != null) {
+			if (temp.isPresent()) {
 				fNumer = temp;
 			}
 
@@ -122,12 +122,12 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * subexpression.
 		 */
 		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
-			IAST result = null;
+			IAST result = F.NIL;
 			int j = 1;
 			// remove constant sub-expressions from Times() expression
 			for (int i = 1; i < times.size(); i++) {
 				if (times.get(i).isFree(Predicates.in(vars), true) && times.get(i).isNumericFunction()) {
-					if (result == null) {
+					if (!result.isPresent()) {
 						result = times.clone();
 					}
 					result.remove(j);
@@ -135,12 +135,12 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				j++;
 			}
-			if (result == null) {
+			if (!result.isPresent()) {
 				return rewriteInverseFunction(times, F.C0);
 			}
 			IExpr temp0 = result.getOneIdentity(F.C1);
 			if (temp0.isAST()) {
-				return temp0.optional(rewriteInverseFunction((IAST) temp0, F.C0));
+				return rewriteInverseFunction((IAST) temp0, F.C0).orElse(temp0);
 			}
 			return temp0;
 		}
@@ -162,7 +162,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
 					if (inverseFunction != null) {
 						IExpr temp = rewriteInverseFunction(plusAST, i);
-						if (temp != null) {
+						if (temp.isPresent()) {
 							return temp;
 						}
 					} else if (function.isPower() && function.arg2().isFraction()) {
@@ -170,7 +170,8 @@ public class Solve extends AbstractFunctionEvaluator {
 						IFraction arg2 = (IFraction) function.arg2();
 						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
 						// if (plus.isFree(Predicates.in(vars), true)) {
-						return engine.evaluate(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+						return engine.evaluate(
+								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
 						// } else {
 						// IInteger numer = arg2.getNumerator();
 						// IInteger denom = arg2.getDenominator();
@@ -183,7 +184,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 
 			}
-			return null;
+			return F.NIL;
 		}
 
 		/**
@@ -193,7 +194,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * @param plusAST
 		 *            the <code>Plus(..., ,...)</code> expression
 		 * @param position
-		 * @return <code>null</code> if no inverse function was found, otherwise
+		 * @return <code>F.NIL</code> if no inverse function was found, otherwise
 		 *         return the rewritten expression
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
@@ -202,7 +203,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (plus.isFree(Predicates.in(vars), true)) {
 				return rewriteInverseFunction(ast, F.Negate(plus));
 			}
-			return null;
+			return F.NIL;
 		}
 
 		/**
@@ -233,7 +234,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 
 			}
-			return null;
+			return F.NIL;
 		}
 
 		/**
@@ -567,7 +568,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 			} else if (exprAnalyzer.getNumberOfVars() == 1 && exprAnalyzer.isLinearOrPolynomial()) {
 				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
-				if (listOfRules != null) {
+				if (listOfRules.isPresent()) {
 					boolean evaled = false;
 					++currEquation;
 					for (int k = 1; k < listOfRules.size(); k++) {
@@ -654,10 +655,10 @@ public class Solve extends AbstractFunctionEvaluator {
 					}
 					return resultList;
 				}
-				return null;
+				return F.NIL;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public Solve() {
