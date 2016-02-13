@@ -31,7 +31,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 			if (matcher.test(arg)) {
 				return F.Null;
 			}
-			return null;
+			return F.NIL;
 		}
 
 	}

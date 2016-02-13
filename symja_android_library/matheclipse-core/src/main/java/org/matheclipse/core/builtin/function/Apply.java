@@ -17,7 +17,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * 
  * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply">Apply</a>
+ * See the online Symja function reference: <a href=
+ * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply">
+ * Apply</a>
  * </p>
  *
  */
@@ -29,7 +31,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 5);
-		
+
 		IAST evaledAST = ast.clone();
 		for (int i = 1; i < evaledAST.size(); i++) {
 			evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
@@ -60,7 +62,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 			if (!evaledAST.arg2().isAtom()) {
 				final IExpr result = evaledAST.arg2().accept(level);
 
-				return result == null ? evaledAST.arg2() : result;
+				return result.isPresent() ? result : evaledAST.arg2();
 			} else if (evaledAST.size() == 3) {
 				if (evaledAST.arg1().isFunction()) {
 					return F.unaryAST1(evaledAST.arg1(), evaledAST.arg2());

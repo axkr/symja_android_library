@@ -24,7 +24,7 @@ public class MapAll extends AbstractFunctionEvaluator {
 		final VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1AST), 0, Integer.MAX_VALUE, false);
 
 		final IExpr result = ast.arg2().accept(level);
-		return result == null ? ast.arg2() : result;
+		return result.isPresent() ? result : ast.arg2(); 
 	}
 
 }

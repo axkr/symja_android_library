@@ -17,14 +17,13 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
-
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
  * 
  * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  * 
  */
-public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
+public class VisitorLevelSpecification extends AbstractExprVisitor {
 	protected final Function<IExpr, IExpr> fFunction;
 
 	protected int fFromLevel;
@@ -45,17 +44,22 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	 * Create a LevelSpecification from an IInteger or IAST list-object.<br>
 	 * <br>
 	 * 
-	 * An <code>expr</code> is interpreted as a <i>level specification</i> for the allowed levels in an AST.<br>
-	 * If <code>expr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
-	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0};<br>
-	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value, i1Value};<br>
+	 * An <code>expr</code> is interpreted as a <i>level specification</i> for
+	 * the allowed levels in an AST.<br>
+	 * If <code>expr</code> is a non-negative IInteger iValue set Level
+	 * {1,iValue};<br>
+	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0};
+	 * <br>
+	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value,
+	 * i1Value};<br>
 	 * 
 	 * @param function
 	 *            the function which should be applied for an element
 	 * @param expr
 	 *            the given <i>level specification</i>
 	 * @param includeHeads
-	 *            set to <code>true</code>, if the header of an AST expression should be included
+	 *            set to <code>true</code>, if the header of an AST expression
+	 *            should be included
 	 * @throws MathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 * @see
@@ -158,7 +162,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 	}
 
 	/**
-	 * Define a level specification for all elements on level <code>level</code> .
+	 * Define a level specification for all elements on level <code>level</code>
+	 * .
 	 * 
 	 * @param level
 	 */
@@ -166,7 +171,8 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		this(function, level, true);
 	}
 
-	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int level, final boolean includeHeads) {
+	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int level,
+			final boolean includeHeads) {
 		this(function, level, level, includeHeads);
 	}
 
@@ -227,7 +233,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -238,7 +244,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -249,7 +255,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -260,7 +266,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -271,7 +277,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -282,7 +288,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -293,7 +299,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -304,7 +310,7 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -315,27 +321,27 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr visitExpr(IExpr element) {
 		if (isInRange(fCurrentLevel, -1)) {
 			return fFunction.apply(element);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr visit(IAST ast) {
 		int minDepth = -1;
 		IExpr temp;
-		IAST result = null;
+		IAST result = F.NIL;
 		try {
 			fCurrentLevel++;
 			if (fIncludeHeads) {
 				temp = ast.get(0).accept(this);
-				if (temp != null) {
-					if (result == null) {
-						result = ast.clone();
+				if (temp.isPresent()) {
+					if (!result.isPresent()) {
+						result = ast.copy();
 					}
 					result.set(0, temp);
 				}
@@ -345,9 +351,9 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 			}
 			for (int i = 1; i < ast.size(); i++) {
 				temp = ast.get(i).accept(this);
-				if (temp != null) {
-					if (result == null) {
-						result = ast.clone();
+				if (temp.isPresent()) {
+					if (!result.isPresent()) {
+						result = ast.copy();
 					}
 					result.set(i, temp);
 				}
@@ -360,11 +366,11 @@ public class VisitorLevelSpecification extends AbstractVisitor<IExpr> {
 		}
 		fCurrentDepth = --minDepth;
 		if (isInRange(fCurrentLevel, minDepth)) {
-			if (result == null) {
+			if (!result.isPresent()) {
 				return fFunction.apply(ast);
 			} else {
 				temp = fFunction.apply(result);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}

@@ -28,7 +28,7 @@ public class Count extends AbstractCoreFunctionEvaluator {
 		}
 
 		public CountFunctor(final IPatternMatcher patternMatcher) {
-			this.matcher = patternMatcher; //new PatternMatcher(pattern);
+			this.matcher = patternMatcher; // new PatternMatcher(pattern);
 			counter = 0;
 		}
 
@@ -37,7 +37,7 @@ public class Count extends AbstractCoreFunctionEvaluator {
 			if (matcher.test(arg)) {
 				counter++;
 			}
-			return null;
+			return F.NIL;
 		}
 
 	}
@@ -50,7 +50,7 @@ public class Count extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		final IExpr arg1 = engine.evaluate(ast.arg1());
-		
+
 		final VisitorLevelSpecification level;
 		CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
 		if (ast.size() == 4) {

@@ -36,8 +36,7 @@ public class Total extends AbstractFunctionEvaluator {
 		if (ast.arg1().isAST()) {
 			// increment level because we select only subexpressions
 			level.incCurrentLevel();
-			IExpr result = ast.arg1().accept(level);
-			return result;
+			return ast.arg1().accept(level);
 		}
 
 		return F.NIL;

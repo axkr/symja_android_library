@@ -53,7 +53,7 @@ public class Functors {
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			IAST result = null;
+			IAST result = F.NIL;
 			if (arg.isAST()) {
 				result = ((IAST) arg).copy();
 				result.set(0, fConstant);
@@ -110,7 +110,7 @@ public class Functors {
 		@Override
 		public IExpr apply(final IExpr arg) {
 			resultCollection.add(arg);
-			return null;
+			return F.NIL;
 		}
 
 	}
@@ -257,7 +257,7 @@ public class Functors {
 			final IAST ast = fAST.clone();
 			ast.add(arg);
 			resultCollection.add(ast);
-			return null;
+			return F.NIL;
 		}
 
 	}

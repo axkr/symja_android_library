@@ -38,13 +38,14 @@ public class Map extends AbstractFunctionEvaluator {
 
 		final IAST arg1 = F.ast(ast.arg1());
 		if (lastIndex == 3) {
-			VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1), ast.get(lastIndex), heads);
+			VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1), ast.get(lastIndex),
+					heads);
 			final IExpr result = ast.arg2().accept(level);
-			return result == null ? ast.arg2() : result;
+			return result.isPresent() ? result : ast.arg2();
 		} else {
 			VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1), 1, heads);
 			final IExpr result = ast.arg2().accept(level);
-			return result == null ? ast.arg2() : result;
+			return result.isPresent() ? result : ast.arg2();
 		}
 	}
 

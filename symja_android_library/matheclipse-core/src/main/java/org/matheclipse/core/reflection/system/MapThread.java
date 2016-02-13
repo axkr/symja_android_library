@@ -50,8 +50,7 @@ public class MapThread extends AbstractFunctionEvaluator {
 			level = new VisitorLevelSpecification(umt, 0);
 		}
 		final IExpr result = ast.arg2().accept(level);
-
-		return result == null ? ast.arg2() : result;
+		return result.isPresent() ? result : ast.arg2();
 	}
 
 }

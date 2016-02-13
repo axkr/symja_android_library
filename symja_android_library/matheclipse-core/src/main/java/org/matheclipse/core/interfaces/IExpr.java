@@ -1758,12 +1758,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Replace all subexpressions with the given rule set. A rule must contain
 	 * the position of the subexpression which should be replaced on the
 	 * left-hand-side. If no substitution matches, the method returns
-	 * <code>null</code>.
+	 * <code>F.NIL</code>.
 	 * 
 	 * @param astRules
 	 *            rules of the form <code>position-&gt;y</code> or
 	 *            <code>{position1-&gt;b, position2-&gt;d}</code>
-	 * @return <code>null</code> if no substitution of a subexpression was
+	 * @return <code>F.NIL</code> if no substitution of a subexpression was
 	 *         possible.
 	 */
 	public IExpr replacePart(final IAST astRules);

@@ -62,7 +62,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 					}
 				}
 			}
-			return null;
+			return F.NIL;
 		}
 
 	}
@@ -99,7 +99,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 					}
 				}
 			}
-			return null;
+			return F.NIL;
 		}
 
 	}

@@ -136,7 +136,7 @@ public class Replace extends AbstractEvaluator {
 						IAST rule = (IAST) element;
 						replaceFunction.setRule(rule);
 						temp = arg1.accept(level);
-						if (temp != null) {
+						if (temp.isPresent()) {
 							break;
 						}
 					} else {
