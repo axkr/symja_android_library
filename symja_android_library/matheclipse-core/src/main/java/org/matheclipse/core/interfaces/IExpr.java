@@ -313,7 +313,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public int hierarchy();
 
 	/**
-	 * If this expression unequals <code>F.UNEVALED</code>, invoke the specified
+	 * If this expression unequals <code>F.NIL</code>, invoke the specified
 	 * consumer with the <code>this</code> object, otherwise do nothing.
 	 *
 	 * @param consumer
