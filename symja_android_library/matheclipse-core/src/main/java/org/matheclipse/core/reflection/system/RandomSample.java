@@ -36,7 +36,7 @@ public class RandomSample extends AbstractFunctionEvaluator {
 		MathArrays.shuffle(indexList);
 
 		// Create shuffled list.
-		final IAST out = list.clone();
+		final IAST out = list.copy();
 		for (int i = 0; i < len; i++) {
 			out.set(i + 1, list.get(indexList[i] + 1));
 		}

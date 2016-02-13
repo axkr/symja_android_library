@@ -260,6 +260,12 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 
 	/** {@inheritDoc} */
 	@Override
+	public IAST copy() {
+		return new AST0(arg0);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean contains(Object object) {
 		return arg0.equals(object);
 	}

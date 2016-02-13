@@ -34,7 +34,7 @@ public class UnaryBindIth implements IUnaryIndexFunction<IExpr, IExpr> {
 	 *          the i-th argument in the new AST
 	 */
 	public IExpr apply(int index, final IExpr arg) {
-		final IAST ast = fConstant.clone();
+		final IAST ast = fConstant.copy();
 		ast.set(index, arg);
 		return ast;
 	}

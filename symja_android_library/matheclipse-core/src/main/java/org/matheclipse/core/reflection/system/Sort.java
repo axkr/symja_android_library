@@ -19,7 +19,7 @@ public class Sort extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {
-			final IAST shallowCopy = ((IAST) ast.arg1()).clone();
+			final IAST shallowCopy = ((IAST) ast.arg1()).copy();
 			if (shallowCopy.size() <= 2) {
 				return shallowCopy;
 			}

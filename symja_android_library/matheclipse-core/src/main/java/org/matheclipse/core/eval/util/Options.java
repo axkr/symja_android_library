@@ -177,14 +177,13 @@ public class Options {
 	}
 
 	public IAST replaceAll(final IAST options) {
-		IAST result = options.clone();
 		if (fCurrentOptionsList != null) {
-			result = (IAST) fEngine.evaluate(ReplaceAll(result, fCurrentOptionsList));
+			return (IAST) fEngine.evaluate(ReplaceAll(options, fCurrentOptionsList));
 		}
 		if (fDefaultOptionsList != null) {
-			result = (IAST) fEngine.evaluate(ReplaceAll(result, fDefaultOptionsList));
+			return (IAST) fEngine.evaluate(ReplaceAll(options, fDefaultOptionsList));
 		}
-		return result;
+		return options;
 	}
 
 	public TermOrder getMonomialOrder(final IAST ast, final TermOrder defaultTermOrder) {

@@ -94,6 +94,12 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
+	public IAST copy() {
+		return new AST2(arg0, arg1, arg2);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean contains(Object object) {
 		return arg0.equals(object) || arg1.equals(object) || arg2.equals(object);
 	}

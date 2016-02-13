@@ -21,7 +21,7 @@ public class Median extends AbstractTrigArg1 {
 		if (arg1.isList()) {
 			final IAST list = (IAST) arg1;
 			if (list.size() > 1) {
-				final IAST sortedList = list.clone();
+				final IAST sortedList = list.copy();
 				EvalAttributes.sort(sortedList);
 				int size = sortedList.size();
 				if ((size & 0x00000001) == 0x00000001) {

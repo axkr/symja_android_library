@@ -601,7 +601,7 @@ public class OutputFormFactory {
 					return;
 				}
 				// flip presign of the exponent
-				IAST pow = list.setAtClone(2, exp.opposite());
+				IAST pow = list.setAtCopy(2, exp.opposite());
 				convertPowerOperator(buf, pow, oper, ASTNodeFactory.DIVIDE_PRECEDENCE);
 				if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
 					append(buf, ")");

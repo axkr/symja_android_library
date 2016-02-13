@@ -327,6 +327,18 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST clone();
 
 	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied). In contrast to the <code>clone()</code>
+	 * method, this method returns exactly the same type for
+	 * <code>AST0, AST1, AST2,AST3</code>.
+	 * 
+	 * @return a copy of this <code>IAST</code> instance.
+	 */
+	default public IAST copy() {
+		return clone();
+	}
+
+	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and
 	 * all elements from to the given <code>position</code> (inclusive).
 	 * 
@@ -817,6 +829,22 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 *         <code>position</code>.
 	 */
 	public IAST setAtClone(int position, IExpr expr);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied) and set the <code>expr</code> at the given
+	 * <code>position</code>. In contrast to the <code>setAtClone()</code>
+	 * method, this method returns exactly the same type for
+	 * <code>AST0, AST1, AST2, AST3</code>.
+	 * 
+	 * @return a copy with element set to <code>expr</code> at the given
+	 *         <code>position</code>.
+	 */
+	default public IAST setAtCopy(int position, IExpr expr) {
+		IAST ast = copy();
+		ast.set(position, expr);
+		return ast;
+	}
 
 	/**
 	 * Set the evaluation flags for this list.

@@ -251,7 +251,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	@Override
 	public IAST apply(final IExpr head) {
-		return setAtClone(0, head);
+		return setAtCopy(0, head);
 	}
 
 	@Override
@@ -317,11 +317,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		throw new UnsupportedOperationException("AST.asType() - cast not supported.");
 	}
 
-	@Override
-	public IExpr copy() {
-		return clone();
-	}
-
 	/** {@inheritDoc} */
 	public IAST copyFrom(int index) {
 		AST result = new AST(size() - index + 1, false);
@@ -360,6 +355,10 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return ast;
 	}
 
+	@Override
+	public IAST copy() {
+		return clone();
+	}
 	/**
 	 * Compares this expression with the specified expression for canonical
 	 * order. Returns a negative integer, zero, or a positive integer as this
@@ -2188,7 +2187,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST map(final Function<IExpr, IExpr> function) {
-		return map(clone(), function);
+		return map(copy(), function);
 	}
 
 	/**
@@ -2222,7 +2221,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 */
 	@Override
 	public final IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
-		return map(setAtClone(0, head), function);
+		return map(setAtCopy(0, head), function);
 	}
 
 	/** {@inheritDoc} */
@@ -2267,7 +2266,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (isTimes()) {
 			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
-				return setAtClone(1, ((INumber) arg1).negate());
+				return setAtCopy(1, ((INumber) arg1).negate());
 			}
 			IAST timesAST = clone();
 			timesAST.add(1, F.CN1);

@@ -30,7 +30,7 @@ public class MapAt extends AbstractFunctionEvaluator {
 				if (arg3.isInteger()) {
 					IInteger i3 = (IInteger) arg3;
 					int n = i3.toInt();
-					return ((IAST) arg2).setAtClone(n, Functors.append(arg1Function).apply(((IAST) arg2).get(n)));
+					return ((IAST) arg2).setAtCopy(n, Functors.append(arg1Function).apply(((IAST) arg2).get(n)));
 				}
 			} catch (RuntimeException ae) {
 				return null;

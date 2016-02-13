@@ -44,7 +44,7 @@ public class Together extends AbstractFunctionEvaluator {
 				IExpr temp = togetherNull((IAST) ast.get(i));
 				if (temp.isPresent()) {
 					if (!result.isPresent()) {
-						result = ast.clone();
+						result = ast.copy();
 					}
 					result.set(i, temp);
 				}
@@ -182,7 +182,7 @@ public class Together extends AbstractFunctionEvaluator {
 						IExpr temp = togetherNull((IAST) ast.arg1());
 						if (temp.isPresent()) {
 							if (!result.isPresent()) {
-								result = ast.clone();
+								result = ast.copy();
 							}
 							result.set(1, temp);
 						}

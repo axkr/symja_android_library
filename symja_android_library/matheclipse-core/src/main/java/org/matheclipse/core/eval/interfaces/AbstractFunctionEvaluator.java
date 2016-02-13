@@ -158,7 +158,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				IExpr arg1 = plusAST.arg1();
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
-						result = plusAST.clone();
+						result = plusAST.copy();
 						result.set(1, arg1.negate());
 						for (int i = 2; i < plusAST.size(); i++) {
 							result.set(i, plusAST.get(i).negate());
@@ -166,7 +166,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						return result;
 					}
 				} else if (arg1.isNegativeInfinity()) {
-					result = plusAST.clone();
+					result = plusAST.copy();
 					result.set(1, F.CInfinity);
 					for (int i = 2; i < plusAST.size(); i++) {
 						result.set(i, plusAST.get(i).negate());
@@ -176,7 +176,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
 					if (arg1Negated != null) {
 						int positiveElementsCounter = 0;
-						result = plusAST.clone();
+						result = plusAST.copy();
 						result.set(1, arg1Negated);
 						for (int i = 2; i < plusAST.size(); i++) {
 							IExpr temp = plusAST.get(i);

@@ -178,17 +178,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
 						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-						return null;
+						return F.NIL;
 					}
 				}
 			}
 		}
-		if ((listLength != 0) && ((result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength)) != null)) {
+		if (listLength != 0) {
+			result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
 		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -504,7 +505,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 
-			IAST resultList = null;
+			IAST resultList = F.NIL;
 			IExpr evaledExpr;
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute isn't set here
@@ -515,7 +516,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						fNumericMode = localNumericMode;
 					}
 					if ((evaledExpr = evalLoop(ast.arg1())).isPresent()) {
-						resultList = ast.setAtClone(1, evaledExpr);
+						// resultList = ast.setAtClone(1, evaledExpr);
+						resultList = ast.copy();
+						resultList.set(1, evaledExpr);
 						resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						if (astSize == 2) {
 							return resultList;
@@ -538,11 +541,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 					for (int i = 2; i < astSize; i++) {
 						if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
-							if (resultList == null) {
-								resultList = ast.clone();
+							if (resultList.isPresent()) {
+								resultList.set(i, evaledExpr);
+							} else {
+								resultList = ast.copy();
 								resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+								resultList.set(i, evaledExpr);
 							}
-							resultList.set(i, evaledExpr);
 						}
 					}
 				} finally {
@@ -551,11 +556,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			if (resultList != null) {
-				return resultList;
-			}
+			// if (resultList != null) {
+			return resultList;
+			// }
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -625,7 +630,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		if ((result = evalArgs(ast, attr)) != null) {
+		if ((result = evalArgs(ast, attr)).isPresent()) {
 			return result;
 		}
 
@@ -633,9 +638,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			final IExpr arg1 = ast.arg1();
 			if (arg1.isList()) {
 				// thread over the list
-				if ((result = EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1)) != null) {
-					return result;
-				}
+				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1);
 			}
 		}
 
@@ -768,7 +771,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// associative symbol
 				if ((flattened = EvalAttributes.flatten(ast)).isPresent()) {
 					IAST resultList = evalArgs(flattened, attr);
-					if (resultList != null) {
+					if (resultList.isPresent()) {
 						return resultList;
 					}
 					return flattened;
@@ -776,7 +779,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 
 			IAST resultList = evalArgs(ast, attr);
-			if (resultList != null) {
+			if (resultList.isPresent()) {
 				return resultList;
 			}
 
@@ -784,7 +787,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					&& !((ast.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
 				// thread over the lists
 				resultList = threadASTListArgs(ast);
-				if (resultList != null) {
+				if (resultList.isPresent()) {
 					return resultList;
 				}
 			}
@@ -876,7 +879,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						IAST temp = (IAST) ast.arg1();
 						expr = evalFlatOrderlessAttributesRecursive(temp);
 						if (expr != null) {
-							resultList = ast.setAtClone(1, expr);
+							resultList = ast.setAtCopy(1, expr);
 						} else {
 							expr = ast.arg1();
 						}
@@ -891,7 +894,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
 						if (expr != null) {
 							if (resultList == null) {
-								resultList = ast.clone();
+								resultList = ast.copy();
 							}
 							resultList.set(i, expr);
 						}
@@ -1101,7 +1104,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
 		if (expr != null) {
 			if (resultList == null) {
-				resultList = ast.setAtClone(i, expr);
+				resultList = ast.setAtCopy(i, expr);
 			} else {
 				resultList.set(i, expr);
 			}
@@ -1111,13 +1114,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (expr.isAST()) {
 			if (expr.isAST(F.Sqrt, 2)) {
 				if (resultList == null) {
-					resultList = ast.setAtClone(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
+					resultList = ast.setAtCopy(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
 				} else {
 					resultList.set(i, PowerOp.power(expr, F.C1D2));
 				}
 			} else if (expr.isAST(F.Exp, 2)) {
 				if (resultList == null) {
-					resultList = ast.setAtClone(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
+					resultList = ast.setAtCopy(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
 				} else {
 					resultList.set(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
 				}

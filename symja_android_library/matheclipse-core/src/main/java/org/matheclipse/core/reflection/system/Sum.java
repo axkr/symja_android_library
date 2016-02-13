@@ -58,7 +58,7 @@ public class Sum extends Table implements SumRules {
 			}
 		}
 		if (arg1.isPlus()) {
-			IAST sum = ast.setAtClone(1, null);
+			IAST sum = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapAt(sum, 1);
 		}
 
@@ -152,7 +152,7 @@ public class Sum extends Table implements SumRules {
 		IAST restAST = F.Times();
 		prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
 		if (filterAST.size() > 1) {
-			IAST reducedSum = ast.clone();
+			IAST reducedSum = ast.copy();
 			reducedSum.set(1, restAST.getOneIdentity(F.C1));
 			return F.Times(filterAST.getOneIdentity(F.C0), reducedSum);
 		}

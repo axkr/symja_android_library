@@ -55,7 +55,7 @@ public class Functors {
 		public IExpr apply(final IExpr arg) {
 			IAST result = null;
 			if (arg.isAST()) {
-				result = ((IAST) arg).clone();
+				result = ((IAST) arg).copy();
 				result.set(0, fConstant);
 			}
 			return result;
@@ -89,7 +89,7 @@ public class Functors {
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			IAST ast = fAST.clone();
+			IAST ast = fAST.copy();
 			ast.set(fPosition, arg);
 			return fEngine.evaluate(ast);
 		}
@@ -149,7 +149,7 @@ public class Functors {
 
 		@Override
 		public IExpr apply(final IExpr arg) {
-			final IAST ast = fConstant.clone();
+			final IAST ast = fConstant.copy();
 			ast.set(fPosition, arg);
 			return ast;
 		}

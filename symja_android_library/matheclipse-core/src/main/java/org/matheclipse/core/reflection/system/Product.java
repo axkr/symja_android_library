@@ -46,7 +46,7 @@ public class Product extends Table implements ProductRules {
 			}
 		}
 		if (arg1.isTimes()) {
-			IAST prod = ast.setAtClone(1, null);
+			IAST prod = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapAt(prod, 1);
 		}
 
@@ -66,7 +66,7 @@ public class Product extends Table implements ProductRules {
 				break;
 			}
 			if (flag) {
-				IAST prod = ast.clone();
+				IAST prod = ast.copy();
 				prod.set(1, arg1.getAt(1));
 				return F.Power(prod, powArg2);
 			}

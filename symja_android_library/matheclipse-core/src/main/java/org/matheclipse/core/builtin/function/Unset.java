@@ -23,7 +23,7 @@ public class Unset extends AbstractCoreFunctionEvaluator {
 		if (leftHandSide.isList()) {
 			// thread over lists
 			IExpr temp = EvalEngine.threadASTListArgs(F.Unset(leftHandSide));
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return engine.evaluate(temp);
 			}
 		}

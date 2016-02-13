@@ -100,6 +100,12 @@ public class AST1 extends AST0 {
 
 	/** {@inheritDoc} */
 	@Override
+	public IAST copy() {
+		return new AST1(arg0, arg1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean contains(Object object) {
 		return arg0.equals(object) || arg1.equals(object);
 	}

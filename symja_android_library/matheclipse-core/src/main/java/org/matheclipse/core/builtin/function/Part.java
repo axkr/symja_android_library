@@ -18,7 +18,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 		if (ast.size() >= 3) {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
-				IAST evaledAST = null;
+				IAST evaledAST = F.NIL;
 
 				boolean numericMode = engine.isNumericMode();
 				IExpr temp;
@@ -27,20 +27,22 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					for (int i = 2; i < astSize; i++) {
 						temp = engine.evalLoop(ast.get(i));
 						if (temp.isPresent()) {
-							if (evaledAST == null) {
-								evaledAST = ast.clone();
+							if (evaledAST.isPresent()) {
+								evaledAST.set(i, temp);
+							} else {
+								evaledAST = ast.copy();
 								evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+								evaledAST.set(i, temp);
 							}
-							evaledAST.set(i, temp);
 						}
 					}
 				} finally {
 					engine.setNumericMode(numericMode);
 				}
-				if (evaledAST == null) {
-					evaledAST = ast;
+				if (evaledAST.isPresent()) {
+					return getPart((IAST) arg1, evaledAST, 2, engine);
 				}
-				return getPart((IAST) arg1, evaledAST, 2, engine);
+				return getPart((IAST) arg1, ast, 2, engine);
 			}
 		}
 		return F.NIL;
@@ -57,7 +59,8 @@ public class Part extends AbstractCoreFunctionEvaluator {
 				if (ires.isAST()) {
 					return getPart((IAST) ires, ast, p1, engine);
 				} else {
-					throw new WrongArgumentType(ast, arg1, pos, "Wrong argument for Part[] function. Function or list expected.");
+					throw new WrongArgumentType(ast, arg1, pos,
+							"Wrong argument for Part[] function. Function or list expected.");
 				}
 			}
 			return ires;
@@ -78,7 +81,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					}
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
-							temp = getPart((IAST) ires, ast, p1,engine);
+							temp = getPart((IAST) ires, ast, p1, engine);
 							result.add(temp);
 						} else {
 							throw new WrongArgumentType(ast, arg1, pos,
@@ -107,8 +110,8 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			position = ast.size() + position;
 		}
 		if ((position < 0) || (position >= ast.size())) {
-			throw new WrappedException(new IndexOutOfBoundsException("Part[] index " + position + " of " + ast.toString()
-					+ " is out of bounds."));
+			throw new WrappedException(new IndexOutOfBoundsException(
+					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
 		}
 		return ast.get(position);
 	}

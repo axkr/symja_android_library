@@ -64,7 +64,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 				temp = expandAll((IAST) ast.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp != null) {
 					if (result == null) {
-						result = ast.setAtClone(i, temp);
+						result = ast.setAtCopy(i, temp);
 					} else {
 						result.set(i, temp);
 					}

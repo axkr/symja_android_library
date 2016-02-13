@@ -36,7 +36,7 @@ public class Unequal extends Equal {
 				}
 			}
 			
-			IAST result = ast.clone();
+			IAST result = ast.copy();
 			for (int i = 1; i < result.size(); i++) {
 				result.set(i, F.expandAll(result.get(i), true, true));
 			}

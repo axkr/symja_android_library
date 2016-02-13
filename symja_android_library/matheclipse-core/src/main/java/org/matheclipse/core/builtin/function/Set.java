@@ -32,7 +32,7 @@ public class Set extends AbstractCoreFunctionEvaluator implements ICreatePattern
 				rightHandSide = e.getValue();
 			}
 			IExpr temp = EvalEngine.threadASTListArgs(F.Set(leftHandSide, rightHandSide));
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return engine.evaluate(temp);
 			}
 			return F.NIL;

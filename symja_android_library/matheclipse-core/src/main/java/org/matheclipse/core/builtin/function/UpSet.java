@@ -31,7 +31,7 @@ public class UpSet extends AbstractCoreFunctionEvaluator implements ICreatePatte
 				rightHandSide = e.getValue();
 			}
 			IExpr temp = EvalEngine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide));
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return engine.evaluate(temp);
 			}
 		}
