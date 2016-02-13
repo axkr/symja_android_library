@@ -23,7 +23,7 @@ import org.matheclipse.parser.client.math.MathException;
  * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  * 
  */
-public class VisitorLevelSpecification extends AbstractExprVisitor {
+public class VisitorLevelSpecification extends AbstractVisitor {
 	protected final Function<IExpr, IExpr> fFunction;
 
 	protected int fFromLevel;

@@ -401,7 +401,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				for (int j = 0; j < analyzerList.size(); j++) {
 					expr = analyzerList.get(j).getExpr();
 					temp = expr.replaceAll(rule);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						temp = F.expandAll(temp, true, true);
 						termsEqualZeroList.add(temp);
 					} else {

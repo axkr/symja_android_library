@@ -35,8 +35,8 @@ public class Function extends AbstractCoreFunctionEvaluator {
 				if (symbolSlots.size() > ast.size()) {
 					throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
 				}
-				final IExpr result = function.arg2().replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)));
-				return (result == null) ? function.arg2() : result;
+				return function.arg2().replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)))
+						.orElse(function.arg2());
 			}
 
 		}
@@ -58,8 +58,7 @@ public class Function extends AbstractCoreFunctionEvaluator {
 	}
 
 	public static IExpr replaceSlots(final IExpr expr, final IAST list) {
-		final IExpr result = expr.replaceSlots(list);
-		return (result == null) ? expr : result;
+		return expr.replaceSlots(list).orElse(expr);
 	}
 
 	@Override

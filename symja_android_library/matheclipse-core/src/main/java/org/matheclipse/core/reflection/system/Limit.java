@@ -110,7 +110,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 			if (data.getLimitValue().isNumericFunction()) {
 				result = expression.replaceAll(data.getRule());
-				if (result != null) {
+				if (result.isPresent()) {
 					result = F.evalQuiet(result);
 					if (result.isNumericFunction()) {
 						if (result.isZero()) {

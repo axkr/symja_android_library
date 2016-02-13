@@ -33,7 +33,8 @@ import org.matheclipse.core.visit.VisitorExpr;
 /**
  * Exponential definitions for trigonometric functions
  * 
- * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of trigonometric identities</a>
+ * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">
+ * Wikipedia - List of trigonometric identities</a>
  */
 public class ComplexExpand extends AbstractEvaluator {
 
@@ -49,7 +50,7 @@ public class ComplexExpand extends AbstractEvaluator {
 		public IExpr visit2(IExpr head, IExpr arg1) {
 			IExpr x = arg1;
 			IExpr result = arg1.accept(this);
-			if (result != null) {
+			if (result.isPresent()) {
 				x = result;
 			}
 			IExpr reX = Re(x);
@@ -67,11 +68,11 @@ public class ComplexExpand extends AbstractEvaluator {
 				reX = F.eval(Re(x));
 				imX = F.eval(Im(x));
 				IExpr temp = complexExpandNull(reX);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					reX = temp;
 				}
 				temp = complexExpandNull(imX);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					imX = temp;
 				}
 			}
@@ -86,59 +87,67 @@ public class ComplexExpand extends AbstractEvaluator {
 			}
 			if (head.equals(Cot)) {
 				// -(Sin[2*Re[x]]/(Cos[2*Re[x]]-Cosh[2*Im[x]]))+(I*Sinh[2*Im[x]])/(Cos[2*Re[x]]-Cosh[2*Im[x]])
-				return Plus(Times(CN1, Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
-						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
+				return Plus(
+						Times(CN1, Sin(Times(C2, reX)),
+								Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
+						Times(CI, Sinh(Times(C2, imX)),
+								Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Csc)) {
-				// (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) + ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2
+				// (-2 Cosh[Im[x]] Sin[Re[x]])/(Cos[2 Re[x]] - Cosh[2 Im[x]]) +
+				// ((2 I) Cos[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]]-Cosh[2
 				// Im[x]])
 				return Plus(
-						Times(integer(-2L), Cosh(imX), Sin(reX),
-								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)),
-						Times(C2, CI, Cos(reX), Sinh(imX), Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
+						Times(integer(-2L), Cosh(imX),
+								Sin(reX), Power(
+										Plus(Cos(Times(C2, reX)),
+												Times(CN1,
+														Cosh(Times(C2, imX)))),
+										CN1)),
+						Times(C2, CI, Cos(reX), Sinh(imX),
+								Power(Plus(Cos(Times(C2, reX)), Times(CN1, Cosh(Times(C2, imX)))), CN1)));
 			}
 			if (head.equals(Sec)) {
-				// (2 Cos[Re[x]] Cosh[Im[x]])/(Cos[2 Re[x]] + Cosh[2 Im[x]]) + ((2 I) Sin[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]] + Cosh[2
+				// (2 Cos[Re[x]] Cosh[Im[x]])/(Cos[2 Re[x]] + Cosh[2 Im[x]]) +
+				// ((2 I) Sin[Re[x]] Sinh[Im[x]])/(Cos[2 Re[x]] + Cosh[2
 				// Im[x]])
 				return Plus(Times(C2, Cos(reX), Cosh(imX), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-						Times(C2, CI, Sin(reX), Sinh(imX), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
+						Times(C2, CI, Sin(reX), Sinh(imX),
+								Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
 			}
 			if (head.equals(Sin)) {
 				// Cosh[Im[x]]*Sin[Re[x]]+I*Sinh[Im[x]]*Cos[Re[x]]
 				return Plus(Times(Cosh(imX), Sin(reX)), Times(CI, Sinh(imX), Cos(reX)));
 			}
 			if (head.equals(Tan)) {
-				// Sin[2*Re[x]]/(Cos[2*Re[x]] + Cosh[2*Im[x]]) + (I*Sinh[2*Im[x]])/(Cos[2*Re[x]] + Cosh[2*Im[x]])
+				// Sin[2*Re[x]]/(Cos[2*Re[x]] + Cosh[2*Im[x]]) +
+				// (I*Sinh[2*Im[x]])/(Cos[2*Re[x]] + Cosh[2*Im[x]])
 				return Plus(Times(Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
 						Times(CI, Sinh(Times(C2, imX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return F.unaryAST1(head, result);
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
-		IExpr arg1 = ast.arg1();
-		return complexExpand(arg1);
+
+		return complexExpand(ast.arg1());
 	}
 
 	private static IExpr complexExpand(IExpr arg1) {
-		IExpr result = complexExpandNull(arg1);
-		if (result != null) {
-			return result;
-		}
-		return arg1;
+		return complexExpandNull(arg1).orElse(arg1);
 	}
 
 	private static IExpr complexExpandNull(IExpr arg1) {
 		ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor();
 		return arg1.accept(tteVisitor);
 	}
- 
+
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);

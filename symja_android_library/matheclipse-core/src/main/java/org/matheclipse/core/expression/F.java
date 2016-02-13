@@ -4124,8 +4124,7 @@ public class F {
 	 *         (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
-		final IExpr result = expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr)));
-		return (result == null) ? expr : result;
+		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr))).orElse(expr);
 	}
 
 	/**
@@ -4140,8 +4139,7 @@ public class F {
 	 *         (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
-		final IExpr result = expr.replaceAll(function);
-		return (result == null) ? expr : result;
+		return expr.replaceAll(function).orElse(expr);
 	}
 
 	/**
@@ -4157,8 +4155,7 @@ public class F {
 	 *         (sub-)expression was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, final IAST astRules) {
-		final IExpr result = expr.replaceAll(astRules);
-		return (result == null) ? expr : result;
+		return expr.replaceAll(astRules).orElse(expr);
 	}
 
 	public static IAST Subfactorial(final IExpr a0) {

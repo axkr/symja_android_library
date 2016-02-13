@@ -35,7 +35,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
 
 	/**
-	 * Mapped symbol to value for Derivative[&lt;n&gt;, &lt;m&gt;][&lt;symbol&gt;]
+	 * Mapped symbol to value for Derivative[&lt;n&gt;,
+	 * &lt;m&gt;][&lt;symbol&gt;]
 	 */
 	private static Map<IAST, IExpr> DERIVATIVE_N_M_MAP = new HashMap<IAST, IExpr>(197);
 
@@ -112,12 +113,15 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	}
 
 	/**
-	 * Get the n-th derivative (<code>Derivative[n][symbol]</code>) if possible. Otherwise return <code>null</code>
+	 * Get the n-th derivative (<code>Derivative[n][symbol]</code>) if possible.
+	 * Otherwise return <code>null</code>
 	 * 
 	 * @param n
-	 *            differentiating <code>n</code> times with respect to the 1. argument
+	 *            differentiating <code>n</code> times with respect to the 1.
+	 *            argument
 	 * @param symbol
-	 *            the function symbol which should be searched in the look-up table.
+	 *            the function symbol which should be searched in the look-up
+	 *            table.
 	 * @return <code>null</code> if no entry was found
 	 */
 	public static IExpr derivative(int n, ISymbol symbol) {
@@ -140,23 +144,26 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 			IExpr result = DERIVATIVE_N_MAP.get(symbol);
 			if (result != null) {
 				// replace Slot[2] with the integer number
-				IAST slotsList = F.List(null, F.integer(n));
-				result = result.replaceSlots(slotsList);
-				return result;
+				IAST slotsList = F.List(F.NIL, F.integer(n));
+				return result.replaceSlots(slotsList);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Get the (n, m)-th derivative (<code>Derivative[n, m][symbol]</code>) if possible. Otherwise return <code>null</code>
+	 * Get the (n, m)-th derivative (<code>Derivative[n, m][symbol]</code>) if
+	 * possible. Otherwise return <code>null</code>
 	 * 
 	 * @param n
-	 *            differentiating <code>n</code> times with respect to the 1. argument
+	 *            differentiating <code>n</code> times with respect to the 1.
+	 *            argument
 	 * @param m
-	 *            differentiating <code>m</code> times with respect to the 2. argument
+	 *            differentiating <code>m</code> times with respect to the 2.
+	 *            argument
 	 * @param symbol
-	 *            the function symbol which should be searched in the look-up table.
+	 *            the function symbol which should be searched in the look-up
+	 *            table.
 	 * @return <code>null</code> if no entry was found
 	 */
 	public static IExpr derivative(int n, int m, ISymbol symbol) {

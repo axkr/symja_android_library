@@ -644,7 +644,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
-			if (expr != null) {
+			if (expr.isPresent()) {
 				filterAST.add(expr);
 			} else {
 				restAST.add(get(i));

@@ -1645,7 +1645,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.UNEVALED</code>, otherwise return <code>other</code>. .
+	 * <code>F.NIL</code>, otherwise return <code>other</code>. .
 	 * 
 	 * @param that
 	 * @return
@@ -1657,7 +1657,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.UNEVALED</code>, otherwise invoke {@code other} and return the
+	 * <code>F.NIL</code>, otherwise invoke {@code other} and return the
 	 * result of that invocation.
 	 *
 	 * @param other
@@ -1673,7 +1673,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.UNEVALED</code>, otherwise throw an exception to be created by
+	 * <code>F.NIL</code>, otherwise throw an exception to be created by
 	 * the provided supplier.
 	 *
 	 * @apiNote A method reference to the exception constructor with an empty
@@ -1733,8 +1733,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param function
 	 *            if the unary functions <code>apply()</code> method returns
-	 *            <code>null</code> the expression isn't substituted.
-	 * @return <code>null</code> if no substitution of a (sub-)expression was
+	 *            <code>F.NIL</code> the expression isn't substituted.
+	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
 	@Nullable
@@ -1748,7 +1748,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            rules of the form <code>x-&gt;y</code> or
 	 *            <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the
 	 *            rule can contain pattern objects.
-	 * @return <code>null</code> if no substitution of a (sub-)expression was
+	 * @return <code>F.NIL</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
 	@Nullable

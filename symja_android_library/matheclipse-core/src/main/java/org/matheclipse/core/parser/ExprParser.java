@@ -726,7 +726,7 @@ public class ExprParser extends ExprScanner {
 			if (EvalEngine.isApfloat(precision)) {
 				NVisitorExpr nve = new NVisitorExpr(precision);
 				IExpr temp = function.arg1().accept(nve);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					function.set(1, temp);
 				}
 			}

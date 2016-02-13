@@ -1,5 +1,6 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -7,7 +8,7 @@ import org.matheclipse.core.interfaces.IInteger;
 /**
  * Replace all occurrences of Slot[] expressions.
  * 
- * The visitors <code>visit()</code> methods return <code>null</code> if no substitution occurred.
+ * The visitors <code>visit()</code> methods return <code>F.NIL</code> if no substitution occurred.
  */
 public class VisitorReplaceSlots extends VisitorExpr {
 	final IAST astSlots;
@@ -28,7 +29,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	private int getSlotSequence(IAST ast, int pos, IInteger ii) {
@@ -59,7 +60,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = null;
+		IAST result = F.NIL;
 		int i = 0;
 		int j = 0;
 		while (i < ast.size()) {
@@ -72,7 +73,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 				break;
 			}
 			temp = ast.get(i).accept(this);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
 				result = ast.clone();
 				result.set(i++, temp);
@@ -82,7 +83,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 			j++;
 			i++;
 		}
-		if (result != null) {
+		if (result.isPresent()) {
 			while (i < ast.size()) {
 				if (ast.get(i).isSlotSequence()) {
 					IAST slotSequence = (IAST) ast.get(i);
@@ -91,7 +92,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 					continue;
 				}
 				temp = ast.get(i).accept(this);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result.set(j, temp);
 				}
 				i++;

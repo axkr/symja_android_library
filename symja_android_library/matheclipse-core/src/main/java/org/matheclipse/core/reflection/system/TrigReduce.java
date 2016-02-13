@@ -80,14 +80,14 @@ public class TrigReduce extends AbstractEvaluator {
 		TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor();
 		IExpr temp = ast.arg1();
 		IExpr result = temp;
-		while (temp != null) {
+		while (temp.isPresent()) {
 			result = temp;
 			if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
 				result = F.evalExpand(temp);
 			}
 
 			temp = result.accept(trigReduceVisitor);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				result = temp;
 			}
 		}

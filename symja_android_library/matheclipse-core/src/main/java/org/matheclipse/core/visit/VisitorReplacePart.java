@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  *  
  */
-public class VisitorReplacePart extends AbstractExprVisitor {
+public class VisitorReplacePart extends AbstractVisitor {
 	final IExpr fReplaceExpr;
 	int[] fPositions;
 

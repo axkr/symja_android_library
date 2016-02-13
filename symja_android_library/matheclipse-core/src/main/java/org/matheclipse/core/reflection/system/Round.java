@@ -29,7 +29,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 			if (expr.isInteger()) {
 				return expr;
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 

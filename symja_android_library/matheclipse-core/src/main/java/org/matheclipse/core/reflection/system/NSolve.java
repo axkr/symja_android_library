@@ -405,7 +405,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 							for (int i = currEquation; i < analyzerList.size(); i++) {
 								IExpr expr = analyzerList.get(i).getExpr();
 								IExpr temp = expr.replaceAll(listOfRules.getAST(k));
-								if (temp != null) {
+								if (temp.isPresent()) {
 									expr = engine.evaluate(temp);
 									exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
 									exprAnalyzer.analyze();

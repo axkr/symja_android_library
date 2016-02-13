@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -16,8 +17,10 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non <code>null</code>
- * value. The visitors <code>visit()</code> methods return <code>null</code> if no substitution occurred.
+ * Replace all occurrences of expressions where the given
+ * <code>function.apply()</code> method returns a non <code>F.NIL</code> value.
+ * The visitors <code>visit()</code> methods return <code>F.NIL</code> if no
+ * substitution occurred.
  */
 public class VisitorReplaceAll extends VisitorExpr {
 	final Function<IExpr, IExpr> fFunction;
@@ -49,7 +52,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IFraction element) {
 		return fFunction.apply(element);
@@ -57,7 +60,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IComplex element) {
 		return fFunction.apply(element);
@@ -65,7 +68,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(INum element) {
 		return fFunction.apply(element);
@@ -73,7 +76,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IComplexNum element) {
 		return fFunction.apply(element);
@@ -81,7 +84,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(ISymbol element) {
 		return fFunction.apply(element);
@@ -89,7 +92,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IPattern element) {
 		return fFunction.apply(element);
@@ -97,16 +100,15 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IPatternSequence element) {
 		return fFunction.apply(element);
 	}
 
-	
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IStringX element) {
 		return fFunction.apply(element);
@@ -115,7 +117,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	@Override
 	public IExpr visit(IAST ast) {
 		IExpr temp = fFunction.apply(ast);
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 		return visitAST(ast);
@@ -123,22 +125,22 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = null;
+		IAST result = F.NIL;
 		int i = fOffset;
 		while (i < ast.size()) {
 			temp = ast.get(i).accept(this);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.clone();
+				result = ast.copy();
 				result.set(i++, temp);
 				break;
 			}
 			i++;
 		}
-		if (result != null) {
+		if (result.isPresent()) {
 			while (i < ast.size()) {
 				temp = ast.get(i).accept(this);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result.set(i, temp);
 				}
 				i++;

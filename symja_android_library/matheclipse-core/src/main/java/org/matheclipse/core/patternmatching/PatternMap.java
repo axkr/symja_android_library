@@ -408,18 +408,18 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 					if (sym != null) {
 						for (int i = 0; i < fSymbolsArray.length; i++) {
 							if (sym == fSymbolsArray[i]) {
-								return fPatternValuesArray[i];
+								return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
 							}
 						}
 					} else {
 						for (int i = 0; i < fSymbolsArray.length; i++) {
 							if (patternObject == fSymbolsArray[i]) {
-								return fPatternValuesArray[i];
+								return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
 							}
 						}
 					}
 				}
-				return null;
+				return F.NIL;
 			}
 
 			);
@@ -448,16 +448,16 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 					ISymbol sym = (ISymbol) input;
 					for (int i = 0; i < fSymbolsArray.length; i++) {
 						if (sym == fSymbolsArray[i]) {
-							return fPatternValuesArray[i];
+							return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
 						}
 					}
 				}
-				return null;
+				return F.NIL;
 			}
 
 			);
 
-			if (result != null) {
+			if (result.isPresent()) {
 				return result;
 			}
 		}

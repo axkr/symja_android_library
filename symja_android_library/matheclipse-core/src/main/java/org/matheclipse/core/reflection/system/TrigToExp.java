@@ -40,9 +40,11 @@ import org.matheclipse.core.visit.VisitorExpr;
 /**
  * Exponential definitions for trigonometric functions
  * 
- * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions">List of trigonometric
- * identities - Exponential definitions</a>,<br/>
- * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+ * See <a href=
+ * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions">
+ * List of trigonometric identities - Exponential definitions</a>,<br/>
+ * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * function</a>
  */
 public class TrigToExp extends AbstractEvaluator {
 
@@ -58,7 +60,7 @@ public class TrigToExp extends AbstractEvaluator {
 		public IExpr visit2(IExpr head, IExpr arg1) {
 			IExpr x = arg1;
 			IExpr result = arg1.accept(this);
-			if (result != null) {
+			if (result.isPresent()) {
 				x = result;
 			}
 			if (head.equals(Sin)) {
@@ -78,7 +80,8 @@ public class TrigToExp extends AbstractEvaluator {
 				return Plus(Times(C1D2, Pi), Times(CI, Log(Plus(Sqrt(Subtract(C1, Sqr(x))), Times(CI, x)))));
 			}
 			if (head.equals(ArcTan)) {
-				return Subtract(Times(C1D2, CI, Log(Plus(C1, Times(CNI, x)))), Times(C1D2, CI, Log(Plus(C1, Times(CI, x)))));
+				return Subtract(Times(C1D2, CI, Log(Plus(C1, Times(CNI, x)))),
+						Times(C1D2, CI, Log(Plus(C1, Times(CI, x)))));
 			}
 			if (head.equals(Cosh)) {
 				// JavaForm[(E^x+E^(-x))/2]
@@ -106,23 +109,18 @@ public class TrigToExp extends AbstractEvaluator {
 				return Times(Plus(Times(CN1, Power(E, Times(CN1, x))), Power(E, x)),
 						Power(Plus(Power(E, Times(CN1, x)), Power(E, x)), CN1));
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				return F.unaryAST1(head, result);
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-
-		TrigToExpVisitor tteVisitor = new TrigToExpVisitor();
-		IExpr result = ast.arg1().accept(tteVisitor);
-		if (result != null) {
-			return result;
-		}
-		return ast.arg1();
+		IExpr arg1 = ast.arg1();
+		return arg1.accept(new TrigToExpVisitor()).orElse(arg1);
 	}
 
 	@Override

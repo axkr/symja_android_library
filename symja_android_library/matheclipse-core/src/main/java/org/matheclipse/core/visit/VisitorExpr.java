@@ -1,5 +1,6 @@
 package org.matheclipse.core.visit;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -15,116 +16,119 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Visit every node of an <code>IExpr</code> expression.
  */
-public class VisitorExpr extends AbstractVisitor<IExpr> {
+public class VisitorExpr extends AbstractVisitor {
 
 	public VisitorExpr() {
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IInteger element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IFraction element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IComplex element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(INum element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IComplexNum element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(ISymbol element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IPattern element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IPatternSequence element) {
-		return null;
+		return F.NIL;
 	}
-	
+
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IStringX element) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and no arguments (i.e. <code>head[]</code>).
+	 * Visit an <code>IAST</code> with the given head and no arguments (i.e.
+	 * <code>head[]</code>).
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit1(IExpr head) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and one argument (i.e. <code>head[arg1]</code>).
+	 * Visit an <code>IAST</code> with the given head and one argument (i.e.
+	 * <code>head[arg1]</code>).
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit2(IExpr head, IExpr arg1) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Visit an <code>IAST</code> with the given head and two arguments (i.e. <code>head[arg1, arg2]</code>).
+	 * Visit an <code>IAST</code> with the given head and two arguments (i.e.
+	 * <code>head[arg1, arg2]</code>).
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * 
-	 * @return <code>null</code>, if no evaluation is possible
+	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	public IExpr visit(IAST ast) {
-		IExpr temp = null;
+		IExpr temp = F.NIL;
 		switch (ast.size()) {
 		case 1:
 			temp = visit1(ast.head());
@@ -136,7 +140,7 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 			temp = visit3(ast.head(), ast.arg1(), ast.arg2());
 			break;
 		}
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 		return visitAST(ast);
@@ -144,16 +148,17 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 
 	/**
 	 * 
-	 * @return the cloned <code>IAST</code> with changed evaluated subexpressions, or <code>null</code>, if no evaluation is
+	 * @return the cloned <code>IAST</code> with changed evaluated
+	 *         subexpressions, or <code>F.NIL</code>, if no evaluation is
 	 *         possible
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = null;
+		IAST result = F.NIL;
 		int i = 1;
 		while (i < ast.size()) {
 			temp = ast.get(i).accept(this);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
 				result = ast.clone();
 				for (int j = 1; j < i; j++) {
@@ -164,10 +169,10 @@ public class VisitorExpr extends AbstractVisitor<IExpr> {
 			}
 			i++;
 		}
-		if (result != null) {
+		if (result.isPresent()) {
 			while (i < ast.size()) {
 				temp = ast.get(i).accept(this);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result.set(i, temp);
 				} else {
 					result.set(i, ast.get(i));

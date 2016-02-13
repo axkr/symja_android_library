@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
@@ -20,7 +19,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
-import org.matheclipse.parser.client.Parser;
 
 public class Functors {
 	private static class AppendFunctor implements Function<IExpr, IExpr> {
@@ -36,6 +34,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			final IAST ast = fAST.clone();
 			ast.add(arg);
@@ -52,6 +51,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IAST result = F.NIL;
 			if (arg.isAST()) {
@@ -88,6 +88,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IAST ast = fAST.copy();
 			ast.set(fPosition, arg);
@@ -108,6 +109,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			resultCollection.add(arg);
 			return F.NIL;
@@ -123,6 +125,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			return fConstant;
 		}
@@ -148,6 +151,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			final IAST ast = fConstant.copy();
 			ast.set(fPosition, arg);
@@ -175,6 +179,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			return fConstant.replaceAll(F.Rule(fLHS, arg));
 		}
@@ -198,8 +203,10 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
-			return fEqualRules.get(arg);
+			IExpr temp = fEqualRules.get(arg);
+			return temp != null ? temp : F.NIL;
 		}
 
 	}
@@ -223,6 +230,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			IExpr temp = fEqualRules.get(arg);
 			if (temp != null) {
@@ -234,7 +242,7 @@ public class Functors {
 					return temp;
 				}
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
@@ -253,6 +261,7 @@ public class Functors {
 		}
 
 		@Override
+		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			final IAST ast = fAST.clone();
 			ast.add(arg);

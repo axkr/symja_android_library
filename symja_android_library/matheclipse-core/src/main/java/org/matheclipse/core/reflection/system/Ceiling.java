@@ -30,7 +30,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			if (expr.isInteger()) {
 				return expr;
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 

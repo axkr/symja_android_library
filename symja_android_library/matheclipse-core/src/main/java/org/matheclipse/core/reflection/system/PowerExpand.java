@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.Assumptions;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -49,7 +48,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			boolean evaled = false;
 			IExpr x1 = arg1;
 			IExpr result = arg1.accept(this);
-			if (result != null) {
+			if (result.isPresent()) {
 				evaled = true;
 				x1 = result;
 			}
@@ -69,7 +68,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			if (evaled) {
 				return F.unaryAST1(head, x1);
 			}
-			return null;
+			return F.NIL;
 		}
 
 		/** {@inheritDoc} */
@@ -78,13 +77,13 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			boolean evaled = false;
 			IExpr x1 = arg1;
 			IExpr result = arg1.accept(this);
-			if (result != null) {
+			if (result.isPresent()) {
 				evaled = true;
 				x1 = result;
 			}
 			IExpr x2 = arg2;
 			result = arg2.accept(this);
-			if (result != null) {
+			if (result.isPresent()) {
 				evaled = true;
 				x2 = result;
 			}
@@ -121,7 +120,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 			if (evaled) {
 				return F.binaryAST2(head, x1, x2);
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
@@ -150,12 +149,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 	}
 
 	public static IExpr powerExpand(final IAST ast, boolean assumptions) {
-		PowerExpandVisitor pweVisitor = new PowerExpandVisitor(assumptions);
-		IExpr result = ast.accept(pweVisitor);
-		if (result != null) {
-			return result;
-		}
-		return ast;
+		return ast.accept(new PowerExpandVisitor(assumptions)).orElse(ast);
 	}
 
 	/** {@inheritDoc} */

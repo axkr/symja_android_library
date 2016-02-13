@@ -104,9 +104,6 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 
 		BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
 		IExpr result = ast.arg1().accept(bcVisitor);
-		if (result != null) {
-			return result;
-		}
-		return ast.arg1();
+		return result.isPresent() ? result : ast.arg1();
 	}
 }

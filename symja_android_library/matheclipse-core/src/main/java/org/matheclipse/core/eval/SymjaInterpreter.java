@@ -113,9 +113,11 @@ public class SymjaInterpreter extends EvalUtilities {
 			if (function != null) {
 				expr = function.replaceAll(F.Rule(F.Slot1, expr));
 			}
-			result = evaluate(expr);
-			OutputFormFactory.get(true).convert(buf, result);
-			return buf.toString();
+			if (expr.isPresent()) {
+				result = evaluate(expr);
+				OutputFormFactory.get(true).convert(buf, result);
+				return buf.toString();
+			}
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {

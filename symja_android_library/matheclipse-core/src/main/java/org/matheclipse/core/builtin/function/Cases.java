@@ -90,7 +90,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr apply(final IExpr arg) throws StopException {
 			IExpr temp = function.apply(arg);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				resultCollection.add(temp);
 				if (maximumResults >= 0) {
 					resultsCounter++;

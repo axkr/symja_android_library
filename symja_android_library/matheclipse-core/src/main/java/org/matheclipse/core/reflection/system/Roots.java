@@ -32,9 +32,11 @@ import edu.jas.poly.Monomial;
 /**
  * Determine the roots of a univariate polynomial
  * 
- * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
- * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
- * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+ * See Wikipedia entries for:
+ * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
+ * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
+ * function</a> and
+ * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
  */
 public class Roots extends AbstractFunctionEvaluator {
 
@@ -73,8 +75,10 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	/**
 	 * <p>
-	 * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the polynomial being considered the
-	 * roots may contain complex number. When complex numbers are present they will come in pairs of complex conjugates.
+	 * Given a set of polynomial coefficients, compute the roots of the
+	 * polynomial. Depending on the polynomial being considered the roots may
+	 * contain complex number. When complex numbers are present they will come
+	 * in pairs of complex conjugates.
 	 * </p>
 	 * 
 	 * @param coefficients
@@ -112,14 +116,15 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	}
 
-	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables, boolean numericSolutions, EvalEngine engine) {
+	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables,
+			boolean numericSolutions, EvalEngine engine) {
 		IAST result = null;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
 
 		try {
 			result = F.List();
-			IExpr temp; 
+			IExpr temp;
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
 			if (polyRat.degree(0) <= 2) {
@@ -132,7 +137,8 @@ public class Roots extends AbstractFunctionEvaluator {
 				if (quarticResultList != null) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						if (numericSolutions) {
-							result.add(F.chopExpr(engine.evalN(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
+							result.add(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+									Config.DEFAULT_ROOTS_CHOP_DELTA));
 						} else {
 							result.add(quarticResultList.get(j));
 						}
@@ -158,11 +164,12 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 		if (result != null) {
 			if (!denom.isNumber()) {
-				// eliminate roots from the result list, which occur in the denominator
+				// eliminate roots from the result list, which occur in the
+				// denominator
 				int i = 1;
 				while (i < result.size()) {
 					IExpr temp = denom.replaceAll(F.Rule(variables.arg1(), result.get(i)));
-					if (temp != null && engine.evaluate(temp).isZero()) {
+					if (temp.isPresent() && engine.evaluate(temp).isZero()) {
 						result.remove(i);
 						continue;
 					}

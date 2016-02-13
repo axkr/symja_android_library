@@ -36,7 +36,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		IExpr temp = expr.accept(visitor);
 		final int iterationLimit = EvalEngine.get().getIterationLimit();
 		int iterationCounter = 1;
-		while (temp != null) {
+		while (temp.isPresent()) {
 			result = temp;
 			temp = result.accept(visitor);
 			if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {

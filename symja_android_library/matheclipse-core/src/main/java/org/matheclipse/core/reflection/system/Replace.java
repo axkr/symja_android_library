@@ -41,7 +41,7 @@ public class Replace extends AbstractEvaluator {
 						IAST rule = (IAST) element;
 						Function<IExpr, IExpr> function = Functors.rules(rule);
 						IExpr temp = function.apply(input);
-						if (temp != null) {
+						if (temp.isPresent()) {
 							return temp;
 						}
 					} else {
@@ -58,7 +58,7 @@ public class Replace extends AbstractEvaluator {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 				engine.printMessage(wat.getMessage());
 			}
-			return null;
+			return F.NIL;
 		}
 
 		public void setRule(IExpr rules) {
@@ -73,13 +73,13 @@ public class Replace extends AbstractEvaluator {
 
 			for (IExpr list : (IAST) rules) {
 				IAST subList = (IAST) list;
-				IExpr temp = null;
+				IExpr temp = F.NIL;
 				for (IExpr element : subList) {
 					if (element.isRuleAST()) {
 						IAST rule = (IAST) element;
 						Function<IExpr, IExpr> function = Functors.rules(rule);
 						temp = function.apply(arg1);
-						if (temp != null) {
+						if (temp.isPresent()) {
 							break;
 						}
 					} else {
@@ -87,7 +87,7 @@ public class Replace extends AbstractEvaluator {
 						throw wat;
 					}
 				}
-				if (temp != null) {
+				if (temp.isPresent()) {
 					result.add(temp);
 				} else {
 					result.add(arg1);
@@ -100,7 +100,7 @@ public class Replace extends AbstractEvaluator {
 					IAST rule = (IAST) element;
 					Function<IExpr, IExpr> function = Functors.rules(rule);
 					IExpr temp = function.apply(arg1);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 				} else {
@@ -171,7 +171,7 @@ public class Replace extends AbstractEvaluator {
 	private static IExpr replaceRule(IExpr arg1, IAST rule) {
 		Function<IExpr, IExpr> function = Functors.rules(rule);
 		IExpr temp = function.apply(arg1);
-		if (temp != null) {
+		if (temp.isPresent()) {
 			return temp;
 		}
 		return arg1;

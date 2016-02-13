@@ -32,7 +32,7 @@ public class D extends AbstractFunctionEvaluator {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
 			IExpr der = Derivative.derivative(1, header);
-			if (der != null) {
+			if (der.isPresent()) {
 				// we've found a derivative for a function of the form f[x_]
 				IExpr derivative = F.eval(F.unaryAST1(der, a1));
 				return F.Times(F.D(a1, x), derivative);

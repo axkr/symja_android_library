@@ -84,7 +84,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 		}
 
 		private IExpr tryExpandAllTransformation(IAST plusAST, IExpr test) {
-			IExpr result = null;
+			IExpr result = F.NIL;
 			long minCounter = plusAST.leafCount();
 			IExpr temp;
 			long count;
@@ -103,9 +103,10 @@ public class Simplify extends AbstractFunctionEvaluator {
 		}
 
 		private IExpr tryTransformations(IExpr expr) {
-			IExpr result = null;
+			IExpr result = F.NIL;
 			if (expr.isAST()) {
-				// try ExpandAll, Together, Apart, Factor to reduce the expression
+				// try ExpandAll, Together, Apart, Factor to reduce the
+				// expression
 				long minCounter = expr.leafCount();
 				IExpr temp;
 				long count;
@@ -163,7 +164,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 			IExpr temp;
 
 			temp = visitAST(ast);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 
@@ -181,7 +182,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 				}
 				if (basicPlus.size() > 1) {
 					temp = tryTransformations(basicPlus.getOneIdentity(F.C0));
-					if (temp != null) {
+					if (temp.isPresent()) {
 						if (restPlus.size() == 1) {
 							return temp;
 						}
@@ -203,13 +204,14 @@ public class Simplify extends AbstractFunctionEvaluator {
 							if (temp.isPlus()) {
 								// <number> * Plus[.....]
 								reduced = tryExpandAll(ast, temp, number, i);
-								if (reduced != null) {
+								if (reduced.isPresent()) {
 									return reduced;
 								}
-							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus() && ((IAST) temp).arg2().isMinusOne()) {
+							} else if (temp.isPower() && ((IAST) temp).arg1().isPlus()
+									&& ((IAST) temp).arg2().isMinusOne()) {
 								// <number> * Power[Plus[...], -1 ]
 								reduced = tryExpandAll(ast, ((IAST) temp).arg1(), number.inverse(), i);
-								if (reduced != null) {
+								if (reduced.isPresent()) {
 									return F.Power(reduced, F.CN1);
 								}
 							}
@@ -222,7 +224,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 				if (basicTimes.size() > 1) {
 					temp = tryTransformations(basicTimes.getOneIdentity(F.C0));
-					if (temp != null) {
+					if (temp.isPresent()) {
 						if (restTimes.size() == 1) {
 							return temp;
 						}
@@ -237,18 +239,18 @@ public class Simplify extends AbstractFunctionEvaluator {
 			if (count < minCounter) {
 				return temp;
 			}
-			return null;
+			return F.NIL;
 		}
 
 		private IExpr tryExpandAll(IAST ast, IExpr temp, IExpr arg1, int i) {
 			IExpr expandedAst = tryExpandAllTransformation((IAST) temp, F.Times(arg1, temp));
-			if (expandedAst != null) {
+			if (expandedAst.isPresent()) {
 				IAST result = F.Times();
 				ast.range(2, ast.size()).toList(result);
 				result.set(i - 1, expandedAst);
 				return result;
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
@@ -258,9 +260,9 @@ public class Simplify extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		
+
 		IExpr arg1 = ast.arg1();
-		if (arg1.isAtom()){
+		if (arg1.isAtom()) {
 			return arg1;
 		}
 		long minCounter = arg1.leafCount();
@@ -268,7 +270,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 		IExpr result = arg1;
 		long count = 0L;
 		IExpr temp = arg1.accept(new SimplifyVisitor());
-		while (temp != null) {
+		while (temp.isPresent()) {
 			count = temp.leafCount();
 			if (count < minCounter) {
 				minCounter = count;

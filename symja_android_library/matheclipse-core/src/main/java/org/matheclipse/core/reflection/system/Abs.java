@@ -39,7 +39,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 			if (!temp.topHead().equals(F.Abs)) {
 				return temp;
 			}
-			return null;
+			return F.NIL;
 		}
 	}
 
