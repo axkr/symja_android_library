@@ -104,7 +104,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 				return result[0];
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

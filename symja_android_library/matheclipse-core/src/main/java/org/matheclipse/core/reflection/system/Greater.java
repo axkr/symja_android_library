@@ -127,7 +127,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			if (arg2.isSignedNumber()) {
 				// this part is used in other comparator operations like Less, GreaterEqual,...
 				IExpr temp = checkAssumptions(arg1, arg2);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}
@@ -150,7 +150,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		cResult[ast.size() - 1] = COMPARE_RESULT.TRUE;
 		if (!evaled) {
 			// expression doesn't change
-			return null;
+			return F.NIL;
 		}
 		int i = 2;
 		evaled = false;
@@ -202,7 +202,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 				return F.False;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public COMPARE_RESULT prepareCompare(final IExpr o0, final IExpr o1) {

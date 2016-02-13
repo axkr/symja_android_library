@@ -115,7 +115,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

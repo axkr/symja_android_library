@@ -45,7 +45,7 @@ public class ArcTanh extends AbstractTrigArg1 implements INumeric, ArcTanhRules 
 		if (imPart != null) {
 			return F.Times(F.CI, F.ArcTan(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

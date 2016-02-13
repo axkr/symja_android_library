@@ -24,7 +24,6 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -91,7 +90,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 			}
 			
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

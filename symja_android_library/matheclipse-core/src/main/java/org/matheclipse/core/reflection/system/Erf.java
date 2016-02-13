@@ -48,7 +48,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 		if (negExpr != null) {
 			return Negate(Erf(negExpr));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

@@ -35,7 +35,8 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to <code>x> 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x > 6</code>
+	 * wll be simplified to <code>x> 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
@@ -43,7 +44,8 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	 *            right-hand-side of the comparator expression
 	 * @param originalHead
 	 *            symbol for which the simplification was started
-	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 * @return the simplified comparator expression or <code>null</code> if no
+	 *         simplification was found
 	 */
 	protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead) {
 		IExpr lhs, rhs;
@@ -54,7 +56,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 			lhs = a2;
 			rhs = a1;
 		} else {
-			return null;
+			return F.NIL;
 		}
 		if (lhs.isAST()) {
 			IAST lhsAST = (IAST) lhs;
@@ -72,7 +74,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
@@ -119,7 +121,8 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	 *            first argument
 	 * @param a2
 	 *            second argument
-	 * @return <code>null</code> or the simplified expression, if equality couldn't be determined.
+	 * @return <code>F.NIL</code> or the simplified expression, if equality
+	 *         couldn't be determined.
 	 */
 	public static IExpr equalNull(final IExpr a1, final IExpr a2) {
 		COMPARE_RESULT b;
@@ -136,13 +139,9 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 
 		return CONST.simplifyCompare(arg1, arg2, F.Equal);
 	}
-	
+
 	public static IExpr equal(final IAST ast) {
-		IExpr temp = equalNull(ast.arg1(), ast.arg2());
-		if (temp!=null){
-			return temp;
-		}
-		return ast; 
+		return equalNull(ast.arg1(), ast.arg2()).orElse(ast);
 	}
 
 	/** {@inheritDoc} */

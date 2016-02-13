@@ -75,7 +75,7 @@ public class Subfactorial extends AbstractTrigArg1 {
 				EvalEngine.get().printMessage("Subfactorial: argument n is to big.");
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -24,7 +25,7 @@ public class ArcSech extends AbstractTrigArg1 implements ArcSechRules {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		return null;
+		return F.NIL;
 	}
 
 	@Override

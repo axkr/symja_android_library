@@ -46,7 +46,7 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 		if (negExpr != null) {
 			return Negate(InverseErf(negExpr));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

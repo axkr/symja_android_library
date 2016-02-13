@@ -31,7 +31,7 @@ public class Unequal extends Equal {
 				}
 
 				IExpr result = simplifyCompare(arg1, arg2, F.Unequal);
-				if (result != null) {
+				if (result.isPresent()) {
 					return result;
 				}
 			}

@@ -46,7 +46,7 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 		if (arg1.isZero()) {
 			return F.CComplexInfinity;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

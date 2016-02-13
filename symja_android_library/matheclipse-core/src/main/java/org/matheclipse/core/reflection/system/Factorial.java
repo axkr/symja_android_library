@@ -73,7 +73,7 @@ public class Factorial extends AbstractTrigArg1 {
 		if (arg1.isInteger()) {
 			return factorial((IInteger) arg1);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

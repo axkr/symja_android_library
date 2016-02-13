@@ -46,7 +46,7 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 		if (negExpr != null) {
 			return Sinc(negExpr);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

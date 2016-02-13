@@ -42,7 +42,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 		if (imPart != null) {
 			return F.Times(F.CNI, F.ArcCot(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

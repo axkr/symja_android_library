@@ -33,7 +33,7 @@ public class Median extends AbstractTrigArg1 {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

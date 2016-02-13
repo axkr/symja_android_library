@@ -71,8 +71,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.NUIL</code> if no evaluation
-	 *         was possible
+	 * @return the evaluated object or <code>F.NUIL</code> if no evaluation was
+	 *         possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
 	public final IExpr evalQuietNull(final IExpr expr) {
@@ -437,10 +437,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public void addOut(IExpr arg0) {
 		// remember the last result
-		if (arg0 == null) {
-			fAnswer = F.Null;
-		} else {
+		if (arg0 != null && arg0.isPresent()) {
 			fAnswer = arg0;
+		} else {
+			fAnswer = F.Null;
 		}
 		ISymbol ans = F.$s("$ans");
 		ans.putDownRule(ISymbol.RuleType.SET, true, ans, fAnswer, false);
@@ -556,9 +556,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			// if (resultList != null) {
 			return resultList;
-			// }
 		}
 		return F.NIL;
 	}
@@ -568,7 +566,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * attributes.
 	 * 
 	 * @param ast
-	 * @return <code>null</code> if no evaluation happened
+	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalAST(IAST ast) {
 		IExpr head = ast.head();
@@ -579,9 +577,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this).orElse(null);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this).orElse(null);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 			}
 		} else {
 			symbol = ast.topHead();
@@ -667,9 +665,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (module instanceof ICoreFunctionEvaluator) {
 				// evaluate a built-in function.
 				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this).orElse(null);
+					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this).orElse(null);
+				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 			}
 
 		} else {
@@ -723,6 +721,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
+				// if (result == null) {
+				// System.out.println(ast);
+				// throw new NullPointerException();
+				// }
 				if (result != null && result.isPresent()) {
 					return result;
 				}
@@ -1078,7 +1080,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param symbol
 	 * @param ast
-	 * @return <code>null</code> if no evaluation happened
+	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST ast) {
 		IExpr result;
@@ -1360,13 +1362,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * 
 	 * Evaluate an object and reset the numeric mode to the value before the
-	 * evaluation step. If evaluation is not possible return
-	 * <code>F.NIL</code>.
+	 * evaluation step. If evaluation is not possible return <code>F.NIL</code>.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return the evaluated object or <code>F.NIL</code> if no evaluation
-	 *         was possible
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was
+	 *         possible
 	 */
 	public final IExpr evaluateNull(final IExpr expr) {
 		boolean numericMode = fNumericMode;

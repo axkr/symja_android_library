@@ -37,7 +37,7 @@ public class Less extends Greater {
 				return F.True;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */

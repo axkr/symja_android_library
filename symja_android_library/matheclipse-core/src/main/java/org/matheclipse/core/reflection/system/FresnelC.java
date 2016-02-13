@@ -14,7 +14,7 @@ public class FresnelC extends AbstractTrigArg1 implements INumeric {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		return null;
+		return F.NIL;
 	}
 
 	@Override

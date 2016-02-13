@@ -89,7 +89,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 				return Times(Power(CN1, parts[1]), Sec(parts[0]));
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

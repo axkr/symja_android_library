@@ -22,7 +22,7 @@ public class Mean extends AbstractTrigArg1 {
 			return F.Times(list.apply(F.Plus), F.Power(F.integer(list.size() - 1),
 					F.CN1));
 		}
-		return null;
+		return F.NIL;
 	} 
 
 	@Override

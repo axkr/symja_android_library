@@ -46,7 +46,7 @@ public class Csch extends AbstractTrigArg1 implements INumeric, CschRules {
 		if (arg1.isZero()) {
 			return F.CComplexInfinity;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

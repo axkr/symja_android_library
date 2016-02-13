@@ -47,7 +47,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
 		if (arg1.isZero()) {
 			return F.C0;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

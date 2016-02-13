@@ -68,7 +68,7 @@ public class Factorial2 extends AbstractTrigArg1 {
 
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

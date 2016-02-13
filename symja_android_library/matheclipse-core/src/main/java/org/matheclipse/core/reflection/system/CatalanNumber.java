@@ -25,7 +25,7 @@ public class CatalanNumber extends AbstractTrigArg1 {
 			return catalanNumber((IInteger) arg1);
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	public static IInteger catalanNumber(IInteger n) {

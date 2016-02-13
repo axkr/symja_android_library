@@ -82,7 +82,7 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 				return F.Tan(parts[0]);
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

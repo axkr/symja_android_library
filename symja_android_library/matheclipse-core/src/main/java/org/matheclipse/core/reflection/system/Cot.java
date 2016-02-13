@@ -85,7 +85,7 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 			}
 			
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

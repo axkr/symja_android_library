@@ -19,7 +19,8 @@ import org.matheclipse.core.reflection.system.rules.LimitRules;
 import edu.jas.poly.GenPolynomial;
 
 /**
- * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+ * Limit of a function. See
+ * <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
 public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
@@ -114,23 +115,26 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 					result = F.evalQuiet(result);
 					if (result.isNumericFunction()) {
 						if (result.isZero()) {
-							IExpr temp = F.evalQuiet(F.N(F.Greater(F.Subtract(expression, data.getLimitValue()), F.C0)));
+							IExpr temp = F
+									.evalQuiet(F.N(F.Greater(F.Subtract(expression, data.getLimitValue()), F.C0)));
 							if (temp != null) {
 								// System.out.println(temp.toString());
 								IAssumptions assumptions = Assumptions.getInstance(temp);
 								if (assumptions != null) {
 									int direction = data.getDirection();
 									if (assumptions.isNegative(data.getSymbol())) {
-										if (direction == DIRECTION_AUTOMATIC || direction == DIRECTION_FROM_SMALLER_VALUES) {
+										if (direction == DIRECTION_AUTOMATIC
+												|| direction == DIRECTION_FROM_SMALLER_VALUES) {
 											data.setDirection(DIRECTION_FROM_SMALLER_VALUES);
 										} else {
-											return null;
+											return F.NIL;
 										}
 									} else if (assumptions.isNonNegative(data.getSymbol())) {
-										if (direction == DIRECTION_AUTOMATIC || direction == DIRECTION_FROM_LARGER_VALUES) {
+										if (direction == DIRECTION_AUTOMATIC
+												|| direction == DIRECTION_FROM_LARGER_VALUES) {
 											data.setDirection(DIRECTION_FROM_LARGER_VALUES);
 										} else {
-											return null;
+											return F.NIL;
 										}
 									}
 								}
@@ -156,11 +160,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">Wikipedia L'Hôpital's rule</a>
+	 * Try L'hospitales rule. See
+	 * <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">
+	 * Wikipedia L'Hôpital's rule</a>
 	 * 
 	 * @param numerator
 	 * @param denominator
@@ -188,11 +194,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		} finally {
 			engine.setRecursionLimit(recursionLimit);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
+	 * See:
+	 * <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at
+	 * Infinity of Rational Functions</a>
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
@@ -208,25 +216,32 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		long numDegree = numeratorPoly.degree();
 		long denomDegree = denominatorPoly.degree();
 		if (numDegree > denomDegree) {
-			// If the numerator has the highest term, then the fraction is called "top-heavy". If, when you divide the numerator
-			// by the denominator the resulting exponent on the variable is even, then the limit (at both \infty and -\infty) is
-			// \infty. If it is odd, then the limit at \infty is \infty, and the limit at -\infty is -\infty.
+			// If the numerator has the highest term, then the fraction is
+			// called "top-heavy". If, when you divide the numerator
+			// by the denominator the resulting exponent on the variable is
+			// even, then the limit (at both \infty and -\infty) is
+			// \infty. If it is odd, then the limit at \infty is \infty, and the
+			// limit at -\infty is -\infty.
 			long oddDegree = (numDegree + denomDegree) % 2;
 			if (oddDegree == 1) {
-				return F.Limit(
-						F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()), limit),
-						rule);
+				return F.Limit(F.Times(
+						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+						limit), rule);
 			} else {
-				return F.Limit(F.Times(F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+				return F.Limit(F.Times(
+						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
 						F.CInfinity), rule);
 			}
 		} else if (numDegree < denomDegree) {
-			// If the denominator has the highest term, then the fraction is called "bottom-heavy" and the limit (at both \infty
+			// If the denominator has the highest term, then the fraction is
+			// called "bottom-heavy" and the limit (at both \infty
 			// and -\infty) is zero.
 			return F.C0;
 		}
-		// If the exponent of the highest term in the numerator matches the exponent of the highest term in the denominator,
-		// the limit (at both \infty and -\infty) is the ratio of the coefficients of the highest terms.
+		// If the exponent of the highest term in the numerator matches the
+		// exponent of the highest term in the denominator,
+		// the limit (at both \infty and -\infty) is the ratio of the
+		// coefficients of the highest terms.
 		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
 	}
 
@@ -241,7 +256,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 * @param denominator
 	 * @param data
 	 *            the limit data definition
-	 * @return <code>null</code> if no limit found
+	 * @return <code>F.NIL</code> if no limit found
 	 */
 	private static IExpr numeratorDenominatorLimit(final IExpr numerator, final IExpr denominator, LimitData data) {
 		IExpr numValue;
@@ -257,25 +272,25 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			ISymbol x = data.getSymbol();
 			denValue = F.evalBlock(denominator, x, limit);
 			if (denValue.equals(F.Indeterminate)) {
-				return null;
+				return F.NIL;
 			} else if (denValue.isZero()) {
 				numValue = F.evalBlock(numerator, x, limit);
 				if (numValue.isZero()) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
-				return null;
+				return F.NIL;
 			} else if (F.CInfinity.equals(denValue)) {
 				numValue = F.evalBlock(numerator, x, limit);
 				if (F.CInfinity.equals(numValue)) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
-				return null;
+				return F.NIL;
 			} else if (denValue.isNegativeInfinity()) {
 				numValue = F.evalBlock(numerator, x, limit);
 				if (numValue.isNegativeInfinity()) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
-				return null;
+				return F.NIL;
 			}
 		}
 
@@ -289,7 +304,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr limit = data.getLimitValue();
 		if (limit.isInfinity() || limit.isNegativeInfinity()) {
 			ISymbol symbol = data.getSymbol();
-			GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol, true);
+			GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol,
+					true);
 			if (poly != null) {
 
 				IExpr coeff = poly.leadingBaseCoefficient();
@@ -341,7 +357,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 					}
 
-					return null;
+					return F.NIL;
 				}
 				return F.Power(temp, exp);
 			}
@@ -353,7 +369,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 					} else if (n.isNegative()) {
 						return F.C0;
 					}
-					return null;
+					return F.NIL;
 				} else if (temp.isNegativeInfinity()) {
 					if (n.isPositive()) {
 						if (n.isEven()) {
@@ -364,9 +380,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 					} else if (n.isNegative()) {
 						return F.C0;
 					}
-					return null;
+					return F.NIL;
 				} else if (temp.equals(F.Indeterminate) || temp.isAST(F.Limit)) {
-					return null;
+					return F.NIL;
 				}
 				if (n.isPositive()) {
 					return F.Power(temp, n);
@@ -375,35 +391,37 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches <code>Infinity</code> or <code>-Infinity</code>,
-	 * <code>y</code> approaches <code>0</code>.
+	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches
+	 * <code>Infinity</code> or <code>-Infinity</code>, <code>y</code>
+	 * approaches <code>0</code>.
 	 * 
 	 * @param arg1
 	 * @param data
 	 *            (the datas limit must be Infinity or -Infinity)
-	 * @return <code>null</code> if the substitution didn't succeed.
+	 * @return <code>F.NIL</code> if the substitution didn't succeed.
 	 */
 	private static IExpr substituteInfinity(final IAST arg1, LimitData data) {
 		ISymbol x = data.getSymbol();
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
-			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false, false, true);
+			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false,
+					false, true);
 			if (parts != null) {
 				if (!parts[1].isOne()) { // denominator != 1
 					LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.getDirection());
 					temp = numeratorDenominatorLimit(parts[0], parts[1], ndData);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static IExpr timesLimit(final IAST arg1, LimitData data) {
@@ -415,19 +433,20 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			IExpr limit = data.getLimitValue();
 			ISymbol symbol = data.getSymbol();
 			if (limit.isInfinity() || limit.isNegativeInfinity()) {
-				GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(denominator,
-						symbol, true);
+				GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ
+						.polynomial(denominator, symbol, true);
 				if (denominatorPoly != null) {
-					GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(numerator,
-							symbol, true);
+					GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ
+							.polynomial(numerator, symbol, true);
 					if (numeratorPoly != null) {
-						return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, data.getRule());
+						return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
+								data.getRule());
 					}
 				}
 			}
 
-			IExpr plusResult = org.matheclipse.core.reflection.system.Apart.partialFractionDecompositionRational(
-					new PartialFractionGenerator(), parts, symbol);
+			IExpr plusResult = org.matheclipse.core.reflection.system.Apart
+					.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, symbol);
 			if (plusResult != null && plusResult.isPlus()) {
 				// OneIdentity if plusResult.size() == 2
 				// if (plusResult.size() > 2) {
@@ -438,13 +457,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			if (denominator.isOne()) {
 				if (limit.isInfinity() || limit.isNegativeInfinity()) {
 					IExpr temp = substituteInfinity(arg1, data);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						return temp;
 					}
 				}
 			}
 			IExpr temp = numeratorDenominatorLimit(numerator, denominator, data);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				return temp;
 			}
 
@@ -458,7 +477,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	public final static int DIRECTION_FROM_LARGER_VALUES = -1;
 
 	/**
-	 * Compute the limit approaching from larger or smaller values automatically.
+	 * Compute the limit approaching from larger or smaller values
+	 * automatically.
 	 */
 	public final static int DIRECTION_AUTOMATIC = 0;
 
@@ -504,7 +524,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (rule.isFreeAt(2, symbol)) {
 			limit = rule.arg2();
 		} else {
-			throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: limit value contains variable symbol for rule definition!");
+			throw new WrongArgumentType(ast, ast.arg2(), 2,
+					"Limit: limit value contains variable symbol for rule definition!");
 		}
 		LimitData data = new LimitData(symbol, limit, rule, direction);
 		return evalLimit(ast.arg1(), data, true);

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -21,7 +22,7 @@ public class FactorInteger extends AbstractTrigArg1 {
 		if (arg1.isRational()) {
 			return ((IRational) arg1).factorInteger();
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

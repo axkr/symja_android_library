@@ -96,7 +96,7 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 			}
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 	@Override

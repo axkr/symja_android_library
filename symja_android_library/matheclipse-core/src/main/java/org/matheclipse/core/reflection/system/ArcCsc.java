@@ -37,7 +37,7 @@ public class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
 		if (imPart != null) {
 			return F.Times(F.CNI, F.ArcCsch(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

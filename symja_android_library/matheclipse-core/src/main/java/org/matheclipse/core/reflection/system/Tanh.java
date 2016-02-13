@@ -46,7 +46,7 @@ public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 		if (arg1.isZero()) {
 			return F.C0;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

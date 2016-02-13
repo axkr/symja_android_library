@@ -42,7 +42,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 		if (arg1.isInteger()) {
 			return fibonacci((IInteger) arg1);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

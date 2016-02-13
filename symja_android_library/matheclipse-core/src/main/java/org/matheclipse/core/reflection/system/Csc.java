@@ -92,7 +92,7 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 				return Times(Power(CN1, parts[1]), Csc(parts[0]));
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

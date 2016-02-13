@@ -81,7 +81,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr e1ComplexArg(final Complex c) {
-		return null;
+		return F.NIL;
 	}
 	
 	public IExpr e1ApcomplexArg(final Apcomplex c) {

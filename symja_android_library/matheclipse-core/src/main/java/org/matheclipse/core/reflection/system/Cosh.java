@@ -45,7 +45,7 @@ public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules {
 		if (arg1.isZero()) {
 			return F.C1;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

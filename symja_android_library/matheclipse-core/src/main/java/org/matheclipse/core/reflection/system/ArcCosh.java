@@ -60,7 +60,7 @@ public class ArcCosh extends AbstractTrigArg1 implements INumeric, ArcCoshRules 
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		return null;
+		return F.NIL;
 	}
 
 	@Override

@@ -84,7 +84,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 		if (imPart != null) {
 			return F.Times(F.CNI, F.ArcCoth(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

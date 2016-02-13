@@ -52,11 +52,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		try {
 			IExpr arg1 = engine.evaluateNull(ast.arg1());
 			if (arg1.isPresent()) {
-				IExpr temp = evalCeiling(arg1);
-				if (temp == null) {
-					return F.Ceiling(arg1);
-				}
-				return temp;
+				return evalCeiling(arg1).orElse(F.Ceiling(arg1));
 			}
 			return evalCeiling(ast.arg1());
 		} catch (ArithmeticException ae) {
@@ -88,7 +84,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 		if (negExpr != null) {
 			return Negate(Floor(negExpr));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

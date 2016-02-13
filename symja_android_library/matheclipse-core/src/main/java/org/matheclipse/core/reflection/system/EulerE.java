@@ -54,7 +54,7 @@ public class EulerE extends AbstractTrigArg1 {
 				// integer to large?
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

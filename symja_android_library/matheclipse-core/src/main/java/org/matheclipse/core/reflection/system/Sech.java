@@ -45,7 +45,7 @@ public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
 		if (arg1.isZero()) {
 			return F.C0;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

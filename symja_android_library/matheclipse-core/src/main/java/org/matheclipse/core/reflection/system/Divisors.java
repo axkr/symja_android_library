@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -27,7 +28,7 @@ public class Divisors extends AbstractTrigArg1 {
 			}
 			return i.divisors();
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

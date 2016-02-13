@@ -51,11 +51,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		try {
 			IExpr arg1 = engine.evaluateNull(ast.arg1());
 			if (arg1.isPresent()) {
-				IExpr temp = evalFloor(arg1);
-				if (temp == null) {
-					return F.Floor(arg1);
-				}
-				return temp;
+				return evalFloor(arg1).orElse(F.Floor(arg1));
 			}
 			return evalFloor(ast.arg1());
 		} catch (ArithmeticException ae) {
@@ -85,7 +81,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 		if (negExpr != null) {
 			return Negate(Ceiling(negExpr));
 		}
-		return null;
+		return F.NIL;
 	} 
 
 	@Override

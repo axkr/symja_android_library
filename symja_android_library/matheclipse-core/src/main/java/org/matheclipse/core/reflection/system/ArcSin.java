@@ -43,7 +43,7 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 		if (imPart != null) {
 			return F.Times(F.CI, F.ArcSinh(imPart));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
