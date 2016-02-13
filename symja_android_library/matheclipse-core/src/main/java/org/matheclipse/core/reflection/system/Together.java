@@ -34,8 +34,7 @@ public class Together extends AbstractFunctionEvaluator {
 	 * Calls <code>Together</code> for each argument of the <code>ast</code>.
 	 * 
 	 * @param ast
-	 * @return <code>F.UNEVALED</code> if the <code>ast</code> couldn't be
-	 *         evaluated.
+	 * @return <code>F.NIL</code> if the <code>ast</code> couldn't be evaluated.
 	 */
 	private static IAST togetherForEach(final IAST ast) {
 		IAST result = F.NIL;

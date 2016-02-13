@@ -66,12 +66,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return <code>F.UNEVALED</code>. In &quot;quiet mode&quot; all
+	 * possible return <code>F.NIL</code>. In &quot;quiet mode&quot; all
 	 * warnings would be suppressed.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 * @return the evaluated object or <code>F.NUIL</code> if no evaluation
 	 *         was possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
@@ -950,11 +950,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
 	 * Evaluate an object, if evaluation is not possible return
-	 * <code>F.UNEVALED</code>.
+	 * <code>F.NIL</code>.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated expression or <code>F.UNEVALED</code> if evaluation
+	 * @return the evaluated expression or <code>F.NIL</code> if evaluation
 	 *         isn't possible
 	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
@@ -1361,11 +1361,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * Evaluate an object and reset the numeric mode to the value before the
 	 * evaluation step. If evaluation is not possible return
-	 * <code>F.UNEVALED</code>.
+	 * <code>F.NIL</code>.
 	 * 
 	 * @param expr
 	 *            the object which should be evaluated
-	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation
 	 *         was possible
 	 */
 	public final IExpr evaluateNull(final IExpr expr) {

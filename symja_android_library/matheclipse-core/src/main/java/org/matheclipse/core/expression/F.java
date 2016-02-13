@@ -2410,7 +2410,7 @@ public class F {
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.UNEVALED</code> if no evaluation
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation
 	 *         was possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()

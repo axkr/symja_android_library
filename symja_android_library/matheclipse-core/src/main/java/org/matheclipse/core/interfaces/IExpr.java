@@ -107,7 +107,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Returns an {@code IExpr} describing the specified value, if non-null,
-	 * otherwise returns {@code F.UNEVALED} .
+	 * otherwise returns {@code F.NIL} .
 	 * 
 	 * @param value
 	 *            the possibly-null value to describe
@@ -271,7 +271,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param engine
 	 *            the evaluation engine
-	 * @return the evaluated Object or <code>F.UNEVALED</code> if the evaluation
+	 * @return the evaluated Object or <code>F.NIL</code> if the evaluation
 	 *         is not possible (i.e. the evaluation doesn't change the object).
 	 */
 	default IExpr evaluate(EvalEngine engine) {
@@ -318,7 +318,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *
 	 * @param consumer
 	 *            block to be executed if this expression unequals
-	 *            <code>F.UNEVALED</code>
+	 *            <code>F.NIL</code>
 	 * @see java.util.Optional#ifPresent(Consumer)
 	 */
 	default void ifPresent(Consumer<? super IExpr> consumer) {
@@ -1323,11 +1323,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Return {@code true} if this expression unequals <code>F.UNEVALED</code>,
+	 * Return {@code true} if this expression unequals <code>F.NIL</code>,
 	 * otherwise {@code false}. This method is similar to
 	 * <code>java.util.Optional#isPresent()</code>.
 	 *
-	 * @return {@code true} if the expression unequals <code>F.UNEVALED</code>,
+	 * @return {@code true} if the expression unequals <code>F.NIL</code>,
 	 *         otherwise {@code false}.
 	 * @see java.util.Optional#isPresent()
 	 */
@@ -1664,7 +1664,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            a {@code Supplier} whose result is returned if no value is
 	 *            present
 	 * @return <code>this</code> if <code>this</code> unequals
-	 *         <code>F.UNEVALED</code>, otherwise the result of
+	 *         <code>F.NIL</code>, otherwise the result of
 	 *         {@code other.get()}
 	 */
 	default IExpr orElseGet(Supplier<? extends IExpr> other) {
@@ -1685,7 +1685,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param exceptionSupplier
 	 *            The supplier which will return the exception to be thrown
 	 * @return <code>this</code> if <code>this</code> unequals
-	 *         <code>F.UNEVALED</code> or throw an exception
+	 *         <code>F.NIL</code> or throw an exception
 	 * @throws X
 	 *             if there is no value present
 	 */
