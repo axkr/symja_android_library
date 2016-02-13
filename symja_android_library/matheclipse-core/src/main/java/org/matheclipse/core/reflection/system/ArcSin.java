@@ -36,11 +36,11 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(ArcSin(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CI, F.ArcSinh(imPart));
 		}
 		return F.NIL;

@@ -47,46 +47,46 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Sec(negExpr);
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Sech(imPart);
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-		if (parts != null) {
-			if (parts[1].isInteger()) {
+		IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+		if (parts.isPresent()) {
+			if (parts.arg2().isInteger()) {
 				// period 2*Pi
-				IInteger i = (IInteger) parts[1];
+				IInteger i = (IInteger) parts.arg2();
 				if (i.isEven()) {
-					return Sec(parts[0]);
+					return Sec(parts.arg1());
 				} else {
-					return Negate(Sec(parts[0]));
+					return Negate(Sec(parts.arg1()));
 				}
 			}
 			
-			if (parts[1].isFraction()) {
+			if (parts.arg2().isFraction()) {
 				// period (n/m)*Pi
-				IFraction f = (IFraction) parts[1];
+				IFraction f = (IFraction) parts.arg2();
 				IInteger[] divRem = f.divideAndRemainder();
 				if (!divRem[0].isZero()) {
 					IFraction rest = F.fraction(divRem[1], f.getDenominator());
 					if (divRem[0].isEven()) {
-						return Sec(Plus(parts[0], Times(rest, Pi)));
+						return Sec(Plus(parts.arg1(), Times(rest, Pi)));
 					} else {
-						return Times(CN1, Sec(Plus(parts[0], Times(rest, Pi))));
+						return Times(CN1, Sec(Plus(parts.arg1(), Times(rest, Pi))));
 					}
 				}
 
 				if (f.equals(C1D2)) {
-					return Times(CN1, Csc(parts[0]));
+					return Times(CN1, Csc(parts.arg1()));
 				}
 			}
 			
-			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period n*Pi
-				return Times(Power(CN1, parts[1]), Sec(parts[0]));
+				return Times(Power(CN1, parts.arg2()), Sec(parts.arg1()));
 			}
 		}
 		return F.NIL;

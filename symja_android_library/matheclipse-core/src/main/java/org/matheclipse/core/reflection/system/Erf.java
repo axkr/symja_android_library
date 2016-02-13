@@ -45,7 +45,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric {
 			return F.CN1;
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Erf(negExpr));
 		}
 		return F.NIL;

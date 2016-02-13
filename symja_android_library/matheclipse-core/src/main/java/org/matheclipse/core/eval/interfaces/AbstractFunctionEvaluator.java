@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -19,7 +20,8 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates to the <code>evaluate()</code>
+ * Abstract interface for built-in Symja functions. The
+ * <code>numericEval()</code> method delegates to the <code>evaluate()</code>
  * 
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
@@ -105,7 +107,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	/**
 	 * Check if the expression is canonical negative.
 	 * 
-	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
+	 * @return the negated negative expression or <code>null</code> if a
+	 *         negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expr) {
 		return getNormalizedNegativeExpression(expr, true);
@@ -115,11 +118,13 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * Check if the expression is canonical negative.
 	 * 
 	 * @param checkTimesPlus
-	 *            check <code>Times(...)</code> and <code>Plus(...)</code> expressions
-	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
+	 *            check <code>Times(...)</code> and <code>Plus(...)</code>
+	 *            expressions
+	 * @return the negated negative expression or <code>F.NIL</code> if a
+	 *         negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expr, boolean checkTimesPlus) {
-		IAST result;
+		IAST result = F.NIL;
 		if (expr.isNumber()) {
 			if (((INumber) expr).complexSign() < 0) {
 				return ((INumber) expr).negate();
@@ -140,7 +145,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				} else if (arg1.isNegativeInfinity()) {
 					return timesAST.setAtClone(1, F.CInfinity);
 					// } else {
-					// IExpr arg1Negated = getNormalizedNegativeExpression(arg1);
+					// IExpr arg1Negated =
+					// getNormalizedNegativeExpression(arg1);
 					// if (arg1Negated != null) {
 					// for (int i = 2; i < timesAST.size(); i++) {
 					// IExpr temp = timesAST.get(i);
@@ -174,23 +180,24 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					return result;
 				} else if (arg1.isTimes()) {
 					IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
-					if (arg1Negated != null) {
+					if (arg1Negated.isPresent()) {
 						int positiveElementsCounter = 0;
 						result = plusAST.copy();
 						result.set(1, arg1Negated);
 						for (int i = 2; i < plusAST.size(); i++) {
 							IExpr temp = plusAST.get(i);
 							if (!temp.isTimes() && !temp.isPower()) {
-								return null;
+								return F.NIL;
 							}
 							arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
-							if (arg1Negated != null) {
+							if (arg1Negated.isPresent()) {
 								result.set(i, arg1Negated);
 							} else {
 								positiveElementsCounter++;
 								if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
-									// number of positive elements is greater than number of negative elements
-									return null;
+									// number of positive elements is greater
+									// than number of negative elements
+									return F.NIL;
 								}
 								result.set(i, temp.negate());
 							}
@@ -205,54 +212,58 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		if (expr.isNegativeResult()) {
 			return F.eval(F.Negate(expr));
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Try to split a periodic part from the expression: <code>expr == part[0]+ part[1] * period</code>
+	 * Try to split a periodic part from the expression:
+	 * <code>expr == part[0] + part[1] * period</code>
 	 * 
 	 * @param expr
 	 * @param period
-	 * @return <code>null</code> if no periodicity was found or the rest at index 0 and the factor of the period at index 1
+	 * @return <code>F.NIL</code> if no periodicity was found or the rest at
+	 *         argument 1 and the factor of the period at argument 2
 	 */
-	public static IExpr[] getPeriodicParts(final IExpr expr, final IExpr period) {
-		IExpr[] result = new IExpr[2];
-		result[0] = F.C0;
-		result[1] = F.C1;
+	public static IAST getPeriodicParts(final IExpr expr, final IExpr period) {
+		// IExpr[] result = new IExpr[2];
+		// result[0] = F.C0;
+		// result[1] = F.C1;
+		AST2 result = new AST2(F.List, F.C0, F.C1);
 		if (expr.equals(period)) {
 			return result;
-		}
+		} 
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (ast.isTimes()) {
 				for (int i = 1; i < ast.size(); i++) {
 					if (ast.get(i).equals(period)) {
-						result[1] = ast.removeAtClone(i).getOneIdentity(F.C1);
+						result.set(2, ast.removeAtClone(i).getOneIdentity(F.C1));
 						return result;
 					}
 				}
-				return null;
+				return F.NIL;
 			}
 			if (ast.isPlus()) {
 				for (int i = 1; i < ast.size(); i++) {
-					IExpr[] temp = getPeriodicParts(ast.get(i), period);
-					if (temp != null && temp[0].isZero()) {
-						result[0] = ast.removeAtClone(i).getOneIdentity(F.C0);
-						result[1] = temp[1];
+					IAST temp = getPeriodicParts(ast.get(i), period);
+					if (temp.isPresent() && temp.arg1().isZero()) {
+						result.set(1, ast.removeAtClone(i).getOneIdentity(F.C0));
+						result.set(2, temp.arg2());
 						return result;
 					}
 				}
-				return null;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Check if <code>expr</code> is a pure imaginary number without a real part.
+	 * Check if <code>expr</code> is a pure imaginary number without a real
+	 * part.
 	 * 
 	 * @param expr
-	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary number.
+	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary
+	 *         number.
 	 */
 	public static IExpr getPureImaginaryPart(final IExpr expr) {
 		if (expr.isComplex() && ((IComplex) expr).getRe().isZero()) {
@@ -266,11 +277,12 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				return times.setAtClone(1, ((IComplex) arg1).getIm());
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
-	 * Initialize the serialized Rubi integration rules from ressource <code>/ser/integrate.ser</code>.
+	 * Initialize the serialized Rubi integration rules from ressource
+	 * <code>/ser/integrate.ser</code>.
 	 * 
 	 * @param symbol
 	 */
@@ -282,12 +294,14 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			engine.setPackageMode(true);
 			engine.setTraceMode(false);
 
-			InputStream in = AbstractFunctionEvaluator.class.getResourceAsStream("/ser/"
-					+ symbol.getSymbolName().toLowerCase(Locale.ENGLISH) + ".ser");
+			InputStream in = AbstractFunctionEvaluator.class
+					.getResourceAsStream("/ser/" + symbol.getSymbolName().toLowerCase(Locale.ENGLISH) + ".ser");
 			ObjectInputStream ois = new ObjectInputStream(in);
-			// InputStream in = new FileInputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+			// InputStream in = new FileInputStream("c:\\temp\\ser\\" +
+			// symbol.getSymbolName() + ".ser");
 			// read files with BufferedInputStream to improve performance
-			// ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(in));
+			// ObjectInputStream ois = new ObjectInputStream(new
+			// BufferedInputStream(in));
 			symbol.readRules(ois);
 			ois.close();
 			in.close();

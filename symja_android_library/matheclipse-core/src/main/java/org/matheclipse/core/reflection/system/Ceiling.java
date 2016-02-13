@@ -81,7 +81,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			}
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Floor(negExpr));
 		}
 		return F.NIL;

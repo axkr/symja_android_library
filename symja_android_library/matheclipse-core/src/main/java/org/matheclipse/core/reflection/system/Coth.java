@@ -36,11 +36,11 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Coth(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CNI, F.Cot(imPart));
 		}
 		if (arg1.isZero()) {

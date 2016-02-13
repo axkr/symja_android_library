@@ -38,7 +38,7 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Plus(Negate(Pi), ArcCos(negExpr));
 		}
 		return F.NIL;

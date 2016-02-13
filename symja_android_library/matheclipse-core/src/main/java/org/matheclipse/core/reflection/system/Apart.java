@@ -373,7 +373,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			}
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return F.Power(powerAST.arg1(), negExpr);
 		}
 		return null;

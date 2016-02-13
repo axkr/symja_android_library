@@ -78,7 +78,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			}
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Ceiling(negExpr));
 		}
 		return F.NIL;

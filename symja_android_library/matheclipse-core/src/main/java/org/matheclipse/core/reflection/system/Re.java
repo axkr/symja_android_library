@@ -63,7 +63,7 @@ public class Re extends AbstractEvaluator {
 		}
 
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Re(negExpr));
 		}
 		if (arg1.isTimes()) {

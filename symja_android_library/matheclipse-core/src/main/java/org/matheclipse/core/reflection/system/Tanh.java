@@ -21,7 +21,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Hyperbolic tangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * function</a>
  */
 public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 
@@ -29,18 +30,18 @@ public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 	public IAST getRuleAST() {
 		return RULES;
 	}
-	
+
 	public Tanh() {
 	}
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Tanh(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CI, F.Tan(imPart));
 		}
 		if (arg1.isZero()) {
@@ -68,7 +69,7 @@ public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.tanh(arg1));
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {

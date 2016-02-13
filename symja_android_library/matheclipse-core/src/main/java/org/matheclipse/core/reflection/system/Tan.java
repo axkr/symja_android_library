@@ -48,27 +48,27 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Tan(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CI, F.Tanh(imPart));
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, F.Pi);
-		if (parts != null) {
-			if (parts[1].isInteger()) {
+		IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, F.Pi);
+		if (parts.isPresent()) {
+			if (parts.arg2().isInteger()) {
 				// period Pi
-				return F.Tan(parts[0]);
+				return F.Tan(parts.arg1());
 			}
 
-			if (parts[1].isFraction()) {
+			if (parts.arg2().isFraction()) {
 				// period (n/m)*Pi
-				IFraction f = (IFraction) parts[1];
+				IFraction f = (IFraction) parts.arg2();
 				IInteger[] divRem = f.divideAndRemainder();
 				IFraction rest = F.fraction(divRem[1], f.getDenominator());
 				if (!divRem[0].isZero()) {
-					return Tan(Plus(parts[0], Times(rest, Pi)));
+					return Tan(Plus(parts.arg1(), Times(rest, Pi)));
 				}
 				
 				if (rest.equals(C1D2)) {
@@ -77,9 +77,9 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 				}
 			}
 			
-			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period Pi
-				return F.Tan(parts[0]);
+				return F.Tan(parts.arg1());
 			}
 		}
 		return F.NIL;

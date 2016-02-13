@@ -36,7 +36,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 			return signedNumberFractionalPart(signedNumber);
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(FractionalPart(negExpr));
 		}
 		return F.NIL;

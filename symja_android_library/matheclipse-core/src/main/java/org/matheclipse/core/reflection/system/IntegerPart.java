@@ -31,7 +31,7 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 				return arg1;
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-			if (negExpr != null) {
+			if (negExpr.isPresent()) {
 				return Negate(IntegerPart(negExpr));
 			}
 		} catch (ArithmeticException ae) {

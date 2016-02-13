@@ -43,7 +43,7 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 			return F.CNInfinity;
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(InverseErf(negExpr));
 		}
 		return F.NIL;

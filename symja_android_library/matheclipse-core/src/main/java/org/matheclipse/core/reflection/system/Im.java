@@ -71,7 +71,7 @@ public class Im extends AbstractEvaluator {
 		// return F.num(((IComplexNum) arg1).getImaginaryPart());
 		// }
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Im(negExpr));
 		}
 		if (arg1.isTimes()) {

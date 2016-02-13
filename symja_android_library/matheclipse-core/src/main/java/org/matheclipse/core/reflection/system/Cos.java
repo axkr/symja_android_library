@@ -51,37 +51,37 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Cos(negExpr);
 		}
 
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Cosh(imPart);
 		}
 
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-		if (parts != null) {
-			if (parts[1].isInteger()) {
+		IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+		if (parts.isPresent()) {
+			if (parts.arg2().isInteger()) {
 				// period n*Pi
-				IInteger i = (IInteger) parts[1];
+				IInteger i = (IInteger) parts.arg2();
 				if (i.isEven()) {
-					return Cos(parts[0]);
+					return Cos(parts.arg1());
 				} else {
-					return Negate(F.Cos(parts[0]));
+					return Negate(F.Cos(parts.arg1()));
 				}
 			}
-			if (parts[1].isFraction()) {
+			if (parts.arg2().isFraction()) {
 				// period (n/m)*Pi
-				IFraction f = (IFraction) parts[1];
+				IFraction f = (IFraction) parts.arg2();
 				IInteger[] divRem = f.divideAndRemainder();
 				IFraction rest = F.fraction(divRem[1], f.getDenominator());
 				if (!NumberUtil.isZero(divRem[0])) {
 
 					if (divRem[0].isEven()) {
-						return Cos(Plus(parts[0], Times(rest, Pi)));
+						return Cos(Plus(parts.arg1(), Times(rest, Pi)));
 					} else {
-						return Negate(Cos(Plus(parts[0], Times(rest, Pi))));
+						return Negate(Cos(Plus(parts.arg1(), Times(rest, Pi))));
 					}
 				}
 
@@ -90,9 +90,9 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 					return Sin(Subtract(Divide(Pi, C2), arg1));
 				}
 			}
-			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period n*Pi
-				return Times(Power(CN1, parts[1]), Cos(parts[0]));
+				return Times(Power(CN1, parts.arg2()), Cos(parts.arg1()));
 			}
 		}
 

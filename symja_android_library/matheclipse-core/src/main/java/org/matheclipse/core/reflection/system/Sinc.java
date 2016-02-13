@@ -43,7 +43,7 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Sinc(negExpr);
 		}
 		return F.NIL;

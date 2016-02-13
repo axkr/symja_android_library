@@ -69,7 +69,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 				}
 			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-			if (negExpr != null) {
+			if (negExpr.isPresent()) {
 				return Negate(Round(negExpr));
 			}
 		} catch (ArithmeticException ae) {

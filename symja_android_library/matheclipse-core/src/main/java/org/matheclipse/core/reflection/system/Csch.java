@@ -36,11 +36,11 @@ public class Csch extends AbstractTrigArg1 implements INumeric, CschRules {
 	@Override
 	public IExpr evaluateArg1(IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Csch(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CNI, F.Csc(imPart));
 		}
 		if (arg1.isZero()) {

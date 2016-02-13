@@ -266,7 +266,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		final IEvaluator module = getEvaluator();
 		if (module instanceof ISymbolEvaluator) {
-			IExpr temp;
+			IExpr temp = F.NIL;
 			if (engine.isNumericMode()) {
 				if (engine.isApfloat()) {
 					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
@@ -276,7 +276,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			} else {
 				temp = ((ISymbolEvaluator) module).evaluate(this);
 			}
-			return IExpr.ofNullable(temp);
+			return temp;
 		}
 		return F.NIL;
 	}

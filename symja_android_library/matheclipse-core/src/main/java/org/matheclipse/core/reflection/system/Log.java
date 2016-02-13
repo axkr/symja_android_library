@@ -148,7 +148,7 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 
 		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			if (negExpr.isPositiveResult()) {
 				return F.Plus(Log(negExpr), Times(CI, F.Pi));
 			}

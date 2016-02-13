@@ -50,34 +50,34 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr != null) {
+		if (negExpr.isPresent()) {
 			return Negate(Csc(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart != null) {
+		if (imPart.isPresent()) {
 			return F.Times(F.CNI, F.Csch(imPart));
 		}
-		IExpr[] parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
-		if (parts != null) {
-			if (parts[1].isInteger()) {
+		IAST parts = AbstractFunctionEvaluator.getPeriodicParts(arg1, Pi);
+		if (parts.isPresent()) {
+			if (parts.arg2().isInteger()) {
 				// period 2*Pi
-				IInteger i = (IInteger) parts[1];
+				IInteger i = (IInteger) parts.arg2();
 				if (i.isEven()) {
-					return F.Csc(parts[0]);
+					return F.Csc(parts.arg1());
 				} else {
-					return F.Times(F.CN1, F.Csc(parts[0]));
+					return F.Times(F.CN1, F.Csc(parts.arg1()));
 				}
 			}
-			if (parts[1].isFraction()) {
+			if (parts.arg2().isFraction()) {
 				// period (n/m)*Pi
-				IFraction f = (IFraction) parts[1];
+				IFraction f = (IFraction) parts.arg2();
 				IInteger[] divRem = f.divideAndRemainder();
 				if (!divRem[0].isZero()) {
 					IFraction rest = F.fraction(divRem[1], f.getDenominator());
 					if (divRem[0].isEven()) {
-						return Csc(Plus(parts[0], Times(rest, Pi)));
+						return Csc(Plus(parts.arg1(), Times(rest, Pi)));
 					} else {
-						return Times(CN1, Csc(Plus(parts[0], Times(rest, Pi))));
+						return Times(CN1, Csc(Plus(parts.arg1(), Times(rest, Pi))));
 					}
 				}
 
@@ -87,9 +87,9 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 				}
 			}
 
-			if (F.True.equals(AbstractAssumptions.assumeInteger(parts[1]))) {
+			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period n*Pi
-				return Times(Power(CN1, parts[1]), Csc(parts[0]));
+				return Times(Power(CN1, parts.arg2()), Csc(parts.arg1()));
 			}
 		}
 		return F.NIL;
