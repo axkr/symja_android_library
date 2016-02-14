@@ -36,7 +36,7 @@ public class Context implements Serializable {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Context) {
-			return contextName.equals(obj);
+			return contextName.equals(((Context) obj).contextName);
 		}
 		return false;
 	}
