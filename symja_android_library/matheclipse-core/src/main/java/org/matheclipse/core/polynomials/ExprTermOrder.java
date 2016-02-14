@@ -275,13 +275,9 @@ public final class ExprTermOrder implements Serializable {
             break;
         }
         default: {
-            horder = null;
+        	throw new IllegalArgumentException("invalid term order: " + evord);
         }
         }
-        if (horder == null) {
-            throw new IllegalArgumentException("invalid term order: " + evord);
-        }
-
         // lorder = new EVlorder();
         lorder = new EVComparator() {
 
