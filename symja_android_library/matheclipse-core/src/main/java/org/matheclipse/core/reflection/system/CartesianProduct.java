@@ -131,7 +131,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 	 * @author Heinz Kredel
 	 * @author Axel Kramer (Modifications for Symja)
 	 */
-	final class CartesianProductList implements Iterable<IAST> {
+	final static class CartesianProductList implements Iterable<IAST> {
 
 		/**
 		 * data structure.

@@ -86,13 +86,13 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 					coefficient = engine.evaluate(simplifyAST);
 					rest.set(i, coefficient);
 				}
-				for (IExpr key : map.keySet()) {
-					simplifyAST.set(1, map.get(key));
+				for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
+					simplifyAST.set(1, entry.getValue());
 					coefficient = engine.evaluate(simplifyAST);
 					if (coefficient.isPlus()) {
-						rest.add(F.Times(key).addOneIdentity((IAST) coefficient));
+						rest.add(F.Times(entry.getKey()).addOneIdentity((IAST) coefficient));
 					} else {
-						rest.add(key.times(coefficient));
+						rest.add(entry.getKey().times(coefficient));
 					}
 				}
 			} else {

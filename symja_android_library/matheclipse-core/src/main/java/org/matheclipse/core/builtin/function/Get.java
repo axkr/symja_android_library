@@ -114,7 +114,9 @@ public class Get extends AbstractCoreFunctionEvaluator {
 				// System.out.println(temp.toString());
 				engine.evaluate(temp);
 			}
-		} catch (final Exception e) {
+		} catch (final IOException e) {
+			e.printStackTrace();
+		} catch (final RuntimeException e) {
 			e.printStackTrace();
 		} finally {
 			if (packageContext != null) {

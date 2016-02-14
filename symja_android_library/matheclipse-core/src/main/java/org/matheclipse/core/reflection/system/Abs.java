@@ -43,7 +43,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		}
 	}
 
-	private final class AbsNumericFunction implements INumericFunction<IExpr> {
+	private static final class AbsNumericFunction implements INumericFunction<IExpr> {
 		final ISymbol symbol;
 
 		public AbsNumericFunction(ISymbol symbol) {

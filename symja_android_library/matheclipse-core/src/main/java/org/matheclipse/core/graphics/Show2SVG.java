@@ -89,7 +89,7 @@ public class Show2SVG {
 				}
 
 			}
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			// catch cast exceptions for example
 		} finally {
 			buf.append("\" style=\"stroke: rgb(24.720000%, 24.000000%, 60.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");

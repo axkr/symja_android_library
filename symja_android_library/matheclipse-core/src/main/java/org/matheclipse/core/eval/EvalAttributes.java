@@ -195,7 +195,7 @@ public class EvalAttributes {
 	}
 
 	private static void chechCachedHashcode(final IAST ast) {
-		int hash = ast.getHashCache();
+		final int hash = ast.getHashCache();
 		if (hash != 0) {
 			ast.clearHashCache();
 			ast.hashCode();

@@ -97,8 +97,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 					listOfVariables.size() - 1);
 			ExprPolynomial poly = ring.create(expr, true);
 			return poly.coefficient(expArr);
-			// }
-		} catch (Exception ae) {
+		} catch (RuntimeException ae) {
 			if (Config.DEBUG) {
 				ae.printStackTrace();
 			}

@@ -29,7 +29,8 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	}
 
 	/**
-	 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
+	 * Returns <code>True</code> if the given expression is a polynoomial
+	 * object; <code>False</code> otherwise
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -45,23 +46,25 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 
 	}
 
-	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables, boolean numericFunction) {
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,
+			boolean numericFunction) {
 		IExpr expr = F.evalExpandAll(polnomialExpr);
 		int termOrder = ExprTermOrder.INVLEX;
-		ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1, new ExprTermOrder(termOrder),
-				true);
+		ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
+				new ExprTermOrder(termOrder), true);
 		try {
 			ExprPolynomial poly = ring.create(expr);
 			ASTRange r = new ASTRange(variables, 1);
 			JASIExpr jas = new JASIExpr(r.toList(), numericFunction);
 			return jas.expr2IExprJAS(poly);
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 
 		}
 		return null;
 	}
 
-	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol, boolean numericFunction) {
+	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,
+			boolean numericFunction) {
 		return polynomial(polnomialExpr, List(symbol), numericFunction);
 	}
 

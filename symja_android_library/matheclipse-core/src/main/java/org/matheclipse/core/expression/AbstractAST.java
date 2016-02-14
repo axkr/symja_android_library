@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.IOException;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -1061,7 +1062,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 					return "Power(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators) + ","
 							+ Long.toString(exp) + ")";
 
-				} catch (Exception ex) {
+				} catch (RuntimeException ex) {
 
 				}
 			}
@@ -1853,7 +1854,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				ExprPolynomial poly = ring.create(expr);
 				return poly.degree() <= maxDegree;
 			}
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			//
 		}
 		return false;
@@ -2660,10 +2661,16 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			StringBuilder sb = new StringBuilder();
 			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this);
 			return sb.toString();
-		} catch (Exception e1) {
+		} catch (IOException ioe) {
+			if (Config.SHOW_STACKTRACE) {
+				ioe.printStackTrace();
+			}
+		} catch (RuntimeException e1) {
 		}
 
-		try {
+		try
+
+		{
 			final StringBuffer buf = new StringBuffer();
 			if (size() > 0 && isList()) {
 				buf.append('{');
@@ -2700,6 +2707,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 			throw e;
 		}
+
 	}
 
 	@Override

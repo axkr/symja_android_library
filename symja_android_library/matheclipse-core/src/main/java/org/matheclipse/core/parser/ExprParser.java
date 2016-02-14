@@ -54,7 +54,7 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public class ExprParser extends ExprScanner {
 
-	class NVisitorExpr extends VisitorExpr {
+	static class NVisitorExpr extends VisitorExpr {
 		final int fPrecision;
 
 		NVisitorExpr(int precision) {

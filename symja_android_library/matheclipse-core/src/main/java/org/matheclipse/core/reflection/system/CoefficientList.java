@@ -35,7 +35,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 				return F.List();
 			}
 			return poly.coefficientList();
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(ast, expr, 1, "Polynomial expected!");
 		}
 	}
@@ -68,7 +68,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 				}
 			}
 			return result;
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(polynomial, "Polynomial expected!");
 		}
 	}
@@ -92,7 +92,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 				resultList.add(temp);
 			}
 			return degree;
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(polynomial, "Polynomial expected!");
 		}
 	}
@@ -133,7 +133,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 				resultListDiff.add(temp);
 			}
 			return degree;
-		} catch (Exception ex) {
+		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(polynomial, "Polynomial expected!");
 		}
 	}

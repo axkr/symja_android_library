@@ -207,7 +207,6 @@ public class AST2Expr {
 	}
 
 	public IExpr convert(ASTNode node, EvalEngine engine) throws ConversionException {
-		fPrecision = 15;
 		fPrecision = engine.getNumericPrecision();
 		return convertNode(node, engine);
 	}

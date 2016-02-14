@@ -162,7 +162,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 			}
 			return result;
 			// }
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
 			}
