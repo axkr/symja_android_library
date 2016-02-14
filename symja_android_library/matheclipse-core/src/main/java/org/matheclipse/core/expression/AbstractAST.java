@@ -127,6 +127,90 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	 */
 	private static final long serialVersionUID = -8682706994448890660L;
 
+	private static int compareToAST(final IAST lhaAST, final IAST rhsAST) {
+
+		if (lhaAST.isPlusTimesPower()) {
+			if (!rhsAST.isPlusTimesPower()) {
+				return -1;
+			}
+		} else {
+			if (rhsAST.isPlusTimesPower()) {
+				return 1;
+			}
+		}
+
+		// compare the headers
+		int cp = lhaAST.head().compareTo(rhsAST.head());
+		if (cp != 0) {
+			return cp;
+		}
+
+		final int commonArgSize = (lhaAST.size() > rhsAST.size()) ? rhsAST.size() : lhaAST.size();
+		for (int i = 1; i < commonArgSize; i++) {
+			cp = lhaAST.get(i).compareTo(rhsAST.get(i));
+			if (cp != 0) {
+				return cp;
+			}
+		}
+
+		return lhaAST.size() - rhsAST.size();
+	}
+
+	/**
+	 * Compares lhsAST (Times) AST with the specified rhsAST for order. Returns
+	 * a negative integer, zero, or a positive integer as lhsAST (Times) AST is
+	 * canonical less than, equal to, or greater than the specified AST.
+	 */
+	private static int compareToTimes(final IAST lhsAST, final IAST rhsAST) {
+		if (rhsAST.isPower()) {
+			// compare from the last this (Times) element:
+			final IExpr lastTimes = lhsAST.get(lhsAST.size() - 1);
+			int cp;
+			if (!(lastTimes instanceof IAST)) {
+				cp = lastTimes.compareTo(rhsAST.arg1());
+				if (cp != 0) {
+					return cp;
+				}
+				return F.C1.compareTo(rhsAST.arg2());
+			} else {
+				if (lastTimes.isPower()) {
+					// compare 2 Power ast's
+					cp = ((IAST) lastTimes).arg1().compareTo(rhsAST.arg1());
+					if (cp != 0) {
+						return cp;
+					}
+					cp = ((IAST) lastTimes).arg2().compareTo(rhsAST.arg2());
+					if (cp != 0) {
+						return cp;
+					}
+					return 1;
+				} else {
+					return compareToAST(lhsAST, rhsAST);
+					// cp = lastTimes.compareTo(ast.arg1());
+					// if (cp != 0) {
+					// return cp;
+					// }
+					// return F.C1.compareTo(ast.arg2());
+				}
+			}
+		} else if (rhsAST.isTimes()) {
+			// compare from the last element:
+			int i0 = lhsAST.size();
+			int i1 = rhsAST.size();
+			int commonArgCounter = (i0 > i1) ? i1 : i0;
+			int cp;
+			while (--commonArgCounter > 0) {
+				cp = lhsAST.get(--i0).compareTo(rhsAST.get(--i1));
+				if (cp != 0) {
+					return cp;
+				}
+			}
+			return lhsAST.size() - rhsAST.size();
+		}
+
+		return compareToAST(lhsAST, rhsAST);
+	}
+
 	private static void internalFormOrderless(IAST ast, StringBuffer text, final String sep,
 			boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		for (int i = 1; i < ast.size(); i++) {
@@ -191,6 +275,31 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public AbstractAST() {
 		super();
 		hashValue = 0;
+	}
+
+	@Override
+	public final IExpr $div(final IExpr that) {
+		return divide(that);
+	}
+
+	@Override
+	public final IExpr $minus(final IExpr that) {
+		return minus(that);
+	}
+
+	@Override
+	public final IExpr $plus(final IExpr that) {
+		return plus(that);
+	}
+
+	@Override
+	public final IExpr $times(final IExpr that) {
+		return times(that);
+	}
+
+	@Override
+	public final IExpr $up(final IExpr that) {
+		return power(that);
 	}
 
 	@Override
@@ -317,30 +426,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		throw new UnsupportedOperationException("AST.asType() - cast not supported.");
 	}
 
-	/** {@inheritDoc} */
-	public IAST copyFrom(int index) {
-		AST result = new AST(size() - index + 1, false);
-		result.add(head());
-		result.addAll(this, index, size());
-		return result;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST copyHead() {
-		return AST.newInstance(head());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST copyUntil(int index) {
-		return AST.newInstance(index, this, index);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST copyUntil(final int intialCapacity, int index) {
-		return AST.newInstance(index, this, index);
+	public void clearHashCache() {
+		this.hashValue = 0;
 	}
 
 	@Override
@@ -355,10 +442,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return ast;
 	}
 
-	@Override
-	public IAST copy() {
-		return clone();
-	}
 	/**
 	 * Compares this expression with the specified expression for canonical
 	 * order. Returns a negative integer, zero, or a positive integer as this
@@ -397,90 +480,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
-	private static int compareToAST(final IAST lhaAST, final IAST rhsAST) {
-
-		if (lhaAST.isPlusTimesPower()) {
-			if (!rhsAST.isPlusTimesPower()) {
-				return -1;
-			}
-		} else {
-			if (rhsAST.isPlusTimesPower()) {
-				return 1;
-			}
-		}
-
-		// compare the headers
-		int cp = lhaAST.head().compareTo(rhsAST.head());
-		if (cp != 0) {
-			return cp;
-		}
-
-		final int commonArgSize = (lhaAST.size() > rhsAST.size()) ? rhsAST.size() : lhaAST.size();
-		for (int i = 1; i < commonArgSize; i++) {
-			cp = lhaAST.get(i).compareTo(rhsAST.get(i));
-			if (cp != 0) {
-				return cp;
-			}
-		}
-
-		return lhaAST.size() - rhsAST.size();
-	}
-
-	/**
-	 * Compares lhsAST (Times) AST with the specified rhsAST for order. Returns
-	 * a negative integer, zero, or a positive integer as lhsAST (Times) AST is
-	 * canonical less than, equal to, or greater than the specified AST.
-	 */
-	private static int compareToTimes(final IAST lhsAST, final IAST rhsAST) {
-		if (rhsAST.isPower()) {
-			// compare from the last this (Times) element:
-			final IExpr lastTimes = lhsAST.get(lhsAST.size() - 1);
-			int cp;
-			if (!(lastTimes instanceof IAST)) {
-				cp = lastTimes.compareTo(rhsAST.arg1());
-				if (cp != 0) {
-					return cp;
-				}
-				return F.C1.compareTo(rhsAST.arg2());
-			} else {
-				if (lastTimes.isPower()) {
-					// compare 2 Power ast's
-					cp = ((IAST) lastTimes).arg1().compareTo(rhsAST.arg1());
-					if (cp != 0) {
-						return cp;
-					}
-					cp = ((IAST) lastTimes).arg2().compareTo(rhsAST.arg2());
-					if (cp != 0) {
-						return cp;
-					}
-					return 1;
-				} else {
-					return compareToAST(lhsAST, rhsAST);
-					// cp = lastTimes.compareTo(ast.arg1());
-					// if (cp != 0) {
-					// return cp;
-					// }
-					// return F.C1.compareTo(ast.arg2());
-				}
-			}
-		} else if (rhsAST.isTimes()) {
-			// compare from the last element:
-			int i0 = lhsAST.size();
-			int i1 = rhsAST.size();
-			int commonArgCounter = (i0 > i1) ? i1 : i0;
-			int cp;
-			while (--commonArgCounter > 0) {
-				cp = lhsAST.get(--i0).compareTo(rhsAST.get(--i1));
-				if (cp != 0) {
-					return cp;
-				}
-			}
-			return lhsAST.size() - rhsAST.size();
-		}
-
-		return compareToAST(lhsAST, rhsAST);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object object) {
@@ -491,6 +490,43 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public IAST copy() {
+		return clone();
+	}
+
+	/** {@inheritDoc} */
+	public IAST copyFrom(int index) {
+		AST result = new AST(size() - index + 1, false);
+		result.add(head());
+		result.addAll(this, index, size());
+		return result;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST copyHead() {
+		return AST.newInstance(head());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST copyUntil(int index) {
+		return AST.newInstance(index, this, index);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST copyUntil(final int intialCapacity, int index) {
+		return AST.newInstance(index, this, index);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr dec() {
+		return plus(F.CN1);
 	}
 
 	/** {@inheritDoc} */
@@ -561,22 +597,22 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final double evalDouble() {
-		ISignedNumber signedNumber = evalSignedNumber();
-		if (signedNumber != null) {
-			return signedNumber.doubleValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final Complex evalComplex() {
 		INumber number = evalNumber();
 		if (number != null) {
 			return number.complexNumValue().complexValue();
 		}
 		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final double evalDouble() {
+		ISignedNumber signedNumber = evalSignedNumber();
+		if (signedNumber != null) {
+			return signedNumber.doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
 	}
 
 	/** {@inheritDoc} */
@@ -809,6 +845,10 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return fEvalFlags;
 	}
 
+	public int getHashCache() {
+		return hashValue;
+	}
+
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an
 	 * <code>IInteger</code>.
@@ -924,6 +964,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return ASTID;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr inc() {
+		return plus(F.C1);
+	}
+
 	@Override
 	public final int indexOf(Object object) {
 		int size = size();
@@ -940,12 +986,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
 
 	/** {@inheritDoc} */
@@ -1134,6 +1174,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (isLowerPrecedence) {
 			text.append(")");
 		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
 
 	@Override
@@ -1515,33 +1561,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isRationalResult() {
-		ISymbol symbol = topHead();
-		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
-			return true;
-		}
-		if (isPower() && arg2().isInteger() && arg2().isPositive()) {
-			if (arg1().isRationalResult()) {
-				return true;
-			}
-			return false;
-		}
-		if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
-			// TODO add more functions
-			// check if all arguments are &quot;rational functions&quot;
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isRationalResult()) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
@@ -1900,6 +1919,33 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isPower() {
 		return isSameHead(F.Power, 3);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isRationalResult() {
+		ISymbol symbol = topHead();
+		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
+			return true;
+		}
+		if (isPower() && arg2().isInteger() && arg2().isPositive()) {
+			if (arg1().isRationalResult()) {
+				return true;
+			}
+			return false;
+		}
+		if (isPlus() || isTimes() || symbol.equals(F.Binomial) || symbol.equals(F.Factorial)) {
+			// TODO add more functions
+			// check if all arguments are &quot;rational functions&quot;
+			for (int i = 1; i < size(); i++) {
+				if (get(i).isRationalResult()) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -2350,18 +2396,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr inc() {
-		return plus(F.C1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr dec() {
-		return plus(F.CN1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final IExpr power(final IExpr that) {
 		if (that.isZero()) {
 			if (!this.isZero()) {
@@ -2671,30 +2705,5 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
 		return variables2Slots(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableList));
-	}
-
-	@Override
-	public final IExpr $div(final IExpr that) {
-		return divide(that);
-	}
-
-	@Override
-	public final IExpr $minus(final IExpr that) {
-		return minus(that);
-	}
-
-	@Override
-	public final IExpr $plus(final IExpr that) {
-		return plus(that);
-	}
-
-	@Override
-	public final IExpr $times(final IExpr that) {
-		return times(that);
-	}
-
-	@Override
-	public final IExpr $up(final IExpr that) {
-		return power(that);
 	}
 }

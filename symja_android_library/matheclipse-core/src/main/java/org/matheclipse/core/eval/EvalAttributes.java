@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
@@ -143,13 +144,12 @@ public class EvalAttributes {
 					ast.set(2, ast.arg1());
 					ast.set(1, temp);
 					ast.addEvalFlags(IAST.IS_SORTED);
-					// recalculate hashCode cache
-					ast.hashCode();
+					if (Config.SHOW_STACKTRACE) {
+						chechCachedHashcode(ast);
+					}
 					return true;
 				}
 				ast.addEvalFlags(IAST.IS_SORTED);
-				// recalculate hashCode cache
-				ast.hashCode();
 				return false;
 			case 4:
 				// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
@@ -176,20 +176,33 @@ public class EvalAttributes {
 				}
 				ast.addEvalFlags(IAST.IS_SORTED);
 				if (evaled) {
-					// recalculate hashCode cache
-					ast.hashCode();
+					if (Config.SHOW_STACKTRACE) {
+						chechCachedHashcode(ast);
+					}
 				}
 				return evaled;
 			default:
 				ast.args().sort(ExprComparator.CONS);
 				ast.addEvalFlags(IAST.IS_SORTED);
-				// recalculate hashCode cache
-				ast.hashCode();
+				if (Config.SHOW_STACKTRACE) {
+					chechCachedHashcode(ast);
+				}
 				return true;
 			}
 		}
 		ast.addEvalFlags(IAST.IS_SORTED);
 		return false;
+	}
+
+	private static void chechCachedHashcode(final IAST ast) {
+		int hash = ast.getHashCache();
+		if (hash != 0) {
+			ast.clearHashCache();
+			ast.hashCode();
+			if (hash != ast.getHashCache()) {
+				throw new UnsupportedOperationException("Different hash codes for:" + ast.toString());
+			}
+		}
 	}
 
 	public final static void sort(final IAST ast, ExprComparator comparator) {

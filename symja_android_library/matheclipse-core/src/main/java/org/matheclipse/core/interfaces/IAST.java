@@ -319,6 +319,11 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public Set<IExpr> asSet();
 
 	/**
+	 * Set the cached hash value to zero.
+	 */
+	public void clearHashCache();
+
+	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not cloned).
 	 * 
@@ -378,15 +383,6 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 *            the expr which should be test for equality
 	 */
 	public boolean equalsAt(int position, final IExpr expr);
-
-	/**
-	 * Find the first argument position, which equals <code>expr</code>. The
-	 * serarch starts at index <code>1</code>.
-	 * 
-	 * @param IExpr
-	 * @return <code>-1</code> if no position was found
-	 */
-	public int findFirstEquals(final IExpr expr);
 
 	/**
 	 * Select all elements by applying the <code>function</code> to each
@@ -501,6 +497,15 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IAST[] filter(Predicate<? super IExpr> predicate);
 
 	/**
+	 * Find the first argument position, which equals <code>expr</code>. The
+	 * serarch starts at index <code>1</code>.
+	 * 
+	 * @param IExpr
+	 * @return <code>-1</code> if no position was found
+	 */
+	public int findFirstEquals(final IExpr expr);
+
+	/**
 	 * <p>
 	 * Iterate over all elements from index <code>1</code> to
 	 * <code>size()-1</code> and call the method <code>Consumer.accept()</code>
@@ -528,6 +533,13 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	 * @return
 	 */
 	public int getEvalFlags();
+
+	/**
+	 * Get the cached hash value.
+	 * 
+	 * @return
+	 */
+	public int getHashCache();
 
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an
