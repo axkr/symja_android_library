@@ -299,7 +299,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 										IExpr apartPlus = Apart.partialFractionDecompositionRational(
 												new PartialFractionIntegrateGenerator(x), parts, x);
 
-										if (apartPlus != null && !apartPlus.isAST(F.Integrate)) {
+										if (apartPlus.isPresent() && !apartPlus.isAST(F.Integrate)) {
 											if (ast.equals(apartPlus)) {
 												return returnIntegrate(ast, evaled);
 											}

@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.math4.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.linear.EigenDecomposition;
 import org.apache.commons.math4.linear.RealMatrix;
@@ -55,7 +57,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
-			return null;
+			return F.NIL;
 		}
 		IExpr expr = evalExpandAll(ast.arg1());
 		IAST variables = eVar.getVarList();
@@ -85,6 +87,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 *            coefficients of the polynomial.
 	 * @return the roots of the polynomial
 	 */
+	@Nonnull
 	public static IAST findRoots(double... coefficients) {
 		int N = coefficients.length - 1;
 
@@ -116,9 +119,18 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	}
 
+	/**
+	 * 
+	 * @param expr
+	 * @param denom
+	 * @param variables
+	 * @param numericSolutions
+	 * @param engine
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables,
 			boolean numericSolutions, EvalEngine engine) {
-		IAST result = null;
+		IAST result = F.NIL;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r.toList();
 
@@ -134,7 +146,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			for (int i = 1; i < factors.size(); i++) {
 				temp = F.evalExpand(factors.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
-				if (quarticResultList != null) {
+				if (quarticResultList.isPresent()) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						if (numericSolutions) {
 							result.add(F.chopExpr(engine.evalN(quarticResultList.get(j)),
@@ -151,7 +163,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					}
 					IAST resultList = findRoots(coefficients);
 					// IAST resultList = RootIntervals.croots(temp, true);
-					if (resultList != null && resultList.size() > 0) {
+					if (resultList.size() > 0) {
 						result.addAll(resultList);
 					}
 					// }
@@ -162,7 +174,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		} catch (JASConversionException e) {
 			result = rootsOfExprPolynomial(expr, varList);
 		}
-		if (result != null) {
+		if (result.isPresent()) {
 			if (!denom.isNumber()) {
 				// eliminate roots from the result list, which occur in the
 				// denominator
@@ -178,17 +190,17 @@ public class Roots extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public static IAST rootsOfExprPolynomial(final IExpr expr, List<IExpr> varList) {
-		IAST result = null;
+		IAST result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
 			GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
 			result = rootsOfPolynomial(ePoly);
-			if (result != null && expr.isNumericMode()) {
+			if (result.isPresent() && expr.isNumericMode()) {
 				for (int i = 1; i < result.size(); i++) {
 					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
 				}
@@ -201,6 +213,11 @@ public class Roots extends AbstractFunctionEvaluator {
 		return result;
 	}
 
+	/**
+	 * 
+	 * @param ePoly
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
 	private static IAST rootsOfPolynomial(GenPolynomial<IExpr> ePoly) {
 		long varDegree = ePoly.degree(0);
 		IAST result = List();
@@ -237,14 +254,14 @@ public class Roots extends AbstractFunctionEvaluator {
 				}
 			}
 			result = QuarticSolver.quarticSolve(a, b, c, d, e);
-			if (result != null) {
+			if (result.isPresent()) {
 				result = QuarticSolver.createSet(result);
 				return result;
 			}
 
 		}
 
-		return null;
+		return F.NIL;
 	}
 
 }

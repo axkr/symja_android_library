@@ -13,7 +13,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Conjugate the given argument.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex
+ * conjugation</a>
  */
 public class Conjugate extends AbstractEvaluator implements INumeric {
 
@@ -30,14 +32,14 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 			return temp;
 		}
 		if (arg1.isPlus() || arg1.isTimes()) {
-			IAST result = null;
+			IAST result = F.NIL;
 			IAST clone = ((IAST) arg1).clone();
 			int i = 1;
 			while (i < clone.size()) {
 				temp = conjugate(clone.get(i));
 				if (temp.isPresent()) {
 					clone.remove(i);
-					if (result == null) {
+					if (!result.isPresent()) {
 						result = ((IAST) arg1).copyHead();
 					}
 					result.add(temp);
@@ -45,7 +47,7 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 				}
 				i++;
 			}
-			if (result != null) {
+			if (result.isPresent()) {
 				if (clone.size() == 1) {
 					return result;
 				}
@@ -61,7 +63,8 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 	}
 
 	/**
-	 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
+	 * Conjugate numbers and special objects like <code>Infinity</code> and
+	 * <code>Indeterminate</code>.
 	 * 
 	 * @param arg1
 	 * @return <code>F.NIL</code> if the evaluation wasn't possible

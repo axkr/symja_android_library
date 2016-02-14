@@ -43,6 +43,7 @@ public class Object2Expr {
 	 * boolean[]            a list of True or False symbols
 	 * 
 	 * </pre>
+	 * 
 	 */
 	public static IExpr convert(Object obj) throws ConversionException {
 		if (obj == null) {
@@ -78,7 +79,7 @@ public class Object2Expr {
 		}
 		if (obj instanceof java.util.List) {
 			final java.util.List<?> lst = (java.util.List<?>) obj;
-			IAST list = null;
+			IAST list = F.NIL;
 			if (lst.size() == 0) {
 				list = List();
 			} else {

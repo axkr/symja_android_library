@@ -597,7 +597,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							try {
 								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector,
 										engine);
-								if (subResultList != null) {
+								if (subResultList.isPresent()) {
 									evaled = true;
 									for (IExpr expr : subResultList) {
 										if (expr.isList()) {
@@ -645,7 +645,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;

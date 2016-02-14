@@ -11,8 +11,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 
 /**
- * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
- * href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert matrix</a>
+ * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See
+ * <a> href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
+ * matrix</a>
  */
 public class HilbertMatrix extends AbstractFunctionEvaluator {
 
@@ -50,11 +51,10 @@ public class HilbertMatrix extends AbstractFunctionEvaluator {
 		final int[] indexArray = new int[2];
 		indexArray[0] = rowSize;
 		indexArray[1] = columnSize;
-		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, new HilbertFunctionDiagonal());
+		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
+				new HilbertFunctionDiagonal());
 		final IAST matrix = (IAST) generator.table();
-		if (matrix != null) {
-			matrix.addEvalFlags(IAST.IS_MATRIX);
-		}
+		matrix.addEvalFlags(IAST.IS_MATRIX);
 		return matrix;
 	}
 }

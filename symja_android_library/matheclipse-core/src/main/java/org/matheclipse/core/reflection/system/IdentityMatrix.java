@@ -12,7 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Create an identity matrix
  * 
- * See <a href="http://en.wikipedia.org/wiki/Identity_matrix">Wikipedia - Identity matrix</a>
+ * See <a href="http://en.wikipedia.org/wiki/Identity_matrix">Wikipedia -
+ * Identity matrix</a>
  */
 public class IdentityMatrix extends AbstractFunctionEvaluator {
 
@@ -32,8 +33,8 @@ public class IdentityMatrix extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal elements) and <code>valueArray[1]</code> (diagonal
-	 * elements).
+	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal
+	 * elements) and <code>valueArray[1]</code> (diagonal elements).
 	 * 
 	 * @param valueArray
 	 *            2 values for non-diagonal and diagonal elemnets of the matrix.
@@ -47,12 +48,10 @@ public class IdentityMatrix extends AbstractFunctionEvaluator {
 		final int[] indexArray = new int[2];
 		indexArray[0] = dimension;
 		indexArray[1] = dimension;
-		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, new IndexFunctionDiagonal(
-				valueArray));
+		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
+				new IndexFunctionDiagonal(valueArray));
 		final IAST matrix = (IAST) generator.table();
-		if (matrix != null) {
-			matrix.addEvalFlags(IAST.IS_MATRIX);
-		}
+		matrix.addEvalFlags(IAST.IS_MATRIX);
 		return matrix;
 	}
 }

@@ -22,13 +22,13 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		
 		if (ast.arg1().isVector() >= 0) {
-			IAST variables = null;
+			IAST variables = F.NIL;
 			if (ast.arg2().isSymbol()) {
 				variables = F.List();
 			} else if (ast.arg2().isVector() >= 0) {
 				variables = (IAST) ast.arg2();
 			}
-			if (variables != null) {
+			if (variables.isPresent()) {
 				IAST vector = (IAST) ast.arg1();
 				IAST jacobiMatrix = F.List();
 				IAST jacobiRow = null;

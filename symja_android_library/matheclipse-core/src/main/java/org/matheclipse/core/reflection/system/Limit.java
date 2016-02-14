@@ -447,7 +447,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 			IExpr plusResult = org.matheclipse.core.reflection.system.Apart
 					.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, symbol);
-			if (plusResult != null && plusResult.isPlus()) {
+			if (plusResult.isPlus()) {
 				// OneIdentity if plusResult.size() == 2
 				// if (plusResult.size() > 2) {
 				return mapLimit((IAST) plusResult, data.getRule());

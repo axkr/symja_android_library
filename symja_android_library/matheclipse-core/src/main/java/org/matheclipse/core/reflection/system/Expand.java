@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -123,8 +125,8 @@ public class Expand extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 
-		private IExpr addExpanded(IExpr expr) {
-			if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
+		private IExpr addExpanded(@Nonnull IExpr expr) {
+			if (expandNegativePowers && !distributePlus && expr.isAST()) {
 				((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
 			}
 			return expr;
@@ -322,7 +324,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
 			IExpr arg = TimesOp.times(expr1, expr2);
 			if (arg.isAST()) {
-				result.add( expandAST((IAST) arg).orElse(arg));
+				result.add(expandAST((IAST) arg).orElse(arg));
 				return;
 			}
 			result.add(arg);

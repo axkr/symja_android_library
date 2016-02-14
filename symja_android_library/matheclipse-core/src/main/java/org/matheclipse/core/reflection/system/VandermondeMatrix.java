@@ -13,8 +13,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See <a
- * href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a>
+ * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See
+ * <a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde
+ * matrix</a>
  * 
  */
 public class VandermondeMatrix extends AbstractFunctionEvaluator {
@@ -23,7 +24,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast,2);
+		Validate.checkSize(ast, 2);
 		if (ast.arg1().isList()) {
 			final IAST lst = (IAST) ast.arg1();
 			final int len0 = lst.size() - 1;
@@ -41,9 +42,7 @@ public class VandermondeMatrix extends AbstractFunctionEvaluator {
 			};
 			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, function);
 			final IAST matrix = (IAST) generator.table();
-			if (matrix != null) {
-				matrix.addEvalFlags(IAST.IS_MATRIX);
-			}
+			matrix.addEvalFlags(IAST.IS_MATRIX);
 			return matrix;
 		}
 

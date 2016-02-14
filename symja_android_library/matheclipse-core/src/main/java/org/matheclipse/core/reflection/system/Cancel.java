@@ -30,7 +30,8 @@ import edu.jas.ufd.GreatestCommonDivisor;
 public class Cancel extends AbstractFunctionEvaluator {
 
 	/**
-	 * This predicate identifies polynomial expressions. It requires that the given expression is already expanded for
+	 * This predicate identifies polynomial expressions. It requires that the
+	 * given expression is already expanded for
 	 * <code>Plus,Power and Times</code> operations.
 	 */
 	private final static class PolynomialPredicate implements Predicate<IExpr> {
@@ -58,7 +59,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 		try {
 			if (arg1.isTimes() || arg1.isPower()) {
 				IExpr result = cancelPowerTimes(arg1);
-				if (result != null) {
+				if (result.isPresent()) {
 					return result;
 				}
 			}
@@ -68,7 +69,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 				return ((IAST) expandedArg1).mapAt(F.Cancel(null), 1);
 			} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
 				IExpr result = cancelPowerTimes(expandedArg1);
-				if (result != null) {
+				if (result.isPresent()) {
 					return result;
 				}
 			}
@@ -83,8 +84,9 @@ public class Cancel extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param powerTimesAST
-	 *            an <code>Times[...] or Power[...]</code> AST, where common factors should be canceled out.
-	 * @return
+	 *            an <code>Times[...] or Power[...]</code> AST, where common
+	 *            factors should be canceled out.
+	 * @return <code>F.NIL</code> is no evaluation was possible
 	 * @throws JASConversionException
 	 */
 	public static IExpr cancelPowerTimes(IExpr powerTimesAST) throws JASConversionException {
@@ -103,20 +105,23 @@ public class Cancel extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * Calculate the 3 elements result array
-	 * <code>[ commonFactor, poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code> for the given expressions
-	 * <code>poly1</code> and <code>poly2</code>.
+	 * <code>[ commonFactor, poly1.divide(gcd(poly1, poly2)), poly2.divide(gcd(poly1, poly2)) ]</code>
+	 * for the given expressions <code>poly1</code> and <code>poly2</code>.
 	 * 
 	 * 
 	 * @param poly1
-	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted
+	 *            to JAS polynomial
 	 * @param poly2
-	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
-	 * @return <code>null</code> if the expressions couldn't be converted to JAS polynomials or gcd equals 1
+	 *            a <code>BigRational</code> polynomial which could be converted
+	 *            to JAS polynomial
+	 * @return <code>null</code> if the expressions couldn't be converted to JAS
+	 *         polynomials or gcd equals 1
 	 */
 	public static IExpr[] cancelGCD(IExpr poly1, IExpr poly2) throws JASConversionException {
 
@@ -131,9 +136,12 @@ public class Cancel extends AbstractFunctionEvaluator {
 			ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 			ExprPolynomial pol1 = ring.create(poly1);
 			ExprPolynomial pol2 = ring.create(poly2);
-			// Polynomial pol1 = new Polynomial(poly1, eVar.getVarList(), false);
-			// Polynomial pol2 = new Polynomial(poly2, eVar.getVarList(), false);
-			// if (pol1.createPolynomial(poly1, true, false) && pol2.createPolynomial(poly2, true, false)) {
+			// Polynomial pol1 = new Polynomial(poly1, eVar.getVarList(),
+			// false);
+			// Polynomial pol2 = new Polynomial(poly2, eVar.getVarList(),
+			// false);
+			// if (pol1.createPolynomial(poly1, true, false) &&
+			// pol2.createPolynomial(poly2, true, false)) {
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			JASIExpr jas = new JASIExpr(r.toList(), true);
 			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);

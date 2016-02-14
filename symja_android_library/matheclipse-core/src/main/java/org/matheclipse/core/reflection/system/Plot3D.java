@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -71,9 +73,7 @@ public class Plot3D extends AbstractEvaluator {
 				// double params[] = {ad, bd, cd, dd, -10.0, 10.0};
 
 				temp = plotArray(ad, bd, cd, dd, ast.get(1), (ISymbol) lst1.get(1), (ISymbol) lst2.get(1), engine);
-				if (temp != null) {
-					graphics.add(temp);
-				}
+				graphics.add(temp);
 
 				final IAST options = List();
 				// for (int i = 0; i < optionsArray.length; i++) {
@@ -89,6 +89,7 @@ public class Plot3D extends AbstractEvaluator {
 		return F.Null;
 	}
 
+	@Nonnull
 	public IExpr plotArray(final double ad, final double bd, final double cd, final double dd, final IExpr function,
 			final ISymbol xVar, final ISymbol yVar, final EvalEngine session) {
 		final double xStep = (bd - ad) / NUMBER_OF_DIVISIONS;

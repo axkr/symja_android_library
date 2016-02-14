@@ -30,15 +30,14 @@ public class ReplacePart extends AbstractEvaluator {
 					}
 					return result;
 				}
-				final IExpr result = ast.arg1().replacePart(F.Rule(ast.arg3(), ast.arg2()));
-				return (result.isPresent()) ? result : ast.arg1();
+				return ast.arg1().replacePart(F.Rule(ast.arg3(), ast.arg2())).orElse(ast.arg1());
 			}
 			if (ast.arg2().isList()) {
 				IExpr result = ast.arg1();
 				for (IExpr subList : (IAST) ast.arg2()) {
 					if (subList.isRuleAST()) {
 						IExpr expr = result.replacePart((IAST) subList);
-						if (expr != null) {
+						if (expr.isPresent()) {
 							result = expr;
 						}
 					}
@@ -47,8 +46,7 @@ public class ReplacePart extends AbstractEvaluator {
 			}
 			IExpr result = ast.arg1();
 			if (ast.arg2().isRuleAST()) {
-				result = ast.arg1().replacePart((IAST) ast.arg2());
-				return (result == null) ? ast.arg1() : result;
+				return ast.arg1().replacePart((IAST) ast.arg2()).orElse(ast.arg1());
 			}
 			return result;
 		} catch (WrongArgumentType wat) {

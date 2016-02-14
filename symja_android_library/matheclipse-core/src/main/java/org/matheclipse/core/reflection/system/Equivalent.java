@@ -23,13 +23,13 @@ public class Equivalent extends AbstractFunctionEvaluator {
 		}
 		IAST result = ast.copyHead();
 		IExpr last = null;
-		IExpr boole = null;
+		IExpr boole = F.NIL;
 		boolean evaled = false;
 
 		for (int i = 1; i < ast.size(); i++) {
 			IExpr temp = ast.get(i);
 			if (temp.isFalse()) {
-				if (boole == null) {
+				if (!boole.isPresent()) {
 					boole = F.False;
 					evaled = true;
 				} else if (boole.isTrue()) {
@@ -38,7 +38,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 					evaled = true;
 				}
 			} else if (temp.isTrue()) {
-				if (boole == null) {
+				if (!boole.isPresent()) {
 					boole = F.True;
 					evaled = true;
 				} else if (boole.isFalse()) {
@@ -58,13 +58,13 @@ public class Equivalent extends AbstractFunctionEvaluator {
 		}
 		if (evaled) {
 			if (result.size() == 1) {
-				if (boole != null) {
+				if (boole.isPresent()) {
 					return F.True;
 				}
 			} else if (result.size() == 2 && boole == null) {
 				return F.True;
 			}
-			if (boole != null) {
+			if (boole.isPresent()) {
 				result = result.apply(F.And);
 				if (boole.isTrue()) {
 					return result;

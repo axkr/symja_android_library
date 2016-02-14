@@ -390,7 +390,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 				}
 			} else if (exprAnalyzer.getNumberOfVars() == 1 && exprAnalyzer.isLinearOrPolynomial()) {
 				IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
-				if (listOfRules != null) {
+				if (listOfRules.isPresent()) {
 					boolean evaled = false;
 					++currEquation;
 					for (int k = 1; k < listOfRules.size(); k++) {
@@ -467,7 +467,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), true, engine);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
@@ -477,10 +477,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 					}
 					return resultList;
 				}
-				return null;
+				return F.NIL;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public NSolve() {

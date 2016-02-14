@@ -190,11 +190,11 @@ public class Together extends AbstractFunctionEvaluator {
 				if (result.isPresent()) {
 					IExpr temp = F.eval(result);
 					if (temp.isTimes() || temp.isPower()) {
-						return temp.optional(Cancel.cancelPowerTimes(temp));
+						return Cancel.cancelPowerTimes(temp).orElse(temp);
 					}
 					return temp;
 				}
-				return F.NIL.optional(Cancel.cancelPowerTimes(ast));
+				return Cancel.cancelPowerTimes(ast);
 			} catch (JASConversionException jce) {
 				// if (Config.DEBUG) {
 				jce.printStackTrace();

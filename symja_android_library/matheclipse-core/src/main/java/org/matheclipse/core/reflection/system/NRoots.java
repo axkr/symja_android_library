@@ -61,10 +61,6 @@ public class NRoots extends AbstractFunctionEvaluator {
 		double[] coefficients = Expr2Object.toPolynomial(expr, sym);
 
 		if (coefficients != null) {
-			// IAST result = rootsUp2Degree3(coefficients);
-			// if (result != null) {
-			// return result;
-			// }
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
 			// System.out.println(expr);
 			Complex[] roots = solver.solveAllComplex(coefficients, 0);
@@ -112,7 +108,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom) {
 		IAST result = List();
 		IAST resultList = RootIntervals.croots(expr, true);
-		if (resultList != null) {
+		if (resultList.isPresent()) {
 			if (resultList.size() > 0) {
 				result.addAll(resultList);
 			}

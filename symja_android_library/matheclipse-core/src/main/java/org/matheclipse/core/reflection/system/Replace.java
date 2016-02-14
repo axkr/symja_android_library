@@ -31,7 +31,8 @@ public class Replace extends AbstractEvaluator {
 		 * 
 		 * @param input
 		 *            the expression which should be replaced by the given rules
-		 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
+		 * @return the expression created by the replacements or
+		 *         <code>null</code> if no replacement occurs
 		 */
 		@Override
 		public IExpr apply(IExpr input) {
@@ -45,7 +46,8 @@ public class Replace extends AbstractEvaluator {
 							return temp;
 						}
 					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
 						throw wat;
 					}
 
@@ -83,7 +85,8 @@ public class Replace extends AbstractEvaluator {
 							break;
 						}
 					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
 						throw wat;
 					}
 				}
@@ -120,16 +123,17 @@ public class Replace extends AbstractEvaluator {
 		return F.NIL;
 	}
 
-	private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules, IExpr exprLevelSpecification,
-			EvalEngine engine) {
-		// use replaceFunction#setRule() method to set the current rules which are initialized with null
+	private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
+			IExpr exprLevelSpecification, EvalEngine engine) {
+		// use replaceFunction#setRule() method to set the current rules which
+		// are initialized with null
 		ReplaceFunction replaceFunction = new ReplaceFunction(ast, null, engine);
 		VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false);
 
 		if (rules.isListOfLists()) {
 			IAST result = F.List();
 			for (IExpr list : (IAST) rules) {
-				IExpr temp = null;
+				IExpr temp = F.NIL;
 				IAST subList = (IAST) list;
 				for (IExpr element : subList) {
 					if (element.isRuleAST()) {
@@ -140,15 +144,12 @@ public class Replace extends AbstractEvaluator {
 							break;
 						}
 					} else {
-						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+						WrongArgumentType wat = new WrongArgumentType(ast, ast, -1,
+								"Rule expression (x->y) expected: ");
 						throw wat;
 					}
 				}
-				if (temp != null) {
-					result.add(temp);
-				} else {
-					result.add(arg1);
-				}
+				result.add(temp.orElse(arg1));
 			}
 			return result;
 		}

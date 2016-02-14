@@ -71,7 +71,7 @@ public class Plot extends AbstractEvaluator {
 					for (int i = 1; i < list.size(); i++) {
 						temp = plotLine(ad, bd, y0d, y1d, list.get(2), (ISymbol) lst.get(1), engine);
 
-						if (temp != null && temp.isPresent()) {
+						if (temp.isPresent()) {
 							line.add(temp);
 							primitives.add(line);
 						}
@@ -83,7 +83,7 @@ public class Plot extends AbstractEvaluator {
 
 				} else {
 					temp = plotLine(ad, bd, y0d, y1d, ast.get(1), (ISymbol) lst.get(1), engine);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						line.add(temp);
 						graphics.add(line);
 					}

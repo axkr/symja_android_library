@@ -24,6 +24,8 @@ import static org.matheclipse.core.expression.F.integer;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
@@ -50,7 +52,7 @@ public class QuarticSolver {
 		if (convert2Coefficients(exprPoly, x, coefficients)) {
 			return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private static boolean convert2Coefficients(IExpr exprPoly, IExpr x, IExpr[] coefficients) {
@@ -132,6 +134,7 @@ public class QuarticSolver {
 		return false;
 	}
 
+	@Nonnull
 	public static IAST quarticSolveN(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
 		return (IAST) F.evaln(quarticSolve(a, b, c, d, e));
 	}
@@ -147,6 +150,7 @@ public class QuarticSolver {
 	 * @param d
 	 * @return
 	 */
+	@Nonnull
 	public static IAST quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
 		if (a.isZero()) {
 			return cubicSolve(b, c, d, e, null);

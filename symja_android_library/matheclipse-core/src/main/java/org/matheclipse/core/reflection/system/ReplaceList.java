@@ -24,7 +24,7 @@ public class ReplaceList extends AbstractEvaluator {
 					IAST rule = (IAST) element;
 					Function<IExpr, IExpr> function = Functors.rules(rule);
 					IExpr temp = function.apply(arg1);
-					if (temp != null) {
+					if (temp.isPresent()) {
 						if (maxNumberOfResults <= result.size()) {
 							return result;
 						}
@@ -41,7 +41,7 @@ public class ReplaceList extends AbstractEvaluator {
 		if (rules.isRuleAST()) {
 			Function<IExpr, IExpr> function = Functors.rules((IAST) rules);
 			IExpr temp = function.apply(arg1);
-			if (temp != null) {
+			if (temp.isPresent()) {
 				if (maxNumberOfResults <= result.size()) {
 					return result;
 				}
