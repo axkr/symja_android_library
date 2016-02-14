@@ -53,9 +53,6 @@ public class Sum extends Table implements SumRules {
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
 			arg1 = F.expand(arg1, false, false);
-//			if (arg1 == null) {
-//				arg1 = ast.arg1();
-//			}
 		}
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtCopy(1, null);
@@ -100,7 +97,7 @@ public class Sum extends Table implements SumRules {
 			if (iterator.isValidVariable() && iterator.isNumericFunction()) {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-				if (temp == null || temp.equals(resultList)) {
+				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}
 				if (ast.size() == 3) {

@@ -79,7 +79,7 @@ public class Extract extends AbstractFunctionEvaluator {
 		IExpr expr = list;
 		for (int i = headOffset; i <= posSize; i++) {
 			p = positionConverter.toInt(positions.get(i));
-			if (temp == null || temp.size() <= p || p < 0) {
+			if (!temp.isPresent() || temp.size() <= p || p < 0) {
 				return F.NIL;
 			}
 			expr = temp.get(p);
@@ -87,7 +87,7 @@ public class Extract extends AbstractFunctionEvaluator {
 				temp = (IAST) expr;
 			} else {
 				if (i < positions.size()) {
-					temp = null;
+					temp = F.NIL;
 				}
 			}
 		}

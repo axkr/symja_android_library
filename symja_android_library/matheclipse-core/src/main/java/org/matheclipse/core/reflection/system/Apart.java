@@ -239,11 +239,11 @@ public class Apart extends AbstractFunctionEvaluator {
 		} else if (arg.isPower()) {
 			parts = new IExpr[2];
 			IExpr denom = getFractionalPartsPower((IAST) arg);
-			if (denom == null) {
-				return null;
-			} else {
+			if (denom.isPresent()) {
 				parts[0] = F.C1;
 				parts[1] = denom;
+			} else {
+				return null;
 			}
 		} else {
 			if (arg.isAST()) {
@@ -300,7 +300,7 @@ public class Apart extends AbstractFunctionEvaluator {
 					}
 				} else if (arg.isPower()) {
 					IExpr denom = getFractionalPartsPower((IAST) arg);
-					if (denom != null) {
+					if (denom.isPresent()) {
 						denominator.add(denom);
 						evaled = true;
 						continue;
@@ -384,6 +384,6 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (negExpr.isPresent()) {
 			return F.Power(powerAST.arg1(), negExpr);
 		}
-		return null;
+		return F.NIL;
 	}
 }

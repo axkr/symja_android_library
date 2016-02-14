@@ -155,11 +155,7 @@ public class Replace extends AbstractEvaluator {
 		}
 
 		replaceFunction.setRule(rules);
-		IExpr result = arg1.accept(level);
-		if (result == null) {
-			return arg1;
-		}
-		return result;
+		return arg1.accept(level).orElse(arg1);
 	}
 
 	/**

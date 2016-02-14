@@ -41,7 +41,7 @@ public class Product extends Table implements ProductRules {
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
 			arg1 = F.expand(arg1, false, false);
-			if (arg1 == null) {
+			if (!arg1.isPresent()) {
 				arg1 = ast.arg1();
 			}
 		}
