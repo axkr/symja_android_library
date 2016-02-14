@@ -147,7 +147,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
-		if (f.equals(BigFraction.ONE)) {
+		if (f.isOne()) {
 			tagStart(buf, "mn");
 			buf.append(f.getNumerator().toString());
 			tagEnd(buf, "mn");
@@ -171,7 +171,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		boolean isReZero = c.getRealPart().isZero();
 		final boolean isImOne = c.getImaginaryPart().isOne();
 		final boolean isImNegative = c.getImaginaryPart().isLessThan(F.C0);
-		final boolean isImMinusOne = c.getImaginaryPart().equals(BigFraction.MINUS_ONE);
+		final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
 		tagStart(buf, "mrow");
 		if (!isReZero) {
 			convertFraction(buf, c.getRealPart(), precedence);

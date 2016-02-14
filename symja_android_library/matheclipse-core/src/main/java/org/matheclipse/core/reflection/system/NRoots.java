@@ -53,7 +53,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		VariablesSet eVar = new VariablesSet(ast.arg1());
 		if (!eVar.isSize(1)) {
 			// factor only possible for univariate polynomials
-			return null;
+			return F.NIL;
 		}
 		IExpr expr = evalExpandAll(ast.arg1());
 		IAST variables = eVar.getVarList();

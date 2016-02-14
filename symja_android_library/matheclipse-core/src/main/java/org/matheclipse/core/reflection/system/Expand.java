@@ -283,7 +283,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		 * @return
 		 */
 		private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
-			long numberOfTerms = (plusAST0.size() - 1) * (plusAST0.size() - 1);
+			long numberOfTerms = (long) (plusAST0.size() - 1) * (long) (plusAST0.size() - 1);
 			if (numberOfTerms > (long) Integer.MAX_VALUE) {
 				throw new ArithmeticException("");
 			}

@@ -285,7 +285,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp, IAST monomTimes) {
-		if (!coeff.getVal().equals(edu.jas.arith.BigInteger.ONE)) {
+		if (!coeff.isONE()) {
 			IInteger coeffValue = F.integer(coeff.getVal());
 			monomTimes.add(coeffValue);
 		}
@@ -493,7 +493,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	public boolean monomialToExpr(AlgebraicNumber<BigRational> coeff, ExpVector exp, IAST monomTimes) {
-		if (!coeff.getVal().equals(edu.jas.arith.BigInteger.ONE)) {
+		if (!coeff.isONE()) {
 			monomTimes.add(algebraicNumber2Expr(coeff));
 		}
 		return expVectorToExpr(exp, monomTimes); 

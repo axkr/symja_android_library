@@ -3269,27 +3269,15 @@ public class F {
 	}
 
 	/**
-	 * Create a local symbol which is created or retrieved from the eval engines
-	 * thread local variables map and push a <code>null</code> value on the
-	 * local stack;
-	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @return
-	 */
-	public static ISymbol local(final String symbolName) {
-		return local(symbolName, null);
-	}
-
-	/**
-	 * Create a local symbol which is created or retrieved from the eval engines
+	 * Get a local symbol which is created or retrieved from the eval engines
 	 * thread local variables map and push a value on the local stack;
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
+	 * @param value 
 	 * @return
 	 */
-	public static ISymbol local(final String symbolName, @Nonnull IExpr value) {
+	public static ISymbol local(@Nonnull final String symbolName, @Nonnull IExpr value) {
 		// HashMap<String, ISymbol> variableMap = EvalEngine.getVariableMap();
 		// ISymbol temp = variableMap.get(symbolName);
 		// if (temp != null) {

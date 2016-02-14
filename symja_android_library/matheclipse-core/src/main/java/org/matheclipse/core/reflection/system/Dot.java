@@ -1,5 +1,5 @@
 package org.matheclipse.core.reflection.system;
- 
+
 import org.apache.commons.math4.linear.BlockFieldMatrix;
 import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.FieldVector;
@@ -38,7 +38,7 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 					list = (IAST) o1;
 					vector1 = Convert.list2Vector(list);
 					IAST res = Convert.vector2List(matrix0.operate(vector1));
-					if (res==null){
+					if (res == null) {
 						return F.NIL;
 					}
 					return res;
@@ -56,7 +56,9 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 				} else if (o1.isVector() != (-1)) {
 					list = (IAST) o1;
 					vector1 = Convert.list2Vector(list);
-					return vector0.dotProduct(vector1);
+					if (vector1 != null) {
+						return vector0.dotProduct(vector1);
+					}
 				}
 			}
 

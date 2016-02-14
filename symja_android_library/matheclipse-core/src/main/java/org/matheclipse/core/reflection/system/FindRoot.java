@@ -26,11 +26,14 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Function for <a href="http://en.wikipedia.org/wiki/Root-finding_algorithm">numerically finding roots</a> of a univariate real
- * function.
+ * Function for
+ * <a href="http://en.wikipedia.org/wiki/Root-finding_algorithm">numerically
+ * finding roots</a> of a univariate real function.
  * 
- * Uses the <a href= "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
- * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver, RiddersSolver, SecantSolver</a> implementations.
+ * Uses the <a href=
+ * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/solvers/UnivariateRealSolver.html"
+ * >Commons math BisectionSolver, BrentSolver, MullerSolver, NewtonSolver,
+ * RiddersSolver, SecantSolver</a> implementations.
  */
 public class FindRoot extends AbstractFunctionEvaluator {
 
@@ -72,14 +75,17 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				if (list.size() > 3) {
 					max = list.arg3().evalSignedNumber();
 				}
-				return F.List(F.Rule(list.arg1(), Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
+				if (min != null) {
+					return F.List(F.Rule(list.arg1(),
+							Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
+				}
 			}
 		}
 		return F.NIL;
 	}
 
-	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max, IExpr function,
-			EvalEngine engine) {
+	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
+			IExpr function, EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
 		function = engine.evaluate(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);

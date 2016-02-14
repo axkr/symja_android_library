@@ -9,8 +9,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * See: <a href="http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/">Exploring Number Theory - Finding
- * Primitive Roots</a>
+ * See: <a href=
+ * "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/">
+ * Exploring Number Theory - Finding Primitive Roots</a>
  */
 public class PrimitiveRoots extends AbstractTrigArg1 {
 
@@ -22,11 +23,13 @@ public class PrimitiveRoots extends AbstractTrigArg1 {
 		if (arg1.isInteger()) {
 			try {
 				IInteger[] roots = ((IInteger) arg1).primitiveRoots();
-				IAST list = F.List();
-				for (int i = 0; i < roots.length; i++) {
-					list.add(roots[i]);
+				if (roots != null) {
+					IAST list = F.List();
+					for (int i = 0; i < roots.length; i++) {
+						list.add(roots[i]);
+					}
+					return list;
 				}
-				return list;
 			} catch (ArithmeticException e) {
 				// integer to large?
 			}

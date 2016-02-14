@@ -97,7 +97,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 		for (int k = 2; k <= n; k++) {
 			bernoulli[k] = AbstractFractionSym.ZERO;
 			for (int i = 0; i < k; i++) {
-				if (!bernoulli[i].equals(BigFraction.ZERO)) {
+				if (!bernoulli[i].isZero()) {
 					IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
 					bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
 				}

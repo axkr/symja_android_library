@@ -58,6 +58,9 @@ public class Fit extends AbstractFunctionEvaluator {
 
 			if (isMatrix != null && isMatrix[1] == 2) {
 				final double[][] elements = Expr2Object.toDoubleMatrix((IAST) ast.arg1());
+				if (elements==null){
+					return F.NIL;
+				}
 				for (int i = 0; i < elements.length; i++) {
 					obs.add(1.0, elements[i][0], elements[i][1]);
 				}

@@ -126,14 +126,10 @@ public class EvalUtilities extends MathMLUtilities {
 				}
 			}
 			if (parsedExpression != null) {
-				// IExpr parsedExpression = AST2Expr.CONST.convert(node,
-				// evalEngine);
-				if (parsedExpression != null) {
-					evalEngine.reset();
-					IExpr temp = evalEngine.evaluate(parsedExpression);
-					evalEngine.addOut(temp);
-					return temp;
-				}
+				evalEngine.reset();
+				IExpr temp = evalEngine.evaluate(parsedExpression);
+				evalEngine.addOut(temp);
+				return temp;
 			}
 		}
 		return null;
