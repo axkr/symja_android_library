@@ -337,6 +337,11 @@ public class Apart extends AbstractFunctionEvaluator {
 		if (evaled) {
 			result[0] = numerator.getOneIdentity(F.C1);
 			result[1] = denominator.getOneIdentity(F.C1);
+			if (result[0].isNegative() && result[1].isPlus() && ((IAST) result[1]).size() == 3) {
+				// negate numerator and denominator:
+				result[0] = result[0].negate();
+				result[1] = result[1].negate();
+			}
 			return result;
 		}
 		if (splitFractionEvaled) {
