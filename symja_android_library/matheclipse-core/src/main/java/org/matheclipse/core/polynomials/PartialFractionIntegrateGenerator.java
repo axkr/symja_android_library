@@ -60,7 +60,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	@Override
-	public void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1, int j) {
+	public void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1,
+			int j) {
 		if (!genPolynomial.isZERO()) {
 			BigRational[] numer = new BigRational[3];
 			BigRational[] denom = new BigRational[3];
@@ -84,8 +85,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 					} else {
 						// compute b^2-4*a*c from
 						// (a*x^2+b*x+c)
-						BigRational cmp = denom[1].multiply(denom[1]).subtract(
-								BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
+						BigRational cmp = denom[1].multiply(denom[1])
+								.subtract(BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
 						int cmpTo = cmp.compareTo(BigRational.ZERO);
 						// (2*a*x+b)
 						IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
@@ -104,6 +105,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 						}
 					}
 				} else {
+					// (B*A*x) / (q*p*x)
 					isQuadratic(genPolynomial, numer);
 					IFraction A = F.fraction(numer[1].numerator(), numer[1].denominator());
 					IFraction B = F.fraction(numer[0].numerator(), numer[0].denominator());
@@ -112,15 +114,18 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 					IFraction q = F.fraction(denom[0].numerator(), denom[0].denominator());
 					if (A.isZero() && !p.isZero()) {
 						// JavaForm[B*Log[p*x+q]/p]
-						temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
+						if (q.isNegative()) {
+							temp = Times(B, Log(Plus(q.negate(), Times(p.negate(), x))), Power(p, CN1));
+						} else {
+							temp = Times(B, Log(Plus(q, Times(p, x))), Power(p, CN1));
+						}
 					} else {
 						// JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-						temp = Plus(
-								Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+						temp = Plus(Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
 								Times(ArcTan(Times(Plus(p, Times(C2, x)),
 										Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-										Plus(Times(C2, B), Times(CN1, A, p)),
-										Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+								Plus(Times(C2, B), Times(CN1, A, p)),
+								Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 					}
 					result.add(F.eval(temp));
 				}
@@ -136,28 +141,39 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				if (A.isZero()) {
 					// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 					// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
-					temp = Times(
-							B,
-							Plus(Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Plus(C1, Times(CN1, k))), x),
-									Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
-									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-									Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
-											Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-											Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k))))));
+					temp = Times(B,
+							Plus(Times(
+									Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+											Plus(C1, Times(CN1, k))), x),
+									Plus(Times(F.integer(-6L), a), Times(C4, a, k)),
+									Power(Plus(CN1, k),
+											CN1),
+									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)),
+											CN1)),
+									Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k),
+											CN1), Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k))))));
 				} else {
 					// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
 					temp = Plus(
-							Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
-									Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
+							Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)),
+									x), Plus(B,
+											Times(CN1D2,
+													A, Power(a,
+															CN1),
+													b))),
 							Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
 									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
 				}
 				result.add(F.eval(temp));
 			} else {
-				// ElementaryIntegration<BigRational> ei = new ElementaryIntegration<BigRational>(BigRational.ZERO);
-				// Integral<BigRational> integral= ei.integrate(genPolynomial, Di_1);
+				// ElementaryIntegration<BigRational> ei = new
+				// ElementaryIntegration<BigRational>(BigRational.ZERO);
+				// Integral<BigRational> integral= ei.integrate(genPolynomial,
+				// Di_1);
 				// System.out.println(integral);
-				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial), F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
+				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial),
+						F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
 				if (!temp.isZero()) {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
@@ -169,10 +185,12 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
+	 * coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of
+	 *         variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
@@ -192,10 +210,12 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
+	 * coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of
+	 *         variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
