@@ -4,6 +4,9 @@
 Sum(c_^i_, {i_Symbol,1,n_Symbol}) := c*(c^n-1)*(c-1)^(-1)
   /; FreeQ(c,i)&&FreeQ(n,i),
   
+Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
+  /; FreeQ(k,i)&&FreeQ(n,i),
+  
 Sum(Ceiling(Log(i_)), {i_Symbol,1,n_Symbol}):=
   ( Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1 ) * (E-1)^(-1) + (n-E^Floor(Log(n)))*Ceiling(Log(n))
   /; FreeQ(n,i),

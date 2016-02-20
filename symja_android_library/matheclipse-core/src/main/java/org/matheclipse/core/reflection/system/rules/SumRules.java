@@ -11,6 +11,8 @@ public interface SumRules {
   final public static IAST RULES1 = List(
     ISetDelayed(Sum(Power(c_,i_),List(i_Symbol,C1,n_Symbol)),
       Condition(Times(c,Plus(Power(c,n),Negate(C1)),Power(Plus(c,Negate(C1)),-1)),And(FreeQ(c,i),FreeQ(n,i)))),
+    ISetDelayed(Sum(Power(i_,k_Symbol),List(i_Symbol,C1,n_Symbol)),
+      Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(k,i),FreeQ(n,i)))),
     ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Negate(C1)),-1)),Times(Plus(n,Negate(Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
     ISetDelayed(Sum(Ceiling(Log(a_,i_)),List(i_Symbol,C1,n_Symbol)),
