@@ -271,8 +271,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param engine
 	 *            the evaluation engine
-	 * @return the evaluated Object or <code>F.NIL</code> if the evaluation
-	 *         is not possible (i.e. the evaluation doesn't change the object).
+	 * @return the evaluated Object or <code>F.NIL</code> if the evaluation is
+	 *         not possible (i.e. the evaluation doesn't change the object).
 	 */
 	default IExpr evaluate(EvalEngine engine) {
 		return F.NIL;
@@ -1644,8 +1644,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr or(final IExpr that);
 
 	/**
-	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.NIL</code>, otherwise return <code>other</code>. .
+	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>
+	 * , otherwise return <code>other</code>. .
 	 * 
 	 * @param that
 	 * @return
@@ -1656,25 +1656,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.NIL</code>, otherwise invoke {@code other} and return the
-	 * result of that invocation.
+	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>
+	 * , otherwise invoke {@code other} and return the result of that
+	 * invocation.
 	 *
 	 * @param other
 	 *            a {@code Supplier} whose result is returned if no value is
 	 *            present
 	 * @return <code>this</code> if <code>this</code> unequals
-	 *         <code>F.NIL</code>, otherwise the result of
-	 *         {@code other.get()}
+	 *         <code>F.NIL</code>, otherwise the result of {@code other.get()}
 	 */
 	default IExpr orElseGet(Supplier<? extends IExpr> other) {
 		return this;
 	}
 
 	/**
-	 * Return <code>this</code> if <code>this</code> unequals
-	 * <code>F.NIL</code>, otherwise throw an exception to be created by
-	 * the provided supplier.
+	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>
+	 * , otherwise throw an exception to be created by the provided supplier.
 	 *
 	 * @apiNote A method reference to the exception constructor with an empty
 	 *          argument list can be used as the supplier. For example,
@@ -1830,6 +1828,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>(this * that)</code>
 	 */
 	public IExpr times(final IExpr that);
+
+	/**
+	 * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.
+	 * Calculates <code>F.eval(F.Times(this, that))</code> in the common case
+	 * and uses a specialized implementation for derived number classes.
+	 * 
+	 * @param that
+	 *            the multiplier expression
+	 * @return <code>(this * that)</code>
+	 */
+	default public IExpr timesDistributed(final IExpr that) {
+		return times(that);
+	}
 
 	/**
 	 * The 'highest level' head of the expression, before Symbol, Integer, Real

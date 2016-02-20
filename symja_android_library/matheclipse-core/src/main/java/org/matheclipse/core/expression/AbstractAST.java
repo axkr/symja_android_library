@@ -2578,6 +2578,18 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return F.eval(F.Times(this, that));
 	}
 
+	@Override
+	public final IExpr timesDistributed(final IExpr that) {
+		if (that.isZero()) {
+			return F.C0;
+		}
+		if (this.isPlus()) {
+			IAST plus = this.map(x -> x.times(that));
+			return F.eval(plus);
+		}
+		return F.eval(F.Times(this, that));
+	}
+
 	private final String toFullFormString() {
 		final String sep = ", ";
 		IExpr temp = null;
