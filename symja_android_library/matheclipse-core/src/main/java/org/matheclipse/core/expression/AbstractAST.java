@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -620,7 +621,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final INumber evalNumber() {
 		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
+			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isNumber()) {
 				return (INumber) result;
 			}
@@ -632,7 +633,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final ISignedNumber evalSignedNumber() {
 		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
+			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isSignedNumber()) {
 				return (ISignedNumber) result;
 			}
@@ -1593,36 +1594,29 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = size() - 1;
-			// if (size() <= 1) {
-			// dim[1] = 0;
-			// } else {
 			dim[1] = ((IAST) arg1()).size() - 1;
-			// }
 			return dim;
 		}
-		if (head().equals(F.List)) {
+		if (isList()) {
 			final int[] dim = new int[2];
 			dim[0] = size() - 1;
-			dim[1] = 0;
 			if (dim[0] > 0) {
+				dim[1] = 0;
 				if (arg1().isList()) {
 					dim[1] = ((IAST) arg1()).size() - 1;
-
 					for (int i = 2; i < size(); i++) {
 						if (!get(i).isList()) {
-							// row is no list
+							// this row is not a list
 							return null;
 						}
 						if (dim[1] != ((IAST) get(i)).size() - 1) {
-							// not the same length
+							// this row has another dimension
 							return null;
 						}
 					}
-				} else {
-					return null;
+					addEvalFlags(IAST.IS_MATRIX);
+					return dim;
 				}
-				addEvalFlags(IAST.IS_MATRIX);
-				return dim;
 			}
 
 		}
@@ -1657,7 +1651,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isNegative() {
 		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
+			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isSignedNumber()) {
 				return ((ISignedNumber) result).isNegative();
 			}
@@ -1869,7 +1863,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final boolean isPositive() {
 		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
+			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isSignedNumber()) {
 				return ((ISignedNumber) result).isPositive();
 			}
@@ -2150,7 +2144,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
 			return size() - 1;
 		}
-		if (head().equals(F.List)) {
+		if (isList()) {
 			final int dim = size() - 1;
 			if (dim > 0) {
 				if (arg1().isList()) {
@@ -2226,7 +2220,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public final List<IExpr> leaves() {
 		int sz = size();
 		if (sz < 2) {
-			return java.util.Collections.EMPTY_LIST;
+			return new ArrayList<IExpr>();
 		}
 		return subList(1, sz);
 	}

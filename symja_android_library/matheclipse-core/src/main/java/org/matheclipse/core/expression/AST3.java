@@ -149,13 +149,7 @@ public class AST3 extends AST2 {
 			hashValue = 23 * hashValue + arg3.hashCode();
 		}
 		return hashValue;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isSameHead(IExpr head) {
-		return arg0.equals(head);
-	}
+	} 
 
 	/** {@inheritDoc} */
 	@Override

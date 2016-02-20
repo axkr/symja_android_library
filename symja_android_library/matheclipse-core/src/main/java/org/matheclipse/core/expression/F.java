@@ -2591,7 +2591,7 @@ public class F {
 	 * 
 	 * @param a0
 	 * @return
-	 * @deprecated use EvalEngine#evaln() instead
+	 * @deprecated use EvalEngine.get().evalN() instead
 	 */
 	@Deprecated
 	public static IExpr evaln(final IExpr a0) {

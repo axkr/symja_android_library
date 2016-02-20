@@ -149,12 +149,6 @@ public class AST1 extends AST0 {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSameHead(IExpr head) {
-		return arg0.equals(head);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isSameHead(IExpr head, int length) {
 		return arg0.equals(head) && length == SIZE;
 	}

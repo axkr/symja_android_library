@@ -273,9 +273,6 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof AbstractAST) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
 			if (obj == this) {
 				return true;
 			}
