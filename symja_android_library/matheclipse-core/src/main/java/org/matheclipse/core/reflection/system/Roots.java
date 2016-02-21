@@ -17,7 +17,9 @@ import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -51,26 +53,41 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() != 2 && ast.size() != 3) {
-			return F.NIL;
-		}
-		VariablesSet eVar;
-		if (ast.size() == 3) {
-			eVar = new VariablesSet(ast.arg2());
+		Validate.checkSize(ast, 3);
+
+		IExpr arg1 = ast.arg1();
+		if (arg1.isAST(F.Equal, 3)) {
+			IAST eq = (IAST) arg1;
+			if (eq.arg2().isZero()) {
+				arg1 = eq.arg1();
+			} else {
+				arg1 = engine.evaluate(F.Subtract(eq.arg1(), eq.arg2()));
+			}
 		} else {
-			eVar = new VariablesSet(ast.arg1());
+			throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal() expression expected!");
 		}
+		VariablesSet eVar = new VariablesSet(ast.arg2());
 		if (!eVar.isSize(1)) {
 			// factorization only possible for univariate polynomials
-			return F.NIL;
+			throw new WrongArgumentType(ast, ast.arg2(), 2, "Only one varible exppected");
 		}
-		return roots(ast, false, eVar, engine);
+		IAST variables = eVar.getVarList();
+		IExpr variable = variables.arg1();
+		IAST list = roots(arg1, false, variables, engine);
+		if (list.isPresent()) {
+			IAST or = F.Or();
+			for (int i = 1; i < list.size(); i++) {
+				or.add(F.Equal(variable, list.get(i)));
+			}
+			return or;
+		}
+		return F.NIL;
 	}
 
-	protected static IAST roots(final IAST ast, boolean numericSolutions, VariablesSet eVar, EvalEngine engine) {
+	protected static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables, EvalEngine engine) {
 
-		IExpr expr = evalExpandAll(ast.arg1());
-		IAST variables = eVar.getVarList();
+		IExpr expr = evalExpandAll(arg1);
+
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
 			expr = Together.together((IAST) expr);
