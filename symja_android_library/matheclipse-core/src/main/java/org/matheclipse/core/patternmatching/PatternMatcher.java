@@ -489,7 +489,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							IExpr temp = null;
 							fPatternMap.resetPattern(patternValues);
 							temp = matchDefaultAST(lhsPatternAST.topHead(), lhsPatternAST);
-							if (temp != null) {
+							if (temp.isPresent()) {
 								matched = matchExpr(temp, lhsEvalExpr, stackMatcher);
 							}
 						}
@@ -520,8 +520,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 *            the symbol for getting the associated default values from
 	 * @param lhsPatternAST
 	 *            left-hand-side which may contain patterns with default values
-	 * @return <code>null</code> if the given <code>ast</code> could not be
-	 *         matched or contains no pattern with default value.
+	 * @return <code>F.NIL</code> if the given <code>lhsPatternAST</code> could
+	 *         not be matched or contains no pattern with default value.
 	 */
 	private IExpr matchDefaultAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST) {
 		IAST cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
@@ -531,7 +531,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				IExpr positionDefaultValue = symbolWithDefaultValue.getDefaultValue(i);
 				if (positionDefaultValue != null) {
 					if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(positionDefaultValue, fPatternMap)) {
-						return null;
+						return F.NIL;
 					}
 					defaultValueMatched = true;
 					continue;
@@ -539,7 +539,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					IExpr commonDefaultValue = symbolWithDefaultValue.getDefaultValue();
 					if (commonDefaultValue != null) {
 						if (!((IPatternObject) lhsPatternAST.get(i)).matchPattern(commonDefaultValue, fPatternMap)) {
-							return null;
+							return F.NIL;
 						}
 						defaultValueMatched = true;
 						continue;
@@ -558,7 +558,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 			return cloned;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	private boolean matchFlatAndFlatOrderlessAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST,
