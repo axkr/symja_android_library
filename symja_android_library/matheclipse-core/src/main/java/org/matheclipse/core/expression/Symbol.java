@@ -5,10 +5,11 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Stack;
+import java.util.function.Function;
 
 import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -40,8 +41,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-
-import java.util.function.Function;
 
 /**
  * Implements Symbols for function, constant and variable names
@@ -675,12 +674,10 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return fSymbolName;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableList);
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+		final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
 		return uv2s.apply(this);
 	}
 

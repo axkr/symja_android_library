@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -489,8 +490,9 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		throw new UnsupportedOperationException(toString());
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
 		return this;
 	}
 

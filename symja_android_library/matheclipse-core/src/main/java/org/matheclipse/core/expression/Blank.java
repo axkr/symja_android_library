@@ -1,12 +1,10 @@
 package org.matheclipse.core.expression;
 
 import java.io.ObjectStreamException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import org.apache.commons.math4.Field;
-import org.apache.commons.math4.exception.MathArithmeticException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
@@ -311,9 +309,10 @@ public class Blank extends ExprImpl implements IPattern {
 		return buffer.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return null;
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+		return F.NIL;
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

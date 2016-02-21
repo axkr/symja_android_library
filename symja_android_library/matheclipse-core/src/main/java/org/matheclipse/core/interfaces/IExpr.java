@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.Serializable;
+import java.util.Collection;  
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -17,9 +18,9 @@ import org.apache.commons.math4.exception.MathArithmeticException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
@@ -1853,10 +1854,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Convert the variables (i.e. expressions of type <code>ISymbol</code>
-	 * which are'nt constants) in this expression into Slot[] s.
+	 * which aren't constants) in this expression into Slot[] s.
 	 * 
-	 * @return <code>null</code> if no variable symbol was found.
+	 * @param map
+	 *            for every given symbol argument return the associated unique
+	 *            slot from this map
+	 * @param variableCollector
+	 *            collects the variables which are used in the replacement
+	 *            process
+	 * @return <code>F.NIL</code> if no variable symbol was found.
 	 */
-	public IExpr variables2Slots(Map<IExpr, IExpr> map, List<IExpr> variableList);
+	public IExpr variables2Slots(Map<IExpr, IExpr> map, Collection<IExpr> variableCollector);
 
 }

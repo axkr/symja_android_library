@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -365,9 +365,10 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final List<IExpr> variableList) {
-		return null;
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+		return F.NIL;
 	}
 
 	/**
