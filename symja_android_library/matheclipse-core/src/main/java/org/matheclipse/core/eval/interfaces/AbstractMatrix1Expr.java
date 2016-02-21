@@ -75,7 +75,21 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
+	/**
+	 * Evaluate the symbolic matrix for this algorithm.
+	 * 
+	 * @param matrix
+	 *            the matrix which contains symbolic values
+	 * @return
+	 */
 	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
 
+	/**
+	 * Evaluate the numeric matrix for this algorithm.
+	 * 
+	 * @param matrix
+	 *            the matrix which contains numeric values
+	 * @return
+	 */
 	public abstract IExpr realMatrixEval(RealMatrix matrix);
 }

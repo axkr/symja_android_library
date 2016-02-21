@@ -7,7 +7,7 @@ import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.LUDecomposition;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Invert a matrix
@@ -17,28 +17,27 @@ import org.matheclipse.core.expression.F;
  */
 public class Inverse extends AbstractMatrix1Matrix {
 
-  public Inverse() {
-    super();
-  }
+	public Inverse() {
+		super();
+	}
 
-  @Override
-  public FieldMatrix matrixEval(FieldMatrix matrix) {
-    final FieldLUDecomposition lu = new FieldLUDecomposition(
-        matrix);
-    FieldDecompositionSolver solver = lu.getSolver();
-    if (!solver.isNonSingular()) {
-      return null;
-    }
-    return solver.getInverse();
-  }
+	@Override
+	public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
+		final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+		FieldDecompositionSolver<IExpr> solver = lu.getSolver();
+		if (!solver.isNonSingular()) {
+			return null;
+		}
+		return solver.getInverse();
+	}
 
-  @Override
-  public RealMatrix realMatrixEval(RealMatrix matrix) {
-    final LUDecomposition lu = new LUDecomposition(matrix);
-    DecompositionSolver solver = lu.getSolver();
-    if (!solver.isNonSingular()) {
-      return null;
-    }
-    return solver.getInverse();
-  }
+	@Override
+	public RealMatrix realMatrixEval(RealMatrix matrix) {
+		final LUDecomposition lu = new LUDecomposition(matrix);
+		DecompositionSolver solver = lu.getSolver();
+		if (!solver.isNonSingular()) {
+			return null;
+		}
+		return solver.getInverse();
+	}
 }
