@@ -64,7 +64,9 @@ public class SymjaInterpreter extends EvalUtilities {
 		final StringBuilder buf = new StringBuilder();
 		try {
 			result = evaluate(expr);
-			OutputFormFactory.get(true).convert(buf, result);
+			if (result.isPresent()) {
+				OutputFormFactory.get(true).convert(buf, result);
+			}
 			return buf.toString();
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
@@ -115,20 +117,31 @@ public class SymjaInterpreter extends EvalUtilities {
 			}
 			if (expr.isPresent()) {
 				result = evaluate(expr);
-				OutputFormFactory.get(true).convert(buf, result);
+				if (result.isPresent()) {
+					OutputFormFactory.get(true).convert(buf, result);
+				}
 				return buf.toString();
 			}
-		} catch (final RuntimeException re) {
+		} catch (
+
+		final RuntimeException re)
+
+		{
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
 				printException(buf, me);
 			} else {
 				printException(buf, re);
 			}
-		} catch (final Exception e) {
+		} catch (
+
+		final Exception e)
+
+		{
 			printException(buf, e);
 		}
 		return buf.toString();
+
 	}
 
 	private void printException(final Appendable buf, final Throwable e) {

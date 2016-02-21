@@ -4,6 +4,7 @@ import java.io.Writer;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -68,7 +69,7 @@ public class EvalUtilities extends MathMLUtilities {
 	 * 
 	 * @param inputExpression
 	 *            the expression which should be evaluated.
-	 * @return <code>null</code>, if the inputExpression is <code>null</code>
+	 * @return <code>F.NIL</code>, if the inputExpression is <code>null</code>
 	 * 
 	 */
 	public IExpr evaluate(final String inputExpression) throws MathException {
@@ -83,7 +84,7 @@ public class EvalUtilities extends MathMLUtilities {
 				return temp;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -103,7 +104,7 @@ public class EvalUtilities extends MathMLUtilities {
 	 *            the expression which should be evaluated.
 	 * @param evalEngine
 	 *            the evaluation engine which should be used
-	 * @return <code>null</code>, if the inputExpression is <code>null</code>
+	 * @return <code>F.NIL</code>, if the inputExpression is <code>null</code>
 	 * @throw org.matheclipse.parser.client.SyntaxError
 	 * @throw org.matheclipse.parser.client.math.MathException
 	 */
@@ -111,7 +112,6 @@ public class EvalUtilities extends MathMLUtilities {
 		if (inputExpression != null) {
 			EvalEngine.set(evalEngine);
 			boolean SIMPLE_SYNTAX = true;
-			// ASTNode node = null;
 			IExpr parsedExpression;
 			try {
 				ExprParser parser = new ExprParser(evalEngine, SIMPLE_SYNTAX);
@@ -132,7 +132,7 @@ public class EvalUtilities extends MathMLUtilities {
 				return temp;
 			}
 		}
-		return null;
+		return F.NIL;
 	};
 
 	/**
@@ -151,7 +151,7 @@ public class EvalUtilities extends MathMLUtilities {
 			fEvalEngine.addOut(temp);
 			return temp;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -162,11 +162,9 @@ public class EvalUtilities extends MathMLUtilities {
 	 * @param out
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
-		IExpr parsedExpression = null;
-		// ASTNode node;
 		if (inputExpression != null) {
 			ExprParser parser = new ExprParser(EvalEngine.get());
-			parsedExpression = parser.parse(inputExpression);
+			IExpr parsedExpression = parser.parse(inputExpression);
 			// node = fEvalEngine.parseNode(inputExpression);
 			// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
 			return parsedExpression.internalFormString(false, 0);
@@ -188,15 +186,15 @@ public class EvalUtilities extends MathMLUtilities {
 	 * @param list
 	 *            an IAST object which will be cloned for containing the traced
 	 *            expressions. Typically a <code>F.List()</code> will be used.
-	 * @return
+	 * @return <code>F.NIL</code> if <code>inputExpression == null</code>
 	 */
 	public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher, IAST list) throws MathException {
-		IExpr parsedExpression = null;
+
 		if (inputExpression != null) {
 			// try {
 			startRequest();
 			fEvalEngine.reset();
-			parsedExpression = fEvalEngine.parse(inputExpression);
+			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
 				fEvalEngine.reset();
 				IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
@@ -204,7 +202,7 @@ public class EvalUtilities extends MathMLUtilities {
 				return temp;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**
@@ -230,7 +228,7 @@ public class EvalUtilities extends MathMLUtilities {
 			IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
 			return temp;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */
@@ -238,7 +236,7 @@ public class EvalUtilities extends MathMLUtilities {
 	synchronized public void toMathML(final String inputExpression, final Writer out) {
 		try {
 			final IExpr result = evaluate(inputExpression);
-			if (result != null) {
+			if (result.isPresent()) {
 				toMathML(result, out);
 			}
 		} catch (final Throwable e) {

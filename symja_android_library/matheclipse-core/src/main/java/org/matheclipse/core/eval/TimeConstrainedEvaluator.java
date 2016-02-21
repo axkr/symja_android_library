@@ -75,7 +75,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 	 */
 	public IExpr constrainedEval(final Writer writer, final String inputString, boolean traceEvaluation) throws Exception {
 
-		fEvaluationResult = null;
+		fEvaluationResult = F.NIL;
 		fException = null;
 		fParsedExpression = null;
 		fEvalEngine.setStopRequested(false);
@@ -98,7 +98,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 	 */
 	public IExpr constrainedEval(final Writer writer, final IExpr inputExpression) throws Exception {
 
-		fEvaluationResult = null;
+		fEvaluationResult = F.NIL;
 		fException = null;
 		fParsedExpression = inputExpression;
 		fEvalEngine.setStopRequested(false);
@@ -123,7 +123,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 				writer.write('\n');
 			}
 
-			if ((fEvaluationResult != null) && !fEvaluationResult.equals(F.Null)) {
+			if ((fEvaluationResult.isPresent()) && !fEvaluationResult.equals(F.Null)) {
 				OutputFormFactory.get(fRelaxedSyntax).convert(writer, fEvaluationResult);
 			}
 			return fEvaluationResult;
