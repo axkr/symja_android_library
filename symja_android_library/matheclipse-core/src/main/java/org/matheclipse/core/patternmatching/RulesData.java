@@ -260,7 +260,6 @@ public class RulesData implements Serializable {
 		}
 
 		try {
-			IExpr result;
 			IPatternMatcher pmEvaluator;
 			if (expression.isAST()) {
 				IAST astExpr = (IAST) expression;
@@ -292,6 +291,7 @@ public class RulesData implements Serializable {
 			}
 
 			if (fPatternDownRules != null) {
+				IExpr result;
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
 					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
@@ -302,7 +302,7 @@ public class RulesData implements Serializable {
 						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
 					}
 					result = pmEvaluator.eval(expression);
-					if (result != null) {
+					if (result.isPresent()) {
 						if (showSteps) {
 							IExpr rhs = pmEvaluator.getRHS();
 							if (rhs == null) {
@@ -329,12 +329,12 @@ public class RulesData implements Serializable {
 
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,
 			final IAST expression, boolean showSteps) throws CloneNotSupportedException {
-		IExpr result;
 		IPatternMatcher pmEvaluator;
 
 		// TODO Performance hotspot
 		Collection<IPatternMatcher> nset = hashToMatcherMap.get(hash);
 		if (nset != null) {
+			IExpr result;
 			for (IPatternMatcher patternEvaluator : nset) {
 				pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 				if (showSteps) {
@@ -346,7 +346,7 @@ public class RulesData implements Serializable {
 					// + " := " + rhs.toString());
 				}
 				result = pmEvaluator.eval(expression);
-				if (result != null) {
+				if (result.isPresent()) {
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
 						if (rhs == null) {
@@ -374,7 +374,6 @@ public class RulesData implements Serializable {
 		}
 
 		try {
-			IExpr result;
 			IPatternMatcher pmEvaluator;
 			if ((fSimplePatternUpRules != null) && (expression.isAST())) {
 				final int hash = ((IAST) expression).patternHashCode();
@@ -383,10 +382,11 @@ public class RulesData implements Serializable {
 					if (set != null) {
 						final IPatternMatcher[] list = set.toArray(new IPatternMatcher[0]);
 						if (list != null) {
+							IExpr result;
 							for (int i = 0; i < list.length; i++) {
 								pmEvaluator = (IPatternMatcher) list[i].clone();
 								result = pmEvaluator.eval(expression);
-								if (result != null) {
+								if (result.isPresent()) {
 									return result;
 								}
 							}

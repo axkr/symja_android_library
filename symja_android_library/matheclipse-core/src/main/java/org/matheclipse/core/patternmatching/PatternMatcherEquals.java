@@ -6,6 +6,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -13,8 +15,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
 
 /**
- * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
- * <code>equals()</code> method.
+ * Matches a given expression by simply comparing the left-hand-side expression
+ * of this pattern matcher with the <code>equals()</code> method.
  * 
  */
 public class PatternMatcherEquals extends IPatternMatcher implements Externalizable {
@@ -47,13 +49,16 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	/**
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set,
+	 *            SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching" succeeds
+	 *            the result which should be evaluated if the "pattern-matching"
+	 *            succeeds
 	 */
-	public PatternMatcherEquals(final ISymbol.RuleType setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+	public PatternMatcherEquals(final ISymbol.RuleType setSymbol, @Nonnull final IExpr leftHandSide,
+			@Nonnull final IExpr rightHandSide) {
 		super(leftHandSide);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
@@ -80,12 +85,13 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		return super.equals(obj);
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(IExpr lhsEvalExpr) {
-		if (test(lhsEvalExpr)) {
+	public IExpr eval(IExpr leftHandSide) {
+		if (test(leftHandSide)) {
 			return fRightHandSide;
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override

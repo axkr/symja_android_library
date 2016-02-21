@@ -83,12 +83,11 @@ public class NRoots extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param coefficients
-	 * @return <code>null</code> if the result couldn't be evaluated
+	 * @return <code>F.NIL</code> if the result couldn't be evaluated
 	 */
 	public static IAST rootsUp2Degree3(double[] coefficients) {
-		IAST result = null;
 		if (coefficients.length == 0) {
-			return null;
+			return  F.NIL;
 		}
 		if (coefficients.length == 1) {
 			return quadratic(0.0, 0.0, coefficients[0]);
@@ -99,6 +98,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		if (coefficients.length == 3) {
 			return quadratic(coefficients[2], coefficients[1], coefficients[0]);
 		}
+		IAST result = F.NIL;
 		if (coefficients.length == 4) {
 			result = cubic(coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
 		}
@@ -153,10 +153,10 @@ public class NRoots extends AbstractFunctionEvaluator {
 	 */
 	private static IAST cubic(double a, double b, double c, double d) {
 		if (F.isZero(a)) {
-			return null;
+			return F.NIL;
 		}
 		if (F.isZero(d)) {
-			return null;
+			return F.NIL;
 		}
 		IAST result = F.List();
 		b /= a;

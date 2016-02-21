@@ -243,7 +243,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 		if (expr.isAST()) {
 			IAST nestedList = (IAST) expr;
-			IAST result = null;
+			IAST result = F.NIL;
 			final IExpr head = nestedList.head();
 			IExpr temp = variables2Slots(head, from, to);
 			if (temp.isPresent()) {

@@ -9,13 +9,14 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Interface for the pattern matcher
  */
-public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher>, Serializable {
+public abstract class IPatternMatcher
+		implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher>, Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2841686297882535691L;
-	
+
 	/**
 	 * Contains the "pattern-matching" expression
 	 * 
@@ -42,14 +43,16 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Co
 	/**
 	 * Get the "right-hand-side" of a pattern-matching rule.
 	 * 
-	 * @return <code>null</code> if no right-hand-side is defined for the pattern matcher
+	 * @return <code>null</code> if no right-hand-side is defined for the
+	 *         pattern matcher
 	 */
 	public IExpr getRHS() {
 		return null;
 	}
 
 	/**
-	 * Returns the matched pattern in the order they appear in the pattern expression.
+	 * Returns the matched pattern in the order they appear in the pattern
+	 * expression.
 	 * 
 	 * 
 	 * @param resultList
@@ -60,14 +63,16 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Co
 	public abstract void getPatterns(List<IExpr> resultList, IExpr patternExpr);
 
 	/**
-	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
+	 * Get the priority of this pattern-matcher. Lower values have higher
+	 * priorities.
 	 * 
 	 * @return the priority
 	 */
 	public abstract int getPriority();
-	
+
 	/**
-	 * Check if the pattern-matchings left-hand-side expression contains no patterns.
+	 * Check if the pattern-matchings left-hand-side expression contains no
+	 * patterns.
 	 * 
 	 * @return <code>true</code>, if the given expression contains no patterns
 	 */
@@ -77,17 +82,20 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Co
 	 * Start pattern matching.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side expression.
+	 * @return <code>true</code> if the <code>expr</code> matches the
+	 *         pattern-matchings left-hand-side expression.
 	 */
 	public abstract boolean test(IExpr expr);
 
 	/**
 	 * Match the given left-hand-side and return an evaluated expression
 	 * 
-	 * @param expr
-	 * @return <code>null</code> if the match wasn't successful, the evaluated expression otherwise.
+	 * @param leftHandSide
+	 *            left-hand-side expression
+	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated
+	 *         expression otherwise.
 	 */
-	public abstract IExpr eval(final IExpr expr);
+	public abstract IExpr eval(final IExpr leftHandSide);
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {

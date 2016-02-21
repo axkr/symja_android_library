@@ -9,6 +9,7 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 
@@ -65,13 +66,13 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	 */
 	public PatternMatcherAndInvoker(final String leftHandSide, IFunctionEvaluator instance, final String methodName) {
 		this.fInstance = instance;
-		
+
 		final ExprParser parser = new ExprParser(EvalEngine.get());
-		IExpr lhs =  parser.parse(leftHandSide);
-		
-//		Parser parser = new Parser();
-//		ASTNode node = parser.parse(leftHandSide);
-//		IExpr lhs = AST2Expr.CONST.convert(node);
+		IExpr lhs = parser.parse(leftHandSide);
+
+		// Parser parser = new Parser();
+		// ASTNode node = parser.parse(leftHandSide);
+		// IExpr lhs = AST2Expr.CONST.convert(node);
 		fLhsPatternExpr = lhs;
 		init(fLhsPatternExpr);
 		initInvoker(instance, methodName);
@@ -93,13 +94,15 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IExpr eval(final IExpr leftHandSide) {
-		IExpr result = null;
+
 		if (isRuleWithoutPatterns() && fLhsPatternExpr.equals(leftHandSide)) {
 			if (fTypes.length != 0) {
-				return null;
+				return F.NIL;
 			}
+			IExpr result = F.NIL;
 			try {
 				result = (IExpr) fMethod.invoke(fInstance);
 			} catch (IllegalArgumentException e) {
@@ -115,19 +118,19 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 					e.printStackTrace();
 				}
 			}
-			return result;
+			return result != null ? result : F.NIL;
 		}
 		if (fTypes.length != fPatternMap.size()) {
-			return null;
+			return F.NIL;
 		}
 		fPatternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
 
 			List<IExpr> args = fPatternMap.getValuesAsList();
-			result = null;
 			try {
 				if (args != null) {
-					result = (IExpr) fMethod.invoke(fInstance, args.toArray());
+					IExpr result = (IExpr) fMethod.invoke(fInstance, args.toArray());
+					return result != null ? result : F.NIL;
 				}
 			} catch (IllegalArgumentException e) {
 				if (Config.SHOW_STACKTRACE) {
@@ -143,7 +146,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 				}
 			}
 		}
-		return result;
+		return F.NIL;
 	}
 
 	@Override

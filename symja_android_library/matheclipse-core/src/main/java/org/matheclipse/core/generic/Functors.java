@@ -238,7 +238,7 @@ public class Functors {
 			}
 			for (int i = 0; i < fMatchers.size(); i++) {
 				temp = fMatchers.get(i).eval(arg);
-				if (temp != null) {
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}

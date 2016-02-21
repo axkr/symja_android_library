@@ -145,35 +145,28 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		return true;
 	}
 
-	/**
-	 * Match the (left-hand-side) pattern with the given expression. If true evaluate the right-hand-side for the determined values
-	 * of the patterns
-	 * 
-	 * @param ee
-	 * @param evalExpr
-	 * @return
-	 */
-	@Override
-	public IExpr eval(final IExpr lhsEvalExpr) {
+	/** {@inheritDoc} */
+	@Override 
+	public IExpr eval(final IExpr leftHandSide) {
 		// if(fRightHandSide.isAST("Condition")) {
 		// System.out.println("2:"+fRightHandSide);
 		// }
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
-			if (fLhsPatternExpr.equals(lhsEvalExpr)) {
+			if (fLhsPatternExpr.equals(leftHandSide)) {
 				IExpr result = fRightHandSide;
 				try {
-					return result.optional(F.eval(result));
+					return F.eval(result);
 				} catch (final ConditionException e) {
-					logConditionFalse(lhsEvalExpr, fLhsPatternExpr, fRightHandSide);
-					return null;
+					logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+					return F.NIL;
 				} catch (final ReturnException e) {
 					return e.getValue();
 				}
 			}
-			if (!(fLhsPatternExpr.isOrderlessAST() && lhsEvalExpr.isOrderlessAST())) {
-				if (!(fLhsPatternExpr.isFlatAST() && lhsEvalExpr.isFlatAST())) {
-					return null;
+			if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
+				if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
+					return F.NIL;
 				}
 				// TODO implement equals matching for special cases, if the AST
 				// is
@@ -182,27 +175,24 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		}
 
 		fPatternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, lhsEvalExpr)) {
+		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
 			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
 			try {
 				result = F.eval(result);
 			} catch (final ConditionException e) {
-				logConditionFalse(lhsEvalExpr, fLhsPatternExpr, fRightHandSide);
-				return null;
+				logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
+				return F.NIL;
 			} catch (final ReturnException e) {
 				result = e.getValue();
 			}
 			return result;
 		}
 		
-		if (fLhsPatternExpr.isAST() && lhsEvalExpr.isAST()) {
+		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
 			fPatternMap.initPattern();
-			IExpr result = evalAST((IAST) fLhsPatternExpr, (IAST) lhsEvalExpr, fRightHandSide, new StackMatcher());
-			if (result != null) {
-				return result;
-			}
+			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, new StackMatcher());
 		}
-		return null;
+		return F.NIL;
 	}
 
 	@Override
