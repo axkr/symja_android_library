@@ -650,18 +650,17 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			System.out.println(toString());
 		}
 		// Util.checkCanceled();
+		IExpr temp = engine.evalAST(this);
 		if (Config.SHOW_CONSOLE) {
-			IExpr temp = IExpr.ofNullable(engine.evalAST(this));
 			if ((topHead().getAttributes() & ISymbol.CONSOLE_OUTPUT) == ISymbol.CONSOLE_OUTPUT) {
 				if (temp.isPresent()) {
 					System.out.println(toString());
 					System.out.println(" => " + temp.toString());
 				}
 			}
-			return temp;
-		} else {
-			return IExpr.ofNullable(engine.evalAST(this));
+
 		}
+		return temp;
 
 	}
 
@@ -2722,6 +2721,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
-		return variables2Slots(this, new IsUnaryVariableOrPattern<IExpr>(), new UnaryVariable2Slot(map, variableCollector));
+		return variables2Slots(this, new IsUnaryVariableOrPattern<IExpr>(),
+				new UnaryVariable2Slot(map, variableCollector));
 	}
 }

@@ -908,7 +908,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * <code>EvalEngine#evalSetAttributes()</code>method
 	 * 
 	 * @param ast
-	 * @return
+	 * @return <code>F.NIL</code> if evaluation is not possible
 	 * @see org.matheclipse.core.eval.EvalEngine#evalSetAttributes()
 	 */
 	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {

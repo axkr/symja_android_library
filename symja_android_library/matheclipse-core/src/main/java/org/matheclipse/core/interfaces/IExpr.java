@@ -1,7 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.Serializable;
-import java.util.Collection;  
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.math4.Field;
@@ -112,10 +113,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param value
 	 *            the possibly-null value to describe
-	 * @return an {@code Optional} with a present value if the specified value
+	 * @return an {@code IExpr} with a present value if the specified value
 	 *         is non-null, otherwise an empty {@code Optional}
 	 */
-	public static IExpr ofNullable(IExpr value) {
+	public static IExpr ofNullable(@Nonnull IExpr value) {
 		return value == null ? F.NIL : value;
 	}
 
@@ -1630,7 +1631,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr opposite();
 
 	/**
-	 * The <code>ExprNull.NOEVAL#optional()</code> method always returns
+	 * The <code>ExprNull.NIL#optional()</code> method always returns
 	 * <code>that</code>. All other objects which implement this method returns
 	 * <code>that</code> if <code>that!=null</code> or <code>this</code> if
 	 * <code>that==null</code>

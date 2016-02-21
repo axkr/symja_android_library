@@ -721,10 +721,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-//				if (result == null) {
-//					System.out.println(ast);
-//					throw new NullPointerException();
-//				}
+				// if (result == null) {
+				// System.out.println(ast);
+				// throw new NullPointerException();
+				// }
 				if (result != null && result.isPresent()) {
 					return result;
 				}
@@ -768,7 +768,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			// ONEIDENTITY is checked in the evalASTArg1() method!
 
-			
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
 				IAST flattened;
@@ -1049,7 +1048,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return evalWithoutNumericReset(expr);
 			}
 			if (expr.isAST()) {
-				return expr.optional(evalSetAttributes((IAST) expr));
+				return evalSetAttributes((IAST) expr).orElse(expr);
 			}
 			return expr;
 		} catch (MathException ce) {
@@ -1105,27 +1104,27 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	private IAST evalSetAttributeArg(IAST ast, int i, IAST argI, IAST resultList, boolean noEvaluation, int level) {
 		IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
-		if (expr != null) {
-			if (resultList == null) {
-				resultList = ast.setAtCopy(i, expr);
-			} else {
+		if (expr.isPresent()) {
+			if (resultList.isPresent()) {
 				resultList.set(i, expr);
+			} else {
+				resultList = ast.setAtCopy(i, expr);
 			}
 		} else {
 			expr = argI;
 		}
 		if (expr.isAST()) {
 			if (expr.isAST(F.Sqrt, 2)) {
-				if (resultList == null) {
-					resultList = ast.setAtCopy(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
-				} else {
+				if (resultList.isPresent()) {
 					resultList.set(i, PowerOp.power(expr, F.C1D2));
+				} else {
+					resultList = ast.setAtCopy(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
 				}
 			} else if (expr.isAST(F.Exp, 2)) {
-				if (resultList == null) {
-					resultList = ast.setAtCopy(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
-				} else {
+				if (resultList.isPresent()) {
 					resultList.set(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
+				} else {
+					resultList = ast.setAtCopy(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
 				}
 			}
 		}
@@ -1167,7 +1166,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// already flattened or sorted
 				return ast;
 			}
-			return ast.optional(evalSetAttributesRecursive(ast, noEvaluation, false, 0));
+			return evalSetAttributesRecursive(ast, noEvaluation, false, 0);
 		} finally {
 			fEvalLHSMode = evalLHSMode;
 		}
@@ -1183,7 +1182,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		symbol.getEvaluator();
 
 		final int attr = symbol.getAttributes();
-		IAST resultList = null;
+		IAST resultList = ast;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 			final int astSize = ast.size();
@@ -1207,7 +1206,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 			if (evalNumericFunction && ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE)) {
-				IAST f = resultList != null ? resultList : ast;
+				IAST f = resultList.isPresent() ? resultList : ast;
 				if (f.isNumericFunction()) {
 					IExpr temp = evalLoop(f);
 					if (temp.isPresent()) {
@@ -1216,17 +1215,17 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		}
-		if (resultList != null) {
+		if (resultList.isPresent()) {
 			if (resultList.size() > 2) {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
 					IAST result;
 					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
-						return result.optional(evalSetOrderless(result, attr, noEvaluation, level));
+						return evalSetOrderless(result, attr, noEvaluation, level);
 					}
 				}
 				IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
-				if (expr != null) {
+				if (expr.isPresent()) {
 					return expr;
 				}
 			}
@@ -1237,29 +1236,29 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			// associative
 			IAST result;
 			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
-				return result.optional(evalSetOrderless(result, attr, noEvaluation, level));
+				return evalSetOrderless(result, attr, noEvaluation, level);
 			}
 		}
 		return evalSetOrderless(ast, attr, noEvaluation, level);
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @param attr
+	 * @param noEvaluation
+	 * @param level
+	 * @return <code>ast</code> if no evaluation was possible
+	 */
 	private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 			EvalAttributes.sort(ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
-					IExpr temp = Plus.CONST.evaluate(ast, null);
-					if (temp.isPresent()) {
-						return temp;
-					}
-					return null;
+					return Plus.CONST.evaluate(ast, this);
 				}
 				if (ast.isTimes()) {
-					IExpr temp = Times.CONST.evaluate(ast, null);
-					if (temp.isPresent()) {
-						return temp;
-					}
-					return null;
+					return Times.CONST.evaluate(ast, this);
 				}
 			}
 		}
@@ -1267,7 +1266,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return evaluate(ast);
 		}
 
-		return null;
+		return ast;
 	}
 
 	/**
