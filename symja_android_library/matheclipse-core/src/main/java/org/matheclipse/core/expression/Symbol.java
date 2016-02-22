@@ -348,7 +348,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public final IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
 		if (fRulesData == null) {
-			return null;
+			return F.NIL;
 		}
 		return fRulesData.evalUpRule(ee, expression);
 	}

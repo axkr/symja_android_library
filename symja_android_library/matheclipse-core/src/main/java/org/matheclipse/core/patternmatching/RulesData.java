@@ -404,7 +404,7 @@ public class RulesData implements Serializable {
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

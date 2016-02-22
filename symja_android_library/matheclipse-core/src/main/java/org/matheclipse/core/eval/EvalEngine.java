@@ -647,7 +647,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			} else {
 				lhsSymbol = arg1.topHead();
 			}
-			if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
+			if ((result = lhsSymbol.evalUpRule(this, ast)).isPresent()) {
 				return result;
 			}
 		}
@@ -1091,7 +1091,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					lhsSymbol = arg.topHead();
 				}
-				if ((result = lhsSymbol.evalUpRule(this, ast)) != null) {
+				if ((result = lhsSymbol.evalUpRule(this, ast)).isPresent()) {
 					return result;
 				}
 			}
