@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -71,7 +72,7 @@ public class HashedPatternFunction extends AbstractHashedPatternRules {
 			IExpr v2 = pm2.getPatternValue0();
 			return function.apply(v1, v2);
 		}
-		return null;
+		return F.NIL;
 	}
 
 }

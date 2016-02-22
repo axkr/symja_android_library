@@ -810,7 +810,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")
 					|| head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
 				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
-				if (temp!=null){
+				if (temp.isPresent()) {
 					return temp;
 				}
 			}

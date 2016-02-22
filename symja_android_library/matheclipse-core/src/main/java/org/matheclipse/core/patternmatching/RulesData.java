@@ -237,6 +237,12 @@ public class RulesData implements Serializable {
 		return definitionList;
 	}
 
+	/**
+	 * 
+	 * @param ee
+	 * @param expression
+	 * @return <code>F.NIL</code> if no evaluation was possible
+	 */
 	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
 		PatternMatcherEquals res;
 		boolean showSteps = false;
@@ -267,7 +273,7 @@ public class RulesData implements Serializable {
 					final int hash = ((IAST) expression).patternHashCode();
 					if (fSimplePatternDownRules.containsKey(hash)) {
 						IExpr temp = evalSimpleRatternDownRule(fSimplePatternDownRules, hash, astExpr, showSteps);
-						if (temp != null) {
+						if (temp.isPresent()) {
 							return temp;
 						}
 					}
@@ -281,7 +287,7 @@ public class RulesData implements Serializable {
 							if (fSimpleOrderlesPatternDownRules.containsKey(hash)) {
 								IExpr temp = evalSimpleRatternDownRule(fSimpleOrderlesPatternDownRules, hash, astExpr,
 										showSteps);
-								if (temp != null) {
+								if (temp.isPresent()) {
 									return temp;
 								}
 							}
@@ -320,7 +326,7 @@ public class RulesData implements Serializable {
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr evalDownRule(final IExpr expression) {
@@ -361,7 +367,7 @@ public class RulesData implements Serializable {
 				}
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {

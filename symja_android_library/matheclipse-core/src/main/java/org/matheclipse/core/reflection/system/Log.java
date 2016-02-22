@@ -106,7 +106,7 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 				if (arg1.isInteger() && arg2.isInteger()) {
 					return baseBLog((IInteger) arg2, (IInteger) arg1);
 				}
-				return null;
+				return F.NIL;
 			}
 
 		};

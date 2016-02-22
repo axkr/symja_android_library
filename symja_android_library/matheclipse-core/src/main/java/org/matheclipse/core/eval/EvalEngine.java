@@ -603,10 +603,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private IExpr evalASTArg1(final IAST ast) {
 		// special case ast.size() == 2
 		// head == ast[0] --- arg1 == ast[1]
-		IExpr result = evalLoop(ast.head());
+		IExpr result = ast.head().evaluateHead(ast, this);
 		if (result.isPresent()) {
-			// set the new evaluated header !
-			return ast.apply(result);
+			return result;
 		}
 
 		final ISymbol symbol = ast.topHead();
@@ -704,7 +703,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.NOATTRIBUTE) && !symbol.equals(F.Integrate)) {
 			IExpr result;
-			if ((result = symbol.evalDownRule(this, ast)) != null) {
+			if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
 				return result;
 			}
 		}
@@ -729,7 +728,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
-					if ((result = symbol.evalDownRule(this, ast)) != null) {
+					if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
 						return result;
 					}
 				}
@@ -746,17 +745,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return
 	 */
 	public IExpr evalAttributes(@Nonnull ISymbol symbol, @Nonnull IAST ast) {
-		IExpr head = ast.head();
-
 		final int astSize = ast.size();
 		if (astSize == 2) {
 			return evalASTArg1(ast);
 		}
 
-		// first evaluate the header !
-		IExpr result = evalLoop(head);
+		// first evaluate the header 
+		IExpr head = ast.head();
+		IExpr result = head.evaluateHead(ast, this);
 		if (result.isPresent()) {
-			return ast.apply(result);
+			return result;
 		}
 
 		if (astSize != 1) {

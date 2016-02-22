@@ -243,7 +243,7 @@ public class HashedOrderlessMatcher {
 	private static boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
 			int[] hashValues, int i, int j) {
 		IExpr temp;
-		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))) != null) {
+		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))).isPresent()) {
 			hashValues[i] = 0;
 			hashValues[j] = 0;
 			result.add(temp);

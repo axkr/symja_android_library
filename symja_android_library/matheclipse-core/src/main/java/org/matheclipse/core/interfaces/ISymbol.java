@@ -315,7 +315,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @param engine
 	 * @param expression
-	 * @return
+	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
 	public IExpr evalDownRule(IEvaluationEngine engine, IExpr expression);
 

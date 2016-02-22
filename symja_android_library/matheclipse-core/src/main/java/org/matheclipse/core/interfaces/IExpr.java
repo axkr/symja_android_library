@@ -113,8 +113,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @param value
 	 *            the possibly-null value to describe
-	 * @return an {@code IExpr} with a present value if the specified value
-	 *         is non-null, otherwise an empty {@code Optional}
+	 * @return an {@code IExpr} with a present value if the specified value is
+	 *         non-null, otherwise an empty {@code Optional}
 	 */
 	public static IExpr ofNullable(@Nonnull IExpr value) {
 		return value == null ? F.NIL : value;
@@ -277,6 +277,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         not possible (i.e. the evaluation doesn't change the object).
 	 */
 	default IExpr evaluate(EvalEngine engine) {
+		return F.NIL;
+	}
+
+	default IExpr evaluateHead(IAST ast, EvalEngine engine) {
+		IExpr result = engine.evalLoop(this);
+		if (result.isPresent()) {
+			// set the new evaluated header !
+			return ast.apply(result);
+		}
 		return F.NIL;
 	}
 

@@ -260,7 +260,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			return IExpr.ofNullable(get());
 		}
 		IExpr result;
-		if ((result = evalDownRule(engine, this)) != null) {
+		if ((result = evalDownRule(engine, this)).isPresent()) {
 			return result;
 		}
 		final IEvaluator module = getEvaluator();
@@ -280,11 +280,21 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return F.NIL;
 	}
 
+	@Override
+	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+		IExpr result = evaluate(engine);
+		if (result.isPresent()) {
+			// set the new evaluated header !
+			return ast.apply(result);
+		}
+		return F.NIL;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
 		if (fRulesData == null) {
-			return null;
+			return F.NIL;
 		}
 		// System.out.println(toString());
 		return fRulesData.evalDownRule(ee, expression);
