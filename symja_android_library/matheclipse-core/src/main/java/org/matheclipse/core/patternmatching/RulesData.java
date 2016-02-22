@@ -302,7 +302,7 @@ public class RulesData implements Serializable {
 					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
-						if (rhs == null) {
+						if (!rhs.isPresent()) {
 							rhs = F.Null;
 						}
 						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
@@ -311,7 +311,7 @@ public class RulesData implements Serializable {
 					if (result.isPresent()) {
 						if (showSteps) {
 							IExpr rhs = pmEvaluator.getRHS();
-							if (rhs == null) {
+							if (!rhs.isPresent()) {
 								rhs = F.Null;
 							}
 							// System.out.println("\nCOMPLEX: " +
@@ -345,7 +345,7 @@ public class RulesData implements Serializable {
 				pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 				if (showSteps) {
 					IExpr rhs = pmEvaluator.getRHS();
-					if (rhs == null) {
+					if (!rhs.isPresent()) {
 						rhs = F.Null;
 					}
 					System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
@@ -355,7 +355,7 @@ public class RulesData implements Serializable {
 				if (result.isPresent()) {
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
-						if (rhs == null) {
+						if (!rhs.isPresent()) {
 							rhs = F.Null;
 						}
 						// System.out.println("\nSIMPLE: " +

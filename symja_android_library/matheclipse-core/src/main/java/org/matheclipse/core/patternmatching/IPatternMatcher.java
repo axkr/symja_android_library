@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -47,7 +48,7 @@ public abstract class IPatternMatcher
 	 *         pattern matcher
 	 */
 	public IExpr getRHS() {
-		return null;
+		return F.NIL;
 	}
 
 	/**

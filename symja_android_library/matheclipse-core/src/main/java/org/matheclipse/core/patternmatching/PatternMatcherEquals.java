@@ -101,7 +101,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public IExpr getRHS() {
-		return fRightHandSide;
+		return IExpr.ofNullable(fRightHandSide);
 	}
 
 	/**

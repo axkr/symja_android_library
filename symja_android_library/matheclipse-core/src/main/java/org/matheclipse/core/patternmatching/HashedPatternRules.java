@@ -102,7 +102,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 * @return the right-hand-side result
 	 */
 	public IExpr getRHS() {
-		return fRHS;
+		return IExpr.ofNullable(fRHS);
 	}
 
 	/**
