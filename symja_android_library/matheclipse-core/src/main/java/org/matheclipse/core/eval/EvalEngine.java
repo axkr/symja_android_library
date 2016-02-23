@@ -738,29 +738,31 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Evaluate an AST. The evaluation steps are controlled by the header
-	 * attributes.
+	 * Evaluate an AST according to the attributes set in the header symbol. The
+	 * evaluation steps are controlled by the header attributes.
 	 * 
 	 * @param ast
 	 * @return
 	 */
 	public IExpr evalAttributes(@Nonnull ISymbol symbol, @Nonnull IAST ast) {
-		final int astSize = ast.size();
+		IAST tempAST = ast;
+		final int astSize = tempAST.size();
 		if (astSize == 2) {
-			return evalASTArg1(ast);
+			return evalASTArg1(tempAST);
 		}
 
-		// first evaluate the header 
-		IExpr head = ast.head();
-		IExpr result = head.evaluateHead(ast, this);
+		// first evaluate the header
+		IExpr head = tempAST.head();
+		IExpr result = head.evaluateHead(tempAST, this);
 		if (result.isPresent()) {
 			return result;
 		}
 
 		if (astSize != 1) {
 			final int attr = symbol.getAttributes();
+			IAST returnResult = F.NIL;
 
-			if ((result = flattenSequences(ast)).isPresent()) {
+			if ((result = flattenSequences(tempAST)).isPresent()) {
 				return result;
 			}
 
@@ -769,33 +771,37 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
 				IAST flattened;
-				if ((flattened = EvalAttributes.flatten(ast)).isPresent()) {
+				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
 					IAST resultList = evalArgs(flattened, attr);
 					if (resultList.isPresent()) {
-						return resultList;
+						returnResult = resultList;
+					} else {
+						returnResult = flattened;
 					}
-					return flattened;
+					tempAST = returnResult;
 				}
 			}
 
-			IAST resultList = evalArgs(ast, attr);
+			IAST resultList = evalArgs(tempAST, attr);
 			if (resultList.isPresent()) {
-				return resultList;
+				returnResult = resultList;
+				tempAST = returnResult;
 			}
 
 			if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE
-					&& !((ast.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
+					&& !((tempAST.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
 				// thread over the lists
-				resultList = threadASTListArgs(ast);
+				resultList = threadASTListArgs(tempAST);
 				if (resultList.isPresent()) {
-					return resultList;
+					return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
 				}
 			}
 
 			if (astSize > 2 && (ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
 				// commutative symbol
-				EvalAttributes.sort(ast);
+				EvalAttributes.sort(tempAST);
 			}
+			return returnResult;
 		}
 
 		return F.NIL;
