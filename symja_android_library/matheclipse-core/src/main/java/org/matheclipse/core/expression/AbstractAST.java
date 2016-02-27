@@ -2087,6 +2087,11 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public final boolean isSlotSequence() {
 		return isSameHead(F.SlotSequence, 2) && arg1().isInteger();
 	}
+	
+	@Override
+	public final boolean isSpan() {
+		return isSameHeadSizeGE(F.Span, 3);
+	}
 
 	/** {@inheritDoc} */
 	@Override

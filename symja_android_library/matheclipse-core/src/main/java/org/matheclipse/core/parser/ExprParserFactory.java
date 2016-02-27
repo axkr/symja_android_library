@@ -36,12 +36,12 @@ public class ExprParserFactory implements IExprParserFactory {
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Map", "Unset", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
 			"Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot", "Not", "PreMinus", "SameQ",
-			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Equal", "StringJoin", "Unequal",
+			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal",
 			"Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function",
 			"Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&",
-			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", "==",
+			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", ";;", "==",
 			"<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/." };
 
 	static final AbstractExprOperator[] OPERATORS = { new InfixExprOperator("::", "MessageName", 7400, InfixExprOperator.NONE),
@@ -68,6 +68,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			new InfixExprOperator("/;", "Condition", 1200, InfixExprOperator.LEFT_ASSOCIATIVE),
 			new InfixExprOperator(":", "Colon", 700, InfixExprOperator.NONE), new InfixExprOperator("//", "//", 600, InfixExprOperator.NONE),
 			new InfixExprOperator("/=", "DivideBy", 900, InfixExprOperator.NONE), new InfixExprOperator("||", "Or", 1900, InfixExprOperator.NONE),
+			new InfixExprOperator(";;", "Span", 2700, InfixExprOperator.NONE),
 			new InfixExprOperator("==", "Equal", 2600, InfixExprOperator.NONE),
 			new InfixExprOperator("<>", "StringJoin", 5800, InfixExprOperator.NONE),
 			new InfixExprOperator("!=", "Unequal", 2600, InfixExprOperator.NONE), new PostfixExprOperator("--", "Decrement", 6400),

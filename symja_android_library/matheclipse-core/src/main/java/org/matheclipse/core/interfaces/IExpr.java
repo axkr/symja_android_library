@@ -939,6 +939,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	default boolean isSpan() {
+		return false;
+	}
 	/**
 	 * Test if this expression is a list of lists
 	 * 

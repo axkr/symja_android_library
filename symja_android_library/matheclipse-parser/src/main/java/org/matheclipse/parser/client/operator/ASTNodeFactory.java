@@ -47,7 +47,7 @@ public class ASTNodeFactory implements IParserFactory {
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Map", "Unset", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
 			"Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot", "Not", "PreMinus", "SameQ",
-			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Equal", "StringJoin", "Unequal", "Decrement",
+			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement",
 			"SubtractFrom", "PrePlus",
 			 "RepeatedNull",
 			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
@@ -56,7 +56,7 @@ public class ASTNodeFactory implements IParserFactory {
 			"ReplaceAll" };
 
 	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&",
-			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", "==", "<>",
+			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", ";;", "==", "<>",
 			"!=", "--", "-=", "+",
 			 "...",
 			"=!=", "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=",
@@ -95,6 +95,7 @@ public class ASTNodeFactory implements IParserFactory {
 			new InfixOperator("//", "//", 600, InfixOperator.NONE),
 			new InfixOperator("/=", "DivideBy", 900, InfixOperator.NONE),
 			new InfixOperator("||", "Or", 1900, InfixOperator.NONE),
+			new InfixOperator(";;", "Span", 2700, InfixOperator.NONE),
 			new InfixOperator("==", "Equal", 2600, InfixOperator.NONE),
 			new InfixOperator("<>", "StringJoin", 5800, InfixOperator.NONE),
 			new InfixOperator("!=", "Unequal", 2600, InfixOperator.NONE),

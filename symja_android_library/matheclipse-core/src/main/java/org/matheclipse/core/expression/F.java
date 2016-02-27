@@ -222,6 +222,7 @@ public class F {
 	public final static ISymbol Slot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot");
 	public final static ISymbol SlotSequence = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slotsequence" : "SlotSequence");
+	public final static ISymbol Span = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "span" : "Span");
 	public final static ISymbol Options = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "options" : "Options");
 	public final static ISymbol Graphics = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "graphics" : "Graphics");
@@ -3274,7 +3275,7 @@ public class F {
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
-	 * @param value 
+	 * @param value
 	 * @return
 	 */
 	public static ISymbol local(@Nonnull final String symbolName, @Nonnull IExpr value) {
@@ -4074,6 +4075,10 @@ public class F {
 	 */
 	public static IAST Sqrt(final IExpr x) {
 		return binaryAST2(Power, x, C1D2);
+	}
+
+	public static IAST Span(final IExpr... a) {
+		return ast(a, Span);
 	}
 
 	public static IAST StringJoin(final IExpr a) {
