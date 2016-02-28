@@ -12,7 +12,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Differentiation of a function. See <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
+ * Differentiation of a function. See
+ * <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
  */
 public class D extends AbstractFunctionEvaluator {
 
@@ -20,11 +21,11 @@ public class D extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Search for one of the <code>Derivative[..]</code> rules.
+	 * Search for one of the <code>Derivative[a1][head]</code> rules.
 	 * 
 	 * 
 	 * @param x
-	 * @param arg1
+	 * @param a1
 	 * @param header
 	 * @return
 	 */
@@ -47,8 +48,7 @@ public class D extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Search for one of the <code>Derivative[..]</code> rules.
-	 * 
+	 * Search for one of the <code>Derivative[a1, a2][head]</code> rules.
 	 * 
 	 * @param x
 	 * @param a1
@@ -107,6 +107,16 @@ public class D extends AbstractFunctionEvaluator {
 		return fDerivParam;
 	}
 
+	/**
+	 * Create <code>Derivative[n][header][arg1, arg2]</code>
+	 * 
+	 * @param n
+	 * @param m
+	 * @param header
+	 * @param arg1
+	 * @param arg2
+	 * @return
+	 */
 	private IAST createDerivative(final int n, final int m, final IExpr header, final IExpr arg1, final IExpr arg2) {
 		IAST deriv = F.Derivative(F.integer(n), F.integer(m));
 		IAST fDeriv = F.ast(deriv);
@@ -182,7 +192,8 @@ public class D extends AbstractFunctionEvaluator {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 			} else if (listArg1.isPower() && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
 				// if (listArg1.isFreeAt(2, x)) {
-				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
+				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(),
+				// header);
 				//
 				// // D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
 				// final IAST timesList = F.Times();
@@ -197,7 +208,6 @@ public class D extends AbstractFunctionEvaluator {
 				// timesList.add(F.D(listArg1.arg1(), ast.arg2()));
 				// return timesList;
 				// } else {
-				
 
 				final IExpr f = listArg1.arg1();
 				final IExpr g = listArg1.arg2();
@@ -212,16 +222,21 @@ public class D extends AbstractFunctionEvaluator {
 			} else if ((header == F.Log) && (listArg1.size() == 3)) {
 				if (listArg1.isFreeAt(1, x)) {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
-					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1), F.D(listArg1.arg2(), x));
+					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1),
+							F.D(listArg1.arg2(), x));
 				}
-				// } else if (header == F.LaplaceTransform && (listArg1.size() == 4)) {
-				// if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x, true)) {
+				// } else if (header == F.LaplaceTransform && (listArg1.size()
+				// == 4)) {
+				// if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
+				// true)) {
 				// // D(LaplaceTransform(c,t,s), s) -> -c / s^2
 				// return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
 				// } else if (listArg1.arg1().equals(x)) {
 				// // D(LaplaceTransform(c,t,s), c) -> 1/s
 				// return F.Power(x, -1L);
-				// } else if (listArg1.arg1().isFree(x, true) && listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x, true))
+				// } else if (listArg1.arg1().isFree(x, true) &&
+				// listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
+				// true))
 				// {
 				// // D(LaplaceTransform(c,t,s), w) -> 0
 				// return F.C0;
