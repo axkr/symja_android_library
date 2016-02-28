@@ -12,13 +12,26 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Greatest common divisor
  * 
- * See <a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia:Greatest common divisor</a>
+ * See <a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia:
+ * Greatest common divisor</a>
  */
 public class GCD extends AbstractArgMultiple {
 	/**
 	 * Constructor for the GCD object
 	 */
 	public GCD() {
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.size() == 1) {
+			return F.C0;
+		} else if (ast.size() == 2) {
+			if (ast.arg1().isSignedNumber()) {
+				return ast.arg1();
+			}
+		}
+		return super.evaluate(ast, engine);
 	}
 
 	@Override
@@ -38,14 +51,6 @@ public class GCD extends AbstractArgMultiple {
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
-	}
-
-	@Override
-	public IExpr evaluate(IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
-			return F.C0;
-		}
-		return super.evaluate(ast, engine);
 	}
 
 }

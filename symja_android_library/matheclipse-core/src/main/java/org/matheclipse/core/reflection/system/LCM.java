@@ -1,7 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -9,8 +12,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Least common multiple
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Least_common_multiple">Wikipedia:Least
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Least_common_multiple">Wikipedia:Least
  * common multiple</a>
  */
 public class LCM extends AbstractArgMultiple {
@@ -18,6 +21,18 @@ public class LCM extends AbstractArgMultiple {
 	 * Constructor for the LCM object
 	 */
 	public LCM() {
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkRange(ast, 2);
+
+		if (ast.size() == 2) {
+			if (ast.arg1().isSignedNumber()) {
+				return ast.arg1();
+			}
+		}
+		return super.evaluate(ast, engine);
 	}
 
 	/**
@@ -39,7 +54,7 @@ public class LCM extends AbstractArgMultiple {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
 	}
 
 }
