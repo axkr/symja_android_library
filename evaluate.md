@@ -16,7 +16,7 @@ A lot of system functions have associated pattern matching rule files in the fol
 
 * [symja_android_library/rules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/rules/)
 
-These rules are converted by the class [org.matheclipse.core.preprocessor.RulePreprocessor](https://bitbucket.org/axelclk/symjaunittests/src/master/SymjaUnitTests/src/org/matheclipse/core/preprocessor/RulePreprocessor.java)
+These rules are converted by the class [org.matheclipse.core.preprocessor.RulePreprocessor](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/tools/src/main/java/org/matheclipse/core/preprocessor/RulePreprocessor.java)
 into the package [org.matheclipse.core.reflection.system.rules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules/)
 
 A new function name should be added to `org.matheclipse.core.convert.AST2Expr#FUNCTION_STRINGS` `String[]` array, with a leading upper case character in its name.
