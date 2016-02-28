@@ -3,6 +3,8 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="src" path="jas/src/main/java"/>
+	<classpathentry kind="src" path="tools/src/main/java"/>
+	<classpathentry kind="src" path="test/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-parser/src/main/java"/>
 	<classpathentry kind="src" path="apfloat/src"/>
 	<classpathentry kind="src" path="guava/src/main/java"/>
@@ -13,5 +15,6 @@
 	<classpathentry kind="lib" path="lib/COMMONS_MATH4_SYMJA.jar" sourcepath="/commons-math"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_25"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.11.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
