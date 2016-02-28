@@ -742,11 +742,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("CoprimeQ[{1, 2, 3, 4, 5}, 6]", "{True,False,False,False,True}");
 	}
 
-	/**
-	 * See: <a href=
-	 * "http://functions.wolfram.com/ElementaryFunctions/Cos/introductions/Cos/05/">
-	 * Cos</a>
-	 */
 	public void testCos() {
 		check("Cos(z+1/2*Pi)", "-Sin(z)");
 		check("Cos(Pi)", "-1");
@@ -767,11 +762,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("CosIntegral(2.8)", "0.18648838964317638");
 	}
 
-	/**
-	 * See: <a href=
-	 * "http://functions.wolfram.com/ElementaryFunctions/Cot/introductions/Cot/05/">
-	 * Cot</a>
-	 */
 	public void testCot() {
 		check("Cot(z+1/2*Pi)", "-Tan(z)");
 		check("Cot(Pi)", "ComplexInfinity");
@@ -1660,7 +1650,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Level(h1(h2(h3(x))), -1)", "{x,h3(x),h2(h3(x))}");
 		check("Level(h1(h2(h3(x))), {0, -1})", "{x,h3(x),h2(h3(x)),h1(h2(h3(x)))}");
 
-		// https://reference.wolfram.com/language/tutorial/LevelsInExpressions.html
 		check("Level(f(f(g(a), a), a, h(a), f), 2)", "{g(a),a,f(g(a),a),a,a,h(a),f}");
 		check("Level(f(f(g(a), a), a, h(a), f), {2})", "{g(a),a,a}");
 		check("Level(f(f(g(a), a), a, h(a), f), {-1})", "{a,a,a,a,f}");
@@ -1802,7 +1791,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testMatrices() {
-		// http://reference.wolfram.com/mathematica/tutorial/ConstructingMatrices.html
 		check("Table(a(i0, j), {i0, 2}, {j, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
 		check("Array(a, {2, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
 		check("ConstantArray(0, {3, 2})", "{{0,0},{0,0},{0,0}}");
@@ -2011,8 +1999,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testNullSpace() {
-		// control with
-		// http://www.gregthatcher.com/Mathematics/NullSpaceCalculator.aspx
 		check("NullSpace({{1, 2, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 1},\n"
 				+ "{0, 0, -1},\n" + "{1, 2, 1}})", "{{-2,1,0}}");
 		check("NullSpace({{1,2,3},{4,5,6},{7,8,9}})", "{{1,-2,1}}");
@@ -2228,7 +2214,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPosition() {
-		// https://reference.wolfram.com/language/tutorial/LevelsInExpressions.html
 		check("Position({x, {x, y}, y},x,1)", "{{1}}");
 		check("Position({x, {x, y}, y},x,2)", "{{1},{2,1}}");
 		check("Position({x, {x, y}, y},x,{2})", "{{2,1}}");
@@ -2512,7 +2497,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		// wrong result
 		check("f(a + b) + f(a + c) + f(b + d) /. f(a + x_) + f(c + y_) -> p(x, y)", "f(b+d)+p(b,a)");
 
-		// http://reference.wolfram.com/mathematica/tutorial/FlatAndOrderlessFunctions.html
 		check("g(a + b, a) /. g(x_ + y_, x_) -> p(x, y)", "p(a,b)");
 		check("g(a + b, b) /. g(x_ + y_, x_) -> p(x, y)", "p(b,a)");
 		check("h(a + b, a + b) /. h(x_ + y_, x_ + z_) -> p(x, y, z)", "p(a,b,b)");
@@ -2549,7 +2533,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testReplaceTransformations() {
-		// https://reference.wolfram.com/language/tutorial/ApplyingTransformationRules.html
 		check("x + y /. x -> 3", "3+y");
 		check("x + y /. {x -> a, y -> b}", "a+b");
 		check("x + y /. {{x -> 1, y -> 2}, {x -> 4, y -> 2}}", "{3,6}");
@@ -2584,7 +2567,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Resultant(x^2 - 2 x + 7, x^3 - x + 5, x)", "265");
 		check("Resultant(x^2 + 2*x , x-c, x)", "2*c+c^2");
 
-		// see: http://reference.wolfram.com/language/ref/PolynomialGCD.html
 		check("Resultant(x^2 - 4, x^2 + 4*x + 4, x)", "0");
 		check("Resultant(3 x + 9, 6 x^3 - 3 x + 12, x)", "-3807");
 
@@ -2630,11 +2612,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"{{1,0,-1,0,-8/3,5/3},\n" + " {0,1,2,0,7/3,-4/3},\n" + " {0,0,0,1,-2,1}}");
 	}
 
-	/**
-	 * See: <a href=
-	 * "http://functions.wolfram.com/ElementaryFunctions/Sec/introductions/Sec/05/">
-	 * Sec</a>
-	 */
 	public void testSec() {
 		check("Sec(Pi/2)", "ComplexInfinity");
 		check("Sec(0)", "1");
@@ -2708,11 +2685,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Simplify(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
 	}
 
-	/**
-	 * See: <a href=
-	 * "http://functions.wolfram.com/ElementaryFunctions/Sin/introductions/Sin/05/">
-	 * Sin</a>
-	 */
 	public void testSin() {
 		check("Sin(z+1/4*Pi)", "Sin(Pi/4+z)");
 		check("Sin(z+1/2*Pi)", "Cos(z)");
@@ -2950,11 +2922,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Table(a, {a, Pi, 2 Pi, Pi / 2})", "{Pi,3/2*Pi,2*Pi}");
 	}
 
-	/**
-	 * See: <a href=
-	 * "http://functions.wolfram.com/ElementaryFunctions/Tan/introductions/Tan/05/">
-	 * Tan</a>
-	 */
 	public void testTan() {
 		check("Tan(Pi/2)", "ComplexInfinity");
 		check("Tan(1/6*Pi)", "1/Sqrt(3)");
