@@ -6,6 +6,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
+/**
+ * Represent Sequences in Take[] or Drop[] functions.
+ * 
+ *
+ */
 public class Sequence extends ListSizeSequence {
 
 	public Sequence(final IInteger i) {
@@ -20,11 +25,11 @@ public class Sequence extends ListSizeSequence {
 	 * Factory method for creating a Sequence from a given expression
 	 *
 	 * @param expr
-	 *          an expression, which should represent a sequence specification
+	 *            an expression, which should represent a sequence specification
 	 * @return returns <code>null</code> if the given expression is no sequence
 	 *         specification
 	 */
-	public static Sequence createSequence(final IExpr expr) {
+	private static Sequence createSequence(final IExpr expr) {
 		Sequence sequ = null;
 		if (expr.isList()) {
 			sequ = new Sequence((IAST) expr);
@@ -34,6 +39,17 @@ public class Sequence extends ListSizeSequence {
 		return sequ;
 	}
 
+	/**
+	 * Factory method for creating a sequences from the arguments of an
+	 * <code>IAST</code> starting with the argument at position
+	 * <code>offset</code>.
+	 * 
+	 * @param ast
+	 * @param offset
+	 *            the position in <code>ast</code>, where the first ISequence
+	 *            specification starts.
+	 * @return
+	 */
 	public static Sequence[] createSequences(final IAST ast, final int offset) {
 		final Sequence[] sequArray = new Sequence[ast.size() - offset];
 		Sequence sequ = null;

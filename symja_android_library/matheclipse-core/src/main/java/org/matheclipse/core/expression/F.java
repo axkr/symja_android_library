@@ -469,6 +469,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Sow());
 	public final static ISymbol Switch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch",
 			new org.matheclipse.core.builtin.function.Switch());
+	public final static ISymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take",
+			new org.matheclipse.core.builtin.function.Take());
 	public final static ISymbol TeXForm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm",
 			new org.matheclipse.core.builtin.function.TeXForm());
 	public final static ISymbol TimeConstrained = initFinalSymbol(
@@ -856,7 +858,6 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxlength" : "SyntaxLength");
 	public final static ISymbol SyntaxQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static ISymbol Table = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "table" : "Table");
-	public final static ISymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
 	public final static ISymbol Tan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tan" : "Tan");
 	public final static ISymbol Tanh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tanh" : "Tanh");
 	public final static ISymbol Taylor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "taylor" : "Taylor");
