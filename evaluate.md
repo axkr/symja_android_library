@@ -50,7 +50,7 @@ Both of these built-in functions are defined in the `org.matheclipse.core.reflec
 * [org.matheclipse.core.reflection.system.D](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/D.java)
 
 
-The [Derivative( ) rules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/rules/Derivative.m) are converted by the class [org.matheclipse.core.preprocessor.RulePreprocessor](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/tools/src/main/java/org/matheclipse/core/preprocessor/RulePreprocessor.java)
+The [Derivative( ) rules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/rules/DerivativeRules.m) are converted by the class [org.matheclipse.core.preprocessor.RulePreprocessor](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/tools/src/main/java/org/matheclipse/core/preprocessor/RulePreprocessor.java)
 into the rules java file [org.matheclipse.core.reflection.system.rules.DerivativeRules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules/DerivativeRules.java).
 
 To use these functions (or other built-in constants and functions) from within other java sources you can import 
