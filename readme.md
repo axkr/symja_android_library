@@ -1,6 +1,4 @@
-=============================================
-  Symja Library - Java Symbolic Math System
-=============================================
+## Symja Library - Java Symbolic Math System
 
 Features:
 * arbitrary precision integers, rational and complex numbers
@@ -10,11 +8,11 @@ Features:
 * see the "Getting started with Symja" document on the Wiki pages
    
 Online demo: 
-* http://symjaweb.appspot.com/ (Mobile web interface)
-* http://symjaweb.appspot.com/new.jsp (Notebook interface)
+* [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
+* [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
 See the Wiki pages:
-* https://bitbucket.org/axelclk/symja_android_library/wiki
+* [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
 	
 axelclk_AT_gmail_DOT_com 
 
