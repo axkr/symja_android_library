@@ -21,5 +21,13 @@ into the package [org.matheclipse.core.reflection.system.rules](https://bitbucke
 
 A new function name should be added to `org.matheclipse.core.convert.AST2Expr#FUNCTION_STRINGS` `String[]` array, with a leading upper case character in its name.
 
+## Example evaluating `D(<expression>, x)`
 
+In the following section the evaluation and implementation of the partial derivative function is described.
 
+Example usage:
+
+```java
+>>> D(sin(x)^3 + x, x)
+1+3*Sin(x)^2*Cos(x)
+```
