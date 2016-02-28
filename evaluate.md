@@ -39,7 +39,12 @@ To see the intermediate evaluation steps you can use the `trace( )` function
 >>> trace(D(sin(x)^3 + x, x)) 
 ```
 
-Internally the `D(<expression>, x)` function uses the `Derivative( )` function. Both of these built-in functions are defined in the `org.matheclipse.core.reflection.system` package:
+Internally the `D(<expression>, x)` function uses the `Derivative( )` function. Both function names are defined in 
+
+* [org.matheclipse.core.convert.AST2Expr#FUNCTION_STRINGS](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/convert/AST2Expr.java)
+
+
+Both of these built-in functions are defined in the `org.matheclipse.core.reflection.system` package:
 
 * [org.matheclipse.core.reflection.system.Derivative](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Derivative.java)
 * [org.matheclipse.core.reflection.system.D](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/D.java)
@@ -48,6 +53,14 @@ Internally the `D(<expression>, x)` function uses the `Derivative( )` function. 
 The [Derivative( ) rules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/rules/Derivative.m) are converted by the class [org.matheclipse.core.preprocessor.RulePreprocessor](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/tools/src/main/java/org/matheclipse/core/preprocessor/RulePreprocessor.java)
 into the rules java file [org.matheclipse.core.reflection.system.rules.DerivativeRules](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules/DerivativeRules.java).
 
+To use these functions (or other built-in constants and functions) from within other java sources you can import 
+[org.matheclipse.core.expression.F](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/expression/F.java)
 
+For `D` and `Derivative` there are two static methods defined:
 
+```java
+public static IAST D(final IExpr a0, final IExpr a1)
 
+public static IAST Derivative(final IExpr... a)
+
+```
