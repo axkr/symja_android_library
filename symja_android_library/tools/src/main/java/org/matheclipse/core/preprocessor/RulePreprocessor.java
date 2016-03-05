@@ -1,19 +1,20 @@
 package org.matheclipse.core.preprocessor;
 
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.Sin;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -61,14 +62,15 @@ public class RulePreprocessor {
 		}
 	}
 
-	public static void convert(ASTNode node, String rulePostfix, StringBuffer buffer, final PrintWriter out, String symbolName) {
+	public static void convert(ASTNode node, String rulePostfix, StringBuffer buffer, final PrintWriter out,
+			String symbolName) {
 		try {
 			// convert ASTNode to an IExpr node
 			IExpr expr = AST2Expr.CONST.convert(node);
 			if (expr.isListOfLists()) {
 				IAST list = (IAST) expr;
 				for (int i = 1; i < list.size(); i++) {
-					convertExpr((IExpr) list.get(i), Integer.toString(i), out, symbolName);
+					convertExpr((IExpr) list.get(i), Integer.toString(i), out, null);
 				}
 			} else {
 				convertExpr(expr, rulePostfix, out, symbolName);
@@ -84,23 +86,34 @@ public class RulePreprocessor {
 	private static void convertExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
 		boolean last;
 		StringBuffer buffer = new StringBuffer();
+		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
 		if (expr.isAST()) {
 			IAST list = (IAST) expr;
-			int counter = 0;
-			for (int i = 1; i < list.size(); i++) {
-				last = i == (list.size() - 1);
-				expr = (IExpr) list.get(i);
-				if (expr.isAST(F.Set, 3)) {
-					counter++;
+			if (symbolName != null) {
+				int equalsRuleCounter = 0;
+				int simpleRuleCounter = 0;
+				for (int i = 1; i < list.size(); i++) {
+					last = i == (list.size() - 1);
+					expr = (IExpr) list.get(i);
+					if (expr.isAST(F.SetDelayed, 3)) {
+						IAST ast = (IAST) expr;
+						if (!RulesData.isComplicatedPatternRule(ast.arg1(), headerSymbols)) {
+							simpleRuleCounter++;
+						}
+					} else if (expr.isAST(F.Set, 3)) {
+						equalsRuleCounter++;
+					}
 				}
-			}
-			if (counter > 0) {
-				out.print(SIZES);
-				out.append(Integer.toString(counter));
-				out.append(" };\n\n");
-				buffer.append("    IInit(");
-				buffer.append(symbolName);
-				buffer.append(", SIZES),\n");
+				if (equalsRuleCounter > 0 || simpleRuleCounter > 0) {
+					out.print(SIZES);
+					out.append(Integer.toString(equalsRuleCounter));
+					out.append(", ");
+					out.append(Integer.toString(simpleRuleCounter));
+					out.append(" };\n\n");
+					buffer.append("    IInit(");
+					buffer.append(symbolName);
+					buffer.append(", SIZES),\n");
+				}
 			}
 
 			for (int i = 1; i < list.size(); i++) {
@@ -190,7 +203,7 @@ public class RulePreprocessor {
 						PrintWriter out;
 						try {
 							String className = files[i].substring(0, files[i].length() - 2);
-							String symbolName = className.substring(0, className.length()-5);
+							String symbolName = className.substring(0, className.length() - 5);
 							File targetFile = new File(targetLocation, className + ".java");
 							if (targetFile.exists()) {
 								if (!ignoreTimestamp && (sourceFile.lastModified() <= targetFile.lastModified())) {
