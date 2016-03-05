@@ -24,7 +24,8 @@ import org.matheclipse.core.reflection.system.rules.LogRules;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a>
+ * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia -
+ * Logarithm</a>
  * 
  */
 public class Log extends AbstractArg12 implements INumeric, LogRules {
@@ -39,8 +40,10 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 	@Override
 	public IAST getRuleAST() {
 		// if (RULES == null) {
-		// RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)), Set(Log(Power(E, CI)), CI),
-		// Set(Log(C0), Times(CN1, CInfinity)), Set(Log(C1), C0), Set(Log(E), C1),
+		// RULES = List(Set(Log(Power(E, Times(CN1, CI))), Times(CN1, CI)),
+		// Set(Log(Power(E, CI)), CI),
+		// Set(Log(C0), Times(CN1, CInfinity)), Set(Log(C1), C0), Set(Log(E),
+		// C1),
 		// SetDelayed(Log(Power(E, $p("x", $s("Integer")))), $s("x")),
 		// SetDelayed(Log(Power(E, $p("x", $s("Rational")))), $s("x")));
 		// }
@@ -71,7 +74,8 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 	}
 
 	/**
-	 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log<sub>b</sub>(arg) or <code>Log(arg)/Log(b)</code>.
+	 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log
+	 * <sub>b</sub>(arg) or <code>Log(arg)/Log(b)</code>.
 	 * 
 	 * @param b
 	 *            the base of the logarithm
@@ -137,12 +141,14 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 			if (imTemp.isSignedNumber()) {
 				if (((ISignedNumber) imTemp).isGreaterThan(F.num(-1 * Math.PI))
 						&& ((ISignedNumber) imTemp).isLessThan(F.num(Math.PI))) {
-					// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi < Im(arg2*Log(arg1)) < Pi
+					// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi <
+					// Im(arg2*Log(arg1)) < Pi
 					return temp;
 				}
 			}
 			if (AbstractAssumptions.assumePositive(arg1) && F.True.equals(AbstractAssumptions.assumeReal(arg2))) {
-				// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is Real
+				// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is
+				// Real
 				return temp;
 			}
 

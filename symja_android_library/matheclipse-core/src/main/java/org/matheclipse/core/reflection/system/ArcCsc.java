@@ -15,10 +15,11 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Inverse hyperbolic tangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
+ * hyperbolic functions</a>
  */
 public class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
-
 	@Override
 	public IAST getRuleAST() {
 		return RULES;

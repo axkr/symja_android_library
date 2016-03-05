@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -32,7 +31,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Secant function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a>
  */
 public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 
@@ -65,7 +66,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 					return Negate(Sec(parts.arg1()));
 				}
 			}
-			
+
 			if (parts.arg2().isFraction()) {
 				// period (n/m)*Pi
 				IFraction f = (IFraction) parts.arg2();
@@ -83,7 +84,7 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 					return Times(CN1, Csc(parts.arg1()));
 				}
 			}
-			
+
 			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period n*Pi
 				return Times(Power(CN1, parts.arg2()), Sec(parts.arg1()));

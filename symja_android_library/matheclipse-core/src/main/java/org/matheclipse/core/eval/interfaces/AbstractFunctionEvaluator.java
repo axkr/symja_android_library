@@ -26,6 +26,12 @@ import org.matheclipse.parser.client.SyntaxError;
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
+	/**
+	 * Get the predefined rules for this function symbol.
+	 * 
+	 * @return <code>null</code> if no rules are defined
+	 * 
+	 */
 	public IAST getRuleAST() {
 		return null;
 	}
@@ -33,9 +39,11 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	/** {@inheritDoc} */
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
-		IAST ruleList;
-		if ((ruleList = getRuleAST()) != null) {
-			EvalEngine.get().addRules(ruleList);
+
+		if (getRuleAST() != null) {
+			// don't call EvalEngine#addRules() here!
+			// the rules should add themselves
+			// EvalEngine.get().addRules(ruleList);
 		}
 
 		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
@@ -231,7 +239,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		AST2 result = new AST2(F.List, F.C0, F.C1);
 		if (expr.equals(period)) {
 			return result;
-		} 
+		}
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (ast.isTimes()) {

@@ -20,7 +20,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Hyperbolic cosine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * function</a>
  */
 public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules {
 
@@ -67,7 +68,7 @@ public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.cosh(arg1));
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {

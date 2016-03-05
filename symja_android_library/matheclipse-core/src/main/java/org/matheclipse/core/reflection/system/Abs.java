@@ -20,7 +20,9 @@ import org.matheclipse.parser.client.SyntaxError;
 import java.util.function.Function;
 
 /**
- * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute value</a>
+ * Absolute value of a number. See
+ * <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
+ * value</a>
  */
 public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 

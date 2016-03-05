@@ -83,6 +83,7 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 					return ast;
 				}
 			}
+			setAllExpanded(expr, expandNegativePowers, distributePlus);
 			return F.NIL;
 		}
 		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);

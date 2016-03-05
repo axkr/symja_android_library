@@ -21,7 +21,6 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -33,7 +32,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Tan
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a>
  */
 public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 
@@ -70,13 +71,13 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules {
 				if (!divRem[0].isZero()) {
 					return Tan(Plus(parts.arg1(), Times(rest, Pi)));
 				}
-				
+
 				if (rest.equals(C1D2)) {
 					// Tan(z) == Cot(Pi/2 - z)
-					return Cot(Subtract(Divide(Pi,C2),arg1));
+					return Cot(Subtract(Divide(Pi, C2), arg1));
 				}
 			}
-			
+
 			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period Pi
 				return F.Tan(parts.arg1());

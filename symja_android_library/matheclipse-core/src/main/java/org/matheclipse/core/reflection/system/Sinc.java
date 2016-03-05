@@ -49,6 +49,7 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 		return F.NIL;
 	}
 
+	
 	@Override
 	public IAST getRuleAST() {
 		return RULES;

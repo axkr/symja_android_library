@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
+import org.matheclipse.core.patternmatching.RulesData;
 
 /**
  * An expression representing a symbol (i.e. variable- constant- or
@@ -134,6 +137,12 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 *         <code>null</code> if no evaluator is associated
 	 */
 	public IEvaluator getEvaluator();
+
+	/**
+	 * 
+	 * @return <code>null</code> if no rules are defined
+	 */
+	public RulesData getRulesData();
 
 	/**
 	 * Get the pure symbol name string
@@ -456,6 +465,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 *         "UpRule"
 	 */
 	public boolean containsRules();
+
+	/**
+	 * Create internal rules data structure with precalculated sizes
+	 * 
+	 * <ul>
+	 * <li>index 0 - number of equal rules in <code>RULES</code></li>
+	 * </ul>
+	 * 
+	 * @param sizes
+	 */
+	public void createRulesData(@Nonnull int[] sizes);
 
 	/**
 	 * Return a list of the rules associated to this symbol

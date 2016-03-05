@@ -11,7 +11,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Inverse hyperbolic secant
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
+ * hyperbolic functions</a>
  */
 public class ArcSech extends AbstractTrigArg1 implements ArcSechRules {
 

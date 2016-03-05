@@ -30,7 +30,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
 	public IAST getRuleAST() {
 		return RULES;
 	}
-	
+
 	public Sinh() {
 	}
 
@@ -59,7 +59,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.sinh());
 	}
-	
+
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.sinh(arg1));

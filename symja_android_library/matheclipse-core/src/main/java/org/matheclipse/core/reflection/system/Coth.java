@@ -21,7 +21,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Hyperbolic cotangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * function</a>
  */
 public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 

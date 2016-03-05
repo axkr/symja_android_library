@@ -22,7 +22,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arccotangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"> Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
+ * > Inverse_trigonometric functions</a>
  */
 public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 
@@ -49,8 +50,8 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 		Complex c = Complex.I.divide(arg1);
 
 		// (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
-		Complex result = Complex.I.divide(new Complex(2.0)).multiply(
-				Complex.ONE.subtract(c).log().subtract(Complex.ONE.sum(c).log()));
+		Complex result = Complex.I.divide(new Complex(2.0))
+				.multiply(Complex.ONE.subtract(c).log().subtract(Complex.ONE.sum(c).log()));
 		return F.complexNum(result);
 	}
 

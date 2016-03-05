@@ -10,8 +10,8 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Compute the characteristic polynomial of a matrix.
  * 
- * See <a
- * href="http://en.wikipedia.org/wiki/Characteristic_polynomial">Wikipedia -
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Characteristic_polynomial">Wikipedia -
  * Characteristic polynomial</a>
  */
 public class CharacteristicPolynomial extends AbstractFunctionEvaluator {
@@ -27,8 +27,7 @@ public class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 		if (dim != null && dim[0] == dim[1]) {
 			// a matrix with square dimensions
 			final IExpr[] valuesForIdentityMatrix = { F.C0, ast.arg2() };
-			return engine.evaluate(F.Det(F.Subtract(ast.arg1(), IdentityMatrix
-					.diagonalMatrix(valuesForIdentityMatrix, dim[0]))));
+			return F.Det(F.Subtract(ast.arg1(), IdentityMatrix.diagonalMatrix(valuesForIdentityMatrix, dim[0])));
 		}
 
 		return F.NIL;

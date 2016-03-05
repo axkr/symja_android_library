@@ -23,7 +23,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arccosine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"> Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
+ * > Inverse_trigonometric functions</a>
  */
 public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 

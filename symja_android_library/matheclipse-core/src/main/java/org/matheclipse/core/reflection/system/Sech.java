@@ -20,10 +20,10 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Hyperbolic Secant function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * functions</a>
  */
 public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
-
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
@@ -67,7 +67,7 @@ public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.cosh(arg1).inverse());
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {

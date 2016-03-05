@@ -35,7 +35,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Cosecant function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a>
  */
 public class Csc extends AbstractTrigArg1 implements INumeric, CscRules {
 

@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.ArcSinh;
 import static org.matheclipse.core.expression.F.Negate;
 
-import org.apache.commons.math4.complex.Complex;
 import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -22,10 +21,12 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arcsin hyperbolic
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
+ * hyperbolic functions</a>
  */
 public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules {
-
+	
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
@@ -60,17 +61,17 @@ public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules 
 		}
 		return FastMath.asinh(stack[top]);
 	}
-	
+
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.asinh(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.asinh(arg1));
 	}
-	
+
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

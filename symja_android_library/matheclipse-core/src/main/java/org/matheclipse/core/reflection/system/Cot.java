@@ -23,7 +23,6 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -35,7 +34,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Cotangent function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a>
  */
 public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 
@@ -51,7 +52,7 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr.isPresent()) {
-			return Negate( Cot(negExpr));
+			return Negate(Cot(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart.isPresent()) {
@@ -74,16 +75,16 @@ public class Cot extends AbstractTrigArg1 implements INumeric, CotRules {
 
 				if (rest.equals(C1D2)) {
 					// Cot(z) == Tan(Pi/2 - z)
-					return Tan(Subtract(Divide(Pi,C2),arg1));
+					return Tan(Subtract(Divide(Pi, C2), arg1));
 				}
-				
+
 			}
-			
+
 			if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
 				// period Pi
 				return Cot(parts.arg1());
 			}
-			
+
 		}
 		return F.NIL;
 	}

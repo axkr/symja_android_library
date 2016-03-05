@@ -24,10 +24,11 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arctangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"> Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
+ * > Inverse_trigonometric functions</a>
  */
 public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
-
+	 
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
@@ -40,7 +41,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 	public IExpr e1ObjArg(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr.isPresent()) {
-			return Negate( ArcTan(negExpr));
+			return Negate(ArcTan(negExpr));
 		}
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart.isPresent()) {

@@ -20,7 +20,9 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arccotangent hyperbolic
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
+ * hyperbolic functions</a>
  */
 public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 
@@ -80,8 +82,8 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules {
 		Apcomplex c = arg1.inverse();
 
 		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
-		Apcomplex result = ApcomplexMath.log(Apcomplex.ONE.add(c)).subtract(ApcomplexMath.log(Apcomplex.ONE.subtract(c)))
-				.divide(new Apfloat(2));
+		Apcomplex result = ApcomplexMath.log(Apcomplex.ONE.add(c))
+				.subtract(ApcomplexMath.log(Apcomplex.ONE.subtract(c))).divide(new Apfloat(2));
 		return F.complexNum(result);
 	}
 

@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToSet;
@@ -40,6 +42,18 @@ public class RulesData implements Serializable {
 	public RulesData(Context context) {
 		this.context = context;
 		clear();
+	}
+
+	public RulesData(Context context, @Nonnull int[] sizes) {
+		this.context = context;
+		clear();
+		if (sizes.length > 0) {
+			int capacity = 8;
+			if (sizes[0] > 0) {
+				capacity = sizes[0];
+			}
+			fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
+		}
 	}
 
 	private PatternMatcher addSimpleOrderlessPatternDownRule(final Set<ISymbol> headerSymbols, final IExpr leftHandSide,

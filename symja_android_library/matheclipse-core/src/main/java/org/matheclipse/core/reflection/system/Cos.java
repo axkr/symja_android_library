@@ -35,8 +35,11 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Cosine function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a> and <a
- * href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">Wikipedia - Exact trigonometric constants</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a> and
+ * <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">
+ * Wikipedia - Exact trigonometric constants</a>
  */
 public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 

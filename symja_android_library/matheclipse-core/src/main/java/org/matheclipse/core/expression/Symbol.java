@@ -79,6 +79,14 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	// private transient UpRulesData fUpRulesData;
 
 	/**
+	 * 
+	 * @return <code>null</code> if no rule is defined
+	 */
+	public RulesData getRulesData() {
+		return fRulesData;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -928,6 +936,14 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public boolean containsRules() {
 		return fRulesData != null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void createRulesData(int[] sizes) {
+		if (fRulesData == null) {
+			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
+		}
 	}
 
 	/**

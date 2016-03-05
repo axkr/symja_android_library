@@ -21,7 +21,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Hyperbolic Cosecant function
  * 
- * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+ * functions</a>
  */
 public class Csch extends AbstractTrigArg1 implements INumeric, CschRules {
 
@@ -63,12 +64,12 @@ public class Csch extends AbstractTrigArg1 implements INumeric, CschRules {
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.sinh(arg1).inverse());
 	}
-	
+
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		return F.complexNum(ApcomplexMath.sinh(arg1).inverse());
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {

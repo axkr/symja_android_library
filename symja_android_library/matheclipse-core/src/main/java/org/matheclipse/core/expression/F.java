@@ -3966,6 +3966,11 @@ public class F {
 		return binaryAST2(Set, a0, a1);
 	}
 
+	public static IAST IInit(final ISymbol sym, int[] sizes) {
+		sym.createRulesData(sizes);
+		return null;
+	}
+	
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 

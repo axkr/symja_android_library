@@ -21,7 +21,8 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arcsine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"> Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
+ * > Inverse_trigonometric functions</a>
  */
 public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 
