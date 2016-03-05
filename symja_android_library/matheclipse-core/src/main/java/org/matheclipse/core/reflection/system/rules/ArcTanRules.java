@@ -13,7 +13,7 @@ public interface ArcTanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 18 };
+  final public static int[] SIZES = { 18, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcTan, SIZES),

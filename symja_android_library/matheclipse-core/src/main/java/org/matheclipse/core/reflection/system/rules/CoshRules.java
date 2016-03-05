@@ -13,7 +13,7 @@ public interface CoshRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 26 };
+  final public static int[] SIZES = { 26, 0 };
 
   final public static IAST RULES = List(
     IInit(Cosh, SIZES),

@@ -48,11 +48,20 @@ public class RulesData implements Serializable {
 		this.context = context;
 		clear();
 		if (sizes.length > 0) {
-			int capacity = 8;
+			int capacity;
 			if (sizes[0] > 0) {
 				capacity = sizes[0];
+				if (capacity < 8) {
+					capacity = 8;
+				}
+				fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
 			}
-			fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
+			if (sizes.length > 1) {
+				if (sizes[1] >= 16) {
+					capacity = sizes[1];
+					fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(capacity);
+				}
+			}
 		}
 	}
 
@@ -113,7 +122,7 @@ public class RulesData implements Serializable {
 		fSimplePatternUpRules = null;
 	}
 
-	public boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
+	public static boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
 		for (int i = 1; i < lhsAST.size(); i++) {
 			if (lhsAST.get(i).isPatternDefault()) {
 				return true;
@@ -469,7 +478,7 @@ public class RulesData implements Serializable {
 		return fSimplePatternUpRules;
 	}
 
-	private boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
+	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
 		if (lhsExpr.isAST()) {
 			final IAST lhsAST = ((IAST) lhsExpr);
 			if (lhsAST.size() > 1) {

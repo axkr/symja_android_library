@@ -13,7 +13,7 @@ public interface ArcCosRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 20 };
+  final public static int[] SIZES = { 20, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCos, SIZES),

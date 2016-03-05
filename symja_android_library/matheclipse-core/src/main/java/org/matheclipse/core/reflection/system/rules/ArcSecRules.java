@@ -13,7 +13,7 @@ public interface ArcSecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 24 };
+  final public static int[] SIZES = { 24, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcSec, SIZES),

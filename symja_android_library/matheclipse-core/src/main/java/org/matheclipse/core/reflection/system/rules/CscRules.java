@@ -13,7 +13,7 @@ public interface CscRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43 };
+  final public static int[] SIZES = { 43, 0 };
 
   final public static IAST RULES = List(
     IInit(Csc, SIZES),

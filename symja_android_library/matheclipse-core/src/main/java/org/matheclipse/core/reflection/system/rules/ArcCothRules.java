@@ -13,7 +13,7 @@ public interface ArcCothRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 8 };
+  final public static int[] SIZES = { 8, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCoth, SIZES),

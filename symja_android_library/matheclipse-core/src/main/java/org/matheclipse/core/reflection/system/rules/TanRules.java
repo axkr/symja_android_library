@@ -13,7 +13,7 @@ public interface TanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 29 };
+  final public static int[] SIZES = { 29, 5 };
 
   final public static IAST RULES = List(
     IInit(Tan, SIZES),
