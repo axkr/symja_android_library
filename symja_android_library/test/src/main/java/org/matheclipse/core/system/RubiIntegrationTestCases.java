@@ -1,12 +1,9 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.interfaces.IAST;
 
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
-
-import javax.script.ScriptEngine;
 
 /**
  * Tests for the Java port of the
@@ -156,7 +153,7 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 	public void testRubi012() {
 		IAST ast;
 		// 2*(a+b*x),x
-		ast = ExpandToSum(Times(C2, Plus(a,Times(b,x))), x);
+		ast = ExpandToSum(Times(C2, Plus(a, Times(b, x))), x);
 
 		// throws AbortException
 		check(ast, "2*a+2*b*x");
