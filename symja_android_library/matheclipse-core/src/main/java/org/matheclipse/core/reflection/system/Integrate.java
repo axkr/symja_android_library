@@ -932,13 +932,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 		IAST ast = null;
 		// if (!Config.LOAD_SERIALIZED_RULES) {
+		F.Integrate.createRulesData(new int[] { 0, 100 });
 		ast = F.ast(F.List, 10000, false);
 		getRuleASTRubi45(ast);
 		// }
 
 		// INT_FUNCTIONS.add(F.Times);
 		// INT_FUNCTIONS.add(F.Power);
-
 		INT_FUNCTIONS.add(F.Cos);
 		INT_FUNCTIONS.add(F.Cot);
 		INT_FUNCTIONS.add(F.Csc);
