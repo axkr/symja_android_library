@@ -876,6 +876,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testDerivative() {
 		check("Derivative(1)[ArcCoth]", "1/(1-#1^2)&");
+		check("y''", "Derivative(2)[y]");
+		check("y''(x)", "y''(x)");
+		check("y''''(x)", "Derivative(4)[y][x]");
 	}
 
 	public void testDet() {
@@ -1008,7 +1011,15 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Drop({{11, 12, 13}, {21, 22, 23}, a, {31, 32, 33}}, 1, 2)",
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
 	}
-
+	
+	public void testDSolve() {
+		check("DSolve(y'(x)== 0, y(x), x)", "{{y(x)->C(1)}}");
+		check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", "{{y(x)->C(1)/E^(2*(-Log(1-x)/2+Log(2+2*x)/2))}}");
+		check("DSolve(y'(x) + y(x)*Tan(x) == 0, y(x), x)", "{{y(x)->C(1)*Cos(x)}}");
+		check("DSolve(y'(x) + y(x)*Cos(x) == 0, y(x), x)", "{{y(x)->C(1)/E^Sin(x)}}");
+		check("DSolve(y'(x) == 3*y(x), y(x), x)", "{{y(x)->E^(3*x)*C(1)}}");
+	}
+	
 	public void testEigenvalues() {
 		check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "{1.0,1.0,1.0}");
 	}

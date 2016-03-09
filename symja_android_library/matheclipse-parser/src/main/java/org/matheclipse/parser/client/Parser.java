@@ -18,10 +18,13 @@ package org.matheclipse.parser.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.ast.NumberNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -31,10 +34,13 @@ import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /**
- * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
+ * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
+ * formulas string representation
  * 
- * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea, how to parse
- * the operators depending on their precedence.
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator
+ * -precedence parser</a> for the idea, how to parse the operators depending on
+ * their precedence.
  */
 public class Parser extends Scanner {
 	/**
@@ -204,8 +210,8 @@ public class Parser extends Scanner {
 			if (fToken == TT_NEWLINE) {
 				return rhs;
 			}
-			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
-					|| (fToken == TT_DIGIT)) {
+			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
+					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
 				// if (fPackageMode && fRecursionDepth < 1) {
 				// return rhs;
 				// }
@@ -226,7 +232,8 @@ public class Parser extends Scanner {
 				InfixOperator infixOperator = determineBinaryOperator();
 				if (infixOperator != null) {
 					if (infixOperator.getPrecedence() > min_precedence
-							|| ((infixOperator.getPrecedence() == min_precedence) && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
+							|| ((infixOperator.getPrecedence() == min_precedence)
+									&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
 						if (infixOperator.getOperatorString().equals(";")) {
 							if (fPackageMode && fRecursionDepth < 1) {
 								return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
@@ -237,14 +244,17 @@ public class Parser extends Scanner {
 					}
 
 					// if (infixOperator.getPrecedence() > min_precedence) {
-					// ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, rhs);
+					// ASTNode compoundExpressionNull =
+					// parseCompoundExpressionNull(infixOperator, rhs);
 					// if (compoundExpressionNull != null) {
 					// return compoundExpressionNull;
 					// }
 					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
 					// continue;
-					// } else if ((infixOperator.getPrecedence() == min_precedence)
-					// && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE)) {
+					// } else if ((infixOperator.getPrecedence() ==
+					// min_precedence)
+					// && (infixOperator.getGrouping() ==
+					// InfixOperator.RIGHT_ASSOCIATIVE)) {
 					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
 					// continue;
 					// }
@@ -278,8 +288,9 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea, how to
-	 * parse the operators depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
+	 * Operator -precedence parser</a> for the idea, how to parse the operators
+	 * depending on their precedence.
 	 * 
 	 * @param lhs
 	 *            the already parsed left-hand-side of the operator
@@ -295,12 +306,14 @@ public class Parser extends Scanner {
 			if (fToken == TT_NEWLINE) {
 				return lhs;
 			}
-			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
-					|| (fToken == TT_DIGIT) || (fToken == TT_SLOT) || (fToken == TT_SLOTSEQUENCE)) {
+			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
+					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)
+					|| (fToken == TT_SLOTSEQUENCE)) {
 				// if (fPackageMode && fRecursionDepth < 1) {
 				// return lhs;
 				// }
-				// if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar == '\n') {
+				// if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar ==
+				// '\n') {
 				// return lhs;
 				// }
 				// lazy evaluation of multiplication
@@ -314,10 +327,17 @@ public class Parser extends Scanner {
 			} else {
 				if (fToken != TT_OPERATOR) {
 					if (fToken == TT_DERIVATIVE) {
+						int derivativeCounter = 1;
 						getNextToken();
-						lhs = fFactory.createFunction(DERIVATIVE, lhs);
+						while (fToken == TT_DERIVATIVE) {
+							derivativeCounter++;
+							getNextToken();
+						}
+						FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
+						FunctionNode deriv = fFactory.createAST(head);
+						deriv.add(lhs);
 						// lhs = postfixOperator.createFunction(fFactory, lhs);
-						lhs = parseArguments(lhs);
+						lhs = parseArguments(deriv);
 						continue;
 					}
 					break;
@@ -803,7 +823,8 @@ public class Parser extends Scanner {
 		} else if (fToken == TT_SLOTSEQUENCE) {
 
 			getNextToken();
-			final FunctionNode slotSequencce = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
+			final FunctionNode slotSequencce = fFactory
+					.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
 			if (fToken == TT_DIGIT) {
 				slotSequencce.add(getNumber(false));
 			} else {
@@ -845,7 +866,8 @@ public class Parser extends Scanner {
 	}
 
 	/**
-	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
+	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code>
+	 * &rarr; <code>b</code>
 	 * 
 	 */
 	private ASTNode getPart() throws SyntaxError {

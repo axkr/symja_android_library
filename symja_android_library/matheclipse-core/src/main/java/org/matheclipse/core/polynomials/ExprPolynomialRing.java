@@ -367,7 +367,7 @@ public class ExprPolynomialRing {
 		}  
 		if (exprPoly.isFree(Predicates.in(vars), true)) {
 			return new ExprPolynomial(this, exprPoly);
-		}
+		} 
 		throw new ClassCastException(exprPoly.toString());
 	}
 

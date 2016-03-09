@@ -442,9 +442,14 @@ public class ExprParser extends ExprScanner {
 			} else {
 				if (fToken != TT_OPERATOR) {
 					if (fToken == TT_DERIVATIVE) {
+						int derivativeCounter = 1;
 						getNextToken();
-						lhs = F.$(DERIVATIVE, lhs);
-						// lhs = fFactory.createFunction(DERIVATIVE, lhs);
+						while (fToken == TT_DERIVATIVE) {
+							derivativeCounter++;
+							getNextToken();
+						}
+						IAST deriv = F.$(DERIVATIVE, F.integer(derivativeCounter));
+						lhs =  F.$(deriv, lhs);
 						lhs = parseArguments(lhs);
 						continue;
 					}
