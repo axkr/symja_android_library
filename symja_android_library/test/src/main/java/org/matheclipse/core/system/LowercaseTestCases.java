@@ -1627,6 +1627,27 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
 	}
 
+	public void testLaplaceTransform() {
+		check("LaplaceTransform(t, t, t)", "LaplaceTransform(t,t,t)");
+		check("LaplaceTransform(t, t, s)", "1/s^2");
+		check("LaplaceTransform(t, s, t)", "1");
+		check("LaplaceTransform(s, t, t)", "LaplaceTransform(s,t,t)");
+		check("LaplaceTransform(E^(-t), t, s)", "1/(1+s)");
+		check("LaplaceTransform(t^4 Sin(t), t, s)","24/(1+s^2)^3+(-288*s^2)/(1+s^2)^4+(384*s^4)/(1+s^2)^5");
+		check("LaplaceTransform(t^(1/2), t, s)", "Sqrt(Pi)/(2*s^(3/2))");
+		check("LaplaceTransform(t^(1/3), t, s)", "Gamma(4/3)/s^(4/3)");
+		check("LaplaceTransform(t^a, t, s)", "Gamma(1+a)/s^(1+1*a)");
+		check("LaplaceTransform(Sin(t), t, s)", "1/(1+s^2)");
+		check("LaplaceTransform(Sin(t), t, t)", "1/(1+t^2)");
+		check("LaplaceTransform(Cos(t), t, s)", "s/(1+s^2)");
+		check("LaplaceTransform(Sinh(t), t, s)", "c/(-1+s^2)");
+		check("LaplaceTransform(Cosh(t), t, s)", "s/(-1+s^2)");
+		check("LaplaceTransform(Log(t), t, s)", "(-EulerGamma-Log(s))/s");
+		check("LaplaceTransform(Log(t)^2, t, s)", "(6*EulerGamma^2+Pi^2+(12*EulerGamma+6*Log(s))*Log(s))/(6*s)");
+		check("LaplaceTransform(Erf(t), t, s)", "(E^(s^2/4)*Erfc(s/2))/s");
+		check("LaplaceTransform(Erf(t^(1/2)), t, s)", "1/(Sqrt(1+s)*s)");
+	}
+	
 	public void testLegendreP() {
 		check("LegendreP(10, x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
 	}
