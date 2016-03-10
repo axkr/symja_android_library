@@ -13,11 +13,6 @@ import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
  * 
  */
 public class LaplaceTransform extends AbstractFunctionEvaluator implements LaplaceTransformRules {
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
-
 	public LaplaceTransform() {
 	}
 
@@ -28,7 +23,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 		IExpr a1 = ast.arg1();
 		IExpr t = ast.arg2();
 		IExpr s = ast.arg3();
-		if (!t.equals(s)) {
+		if (!t.isList() && !s.isList() && !t.equals(s)) {
 			if (a1.isFree(t) && a1.isAtom()) {
 				return F.Divide(a1, s);
 			}
@@ -49,5 +44,10 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 			}
 		}
 		return F.NIL;
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 }

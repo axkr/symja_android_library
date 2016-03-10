@@ -1646,6 +1646,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LaplaceTransform(Log(t)^2, t, s)", "(6*EulerGamma^2+Pi^2+(12*EulerGamma+6*Log(s))*Log(s))/(6*s)");
 		check("LaplaceTransform(Erf(t), t, s)", "(E^(s^2/4)*Erfc(s/2))/s");
 		check("LaplaceTransform(Erf(t^(1/2)), t, s)", "1/(Sqrt(1+s)*s)");
+		
+		check("LaplaceTransform(Sin(t)*Exp(t), t, s)", "1/(1+(1-s)^2)");
 	}
 	
 	public void testLegendreP() {
