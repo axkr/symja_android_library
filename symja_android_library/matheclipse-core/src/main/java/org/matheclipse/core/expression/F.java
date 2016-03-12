@@ -522,6 +522,10 @@ public class F {
 	public final static ISymbol Ceiling = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ceiling" : "Ceiling");
 	public final static ISymbol CharacteristicPolynomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "characteristicpolynomial" : "CharacteristicPolynomial");
+	public final static ISymbol ChebyshevT = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chebyshevt" : "ChebyshevT");
+	public final static ISymbol ChebyshevU = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chebyshevu" : "ChebyshevU");
 	public final static ISymbol ChessboardDistance = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chessboarddistance" : "ChessboardDistance");
 	public final static ISymbol Coefficient = initFinalSymbol(
@@ -2132,6 +2136,14 @@ public class F {
 					engine.getNumericPrecision());
 		}
 		return complexNum(value.doubleValue(), 0.0d);
+	}
+
+	public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ChebyshevT, a0, a1);
+	}
+
+	public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ChebyshevU, a0, a1);
 	}
 
 	public static IAST Chop(final IExpr a0) {
@@ -3970,7 +3982,7 @@ public class F {
 		sym.createRulesData(sizes);
 		return null;
 	}
-	
+
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 

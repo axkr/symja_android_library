@@ -534,23 +534,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", "(3+2*x)/(2+3*x+x^2)");
 	}
 
-	public void testCharacteristicPolynomial() {
-		check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", "-b*c+a*d-a*x-d*x+x^2");
-		check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", "-1/3-7/3*x+9/2*x^2-x^3");
-		check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)",
-				"-0.33333333333333304-2.3333333333333335*x+4.5*x^2.0-x^3.0");
-		check("CharacteristicPolynomial({{1, 2 I}, {3 + 4 I, 5}}, z)", "13-I*6-6*z+z^2");
-	}
-
-	public void testChebyshevT() {
-		check("ChebyshevT(10, x)", "-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
-	}
-
-	public void testCeiling() {
-		check("Ceiling(1.5)", "2");
-		check("Ceiling(1.5 + 2.7 I)", "2+I*3");
-	}
-
 	public void testCatch() {
 		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{2,3});True)", "True");
 		check("Catch(Scan(If(IntegerQ(#1),Null,Throw(False))&,{b+a});True)", "False");
@@ -570,6 +553,34 @@ public class LowercaseTestCases extends AbstractTestCase {
 		// " {Map(Function($lst=False;\n" +
 		// " If($lst===False,Throw(False),$lst((1)))),\n" +
 		// " u),$lst((2)),$lst((3))})","");
+	}
+
+	public void testCeiling() {
+		check("Ceiling(1.5)", "2");
+		check("Ceiling(1.5 + 2.7 I)", "2+I*3");
+	}
+
+	public void testCharacteristicPolynomial() {
+		check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", "-b*c+a*d-a*x-d*x+x^2");
+		check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", "-1/3-7/3*x+9/2*x^2-x^3");
+		check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)",
+				"-0.33333333333333304-2.3333333333333335*x+4.5*x^2.0-x^3.0");
+		check("CharacteristicPolynomial({{1, 2 I}, {3 + 4 I, 5}}, z)", "13-I*6-6*z+z^2");
+	}
+
+	public void testChebyshevT() {
+		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
+		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
+		check("ChebyshevT({0,-1,-2,-3,-4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
+		check("ChebyshevT(10, x)", "-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
+	}
+
+	public void testChebyshevU() {
+		check("ChebyshevU(n, 1)", "1+n");
+		check("ChebyshevU({0,1,2,3,4,5}, x)", "{1,2*x,-1+4*x^2,-4*x+8*x^3,1-12*x^2+16*x^4,6*x-32*x^3+32*x^5}");
+		check("ChebyshevU(0, x)", "1");
+		check("ChebyshevU(1, x)", "2*x");
+		check("ChebyshevU(10, x)", "-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
 	}
 
 	public void testCoefficient() {
@@ -1011,7 +1022,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Drop({{11, 12, 13}, {21, 22, 23}, a, {31, 32, 33}}, 1, 2)",
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
 	}
-	
+
 	public void testDSolve() {
 		check("DSolve(y'(x)== 0, y(x), x)", "{{y(x)->C(1)}}");
 		check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", "{{y(x)->C(1)/E^(2*(-Log(1-x)/2+Log(2+2*x)/2))}}");
@@ -1019,7 +1030,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("DSolve(y'(x) + y(x)*Cos(x) == 0, y(x), x)", "{{y(x)->C(1)/E^Sin(x)}}");
 		check("DSolve(y'(x) == 3*y(x), y(x), x)", "{{y(x)->E^(3*x)*C(1)}}");
 	}
-	
+
 	public void testEigenvalues() {
 		check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "{1.0,1.0,1.0}");
 	}
@@ -1633,7 +1644,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LaplaceTransform(t, s, t)", "1");
 		check("LaplaceTransform(s, t, t)", "LaplaceTransform(s,t,t)");
 		check("LaplaceTransform(E^(-t), t, s)", "1/(1+s)");
-		check("LaplaceTransform(t^4 Sin(t), t, s)","24/(1+s^2)^3+(-288*s^2)/(1+s^2)^4+(384*s^4)/(1+s^2)^5");
+		check("LaplaceTransform(t^4 Sin(t), t, s)", "24/(1+s^2)^3+(-288*s^2)/(1+s^2)^4+(384*s^4)/(1+s^2)^5");
 		check("LaplaceTransform(t^(1/2), t, s)", "Sqrt(Pi)/(2*s^(3/2))");
 		check("LaplaceTransform(t^(1/3), t, s)", "Gamma(4/3)/s^(4/3)");
 		check("LaplaceTransform(t^a, t, s)", "Gamma(1+a)/s^(1+1*a)");
@@ -1646,10 +1657,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LaplaceTransform(Log(t)^2, t, s)", "(6*EulerGamma^2+Pi^2+(12*EulerGamma+6*Log(s))*Log(s))/(6*s)");
 		check("LaplaceTransform(Erf(t), t, s)", "(E^(s^2/4)*Erfc(s/2))/s");
 		check("LaplaceTransform(Erf(t^(1/2)), t, s)", "1/(Sqrt(1+s)*s)");
-		
+
 		check("LaplaceTransform(Sin(t)*Exp(t), t, s)", "1/(1+(1-s)^2)");
 	}
-	
+
 	public void testLegendreP() {
 		check("LegendreP(10, x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
 	}
