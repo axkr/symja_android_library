@@ -3033,6 +3033,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("Sin(x)/Tan(x)", "Cos(x)");
+		check("Sin(x)/Cos(x)", "Tan(x)");
+		check("Cos(x)*Tan(x)", "Sin(x)");
+		check("Cos(x)/Sin(x)", "Cot(x)");
+		check("Tan(x)/Sin(x)", "Sec(x)");
+		
 		check("Times()", "1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
 		check("I*Infinity", "I*Infinity");

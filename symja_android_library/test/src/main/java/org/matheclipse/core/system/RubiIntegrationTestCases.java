@@ -168,7 +168,7 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 	}
 
 	public void testSqrtSin() {
-		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Sqrt(a*Sin(x)^2)*Cos(x)*Csc(x)");
+		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Sqrt(a*Sin(x)^2)*Cot(x)");
 	}
 
 	public void testArcSin() {
@@ -260,9 +260,9 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
 		check("int(Sin(x)*tan(x),x)",
 				"((-(Log(-2+2*Sin(x))/2-Log(1+Sin(x))/2+2*Sin(x))/2+1/2*(-Log(-Sin(x/2)+Cos(x/2))+Log(Cos(x/\n"
-						+ "2)+Sin(x/2))))*Cos(x)*Sin(x)*Tan(x))/Sin(x)^2");
+						+ "2)+Sin(x/2))))*Sin(x)^2)/Sin(x)^2");
 
-		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Sqrt(a*Sin(x)^2)*Cos(x)*Csc(x)");
+		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Sqrt(a*Sin(x)^2)*Cot(x)");
 		check("Integrate(Sqrt(a*Sin(x)),x)", "(-2*Sqrt(a*Sin(x))*EllipticE(Pi/4-x/2,2))/Sqrt(Sin(x))");
 
 		// TODO check this test

@@ -119,7 +119,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					return o1.power(power0.arg2().inc());
 				}
 			}
-			 
+
 			if (o1.isPower()) {
 				final IAST f1 = (IAST) o1;
 				if (power0.arg2().isNumber()) {
@@ -155,7 +155,8 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				if (o0.isFraction()) {
 					// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 
-					// TODO implementation for complex numbers instead of fractions
+					// TODO implementation for complex numbers instead of
+					// fractions
 					IFraction f0 = (IFraction) o0;
 					IInteger pArg1 = (IInteger) power1.arg1();
 					IFraction pArg2 = (IFraction) power1.arg2();
@@ -183,8 +184,10 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			if (o0.isMinusOne()) {
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
-			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3) && (((IAST) o1).arg1().isNumericFunction())) {
-				// Note: this doesn't work for Together() function, if we allow o0 to be a fractional number
+			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3)
+					&& (((IAST) o1).arg1().isNumericFunction())) {
+				// Note: this doesn't work for Together() function, if we allow
+				// o0 to be a fractional number
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
 		}
@@ -223,14 +226,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (inf.size() == 2) {
 			if (o1.isNumber() || o1.isSymbol()) {
 				if (inf.size() == 2) {
-					return DirectedInfinity.timesInf(inf, o1); 
+					return DirectedInfinity.timesInf(inf, o1);
 				}
 
 			}
 			if (o1.isDirectedInfinity() && ((IAST) o1).size() == 2) {
 				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
 			}
-		} 
+		}
 		return F.NIL;
 	}
 
@@ -323,11 +326,17 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)", Log.getFunction());
+		symbol.setAttributes(
+				ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
+		// Log.getFunction());
 		ORDERLESS_MATCHER.defineHashRule(Log($p(x)), Power(Log($p(y)), CN1),
 				org.matheclipse.core.reflection.system.Log.getFunction());
-
+		ORDERLESS_MATCHER.defineHashRule(F.Sin($p(x)), F.Cot($p(x)), F.Cos(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Sin($p(x)), F.Sec($p(x)), F.Tan(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Cos($p(x)), F.Tan($p(x)), F.Sin(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Csc($p(x)), F.Tan($p(x)), F.Sec(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Cos($p(x)), F.Csc($p(x)), F.Cot(x));
 		super.setUp(symbol);
 	}
 
