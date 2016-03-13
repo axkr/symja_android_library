@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.ExprComparator;
-import org.matheclipse.core.generic.interfaces.BiFunction;
-import org.matheclipse.core.generic.interfaces.BiPredicate;
 import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -174,14 +174,14 @@ public class Range implements Iterable<IExpr> {
 	 * (end-1) the method return false;
 	 * 
 	 */
-	public boolean compareAdjacent(BiPredicate<IExpr> predicate) {
+	public boolean compareAdjacent(BiPredicate<IExpr,IExpr> predicate) {
 		if (fStart >= fEnd - 1) {
 			return false;
 		}
 		IExpr elem = fList.get(fStart);
 		for (int i = fStart + 1; i < fEnd; i++) {
 
-			if (!predicate.apply(elem, fList.get(i))) {
+			if (!predicate.test(elem, fList.get(i))) {
 				return false;
 			}
 			elem = fList.get(i);

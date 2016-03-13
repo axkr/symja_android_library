@@ -27,7 +27,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
-import org.matheclipse.core.generic.interfaces.BiFunction;
+import java.util.function.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;

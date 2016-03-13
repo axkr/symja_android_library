@@ -1,8 +1,8 @@
 package org.matheclipse.core.generic;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.matheclipse.core.generic.interfaces.BiFunction;
 /**
  * A function object that takes two arguments and returns a result. The two
  * arguments are both of type <code>T</code> and the result is also of type

@@ -1,6 +1,6 @@
 package org.matheclipse.core.generic;
 
-import org.matheclipse.core.generic.interfaces.BiPredicate;
+import java.util.function.BiPredicate;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -9,8 +9,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * expression (&lt;= relation).
  *
  */
-public class IsLEOrdered<E extends IExpr> implements  BiPredicate<E> {
-	public boolean apply(final IExpr firstArg, final IExpr secondArg) {
+public class IsLEOrdered<E extends IExpr> implements  BiPredicate<E, E> {
+	public boolean test(final IExpr firstArg, final IExpr secondArg) {
 		return firstArg.isLEOrdered(secondArg);
 	}
 }

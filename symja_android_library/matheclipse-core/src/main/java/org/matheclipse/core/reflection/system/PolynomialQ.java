@@ -9,7 +9,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.interfaces.BiPredicate;
+import java.util.function.BiPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -23,7 +23,7 @@ import edu.jas.poly.GenPolynomial;
  * Returns <code>True</code>, if the given expression is a polynoomial object
  * 
  */
-public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr> {
+public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
 
 	public PolynomialQ() {
 	}
@@ -73,7 +73,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	}
 
 	@Override
-	public boolean apply(final IExpr firstArg, final IExpr secondArg) {
+	public boolean test(final IExpr firstArg, final IExpr secondArg) {
 		IAST list;
 		if (secondArg.isList()) {
 			list = (IAST) secondArg;
