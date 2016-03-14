@@ -2314,6 +2314,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		if (isTimes()) {
 			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
+				if (arg1.isMinusOne()) {
+					if (size()==3) {
+						return arg2();
+					}
+					return removeAtClone(1);
+				}
 				return setAtCopy(1, ((INumber) arg1).negate());
 			}
 			IAST timesAST = clone();

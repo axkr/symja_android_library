@@ -1,5 +1,8 @@
 package org.matheclipse.core.eval;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -9,6 +12,89 @@ import org.matheclipse.core.reflection.system.Times;
  * 
  */
 public class TimesOp {
+	final Map<IExpr, IExpr> timesMap;
+	boolean evaled;
+
+	IExpr numberValue;
+
+	public TimesOp(final int size) {
+		timesMap = new HashMap<IExpr, IExpr>(size);
+		evaled = false;
+		numberValue = null;
+	}
+
+	/**
+	 * Add or merge the <code>key, value</code> pair into the given
+	 * <code>timesMap</code>.
+	 * 
+	 * @param key
+	 *            the key expression
+	 */
+	public boolean addMerge(final IExpr key) {
+		return addMerge(key, F.C1);
+	}
+
+	/**
+	 * Add or merge the <code>key, value</code> pair into the given
+	 * <code>timesMap</code>.
+	 * 
+	 * @param key
+	 *            the key expression
+	 * @param value
+	 *            the value expression
+	 */
+	public boolean addMerge(final IExpr key, final IExpr value) {
+		IExpr temp = timesMap.get(key);
+		if (temp == null) {
+			timesMap.put(key, value);
+			return false;
+		}
+		// merge both values
+		if (temp.isNumber() && value.isNumber()) {
+			temp = temp.plus(value);
+			if (temp.isOne()) {
+				timesMap.remove(key);
+				return true;
+			}
+		} else if (temp.head().equals(F.Plus)) {
+			((IAST) temp).add(value);
+		} else {
+			temp = F.Plus(temp, value);
+		}
+		timesMap.put(key, temp);
+		return true;
+	}
+
+	/**
+	 * Get the current evaluated result of the summation as a
+	 * <code>Plus()</code> expression with respecting the
+	 * <code>OneIdentity</code> attribute.
+	 * 
+	 * @return
+	 */
+	public IExpr getProduct() {
+
+		IAST result = F.Times();
+		if (numberValue != null && !numberValue.isZero()) {
+			if (numberValue.isComplexInfinity()) {
+				return numberValue;
+			}
+			result.add(numberValue);
+		}
+		for (Map.Entry<IExpr, IExpr> element : timesMap.entrySet()) {
+			if (element.getValue().isOne()) {
+				final IExpr temp = element.getKey();
+				if (temp.isPlus()) {
+					result.addAll((IAST) temp);
+				} else {
+					result.add(temp);
+				}
+				continue;
+			}
+			result.add(F.Power(element.getValue(), element.getKey()));
+		}
+		return result.getOneIdentity(F.C1);
+	}
 
 	/**
 	 * Evaluate <code>Times(a1, a2,...)</code>.

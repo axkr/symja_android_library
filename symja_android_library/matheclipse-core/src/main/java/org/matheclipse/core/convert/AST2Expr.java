@@ -46,7 +46,7 @@ public class AST2Expr {
 			"Catalan", "Complexes", "Degree", "EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll",
 			"HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable",
 			"Modulus", "None", "Null", "NumericFunction", "OneIdentity", "Orderless", "Pi", "Primes", "Rationals",
-			"Real", "Reals", "Slot", "SlotSequence", "String", "Symbol", "True" };
+			"Real", "Reals", "Slot", "SlotSequence", "String", "Symbol", "Trig", "True" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "Alternatives", "Apart", "AppellF1",
 			"Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec",

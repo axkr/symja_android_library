@@ -79,6 +79,7 @@ public class MainTestCases extends AbstractTestCase {
 	 * Test system functions
 	 */
 	public void testSystem000() {
+		
 		// assertEquals(PrimeList.getMersennePrime(4).toString(), "15");
 		// assertEquals(PrimeList.getMersennePrime(128).toString(), "15");
 		check("1^(-1)", "1");
@@ -1446,7 +1447,7 @@ public class MainTestCases extends AbstractTestCase {
 		check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");
 		check("Integrate(Log(x)*x^2,x)", "-x^3/9+1/3*x^3*Log(x)");
 		check("Integrate((x^2+1)Log(x),x)", "-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
-		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "x/(1+x^3)");
+		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "1/(x+x^4)");
 
 		check("Integrate(x/(x^3+1),x)", "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");// "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1)");
 		// check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
@@ -2740,10 +2741,10 @@ public class MainTestCases extends AbstractTestCase {
 		check("Numerator(1/3*(3*a-1/2*b))", "3*a-b/2");
 		check("Denominator(1/3*(3*a-1/2*b))", "3");
 
-		check("Denominator(Csc(x))", "Sin(x)");
-		check("Denominator(Csc(x)^4)", "Sin(x)^4");
-		check("Denominator(42*Csc(x))", "Sin(x)");
-		check("Denominator(42*Csc(x)^3)", "Sin(x)^3");
+		check("Denominator(Csc(x))", "1");
+		check("Denominator(Csc(x)^4)", "1");
+		check("Denominator(42*Csc(x))", "1");
+		check("Denominator(42*Csc(x)^3)", "1");
 
 		check("Numerator(E^(-x)*x^(1/2))", "Sqrt(x)");
 		check("Denominator(E^(-x)*x^(1/2))", "E^x");

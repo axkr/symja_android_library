@@ -902,6 +902,39 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("DigitQ(\".\")", "False");
 	}
 
+	public void testDenominator() {
+		check("Denominator(Csc(x))", "1");
+		check("Denominator(Csc(x), Trig->True)", "Sin(x)");
+		check("Denominator(Csc(x)^4)", "1");
+		check("Denominator(Csc(x)^4, Trig->True)", "Sin(x)^4");
+		check("Denominator(42*Csc(x))", "1");
+		check("Denominator(42*Csc(x), Trig->True)", "Sin(x)");
+		check("Denominator(42*Csc(x)^3)", "1");
+		check("Denominator(42*Csc(x)^3, Trig->True)", "Sin(x)^3");
+		check("Denominator(E^(-x)*x^(1/2))", "E^x");
+		
+		check("Denominator(Sec(x))", "1"); 
+		check("Denominator(Tan(x))", "1"); 
+		check("Denominator(Tan(x), Trig->True)", "Cos(x)"); 
+	}
+	
+	public void testNumerator() {
+		check("Numerator(Csc(x))", "Csc(x)");
+		check("Numerator(Csc(x), Trig->True)", "1");
+		check("Numerator(Csc(x)^4)", "Csc(x)^4");
+		check("Numerator(Csc(x)^4, Trig->True)", "1");
+		check("Numerator(42*Csc(x))", "42*Csc(x)");
+		check("Numerator(42*Csc(x), Trig->True)", "42");
+		check("Numerator(42*Csc(x)^3)", "42*Csc(x)^3");
+		check("Numerator(42*Csc(x)^3, Trig->True)", "42");
+		check("Numerator(E^(-x)*x^(1/2))", "Sqrt(x)");
+		
+		check("Numerator(Sec(x))", "Sec(x)"); 
+		check("Numerator(Sec(x), Trig->True)", "1"); 
+		check("Numerator(Tan(x))", "Tan(x)"); 
+		check("Numerator(Tan(x), Trig->True)", "Sin(x)"); 
+	}
+	
 	public void testDepth() {
 		check("Depth(a)", "1");
 		check("Depth(g(a))", "2");
@@ -1647,7 +1680,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LaplaceTransform(t^4 Sin(t), t, s)", "24/(1+s^2)^3+(-288*s^2)/(1+s^2)^4+(384*s^4)/(1+s^2)^5");
 		check("LaplaceTransform(t^(1/2), t, s)", "Sqrt(Pi)/(2*s^(3/2))");
 		check("LaplaceTransform(t^(1/3), t, s)", "Gamma(4/3)/s^(4/3)");
-		check("LaplaceTransform(t^a, t, s)", "Gamma(1+a)/s^(1+1*a)");
+		check("LaplaceTransform(t^a, t, s)", "Gamma(1+a)/s^(1+a)");
 		check("LaplaceTransform(Sin(t), t, s)", "1/(1+s^2)");
 		check("LaplaceTransform(Sin(t), t, t)", "1/(1+t^2)");
 		check("LaplaceTransform(Cos(t), t, s)", "s/(1+s^2)");
@@ -1756,7 +1789,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Derivative(1)[Sin][x]", "Cos(x)");
 		check("Derivative(4)[Cos][x]", "Cos(x)");
 		check("Derivative(1)[Tan]", "Sec(#1)^2&");
-		check("Derivative(2)[Tan]", "(2*Tan(#1))/Cos(#1)^2&");
+		check("Derivative(2)[Tan]", "2*Sec(#1)^2*Tan(#1)&");
 		check("Derivative(4)[Log][x]", "-6/x^4");
 		check("Derivative(2)[ArcSin][x]", "x/(1-x^2)^(3/2)");
 	}
@@ -3033,7 +3066,15 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("Sin(x)^(-2)/Tan(x)", "Csc(x)^2*Cot(x)");
 		check("Sin(x)/Tan(x)", "Cos(x)");
+//		check("Sin(x)^2/Tan(x)^3", "Cos(x)^2*Cot(x)");
+//		check("Sin(x)^3/Tan(x)^2", "Cos(x)^2*Sin(x)");
+//		check("Sin(x)^2/Tan(x)", "Cos(x)*Sin(x)");
+//		check("Sin(x)/Tan(x)^2", "Cos(x)*Cot(x)");
+ 		
+		check("Sin(x)^(-2)", "Csc(x)^2");
+		check("Sin(x)/Tan(x)^(-2)", "Tan(x)^2*Sin(x)");
 		check("Sin(x)/Cos(x)", "Tan(x)");
 		check("Cos(x)*Tan(x)", "Sin(x)");
 		check("Cos(x)/Sin(x)", "Cot(x)");
@@ -3100,6 +3141,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
+		check("trigexpand(Sin(x)*Tan(x))", "Sin(x)*Tan(x)");
 		check("trigexpand(Sin(x + y))", "Cos(y)*Sin(x)+Cos(x)*Sin(y)");
 		check("trigexpand(Cos(x + y))", "Cos(x)*Cos(y)-Sin(x)*Sin(y)");
 		check("trigexpand(Sin(x + y + z))",
@@ -3110,6 +3152,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTrigReduce() {
+		check("TrigReduce(Sin(x)*Tan(y))", "1/2*(-Cos(x+y)+Cos(x-y))*Sec(y)");
+		check("TrigReduce(Cos(x)*Tan(y))", "-1/2*(-Sin(x+y)+Sin(x-y))*Sec(y)");
 		check("TrigReduce(2 Cos(x)^2)", "1+Cos(2*x)");
 		check("TrigReduce(2 Cos(x)*Sin(y))", "Sin(x+y)+Sin(-x+y)");
 		check("TrigReduce(15 Sin(12 x)^2 + 12 Sin(15 x)^2)", "27/2-15/2*Cos(24*x)-6*Cos(30*x)");

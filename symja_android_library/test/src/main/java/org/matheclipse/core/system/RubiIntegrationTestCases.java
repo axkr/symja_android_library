@@ -200,6 +200,11 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 	}
 
 	public void testTrig001() {
+		check("Sin(x)*tan(x)","Sin(x)*Tan(x)");
+		check("int(Sin(x)*tan(x),x)",
+				"(-(Log(-2+2*Sin(x))/2-Log(1+Sin(x))/2+2*Sin(x))/2+1/2*(-Log(-Sin(x/2)+Cos(x/2))+Log(Cos(x/\n" + 
+				"2)+Sin(x/2))))*Csc(x)^2*Sin(x)^2");
+		
 		check("Integrate(Sin(a + b*x)^3,x)", "(Cos(a+b*x)^3/3-Cos(a+b*x))/b");
 
 		check("Integrate(Sin(a+x),x)", "-Cos(a+x)");
@@ -258,9 +263,6 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 						+ "4*x+(-4*a^3*b*Cos(c+g*x))/g");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
-		check("int(Sin(x)*tan(x),x)",
-				"((-(Log(-2+2*Sin(x))/2-Log(1+Sin(x))/2+2*Sin(x))/2+1/2*(-Log(-Sin(x/2)+Cos(x/2))+Log(Cos(x/\n"
-						+ "2)+Sin(x/2))))*Sin(x)^2)/Sin(x)^2");
 
 		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Sqrt(a*Sin(x)^2)*Cot(x)");
 		check("Integrate(Sqrt(a*Sin(x)),x)", "(-2*Sqrt(a*Sin(x))*EllipticE(Pi/4-x/2,2))/Sqrt(Sin(x))");
@@ -291,8 +293,8 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 		// check("Integrate(x^p*(a*x^n+b*x^(12*n+n+p+1))^12,x)", "");
 
 		check("D(b^(-1)*x^(-m*n-n)*(m+1)^(-1)*(p+m*n+1)^(-1)*(b*x^(p+m*n+n+1)+a*x^n)^(m+1),x)",
-				"((-n-m*n)*(b*x^(1+n+m*n+p)+a*x^n)^(1+m))/((1+m)*(1+m*n+p)*b*x^(1+1*n+1*m*n))+(((a*n)/x^(\n"
-						+ "1-n)+(1+n+m*n+p)*b*x^(n+m*n+p))*(b*x^(1+n+m*n+p)+a*x^n)^m)/((1+m*n+p)*b*x^(n+m*n))");
+				"((-n-m*n)*(b*x^(1+n+m*n+p)+a*x^n)^(1+m))/((1+m)*(1+m*n+p)*b*x^(1+n+m*n))+(((a*n)/x^(\n" + 
+				"1-n)+(1+n+m*n+p)*b*x^(n+m*n+p))*(b*x^(1+n+m*n+p)+a*x^n)^m)/((1+m*n+p)*b*x^(n+m*n))");
 
 		// check("Simplify((-m*n-n)*b^(-1)*x^(-m*n-n-1)*(m+1)^(-1)*(p+m*n+1)^(-1)*(b*x^(p+m*n+n+1)+a*x^n)^(m+\n"
 		// +

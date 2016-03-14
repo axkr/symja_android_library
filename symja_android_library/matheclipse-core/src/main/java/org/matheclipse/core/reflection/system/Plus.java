@@ -123,7 +123,11 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (size > 2) {
-			return evaluateHashs(ast);
+			IExpr temp = evaluateHashs(ast);
+			if (temp.isAST(F.Plus, 2)) {
+				return ((IAST) temp).arg1();
+			}
+			return temp;
 		}
 		return F.NIL;
 	}

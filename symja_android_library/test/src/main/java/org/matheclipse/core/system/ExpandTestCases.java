@@ -81,10 +81,10 @@ public class ExpandTestCases extends AbstractTestCase {
 		IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
 		IExpr temp = Expand.expand(ast, null, true, false);
 		if (!temp.isPresent()) {
-			assertEquals(ast.toString(), "Sin[x]^2/Cos[x]^2");
+			assertEquals(ast.toString(), "Sec[x]^2*Sin[x]^2");
 			return;
 		}
-		assertEquals(temp.toString(), "Sin[x]^2/Cos[x]^2");
+		assertEquals(temp.toString(), "Tan[x]^2");
 	}
 
 	public void testRationalFunction001() {

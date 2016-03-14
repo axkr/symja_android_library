@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
+import org.matheclipse.core.expression.F;
 
 /**
  * Tests MathML presentation function
@@ -111,6 +112,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	 */
 	protected void setUp() {
 		try {
+			F.initSymbols();
 			EvalEngine engine = new EvalEngine(false);
 			mathUtil = new MathMLUtilities(engine, false, true);
 		} catch (Exception e) {

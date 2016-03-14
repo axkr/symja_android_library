@@ -2,10 +2,14 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.$p;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.IntegerQ;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.m;
+import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.y;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.y_;
 
 import org.matheclipse.core.builtin.function.DirectedInfinity;
 import org.matheclipse.core.eval.EvalEngine;
@@ -251,6 +255,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (size > 2) {
 			IAST temp = evaluateHashs(ast);
 			if (temp.isPresent()) {
+				if (temp.isAST(F.Times, 2)) {
+					return ((IAST) temp).arg1();
+				}
 				return temp;
 			}
 		}
@@ -330,14 +337,36 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
 		// Log.getFunction());
-		ORDERLESS_MATCHER.defineHashRule(Log($p(x)), Power(Log($p(y)), CN1),
+		ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1),
 				org.matheclipse.core.reflection.system.Log.getFunction());
-		ORDERLESS_MATCHER.defineHashRule(F.Sin($p(x)), F.Cot($p(x)), F.Cos(x));
-		ORDERLESS_MATCHER.defineHashRule(F.Sin($p(x)), F.Sec($p(x)), F.Tan(x));
-		ORDERLESS_MATCHER.defineHashRule(F.Cos($p(x)), F.Tan($p(x)), F.Sin(x));
-		ORDERLESS_MATCHER.defineHashRule(F.Csc($p(x)), F.Tan($p(x)), F.Sec(x));
-		ORDERLESS_MATCHER.defineHashRule(F.Cos($p(x)), F.Csc($p(x)), F.Cot(x));
+//		addTrigRules(F.Sin, F.Cot, F.Cos);
+//		addTrigRules(F.Sin, F.Sec, F.Tan);
+//		addTrigRules(F.Cos, F.Tan, F.Sin);
+//		addTrigRules(F.Csc, F.Tan, F.Sec);
+//		addTrigRules(F.Cos, F.Csc, F.Cot);
+		ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Sec(x_), F.Tan(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Csc(x_), F.Tan(x_), F.Sec(x));
+		ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Csc(x_), F.Cot(x));
 		super.setUp(symbol);
+	}
+
+	private void addTrigRules(ISymbol head1, ISymbol head2, ISymbol resultHead) {
+		IAST sinX_ = F.unaryAST1(head1, x_);
+		IAST cotX_ = F.unaryAST1(head2, x_);
+		IAST sinX = F.unaryAST1(head1, x);
+		IAST cotX = F.unaryAST1(head2, x);
+		IAST resultX = F.unaryAST1(resultHead, x);
+		ORDERLESS_MATCHER.defineHashRule(sinX_, cotX_, resultX);
+		ORDERLESS_MATCHER.defineHashRule(sinX_, F.Power(cotX_, $p(n, IntegerQ)),
+				F.Times(F.Power(cotX, F.Subtract(n, F.C1)), resultX), F.Positive(n));
+		ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)), cotX_,
+				F.Times(F.Power(sinX, F.Subtract(m, F.C1)), resultX), F.Positive(m));
+		ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)), F.Power(cotX_, $p(n, IntegerQ)),
+				F.If(F.Greater(m, n), F.Times(F.Power(sinX, F.Subtract(m, n)), F.Power(resultX, n)),
+						F.Times(F.Power(cotX, F.Subtract(n, m)), F.Power(resultX, m))),
+				F.And(F.Positive(m), F.Positive(n)));
 	}
 
 	@Override

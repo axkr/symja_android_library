@@ -485,7 +485,7 @@ public class OutputFormFactory {
 
 	private void convertTimesFraction(final Appendable buf, final IAST timesAST, final InfixOperator oper,
 			final int precedence, boolean caller) throws IOException {
-		IExpr[] parts = Apart.getFractionalPartsTimes(timesAST, true, false, false);
+		IExpr[] parts = Apart.getFractionalPartsTimes(timesAST, true, false, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, timesAST, oper, precedence, caller);
 			return;

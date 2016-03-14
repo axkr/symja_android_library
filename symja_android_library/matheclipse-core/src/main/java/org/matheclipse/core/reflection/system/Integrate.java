@@ -285,7 +285,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							if (header == F.Times || header == F.Power) {
 								if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION)
 										&& ast.arg2().isSymbol()) {
-									IExpr[] parts = Apart.getFractionalParts(arg1);
+									IExpr[] parts = Apart.getFractionalParts(arg1, true);
 									if (parts != null) {
 										// try Rubi rules first
 										if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {

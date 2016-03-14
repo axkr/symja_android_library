@@ -2867,6 +2867,10 @@ public class F {
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(If, a0, a1, a2);
 	}
+	
+	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(If, a0, a1, a2, a3);
+	}
 
 	public static IExpr Im(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {

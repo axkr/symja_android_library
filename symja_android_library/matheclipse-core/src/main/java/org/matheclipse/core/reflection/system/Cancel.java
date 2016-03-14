@@ -90,7 +90,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 	 * @throws JASConversionException
 	 */
 	public static IExpr cancelPowerTimes(IExpr powerTimesAST) throws JASConversionException {
-		IExpr[] parts = Apart.getFractionalParts(powerTimesAST);
+		IExpr[] parts = Apart.getFractionalParts(powerTimesAST, false);
 		if (parts != null) {
 			if (parts[0].isPlus() && parts[1].isPlus()) {
 				IAST[] numParts = ((IAST) parts[0]).filter(new PolynomialPredicate());
