@@ -35,9 +35,17 @@ public class PossibleZeroQ extends AbstractFunctionEvaluator {
 			if (expr.isZero()) {
 				return true;
 			}
-			expr = engine.evaluate(F.Simplify(expr));
-			if (expr.isZero()) {
-				return true;
+			if (expr.isPlus() || expr.isPower() || expr.isTimes()) {
+				expr = engine.evaluate(expr);
+				if (expr.isZero()) {
+					return true;
+				}
+				if (expr.isPlus() || expr.isPower() || expr.isTimes()) {
+					expr = engine.evaluate(F.Together(expr));
+					if (expr.isZero()) {
+						return true;
+					}
+				}
 			}
 		}
 		if (expr.isNumericFunction()) {

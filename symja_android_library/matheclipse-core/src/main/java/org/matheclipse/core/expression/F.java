@@ -3714,10 +3714,6 @@ public class F {
 		return unaryAST1(PossibleZeroQ, a0);
 	}
 
-	public static IAST Power() {
-		return ast(Power);
-	}
-
 	public static IAST Power(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Power, a0, a1);
 	}
