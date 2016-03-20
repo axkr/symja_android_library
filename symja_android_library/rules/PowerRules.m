@@ -5,6 +5,7 @@
  E^(-I*Infinity)=Indeterminate,
  E^(ComplexInfinity)=Indeterminate,
  E^Log(x_):=x,
+ E^(a_*Log(x_)):=x^a /; FreeQ(a,x),
  Tan(x_)^(m_IntegerQ):=Cot(x)^(-m)/;(m<0),
  Cot(x_)^(m_IntegerQ):=Tan(x)^(-m)/;(m<0),
  Sec(x_)^(m_IntegerQ):=Cos(x)^(-m)/;(m<0),

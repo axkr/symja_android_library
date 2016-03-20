@@ -109,17 +109,19 @@ public class DSolve extends AbstractFunctionEvaluator {
 	 */
 	private IExpr linearODE(IExpr p, IExpr q, IExpr uFunction, IExpr xVar, EvalEngine engine) {
 		// integrate p
-		IExpr pInt = engine.evaluate(F.Integrate(p, xVar));
+		IExpr pInt = engine.evaluate(F.Exp(F.Integrate(p, xVar)));
 		IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
 		IAST result = F.List();
 		if (q.isZero()) {
 			// homogenous linear ODE
-			result.add(F.List(F.Rule(uFunction, F.Times(C_1, F.Exp(F.Times(F.CN1, pInt))))));
+			result.add(F.List(F.Rule(uFunction, F.Divide(C_1, pInt))));
 			return result;
 		} else {
 			// TODO implement inhomogenous linear ODE
+			IExpr qInt = engine.evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, q, pInt), xVar))));
+			result.add(F.List(F.Rule(uFunction, F.Expand(F.Divide(qInt, pInt)))));
+			return result;
 		}
-		return F.NIL;
 	}
 
 }
