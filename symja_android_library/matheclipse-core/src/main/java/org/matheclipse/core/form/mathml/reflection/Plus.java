@@ -27,7 +27,7 @@ public class Plus extends AbstractOperator {
 		IExpr expr;
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);
-		final Times timesConverter = (Times) fFactory.reflection(AST2Expr.TIMES_STRING);
+		final Times timesConverter = org.matheclipse.core.form.mathml.reflection.Times.CONST;//(Times) fFactory.reflection(AST2Expr.TIMES_STRING);
 		int size = f.size() - 1;
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);

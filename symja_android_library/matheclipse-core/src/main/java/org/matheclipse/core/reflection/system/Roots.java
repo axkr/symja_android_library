@@ -185,7 +185,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					// if (numericSolutions) {
 					double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
 					if (coefficients == null) {
-						return null;
+						return F.NIL;
 					}
 					IAST resultList = findRoots(coefficients);
 					// IAST resultList = RootIntervals.croots(temp, true);

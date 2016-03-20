@@ -21,7 +21,7 @@ public class Plus extends AbstractOperator {
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
 		IExpr expr;
 		precedenceOpen(buf, precedence);
-		final Times timesConverter = (Times) fFactory.reflection(AST2Expr.TIMES_STRING);
+		final Times timesConverter = org.matheclipse.core.form.tex.reflection.Times.CONST;//  (Times) fFactory.reflection(AST2Expr.TIMES_STRING);
 		for (int i = 1; i < f.size(); i++) {
 			expr = f.get(i);
 

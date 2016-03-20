@@ -191,40 +191,42 @@ public class RulePreprocessor {
 		if (sourceLocation.exists()) {
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
-			StringBuffer buffer;
-			for (int i = 0; i < files.length; i++) {
-				File sourceFile = new File(sourceLocation, files[i]);
-				// we are only interested in .m files
-				if (files[i].endsWith(".m")) {
-					ASTNode node = parseFileToList(sourceFile);
+			if (files != null) {
+				StringBuffer buffer;
+				for (int i = 0; i < files.length; i++) {
+					File sourceFile = new File(sourceLocation, files[i]);
+					// we are only interested in .m files
+					if (files[i].endsWith(".m")) {
+						ASTNode node = parseFileToList(sourceFile);
 
-					if (node != null) {
-						buffer = new StringBuffer(100000);
-						PrintWriter out;
-						try {
-							String className = files[i].substring(0, files[i].length() - 2);
-							String symbolName = className.substring(0, className.length() - 5);
-							File targetFile = new File(targetLocation, className + ".java");
-							if (targetFile.exists()) {
-								if (!ignoreTimestamp && (sourceFile.lastModified() <= targetFile.lastModified())) {
-									// only copy if timestamp is newer than
-									// existing ones
-									continue;
+						if (node != null) {
+							buffer = new StringBuffer(100000);
+							PrintWriter out;
+							try {
+								String className = files[i].substring(0, files[i].length() - 2);
+								String symbolName = className.substring(0, className.length() - 5);
+								File targetFile = new File(targetLocation, className + ".java");
+								if (targetFile.exists()) {
+									if (!ignoreTimestamp && (sourceFile.lastModified() <= targetFile.lastModified())) {
+										// only copy if timestamp is newer than
+										// existing ones
+										continue;
+									}
 								}
+								System.out.println(className);
+								out = new PrintWriter(targetFile.getCanonicalPath());
+								out.print(HEADER);
+								out.print(className);
+								out.print(" {\n");
+								convert(node, "", buffer, out, symbolName);
+								out.println(FOOTER1);
+								out.close();
+							} catch (IOException e) {
+								e.printStackTrace();
 							}
-							System.out.println(className);
-							out = new PrintWriter(targetFile.getCanonicalPath());
-							out.print(HEADER);
-							out.print(className);
-							out.print(" {\n");
-							convert(node, "", buffer, out, symbolName);
-							out.println(FOOTER1);
-							out.close();
-						} catch (IOException e) {
-							e.printStackTrace();
 						}
-					}
 
+					}
 				}
 			}
 		}
