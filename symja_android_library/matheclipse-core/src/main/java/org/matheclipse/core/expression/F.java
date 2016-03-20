@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -2982,7 +2983,7 @@ public class F {
 					Reader reader = null;
 					if (fileName != null) {
 						try {
-							reader = new FileReader(fileName);
+							reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();
 						}

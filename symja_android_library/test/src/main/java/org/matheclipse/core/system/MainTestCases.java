@@ -40,7 +40,7 @@ public class MainTestCases extends AbstractTestCase {
 			assertEquals(evaledResult, expectedResult);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals(e.getMessage(), "");
 		}
 	}
 
@@ -69,7 +69,7 @@ public class MainTestCases extends AbstractTestCase {
 			assertEquals(buf.toString(), strResult);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals(e.getMessage(), "");
 		} finally {
 			Config.SERVER_MODE = mode;
 		}

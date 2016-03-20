@@ -30,7 +30,7 @@ public class Table extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		return evaluateTable(ast, List(), List());
+		return evaluateTable(ast, List(), List(), engine);
 	}
 
 	/**
@@ -43,10 +43,9 @@ public class Table extends AbstractFunctionEvaluator {
 	 *            the default value used in the iterator
 	 * @return <code>F.NIL</code> if no evaluation is possible
 	 */
-	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue) {
+	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
 		try {
 			if (ast.size() > 2) {
-				final EvalEngine engine = EvalEngine.get();
 				final List<Iterator> iterList = new ArrayList<Iterator>();
 				for (int i = 2; i < ast.size(); i++) {
 					iterList.add(new Iterator((IAST) ast.get(i), engine));

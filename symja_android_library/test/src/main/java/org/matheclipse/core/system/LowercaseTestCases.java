@@ -912,12 +912,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Denominator(42*Csc(x)^3)", "1");
 		check("Denominator(42*Csc(x)^3, Trig->True)", "Sin(x)^3");
 		check("Denominator(E^(-x)*x^(1/2))", "E^x");
-		
-		check("Denominator(Sec(x))", "1"); 
-		check("Denominator(Tan(x))", "1"); 
-		check("Denominator(Tan(x), Trig->True)", "Cos(x)"); 
+
+		check("Denominator(Sec(x))", "1");
+		check("Denominator(Tan(x))", "1");
+		check("Denominator(Tan(x), Trig->True)", "Cos(x)");
 	}
-	
+
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
@@ -928,13 +928,13 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Numerator(42*Csc(x)^3)", "42*Csc(x)^3");
 		check("Numerator(42*Csc(x)^3, Trig->True)", "42");
 		check("Numerator(E^(-x)*x^(1/2))", "Sqrt(x)");
-		
-		check("Numerator(Sec(x))", "Sec(x)"); 
-		check("Numerator(Sec(x), Trig->True)", "1"); 
-		check("Numerator(Tan(x))", "Tan(x)"); 
-		check("Numerator(Tan(x), Trig->True)", "Sin(x)"); 
+
+		check("Numerator(Sec(x))", "Sec(x)");
+		check("Numerator(Sec(x), Trig->True)", "1");
+		check("Numerator(Tan(x))", "Tan(x)");
+		check("Numerator(Tan(x), Trig->True)", "Sin(x)");
 	}
-	
+
 	public void testDepth() {
 		check("Depth(a)", "1");
 		check("Depth(g(a))", "2");
@@ -1838,6 +1838,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testMap() {
+		check("Map(List,Join({1,2,3},4-{1,2,3}))", "{{1},{2},{3},{3},{2},{1}}");
 		check("Map(f, {{{{{a}}}}}, 2)", "{f({f({{{a}}})})}");
 		check("Map(f, {{{{{a}}}}}, {2})", "{{f({{{a}}})}}");
 		check("Map(f, {{{{{a}}}}}, {0,2})", "f({f({f({{{a}}})})})");
@@ -2675,6 +2676,16 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	}
 
+	public void testRotateLeft() {
+		check("RotateLeft({1,2,3,4,5},2)", "{3,4,5,1,2}");
+
+	}
+
+	public void testRotateRight() {
+		check("RotateRight({1,2,3,4,5},2)", "{4,5,1,2,3}");
+
+	}
+
 	public void testRowReduce() {
 		check("RowReduce({{1, 2, 3, 1}, {4, 5, 6, 1}, {7, 8, 9, 1}})",
 				"{{1,0,-1,-1},\n" + " {0,1,2,1},\n" + " {0,0,0,0}}");
@@ -2985,6 +2996,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("Table(0,{4-1})", "{0,0,0}");
 		check("$a=10;Table($a^2, {$a, 10})", "{1,4,9,16,25,36,49,64,81,100}");
 		check("Table(f[a], {a, 0, 20, 2})", "{f(0),f(2),f(4),f(6),f(8),f(10),f(12),f(14),f(16),f(18),f(20)}");
 		check("Table(x, {10})", "{x,x,x,x,x,x,x,x,x,x}");
@@ -3068,18 +3080,18 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testTimes() {
 		check("Sin(x)^(-2)/Tan(x)", "Csc(x)^2*Cot(x)");
 		check("Sin(x)/Tan(x)", "Cos(x)");
-//		check("Sin(x)^2/Tan(x)^3", "Cos(x)^2*Cot(x)");
-//		check("Sin(x)^3/Tan(x)^2", "Cos(x)^2*Sin(x)");
-//		check("Sin(x)^2/Tan(x)", "Cos(x)*Sin(x)");
-//		check("Sin(x)/Tan(x)^2", "Cos(x)*Cot(x)");
- 		
+		// check("Sin(x)^2/Tan(x)^3", "Cos(x)^2*Cot(x)");
+		// check("Sin(x)^3/Tan(x)^2", "Cos(x)^2*Sin(x)");
+		// check("Sin(x)^2/Tan(x)", "Cos(x)*Sin(x)");
+		// check("Sin(x)/Tan(x)^2", "Cos(x)*Cot(x)");
+
 		check("Sin(x)^(-2)", "Csc(x)^2");
 		check("Sin(x)/Tan(x)^(-2)", "Tan(x)^2*Sin(x)");
 		check("Sin(x)/Cos(x)", "Tan(x)");
 		check("Cos(x)*Tan(x)", "Sin(x)");
 		check("Cos(x)/Sin(x)", "Cot(x)");
 		check("Tan(x)/Sin(x)", "Sec(x)");
-		
+
 		check("Times()", "1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
 		check("I*Infinity", "I*Infinity");

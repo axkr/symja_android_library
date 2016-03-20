@@ -1,9 +1,11 @@
 package org.matheclipse.core.builtin.function;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
@@ -42,12 +44,12 @@ public class Get extends AbstractCoreFunctionEvaluator {
 			throw new RuleCreationError(null);
 		}
 		IStringX arg1 = (IStringX) ast.arg1();
-		FileReader reader;
+		Reader reader;
 		try {
-			reader = new FileReader(arg1.toString());
+			reader = new InputStreamReader(new FileInputStream(arg1.toString()), "UTF-8");
 			loadPackage(engine, reader);
 			// System.out.println(resultList);
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			engine.printMessage("Get: file " + arg1.toString() + " not found!");
 		}
 		return F.Null;
@@ -98,7 +100,7 @@ public class Get extends AbstractCoreFunctionEvaluator {
 						packageContext = new Context(contextName);
 						ISymbol endSymbol = F.EndPackage;
 						for (int j = 2; j < ast.size(); j++) {
-							FileReader reader = new FileReader(ast.get(j).toString());
+							Reader reader = new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8");
 							Get.loadPackage(engine, reader);
 							reader.close();
 						}

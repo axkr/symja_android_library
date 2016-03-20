@@ -30,7 +30,8 @@ public class Norm extends AbstractEvaluator {
 					return ((IAST) arg1).map(F.Max, Functors.replaceAll(F.Abs(F.Null), F.Null));
 				} else {
 					if (arg2.isSymbol() || arg2.isSignedNumber()) {
-						return F.Power(((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Power(F.Abs(F.Null), arg2), F.Null)),
+						return F.Power(
+								((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Power(F.Abs(F.Null), arg2), F.Null)),
 								arg2.inverse());
 					}
 				}
@@ -40,14 +41,13 @@ public class Norm extends AbstractEvaluator {
 		}
 		if (arg1.isNumber()) {
 			if (ast.size() == 3) {
- 				return F.NIL;
+				return F.NIL;
 			}
 			// absolute Value of a number
 			return ((INumber) arg1).eabs();
 		}
 		if (arg1.isNumericFunction()) {
 			if (ast.size() == 3) {
-				IExpr arg2 = ast.arg2();
 				return F.NIL;
 			}
 			// absolute Value

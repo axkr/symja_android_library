@@ -2,7 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -48,7 +48,7 @@ public class Console {
 		final File file = console.getFile();
 		if (file != null) {
 			try {
-				final BufferedReader f = new BufferedReader(new FileReader(file));
+				final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 				final StringBuffer buff = new StringBuffer(1024);
 				String line;
 				while ((line = f.readLine()) != null) {
