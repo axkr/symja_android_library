@@ -15,12 +15,12 @@ public class TimesOp {
 	final Map<IExpr, IExpr> timesMap;
 	boolean evaled;
 
-	IExpr numberValue;
+	// IExpr numberValue;
 
 	public TimesOp(final int size) {
 		timesMap = new HashMap<IExpr, IExpr>(size);
 		evaled = false;
-		numberValue = null;
+		// numberValue = null;
 	}
 
 	/**
@@ -75,12 +75,12 @@ public class TimesOp {
 	public IExpr getProduct() {
 
 		IAST result = F.Times();
-		if (numberValue != null && !numberValue.isZero()) {
-			if (numberValue.isComplexInfinity()) {
-				return numberValue;
-			}
-			result.add(numberValue);
-		}
+		// if (numberValue != null && !numberValue.isZero()) {
+		// if (numberValue.isComplexInfinity()) {
+		// return numberValue;
+		// }
+		// result.add(numberValue);
+		// }
 		for (Map.Entry<IExpr, IExpr> element : timesMap.entrySet()) {
 			if (element.getValue().isOne()) {
 				final IExpr temp = element.getKey();

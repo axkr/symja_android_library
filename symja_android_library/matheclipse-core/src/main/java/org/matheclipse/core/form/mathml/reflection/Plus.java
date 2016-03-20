@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.mathml.reflection;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,7 +26,8 @@ public class Plus extends AbstractOperator {
 		IExpr expr;
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);
-		final Times timesConverter = org.matheclipse.core.form.mathml.reflection.Times.CONST;//(Times) fFactory.reflection(AST2Expr.TIMES_STRING);
+		final Times timesConverter = new org.matheclipse.core.form.mathml.reflection.Times();
+		timesConverter.setFactory(fFactory);
 		int size = f.size() - 1;
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);

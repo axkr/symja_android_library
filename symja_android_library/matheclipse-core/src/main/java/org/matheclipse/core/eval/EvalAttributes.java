@@ -198,8 +198,7 @@ public class EvalAttributes {
 		final int hash = ast.getHashCache();
 		if (hash != 0) {
 			ast.clearHashCache();
-			ast.hashCode();
-			if (hash != ast.getHashCache()) {
+			if (hash != ast.hashCode()) {
 				throw new UnsupportedOperationException("Different hash codes for:" + ast.toString());
 			}
 		}
