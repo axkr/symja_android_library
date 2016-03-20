@@ -49,7 +49,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		VariablesSet eVar;
 		IAST symbolList = F.List();
-		List<ISymbol> varList;
+		List<IExpr> varList;
 		if (ast.size() == 2) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
@@ -57,7 +57,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 			varList = eVar.getArrayList();
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
-			varList = new ArrayList<ISymbol>(symbolList.size() - 1);
+			varList = new ArrayList<IExpr>(symbolList.size() - 1);
 			for (int i = 1; i < symbolList.size(); i++) {
 				varList.add((ISymbol) symbolList.get(i));
 			}
@@ -102,7 +102,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 *            the JAS term ordering
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	public static IAST coefficientRules(IExpr polynomial, final List<ISymbol> variablesList, final TermOrder termOrder)
+	public static IAST coefficientRules(IExpr polynomial, final List<IExpr> variablesList, final TermOrder termOrder)
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
@@ -132,7 +132,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 *            the &quot;Modulus&quot; option
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	private static IAST coefficientRulesModulus(IExpr polynomial, List<ISymbol> variablesList,
+	private static IAST coefficientRulesModulus(IExpr polynomial, List<IExpr> variablesList,
 			final TermOrder termOrder, IExpr option) throws JASConversionException {
 		try {
 			// found "Modulus" option => use ModIntegerRing

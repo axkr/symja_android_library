@@ -24,7 +24,7 @@ public class Expr2LP {
 	/**
 	 * The variables used in the expression.
 	 */
-	private final List<? extends ISymbol> fVariables;
+	private final List<? extends IExpr> fVariables;
 	private final VariablesSet fVariablesSet;
 
 	public Expr2LP(IExpr expr) {

@@ -3905,6 +3905,10 @@ public class F {
 	public static IAST Roots(final IExpr a0) {
 		return unaryAST1(Roots, a0);
 	}
+	
+	public static IAST Roots(final IExpr a0,final IExpr a1) {
+		return binaryAST2(Roots, a0, a1);
+	}
 
 	public static IAST Round(final IExpr a0) {
 		return unaryAST1(Round, a0);

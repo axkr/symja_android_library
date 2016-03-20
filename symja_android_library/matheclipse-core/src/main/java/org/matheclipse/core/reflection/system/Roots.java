@@ -66,10 +66,16 @@ public class Roots extends AbstractFunctionEvaluator {
 		} else {
 			throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal() expression expected!");
 		}
-		VariablesSet eVar = new VariablesSet(ast.arg2());
+		VariablesSet eVar = null;
+		if (ast.arg2().isList()) {
+			eVar = new VariablesSet(ast.arg2());
+		} else {
+			eVar = new VariablesSet();
+			eVar.add(ast.arg2());
+		}
 		if (!eVar.isSize(1)) {
 			// factorization only possible for univariate polynomials
-			throw new WrongArgumentType(ast, ast.arg2(), 2, "Only one varible exppected");
+			throw new WrongArgumentType(ast, ast.arg2(), 2, "Only one variable expected");
 		}
 		IAST variables = eVar.getVarList();
 		IExpr variable = variables.arg1();
