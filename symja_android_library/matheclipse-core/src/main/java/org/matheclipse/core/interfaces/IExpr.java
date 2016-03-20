@@ -939,9 +939,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
-	default boolean isSpan() {
-		return false;
-	}
 	/**
 	 * Test if this expression is a list of lists
 	 * 
@@ -952,7 +949,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isListOfLists() {
 		return false;
 	}
-
 	/**
 	 * Test if this expression is the function <code>Log[&lt;arg&gt;]</code>
 	 * 
@@ -1481,6 +1477,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+	default boolean isSpan() {
+		return false;
+	}
+
 	/**
 	 * Test if this expression is a symbol
 	 * 
@@ -1622,7 +1622,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr multiply(int n) {
 		return times(F.integer(n));
 	}
-
+	
 	/**
 	 * Additional negative method, which works like opposite to fulfill groovy's
 	 * method signature
@@ -1631,7 +1631,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #opposite()
 	 */
 	public IExpr negative();
-
+	
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(-1) * this</code>.
 	 * Calculates <code>F.eval(F.Times(F.CN1, this))</code> in the common case
@@ -1831,6 +1831,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Deprecated
 	@Override
 	public int signum();
+
+	@Override
+	public IExpr subtract(final IExpr that);
+
+	@Override
+	public IExpr sum(final IExpr that);
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.
