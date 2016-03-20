@@ -16,19 +16,22 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.size() == 3) {
+			if (engine.evalTrue(ast.arg2())) {
+				return engine.evaluate(ast.arg1());
+			}
+			if (engine.isEvalLHSMode()) {
+				return F.NIL;
+			}
+			throw new ConditionException(ast);
+		}
 		Validate.checkSize(ast, 3);
-
-		if (engine.evalTrue(ast.arg2())) {
-			return engine.evaluate(ast.arg1());
-		}
-		if (engine.isEvalLHSMode()) {
-			return F.NIL;
-		}
-		throw new ConditionException(ast);
+		return F.NIL;
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without evaluating a result.
+	 * Check the (possible nested) condition in pattern matcher without
+	 * evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
