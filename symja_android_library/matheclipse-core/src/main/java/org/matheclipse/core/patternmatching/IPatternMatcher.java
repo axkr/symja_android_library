@@ -44,7 +44,7 @@ public abstract class IPatternMatcher
 	/**
 	 * Get the "right-hand-side" of a pattern-matching rule.
 	 * 
-	 * @return <code>null</code> if no right-hand-side is defined for the
+	 * @return <code>F.NIL</code> if no right-hand-side is defined for the
 	 *         pattern matcher
 	 */
 	public IExpr getRHS() {
