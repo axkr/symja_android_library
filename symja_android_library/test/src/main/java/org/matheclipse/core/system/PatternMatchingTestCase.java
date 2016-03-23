@@ -187,7 +187,7 @@ public class PatternMatchingTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			// setup the evaluation engine (and bind to current thread)
-			F.initSymbols();
+//			F.initSymbols();
 			EvalEngine engine = new EvalEngine(); // EvalEngine.get();
 			EvalEngine.set(engine);
 			engine.setSessionID("SpecialTestCase");

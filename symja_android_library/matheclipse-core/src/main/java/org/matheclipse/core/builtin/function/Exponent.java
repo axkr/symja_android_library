@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -16,7 +16,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 /**
  * Get the exponent of a subexpression in a polynomial expression
  */
-public class Exponent extends AbstractFunctionEvaluator {
+public class Exponent extends AbstractCoreFunctionEvaluator {
 
 	public Exponent() {
 	}

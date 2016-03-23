@@ -25,7 +25,7 @@ public class ExprEvaluator {
 	private IExpr fExpr;
 
 	static {
-		F.initSymbols(null, null, false);
+		F.initSymbols(null, null, true);
 	}
 
 	/**

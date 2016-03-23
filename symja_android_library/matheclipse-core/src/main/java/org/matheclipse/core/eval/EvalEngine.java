@@ -44,6 +44,12 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
 
+	static {
+		// set package loading to true, otherwise we get a circular
+		// initialization and an NPE
+		F.initSymbols(null, null, true);
+	}
+
 	/**
 	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
 	 * possible return the input object. In &quot;quiet mode&quot; all warnings

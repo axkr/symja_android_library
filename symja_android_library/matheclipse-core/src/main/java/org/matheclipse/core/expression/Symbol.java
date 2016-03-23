@@ -598,7 +598,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {
-		return this==F.True;
+		return this == F.True;
 	}
 
 	/** {@inheritDoc} */
@@ -616,7 +616,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isFalse() {
-		return this==F.False;
+		return this == F.False;
 	}
 
 	/** {@inheritDoc} */

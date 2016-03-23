@@ -23,14 +23,18 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
-		check("x*(1+x)^(-2)", "<mfrac><mi>x</mi><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mn>2</mn></msup></mfrac>");
-		check("x/(1+x)/(1+x)", "<mfrac><mi>x</mi><mrow><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mo>&#x2062;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow></mrow></mfrac>");
+		check("x*(1+x)^(-2)",
+				"<mfrac><mi>x</mi><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mn>2</mn></msup></mfrac>");
+		check("x/(1+x)/(1+x)",
+				"<mfrac><mi>x</mi><mrow><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mo>&#x2062;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow></mrow></mfrac>");
 		check("Sqrt[x]", "<msqrt><mi>x</mi></msqrt>");
 		check("x^(1/3)", "<mroot><mi>x</mi><mn>3</mn></mroot>");
 		check("x^(2/3)", "<mroot><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mroot>");
 		check("x^y", "<msup><mi>x</mi><mi>y</mi></msup>");
-		check("Abs[-x]", "<mrow><mo>&LeftBracketingBar;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&RightBracketingBar;</mo></mrow>");
-		check("a*b*c*d", "<mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi><mo>&#x2062;</mo><mi>c</mi><mo>&#x2062;</mo><mi>d</mi></mrow>");
+		check("Abs[-x]",
+				"<mrow><mo>&LeftBracketingBar;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&RightBracketingBar;</mo></mrow>");
+		check("a*b*c*d",
+				"<mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi><mo>&#x2062;</mo><mi>c</mi><mo>&#x2062;</mo><mi>d</mi></mrow>");
 		check("k/2", "<mfrac><mi>k</mi><mn>2</mn></mfrac>");
 		check("Binomial[n,k/2]",
 				"<mrow><mo>(</mo><mfrac linethickness=\"0\"><mi>n</mi><mfrac><mi>k</mi><mn>2</mn></mfrac></mfrac><mo>)</mo></mrow>");
@@ -69,7 +73,8 @@ public class MathMLPresentationTestCase extends TestCase {
 
 		check("Sum[i, {i,1,n}]",
 				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi></mrow>");
-		check("Sum[i, i]", "<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
+		check("Sum[i, i]",
+				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
 
 		check("Product[i, {i,10,n,1}, {j,m}]",
 				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi><mo>=</mo><mn>10</mn></mrow><mi>n</mi></munderover><mrow><munderover><mo>&#x220F;</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>m</mi></munderover><mi>i</mi></mrow></mrow>");
@@ -77,7 +82,8 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("Product[i, {i,1,n}]",
 				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi></mrow>");
 
-		check("Product[i, i]", "<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
+		check("Product[i, i]",
+				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
 
 		check("Integrate[Sin[x], x]",
 				"<mo>&#x222B;</mo><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
@@ -93,7 +99,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("Infinity", "<mi>∞</mi>");
 		check("-Infinity", "<mrow><mo>-</mo><mi>∞</mi></mrow>");
 	}
-	
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);
@@ -101,9 +107,10 @@ public class MathMLPresentationTestCase extends TestCase {
 		// Object obj = fParser.start();
 		// StringBuffer buf = new StringBuffer();
 		// fMathMLFactory.convert(buf, obj, 0);
-		assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
-				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-				+ "<math mode=\"display\">\n" + strResult + "</math>");
+		assertEquals(stw.toString(),
+				"<?xml version=\"1.0\"?>\n"
+						+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+						+ "<math mode=\"display\">\n" + strResult + "</math>");
 
 	}
 
@@ -112,7 +119,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	 */
 	protected void setUp() {
 		try {
-			F.initSymbols();
+			// F.initSymbols();
 			EvalEngine engine = new EvalEngine(false);
 			mathUtil = new MathMLUtilities(engine, false, true);
 		} catch (Exception e) {

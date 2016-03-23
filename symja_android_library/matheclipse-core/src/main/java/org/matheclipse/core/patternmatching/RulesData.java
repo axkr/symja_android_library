@@ -263,6 +263,7 @@ public class RulesData implements Serializable {
 	/**
 	 * 
 	 * @param ee
+	 *            evaluation engine
 	 * @param expression
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
@@ -546,6 +547,10 @@ public class RulesData implements Serializable {
 			return true;
 		}
 		return false;
+	}
+
+	public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
+		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide);
 	}
 
 	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,

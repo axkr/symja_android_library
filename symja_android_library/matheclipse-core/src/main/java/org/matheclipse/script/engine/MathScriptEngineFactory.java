@@ -10,8 +10,11 @@ import org.matheclipse.core.expression.F;
 
 public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory {
 
+	static {
+		F.initSymbols(null, null, true);
+	}
+	
 	public MathScriptEngineFactory() {
-		F.initSymbols(null, null, false);
 		Config.SERVER_MODE = false;
 	}
 

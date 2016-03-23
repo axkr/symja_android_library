@@ -53,6 +53,9 @@ import org.matheclipse.parser.client.SyntaxError;
  * their precedence.
  */
 public class ExprParser extends ExprScanner {
+	static {
+		F.initSymbols(null, null, true);
+	}
 
 	static class NVisitorExpr extends VisitorExpr {
 		final int fPrecision;
@@ -449,7 +452,7 @@ public class ExprParser extends ExprScanner {
 							getNextToken();
 						}
 						IAST deriv = F.$(DERIVATIVE, F.integer(derivativeCounter));
-						lhs =  F.$(deriv, lhs);
+						lhs = F.$(deriv, lhs);
 						lhs = parseArguments(lhs);
 						continue;
 					}

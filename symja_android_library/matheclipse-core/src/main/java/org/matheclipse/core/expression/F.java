@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -2868,7 +2867,7 @@ public class F {
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(If, a0, a1, a2);
 	}
-	
+
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(If, a0, a1, a2, a3);
 	}
@@ -3905,8 +3904,8 @@ public class F {
 	public static IAST Roots(final IExpr a0) {
 		return unaryAST1(Roots, a0);
 	}
-	
-	public static IAST Roots(final IExpr a0,final IExpr a1) {
+
+	public static IAST Roots(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Roots, a0, a1);
 	}
 
@@ -4662,7 +4661,6 @@ public class F {
 	};
 
 	static {
-
 		try {
 			// if (Config.DEBUG) {
 			// System.out.println("Config.DEBUG == true");
@@ -4724,7 +4722,8 @@ public class F {
 			Power.setDefaultValue(2, C1);
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
 			// initialize only the utility function rules for Integrate
-			// other rules are "lazy loaded" on first use og Integrate function
+			// other rules are "lazy loaded" on first use og Integrate
+			// function
 			final EvalEngine engine = EvalEngine.get();
 			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 			if (ruleList != null) {
@@ -4736,7 +4735,6 @@ public class F {
 		} catch (Throwable th) {
 			th.printStackTrace();
 		}
-
 	}
 
 }

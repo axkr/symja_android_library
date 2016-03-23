@@ -164,7 +164,7 @@ public class BasicTeXTestCase extends TestCase {
 	 */
 	protected void setUp() {
 		try {
-			F.initSymbols();
+//			F.initSymbols();
 			EvalEngine engine = new EvalEngine();
 			texUtil = new TeXUtilities(engine, true);
 		} catch (Exception e) {

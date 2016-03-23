@@ -784,8 +784,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				if (matched) {
 					IAST lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
+					IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 					try {
-						IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 						result = F.eval(result);
 						lhsResultAST.add(result);
 						return lhsResultAST;
