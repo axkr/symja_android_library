@@ -14,11 +14,18 @@ public class Context implements Serializable {
 	 */
 	private static final long serialVersionUID = -8850219140638371052L;
 
-	public final static Context SYSTEM = new Context("System", F.PREDEFINED_SYMBOLS_MAP);
+	/**
+	 * The map for predefined (context &quot;System&quot;) symbols
+	 */
+	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
+	
+	public final static Context SYSTEM = new Context("System", PREDEFINED_SYMBOLS_MAP);
 
 	final String contextName;
 
 	final Map<String, ISymbol> symbolTable;
+
+	
 
 	public Context(String contextName) {
 		this(contextName, new HashMap<String, ISymbol>());

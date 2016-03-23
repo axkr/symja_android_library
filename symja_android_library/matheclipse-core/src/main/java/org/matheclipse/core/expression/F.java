@@ -70,11 +70,6 @@ public class F {
 
 	public final static Map<String, IPattern> PREDEFINED_PATTERN_MAP = new HashMap<String, IPattern>(61);
 
-	/**
-	 * The map for predefined (context &quot;System&quot;) symbols
-	 */
-	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
-
 	public final static Map<String, ISymbol> HIDDEN_SYMBOLS_MAP = new HashMap<String, ISymbol>(197);
 
 	public static ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
@@ -1533,7 +1528,7 @@ public class F {
 				name = symbolName.toLowerCase(Locale.ENGLISH);
 			}
 		}
-		ISymbol symbol = PREDEFINED_SYMBOLS_MAP.get(name);
+		ISymbol symbol = Context.PREDEFINED_SYMBOLS_MAP.get(name);
 		if (symbol != null) {
 			return symbol;
 		}
@@ -1547,7 +1542,7 @@ public class F {
 				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
 					// second try, because the symbol may now be added to
 					// fSymbolMap
-					ISymbol secondTry = PREDEFINED_SYMBOLS_MAP.get(name);
+					ISymbol secondTry = Context.PREDEFINED_SYMBOLS_MAP.get(name);
 					if (secondTry != null) {
 						return secondTry;
 					}
@@ -1557,7 +1552,7 @@ public class F {
 					if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
 						// second try, because the symbol may now be added to
 						// fSymbolMap
-						ISymbol secondTry = PREDEFINED_SYMBOLS_MAP.get(name);
+						ISymbol secondTry = Context.PREDEFINED_SYMBOLS_MAP.get(name);
 						if (secondTry != null) {
 							return secondTry;
 						}
