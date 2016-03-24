@@ -210,7 +210,9 @@ public class Predicates {
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if
-	 * <code>input.isNumeric()</code> gives {@code true}.
+	 * <code>input.isNumeric()</code> gives {@code true}. The predicates test if
+	 * an input expression is a numeric number (i.e. an instance of type INum or
+	 * type IComplexNum
 	 * 
 	 * @return
 	 */
@@ -219,6 +221,24 @@ public class Predicates {
 			@Override
 			public boolean test(IExpr input) {
 				return input.isNumeric();
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that evaluates to {@code true} if
+	 * <code>input.isNumericFunction()</code> gives {@code true}. The predicates
+	 * test if an input expression is a numeric function (i.e. a number, a
+	 * symbolic constant or a function (with attribute NumericFunction) where
+	 * all arguments are also "numeric functions")
+	 * 
+	 * @return
+	 */
+	public static Predicate<IExpr> isNumericFunction() {
+		return new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr input) {
+				return input.isNumericFunction();
 			}
 		};
 	}

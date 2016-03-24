@@ -1717,6 +1717,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Map(Length, {{a, b}, {a, b, c}, {x}})", "{2,3,1}");
 	}
 
+	public void testLess() {
+		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
+		check("(-2*x+5)<(5^(1/2))", "x>-(-5+Sqrt(5))/2");
+	}
+
 	public void testLevel() {
 		check("Level(a + f(x, y^n), {-1})", "{a,x,y,n}");
 		check("Level(a + f(x, y^n0), 2)", "{a,x,y^n0,f(x,y^n0)}");

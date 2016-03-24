@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ITernaryComparator;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -21,41 +22,47 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> will be simplified to <code>x &gt; 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
+	 * will be simplified to <code>x &gt; 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
 	 * @param a2
 	 *            right-hand-side of the comparator expression
-	 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+	 * @return the simplified comparator expression or <code>null</code> if no
+	 *         simplification was found
 	 */
 	protected IAST simplifyCompare(IExpr a1, IExpr a2) {
 		return simplifyCompare(a1, a2, F.Greater, F.Less);
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to <code>x &gt; 2</code>.
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
+	 * wll be simplified to <code>x &gt; 2</code>.
 	 * 
 	 * @param a1
 	 *            left-hand-side of the comparator expression
 	 * @param a2
 	 *            right-hand-side of the comparator expression
 	 * @param originalHead
-	 *            symbol of the comparator operator for which the simplification was started
+	 *            symbol of the comparator operator for which the simplification
+	 *            was started
 	 * @param oppositeHead
-	 *            opposite of the symbol of the comparator operator for which the comparison was started
-	 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
+	 *            opposite of the symbol of the comparator operator for which
+	 *            the comparison was started
+	 * @return the simplified comparator expression or <code>F.NIL</code> if no
+	 *         simplification was found
 	 */
 	final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
 		IExpr lhs;
-		ISignedNumber rhs;
+		IExpr rhs;
 		boolean useOppositeHeader = false;
-		if (a2.isSignedNumber()) {
+		if (a2.isNumericFunction()) {
 			lhs = a1;
-			rhs = (ISignedNumber) a2;
-		} else if (a1.isSignedNumber()) {
+			rhs = a2;
+		} else if (a1.isNumericFunction()) {
 			lhs = a2;
-			rhs = (ISignedNumber) a1;
+			rhs = a1;
 			useOppositeHeader = true;
 		} else {
 			lhs = F.eval(F.Subtract(a1, a2));
@@ -64,19 +71,22 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		if (lhs.isAST()) {
 			IAST lhsAST = (IAST) lhs;
 			if (lhsAST.isTimes()) {
-				if (lhsAST.arg1().isSignedNumber()) {
-					ISignedNumber sn = (ISignedNumber) lhsAST.arg1();
-					if (sn.isNegative()) {
+				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
+				if (result[0].size() > 1) {
+					IExpr temp = result[0].getOneIdentity(F.C0);
+					if (temp.isNegative()) {
 						useOppositeHeader = !useOppositeHeader;
 					}
-					rhs = rhs.divideBy(sn);
-					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
+					rhs = rhs.divide(temp);
+					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
+							oppositeHead);
 				}
 			} else if (lhsAST.isPlus()) {
-				if (lhsAST.arg1().isSignedNumber()) {
-					ISignedNumber sn = (ISignedNumber) lhsAST.arg1();
-					rhs = rhs.subtractFrom(sn);
-					return createComparatorResult(lhsAST, rhs, useOppositeHeader, originalHead, oppositeHead);
+				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
+				if (result[0].size() > 1) {
+					rhs = rhs.subtract(result[0].getOneIdentity(F.C0));
+					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
+							oppositeHead);
 				}
 			}
 		}
@@ -86,30 +96,23 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	/**
 	 * Create the result for a <code>simplifyCompare()</code> step.
 	 * 
-	 * @param oneIdentityLHS
-	 *            left-hand-side of the comparator expression which must have <code>OneIdentity</code> property.
+	 * @param lhs
+	 *            left-hand-side of the comparator expression
 	 * @param rhs
 	 *            right-hand-side of the comparator expression
 	 * @param useOppositeHeader
 	 *            use the opposite header to create the result
 	 * @param originalHead
-	 *            symbol of the comparator operator for which the simplification was started
+	 *            symbol of the comparator operator for which the simplification
+	 *            was started
 	 * @param oppositeHead
-	 *            opposite of the symbol of the comparator operator for which the comparison was started
+	 *            opposite of the symbol of the comparator operator for which
+	 *            the comparison was started
 	 * @return
 	 */
-	private IAST createComparatorResult(IAST oneIdentityLHS, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
+	private IAST createComparatorResult(IExpr lhs, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
 			ISymbol oppositeHead) {
-		IAST lhsClone = oneIdentityLHS.removeAtClone(1);
-		IExpr lhsExpr = lhsClone;
-		if (lhsClone.size() == 2) {
-			lhsExpr = lhsClone.arg1();
-		}
-		if (useOppositeHeader) {
-			return F.binary(oppositeHead, lhsExpr, rhs);
-		} else {
-			return F.binary(originalHead, lhsExpr, rhs);
-		}
+		return F.binary(useOppositeHeader ? oppositeHead : originalHead, lhs, rhs);
 	}
 
 	@Override
@@ -121,11 +124,13 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 			IExpr arg2 = ast.arg2();
 			IExpr result = simplifyCompare(arg1, arg2);
 			if (result.isPresent()) {
-				// the result may return an AST with an "opposite header" (i.e. Less instead of Greater)
+				// the result may return an AST with an "opposite header" (i.e.
+				// Less instead of Greater)
 				return result;
 			}
 			if (arg2.isSignedNumber()) {
-				// this part is used in other comparator operations like Less, GreaterEqual,...
+				// this part is used in other comparator operations like Less,
+				// GreaterEqual,...
 				IExpr temp = checkAssumptions(arg1, arg2);
 				if (temp.isPresent()) {
 					return temp;
@@ -174,7 +179,8 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Check assumptions for the comparison operator. Will be overridden in <code>GreaterEqual, Less, LessEqual</code>.
+	 * Check assumptions for the comparison operator. Will be overridden in
+	 * <code>GreaterEqual, Less, LessEqual</code>.
 	 * 
 	 * @param arg1
 	 *            the left-hand-side of the comparison

@@ -949,6 +949,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isListOfLists() {
 		return false;
 	}
+
 	/**
 	 * Test if this expression is the function <code>Log[&lt;arg&gt;]</code>
 	 * 
@@ -1036,7 +1037,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this object is a negative signed number.
+	 * Test if this object is a negative signed number. For an <code>IAST</code>
+	 * object the method checks, if it is a numeric constant. If the
+	 * <code>IAST</code> object evaluates to a negative numeric expression this
+	 * method returns <code>true</code>.
 	 * 
 	 * @return <code>true</code>, if <code>this < 0</code>; <code>false</code>
 	 *         in all other case.
@@ -1303,7 +1307,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this object is a positive signed number.
+	 * Test if this object is a positive signed number. For an <code>IAST</code>
+	 * object the method checks, if it is a numeric constant. If the
+	 * <code>IAST</code> object evaluates to a positive numeric expression this
+	 * method returns <code>true</code>.
 	 * 
 	 * @return <code>true</code>, if <code>this > 0</code>; <code>false</code>
 	 *         in all other case.
@@ -1622,7 +1629,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr multiply(int n) {
 		return times(F.integer(n));
 	}
-	
+
 	/**
 	 * Additional negative method, which works like opposite to fulfill groovy's
 	 * method signature
@@ -1631,7 +1638,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #opposite()
 	 */
 	public IExpr negative();
-	
+
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(-1) * this</code>.
 	 * Calculates <code>F.eval(F.Times(F.CN1, this))</code> in the common case
