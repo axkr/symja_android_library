@@ -15,6 +15,14 @@ import org.matheclipse.core.patternmatching.Matcher;
 
   Matcher matcher = new Matcher();
   matcher.caseOf(Sin(x_), D(Sin(x), x));
+  
+  
   // print Cos[y]
   System.out.println(matcher.apply(Sin(y)));
 ```
+
+A more advanced usage of the `Matcher` class can be found in the `TrigToExp()` function:
+* [org.matheclipse.core.reflection.system.TrigToExp](https://bitbucket.org/axelclk/symja_android_library/src/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigToExp.java)
+
+
+
