@@ -39,6 +39,6 @@ public interface IVisitor<T> {
 	
 	public abstract T visit(IStringX element);
 
-	public abstract T visit(IAST list);
+	public abstract T visit(IAST ast);
 
 }

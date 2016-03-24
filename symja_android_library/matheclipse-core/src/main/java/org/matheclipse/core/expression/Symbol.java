@@ -305,7 +305,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			return F.NIL;
 		}
 		// System.out.println(toString());
-		return fRulesData.evalDownRule(ee, expression);
+		return fRulesData.evalDownRule(expression);
 	}
 
 	/** {@inheritDoc} */
@@ -358,7 +358,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
-		return fRulesData.evalUpRule(ee, expression);
+		return fRulesData.evalUpRule(expression);
 	}
 
 	/** {@inheritDoc} */

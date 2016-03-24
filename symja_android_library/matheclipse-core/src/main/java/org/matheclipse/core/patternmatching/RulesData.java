@@ -20,7 +20,6 @@ import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -262,12 +261,12 @@ public class RulesData implements Serializable {
 
 	/**
 	 * 
+	 * @param expression
 	 * @param ee
 	 *            evaluation engine
-	 * @param expression
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
+	public IExpr evalDownRule(final IExpr expression) {
 		PatternMatcherEquals res;
 		boolean showSteps = false;
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
@@ -352,11 +351,7 @@ public class RulesData implements Serializable {
 		}
 		return F.NIL;
 	}
-
-	public IExpr evalDownRule(final IExpr expression) {
-		return evalDownRule(EvalEngine.get(), expression);
-	}
-
+ 
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,
 			final IAST expression, boolean showSteps) throws CloneNotSupportedException {
 		IPatternMatcher pmEvaluator;
@@ -394,7 +389,7 @@ public class RulesData implements Serializable {
 		return F.NIL;
 	}
 
-	public IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
+	public IExpr evalUpRule(final IExpr expression) {
 		PatternMatcherEquals res;
 		if (fEqualUpRules != null) {
 			res = fEqualUpRules.get(expression);

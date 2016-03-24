@@ -3199,7 +3199,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("TrigToExp(Sech(x)+a)", "2/(E^x+E^(-x))+a");
 		check("TrigToExp(Sinh(x)+a)", "a+1/2*(E^x-1/E^x)");
 		check("TrigToExp(Tanh(x))", "(E^x-1/E^x)/(E^x+E^(-x))");
-
+		check("TrigToExp(a+b)", "a+b");
 	}
 
 	public void testTrueQ() {
