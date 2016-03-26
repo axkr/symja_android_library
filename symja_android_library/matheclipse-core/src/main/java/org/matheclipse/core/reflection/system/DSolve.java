@@ -18,6 +18,7 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
  * 
  */
 public class DSolve extends AbstractFunctionEvaluator {
+
 	public DSolve() {
 	}
 
@@ -28,33 +29,37 @@ public class DSolve extends AbstractFunctionEvaluator {
 		}
 		Validate.checkSize(ast, 4);
 
-		IAST listOfEquations = Validate.checkEquations(ast, 1);
 		if (ast.arg2().isAST()) {
 			IAST uFunction1Arg = (IAST) ast.arg2();
 			IExpr xVar = ast.arg3();
+			IAST listOfEquations = Validate.checkEquations(ast, 1).clone();
+			IExpr[] boundaryCondition = null;
+			for (int i = 1; i < listOfEquations.size(); i++) {
+				IExpr equation = listOfEquations.get(i);
+				if (equation.isFree(xVar)) {
+					boundaryCondition = solveSingleBoundary(equation, uFunction1Arg, xVar, engine);
+					if (boundaryCondition != null) {
+						listOfEquations.remove(i);
+						break;
+					}
+				}
+			}
+
 			if (uFunction1Arg.size() == 2 && uFunction1Arg.arg1().equals(xVar)) {
 				IAST listOfVariables = F.List(uFunction1Arg);
-				if (listOfEquations.size() <= 3) {
+				if (listOfEquations.size() <= 2) {
 					IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
-					IExpr equation1 = listOfEquations.arg1();
+					IExpr equation = listOfEquations.arg1();
 
-					IExpr temp = solveSingleODE(equation1, uFunction1Arg, xVar, listOfVariables, C_1, engine);
+					IExpr temp = solveSingleODE(equation, uFunction1Arg, xVar, listOfVariables, C_1, engine);
 					if (temp.isPresent()) {
-						if (listOfEquations.size() == 3) {
-							IExpr equation2 = listOfEquations.arg2();
-							if (equation2.isFree(xVar)) {
-								IExpr[] boundary = solveSingleBoundary(equation2, uFunction1Arg, xVar, listOfVariables,
-										engine);
-								if (boundary != null) {
-									IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundary[1])));
-									IExpr C1 = engine.evaluate(F.Roots(F.Equal(res, boundary[0]), C_1));
-									if (C1.isAST(F.Equal, 3, C_1)) {
-										res = F.subst(temp, F.List(F.Rule(C_1, ((IAST) C1).arg2())));
-										return F.List(F.List(F.Rule(uFunction1Arg, res)));
-									}  
-								}
+						if (boundaryCondition != null) {
+							IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[1])));
+							IExpr C1 = engine.evaluate(F.Roots(F.Equal(res, boundaryCondition[0]), C_1));
+							if (C1.isAST(F.Equal, 3, C_1)) {
+								res = F.subst(temp, F.List(F.Rule(C_1, ((IAST) C1).arg2())));
+								return F.List(F.List(F.Rule(uFunction1Arg, res)));
 							}
-							return F.NIL;
 						}
 						return F.List(F.List(F.Rule(uFunction1Arg, temp)));
 					}
@@ -76,7 +81,6 @@ public class DSolve extends AbstractFunctionEvaluator {
 				eq = F.Plus(eq);
 			}
 
-			// TODO implement other expressions then Plus(...)
 			int j = 1;
 			IAST[] deriveExpr = null;
 			while (j < eq.size()) {
@@ -123,8 +127,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar, IAST listOfVariables,
-			EvalEngine engine) {
+	private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
 		if (equation.isAST()) {
 			IAST eq = ((IAST) equation).clone();
 			if (!eq.isPlus()) {
