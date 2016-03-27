@@ -7,7 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ExprComparator;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -32,7 +32,7 @@ public class Union extends AbstractFunctionEvaluator {
 			for (IExpr IExpr : set) {
 				result.add(IExpr);
 			}
-			return result.args().sort(ExprComparator.CONS);
+			return result.args().sort(Comparators.ExprComparator.CONS);
 		}
 
 		if (ast.arg1().isAST() && ast.arg2().isAST()) {

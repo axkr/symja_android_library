@@ -1,8 +1,9 @@
 package org.matheclipse.core.generic;
 
 import java.io.Serializable;
-
-import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -12,27 +13,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.Predicate;
-
 public class Predicates {
-	private Predicates() {
-
-	}
-
 	private static class InASTPredicate implements Predicate<IExpr>, Serializable {
+		private static final long serialVersionUID = 0;
+
 		private final IAST target;
 
 		private InASTPredicate(IAST target) {
 			this.target = target;
-		}
-
-		public boolean test(IExpr t) {
-			for (IExpr expr : target) {
-				if (expr.equals(t)) {
-					return true;
-				}
-			}
-			return false;
 		}
 
 		@Override
@@ -53,11 +41,133 @@ public class Predicates {
 		}
 
 		@Override
+		public boolean test(IExpr t) {
+			for (IExpr expr : target) {
+				if (expr.equals(t)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public String toString() {
 			return "In(" + target + ")";
 		}
+	}
 
-		private static final long serialVersionUID = 0;
+	/**
+	 * Check if the evaluation of a binary AST object gives <code>False</code>
+	 * 
+	 */
+	public static class IsBinaryFalse implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
+		protected final EvalEngine fEngine;
+
+		protected final IAST fAST;
+
+		/**
+		 * Define a binary AST with the header <code>head</code>.
+		 * 
+		 * @param head
+		 *            the AST's head expression
+		 */
+		public IsBinaryFalse(final IExpr head) {
+			this(head, EvalEngine.get());
+		}
+
+		public IsBinaryFalse(final IExpr head, EvalEngine engine) {
+			fEngine = engine;
+			fAST = F.ast(head, 2, true);
+		}
+
+		@Override
+		public int compare(final IExpr firstArg, final IExpr secondArg) {
+			fAST.set(1, firstArg);
+			fAST.set(2, secondArg);
+			IExpr temp = fEngine.evaluate(fAST);
+			if (temp.isFalse()) {
+				return 1;
+			}
+			if (temp.isTrue()) {
+				return -1;
+			}
+			return 0;
+		}
+
+		/**
+		 * Check if the evaluation of a binary AST object gives
+		 * <code>True</code> by settings it's first argument to
+		 * <code>firstArg</code> and settings it's second argument to
+		 * <code>secondArg</code>
+		 * 
+		 */
+		@Override
+		public boolean test(final IExpr firstArg, final IExpr secondArg) {
+			fAST.set(1, firstArg);
+			fAST.set(2, secondArg);
+			if (fEngine.evaluate(fAST).isFalse()) {
+				return true;
+			}
+			return false;
+		}
+
+	}
+
+	/**
+	 * Check if the evaluation of a binary AST object gives <code>True</code>
+	 * 
+	 */
+	public static class IsBinaryTrue implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
+		protected final EvalEngine fEngine;
+
+		protected final IAST fAST;
+
+		/**
+		 * Define a binary AST with the header <code>head</code>.
+		 * 
+		 * @param head
+		 *            the AST's head expression
+		 */
+		public IsBinaryTrue(final IExpr head) {
+			this(head, EvalEngine.get());
+		}
+
+		public IsBinaryTrue(final IExpr head, EvalEngine engine) {
+			fEngine = engine;
+			fAST = F.ast(head, 2, true);
+		}
+
+		@Override
+		public int compare(final IExpr firstArg, final IExpr secondArg) {
+			fAST.set(1, firstArg);
+			fAST.set(2, secondArg);
+			IExpr temp = fEngine.evaluate(fAST);
+			if (temp.isTrue()) {
+				return 1;
+			}
+			if (temp.isFalse()) {
+				return -1;
+			}
+			return 0;
+		}
+
+		/**
+		 * Check if the evaluation of a binary AST object gives
+		 * <code>True</code> by settings it's first argument to
+		 * <code>firstArg</code> and settings it's second argument to
+		 * <code>secondArg</code>
+		 * 
+		 */
+		@Override
+		public boolean test(final IExpr firstArg, final IExpr secondArg) {
+			fAST.set(1, firstArg);
+			fAST.set(2, secondArg);
+			if (fEngine.evaluate(fAST).isTrue()) {
+				return true;
+			}
+			return false;
+		}
+
 	}
 
 	/**
@@ -90,49 +200,13 @@ public class Predicates {
 		 * <code>arg</code>.
 		 * 
 		 */
+		@Override
 		public boolean test(final IExpr arg) {
 			final IAST ast = fAST.clone();
 			ast.add(arg);
 			return fEngine.evalTrue(ast);
 		}
 
-	}
-
-	/**
-	 * Check if the evaluation of the <code>expr</code> object gives
-	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
-	 * assigned <code>Predicate</code> evaluator object, the predicate will be
-	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
-	 * returned.
-	 * 
-	 * @param expr
-	 * @return
-	 * @see IsUnaryTrue
-	 */
-	public static Predicate<IExpr> isTrue(IExpr expr) {
-		return new IsUnaryTrue<IExpr>(EvalEngine.get(), expr);
-	}
-
-	/**
-	 * Check if the evaluation of the <code>expr</code> object gives
-	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
-	 * assigned <code>Predicate</code> evaluator object, the predicate will be
-	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
-	 * returned.
-	 * 
-	 * @param engine
-	 * @param head
-	 * @return
-	 * @see IsUnaryTrue
-	 */
-	public static Predicate<IExpr> isTrue(final EvalEngine engine, final IExpr head) {
-		if (head.isSymbol()) {
-			IEvaluator eval = ((ISymbol) head).getEvaluator();
-			if (eval != null && (eval instanceof Predicate<?>)) {
-				return (Predicate<IExpr>) eval;
-			}
-		}
-		return new IsUnaryTrue<IExpr>(engine, head);
 	}
 
 	/**
@@ -162,6 +236,51 @@ public class Predicates {
 	}
 
 	/**
+	 * Returns a predicate that evaluates to {@code true} if the
+	 * <code>input</code> is an AST list, which contains one of the given
+	 * <b>header elements</b> at index position <code>0</code>.
+	 * 
+	 */
+	public static Predicate<IExpr> isAST(final ISymbol[] heads) {
+		return new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr input) {
+				for (int i = 0; i < heads.length; i++) {
+					if (input.isAST(heads[i])) {
+						return true;
+					}
+				}
+				return false;
+			}
+		};
+	}
+
+	/**
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>False</code>. A <code>IsBinaryFalse</code> predicate will be
+	 * returned.
+	 * 
+	 * @param expr
+	 * @return
+	 * @see IsUnaryTrue
+	 */
+	public static BiPredicate<IExpr, IExpr> isBinaryFalse(IExpr expr) {
+		return new IsBinaryFalse(expr, EvalEngine.get());
+	}
+
+	/**
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>True</code>. A <code>IsUnaryTrue</code> predicate will be returned.
+	 * 
+	 * @param expr
+	 * @return
+	 * @see IsUnaryTrue
+	 */
+	public static BiPredicate<IExpr, IExpr> isBinaryTrue(IExpr expr) {
+		return new IsBinaryTrue(expr, EvalEngine.get());
+	}
+
+	/**
 	 * Returns a predicate that evaluates to {@code true} if the object
 	 * reference being tested is free of the arguments of the given
 	 * <code>ast</code>. Calls <code>IExpr#isFree(expr, true)</code>.
@@ -174,21 +293,6 @@ public class Predicates {
 			@Override
 			public boolean test(IExpr input) {
 				return input.isFree(expr, true);
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that evaluates to {@code true} if the input is an
-	 * <code>instanceof IPattern</code>.
-	 * 
-	 * @return
-	 */
-	public static Predicate<IExpr> isPattern() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return (input instanceof IPattern);
 			}
 		};
 	}
@@ -244,6 +348,21 @@ public class Predicates {
 	}
 
 	/**
+	 * Returns a predicate that evaluates to {@code true} if the input is an
+	 * <code>instanceof IPattern</code>.
+	 * 
+	 * @return
+	 */
+	public static Predicate<IExpr> isPattern() {
+		return new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr input) {
+				return (input instanceof IPattern);
+			}
+		};
+	}
+
+	/**
 	 * Returns a predicate that evaluates to {@code true} if
 	 * <code>input.isSignedNumber()</code> gives {@code true}.
 	 * 
@@ -259,22 +378,61 @@ public class Predicates {
 	}
 
 	/**
-	 * Returns a predicate that evaluates to {@code true} if the
-	 * <code>input</code> is an AST list, which contains one of the given
-	 * <b>header elements</b> at index position <code>0</code>.
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
+	 * assigned <code>Predicate</code> evaluator object, the predicate will be
+	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
+	 * returned.
 	 * 
+	 * @param engine
+	 * @param head
+	 * @return
+	 * @see IsUnaryTrue
 	 */
-	public static Predicate<IExpr> isAST(final ISymbol[] heads) {
+	public static Predicate<IExpr> isTrue(final EvalEngine engine, final IExpr head) {
+		if (head.isSymbol()) {
+			IEvaluator eval = ((ISymbol) head).getEvaluator();
+			if (eval != null && (eval instanceof Predicate<?>)) {
+				return (Predicate<IExpr>) eval;
+			}
+		}
+		return new IsUnaryTrue<IExpr>(engine, head);
+	}
+
+	/**
+	 * Check if the evaluation of the <code>expr</code> object gives
+	 * <code>True</code>. If <code>expr</code> is a symbol, which has an
+	 * assigned <code>Predicate</code> evaluator object, the predicate will be
+	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
+	 * returned.
+	 * 
+	 * @param expr
+	 * @return
+	 * @see IsUnaryTrue
+	 */
+	public static Predicate<IExpr> isTrue(IExpr expr) {
+		return new IsUnaryTrue<IExpr>(EvalEngine.get(), expr);
+	}
+
+	/**
+	 *
+	 */
+	public static Predicate<IExpr> isUnaryVariableOrPattern() {
 		return new Predicate<IExpr>() {
 			@Override
-			public boolean test(IExpr input) {
-				for (int i = 0; i < heads.length; i++) {
-					if (input.isAST(heads[i])) {
-						return true;
-					}
+			public boolean test(final IExpr firstArg) {
+				if (firstArg instanceof ISymbol) {
+					return true;
+				}
+				if (firstArg instanceof IPattern) {
+					return true;
 				}
 				return false;
 			}
 		};
+	}
+
+	private Predicates() {
+
 	}
 }

@@ -1,10 +1,12 @@
 package org.matheclipse.core.eval;
 
+import java.util.Comparator;
+
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ExprComparator;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -182,7 +184,7 @@ public class EvalAttributes {
 				}
 				return evaled;
 			default:
-				ast.args().sort(ExprComparator.CONS);
+				ast.args().sort(Comparators.ExprComparator.CONS);
 				ast.addEvalFlags(IAST.IS_SORTED);
 				if (Config.SHOW_STACKTRACE) {
 					chechCachedHashcode(ast);
@@ -204,7 +206,7 @@ public class EvalAttributes {
 		}
 	}
 
-	public final static void sort(final IAST ast, ExprComparator comparator) {
+	public final static void sort(final IAST ast, Comparator<IExpr> comparator) {
 		ast.args().sort(comparator);
 	}
 

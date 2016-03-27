@@ -1433,6 +1433,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Gamma(2.2)", "1.1018024908797128");
 	}
 
+	public void testGather() {
+		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)", "{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
+		check("Gather({1,2,3,2,3,4,5,6,2,3})", "{{1},{2,2,2},{3,3,3},{4},{5},{6}}");
+		check("Gather(Range(0, 3, 1/3), Floor(#1) == Floor(#2) &)", "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
+	}
+	
 	public void testGeometricMean() {
 		check("GeometricMean({})", "GeometricMean({})");
 		check("GeometricMean({2, 6, 5, 15, 10, 1})", "9000^(1/6)");

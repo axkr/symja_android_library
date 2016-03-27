@@ -24,7 +24,6 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
-import org.matheclipse.core.generic.IsUnaryVariableOrPattern;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import java.util.function.BiFunction;
@@ -2732,7 +2731,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
-		return variables2Slots(this, new IsUnaryVariableOrPattern<IExpr>(),
+		return variables2Slots(this, Predicates.isUnaryVariableOrPattern(),
 				new UnaryVariable2Slot(map, variableCollector));
 	}
 }

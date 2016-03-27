@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.IsLEOrdered;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -27,7 +26,7 @@ public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAS
 
 	@Override
 	public boolean test(IAST ast) {
-		return ast.args().compareAdjacent(new IsLEOrdered<IExpr>());
+		return ast.args().compareAdjacent((x, y) -> x.isLEOrdered(y));
 	}
 
 }

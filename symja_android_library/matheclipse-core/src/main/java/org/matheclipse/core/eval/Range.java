@@ -10,7 +10,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.generic.ExprComparator;
 import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -808,7 +807,7 @@ public class Range implements Iterable<IExpr> {
 	 * internal referenced list), according to the order induced by the
 	 * specified comparator.
 	 */
-	public IAST sort(ExprComparator comparator) {
+	public IAST sort(Comparator<IExpr> comparator) {
 		final IExpr[] a = fList.toArray(new IExpr[fList.size()]);
 		Arrays.sort(a, fStart, fEnd, comparator);
 		for (int j = fStart; j < fEnd; j++) {

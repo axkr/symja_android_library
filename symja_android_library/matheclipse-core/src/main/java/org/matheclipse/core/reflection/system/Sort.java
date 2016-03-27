@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.IsBinaryFalse;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -27,8 +27,9 @@ public class Sort extends AbstractFunctionEvaluator {
 				if (ast.size() == 2) {
 					EvalAttributes.sort(shallowCopy);
 				} else {
-					// use the 2nd argument as a head for the comparator operation:
-					EvalAttributes.sort(shallowCopy, new IsBinaryFalse<IExpr>(ast.arg2()));
+					// use the 2nd argument as a head for the comparator
+					// operation:
+					EvalAttributes.sort(shallowCopy, new Predicates.IsBinaryFalse(ast.arg2()));
 				}
 				return shallowCopy;
 			} catch (Exception ex) {
