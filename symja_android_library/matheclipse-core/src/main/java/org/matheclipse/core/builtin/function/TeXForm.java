@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Return the TeX form of this expression.
  */
-public class TeXForm extends AbstractFunctionEvaluator {
+public class TeXForm extends AbstractCoreFunctionEvaluator {
 
 	public TeXForm() {
 	}
