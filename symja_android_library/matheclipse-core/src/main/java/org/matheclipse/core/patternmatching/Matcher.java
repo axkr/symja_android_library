@@ -1,6 +1,9 @@
 package org.matheclipse.core.patternmatching;
 
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -22,8 +25,85 @@ import org.matheclipse.core.visit.AbstractVisitor;
  *
  */
 public class Matcher implements Function<IExpr, IExpr> {
+	private static class PatternMatcherMapMethod extends AbstractPatternMatcherMethod {
+		final IPatternMethod fRightHandSide;
 
-	static class MatcherVisitor extends AbstractVisitor {
+		public PatternMatcherMapMethod(final IExpr leftHandSide, final IPatternMethod rightHandSide) {
+			super(leftHandSide);
+			fRightHandSide = rightHandSide;
+		}
+
+		@Override
+		IExpr evalMethod() {
+			return fRightHandSide.eval(fPatternMap);
+		}
+	}
+
+	private static class PatternMatcherFunctionMethod extends AbstractPatternMatcherMethod {
+		Function<IExpr, IExpr> fRightHandSide;
+
+		public PatternMatcherFunctionMethod(final IExpr leftHandSide, final Function<IExpr, IExpr> rightHandSide) {
+			super(leftHandSide);
+			fRightHandSide = rightHandSide;
+		}
+
+		@Override
+		IExpr evalMethod() {
+			IExpr arg1 = fPatternMap.getValue(0);
+			return fRightHandSide.apply(arg1);
+		}
+	}
+
+	private static class PatternMatcherBiFunctionMethod extends AbstractPatternMatcherMethod {
+		BiFunction<IExpr, IExpr, IExpr> fRightHandSide;
+
+		public PatternMatcherBiFunctionMethod(final IExpr leftHandSide,
+				final BiFunction<IExpr, IExpr, IExpr> rightHandSide) {
+			super(leftHandSide);
+			fRightHandSide = rightHandSide;
+		}
+
+		@Override
+		IExpr evalMethod() {
+			IExpr arg1 = fPatternMap.getValue(0);
+			IExpr arg2 = fPatternMap.getValue(0);
+			return fRightHandSide.apply(arg1, arg2);
+		}
+	}
+
+	private static class PatternMatcherPredicateMethod extends AbstractPatternMatcherMethod {
+		Predicate<IExpr> fRightHandSide;
+
+		public PatternMatcherPredicateMethod(final IExpr leftHandSide, final Predicate<IExpr> rightHandSide) {
+			super(leftHandSide);
+			fRightHandSide = rightHandSide;
+		}
+
+		@Override
+		IExpr evalMethod() {
+			IExpr arg1 = fPatternMap.getValue(0);
+			return fRightHandSide.test(arg1) ? F.True : F.False;
+		}
+	}
+
+	private static class PatternMatcherBiPredicateMethod extends AbstractPatternMatcherMethod {
+		BiPredicate<IExpr, IExpr> fRightHandSide;
+
+		public PatternMatcherBiPredicateMethod(final IExpr leftHandSide,
+				final BiPredicate<IExpr, IExpr> rightHandSide) {
+			super(leftHandSide);
+			fRightHandSide = rightHandSide;
+		}
+
+		@Override
+		IExpr evalMethod() {
+			IExpr arg1 = fPatternMap.getValue(0);
+			IExpr arg2 = fPatternMap.getValue(1);
+			return fRightHandSide.test(arg1, arg2) ? F.True : F.False;
+		}
+	}
+
+	private static class MatcherVisitor extends AbstractVisitor {
 		final Matcher matcher;
 
 		public MatcherVisitor(Matcher matcher) {
@@ -144,6 +224,61 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
+	 * If this rule matches the evaluation will return the result of the
+	 * <code>method.eval()</code> method.
+	 * 
+	 * @param patternMatchingRule
+	 * @param method
+	 */
+	public void caseMethod(final IExpr patternMatchingRule, final IPatternMethod method) {
+		rules.putDownRule(patternMatchingRule, new PatternMatcherMapMethod(patternMatchingRule, method));
+	}
+
+	/**
+	 * If this rule matches the evaluation will return the result of the
+	 * <code>function.apply()</code> method.
+	 * 
+	 * @param patternMatchingRule
+	 * @param function
+	 */
+	public void caseOf(final IExpr patternMatchingRule, final Function<IExpr, IExpr> function) {
+		rules.putDownRule(patternMatchingRule, new PatternMatcherFunctionMethod(patternMatchingRule, function));
+	}
+
+	/**
+	 * If this rule matches the evaluation will return the result of the
+	 * <code>function.apply()</code> method.
+	 * 
+	 * @param patternMatchingRule
+	 * @param function
+	 */
+	public void caseOf(final IExpr patternMatchingRule, final BiFunction<IExpr, IExpr, IExpr> function) {
+		rules.putDownRule(patternMatchingRule, new PatternMatcherBiFunctionMethod(patternMatchingRule, function));
+	}
+
+	/**
+	 * If this rule matches the evaluation will return <code>F.True</code> or
+	 * <code>F.False</code> depending on the <code>predicates</code> result.
+	 * 
+	 * @param patternMatchingRule
+	 * @param predicate
+	 */
+	public void caseBoole(final IExpr patternMatchingRule, final Predicate<IExpr> predicate) {
+		rules.putDownRule(patternMatchingRule, new PatternMatcherPredicateMethod(patternMatchingRule, predicate));
+	}
+
+	/**
+	 * If this rule matches the evaluation will return <code>F.True</code> or
+	 * <code>F.False</code> depending on the <code>predicates</code> result.
+	 * 
+	 * @param patternMatchingRule
+	 * @param predicate
+	 */
+	public void caseBoole(final IExpr patternMatchingRule, final BiPredicate<IExpr, IExpr> predicate) {
+		rules.putDownRule(patternMatchingRule, new PatternMatcherBiPredicateMethod(patternMatchingRule, predicate));
+	}
+
+	/**
 	 * Main method performing the pattern matching.
 	 *
 	 * @param expression
@@ -169,11 +304,17 @@ public class Matcher implements Function<IExpr, IExpr> {
 		return expression.accept(new MatcherVisitor(this));
 	}
 
+	// public static IExpr evalTest(PatternMap pm) {
+	// return F.List(pm.val(F.y));
+	// }
+	//
 	// public static void main(String[] args) {
 	// Matcher matcher = new Matcher();
 	// matcher.caseOf(F.Sin(F.x_), F.D(F.Sin(F.x), F.x));
-	//
-	// System.out.println(matcher.apply(F.Sin(F.y)));
+	// matcher.caseOf(F.Cos(F.x_), x -> F.Floor(x));
+	// matcher.caseBoole(F.Cot(F.x_), x -> false);
+	// matcher.caseMethod(F.Tan(F.y_), Matcher::evalTest);
+	// System.out.println(matcher.apply(F.Tan(F.z)));
 	// }
 
 }

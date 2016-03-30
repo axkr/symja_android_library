@@ -15,7 +15,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -351,7 +350,7 @@ public class RulesData implements Serializable {
 		}
 		return F.NIL;
 	}
- 
+
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,
 			final IAST expression, boolean showSteps) throws CloneNotSupportedException {
 		IPatternMatcher pmEvaluator;
@@ -593,6 +592,29 @@ public class RulesData implements Serializable {
 				// return pmEvaluator;
 				// }
 				// }
+			}
+			fPatternDownRules.add(pmEvaluator);
+			return pmEvaluator;
+
+		}
+
+	}
+
+	public IPatternMatcher putDownRule(final IExpr leftHandSide, final AbstractPatternMatcherMethod pmEvaluator) {
+		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
+			fSimplePatternDownRules = getSimplePatternDownRules();
+			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
+
+		} else {
+			if (headerSymbols.size() > 0) {
+				fSimpleOrderlesPatternDownRules = getSimpleOrderlessPatternDownRules();
+				return addSimpleOrderlessPatternDownRule(headerSymbols, leftHandSide, pmEvaluator);
+			}
+
+			fPatternDownRules = getPatternDownRules();
+			if (F.isSystemInitialized) {
+				fPatternDownRules.remove(pmEvaluator);
 			}
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;

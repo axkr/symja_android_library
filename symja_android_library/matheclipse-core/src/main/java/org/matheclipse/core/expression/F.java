@@ -1023,7 +1023,7 @@ public class F {
 	public final static IPattern F_DEFAULT = new Pattern(FSymbol, null, true);
 	public final static IPattern G_DEFAULT = new Pattern(GSymbol, null, true);
 	/**
-	 * * Constant integer &quot;0&quot;
+	 * Constant integer &quot;0&quot;
 	 */
 	public final static IntegerSym C0 = new IntegerSym(0);
 

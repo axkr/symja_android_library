@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -261,13 +263,26 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * @param pExpr
 	 * @return <code>null</code> if no matched expression exists
 	 */
-	public IExpr getValue(IPatternObject pattern) {
+	public IExpr getValue(@Nonnull IPatternObject pattern) {
 		ISymbol sym = pattern.getSymbol();
-		IExpr temp = pattern;
 		if (sym != null) {
-			temp = sym;
+			return val(sym);
 		}
+		IExpr temp = pattern;
+
 		int indx = get(temp);
+		return indx >= 0 ? fPatternValuesArray[indx] : null;
+	}
+
+	/**
+	 * Return the matched value for the given symbol
+	 * 
+	 * @param symbol
+	 *            the symbol
+	 * @return <code>null</code> if no matched expression exists
+	 */
+	public final IExpr val(@Nonnull ISymbol symbol) {
+		int indx = get(symbol);
 		return indx >= 0 ? fPatternValuesArray[indx] : null;
 	}
 
