@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
-
-import org.apache.commons.math4.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -16,7 +13,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 import com.google.common.math.BigIntegerMath;
-import com.google.common.math.LongMath;
 
 /**
  * Compute the Bernoulli number of the first kind.

@@ -480,6 +480,17 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Table(BernoulliB(k), {k, 0, 10})", "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
 	}
 
+	public void testBesselJ() {
+		check("BesselJ(0.0, 0.0)", "1.0");
+		check("BesselJ(4.0, 0.0)", "-0.3971498098638474");
+		// commons math: Bessel function of order 0 cannot be computed for x = -3
+		check("BesselJ(-3.0, 0.0)", "BesselJ(-3.0,0.0)");
+		
+		check("BesselJ(-3, 0)", "0");
+		check("BesselJ(0, 0)", "1");
+		check("BesselJ(4, 0)", "0");
+	}
+	
 	public void testBinomial() {
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
@@ -1151,6 +1162,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("E^(2*I*Pi)", "1");
 		check("E^(2*I*Pi*3)", "1");
 		check("E^(5*I*Pi)", "-1");
+		check("E^Infinity", "Infinity");
+		check("E^(-Infinity)", "0");
 	}
 
 	// public void testExpand() {
