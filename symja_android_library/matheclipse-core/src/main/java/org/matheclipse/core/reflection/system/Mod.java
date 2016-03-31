@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
@@ -19,6 +20,12 @@ public class Mod extends AbstractArg2 {
 			return i0.negate().mod(i1.negate()).negate();
 		}
 		return i0.mod(i1);
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
 	}
 
 }

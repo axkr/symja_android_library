@@ -31,7 +31,7 @@ public class FresnelC extends AbstractTrigArg1 implements INumeric {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
+	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}

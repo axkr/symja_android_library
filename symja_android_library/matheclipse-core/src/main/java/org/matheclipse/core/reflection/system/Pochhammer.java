@@ -75,6 +75,6 @@ public class Pochhammer extends AbstractArg2 {
 
 	@Override
 	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 }

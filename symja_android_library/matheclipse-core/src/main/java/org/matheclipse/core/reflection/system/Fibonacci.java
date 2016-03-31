@@ -17,14 +17,14 @@ public class Fibonacci extends AbstractTrigArg1 {
 		IInteger b = F.C0;
 		IInteger c = F.C1;
 		IInteger d = F.C0;
-		IInteger f = F.C0;
+		IInteger result = F.C0;
 		final IInteger c2 = F.C2;
 		IInteger temp = iArg;
 
 		while (!temp.isZero()) {
 			if (temp.isOdd()) {
-				d = f.multiply(c);
-				f = a.multiply(c).add(f.multiply(b).add(d));
+				d = result.multiply(c);
+				result = a.multiply(c).add(result.multiply(b).add(d));
 				a = a.multiply(b).add(d);
 			}
 
@@ -34,7 +34,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 			temp = temp.shiftRight(1);
 		}
 
-		return f;
+		return result;
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.SyntaxError;
 
 public class Log2 extends AbstractArg1 implements INumeric {
 	public Log2() {
@@ -20,5 +22,11 @@ public class Log2 extends AbstractArg1 implements INumeric {
 			throw new UnsupportedOperationException();
 		}
 		return Math.log(stack[top] / 2.0d);
+	}
+	
+	@Override
+	public void setUp(ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
 	}
 }

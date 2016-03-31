@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class Quotient extends AbstractArg2 {
 	public Quotient() {
@@ -13,4 +14,9 @@ public class Quotient extends AbstractArg2 {
 		return (i0).quotient(i1);
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
+	}
 }

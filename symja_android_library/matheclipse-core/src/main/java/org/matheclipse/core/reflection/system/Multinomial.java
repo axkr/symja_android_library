@@ -46,7 +46,7 @@ public class Multinomial extends AbstractFunctionEvaluator {
 
 	}
 
-	public static IInteger multinomial(final List<IExpr> ast) {
+	public static IInteger multinomial(final IAST ast) {
 		IInteger[] k = new IInteger[ast.size() - 1];
 		IInteger n = F.C0;
 		for (int i = 1; i < ast.size(); i++) {
@@ -82,6 +82,6 @@ public class Multinomial extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 }

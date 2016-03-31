@@ -18,8 +18,10 @@ import org.matheclipse.parser.client.SyntaxError;
  * Returns the Gamma function value.
  * </p>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a> and <a
- * href="https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function">Particular values of the Gamma function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a>
+ * and <a href=
+ * "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function">
+ * Particular values of the Gamma function</a>
  * 
  */
 public class Gamma extends AbstractTrigArg1 {
@@ -63,7 +65,8 @@ public class Gamma extends AbstractTrigArg1 {
 			if (frac.getDenominator().equals(F.C2)) {
 				IInteger n = frac.getNumerator();
 				// Sqrt(Pi) * (n-2)!! / 2^((n-1)/2)
-				return F.Times(F.Sqrt(F.Pi), F.Factorial2(n.subtract(F.C2)), F.Power(F.C2, F.Times(F.C1D2, F.Subtract(F.C1, n))));
+				return F.Times(F.Sqrt(F.Pi), F.Factorial2(n.subtract(F.C2)),
+						F.Power(F.C2, F.Times(F.C1D2, F.Subtract(F.C1, n))));
 
 			}
 		}
@@ -71,7 +74,7 @@ public class Gamma extends AbstractTrigArg1 {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
+	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}

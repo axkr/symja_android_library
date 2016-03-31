@@ -48,6 +48,6 @@ public class UnitStep extends AbstractEvaluator implements INumeric {
 
 	@Override
 	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 }

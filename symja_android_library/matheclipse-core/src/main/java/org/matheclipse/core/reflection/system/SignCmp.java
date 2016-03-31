@@ -36,7 +36,7 @@ public class SignCmp extends AbstractEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 
 }

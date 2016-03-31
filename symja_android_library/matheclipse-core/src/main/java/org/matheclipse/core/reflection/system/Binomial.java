@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 
 import com.google.common.math.BigIntegerMath;
 
@@ -95,5 +96,11 @@ public class Binomial extends AbstractArg2 {
 			return F.Binomial(n, F.Subtract(n, k));
 		}
 		return F.NIL;
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
 	}
 }
