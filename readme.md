@@ -24,3 +24,49 @@ License:
 * the Symja parser (and simple numeric evaluators) are published under the APACHE LICENSE Version 2.0.
 * the Apache Commons Mathematics Library is published under Apache software licence
 * the JAS Java Algebra System is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence 
+
+Examples
+```
+>>> 24/60
+2/5
+
+>>> N(24/60)
+0.4
+
+>>> sin(30*degree)
+1/2
+
+>>> sin(pi/2)
+1
+
+>>> a+a+4*b^2+3*b^2
+2*a+7*b^2
+
+>>> solve(a*x + b == 0, x)
+{{x->-b/a}}
+
+>>> integrate(cos(x)^5, x)
+-2/3*Sin(x)^3+Sin(x)^5/5+Sin(x)
+
+>>> D(sin(x^3), x)
+3*x^2*Cos(x^3)
+
+>>> factor(-1+x^16)
+(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)
+
+>>> factor(5+x^12, Modulus->7)
+(2+x^3)*(4+x^6)*(5+x^3)
+
+>>> expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))
+-1+x^16
+
+>>> det({{1,2},{3,4}})
+-2
+
+>>> inverse({{1,2},{3,4}})
+{{-2,1},
+ {3/2,-1/2}}
+
+>>> factorinteger(2^15-5)
+{{3,1},{67,1},{163,1}}
+```
