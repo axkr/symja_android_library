@@ -112,11 +112,12 @@ public class Matcher implements Function<IExpr, IExpr> {
 
 		@Override
 		public IExpr visit(IAST ast) {
+			IAST list = ast;
 			boolean evaled = false;
-			IExpr temp = matcher.apply(ast);
+			IExpr temp = matcher.apply(list);
 			if (temp.isPresent()) {
 				if (temp.isAST()) {
-					ast = (IAST) temp;
+					list = (IAST) temp;
 					evaled = true;
 				} else {
 					return temp;
@@ -124,13 +125,13 @@ public class Matcher implements Function<IExpr, IExpr> {
 			}
 			IAST result = F.NIL;
 			int i = 1;
-			while (i < ast.size()) {
-				temp = ast.get(i).accept(this);
+			while (i < list.size()) {
+				temp = list.get(i).accept(this);
 				if (temp.isPresent()) {
 					// something was evaluated - return a new IAST:
-					result = ast.clone();
+					result = list.clone();
 					for (int j = 1; j < i; j++) {
-						result.set(j, ast.get(j));
+						result.set(j, list.get(j));
 					}
 					result.set(i++, temp);
 					break;
@@ -138,12 +139,12 @@ public class Matcher implements Function<IExpr, IExpr> {
 				i++;
 			}
 			if (result.isPresent()) {
-				while (i < ast.size()) {
-					temp = ast.get(i).accept(this);
+				while (i < list.size()) {
+					temp = list.get(i).accept(this);
 					if (temp.isPresent()) {
 						result.set(i, temp);
 					} else {
-						result.set(i, ast.get(i));
+						result.set(i, list.get(i));
 					}
 					i++;
 				}
@@ -152,43 +153,52 @@ public class Matcher implements Function<IExpr, IExpr> {
 				return result;
 			}
 			if (evaled) {
-				return ast;
+				return list;
 			}
 			return F.NIL;
 		}
 
+		@Override
 		public IExpr visit(IInteger element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IFraction element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IComplex element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(INum element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IComplexNum element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(ISymbol element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IPattern element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IPatternSequence element) {
 			return matcher.apply(element);
 		}
 
+		@Override
 		public IExpr visit(IStringX element) {
 			return matcher.apply(element);
 		}

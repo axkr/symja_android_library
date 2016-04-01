@@ -90,7 +90,7 @@ public class F {
 	 * evaluation process that no evaluation was possible (i.e. no further
 	 * definition was found to create a new expression from the existing one).
 	 */
-	public static NILPointer NIL = new NILPointer();
+	public final static NILPointer NIL = new NILPointer();
 
 	public final static ISymbol Catalan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
 			new org.matheclipse.core.builtin.constant.Catalan());
@@ -2332,54 +2332,6 @@ public class F {
 		return binary(Equal, a0, a1);
 	}
 
-	public static boolean equals(IExpr a, IExpr b) {
-		IExpr tempA = a;
-		IExpr tempB = b;
-		if (a.isAST()) {
-			tempA = eval(a);
-		}
-		if (b.isAST()) {
-			tempB = eval(b);
-		}
-		return tempA.equals(tempB);
-	}
-
-	public static boolean equals(IExpr a, Integer i) {
-		IExpr tempA = a;
-		IExpr tempB = integer(i.longValue());
-		if (a.isAST()) {
-			tempA = eval(a);
-		}
-		return tempA.equals(tempB);
-	}
-
-	public static boolean equals(IExpr a, java.math.BigInteger i) {
-		IExpr tempA = a;
-		IExpr tempB = integer(i);
-		if (a.isAST()) {
-			tempA = eval(a);
-		}
-		return tempA.equals(tempB);
-	}
-
-	public static boolean equals(Integer i, IExpr b) {
-		IExpr tempA = integer(i.longValue());
-		IExpr tempB = b;
-		if (b.isAST()) {
-			tempB = eval(b);
-		}
-		return tempA.equals(tempB);
-	}
-
-	public static boolean equals(java.math.BigInteger i, IExpr b) {
-		IExpr tempA = integer(i);
-		IExpr tempB = b;
-		if (b.isAST()) {
-			tempB = eval(b);
-		}
-		return tempA.equals(tempB);
-	}
-
 	public static IAST Erf(final IExpr a) {
 		return unaryAST1(Erf, a);
 	}
@@ -2408,6 +2360,7 @@ public class F {
 	 * @see EvalEngine#evalQuiet(IExpr)
 	 * @deprecated use EvalEngine#evalQuiet();
 	 */
+	@Deprecated
 	public static IExpr evalQuiet(IExpr a) {
 		return EvalEngine.get().evalQuiet(a);
 	}
@@ -4553,8 +4506,8 @@ public class F {
 	/**
 	 * Global array of predefined constant expressions.
 	 */
-	public final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1,
-			C2, C3, C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1, CInfinity,
+	final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
+			C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1, CInfinity,
 			CNInfinity, CComplexInfinity, CSqrt2, CSqrt3, CSqrt5, CSqrt6, CSqrt7, CSqrt10, C1DSqrt2, C1DSqrt3, C1DSqrt5,
 			C1DSqrt6, C1DSqrt7, C1DSqrt10, Slot1, Slot2,
 			// start symbols

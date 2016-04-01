@@ -35,15 +35,17 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * HMArrayList is an implementation of {@link List}, backed by an array. All optional operations adding, removing, and replacing are
- * supported. The elements can be any objects.
+ * HMArrayList is an implementation of {@link List}, backed by an array. All
+ * optional operations adding, removing, and replacing are supported. The
+ * elements can be any objects.
  * 
  * Copied and modified from the Apache Harmony project.
  * 
  */
 public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cloneable, Serializable, RandomAccess {
 
-	private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$
+	// private static final ObjectStreamField[] serialPersistentFields = { new
+	// ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$
 
 	private static final long serialVersionUID = 8683452581122892189L;
 
@@ -61,8 +63,9 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} containing the elements of the specified collection. The initial size of the
-	 * {@code ArrayList} will be 10% higher than the size of the specified collection.
+	 * Constructs a new instance of {@code ArrayList} containing the elements of
+	 * the specified collection. The initial size of the {@code ArrayList} will
+	 * be 10% higher than the size of the specified collection.
 	 * 
 	 * @param collection
 	 *            the collection of elements to add.
@@ -91,7 +94,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
+	 * Constructs a new instance of {@code ArrayList} with the specified
+	 * capacity.
 	 * 
 	 * @param capacity
 	 *            the initial capacity of this {@code ArrayList}.
@@ -105,70 +109,79 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
+	 * Get the first argument (i.e. the second element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(1) ). <br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
 	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @return the first argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public final IExpr arg1() {
-		// return get(1);
 		return array[firstIndex + 1];
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>), <code>arg2()</code>
-	 * returns <code>y</code>.
+	 * Get the second argument (i.e. the third element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code>
+	 * (i.e. <code>Power(x, y)</code>), <code>arg2()</code> returns
+	 * <code>y</code>.
 	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @return the second argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public final IExpr arg2() {
-		// return get(2);
 		return array[firstIndex + 2];
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @return the third argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public final IExpr arg3() {
-		// return get(3);
 		return array[firstIndex + 3];
 	}
 
 	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
+	 * Get the fourth argument (i.e. the fifth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(4) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns <code>d</code>.
 	 * 
-	 * @return the fourth argument of the function represented by this <code>AST</code>.
+	 * @return the fourth argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public final IExpr arg4() {
-		// return get(4);
 		return array[firstIndex + 4];
 	}
 
 	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns
-	 * <code>e</code>.
+	 * Get the fifth argument (i.e. the sixth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(5) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns <code>e</code>
+	 * .
 	 * 
-	 * @return the fifth argument of the function represented by this <code>AST</code>.
+	 * @return the fifth argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public final IExpr arg5() {
-		// return get(5);
 		return array[firstIndex + 5];
 	}
 
@@ -181,7 +194,7 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 		}
 		return set;
 	}
-	
+
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
@@ -201,9 +214,10 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before any
-	 * previous element at the specified location. If the location is equal to the size of this {@code ArrayList}, the object is
-	 * added at the end.
+	 * Inserts the specified object into this {@code ArrayList} at the specified
+	 * location. The object is inserted before any previous element at the
+	 * specified location. If the location is equal to the size of this
+	 * {@code ArrayList}, the object is added at the end.
 	 * 
 	 * @param location
 	 *            the index at which to insert the object.
@@ -238,13 +252,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 			}
 			array[lastIndex++] = object;
 		} else {
-			// throw new IndexOutOfBoundsException(
-			// luni.0A=Index: {0}, Size: {1}
-			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex -
-			// firstIndex)));
-			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-					+ Integer.valueOf(lastIndex - firstIndex));
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 
 		modCount++;
@@ -255,7 +264,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	 * 
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
 	 */
 	@Override
 	public boolean addAll(Collection<? extends IExpr> collection) {
@@ -274,14 +284,16 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in the order
-	 * they are returned from the collection's iterator.
+	 * Inserts the objects in the specified collection at the specified location
+	 * in this List. The objects are added in the order they are returned from
+	 * the collection's iterator.
 	 * 
 	 * @param location
 	 *            the index at which to insert.
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
@@ -290,16 +302,11 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (location < 0 || location > size) {
-			// throw new IndexOutOfBoundsException(
-			// luni.0A=Index: {0}, Size: {1}
-			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex -
-			// firstIndex)));
-			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-					+ Integer.valueOf(lastIndex - firstIndex));
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 		if (this == collection) {
-			collection = (HMArrayList) clone();
+			collection = clone();
 		}
 		Object[] dumparray = collection.toArray();
 		int growSize = dumparray.length;
@@ -357,7 +364,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size
+	 * and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -365,18 +373,42 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	@Override
 	@SuppressWarnings("unchecked")
 	public IAST clone() {
-		// try {
 		HMArrayList newList = (HMArrayList) super.clone();
 		newList.array = array.clone();
 		newList.hashValue = 0;
 		return newList;
-		// } catch (CloneNotSupportedException e) {
-		// return null;
-		// }
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof HMArrayList) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			if (obj == this) {
+				return true;
+			}
+			HMArrayList list = (HMArrayList) obj;
+			int size = lastIndex - firstIndex;
+			if (size != list.size()) {
+				return false;
+			}
+			int i1 = firstIndex;
+			int i2 = list.firstIndex;
+			for (int i = 0; i < size; i++) {
+				if (array[i1++].equals(list.array[i2++])) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		return super.equals(obj);
 	}
 
 	/**
-	 * Ensures that after this operation the {@code ArrayList} can hold the specified number of elements without further growing.
+	 * Ensures that after this operation the {@code ArrayList} can hold the
+	 * specified number of elements without further growing.
 	 * 
 	 * @param minimumCapacity
 	 *            the minimum capacity asked for.
@@ -397,8 +429,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 		if ((index = firstIndex + location) < lastIndex) {
 			return array[index];
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-				+ Integer.valueOf(lastIndex - firstIndex));
+		throw new IndexOutOfBoundsException(
+				"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 	}
 
 	private void growAtEnd(int required) {
@@ -483,11 +515,10 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 
 	@Override
 	public final IExpr head() {
-		// return get(0);
 		return array[firstIndex];
 	}
 
-	final protected void init(IExpr[] array) {
+	protected final void init(IExpr[] array) {
 		this.array = array;
 		firstIndex = hashValue = 0;
 		lastIndex = modCount = array.length;
@@ -544,13 +575,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 				firstIndex = lastIndex = 0;
 			}
 		} else {
-			// throw new IndexOutOfBoundsException(
-			// luni.0A=Index: {0}, Size: {1}
-			//                Messages.getString("luni.0A", //$NON-NLS-1$
-			// Integer.valueOf(location), Integer.valueOf(lastIndex -
-			// firstIndex)));
-			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-					+ Integer.valueOf(lastIndex - firstIndex));
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 
 		modCount++;
@@ -569,7 +595,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Removes the objects in the specified range from the start to the end, but not including the end index.
+	 * Removes the objects in the specified range from the start to the end, but
+	 * not including the end index.
 	 * 
 	 * @param start
 	 *            the index at which to start removing.
@@ -600,16 +627,13 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 			}
 			modCount++;
 		} else {
-			// throw new IndexOutOfBoundsException(
-			// luni.0B=Array index out of range: {0}
-			//                Messages.getString("luni.0B", //$NON-NLS-1$
-			// lastIndex - firstIndex - end));
 			throw new IndexOutOfBoundsException("Index: " + (lastIndex - firstIndex - end));
 		}
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList}
+	 * with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -627,8 +651,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 			array[firstIndex + location] = object;
 			return result;
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-				+ Integer.valueOf(lastIndex - firstIndex));
+		throw new IndexOutOfBoundsException(
+				"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 	}
 
 	/**
@@ -642,7 +666,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this
+	 * {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
@@ -655,15 +680,19 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Returns an array containing all elements contained in this {@code ArrayList}. If the specified array is large enough to hold
-	 * the elements, the specified array is used, otherwise an array of the same type is created. If the specified array is used and
-	 * is larger than this {@code ArrayList}, the array element following the collection elements is set to null.
+	 * Returns an array containing all elements contained in this
+	 * {@code ArrayList}. If the specified array is large enough to hold the
+	 * elements, the specified array is used, otherwise an array of the same
+	 * type is created. If the specified array is used and is larger than this
+	 * {@code ArrayList}, the array element following the collection elements is
+	 * set to null.
 	 * 
 	 * @param contents
 	 *            the array.
 	 * @return an array of the elements from this {@code ArrayList}.
 	 * @throws ArrayStoreException
-	 *             when the type of an element in this {@code ArrayList} cannot be stored in the type of the specified array.
+	 *             when the type of an element in this {@code ArrayList} cannot
+	 *             be stored in the type of the specified array.
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -681,7 +710,8 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 	}
 
 	/**
-	 * Sets the capacity of this {@code ArrayList} to be the same as the current size.
+	 * Sets the capacity of this {@code ArrayList} to be the same as the current
+	 * size.
 	 * 
 	 * @see #size
 	 */
@@ -700,7 +730,6 @@ public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cl
 		int size = lastIndex - firstIndex;
 		fields.put("size", size); //$NON-NLS-1$
 		stream.writeFields();
-		// stream.writeInt(array.length);
 		// don't use an iterator here!
 		for (int i = 0; i < size; i++) {
 			stream.writeObject(get(i));
