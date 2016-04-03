@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @deprecated
  */
+@Deprecated
 public class Matrix extends ASTDelegate {
 	private final int fColumns;
 
@@ -19,6 +20,7 @@ public class Matrix extends ASTDelegate {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated
 	public Matrix(IAST ast, int columns) {
 		super(ast);
 		fColumns = columns;
@@ -30,6 +32,7 @@ public class Matrix extends ASTDelegate {
 	 * @param columns
 	 * @deprecated
 	 */
+	@Deprecated
 	public Matrix(int rows, int columns) {
 		super();
 		fColumns = columns;
@@ -41,6 +44,7 @@ public class Matrix extends ASTDelegate {
 	 * @param values
 	 * @deprecated
 	 */
+	@Deprecated
 	public Matrix(int[][] values) {
 		super();
 		fColumns = values[0].length;

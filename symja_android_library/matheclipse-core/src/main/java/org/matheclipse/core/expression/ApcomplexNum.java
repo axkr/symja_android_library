@@ -36,7 +36,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public static ApcomplexNum valueOf(final double real, long precision) {
-		return valueOf(new Apcomplex(new Apfloat(real, precision), Apfloat.ZERO));
+		return valueOf(new Apcomplex(new Apfloat(real, precision), Apcomplex.ZERO));
 	}
 
 	public static ApcomplexNum valueOf(final double real, final double imaginary, long precision) {
@@ -208,7 +208,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(),
 		// fApcomplex.imag().doubleValue());
 		// }
-		if (fApcomplex.imag().equals(Apfloat.ZERO)) {
+		if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
 			return ApfloatNum.valueOf(fApcomplex.real());
 		}
 		return F.NIL;
@@ -280,10 +280,12 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 	// return fComplex.floatValue();
 	// }
 
+	@Override
 	public double getImaginary() {
 		return fApcomplex.imag().doubleValue();
 	}
 
+	@Override
 	public double getReal() {
 		return fApcomplex.real().doubleValue();
 	}
@@ -327,7 +329,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 			return valueOf(fApcomplex.add(((ApcomplexNum) that).fApcomplex));
 		}
 		if (that instanceof ApfloatNum) {
-			return add(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apfloat.ZERO));
+			return add(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return add(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
@@ -366,7 +368,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 			return valueOf(fApcomplex.multiply(((ApcomplexNum) that).fApcomplex));
 		}
 		if (that instanceof ApfloatNum) {
-			return multiply(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apfloat.ZERO));
+			return multiply(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart(), fApcomplex.precision()));
@@ -393,9 +395,9 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public int complexSign() {
-		final int i = (int) fApcomplex.real().signum();
+		final int i = fApcomplex.real().signum();
 		if (i == 0) {
-			return (int) fApcomplex.imag().signum();
+			return fApcomplex.imag().signum();
 		}
 		return i;
 	}

@@ -81,6 +81,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	private PatternSequence() {
 	}
 
+	@Override
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		// the ast contains a pattern sequence (i.e. "x__")
@@ -116,6 +117,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * @param pm2
 	 * @return
 	 */
+	@Override
 	public boolean equivalent(final IPatternObject patternExpr2, final PatternMap pm1, PatternMap pm2) {
 		if (this == patternExpr2) {
 			return true;
@@ -137,11 +139,13 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return false;
 	}
 
+	@Override
 	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
 		IAST sequence = F.Sequence(expr);
 		return matchPatternSequence(sequence, patternMap);
 	}
 
+	@Override
 	public boolean matchPatternSequence(final IAST sequence, PatternMap patternMap) {
 		if (!isConditionMatchedSequence(sequence, patternMap)) {
 			return false;
@@ -154,6 +158,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return patternMap.setValue(this, sequence);
 	}
 
+	@Override
 	public IExpr getCondition() {
 		return fCondition;
 	}
@@ -167,6 +172,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * @return
 	 */
+	@Override
 	public int getIndex(PatternMap pm) {
 		if (pm != null) {
 			return pm.get(fSymbol);
@@ -177,6 +183,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * @return
 	 */
+	@Override
 	public ISymbol getSymbol() {
 		return fSymbol;
 	}
@@ -187,6 +194,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int hierarchy() {
 		return PATTERNID;
 	}
@@ -266,6 +274,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return buffer.toString();
 	}
 
+	@Override
 	public String fullFormString() {
 		StringBuffer buf = new StringBuffer();
 		if (fSymbol == null) {
@@ -293,6 +302,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * a negative integer, zero, or a positive integer as this expression is
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof PatternSequence) {
 			int cp;
@@ -326,14 +336,17 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 		return super.compareTo(expr);
 	}
 
+	@Override
 	public ISymbol head() {
 		return F.PatternHead;
 	}
 
+	@Override
 	public boolean isBlank() {
 		return false;
 	}
 
+	@Override
 	public boolean isConditionMatchedSequence(final IAST sequence, PatternMap patternMap) {
 		if (fCondition == null) {
 			patternMap.setValue(this, sequence);
@@ -374,6 +387,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
@@ -381,6 +395,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
@@ -388,6 +403,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
@@ -403,6 +419,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	 * 
 	 * @return
 	 */
+	@Override
 	public boolean isDefault() {
 		return fDefault;
 	}
@@ -414,11 +431,13 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final boolean isPatternExpr() {
 		return true;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	final public boolean isPatternSequence() {
 		return true;
 	}

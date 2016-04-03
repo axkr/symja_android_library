@@ -86,7 +86,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
-		return fApfloat.truncate().equals(new Apint(ii.getBigNumerator())) && fApfloat.frac().equals(Apint.ZERO);
+		return fApfloat.truncate().equals(new Apint(ii.getBigNumerator())) && fApfloat.frac().equals(Apcomplex.ZERO);
 	}
 
 	/** {@inheritDoc} */
@@ -100,19 +100,19 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumIntValue() {
-		return fApfloat.frac().equals(Apfloat.ZERO);
+		return fApfloat.frac().equals(Apcomplex.ZERO);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
-		return fApfloat.compareTo(Apfloat.ZERO) < 0;
+		return fApfloat.compareTo(Apcomplex.ZERO) < 0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
-		return fApfloat.compareTo(Apfloat.ZERO) > 0;
+		return fApfloat.compareTo(Apcomplex.ZERO) > 0;
 	}
 
 	@Override
@@ -157,7 +157,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
-		return ApfloatMath.abs(fApfloat).compareTo(Apfloat.ONE);
+		return ApfloatMath.abs(fApfloat).compareTo(Apcomplex.ONE);
 	}
 
 	@Override
@@ -169,11 +169,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 			return add(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
 		}
 		if (that instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).add((ApcomplexNum) that);
+			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO).add((ApcomplexNum) that);
 		}
 		if (that instanceof ComplexNum) {
 			ComplexNum cn = (ComplexNum) that;
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO)
+			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.plus(that);
@@ -286,11 +286,11 @@ public class ApfloatNum extends ExprImpl implements INum {
 			return multiply(ApfloatNum.valueOf(((Num) that).getRealPart(), fApfloat.precision()));
 		}
 		if (that instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO).multiply((ApcomplexNum) that);
+			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO).multiply((ApcomplexNum) that);
 		}
 		if (that instanceof ComplexNum) {
 			ComplexNum cn = (ComplexNum) that;
-			return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO)
+			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
 		return super.times(that);
@@ -339,19 +339,19 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isE() {
-		return fApfloat.equals(ApfloatMath.exp(Apfloat.ONE));
+		return fApfloat.equals(ApfloatMath.exp(Apcomplex.ONE));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isMinusOne() {
-		return fApfloat.equals(Apfloat.MINUS_ONE);
+		return fApfloat.equals(Apcomplex.MINUS_ONE);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOne() {
-		return fApfloat.equals(Apfloat.ONE);
+		return fApfloat.equals(Apcomplex.ONE);
 	}
 
 	/** {@inheritDoc} */
@@ -369,7 +369,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero() {
-		return fApfloat.equals(Apfloat.ZERO);
+		return fApfloat.equals(Apcomplex.ZERO);
 		// return fDouble == 0.0;
 	}
 
@@ -499,7 +499,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	@Override
 	public ApcomplexNum apcomplexNumValue(long precision) {
-		return ApcomplexNum.valueOf(fApfloat, Apfloat.ZERO);
+		return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO);
 	}
 
 	@Override
@@ -507,10 +507,12 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return ComplexNum.valueOf(fApfloat.doubleValue());
 	}
 
+	@Override
 	public double getImaginary() {
 		return 0.0;
 	}
 
+	@Override
 	public double getReal() {
 		return doubleValue();
 	}

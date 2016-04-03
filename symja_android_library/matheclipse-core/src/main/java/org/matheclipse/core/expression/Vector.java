@@ -8,12 +8,14 @@ import org.matheclipse.core.interfaces.IAST;
  * 
  * @deprecated
  */
+@Deprecated
 public class Vector extends ASTDelegate {
 	/**
 	 * 
 	 * @param ast
 	 * @deprecated
 	 */
+	@Deprecated
 	public Vector(IAST ast) {
 		super(ast);
 	}
@@ -23,6 +25,7 @@ public class Vector extends ASTDelegate {
 	 * @param size
 	 * @deprecated
 	 */
+	@Deprecated
 	public Vector(int size) {
 		super();
 		fAst = createAST(size);
@@ -33,6 +36,7 @@ public class Vector extends ASTDelegate {
 	 * @param values
 	 * @deprecated
 	 */
+	@Deprecated
 	public Vector(int[] values) {
 		super();
 		fAst = createAST(values);

@@ -75,6 +75,7 @@ public class AST1 extends AST0 {
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	final public IExpr arg1() {
 		return arg1;
 	}

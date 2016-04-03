@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @deprecated
  */
+@Deprecated
 public class MethodSymbol extends Symbol {
 	/**
 	 * 
@@ -34,6 +35,7 @@ public class MethodSymbol extends Symbol {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated
 	public MethodSymbol(final String symbolName, final String packagename, final String classname, final String methodname) {
 		super(symbolName);
 		try {
@@ -52,6 +54,7 @@ public class MethodSymbol extends Symbol {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated
 	public MethodSymbol(final String symbolName, final String classname, final String methodname) {
 		this(symbolName, "org.matheclipse.core.reflection.system", classname, methodname);
 

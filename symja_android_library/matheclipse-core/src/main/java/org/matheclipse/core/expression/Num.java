@@ -641,10 +641,12 @@ public class Num extends ExprImpl implements INum {
 		return ComplexNum.valueOf(doubleValue(), 0.0);
 	}
 	
+	@Override
 	public double getImaginary() {
 		return 0.0;
 	}
 
+	@Override
 	public double getReal() {
 		return doubleValue();
 	}

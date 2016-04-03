@@ -291,10 +291,12 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	// return fComplex.floatValue();
 	// }
 
+	@Override
 	public double getImaginary() {
 		return fComplex.getImaginary();
 	}
 
+	@Override
 	public double getReal() {
 		return fComplex.getReal();
 	}
@@ -417,7 +419,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof ApfloatNum) {
 			ApfloatNum afn = (ApfloatNum) that;
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).add(
-					ApcomplexNum.valueOf(afn.fApfloat, Apfloat.ZERO));
+					ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return add(ComplexNum.valueOf(((Num) that).getRealPart()));
@@ -500,7 +502,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof ApfloatNum) {
 			ApfloatNum afn = (ApfloatNum) that;
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).multiply(
-					ApcomplexNum.valueOf(afn.fApfloat, Apfloat.ZERO));
+					ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));

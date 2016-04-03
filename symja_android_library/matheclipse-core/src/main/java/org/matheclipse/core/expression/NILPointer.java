@@ -114,6 +114,7 @@ public class NILPointer extends AbstractAST {
 		return this == obj;
 	}
 
+	@Override
 	public final IExpr evaluate(EvalEngine engine) {
 		throw new UnsupportedOperationException();
 	}
@@ -128,10 +129,12 @@ public class NILPointer extends AbstractAST {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public final boolean isAST() {
 		return false;
 	}
 
+	@Override
 	public final boolean isAST(final IExpr header) {
 		return false;
 	}
@@ -141,30 +144,37 @@ public class NILPointer extends AbstractAST {
 		return false;
 	}
 
+	@Override
 	public boolean isSameHead(IExpr head) {
 		return head().equals(head);
 	}
 
+	@Override
 	public boolean isSameHead(IExpr head, int length) {
 		return false;
 	}
 
+	@Override
 	public boolean isSameHead(IExpr head, int minLength, int maxLength) {
 		return false;
 	}
 
+	@Override
 	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		return false;
 	}
 
+	@Override
 	public final IExpr orElse(final IExpr other) {
 		return other;
 	}
 
+	@Override
 	public final IExpr orElseGet(Supplier<? extends IExpr> other) {
 		return other.get();
 	}
 
+	@Override
 	public final <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
 		throw exceptionSupplier.get();
 	}

@@ -241,6 +241,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final long leafCount() {
 		return isAtom() ? 1L : 0L;
 	}
@@ -287,11 +288,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public IExpr opposite() {
 		return times(F.CN1);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final IExpr optional(final IExpr that) {
 		if (that != null) {
 			return that;

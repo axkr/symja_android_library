@@ -521,10 +521,12 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return tb.toString();
 	}
 	
+	@Override
 	public double getImaginary() {
 		return _imaginary.doubleValue();
 	}
 
+	@Override
 	public double getReal() {
 		return _real.doubleValue();
 	}

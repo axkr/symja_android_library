@@ -67,6 +67,7 @@ public class Blank extends ExprImpl implements IPattern {
 		this.fDefault = def;
 	}
 
+	@Override
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
@@ -85,6 +86,7 @@ public class Blank extends ExprImpl implements IPattern {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
@@ -92,6 +94,7 @@ public class Blank extends ExprImpl implements IPattern {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
@@ -99,6 +102,7 @@ public class Blank extends ExprImpl implements IPattern {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
@@ -131,6 +135,7 @@ public class Blank extends ExprImpl implements IPattern {
 	 * @param pm2
 	 * @return
 	 */
+	@Override
 	public boolean equivalent(final IPatternObject patternObject, final PatternMap pm1, PatternMap pm2) {
 		if (this == patternObject) {
 			return true;
@@ -165,10 +170,12 @@ public class Blank extends ExprImpl implements IPattern {
 		return false;
 	}
 
+	@Override
 	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
 		return isConditionMatched(expr, patternMap);
 	}
 
+	@Override
 	public IExpr getCondition() {
 		return fCondition;
 	}
@@ -201,6 +208,7 @@ public class Blank extends ExprImpl implements IPattern {
 		return (fCondition == null) ? 193 : 23 + fCondition.hashCode();
 	}
 
+	@Override
 	public ISymbol head() {
 		return F.BlankHead;
 	}
@@ -280,6 +288,7 @@ public class Blank extends ExprImpl implements IPattern {
 		return buffer.toString();
 	}
 
+	@Override
 	public String fullFormString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Blank");

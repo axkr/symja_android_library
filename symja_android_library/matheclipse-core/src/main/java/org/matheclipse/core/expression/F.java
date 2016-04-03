@@ -1493,7 +1493,7 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final String symbolName) {
-		return PatternSequence.valueOf((Symbol) $s(symbolName));
+		return PatternSequence.valueOf($s(symbolName));
 	}
 
 	/**
@@ -2091,7 +2091,7 @@ public class F {
 	}
 
 	public static IComplexNum complexNum(final Apfloat r) {
-		return ApcomplexNum.valueOf(r, Apfloat.ZERO);
+		return ApcomplexNum.valueOf(r, Apcomplex.ZERO);
 	}
 
 	public static IComplexNum complexNum(final Apcomplex c) {

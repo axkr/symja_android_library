@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @deprecated
  */
+@Deprecated
 public abstract class ASTDelegate {
 
 	protected IAST fAst;
@@ -15,6 +16,7 @@ public abstract class ASTDelegate {
 	/**
 	 * @deprecated
 	 */
+	@Deprecated
 	protected ASTDelegate() {
 		this(null);
 	}
@@ -24,6 +26,7 @@ public abstract class ASTDelegate {
 	 * @param ast
 	 * @deprecated
 	 */
+	@Deprecated
 	public ASTDelegate(IAST ast) {
 		super();
 		fAst = ast;
@@ -65,6 +68,7 @@ public abstract class ASTDelegate {
 		return fAst.fullFormString();
 	}
 
+	@Override
 	public String toString() {
 		return fAst.toString();
 	}

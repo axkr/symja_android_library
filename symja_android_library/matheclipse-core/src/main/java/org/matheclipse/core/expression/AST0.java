@@ -85,6 +85,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public IExpr arg1() {
 		throw new UnsupportedOperationException();
 	}
@@ -100,6 +101,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public IExpr arg2() {
 		throw new UnsupportedOperationException();
 	}
@@ -114,6 +116,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public IExpr arg3() {
 		throw new UnsupportedOperationException();
 	}
@@ -128,6 +131,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public IExpr arg4() {
 		throw new UnsupportedOperationException();
 	}
@@ -143,6 +147,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	public IExpr arg5() {
 		throw new UnsupportedOperationException();
 	}

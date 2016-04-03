@@ -69,6 +69,7 @@ public class Pattern extends Blank {
 		fSymbol = symbol;
 	}
 
+	@Override
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
@@ -133,6 +134,7 @@ public class Pattern extends Blank {
 	 * @param pm2
 	 * @return
 	 */
+	@Override
 	public boolean equivalent(final IPatternObject patternObject, final PatternMap pm1, PatternMap pm2) {
 		if (this == patternObject) {
 			return true;
@@ -168,6 +170,7 @@ public class Pattern extends Blank {
 		return patternMap.setValue(this, expr);
 	}
 
+	@Override
 	public String fullFormString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Pattern");
@@ -214,6 +217,7 @@ public class Pattern extends Blank {
 		return 19 + fSymbol.hashCode();
 	}
 
+	@Override
 	public ISymbol head() {
 		return F.PatternHead;
 	}
@@ -312,6 +316,7 @@ public class Pattern extends Blank {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	final public boolean isPattern() {
 		return true;
 	}

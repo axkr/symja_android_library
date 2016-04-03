@@ -71,6 +71,7 @@ public class AST3 extends AST2 {
 	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
+	@Override
 	final public IExpr arg3() {
 		return arg3;
 	}

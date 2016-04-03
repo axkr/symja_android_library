@@ -30,6 +30,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 * 
 	 * @return true.
 	 */
+	@Override
 	public boolean isField() {
 		return false;
 	}
@@ -39,6 +40,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 * 
 	 * @return characteristic of this ring.
 	 */
+	@Override
 	public java.math.BigInteger characteristic() {
 		return java.math.BigInteger.ZERO;
 	}
@@ -50,6 +52,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	 *            long.
 	 * @return BigRational from a.
 	 */
+	@Override
 	public IExpr fromInteger(long a) {
 		return F.integer(a);
 	}

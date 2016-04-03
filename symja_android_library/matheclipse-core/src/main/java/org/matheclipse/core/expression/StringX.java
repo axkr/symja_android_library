@@ -194,6 +194,7 @@ public class StringX extends ExprImpl implements IStringX {
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
 	 * this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
+	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof StringX) {
 			return fString.compareTo(((StringX) expr).fString);
@@ -302,6 +303,7 @@ public class StringX extends ExprImpl implements IStringX {
 		return 37 * fString.hashCode();
 	}
 
+	@Override
 	public int hierarchy() {
 		return STRINGID;
 	}
@@ -545,6 +547,7 @@ public class StringX extends ExprImpl implements IStringX {
 	// tb.append(fString);
 	// return tb.toText();
 	// }
+	@Override
 	public ISymbol head() {
 		return F.StringHead;
 	}
@@ -557,6 +560,7 @@ public class StringX extends ExprImpl implements IStringX {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
@@ -564,6 +568,7 @@ public class StringX extends ExprImpl implements IStringX {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
@@ -571,6 +576,7 @@ public class StringX extends ExprImpl implements IStringX {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
 	}
