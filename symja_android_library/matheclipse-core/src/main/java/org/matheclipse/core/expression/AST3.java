@@ -8,25 +8,32 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 3 arguments</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 3
+ * arguments</b>.
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja source code.
- * Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the sense that it does not
- * represent every detail that appears in the real syntax. For instance, grouping parentheses are implicit in the tree structure,
- * and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by an AST with 2 nodes. One node for the
- * header <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the
+ * abstract syntactic structure of the Symja source code. Each node of the tree
+ * denotes a construct occurring in the source code. The syntax is 'abstract' in
+ * the sense that it does not represent every detail that appears in the real
+ * syntax. For instance, grouping parentheses are implicit in the tree
+ * structure, and a syntactic construct such as a <code>Sin[x]</code> expression
+ * will be denoted by an AST with 2 nodes. One node for the header
+ * <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which contains
+ * Internally an AST is represented as a <code>java.util.List</code> which
+ * contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index <code>0</code>
- * and</li>
- * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
+ * Inverse, Plus, Times,...) at index <code>0</code> and</li>
+ * <li>the <code>n</code> arguments of a function in the index
+ * <code>1 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
+ * syntax tree</a>.
  * 
  * @see AST
  */
@@ -39,13 +46,8 @@ public class AST3 extends AST2 {
 	protected IExpr arg3;
 
 	/**
-	 * Constructs a new instance
-	 */
-	public AST3() {
-	}
-
-	/**
-	 * Create a function with three arguments (i.e. <code>head[arg1, arg2, arg3]</code>).
+	 * Create a function with three arguments (i.e.
+	 * <code>head[arg1, arg2, arg3]</code>).
 	 * 
 	 * @param head
 	 *            the head of the function
@@ -57,18 +59,18 @@ public class AST3 extends AST2 {
 	 *            the thirs argument of the function
 	 */
 	public AST3(IExpr head, IExpr arg1, IExpr arg2, IExpr arg3) {
-		this.arg0 = head;
-		this.arg1 = arg1;
-		this.arg2 = arg2;
+		super(head, arg1, arg2);
 		this.arg3 = arg3;
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code> function (i.e.
-	 * get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @return the third argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -84,9 +86,10 @@ public class AST3 extends AST2 {
 		set.add(arg3);
 		return set;
 	}
-	
+
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size
+	 * and the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -101,7 +104,7 @@ public class AST3 extends AST2 {
 	public IAST copy() {
 		return new AST3(arg0, arg1, arg2, arg3);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean contains(Object object) {
@@ -121,7 +124,8 @@ public class AST3 extends AST2 {
 			if (list.size() != SIZE) {
 				return false;
 			}
-			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2()) && arg3.equals(list.arg3());
+			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2())
+					&& arg3.equals(list.arg3());
 		}
 		return false;
 	}
@@ -137,8 +141,9 @@ public class AST3 extends AST2 {
 			return arg2;
 		case 3:
 			return arg3;
+		default:
+			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
 
 	@Override
@@ -150,7 +155,7 @@ public class AST3 extends AST2 {
 			hashValue = 23 * hashValue + arg3.hashCode();
 		}
 		return hashValue;
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -171,7 +176,8 @@ public class AST3 extends AST2 {
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList}
+	 * with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -202,8 +208,9 @@ public class AST3 extends AST2 {
 			result = arg3;
 			arg3 = object;
 			return result;
+		default:
+			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 		}
-		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 3");
 	}
 
 	/**
@@ -217,7 +224,8 @@ public class AST3 extends AST2 {
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this
+	 * {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */

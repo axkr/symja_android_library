@@ -60,12 +60,6 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	protected IExpr arg0;
 
 	/**
-	 * Constructs a new instance
-	 */
-	public AST0() {
-	}
-
-	/**
 	 * Create a function with no arguments (i.e. <code>head[ ]</code>).
 	 * 
 	 * @param head

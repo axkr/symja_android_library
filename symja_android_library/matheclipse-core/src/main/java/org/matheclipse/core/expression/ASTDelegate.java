@@ -71,11 +71,7 @@ public abstract class ASTDelegate {
 	@Override
 	public String toString() {
 		return fAst.toString();
-	}
-
-	// public Text toText() {
-	// return fAst.toText();
-	// }
+	} 
 
 	public IAST getAST() {
 		return fAst;

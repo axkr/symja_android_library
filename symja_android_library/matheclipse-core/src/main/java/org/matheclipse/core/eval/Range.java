@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -19,7 +20,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  */
 public class Range implements Iterable<IExpr> {
-	 
+
 	static class RangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;
 
@@ -37,6 +38,9 @@ public class Range implements Iterable<IExpr> {
 
 		@Override
 		public IExpr next() {
+			if (fCurrrent == fRange.fEnd) {
+				throw new NoSuchElementException();
+			}
 			return fRange.get(fCurrrent++);
 		}
 
@@ -176,7 +180,7 @@ public class Range implements Iterable<IExpr> {
 	 * (end-1) the method return false;
 	 * 
 	 */
-	public boolean compareAdjacent(BiPredicate<IExpr,IExpr> predicate) {
+	public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate) {
 		if (fStart >= fEnd - 1) {
 			return false;
 		}
@@ -191,35 +195,14 @@ public class Range implements Iterable<IExpr> {
 		return true;
 	}
 
-	/**
-	 * Create the (unordered) complement set from both ranges
-	 * 
-	 * @param result
-	 * @param secondRange
-	 * @return
-	 */
-	// public Collection<IExpr> complement(final Collection<IExpr> result, final
-	// Range secondRange) {
-	// if ((size() == 0) && (secondRange.size() == 0)) {
-	// return result;
-	// }
-	// Set<IExpr> set1 = Sets.newHashSet(this);
-	// Set<IExpr> set2 = Sets.newHashSet(secondRange);
-	// Set<IExpr> set3 = Sets.difference(set1, set2);
-	// for (IExpr IExpr : set3) {
-	// result.add(IExpr);
-	// }
-	// return result;
-	// }
-
 	public boolean contains(IExpr o) {
 		return indexOf(o) >= 0;
 	}
 
 	public boolean containsAll(Collection<? extends IExpr> c) {
-		Iterator<? extends IExpr> IExpr = c.iterator();
-		while (IExpr.hasNext())
-			if (!contains(IExpr.next()))
+		Iterator<? extends IExpr> iter = c.iterator();
+		while (iter.hasNext())
+			if (!contains(iter.next()))
 				return false;
 		return true;
 	}
@@ -343,42 +326,6 @@ public class Range implements Iterable<IExpr> {
 			}
 		}
 		return list;
-	}
-
-	/**
-	 * Locates the first pair of adjacent elements in a range that are the same
-	 * value.
-	 * 
-	 * @return the index of the first element
-	 */
-	public int findAdjacent(Object match) {
-		return findAdjacent(match, fStart);
-	}
-
-	/**
-	 * Locates the first pair of adjacent elements in a range that are the same
-	 * value starting at index <code>start</start> and ending at the ranges
-	 * upper limit.
-	 * 
-	 * @return the index of the first element
-	 */
-	public int findAdjacent(Object match, int start) {
-		if (match == null) {
-			for (int i = fStart; i < fEnd - 1; i++) {
-
-				if (fList.get(i) == null && fList.get(i + 1) == null) {
-					return i;
-				}
-			}
-		} else {
-			for (int i = fStart; i < fEnd - 1; i++) {
-
-				if (match.equals(fList.get(i)) && match.equals(fList.get(i))) {
-					return i;
-				}
-			}
-		}
-		return -1;
 	}
 
 	/**
@@ -843,5 +790,5 @@ public class Range implements Iterable<IExpr> {
 		}
 		return list;
 	}
- 
+
 }

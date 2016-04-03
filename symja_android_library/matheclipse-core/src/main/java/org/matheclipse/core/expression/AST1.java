@@ -47,12 +47,6 @@ public class AST1 extends AST0 {
 	protected IExpr arg1;
 
 	/**
-	 * Constructs a new instance
-	 */
-	public AST1() {
-	}
-
-	/**
 	 * Create a function with one arguments (i.e. <code>head[arg1]</code>).
 	 * 
 	 * @param head
@@ -61,7 +55,7 @@ public class AST1 extends AST0 {
 	 *            the first argument of the function
 	 */
 	protected AST1(IExpr head, IExpr arg1) {
-		this.arg0 = head;
+		super(head);
 		this.arg1 = arg1;
 	}
 
