@@ -195,7 +195,7 @@ public class MMAConsole {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
-			result = (IExpr) fEvaluator.evaluate(inputExpression);
+			result = fEvaluator.evaluate(inputExpression);
 			if (result != null) {
 				if (result.equals(F.Null)) {
 					return "";

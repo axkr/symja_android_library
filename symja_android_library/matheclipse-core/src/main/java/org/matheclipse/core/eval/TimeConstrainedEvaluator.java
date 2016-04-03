@@ -38,6 +38,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 		fTraceEvaluation = false;
 	}
 
+	@Override
 	public void run() {
 		try {
 			startRequest();

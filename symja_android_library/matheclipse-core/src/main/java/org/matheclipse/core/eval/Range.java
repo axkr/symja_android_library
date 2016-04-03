@@ -30,14 +30,17 @@ public class Range implements Iterable<IExpr> {
 			fCurrrent = fRange.fStart;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return fCurrrent < fRange.fEnd;
 		}
 
+		@Override
 		public IExpr next() {
 			return fRange.get(fCurrrent++);
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -543,6 +546,7 @@ public class Range implements Iterable<IExpr> {
 		return -1;
 	}
 
+	@Override
 	public Iterator<IExpr> iterator() {
 		return new RangeIterator(this);
 	}
@@ -621,6 +625,7 @@ public class Range implements Iterable<IExpr> {
 	 * @param function
 	 * @deprecated use {@link IAST#mapAt(IAST, IAST, int)} instead
 	 */
+	@Deprecated
 	public IAST map(IAST list, Function<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.add(function.apply(fList.get(i)));

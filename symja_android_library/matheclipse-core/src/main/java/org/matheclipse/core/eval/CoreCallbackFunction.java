@@ -19,6 +19,7 @@ import org.matheclipse.parser.client.math.MathException;
 public class CoreCallbackFunction implements IDoubleCallbackFunction {
 	public final static CoreCallbackFunction CONST = new CoreCallbackFunction();
 
+	@Override
 	public double evaluate(DoubleEvaluator doubleEngine, FunctionNode functionNode, double[] args) {
 		ASTNode node = functionNode.getNode(0);
 		if (node instanceof SymbolNode) {

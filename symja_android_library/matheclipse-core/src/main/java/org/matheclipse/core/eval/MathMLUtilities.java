@@ -2,12 +2,10 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Convert an expression into presentation MathML output
