@@ -29,7 +29,8 @@ public class Namespace {
 	 * Adds a Java packagename to the namespace
 	 * 
 	 * @param arg
-	 *            the name of a Java package which should be add to this namespace
+	 *            the name of a Java package which should be add to this
+	 *            namespace
 	 * @return
 	 */
 	public boolean add(final String arg) {
@@ -41,7 +42,8 @@ public class Namespace {
 	 * Adds a Java packagename to the namespace
 	 * 
 	 * @param arg
-	 *            the name of a Java package which should be add to this namespace
+	 *            the name of a Java package which should be add to this
+	 *            namespace
 	 * @return
 	 */
 	public boolean add(final Namespace arg) {
@@ -50,8 +52,9 @@ public class Namespace {
 	}
 
 	/**
-	 * Search the IEvaluator class for a symbol in the given namespaces in descending order If an IEvaluator class exists, the
-	 * symbol runs through the setUp() method of the IEvaluator and is set into the symbol.
+	 * Search the IEvaluator class for a symbol in the given namespaces in
+	 * descending order. If an IEvaluator class exists, the symbol runs through
+	 * the setUp() method of the IEvaluator and is assigned to the symbol.
 	 * 
 	 * @param symbol
 	 *            the symbol which should be set-up
@@ -74,8 +77,8 @@ public class Namespace {
 					if (namespaceEntry.getValue() == null) {
 						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName);
 					} else {
-						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName, true, namespaceEntry.getValue()
-								.getClass().getClassLoader());
+						clazz = Class.forName(namespaceEntry.getKey() + "." + functionName, true,
+								namespaceEntry.getValue().getClass().getClassLoader());
 					}
 				} catch (final ClassNotFoundException e) {
 					// not a predefined function
