@@ -104,16 +104,6 @@ public class BigFractionSym extends AbstractFractionSym {
 		return AbstractIntegerSym.valueOf(div);
 	}
 
-	// public int compareFraction(final int numerator, final int denominator) {
-	// BigInteger num = fFraction.getNumerator();
-	// BigInteger den = fFraction.getDenominator();
-	// if (num.bitLength() <= 31) {
-	// int temp = num.intValue();
-	// return temp > value ? 1 : temp == value ? 0 : -1;
-	// }
-	// return num.signum();
-	// }
-
 	/**
 	 * Return a new rational representing the smallest integral rational not
 	 * smaller than <code>this</code>.
@@ -218,8 +208,6 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (o instanceof FractionSym) {
 			final FractionSym r = (FractionSym) o;
 			return equalsFraction(r.fNumerator, r.fDenominator);
-			// return NumberUtil.isInt(fFraction.getNumerator(), r.fNumerator)
-			// && NumberUtil.isInt(fFraction.getDenominator(), r.fDenominator);
 		}
 		if (o instanceof BigFractionSym) {
 			BigFractionSym r = (BigFractionSym) o;
@@ -235,14 +223,6 @@ public class BigFractionSym extends AbstractFractionSym {
 		return num.intValue() == numerator && den.intValue() == denominator && num.bitLength() <= 31
 				&& den.bitLength() <= 31;
 	}
-
-	// public IInteger ceil() {
-	//
-	// }
-	//
-	// public IInteger floor() {
-	//
-	// }
 
 	@Override
 	public boolean equalsInt(final int numerator) {
@@ -301,7 +281,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer("Rational");
+		StringBuilder buf = new StringBuilder("Rational");
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
 		} else {
@@ -409,6 +389,7 @@ public class BigFractionSym extends AbstractFractionSym {
 					return "C1D3";
 				case 4:
 					return "C1D4";
+				default:
 				}
 			}
 			if (numerator == -1) {
@@ -419,10 +400,11 @@ public class BigFractionSym extends AbstractFractionSym {
 					return "CN1D3";
 				case 4:
 					return "CN1D4";
+				default:
 				}
 			}
-		} catch (Exception e) {
-
+		} catch (RuntimeException e) {
+			return "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString() + "L)";
 		}
 		return "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString() + "L)";
 	}
@@ -457,7 +439,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNegative() {
-		return (fFraction.getNumerator().compareTo(BigInteger.ZERO) == -1);
+		return fFraction.getNumerator().compareTo(BigInteger.ZERO) < 0;
 	}
 
 	/** {@inheritDoc} */
@@ -469,7 +451,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPositive() {
-		return (fFraction.getNumerator().compareTo(BigInteger.ZERO) == 1);
+		return fFraction.getNumerator().compareTo(BigInteger.ZERO) < 0;
 	}
 
 	/** {@inheritDoc} */
@@ -581,8 +563,8 @@ public class BigFractionSym extends AbstractFractionSym {
 			OutputFormFactory.get().convertFraction(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
+			// fall back to simple output format
+			return fFraction.getNumerator().toString() + "/" + fFraction.getDenominator().toString();
 		}
-		// fall back to simple output format
-		return fFraction.getNumerator().toString() + "/" + fFraction.getDenominator().toString();
 	}
 }

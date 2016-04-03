@@ -99,8 +99,8 @@ public class FractionSym extends AbstractFractionSym {
 				long newnum = otherdenomgcd * fNumerator + (long) fDenominator * (long) fs.fNumerator;
 				return valueOf(newnum, newdenom);
 			}
-			long denomgcd = fDenominator / gcd;
-			long otherdenomgcd = fs.fDenominator / gcd;
+			long denomgcd = ((long) fDenominator) / gcd;
+			long otherdenomgcd = ((long) fs.fDenominator) / gcd;
 			long newdenom = denomgcd * fs.fDenominator;
 			long newnum = otherdenomgcd * fNumerator + denomgcd * fs.fNumerator;
 			return valueOf(newnum, newdenom);
@@ -120,7 +120,6 @@ public class FractionSym extends AbstractFractionSym {
 			long newnum = fNumerator + (long) fDenominator * (long) is.fIntValue;
 			return valueOf(newnum, fDenominator);
 		}
-//		BigIntegerSym p1 = (BigIntegerSym) parm1;
 		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(parm1.getBigNumerator()));
 		return valueOf(newnum, getBigDenominator());
 	}
@@ -248,7 +247,7 @@ public class FractionSym extends AbstractFractionSym {
 			newnum = -newnum;
 		return valueOf(newnum, newdenom);
 	}
-	
+
 	@Override
 	public IInteger[] divideAndRemainder() {
 		IInteger[] result = new IInteger[2];
@@ -343,7 +342,7 @@ public class FractionSym extends AbstractFractionSym {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer("Rational");
+		StringBuilder buf = new StringBuilder("Rational");
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
 		} else {
@@ -438,6 +437,7 @@ public class FractionSym extends AbstractFractionSym {
 				return "C1D3";
 			case 4:
 				return "C1D4";
+			default:
 			}
 		}
 		if (fNumerator == -1) {
@@ -448,6 +448,7 @@ public class FractionSym extends AbstractFractionSym {
 				return "CN1D3";
 			case 4:
 				return "CN1D4";
+			default:
 			}
 		}
 		return "QQ(" + fNumerator + "L," + fDenominator + "L)";
@@ -526,7 +527,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Product of <code>this</code> and <code>other</code>.
 	 */
 	public IFraction mul(BigInteger other) {
-		if (other.bitLength() <=31) {
+		if (other.bitLength() <= 31) {
 			int oint = other.intValue();
 			if (oint == 1)
 				return this;
@@ -669,9 +670,9 @@ public class FractionSym extends AbstractFractionSym {
 					OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
+			// fall back to simple output format
+			return getBigNumerator().toString() + "/" + getBigDenominator().toString();
 		}
-		// fall back to simple output format
-		return getBigNumerator().toString() + "/" + getBigDenominator().toString();
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

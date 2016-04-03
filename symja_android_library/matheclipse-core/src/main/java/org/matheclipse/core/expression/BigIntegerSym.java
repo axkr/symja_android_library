@@ -245,12 +245,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			result[0] = null;
 			result[1] = F.C1;
 			result[2] = F.C1;
-			if (that == null || that.isZero()) {
-				result[0] = (this);
+			if (that.isZero()) {
+				result[0] = this;
 				return result;
 			}
 			if (this.isZero()) {
-				result[0] = ((BigIntegerSym) that);
+				result[0] = (BigIntegerSym) that;
 				return result;
 			}
 			BigInteger[] qr;
@@ -412,28 +412,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 				result.add(is);
 			}
 		}
-		//
-		// if (b.fInteger.isProbablePrime(32)) {
-		// result.add(b);
-		// return result;
-		// }
 
-		// TODO improve performance
-		// IntegerSym p = IntegerSym.valueOf(1023);
-		// while (true) {
-		// final IntegerSym q[] = b.divideAndRemainder(p);
-		// if (q[0].compareTo(p) < 0) {
-		// result.add(b);
-		// break;
-		// }
-		// if (q[1].sign() == 0) {
-		// result.add(p);
-		// b = q[0];
-		// } else {
-		// // test only odd integers
-		// p = p.add(IntegerSym.valueOf(2));
-		// }
-		// }
 		return result;
 	}
 
@@ -544,8 +523,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return "C9";
 		case 10:
 			return "C10";
+		default:
+			return "ZZ(" + value + "L)";
 		}
-		return "ZZ(" + value + "L)";
+
 	}
 
 	@Override
@@ -723,6 +704,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 				return this;
 			case -1:
 				return negate();
+			default:
 			}
 		}
 		return valueOf(fBigIntValue.multiply(that.getBigNumerator()));
@@ -789,7 +771,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			IInteger temp = this;
 			do {
 				result = temp;
-				temp = divideAndRemainder(temp.pow(n - 1))[0].add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
+				temp = divideAndRemainder(temp.pow(((long) n) - 1))[0]
+						.add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
 						.divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
 			} while (temp.compareTo(result) < 0);
 			return result;
@@ -879,8 +862,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			value = objectInput.readInt();
 			fBigIntValue = BigInteger.valueOf(value);
 			return;
+		default:
+			fBigIntValue = (BigInteger) objectInput.readObject();
 		}
-		fBigIntValue = (BigInteger) objectInput.readObject();
 	}
 
 	@Override
@@ -962,9 +946,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			OutputFormFactory.get().convertInteger(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
+			// fall back to simple output format
+			return fBigIntValue.toString();
 		}
-		// fall back to simple output format
-		return fBigIntValue.toString();
 	}
 
 	@Override

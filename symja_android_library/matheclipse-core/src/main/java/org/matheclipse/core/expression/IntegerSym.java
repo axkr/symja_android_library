@@ -256,12 +256,12 @@ public class IntegerSym extends AbstractIntegerSym {
 			result[0] = null;
 			result[1] = F.C1;
 			result[2] = F.C1;
-			if (that == null || that.isZero()) {
-				result[0] = (this);
+			if (that.isZero()) {
+				result[0] = this;
 				return result;
 			}
 			if (this.isZero()) {
-				result[0] = ((IntegerSym) that);
+				result[0] = (IntegerSym) that;
 				return result;
 			}
 			BigInteger[] qr;
@@ -380,7 +380,6 @@ public class IntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	public IAST factorize(IAST result) {
-		// final ArrayList<IInteger> result = new ArrayList<IInteger>();
 		IInteger b = this;
 		if (sign() < 0) {
 			b = b.multiply(AbstractIntegerSym.valueOf(-1));
@@ -417,28 +416,7 @@ public class IntegerSym extends AbstractIntegerSym {
 				result.add(is);
 			}
 		}
-		//
-		// if (b.fInteger.isProbablePrime(32)) {
-		// result.add(b);
-		// return result;
-		// }
 
-		// TODO improve performance
-		// IntegerSym p = IntegerSym.valueOf(1023);
-		// while (true) {
-		// final IntegerSym q[] = b.divideAndRemainder(p);
-		// if (q[0].compareTo(p) < 0) {
-		// result.add(b);
-		// break;
-		// }
-		// if (q[1].sign() == 0) {
-		// result.add(p);
-		// b = q[0];
-		// } else {
-		// // test only odd integers
-		// p = p.add(IntegerSym.valueOf(2));
-		// }
-		// }
 		return result;
 	}
 
@@ -553,6 +531,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return "C9";
 		case 10:
 			return "C10";
+		default:
 		}
 		return "ZZ(" + value + "L)";
 	}
@@ -772,15 +751,16 @@ public class IntegerSym extends AbstractIntegerSym {
 			return that;
 		case -1:
 			return that.negate();
+		default:
+			if (that instanceof BigIntegerSym) {
+				return ((BigIntegerSym) that).multiply(this);
+			}
+			IntegerSym is = (IntegerSym) that;
+			if (is.fIntValue == 1) {
+				return this;
+			}
+			return valueOf((long) fIntValue * is.fIntValue);
 		}
-		if (that instanceof BigIntegerSym) {
-			return ((BigIntegerSym) that).multiply(this);
-		}
-		IntegerSym is = (IntegerSym) that;
-		if (is.fIntValue == 1) {
-			return this;
-		}
-		return valueOf((long) fIntValue * is.fIntValue);
 	}
 
 	@Override
@@ -849,7 +829,8 @@ public class IntegerSym extends AbstractIntegerSym {
 			IInteger temp = this;
 			do {
 				result = temp;
-				temp = divideAndRemainder(temp.pow(n - 1))[0].add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
+				temp = divideAndRemainder(temp.pow(((long) n) - 1))[0]
+						.add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
 						.divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
 			} while (temp.compareTo(result) < 0);
 			return result;
@@ -939,6 +920,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			value = objectInput.readInt();
 			fIntValue = value;
 			return;
+		default:
 		}
 	}
 
@@ -1040,9 +1022,9 @@ public class IntegerSym extends AbstractIntegerSym {
 			OutputFormFactory.get().convertInteger(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
+			// fall back to simple output format
+			return Integer.toString(fIntValue);
 		}
-		// fall back to simple output format
-		return Integer.toString(fIntValue);
 	}
 
 	@Override
