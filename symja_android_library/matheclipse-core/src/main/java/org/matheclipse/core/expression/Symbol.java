@@ -73,15 +73,11 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	private transient RulesData fRulesData;
 
 	/**
-	 * The pattern matching &quot;up value&quot; rules associated with this
-	 * symbol.
-	 */
-	// private transient UpRulesData fUpRulesData;
-
-	/**
+	 * Get the rules for initializing the pattern matching rules of this symbol.
 	 * 
 	 * @return <code>null</code> if no rule is defined
 	 */
+	@Override
 	public RulesData getRulesData() {
 		return fRulesData;
 	}
@@ -165,7 +161,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	static class DummyEvaluator implements IEvaluator {
 		@Override
 		public void setUp(ISymbol symbol) {
-
+			// do nothing because of dummy evaluator
 		}
 	}
 
@@ -273,7 +269,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		}
 		final IEvaluator module = getEvaluator();
 		if (module instanceof ISymbolEvaluator) {
-			IExpr temp = F.NIL;
+			IExpr temp;
 			if (engine.isNumericMode()) {
 				if (engine.isApfloat()) {
 					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
@@ -304,7 +300,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
-		// System.out.println(toString());
 		return fRulesData.evalDownRule(expression);
 	}
 
@@ -539,48 +534,50 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
 		if (expr.isAST()) {
-			final IAST ast = (IAST) expr;
+			return compareToAST((IAST) expr);
+		}
+		return super.compareTo(expr);
+	}
 
-			if (expr.isAST(F.DirectedInfinity)) {
+	private int compareToAST(final IAST ast) {
+		if (ast.isAST(F.DirectedInfinity)) {
+			return 1;
+		}
+
+		if (ast.size() > 1) {
+			if (ast.isPlus()) {
 				return 1;
-			}
-
-			if (ast.size() > 1) {
-				if (ast.isPlus()) {
-					return 1;
-				} else if (ast.isPower()) {
-					if (ast.arg1() instanceof ISymbol) {
-						final int cp = fSymbolName.compareTo(((Symbol) ast.arg1()).fSymbolName);
-						if (cp != 0) {
-							return cp;
-						}
-						if (EvalEngine.get().isNumericMode()) {
-							return F.CD1.compareTo(ast.arg2());
-						}
-						return F.C1.compareTo(ast.arg2());
+			} else if (ast.isPower()) {
+				if (ast.arg1() instanceof ISymbol) {
+					final int cp = fSymbolName.compareTo(((Symbol) ast.arg1()).fSymbolName);
+					if (cp != 0) {
+						return cp;
 					}
-				} else if (ast.isTimes()) {
-					// compare with the last ast element:
-					final IExpr lastTimes = ast.last();
-					if (lastTimes.isPower()) {
-						final int cp = compareTo(((IAST) lastTimes).arg1());
-						if (cp != 0) {
-							return cp;
-						}
-						// "x^1" compared to "x^arg2()"
-						return F.C1.compareTo(((IAST) lastTimes).arg2());
+					if (EvalEngine.get().isNumericMode()) {
+						return F.CD1.compareTo(ast.arg2());
 					}
-					if (lastTimes.isSymbol()) {
-						final int cp = compareTo(lastTimes);
-						if (cp != 0) {
-							return cp;
-						}
+					return F.C1.compareTo(ast.arg2());
+				}
+			} else if (ast.isTimes()) {
+				// compare with the last ast element:
+				final IExpr lastTimes = ast.last();
+				if (lastTimes.isPower()) {
+					final int cp = compareTo(((IAST) lastTimes).arg1());
+					if (cp != 0) {
+						return cp;
+					}
+					// "x^1" compared to "x^arg2()"
+					return F.C1.compareTo(((IAST) lastTimes).arg2());
+				}
+				if (lastTimes.isSymbol()) {
+					final int cp = compareTo(lastTimes);
+					if (cp != 0) {
+						return cp;
 					}
 				}
 			}
-			return -1;
 		}
-		return super.compareTo(expr);
+		return -1;
 	}
 
 	/** {@inheritDoc} */
@@ -650,22 +647,30 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isPolynomial(ISymbol variable) {
-		return true;// this.equals(variable);
+		if (variable == null) {
+			return true;
+		}
+		return this.equals(variable);
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isPolynomial(IAST variables) {
-		return true;
-		// for (int i = 1; i < variables.size(); i++) {
-		// if (this.equals(variables.get(i))) {
-		// return true;
-		// }
-		// }
-		// return false;
+		if (variables.size() == 1) {
+			return true;
+		}
+		for (int i = 1; i < variables.size(); i++) {
+			if (this.equals(variables.get(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
 		if (maxDegree == 0L) {
 			if (this.equals(variable)) {
@@ -694,6 +699,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public final String getSymbolName() {
 		return fSymbolName;
 	}
@@ -721,49 +727,56 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
-			if (fSymbolName.length() == 1) {// &&
-											// Character.isLowerCase(fSymbolName.charAt(0)))
-											// {
-				char ch = fSymbolName.charAt(0);
-				if ('a' <= ch && ch <= 'z') {
-					return fSymbolName;
-				}
-				if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
-					return fSymbolName + "Symbol";
-				}
-			}
-			if (Config.RUBI_CONVERT_SYMBOLS) {
-				if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
-						&& Character.isLowerCase(fSymbolName.charAt(1))) {
-					char ch = fSymbolName.charAt(1);
-					if ('a' <= ch && ch <= 'z') {
-						return "p" + ch;
-					}
-				}
-			}
-			if (Character.isUpperCase(fSymbolName.charAt(0))) {
-				String alias = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(fSymbolName);
-				if (alias != null) {
-					if (alias.contains("::")) {
-						return "$s(\"" + alias + "\")";
-					}
-					return alias;
-				}
-			}
-			return "$s(\"" + fSymbolName + "\")";
+			return internalJavaStringAsFacoryMethod();
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name;
 			if (fSymbolName.length() == 1) {
-				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString());
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
 			} else {
-				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toString().toLowerCase(Locale.ENGLISH));
+				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
 			}
 			if (name != null) {
 				return name;
 			}
 		}
 		return fSymbolName;
+	}
+
+	/**
+	 * Used to generate special Symja Java code
+	 * 
+	 * @return
+	 */
+	private String internalJavaStringAsFacoryMethod() {
+		if (fSymbolName.length() == 1) {
+			char ch = fSymbolName.charAt(0);
+			if ('a' <= ch && ch <= 'z') {
+				return fSymbolName;
+			}
+			if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
+				return fSymbolName + "Symbol";
+			}
+		}
+		if (Config.RUBI_CONVERT_SYMBOLS) {
+			if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
+					&& Character.isLowerCase(fSymbolName.charAt(1))) {
+				char ch = fSymbolName.charAt(1);
+				if ('a' <= ch && ch <= 'z') {
+					return "p" + ch;
+				}
+			}
+		}
+		if (Character.isUpperCase(fSymbolName.charAt(0))) {
+			String alias = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(fSymbolName);
+			if (alias != null) {
+				if (alias.contains("::")) {
+					return "$s(\"" + alias + "\")";
+				}
+				return alias;
+			}
+		}
+		return "$s(\"" + fSymbolName + "\")";
 	}
 
 	@Override
@@ -773,8 +786,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
 			return sb.toString();
 		} catch (Exception e1) {
+			return fSymbolName;
 		}
-		return fSymbolName;
 	}
 
 	/**
@@ -820,7 +833,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (fDefaultValues == null) {
 			return null;
 		}
-		return fDefaultValues.get(Integer.valueOf(pos));
+		return fDefaultValues.get(pos);
 	}
 
 	/** {@inheritDoc} */
@@ -840,7 +853,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		if (fDefaultValues == null) {
 			fDefaultValues = new OpenIntToIExprHashMap();
 		}
-		fDefaultValues.put(Integer.valueOf(pos), expr);
+		fDefaultValues.put(pos, expr);
 	}
 
 	/** {@inheritDoc} */
@@ -871,14 +884,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
-		// boolean hasDownRulesData = stream.readBoolean();
-		// if (hasDownRulesData) {
-		// fDownRulesData.readSymbol(stream);
-		// }
-		// boolean hasUpRulesData = stream.readBoolean();
-		// if (hasUpRulesData) {
-		// fUpRulesData.readSymbol(stream);
-		// }
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
@@ -889,18 +894,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
-		// if (fDownRulesData == null) {
-		// stream.writeBoolean(false);
-		// } else {
-		// stream.writeBoolean(true);
-		// fDownRulesData.writeSymbol(stream);
-		// }
-		// if (fUpRulesData == null) {
-		// stream.writeBoolean(false);
-		// } else {
-		// stream.writeBoolean(true);
-		// fUpRulesData.writeSymbol(stream);
-		// }
 	}
 
 	public Object readResolve() throws ObjectStreamException {

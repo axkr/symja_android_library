@@ -1276,8 +1276,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * <p>
 	 * Test if this expression is a polynomial for the given list of
 	 * <code>variables</code>.
+	 * </p>
+	 * <b>Note:</b> if the list contains no argument, this method returns
+	 * <code>true</code> for a <code>Symbol</code> expression.
+	 * 
+	 * @param variables
+	 *            a list of variables or an empty list
+	 * @return <code>true</code> if this expression is a polynomial;
+	 *         <code>false</code>otherwise
 	 * 
 	 */
 	default boolean isPolynomial(IAST variables) {
@@ -1285,11 +1294,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * <p>
 	 * Test if this expression is a polynomial for the given
 	 * <code>variable</code>.
+	 * </p>
+	 * <b>Note:</b> if the variable is set to <code>null</code>, this method
+	 * returns <code>true</code> for a <code>Symbol</code> expression.
 	 * 
 	 */
-	default boolean isPolynomial(ISymbol variable) {
+	default boolean isPolynomial(@Nullable ISymbol variable) {
 		return isNumber();
 	}
 
