@@ -17,7 +17,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math4.complex.Complex</code> value to represent a
+ * <code>IComplexNum</code> implementation which wraps a
+ * <code>org.apache.commons.math4.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
 public class ComplexNum extends ExprImpl implements IComplexNum {
@@ -29,12 +30,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	protected static ComplexNum newInstance(final Complex value) {
-		// ComplexNum d;
-		// if (Config.SERVER_MODE) {
-		// d = FACTORY.object();
-		// } else {
-		// d = new ComplexNum(0.0, 0.0);
-		// }
 		ComplexNum d = new ComplexNum(0.0, 0.0);
 		d.fComplex = value;
 		return d;
@@ -91,7 +86,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return temp;
 	}
 
-	/**
+	/** 
 	 * @return
 	 */
 	@Override
@@ -105,7 +100,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public boolean isZero() {
-		return (fComplex.getReal() == 0.0) && (fComplex.getImaginary() == 0.0);
+		return F.isZero(fComplex.getReal())  && F.isZero(fComplex.getImaginary());
 	}
 
 	@Override
@@ -123,7 +118,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		return new Apcomplex(new Apfloat(fComplex.getReal(), precision), new Apfloat(fComplex.getImaginary(), precision));
+		return new Apcomplex(new Apfloat(fComplex.getReal(), precision),
+				new Apfloat(fComplex.getImaginary(), precision));
 	}
 
 	@Override
@@ -173,27 +169,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return newInstance(fComplex.divide(that.fComplex));
 	}
 
-	/**
-	 * @param k
-	 * @return
-	 */
-	// public Complex divide(final double k) {
-	// return fComplex.divide(k);
-	// }
-	/**
-	 * @return
-	 */
-	// public double doubleValue() {
-	// return fComplex.doubleValue();
-	// }
-	/**
-	 * @param that
-	 * @param tolerance
-	 * @return
-	 */
-	// public boolean equals(final Complex that, final double tolerance) {
-	// return fComplex.equals(that, tolerance);
-	// }
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -222,10 +197,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (expression instanceof ComplexNum) {
 			return F.isZero(fComplex.getReal() - ((ComplexNum) expression).fComplex.getReal(), epsilon)
 					&& F.isZero(fComplex.getImaginary() - ((ComplexNum) expression).fComplex.getImaginary(), epsilon);
-			// return Math.abs(fComplex.getReal() - ((ComplexNum)
-			// expression).fComplex.getReal()) < epsilon
-			// && Math.abs(fComplex.getImaginary() - ((ComplexNum)
-			// expression).fComplex.getImaginary()) < epsilon;
 		}
 		return false;
 	}
@@ -246,17 +217,17 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 
 		if (Math.abs(c.getReal()) < Math.abs(c.getImaginary())) {
-			if (c.getImaginary() == 0.0) {
+			if (F.isZero(c.getImaginary())) {
 				return Math.abs(c.getReal());
 			}
 			final double q = c.getReal() / c.getImaginary();
-			return (Math.abs(c.getImaginary()) * Math.sqrt(1 + q * q));
+			return Math.abs(c.getImaginary()) * Math.sqrt(1 + q * q);
 		} else {
-			if (c.getReal() == 0.0) {
+			if (F.isZero(c.getReal())) {
 				return Math.abs(c.getImaginary());
 			}
 			final double q = c.getImaginary() / c.getReal();
-			return (Math.abs(c.getReal()) * Math.sqrt(1 + q * q));
+			return Math.abs(c.getReal()) * Math.sqrt(1 + q * q);
 		}
 	}
 
@@ -271,25 +242,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		double temp = dabs();
 		return Double.compare(temp, 1.0);
 	}
-
-	/**
-	 * @return
-	 */
-	// public Complex exp() {
-	// return fComplex.exp();
-	// }
-	/**
-	 * @return
-	 */
-	// public Object export() {
-	// return fComplex.export();
-	// }
-	/**
-	 * @return
-	 */
-	// public float floatValue() {
-	// return fComplex.floatValue();
-	// }
 
 	@Override
 	public double getImaginary() {
@@ -314,12 +266,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/**
 	 * @return
 	 */
-	// public int intValue() {
-	// return fComplex.intValue();
-	// }
-	/**
-	 * @return
-	 */
 	public boolean isInfinite() {
 		return fComplex.isInfinite();
 	}
@@ -330,54 +276,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	public boolean isNaN() {
 		return fComplex.isNaN();
 	}
-
-	/**
-	 * @return
-	 */
-	// public Complex log() {
-	// return fComplex.log();
-	// }
-	/**
-	 * @return
-	 */
-	// public long longValue() {
-	// return fComplex.longValue();
-	// }
-	/**
-	 * @return
-	 */
-	// public double magnitude() {
-	// return fComplex.magnitude();
-	// }
-	/**
-	 * @param cs
-	 */
-	// @Override
-	// public boolean move(final ObjectSpace cs) {
-	// fComplex.move(cs);
-	// return true;
-	// }
-	// public ComplexNum copy() {
-	// // ComplexNum d;
-	// // if (Config.SERVER_MODE) {
-	// // d = FACTORY.object();
-	// // } else {
-	// // d = new ComplexNum(0.0, 0.0);
-	// // }
-	// ComplexNum d = new ComplexNum(0.0, 0.0);
-	// d.fComplex = fComplex.copy();
-	// return d;
-	// }
-	//
-	// public ComplexNum copyNew() {
-	// ComplexNum dci = new ComplexNum(0.0, 0.0);
-	// dci.fComplex = new Complex(fComplex.getReal(), fComplex.getImaginary());
-	// return dci;
-	// }
-
-	// public void recycle() {
-	// FACTORY.recycle(this);
-	// }
 
 	/**
 	 * @param that
@@ -418,8 +316,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 		if (that instanceof ApfloatNum) {
 			ApfloatNum afn = (ApfloatNum) that;
-			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).add(
-					ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision())
+					.add(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return add(ComplexNum.valueOf(((Num) that).getRealPart()));
@@ -427,53 +325,13 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return super.plus(that);
 	}
 
-	/**
-	 * @param that
-	 * @return
-	 */
-	// public Complex pow(final Complex that) {
-	// return fComplex.pow(that);
-	// }
-	/**
-	 * @param e
-	 * @return
-	 */
-	// public Complex pow(final double e) {
-	// return fComplex.pow(e);
-	// }
-	/**
-	 * @param exp
-	 * @return
-	 */
-	// public Complex pow(final int exp) {
-	// return fComplex.pow(exp);
-	// }
-	/**
-	 * @param isPreserved
-	 * @return
-	 */
-	// public Object preserve(boolean isPreserved) {
-	// return fComplex.preserve(isPreserved);
-	// }
 	@Override
 	public IExpr inverse() {
-		// return new DoubleComplexImpl(fComplex.inverse());
-		final double tmp = (fComplex.getReal() * fComplex.getReal()) + (fComplex.getImaginary() * fComplex.getImaginary());
+		final double tmp = (fComplex.getReal() * fComplex.getReal())
+				+ (fComplex.getImaginary() * fComplex.getImaginary());
 		return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
 	}
 
-	/**
-	 * @return
-	 */
-	// public short shortValue() {
-	// return fComplex.shortValue();
-	// }
-	/**
-	 * @return
-	 */
-	// public Complex sqrt() {
-	// return fComplex.sqrt();
-	// }
 	/**
 	 * @param that
 	 * @return
@@ -501,8 +359,8 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		}
 		if (that instanceof ApfloatNum) {
 			ApfloatNum afn = (ApfloatNum) that;
-			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision()).multiply(
-					ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
+			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), afn.fApfloat.precision())
+					.multiply(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
 		}
 		if (that instanceof Num) {
 			return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
@@ -517,9 +375,9 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 			OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
+			// fall back to simple output format
+			return fComplex.toString();
 		}
-		// fall back to simple output format
-		return fComplex.toString();
 	}
 
 	@Override
@@ -537,13 +395,6 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
 	}
 
-	/**
-	 * @return
-	 */
-	// @Override
-	// public Text toText() {
-	// return fComplex.toText();
-	// }
 	@Override
 	public int complexSign() {
 		final int i = (int) Math.signum(fComplex.getReal());
@@ -565,7 +416,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (l1 < l2) {
 			return -1;
 		}
-		if (l2 > l1) {
+		if (l1 > l2) {
 			return 1;
 		}
 		if (fComplex.getImaginary() < that.getImaginary()) {
@@ -579,15 +430,16 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (l1 < l2) {
 			return -1;
 		}
-		if (l2 > l1) {
+		if (l1 > l2) {
 			return 1;
 		}
 		return 0;
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -653,12 +505,14 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public INumber ceilFraction() throws ArithmeticException {
-		return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())), NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
+		return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())),
+				NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
 	}
 
 	@Override
 	public INumber floorFraction() throws ArithmeticException {
-		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())), NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
+		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
+				NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
 	}
 
 }

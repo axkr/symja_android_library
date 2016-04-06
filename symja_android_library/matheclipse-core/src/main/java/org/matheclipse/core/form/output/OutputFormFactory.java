@@ -737,7 +737,7 @@ public class OutputFormFactory {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];
 					if (a1Head.size() == 2 && a1Head.arg1().isInteger() && headAST.size() == 2
-							&& headAST.arg1().isSymbol()&&derivStruct[2]!=null) {
+							&& headAST.arg1().isSymbol() && derivStruct[2] != null) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							// IExpr arg1 = listArg1.arg1();
