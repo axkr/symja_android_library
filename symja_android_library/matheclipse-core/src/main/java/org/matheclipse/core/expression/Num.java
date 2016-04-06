@@ -16,7 +16,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric floating-point number.
+ * <code>INum</code> implementation which wraps a <code>double</code> value to
+ * represent a numeric floating-point number.
  */
 public class Num extends ExprImpl implements INum {
 	/**
@@ -33,24 +34,15 @@ public class Num extends ExprImpl implements INum {
 	 * @return
 	 */
 	protected static Num newInstance(final double value) {
-		Num d;
-		// if (Config.SERVER_MODE) {
-		// d = FACTORY.object();
-		// } else {
-		d = new Num(0.0);
-		// }
+		Num d = new Num(0.0);
 		d.fDouble = value;
 		return d;
 	}
 
-	// public DoubleImpl(final double value) {
-	// fDouble = value;
-	// }
-
-	Num( ) {
+	Num() {
 		fDouble = 0.0;
 	}
-	
+
 	Num(final double value) {
 		fDouble = value;
 	}
@@ -76,7 +68,6 @@ public class Num extends ExprImpl implements INum {
 	@Override
 	public boolean isNumIntValue() {
 		return F.isNumIntValue(fDouble);
-		// return fDouble == Math.floor(fDouble);
 	}
 
 	/** {@inheritDoc} */
@@ -99,7 +90,7 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public boolean equalsInt(final int i) {
-		return fDouble == i;
+		return F.isNumIntValue(fDouble, i);
 	}
 
 	@Override
@@ -123,27 +114,14 @@ public class Num extends ExprImpl implements INum {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser. interfaces .IDouble)
+	 * @see
+	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.
+	 * interfaces .IDouble)
 	 */
 	@Override
 	public INum pow(final INum val) {
 		return valueOf(Math.pow(fDouble, val.getRealPart()));
 	}
-
-	// protected static final XmlFormat FRACTION_XML = new
-	// XmlFormat(DoubleImpl.class) {
-	// public void format(Object obj, XmlElement xml) {
-	// DoubleImpl expr = (DoubleImpl) obj;
-	// xml.setAttribute("val", String.valueOf(expr.fValue));
-	// }
-	//
-	// public Object parse(XmlElement xml) {
-	// DoubleImpl expr = (DoubleImpl) xml.object();
-	// expr.fValue = Double.parseDouble(xml.getAttribute("val", ""));
-	// return expr;
-	// }
-	// };
-	//
 
 	/**
 	 * @param chars
@@ -210,12 +188,6 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	/**
-	 * @return
-	 */
-	// public byte byteValue() {
-	// return fDouble.byteValue();
-	// }
-	/**
 	 * @param that
 	 * @return
 	 */
@@ -262,10 +234,6 @@ public class Num extends ExprImpl implements INum {
 		return Math.exp(fDouble);
 	}
 
-	// public float floatValue() {
-	// return fDouble.floatValue();
-	// }
-
 	@Override
 	public final int hashCode() {
 		return MathUtils.hash(fDouble);
@@ -276,7 +244,7 @@ public class Num extends ExprImpl implements INum {
 	 */
 	@Override
 	public int intValue() {
-		return Double.valueOf(fDouble).intValue();
+		return (int) fDouble;
 	}
 
 	/**
@@ -320,40 +288,9 @@ public class Num extends ExprImpl implements INum {
 	 * @return
 	 */
 	public long longValue() {
-		return Double.valueOf(fDouble).longValue();
+		return (long) fDouble;
 	}
 
-	/**
-	 * @param cs
-	 */
-	// @Override
-	// public boolean move(final ObjectSpace os) {
-	// if (super.move(os)) {
-	// fDouble.move(os);
-	// return true;
-	// }
-	// return false;
-	// }
-	// public Num copy() {
-	// Num d;
-	// // if (Config.SERVER_MODE) {
-	// // d = FACTORY.object();
-	// // } else {
-	// d = new Num(0.0);
-	// // }
-	// d.fDouble = fDouble.copy();
-	// return d;
-	// }
-	//
-	// public Num copyNew() {
-	// Num di = new Num(0.0);
-	// di.fDouble = new double(fDouble);
-	// return di;
-	// }
-	// @Override
-	// public void recycle() {
-	// FACTORY.recycle(this);
-	// }
 	/**
 	 * @param that
 	 * @return
@@ -371,7 +308,8 @@ public class Num extends ExprImpl implements INum {
 			return newInstance(fDouble * ((Num) that).fDouble);
 		}
 		if (that instanceof ApcomplexNum) {
-			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision()).multiply((ApcomplexNum) that);
+			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision())
+					.multiply((ApcomplexNum) that);
 		}
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).multiply((ComplexNum) that);
@@ -399,13 +337,6 @@ public class Num extends ExprImpl implements INum {
 	 * @param that
 	 * @return
 	 */
-	// public Operable plus(Operable that) {
-	// return fDouble.plus(that);
-	// }
-	/**
-	 * @param that
-	 * @return
-	 */
 	public double pow(final double that) {
 		return Math.pow(fDouble, that);
 	}
@@ -429,12 +360,6 @@ public class Num extends ExprImpl implements INum {
 	/**
 	 * @return
 	 */
-	// public short shortValue() {
-	// return fDouble.shortValue();
-	// }
-	/**
-	 * @return
-	 */
 	public double sqrt() {
 		return Math.sqrt(fDouble);
 	}
@@ -446,13 +371,6 @@ public class Num extends ExprImpl implements INum {
 	public double minus(final double that) {
 		return fDouble - that;
 	}
-
-	/**
-	 * @return
-	 */
-	// public Text toText() {
-	// return fDouble.toText();
-	// }
 
 	@Override
 	public double getRealPart() {
@@ -522,8 +440,9 @@ public class Num extends ExprImpl implements INum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -553,10 +472,10 @@ public class Num extends ExprImpl implements INum {
 	 */
 	@Override
 	public String toString() {
-		if (fDouble == (-0.0)) {
+		if (F.isZero(fDouble)) {
 			return "0.0";
 		}
-		return Double.valueOf(fDouble).toString();
+		return Double.toString(fDouble);
 	}
 
 	@Override
@@ -640,7 +559,7 @@ public class Num extends ExprImpl implements INum {
 		// double precision complex number
 		return ComplexNum.valueOf(doubleValue(), 0.0);
 	}
-	
+
 	@Override
 	public double getImaginary() {
 		return 0.0;
