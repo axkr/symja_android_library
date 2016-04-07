@@ -22,19 +22,28 @@ import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
+/**
+ * Compute the Groebner basis for a list of polynomials.
+ * 
+ * See
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia:
+ * Gröbner basis</a></li>
+ * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia:
+ * Gröbner basis</a></li>
+ * </ul>
+ */
 public class GroebnerBasis extends AbstractFunctionEvaluator {
 
 	public GroebnerBasis() {
+		// empty constructor
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() >= 3) {
 			try {
-				if (ast.arg1().isVector() < 0) {
-					return F.NIL;
-				}
-				if (ast.arg2().isVector() < 0) {
+				if (ast.arg1().isVector() < 0 || ast.arg2().isVector() < 0) {
 					return F.NIL;
 				}
 				TermOrder termOrder = TermOrderByName.Lexicographic;
@@ -42,44 +51,14 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 					final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 					termOrder = options.getMonomialOrder(ast, termOrder);
 				}
-				if (ast.size() >= 3) {
-					IAST vars = (IAST) ast.arg2();
-					if (vars.size() <= 1) {
-						return F.NIL;
-					}
-					List<ISymbol> varList = new ArrayList<ISymbol>(vars.size() - 1);
-					String[] pvars = new String[vars.size() - 1];
-				 
-					for (int i = 1; i < vars.size(); i++) {
-						if (!vars.get(i).isSymbol()) {
-							return F.NIL;
-						}
-						varList.add((ISymbol) vars.get(i));
-						pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
-					}
-					 
-					GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
-					IAST polys = (IAST) ast.arg1();
-					List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
-							polys.size() - 1);
-					JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
-					for (int i = 1; i < polys.size(); i++) {
-						IExpr expr = F.evalExpandAll(polys.get(i));
-						GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-						polyList.add(poly);
-					}
 
-					OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
-					// System.out.println(opl);
-
-					IAST resultList = F.List();
-					for (GenPolynomial<BigRational> p : opl.list) {
-						// convert rational to integer coefficients and add
-						// polynomial to result list
-						resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
-					}
-					return resultList;
+				IAST polys = (IAST) ast.arg1();
+				IAST vars = (IAST) ast.arg2();
+				if (vars.size() <= 1) {
+					return F.NIL;
 				}
+
+				return computeGroebnerBasis(termOrder, polys, vars);
 			} catch (JASConversionException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -87,6 +66,42 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+
+	public static IAST computeGroebnerBasis(IAST polys, IAST vars) {
+		TermOrder termOrder = TermOrderByName.Lexicographic;
+		return computeGroebnerBasis(termOrder, polys, vars);
+	}
+
+	private static IAST computeGroebnerBasis(TermOrder termOrder, IAST polys, IAST vars) {
+		List<ISymbol> varList = new ArrayList<ISymbol>(vars.size() - 1);
+		String[] pvars = new String[vars.size() - 1];
+
+		for (int i = 1; i < vars.size(); i++) {
+			if (!vars.get(i).isSymbol()) {
+				return F.NIL;
+			}
+			varList.add((ISymbol) vars.get(i));
+			pvars[i - 1] = ((ISymbol) vars.get(i)).toString();
+		}
+		GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
+		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(polys.size() - 1);
+		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
+		for (int i = 1; i < polys.size(); i++) {
+			IExpr expr = F.evalExpandAll(polys.get(i));
+			GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+			polyList.add(poly);
+		}
+
+		OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
+
+		IAST resultList = F.List();
+		for (GenPolynomial<BigRational> p : opl.list) {
+			// convert rational to integer coefficients and add
+			// polynomial to result list
+			resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
+		}
+		return resultList;
 	}
 
 }

@@ -3,11 +3,15 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.commons.math4.linear.FieldMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -30,7 +34,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IExpr wrongExpr;
 
 		public IsWrongSolveExpression() {
-
+			wrongExpr = null;
 		}
 
 		@Override
@@ -57,7 +61,6 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		final static public int LINEAR = 0;
 		final static public int OTHERS = 2;
-		// final static public int INVERSE_FUNCTION = 2;
 		final static public int POLYNOMIAL = 1;
 
 		private int fEquationType;
@@ -169,17 +172,8 @@ public class Solve extends AbstractFunctionEvaluator {
 						// issue #95
 						IFraction arg2 = (IFraction) function.arg2();
 						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
-						// if (plus.isFree(Predicates.in(vars), true)) {
 						return engine.evaluate(
 								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
-						// } else {
-						// IInteger numer = arg2.getNumerator();
-						// IInteger denom = arg2.getDenominator();
-						// return
-						// F.eval(F.Subtract(F.Expand(F.Power(F.Negate(plus),
-						// denom)),
-						// F.Expand(F.Power(function.arg1(), numer))));
-						// }
 					}
 				}
 
@@ -194,8 +188,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * @param plusAST
 		 *            the <code>Plus(..., ,...)</code> expression
 		 * @param position
-		 * @return <code>F.NIL</code> if no inverse function was found, otherwise
-		 *         return the rewritten expression
+		 * @return <code>F.NIL</code> if no inverse function was found,
+		 *         otherwise return the rewritten expression
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
@@ -391,7 +385,6 @@ public class Solve extends AbstractFunctionEvaluator {
 							}
 						}
 					} else if (expr.isPower() && (expr.getAt(2).isInteger() || expr.getAt(2).isNumIntValue())) {
-						// (JASConvert.getExponent((IAST) expr) > 0)) {
 						if (fEquationType == LINEAR) {
 							fEquationType = POLYNOMIAL;
 						}
@@ -403,11 +396,9 @@ public class Solve extends AbstractFunctionEvaluator {
 						}
 					}
 				}
-				if (fEquationType == LINEAR) {
-					if (sym == null) {
-						// should never happen??
-						System.out.println("sym == null???");
-					}
+				if (fEquationType == LINEAR && sym == null) {
+					// should never happen??
+					System.err.println("sym == null???");
 				}
 			} else {
 				getTimesArgumentEquationType(eqExpr);
@@ -424,7 +415,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		/**
 		 * @return the symbolSet
 		 */
-		public HashSet<ISymbol> getSymbolSet() {
+		public Set<ISymbol> getSymbolSet() {
 			return fSymbolSet;
 		}
 
@@ -546,7 +537,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param resultList
 	 * @param matrix
 	 * @param vector
-	 * @return <code>null</code> if the solution couldn't be found
+	 * @return
 	 */
 	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
 			IAST vector, EvalEngine engine) throws NoSolution {
@@ -662,6 +653,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	public Solve() {
+		// empty constructor
 	}
 
 	@Override
@@ -669,6 +661,17 @@ public class Solve extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
+
+		try {
+			IAST list = GroebnerBasis.computeGroebnerBasis(termsEqualZeroList, vars);
+			if (list.isPresent()) {
+				termsEqualZeroList = list;
+			}
+		} catch (JASConversionException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+		}
 
 		ExprAnalyzer exprAnalyzer;
 		ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
@@ -691,14 +694,17 @@ public class Solve extends AbstractFunctionEvaluator {
 			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
-				// IExpr temp = F.eval(F.RowReduce(augmentedMatrix));
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
 				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList);
 			}
 
+			for (int i = 1; i < resultList.size(); i++) {
+				if (resultList.get(i).isList()) {
+					EvalAttributes.sort((IAST) resultList.get(i));
+				}
+			}
 			return resultList;
 		} catch (NoSolution e) {
-			// e.printStackTrace();
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}

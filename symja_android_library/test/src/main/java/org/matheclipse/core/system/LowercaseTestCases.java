@@ -483,14 +483,15 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testBesselJ() {
 		check("BesselJ(0.0, 0.0)", "1.0");
 		check("BesselJ(4.0, 0.0)", "-0.3971498098638474");
-		// commons math: Bessel function of order 0 cannot be computed for x = -3
+		// commons math: Bessel function of order 0 cannot be computed for x =
+		// -3
 		check("BesselJ(-3.0, 0.0)", "BesselJ(-3.0,0.0)");
-		
+
 		check("BesselJ(-3, 0)", "0");
 		check("BesselJ(0, 0)", "1");
 		check("BesselJ(4, 0)", "0");
 	}
-	
+
 	public void testBinomial() {
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
@@ -1070,7 +1071,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testDSolve() {
 		check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 		check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-		
+
 		check("DSolve(y'(x) + y(x) == a*Sin(x), y(x), x)", "{{y(x)->C(1)/E^x-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
 		check("DSolve(y'(x)-x ==0, y(x), x)", "{{y(x)->x^2/2+C(1)}}");
@@ -1447,11 +1448,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testGather() {
-		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)", "{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
+		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)",
+				"{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
 		check("Gather({1,2,3,2,3,4,5,6,2,3})", "{{1},{2,2,2},{3,3,3},{4},{5},{6}}");
 		check("Gather(Range(0, 3, 1/3), Floor(#1) == Floor(#2) &)", "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
 	}
-	
+
 	public void testGeometricMean() {
 		check("GeometricMean({})", "GeometricMean({})");
 		check("GeometricMean({2, 6, 5, 15, 10, 1})", "9000^(1/6)");
@@ -2860,6 +2862,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->1,y->-10},{x->-2,y->-7}}");
 
 		// issue 42
 		// check("$sol=Solve(x^3 + 2x^2 - 5x -3 ==0,x);N($sol)",
