@@ -663,7 +663,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
 		try {
-			IAST list = GroebnerBasis.computeGroebnerBasis(termsEqualZeroList, vars);
+			IAST list = GroebnerBasis.computeGroebnerBasis(termsEqualZeroList, vars, false);
 			if (list.isPresent()) {
 				termsEqualZeroList = list;
 			}
@@ -698,17 +698,21 @@ public class Solve extends AbstractFunctionEvaluator {
 				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList);
 			}
 
-			for (int i = 1; i < resultList.size(); i++) {
-				if (resultList.get(i).isList()) {
-					EvalAttributes.sort((IAST) resultList.get(i));
-				}
-			}
-			return resultList;
+			return sortResults(resultList);
 		} catch (NoSolution e) {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}
 			return F.NIL;
 		}
+	}
+
+	private IExpr sortResults(IAST resultList) {
+		for (int i = 1; i < resultList.size(); i++) {
+			if (resultList.get(i).isList()) {
+				EvalAttributes.sort((IAST) resultList.get(i));
+			}
+		}
+		return resultList;
 	}
 }
