@@ -266,6 +266,7 @@ public class GroebnerBasePseudoSeq<C extends GcdRingElem<C>> extends GroebnerBas
             G.add(a); // adds as last
             i++;
         }
+        Collections.reverse(G); // undo reverse
         return G;
     }
 

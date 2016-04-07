@@ -72,7 +72,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
     public SquarefreeFieldCharP(RingFactory<C> fac) {
         super(GCDFactory.<C> getProxy(fac));
         if (!fac.isField()) {
-            //throw new IllegalArgumentException("fac must be a field");
+            //throw new IllegalArgumentException("fac must be a field: "  + fac.toScript());
             logger.warn("fac should be a field: " + fac.toScript());
         }
         if (fac.characteristic().signum() == 0) {

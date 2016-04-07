@@ -235,7 +235,7 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
      * @param b ModLong.
      * @return sign(this-b).
      */
-    @Override 
+    @Override
     public int compareTo(ModLong b) {
         long v = b.val;
         if (ring != b.ring) {
@@ -574,6 +574,17 @@ public final class ModLong implements GcdRingElem<ModLong>, Modular {
             b += m;
         }
         return b;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this ModLong,
+     * including a sign bit.
+     * @return number of bits in the representation of this ModLong, including a
+     *         sign bit.
+     */
+    public long bitLength() {
+        return BigInteger.bitLength(val);
     }
 
 }

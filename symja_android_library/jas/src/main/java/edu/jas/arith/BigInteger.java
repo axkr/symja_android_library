@@ -13,8 +13,8 @@ import java.util.Random;
 
 import edu.jas.kern.StringUtil;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.RingFactory;
 import edu.jas.structure.NotInvertibleException;
+import edu.jas.structure.RingFactory;
 
 
 /**
@@ -26,7 +26,7 @@ import edu.jas.structure.NotInvertibleException;
  */
 
 public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<BigInteger>,
-                                         Iterable<BigInteger>, Rational {
+                Iterable<BigInteger>, Rational {
 
 
     /**
@@ -255,7 +255,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return val.equals(java.math.BigInteger.ZERO);
+        return val.signum() == 0; //equals(java.math.BigInteger.ZERO);
     }
 
 
@@ -471,8 +471,8 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
 
 
     /**
-     * Integer inverse. R is a non-zero integer. S=1/R if defined else 
-     * throws not invertible exception.
+     * Integer inverse. R is a non-zero integer. S=1/R if defined else throws
+     * not invertible exception.
      * @see edu.jas.structure.RingElem#inverse()
      */
     public BigInteger inverse() {
@@ -670,7 +670,7 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
     public BigInteger shiftLeft(int n) {
         return new BigInteger(val.shiftLeft(n));
     }
-    
+
 
     /**
      * BigInteger multiply.
@@ -736,6 +736,36 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      */
     public BigRational getRational() {
         return new BigRational(val);
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this BigInteger,
+     * including a sign bit. For positive BigIntegers, this is equivalent to
+     * {@code (ceil(log2(this+1))+1)}.)
+     * @return number of bits in the representation of this BigInteger,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        long n = val.bitLength();
+        //System.out.println("sign(val) = " + val.signum());
+        if (val.signum() < 0) {
+            n++;
+        }
+        return ++n;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of a Long, including a
+     * sign bit.
+     * @param v value.
+     * @return number of bits in the representation of a Long, including a sign
+     *         bit.
+     */
+    public static long bitLength(long v) { // compare BigInteger.bitLengthForInt
+        long n = 64 - Long.numberOfLeadingZeros(v);
+        return ++n;
     }
 
 

@@ -386,7 +386,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return re.equals(BigRational.ZERO) && im.equals(BigRational.ZERO);
+        return re.isZERO() && im.isZERO();
     }
 
 
@@ -408,7 +408,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @see edu.jas.structure.RingElem#isONE()
      */
     public boolean isONE() {
-        return re.equals(BigRational.ONE) && im.equals(BigRational.ZERO);
+        return re.isONE() && im.isZERO();
     }
 
 
@@ -417,7 +417,7 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
      * @return If this is i then true is returned, else false.
      */
     public boolean isIMAG() {
-        return re.equals(BigRational.ZERO) && im.equals(BigRational.ONE);
+        return re.isZERO() && im.isONE();
     }
 
 
@@ -812,6 +812,18 @@ public final class BigComplex implements StarRingElem<BigComplex>, GcdRingElem<B
         ret[1] = this.inverse().multiply(half);
         ret[2] = S.inverse().multiply(half);
         return ret;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this BigComplex,
+     * including a sign bit. It is equivalent to
+     * {@code re.bitLength() + im.bitLength()}.)
+     * @return number of bits in the representation of this BigComplex,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        return re.bitLength() + im.bitLength();
     }
 
 }

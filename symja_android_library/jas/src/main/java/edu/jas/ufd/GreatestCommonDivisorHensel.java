@@ -36,8 +36,8 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular> extends
-                GreatestCommonDivisorAbstract<BigInteger> {
+public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
+                extends GreatestCommonDivisorAbstract<BigInteger> {
 
 
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorHensel.class);
@@ -302,7 +302,7 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
         }
         long e = P.degree(0);
         long f = S.degree(0);
-        GenPolynomial<GenPolynomial<BigInteger>> q, r, s;
+        GenPolynomial<GenPolynomial<BigInteger>> q, r; //, s;
         if (f > e) {
             r = P;
             q = S;
@@ -376,7 +376,7 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
 
         // double check variables
         // need qe,re,qd,rd,a,b
-        GenPolynomial<BigInteger> qe0, re0, ce0 = null;
+        GenPolynomial<BigInteger> ce0 = null; // qe0, re0,
 
         for (int i = 0; i < 11; i++) { // meta loop
             //System.out.println("======== run " + dfac.nvar + ", " + i);
@@ -500,8 +500,8 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
             // double check 
             // need qe,re,qd,rd,a,b
             if (i == 0) {
-                qe0 = qe;
-                re0 = re;
+                //qe0 = qe;
+                //re0 = re;
                 ce0 = ce;
                 continue;
             }
@@ -509,8 +509,8 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
             long d1 = ce.degree(0);
             //System.out.println("d0, d1 = " + d0 + ", " + d1);
             if (d1 < d0) {
-                qe0 = qe;
-                re0 = re;
+                //qe0 = qe;
+                //re0 = re;
                 ce0 = ce;
                 continue;
             } else if (d1 > d0) {
@@ -532,7 +532,7 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
             // prepare lifting, chose factor polynomials
             GenPolynomial<BigInteger> re1 = PolyUtil.<BigInteger> basePseudoDivide(re, ce);
             GenPolynomial<BigInteger> qe1 = PolyUtil.<BigInteger> basePseudoDivide(qe, ce);
-            GenPolynomial<BigInteger> ui, he, pe;
+            GenPolynomial<BigInteger> ui, he; //, pe;
             GenPolynomial<BigInteger> g, gi, lui;
             GenPolynomial<BigInteger> gcr, gcq;
             gcr = ufd.baseGcd(re1, ce);
@@ -540,18 +540,18 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
             if (gcr.isONE() && gcq.isONE()) { // both gcds == 1: chose smaller ldcf
                 if (la.totalDegree() > lb.totalDegree()) {
                     ui = qd;
-                    s = q;
+                    //s = q;
                     he = qe1;
-                    pe = qe;
+                    //pe = qe;
                     BigInteger bn = qd.maxNorm();
                     mn = bn.multiply(cc).multiply(new BigInteger(2L));
                     g = lb;
                     logger.debug("select deg: ui = qd, g = b"); //, qe1 = " + qe1); // + ", qe = " + qe);
                 } else {
                     ui = rd;
-                    s = r;
+                    //s = r;
                     he = re1;
-                    pe = re;
+                    //pe = re;
                     BigInteger an = rd.maxNorm();
                     mn = an.multiply(cc).multiply(new BigInteger(2L));
                     g = la;
@@ -559,18 +559,18 @@ public class GreatestCommonDivisorHensel<MOD extends GcdRingElem<MOD> & Modular>
                 }
             } else if (gcr.isONE()) {
                 ui = rd;
-                s = r;
+                //s = r;
                 he = re1;
-                pe = re;
+                //pe = re;
                 BigInteger an = rd.maxNorm();
                 mn = an.multiply(cc).multiply(new BigInteger(2L));
                 g = la;
                 logger.debug("select: ui = rd, g = a"); //, re1 = " + re1); // + ", re = " + re);
             } else if (gcq.isONE()) {
                 ui = qd;
-                s = q;
+                //s = q;
                 he = qe1;
-                pe = qe;
+                //pe = qe;
                 BigInteger bn = qd.maxNorm();
                 mn = bn.multiply(cc).multiply(new BigInteger(2L));
                 g = lb;

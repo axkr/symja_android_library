@@ -5,13 +5,15 @@
 package edu.jas.poly;
 
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -49,6 +51,18 @@ Iterable<Monomial<C>> {
      * The data structure for polynomials.
      */
     protected final SortedMap<ExpVector, C> val; // do not change to TreeMap
+
+
+    /**
+     * Stored hash code.
+     */
+    transient protected int hash = -1;
+
+
+    /**
+     * Stored bitLength.
+     */
+    transient protected long blen = -1;
 
 
     private static final Logger logger = Logger.getLogger(GenPolynomial.class);
@@ -186,6 +200,8 @@ Iterable<Monomial<C>> {
             if (a != null) {
                 logger.error("map entry exists " + e + " to " + a + " new " + c);
             }
+            hash = -1;
+            blen = -1;
         }
         if (!c.isZERO()) {
             val.put(e, c);
@@ -204,6 +220,8 @@ Iterable<Monomial<C>> {
     public void doRemoveFromMap(ExpVector e, C c) {
         C b = val.remove(e);
         if (debug) {
+            hash = -1;
+            blen = -1;
             if (c == null) { // ignore b
                 return;
             }
@@ -229,6 +247,8 @@ Iterable<Monomial<C>> {
                 if (a != null) {
                     logger.error("map entry exists " + e + " to " + a + " new " + me.getValue());
                 }
+                hash = -1;
+                blen = -1;
             }
             C c = me.getValue();
             if (!c.isZERO()) {
@@ -521,9 +541,12 @@ Iterable<Monomial<C>> {
      */
     @Override
     public int hashCode() {
-        int h;
-        h = (ring.hashCode() << 27);
-        h += val.hashCode();
+        int h = hash;
+        if (h < 0) {
+            h = (ring.hashCode() << 27);
+            h += val.hashCode();
+            hash = h;
+        }
         return h;
     }
 
@@ -794,7 +817,7 @@ Iterable<Monomial<C>> {
             maxw = weightDegree();
         }
         GenPolynomial<C> wp = new GenPolynomial<C>(ring);
-        for (Map.Entry<ExpVector,C> m : val.entrySet()) {
+        for (Map.Entry<ExpVector, C> m : val.entrySet()) {
             ExpVector e = m.getKey();
             long d = e.weightDeg(w);
             if (d >= maxw) {
@@ -852,11 +875,11 @@ Iterable<Monomial<C>> {
     public List<ExpVector> deltaExpVectors() {
         List<ExpVector> de = new ArrayList<ExpVector>(val.size());
         if (val.isEmpty()) {
-            return de; 
+            return de;
         }
         ExpVector u = null;
         for (ExpVector e : val.keySet()) {
-            if ( u == null ) {
+            if (u == null) {
                 u = e;
             } else {
                 ExpVector v = u.subtract(e);
@@ -1496,6 +1519,9 @@ Iterable<Monomial<C>> {
         if (this.isZERO()) {
             return this;
         }
+        if (e == null) { // exp vector of zero polynomial
+            return ring.getZERO();
+        }
         if (this instanceof GenSolvablePolynomial) {
             //throw new RuntimeException("wrong method dispatch in JRE ");
             logger.debug("warn: wrong method dispatch in JRE multiply(s,e) - trying to fix");
@@ -1523,7 +1549,10 @@ Iterable<Monomial<C>> {
      * @return this * x<sup>e</sup>.
      */
     public GenPolynomial<C> multiply(ExpVector e) {
-        // assert e != null. This is never allowed.
+        if (e == null) { // exp vector of zero polynomial
+            return ring.getZERO();
+        }
+        // assert e != null. This is seldom allowed.
         if (this.isZERO()) {
             return this;
         }
@@ -2170,6 +2199,38 @@ Iterable<Monomial<C>> {
             }
         }
         return n;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this polynomial.
+     * @return number of bits in the representation of this polynomial,
+     *         including sign bits.
+     */
+    public long bitLength() {
+        if (blen < 0L) {
+            long n = 0L;
+            for (Monomial<C> m : this) {
+                n += m.e.bitLength();
+                //n += m.c.bitLength(); // TODO add bitLength to Element
+                try { // hack
+                    Method method = m.c.getClass().getMethod("bitLength", null);
+                    n += (Long) method.invoke(m.c, null);
+                } catch (NoSuchMethodException e) {
+                    logger.error("Exception, class: " + m.c.getClass());
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    logger.error("Exception, class: " + m.c.getClass());
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    logger.error("Exception, class: " + m.c.getClass());
+                    throw new RuntimeException(e);
+                }
+            }
+            blen = n;
+            //System.out.println("bitLength(poly) = " + blen);
+        }
+        return blen;
     }
 
 }

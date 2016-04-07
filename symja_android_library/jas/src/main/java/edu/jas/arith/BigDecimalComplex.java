@@ -836,4 +836,16 @@ public final class BigDecimalComplex implements StarRingElem<BigDecimalComplex>,
         return ret;
     }
 
+
+    /**
+     * Returns the number of bits in the representation of this
+     * BigDecimalComplex, including a sign bit. It is equivalent to
+     * {@code re.bitLength() + im.bitLength()}.)
+     * @return number of bits in the representation of this BigDecimalComplex,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        return re.bitLength() + im.bitLength();
+    }
+
 }

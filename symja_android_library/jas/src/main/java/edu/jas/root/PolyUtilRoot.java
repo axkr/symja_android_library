@@ -96,8 +96,8 @@ public class PolyUtilRoot {
     public static <C extends GcdRingElem<C> & Rational> GenPolynomial<AlgebraicNumber<C>> algebraicFromRealCoefficients(
                     GenPolynomialRing<AlgebraicNumber<C>> afac, GenPolynomial<RealAlgebraicNumber<C>> A) {
         AlgebraicNumberRing<C> cfac = (AlgebraicNumberRing<C>) afac.coFac;
-        return PolyUtil.<RealAlgebraicNumber<C>, AlgebraicNumber<C>> map(afac, A, new AlgFromRealCoeff<C>(
-                        cfac));
+        return PolyUtil.<RealAlgebraicNumber<C>, AlgebraicNumber<C>> map(afac, A,
+                        new AlgFromRealCoeff<C>(cfac));
     }
 
 
@@ -112,8 +112,8 @@ public class PolyUtilRoot {
     public static <C extends GcdRingElem<C> & Rational> GenPolynomial<RealAlgebraicNumber<C>> realFromAlgebraicCoefficients(
                     GenPolynomialRing<RealAlgebraicNumber<C>> rfac, GenPolynomial<AlgebraicNumber<C>> A) {
         RealAlgebraicRing<C> cfac = (RealAlgebraicRing<C>) rfac.coFac;
-        return PolyUtil.<AlgebraicNumber<C>, RealAlgebraicNumber<C>> map(rfac, A, new RealFromAlgCoeff<C>(
-                        cfac));
+        return PolyUtil.<AlgebraicNumber<C>, RealAlgebraicNumber<C>> map(rfac, A,
+                        new RealFromAlgCoeff<C>(cfac));
     }
 
 
@@ -165,8 +165,8 @@ public class PolyUtilRoot {
 /**
  * Polynomial to algebraic functor.
  */
-class PolyToReAlg<C extends GcdRingElem<C> & Rational> implements
-                UnaryFunctor<GenPolynomial<C>, RealAlgebraicNumber<C>> {
+class PolyToReAlg<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<GenPolynomial<C>, RealAlgebraicNumber<C>> {
 
 
     final protected RealAlgebraicRing<C> afac;
@@ -223,7 +223,8 @@ class CoeffToReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunctor<
 /**
  * Coefficient to recursive algebraic functor.
  */
-class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunctor<C, RealAlgebraicNumber<C>> {
+class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<C, RealAlgebraicNumber<C>> {
 
 
     final protected List<RealAlgebraicRing<C>> lfac;
@@ -232,7 +233,7 @@ class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunct
     final int depth;
 
 
-    @SuppressWarnings("cast")
+    @SuppressWarnings({ "unchecked", "cast" })
     public CoeffToRecReAlg(int depth, RealAlgebraicRing<C> fac) {
         if (fac == null) {
             throw new IllegalArgumentException("fac must not be null");
@@ -252,7 +253,7 @@ class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunct
     }
 
 
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public RealAlgebraicNumber<C> eval(C c) {
         if (c == null) {
             return lfac.get(0).getZERO();
@@ -275,8 +276,8 @@ class CoeffToRecReAlg<C extends GcdRingElem<C> & Rational> implements UnaryFunct
 /**
  * Coefficient to algebraic from real algebraic functor.
  */
-class AlgFromRealCoeff<C extends GcdRingElem<C> & Rational> implements
-                UnaryFunctor<RealAlgebraicNumber<C>, AlgebraicNumber<C>> {
+class AlgFromRealCoeff<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<RealAlgebraicNumber<C>, AlgebraicNumber<C>> {
 
 
     final protected AlgebraicNumberRing<C> afac;
@@ -302,8 +303,8 @@ class AlgFromRealCoeff<C extends GcdRingElem<C> & Rational> implements
 /**
  * Coefficient to real algebriac from algebraic functor.
  */
-class RealFromAlgCoeff<C extends GcdRingElem<C> & Rational> implements
-                UnaryFunctor<AlgebraicNumber<C>, RealAlgebraicNumber<C>> {
+class RealFromAlgCoeff<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<AlgebraicNumber<C>, RealAlgebraicNumber<C>> {
 
 
     final protected RealAlgebraicRing<C> rfac;
@@ -360,8 +361,8 @@ class CoeffToReal<C extends GcdRingElem<C> & Rational> implements UnaryFunctor<C
 /**
  * Coefficient to complex algebraic functor.
  */
-class CoeffToComplex<C extends GcdRingElem<C> & Rational> implements
-                UnaryFunctor<C, ComplexAlgebraicNumber<C>> {
+class CoeffToComplex<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<C, ComplexAlgebraicNumber<C>> {
 
 
     final protected ComplexAlgebraicRing<C> cfac;
@@ -396,8 +397,8 @@ class CoeffToComplex<C extends GcdRingElem<C> & Rational> implements
 /**
  * Coefficient to complex algebraic from complex functor.
  */
-class CoeffToComplexFromComplex<C extends GcdRingElem<C> & Rational> implements
-                UnaryFunctor<Complex<C>, ComplexAlgebraicNumber<C>> {
+class CoeffToComplexFromComplex<C extends GcdRingElem<C> & Rational>
+                implements UnaryFunctor<Complex<C>, ComplexAlgebraicNumber<C>> {
 
 
     final protected ComplexAlgebraicRing<C> cfac;

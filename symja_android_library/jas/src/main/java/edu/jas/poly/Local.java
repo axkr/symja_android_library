@@ -128,7 +128,7 @@ public class Local<C extends RingElem<C>> implements RingElem<Local<C>>, QuotPai
             }
             // } else { // univariate polynomial?
         } else {
-            logger.warn("gcd = ????");
+            logger.warn("gcd = ????: " + n.getClass() + ", " + d.getClass());
             num = n;
             den = d;
         }

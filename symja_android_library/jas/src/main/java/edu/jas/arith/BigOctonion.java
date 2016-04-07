@@ -383,7 +383,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return or.equals(BigQuaternion.ZERO) && oi.equals(BigQuaternion.ZERO);
+        return or.isZERO() && oi.isZERO();
     }
 
 
@@ -405,7 +405,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @return true if this is 1, else false.
      */
     public boolean isONE() {
-        return or.equals(BigQuaternion.ONE) && oi.equals(BigQuaternion.ZERO);
+        return or.isONE() && oi.isZERO();
     }
 
 
@@ -414,7 +414,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @return true if this is i, else false.
      */
     public boolean isIMAG() {
-        return or.equals(BigQuaternion.ZERO) && oi.equals(BigQuaternion.ONE);
+        return or.isZERO() && oi.isONE();
     }
 
 
@@ -447,9 +447,8 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      */
     @Override
     public int hashCode() {
-        int h;
-        h = 41 * or.hashCode();
-        h += 41 * oi.hashCode();
+        int h = 41 * or.hashCode();
+        h += oi.hashCode();
         return h;
     }
 
@@ -830,6 +829,18 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
         ret[1] = this.inverse().multiply(half);
         ret[2] = S.inverse().multiply(half);
         return ret;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this BigOctonion,
+     * including a sign bit. It is equivalent to
+     * {@code or.bitLength() + oi.bitLength()}.)
+     * @return number of bits in the representation of this BigOctonion,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        return or.bitLength() + oi.bitLength();
     }
 
 }

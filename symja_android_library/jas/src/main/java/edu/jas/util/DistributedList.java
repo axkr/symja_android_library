@@ -98,7 +98,7 @@ public class DistributedList /* implements List not jet */ {
     public void terminate() {
         if ( cf != null ) {
             cf.terminate();
-            logger.warn("terminating " + cf);
+            //logger.warn("terminating " + cf);
         }
         if ( channel != null ) {
             channel.close();

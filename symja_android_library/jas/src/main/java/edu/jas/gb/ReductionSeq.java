@@ -8,6 +8,8 @@ package edu.jas.gb;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingElem;
@@ -23,7 +25,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 extends ReductionAbstract<C> {
 
 
-    //private static final Logger logger = Logger.getLogger(ReductionSeq.class);
+    private static final Logger logger = Logger.getLogger(ReductionSeq.class);
 
 
     /**
@@ -95,7 +97,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                     break;
             }
             if (!mt) {
-                //logger.debug("irred");
+                logger.debug("irred");
                 //R = R.sum( a, e );
                 //S = S.subtract( a, e ); 
                 R.doPutToMap(e, a);
@@ -103,8 +105,8 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 // System.out.println(" S = " + S);
             } else {
                 e = e.subtract(htl[i]);
-                //logger.info("red div = " + e);
                 a = a.divide((C) lbc[i]);
+                //logger.info("red div: e = " + e + ", a = " + a);
                 //Q = p[i].multiply( a, e );
                 //S = S.subtract( Q );
                 S = S.subtractMultiple(a, e, p[i]);

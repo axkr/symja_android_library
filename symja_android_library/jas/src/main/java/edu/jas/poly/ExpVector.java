@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import edu.jas.arith.BigInteger;
 import edu.jas.structure.AbelianGroupElem;
 import edu.jas.structure.AbelianGroupFactory;
 import edu.jas.structure.Power;
@@ -33,14 +34,19 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public abstract class ExpVector implements AbelianGroupElem<ExpVector>
-/*Cloneable, Serializable*/{
+public abstract class ExpVector implements AbelianGroupElem<ExpVector> {
 
 
     /**
      * Stored hash code.
      */
-    protected int hash = 0;
+    transient protected int hash = -1;
+
+
+    /**
+     * Stored bitLength.
+     */
+    transient protected long blen = -1;
 
 
     /**
@@ -269,8 +275,8 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
 
 
     /**
-     * Reverse lower j variables. Used e.g. in opposite
-     * rings. Reverses the first j-1 variables, the rest is unchanged.
+     * Reverse lower j variables. Used e.g. in opposite rings. Reverses the
+     * first j-1 variables, the rest is unchanged.
      * @param j index of first variable reversed.
      * @return reversed exponent vector.
      */
@@ -529,15 +535,32 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector>
      */
     @Override
     public int hashCode() {
-        if (hash == 0) {
+        if (hash < 0) {
+            int h = 0;
             for (int i = 0; i < length(); i++) {
-                hash = hash << 4 + getVal(i);
+                h = (h << 4) + (int)getVal(i);
             }
-            if (hash == 0) {
-                hash = 1;
-            }
+            hash = h;
         }
         return hash;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this exponent vector.
+     * @return number of bits in the representation of this ExpVector, including
+     *         sign bits.
+     */
+    public long bitLength() {
+        if (blen < 0L) {
+            long n = 0L;
+            for (int i = 0; i < length(); i++) {
+                n += BigInteger.bitLength(getVal(i));
+            }
+            blen = n;
+            //System.out.println("bitLength(ExpVector) = " + blen);
+        }
+        return blen;
     }
 
 

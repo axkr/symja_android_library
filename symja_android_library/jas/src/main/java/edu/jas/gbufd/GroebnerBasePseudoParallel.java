@@ -319,6 +319,7 @@ public class GroebnerBasePseudoParallel<C extends GcdRingElem<C>> extends Groebn
             a = mirs[i].getNF();
             F.add(a);
         }
+        Collections.reverse(F); // undo reverse
         return F;
     }
 

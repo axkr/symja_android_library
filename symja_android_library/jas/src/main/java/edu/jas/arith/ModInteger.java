@@ -155,7 +155,7 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return val.equals(java.math.BigInteger.ZERO);
+        return val.signum() == 0;
     }
 
 
@@ -648,6 +648,23 @@ public final class ModInteger implements GcdRingElem<ModInteger>, Modular {
         ret[1] = new ModInteger(ring, c1);
         ret[2] = new ModInteger(ring, c2);
         return ret;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this ModInteger,
+     * including a sign bit. For positive ModIntegers, this is equivalent to
+     * {@code val.bitLength()}.)
+     * @return number of bits in the representation of this ModInteger,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        long n = val.bitLength();
+        if (val.signum() < 0) {
+            n++;
+        }
+        n++;
+        return n;
     }
 
 }

@@ -138,4 +138,47 @@ public class OrderedPolynomialList<C extends RingElem<C>> extends PolynomialList
         return L; // unsorted
     }
 
+
+    /**
+     * Sort a list of polynomials with respect to the ascending order of the
+     * degree. 
+     * @param L polynomial list.
+     * @return sorted polynomial list from L.
+     */
+    @SuppressWarnings({ "unchecked", "cast" })
+    public static <C extends RingElem<C>> List<GenPolynomial<C>> sortDegree(List<GenPolynomial<C>> L) {
+        if (L == null) {
+            return L;
+        }
+        if (L.size() <= 1) { // nothing to sort
+            return L;
+        }
+        Comparator<GenPolynomial<C>> cmp = new Comparator<GenPolynomial<C>>() {
+
+            public int compare(GenPolynomial<C> p1, GenPolynomial<C> p2) {
+                long d1 = p1.degree();
+                long d2 = p2.degree();
+                if (d1 > d2) {
+                    return -1;
+                } else if (d1 < d2) {
+                    return 1;
+                }
+                return 0;
+            }
+        };
+        GenPolynomial<C>[] s = null;
+        try {
+            s = (GenPolynomial<C>[]) new GenPolynomial[L.size()];
+            int i = 0;
+            for (GenPolynomial<C> p : L) {
+                s[i++] = p;
+            }
+            Arrays.<GenPolynomial<C>> sort(s, cmp);
+            return new ArrayList<GenPolynomial<C>>(Arrays.<GenPolynomial<C>> asList(s));
+        } catch (ClassCastException ok) {
+            System.out.println("Warning: polynomials not sorted");
+        }
+        return L; // unsorted
+    }
+
 }

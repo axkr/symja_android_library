@@ -117,7 +117,7 @@ public class Quotient<C extends RingElem<C>> implements RingElem<Quotient<C>>, Q
             }
             // } else { // univariate polynomial?
         } else {
-            logger.warn("gcd = ????");
+            logger.warn("gcd = ????: " + n.getClass() + ", " + d.getClass());
             num = n;
             den = d;
         }

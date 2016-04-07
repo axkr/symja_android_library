@@ -199,8 +199,8 @@ public class PolyUtil {
      * @param A polynomial with BigRational coefficients to be converted.
      * @return polynomial with BigInteger coefficients.
      */
-    public static GenPolynomial<BigInteger> integerFromRationalCoefficients(
-                    GenPolynomialRing<BigInteger> fac, GenPolynomial<BigRational> A) {
+    public static GenPolynomial<BigInteger> integerFromRationalCoefficients(GenPolynomialRing<BigInteger> fac,
+                    GenPolynomial<BigRational> A) {
         if (A == null || A.isZERO()) {
             return fac.getZERO();
         }
@@ -228,8 +228,7 @@ public class PolyUtil {
     /**
      * BigInteger from BigRational coefficients. Represent as polynomial with
      * BigInteger coefficients by multiplication with the gcd of the numerators
-     * and the lcm of the denominators of the BigRational coefficients. <br
-     * />
+     * and the lcm of the denominators of the BigRational coefficients. <br />
      * <b>Author:</b> Axel Kramer
      * @param fac result polynomial factory.
      * @param A polynomial with BigRational coefficients to be converted.
@@ -711,7 +710,8 @@ public class PolyUtil {
      * @return extended polynomial.
      */
     public static <C extends RingElem<C>> GenPolynomial<GenPolynomial<C>> extendCoefficients(
-                    GenPolynomialRing<GenPolynomial<C>> pfac, GenPolynomial<GenPolynomial<C>> A, int j, long k) {
+                    GenPolynomialRing<GenPolynomial<C>> pfac, GenPolynomial<GenPolynomial<C>> A, int j,
+                    long k) {
         GenPolynomial<GenPolynomial<C>> Cp = pfac.getZERO().copy();
         if (A.isZERO()) {
             return Cp;
@@ -1550,7 +1550,8 @@ public class PolyUtil {
      * @return quotient with ldcf(s)<sup>m</sup> P = quotient * s + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
      */
-    public static <C extends RingElem<C>> GenPolynomial<C> coefficientBasePseudoDivide(GenPolynomial<C> P, C s) {
+    public static <C extends RingElem<C>> GenPolynomial<C> coefficientBasePseudoDivide(GenPolynomial<C> P,
+                    C s) {
         if (s == null || s.isZERO()) {
             throw new ArithmeticException(P + " division by zero " + s);
         }
@@ -1629,8 +1630,8 @@ public class PolyUtil {
         }
         GenPolynomialRing<C> pfac = P.ring;
         if (r < 0 || pfac.nvar <= r) {
-            throw new IllegalArgumentException(P.getClass().getName() + " deriviative variable out of bound "
-                            + r);
+            throw new IllegalArgumentException(
+                            P.getClass().getName() + " deriviative variable out of bound " + r);
         }
         int rp = pfac.nvar - 1 - r;
         RingFactory<C> rf = pfac.coFac;
@@ -2621,8 +2622,8 @@ public class PolyUtil {
         GenPolynomialRing<C> facr = fac.contract(n);
         Map<ExpVector, GenPolynomial<C>> mpr = p.contract(facr);
         if (mpr.size() != 1) {
-            System.out.println("upper ex, l = " + l + ", r = " + r + ", p = " + p + ", fac = "
-                            + fac.toScript());
+            System.out.println(
+                            "upper ex, l = " + l + ", r = " + r + ", p = " + p + ", fac = " + fac.toScript());
             throw new RuntimeException("this should not happen " + mpr);
         }
         GenPolynomial<C> pr = mpr.values().iterator().next();
@@ -2662,8 +2663,8 @@ public class PolyUtil {
         GenPolynomialRing<GenPolynomial<C>> rfac = fac.recursive(n);
         GenPolynomial<GenPolynomial<C>> mpr = recursive(rfac, p);
         if (mpr.length() != p.length()) {
-            System.out.println("lower ex, l = " + l + ", r = " + r + ", p = " + p + ", fac = "
-                            + fac.toScript());
+            System.out.println(
+                            "lower ex, l = " + l + ", r = " + r + ", p = " + p + ", fac = " + fac.toScript());
             throw new RuntimeException("this should not happen " + mpr);
         }
         RingFactory<C> cf = fac.coFac;
@@ -2761,7 +2762,8 @@ public class PolyUtil {
      * @param i variable index.
      * @return polynomial with head term in variable i
      */
-    public static <C extends RingElem<C>> GenPolynomial<C> selectWithVariable(List<GenPolynomial<C>> P, int i) {
+    public static <C extends RingElem<C>> GenPolynomial<C> selectWithVariable(List<GenPolynomial<C>> P,
+                    int i) {
         for (GenPolynomial<C> p : P) {
             int[] dep = p.leadingExpVector().dependencyOnVariables();
             if (dep.length == 1 && dep[0] == i) {
@@ -2777,8 +2779,8 @@ public class PolyUtil {
 /**
  * Conversion of distributive to recursive representation.
  */
-class DistToRec<C extends RingElem<C>> implements
-                UnaryFunctor<GenPolynomial<C>, GenPolynomial<GenPolynomial<C>>> {
+class DistToRec<C extends RingElem<C>>
+                implements UnaryFunctor<GenPolynomial<C>, GenPolynomial<GenPolynomial<C>>> {
 
 
     GenPolynomialRing<GenPolynomial<C>> fac;
@@ -2801,8 +2803,8 @@ class DistToRec<C extends RingElem<C>> implements
 /**
  * Conversion of recursive to distributive representation.
  */
-class RecToDist<C extends RingElem<C>> implements
-                UnaryFunctor<GenPolynomial<GenPolynomial<C>>, GenPolynomial<C>> {
+class RecToDist<C extends RingElem<C>>
+                implements UnaryFunctor<GenPolynomial<GenPolynomial<C>>, GenPolynomial<C>> {
 
 
     GenPolynomialRing<C> fac;
@@ -2946,7 +2948,8 @@ class RatToDec<C extends Element<C> & Rational> implements UnaryFunctor<C, BigDe
 /**
  * Conversion of Complex Rational to Complex BigDecimal. result = decimal(r).
  */
-class CompRatToDec<C extends RingElem<C> & Rational> implements UnaryFunctor<Complex<C>, Complex<BigDecimal>> {
+class CompRatToDec<C extends RingElem<C> & Rational>
+                implements UnaryFunctor<Complex<C>, Complex<BigDecimal>> {
 
 
     ComplexRing<BigDecimal> ring;
@@ -2994,8 +2997,8 @@ class FromInteger<D extends RingElem<D>> implements UnaryFunctor<BigInteger, D> 
 /**
  * Conversion from GenPolynomial<BigInteger> functor.
  */
-class FromIntegerPoly<D extends RingElem<D>> implements
-                UnaryFunctor<GenPolynomial<BigInteger>, GenPolynomial<D>> {
+class FromIntegerPoly<D extends RingElem<D>>
+                implements UnaryFunctor<GenPolynomial<BigInteger>, GenPolynomial<D>> {
 
 
     GenPolynomialRing<D> ring;
@@ -3023,8 +3026,8 @@ class FromIntegerPoly<D extends RingElem<D>> implements
 
 
 /**
- * Conversion from GenPolynomial<BigRational> to GenPolynomial<BigInteger>
- * functor.
+ * Conversion from GenPolynomial<BigRational> to GenPolynomial
+ * <BigInteger> functor.
  */
 class RatToIntPoly implements UnaryFunctor<GenPolynomial<BigRational>, GenPolynomial<BigInteger>> {
 
@@ -3366,7 +3369,7 @@ class CoeffToRecAlg<C extends GcdRingElem<C>> implements UnaryFunctor<C, Algebra
     }
 
 
-    @SuppressWarnings({ "unchecked", "cast" })
+    @SuppressWarnings({ "unchecked" })
     public AlgebraicNumber<C> eval(C c) {
         if (c == null) {
             return lfac.get(0).getZERO();

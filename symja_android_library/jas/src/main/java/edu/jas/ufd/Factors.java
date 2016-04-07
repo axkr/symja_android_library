@@ -195,7 +195,7 @@ public class Factors<C extends GcdRingElem<C>> implements Comparable<Factors<C>>
             return i;
         }
         for (Factors<AlgebraicNumber<C>> f : arfactors) {
-             i += f.length();
+            i += f.length();
         }
         return i;
     }
@@ -314,7 +314,7 @@ public class Factors<C extends GcdRingElem<C>> implements Comparable<Factors<C>>
      * Find largest extension field.
      * @return largest extension field or null if no extension field
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public AlgebraicNumberRing<C> findExtensionField() {
         if (afac == null) {
             return null;

@@ -509,8 +509,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return re.equals(BigRational.ZERO) && im.equals(BigRational.ZERO) && jm.equals(BigRational.ZERO)
-                        && km.equals(BigRational.ZERO);
+        return re.isZERO() && im.isZERO() && jm.isZERO() && km.isZERO();
     }
 
 
@@ -532,8 +531,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @return true if this is 1, else false.
      */
     public boolean isONE() {
-        return re.equals(BigRational.ONE) && im.equals(BigRational.ZERO) && jm.equals(BigRational.ZERO)
-                        && km.equals(BigRational.ZERO);
+        return re.isONE() && im.isZERO() && jm.isZERO() && km.isZERO();
     }
 
 
@@ -542,8 +540,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @return true if this is i, else false.
      */
     public boolean isIMAG() {
-        return re.equals(BigRational.ZERO) && im.equals(BigRational.ONE) && jm.equals(BigRational.ZERO)
-                        && km.equals(BigRational.ZERO);
+        return re.isZERO() && im.isONE() && jm.isZERO() && km.isZERO();
     }
 
 
@@ -576,11 +573,10 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      */
     @Override
     public int hashCode() {
-        int h;
-        h = 37 * re.hashCode();
-        h += 37 * im.hashCode();
-        h += 37 * jm.hashCode();
-        h += 37 * km.hashCode();
+        int h = re.hashCode();
+        h += h * 37 + im.hashCode();
+        h += h * 37 + jm.hashCode();
+        h += h * 37 + km.hashCode();
         return h;
     }
 
@@ -995,6 +991,18 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
         ret[1] = this.inverse().multiply(half);
         ret[2] = S.inverse().multiply(half);
         return ret;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this BigQuaternion,
+     * including a sign bit. It is equivalent to
+     * {@code re.bitLength()+im.bitLength()+jm.bitLength()+km.bitLength()}.)
+     * @return number of bits in the representation of this BigQuaternion,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        return re.bitLength() + im.bitLength() + jm.bitLength() + km.bitLength();
     }
 
 }

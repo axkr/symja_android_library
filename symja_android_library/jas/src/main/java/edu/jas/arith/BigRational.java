@@ -489,7 +489,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @see edu.jas.structure.RingElem#isZERO()
      */
     public boolean isZERO() {
-        return num.equals(BigInteger.ZERO);
+        return num.signum() == 0; //equals(BigInteger.ZERO);
     }
 
 
@@ -1153,6 +1153,26 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
         ret[1] = this.inverse().multiply(half);
         ret[2] = S.inverse().multiply(half);
         return ret;
+    }
+
+
+    /**
+     * Returns the number of bits in the representation of this BigRational,
+     * including a sign bit. For positive BigRational, this is equivalent to
+     * {@code num.bitLength()+den.bitLength()}.)
+     * @return number of bits in the representation of this BigRational,
+     *         including a sign bit.
+     */
+    public long bitLength() {
+        long n = num.bitLength();
+        if (num.signum() < 0) {
+            n++;
+        }
+        n++;
+        n += den.bitLength();
+        // den.signum() > 0
+        n++;
+        return n;
     }
 
 

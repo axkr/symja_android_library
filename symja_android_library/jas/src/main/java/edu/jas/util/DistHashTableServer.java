@@ -140,7 +140,7 @@ public class DistHashTableServer<K> extends Thread {
                     goon = false;
                     //logger.info("list server " + this + " interrupted");
                 } else {
-                    s = new DHTBroadcaster<K>(channel, servers,/*listElem,*/theList);
+                    s = new DHTBroadcaster<K>(channel, servers, /*listElem,*/theList);
                     int ls = 0;
                     synchronized (servers) {
                         if (goon) {
@@ -211,7 +211,7 @@ public class DistHashTableServer<K> extends Thread {
                             }
                             //System.out.print(".");
                             br.interrupt();
-                            br.join(100);
+                            br.join(50);
                         }
                         if (logger.isDebugEnabled()) {
                             logger.info("server+ " + br + " terminated");
@@ -244,9 +244,6 @@ public class DistHashTableServer<K> extends Thread {
                 //System.out.print("-");
                 mythread.interrupt();
                 mythread.join(100);
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("server terminated " + mythread);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -283,7 +280,7 @@ public class DistHashTableServer<K> extends Thread {
 /**
  * Thread for broadcasting all incoming objects to the list clients.
  */
-class DHTBroadcaster<K> extends Thread /*implements Runnable*/{
+class DHTBroadcaster<K> extends Thread /*implements Runnable*/ {
 
 
     private static final Logger logger = Logger.getLogger(DHTBroadcaster.class);
@@ -339,7 +336,7 @@ class DHTBroadcaster<K> extends Thread /*implements Runnable*/{
      * broadcast.
      * @param o DHTTransport element to broadcast.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({ "unchecked", "cast" })
     public void broadcast(DHTTransport o) {
         if (logger.isDebugEnabled()) {
             logger.debug("broadcast = " + o);
@@ -459,9 +456,6 @@ class DHTBroadcaster<K> extends Thread /*implements Runnable*/{
                 logger.info("receive, exception " + e);
                 e.printStackTrace();
             }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.info("terminated+ " + this);
         }
         synchronized (bcaster) {
             bcaster.remove(this);
