@@ -111,10 +111,7 @@ an [email][1]!
 
 ###License
 
-* the Symja source code is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3
-* the Symja parser (and simple numeric evaluators) are published under the APACHE LICENSE Version 2.0.
-* the Apache Commons Mathematics Library is published under Apache software licence
-* the JAS Java Algebra System is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence 
+* the Symja source code is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3 
 
 [1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
