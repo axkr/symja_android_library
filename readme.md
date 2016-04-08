@@ -81,20 +81,23 @@ Install and open the latest version of the Eclipse development IDE:
 ### BitBucket GIT
 
 1. Fork the Symja repository to use as a starting point.
-  * Navigate to https://bitbucket.org/axelclk/symja_android_library/fork in your browser.
-  * Click the "Fork" button in the top-right of the page.
-  * Once your fork is ready, open the new repository's "Settings" by clicking the link in the menu bar on the left.
-  * Change the repository name to the name of your Library and save your changes.
-1. Clone your new repository to your Eclipse workspace.
-  * Open Eclipse and select the File → Import... menu item.
-  * Select Git → Projects from Git, and click "Next >".
-  * Select "URI" and click "Next >". 
-  * Enter your repository's clone URL in the "URI" field. The remaining fields in the "Location" and "Connection" groups will get automatically filled in.
-  * Enter your BitBucket credentials in the "Authentication" group, and click "Next >".
-  * Select the `master` branch on the next screen, and click "Next >".
-  * The default settings on the "Local Configuration" screen should work fine, click "Next >".
-  * Make sure "Import existing projects" is selected, and click "Next >".
-  * Eclipse should find and select the `symja_android_library` automatically, click "Finish".
+
+* Navigate to https://bitbucket.org/axelclk/symja_android_library/fork in your browser.
+* Click the "Fork" button in the top-right of the page.
+* Once your fork is ready, open the new repository's "Settings" by clicking the link in the menu bar on the left.
+* Change the repository name to the name of your Library and save your changes.
+  
+2. Clone your new repository to your Eclipse workspace.
+
+* Open Eclipse and select the File → Import... menu item.
+* Select Git → Projects from Git, and click "Next >".
+* Select "URI" and click "Next >". 
+* Enter your repository's clone URL in the "URI" field. The remaining fields in the "Location" and "Connection" groups will get automatically filled in.
+* Enter your BitBucket credentials in the "Authentication" group, and click "Next >".
+* Select the `master` branch on the next screen, and click "Next >".
+* The default settings on the "Local Configuration" screen should work fine, click "Next >".
+* Make sure "Import existing projects" is selected, and click "Next >".
+* Eclipse should find and select the `symja_android_library` automatically, click "Finish".
   
 
 See also the "Getting started with Symja" document on the BitBucket Wiki pages:
