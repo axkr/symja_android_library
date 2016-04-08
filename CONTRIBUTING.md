@@ -49,7 +49,7 @@ to ensure you aren't duplicating anyone's work. Then, do the following:
 5. [Submit a pull request][3] and hold tight!
 6. If any changes are requested by the project maintainers, make them and follow this process again until the changes are merged.
 
-[1]: mailto:{axelclk@gmail.com}
+[1]: mailto:axelclk@gmail.com
 [2]: https://bitbucket.org/axelclk/symja_android_library/issues/new
 [3]: https://bitbucket.org/axelclk/symja_android_library/pull-requests/new
 [4]: https://bitbucket.org/axelclk/symja_android_library/pull-requests/

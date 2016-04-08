@@ -116,5 +116,5 @@ an [email][1]!
 * the Apache Commons Mathematics Library is published under Apache software licence
 * the JAS Java Algebra System is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence 
 
-[1]: mailto:{axelclk@gmail.com}
+[1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
