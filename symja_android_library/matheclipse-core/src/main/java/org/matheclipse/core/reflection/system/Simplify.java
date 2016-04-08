@@ -22,7 +22,7 @@ import org.matheclipse.core.visit.VisitorExpr;
  */
 public class Simplify extends AbstractFunctionEvaluator {
 
-	public static class IsBasicExpressionVisitor extends AbstractVisitorBoolean {
+	private static class IsBasicExpressionVisitor extends AbstractVisitorBoolean {
 		public IsBasicExpressionVisitor() {
 			super();
 		}
@@ -76,7 +76,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 		}
 	}
 
-	static class SimplifyVisitor extends VisitorExpr {
+	private static class SimplifyVisitor extends VisitorExpr {
 		final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
 
 		public SimplifyVisitor() {
