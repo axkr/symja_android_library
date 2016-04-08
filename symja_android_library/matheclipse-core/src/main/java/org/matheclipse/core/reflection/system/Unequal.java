@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * <code>!=</code> operator implementation.
+ * {@code !=} operator implementation.
  * 
  */
 public class Unequal extends Equal {

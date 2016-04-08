@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <code>=!=</code> operator implementation.
+ * {@code =!=} operator implementation.
  * 
  */
 public class UnsameQ extends AbstractFunctionEvaluator {
@@ -38,6 +38,6 @@ public class UnsameQ extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT|ISymbol.NHOLDALL);
+		symbol.setAttributes(ISymbol.FLAT | ISymbol.NHOLDALL);
 	}
 }

@@ -10,7 +10,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * 
+ * Unit step <code>1</code> for all x greater equal <code>0</code>.
+ * <code>0</code> in all other cases,
  */
 public class UnitStep extends AbstractEvaluator implements INumeric {
 

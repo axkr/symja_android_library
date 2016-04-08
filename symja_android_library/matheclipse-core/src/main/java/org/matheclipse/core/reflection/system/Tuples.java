@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
- * 
+ * Generate tuples from elements of a list.
  */
 public class Tuples extends AbstractFunctionEvaluator {
 
