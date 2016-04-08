@@ -1,0 +1,402 @@
+<project name="symja_android_library" basedir="." default="main">
+	<tstamp>
+		<format property="date" pattern="yyyy-MM-dd" />
+	</tstamp>
+
+	<property file="build.properties" />
+
+	<property name="src.dir" value="${src.includes}" />
+	<!-- "symja-gui\src\main\java"/>  -->
+
+	<property name="build.dir" value="build" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="doc.dir" value="${build.dir}/javadoc" />
+	<property name="jar.dir" value="${build.dir}/jar" />
+
+	<property name="main-class" value="org.matheclipse.core.eval.Console" />
+
+	<property name="lib.dir" value="lib" />
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+
+
+	<target name="clean" description="Delete the &quot;/build/..&quot; target subdirectory">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="compile" description="Compile the Symja Java sources to subdirectory &quot;/build/classes&quot;" depends="clean">
+		<mkdir dir="${classes.dir}" />
+		<copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
+		<copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
+		<copydir src="matheclipse-core/src/main/java/ser" dest="${classes.dir}/ser" />
+		<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
+		<copy file="matheclipse-core/src/main/java/META-INF/MANIFEST.MF" todir="${classes.dir}/META-INF" />
+		<copy file="matheclipse-core/src/main/java/META-INF/services/javax.script.ScriptEngineFactory" todir="${classes.dir}/META-INF/services" />
+
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" source="1.8" target="1.8" debug="true" includeantruntime="false" />
+	</target>
+
+	<!-- Generate javadocs for current project into ${doc.dir} -->
+	<target name="doc" depends="compile" description="Generate Javadoc documentation in subdirectory &quot;/build/javadoc&quot;">
+		<javadoc sourcepath="${src.dir}" encoding="utf-8" packagenames="org.matheclipse.core.*,org.matheclipse.parser.*" destdir="${doc.dir}" />
+	</target>
+
+	<target name="jar" description="Create full &quot;/build/jar/symja-YYYY-MM-DD.jar&quot; file for download" depends="doc">
+		<mkdir dir="${jar.dir}" />
+		<unjar src="lib/commons-io-1.3.1.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+				<exclude name="**/pom*.*" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/commons-logging-1.1.1.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+				<exclude name="**/pom*.*" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/jsr305.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/log4j-1.2.11.jar " dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+				<exclude name="**/*.gif" />
+			</patternset>
+		</unjar>
+		<!--		<unjar src="lib/junit-4.6.jar " dest="${classes.dir}"> 
+		  <patternset>
+            <exclude name="**/*.java"/>
+		  	<exclude name="**/*.html"/>
+          </patternset>  
+		</unjar>   -->
+
+		<jar manifest="${classes.dir}/META-INF/MANIFEST.MF" destfile="${jar.dir}/symja_java8-${date}.jar" basedir="${classes.dir}">
+
+		</jar>
+	</target>
+
+	<target name="proguard" description="Deprecated use task &quot;proguard-library&quot; instead" depends="jar">
+		<taskdef resource="proguard/ant/task.properties" classpath="toolslib/proguard.jar" />
+		<proguard printmapping="proguard.map" overloadaggressively="on" defaultpackage="" allowaccessmodification="on">
+	         	-dontwarn
+	            -dontskipnonpubliclibraryclasses
+	         	-dontskipnonpubliclibraryclassmembers
+
+                -assumenosideeffects class org.apache.log4j.Logger {
+                   public static *** getLogger(...);
+                   public static *** debug(...);
+                   public static *** error(...);
+                   public static *** fatal(...);
+                   public static *** warn(...);
+                }
+
+	           <injar file="${jar.dir}/symja-${date}.jar" />
+			<outjar file="${jar.dir}/symja-mini-${date}.jar" />
+
+			<libraryjar file="${java.home}/lib/rt.jar" />
+
+			<keepclasseswithmembers name="org.matheclipse.core.basic.Config" />
+			<keepclasseswithmembers name="org.matheclipse.core.eval.MathUtils" />
+			<keepclasseswithmembers name="org.matheclipse.parser.client.ast.ASTNode" />
+			<keepclasseswithmembers extends="org.matheclipse.parser.client.ast.ASTNode" />
+			<keepclasseswithmembers name="org.matheclipse.parser.client.math.MathException" />
+			<keepclasseswithmembers extends="org.matheclipse.parser.client.math.MathException" />
+			<keepclasseswithmembers name="org.matheclipse.core.eval.EvalDouble" />
+			<keepclasseswithmembers name="org.matheclipse.core.eval.EvalComplex" />
+			<keepclasseswithmembers name="org.matheclipse.parser.client.eval.DoubleEvaluator" />
+			<keepclasseswithmembers name="org.matheclipse.parser.client.eval.ComplexEvaluator" />
+			<keepclasseswithmembers name="org.matheclipse.core.eval.ExprEvaluator" />
+
+			<keep access="public" extends="com.google.common.base.Predicate" />
+			<keep access="public" extends="com.google.common.base.Function" />
+			<keep access="public" extends="org.matheclipse.core.interfaces.IExpr" />
+			<keep access="public" extends="org.matheclipse.core.interfaces.IEvaluator" />
+			<keep access="public" extends="org.matheclipse.core.eval.MathMLUtilities" />
+			<keep access="public" extends="org.matheclipse.core.eval.interfaces.ISymbolEvaluator" />
+			<keep access="public" extends="org.matheclipse.core.eval.interfaces.IFunctionEvaluator" />
+			<keep access="public" extends="org.matheclipse.core.form.mathml.IConverter" />
+			<keep access="public" extends="org.matheclipse.core.form.tex.IConverter" />
+			<keep access="public" extends="org.matheclipse.core.visit.IVisitor" />
+			<keep access="public" extends="org.matheclipse.core.visit.IVisitorBoolean" />
+			<keep access="public" extends="org.matheclipse.core.visit.IVisitorInt" />
+			<keep access="public" extends="org.matheclipse.core.visit.IVisitorLong" />
+			<keep access="public" extends="org.matheclipse.core.interfaces.IEvalStepListener" />
+			<keep access="public" extends="org.matheclipse.core.eval.util.IAssumptions" />
+			<keep access="public" extends="org.matheclipse.core.eval.util.Assumptions" />
+			<keep access="public" extends="org.apache.log4j.Appender" />
+			<keep access="public" extends="org.apache.log4j.spi.OptionHandler" />
+			<keep access="public" extends="org.apfloat.spi.BuilderFactory" />
+
+			<keep access="public" name="com.google.common.base.Predicate">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="com.google.common.base.Function">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.apache.commons.math4.complex.Complex">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.apache.commons.math4.fraction.BigFraction">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.apfloat.Apfloat">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.apfloat.Apcomplex">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.integrate.rubi.UtilityFunctions">
+				<method access="public static" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.MathUtils">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.EvalEngine">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.ExprEvaluator">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.EvalUtilities">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.MathMLUtilities">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.TeXUtilities">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.EvalDouble">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.parser.client.Parser">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.parser.client.ast.ASTNode">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.basic.Config">
+				<method access="public" name="*" />
+				<field access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.expression.F">
+				<method access="public" name="*" />
+				<field access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.form.output.OutputFormFactory">
+				<method access="public" name="*" />
+				<field access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.convert.AST2Expr">
+				<method access="public" name="*" />
+				<field access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.convert.Object2Expr">
+				<method access="public" name="*" />
+				<field access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IExpr">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IAST">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IInteger">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IFraction">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IComplex">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.INum">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IComplexNum">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IBigNumber">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.INumber">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IPattern">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IPatternSequence">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IRational">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.ISignedNumber">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IStringX">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.ISymbol">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.interfaces.IEvalStepListener">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.util.IAssumptions">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="org.matheclipse.core.eval.util.Assumptions">
+				<method access="public" name="*" />
+			</keep>
+			<keep access="public" name="${main-class}">
+				<method access="public static" type="void" name="main" parameters="java.lang.String[]" />
+			</keep>
+
+		</proguard>
+
+	</target>
+
+	<target name="proguard-library" description="Create shrinked and obfuscated &quot;/build/jar/symja-lib-YYYY-MM-DD.jar&quot; file for download with &quot;/toolslib/proguard.jar&quot;" depends="jar">
+		<taskdef resource="proguard/ant/task.properties" classpath="toolslib/proguard.jar" />
+		<proguard printmapping="proguard.map" overloadaggressively="on" defaultpackage="" allowaccessmodification="on">
+-libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar;${lib.dir}/COMMONS_MATH4_SYMJA.jar
+-injars      ${jar.dir}/symja-${date}.jar
+-outjars     ${jar.dir}/symja-lib-${date}.jar
+-keepattributes Signature
+
+-keep public class com.google.common.base.FinalizableReference {
+    public protected *;
+}
+
+-keep public class * extends com.google.common.base.FinalizableReference {
+    public protected *;
+}
+
+-keep public class * extends org.apache.log4j.Appender {
+    public protected *;
+}
+
+-keep public class * extends org.apache.log4j.spi.OptionHandler {
+    public protected *;
+}
+
+-keep public class * implements org.apfloat.spi.BuilderFactory {
+    public protected *;
+}
+
+-keep public class * implements java.lang.Number {
+    public protected *;
+}
+
+-keep public class com.google.common.base.Predicate {
+    public protected *;
+}
+
+-keep public class * implements com.google.common.base.Predicate {
+    public protected *;
+}
+
+-keep public class com.google.common.base.Function {
+    public protected *;
+}
+
+-keep public class * implements com.google.common.base.Function {
+    public protected *;
+}
+
+-keep public class org.apache.commons.math4.Field {
+    public protected *;
+}
+
+-keep public class * implements org.apache.commons.math4.Field {
+    public protected *;
+}
+
+-keep public class org.apache.commons.math4.FieldElement {
+    public protected *;
+}
+
+-keep public class * implements org.apache.commons.math4.FieldElement {
+    public protected *;
+}
+
+-keepnames class * implements java.io.Serializable
+
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    !static !transient &lt;fields&gt;;
+    !private &lt;fields&gt;;
+    !private &lt;methods&gt;;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+-keep public class org.matheclipse.parser.** { 
+    public protected *;
+}
+
+-keepclassmembernames class org.matheclipse.parser.** {
+  java.lang.Class class$(java.lang.String);
+  java.lang.Class class$(java.lang.String, boolean);
+}
+
+-keepclasseswithmembernames class org.matheclipse.parser.** {
+  native &lt;methods&gt;;
+}
+
+-keepclassmembers enum org.matheclipse.parser.** {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
+
+-keepclassmembers class org.matheclipse.parser.** implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+-keep public class org.matheclipse.core.** { 
+    public protected *;
+}
+
+-keepclassmembernames class org.matheclipse.core.** {
+  java.lang.Class class$(java.lang.String);
+  java.lang.Class class$(java.lang.String, boolean);
+}
+
+-keepclasseswithmembernames class org.matheclipse.core.** {
+  native &lt;methods&gt;;
+}
+
+-keepclassmembers enum org.matheclipse.core.** {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
+
+-keepclassmembers class org.matheclipse.core.** implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+</proguard>
+	</target>
+
+	<target name="main" description="Run ANT targets clean and jar" depends="clean,jar" />
+
+</project>
+
