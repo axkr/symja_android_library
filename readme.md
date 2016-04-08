@@ -12,11 +12,6 @@
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
-See the "Getting started with Symja" document on the Wiki pages
-
-* [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
-	
-
 ###Examples
 
 ```
@@ -101,6 +96,11 @@ Install and open the latest version of the Eclipse development IDE:
   * Make sure "Import existing projects" is selected, and click "Next >".
   * Eclipse should find and select the `symja_android_library` automatically, click "Finish".
   
+
+See also the "Getting started with Symja" document on the BitBucket Wiki pages:
+
+* [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
+
 ###Contact
 
 If you have any questions about using or developing for this project, shoot me
