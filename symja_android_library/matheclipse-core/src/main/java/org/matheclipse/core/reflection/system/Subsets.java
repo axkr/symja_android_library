@@ -21,7 +21,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
 	 */
-	public final static class KSubsetsIterable implements Iterator<int[]>, Iterable<int[]> {
+	private final static class KSubsetsIterable implements Iterator<int[]>, Iterable<int[]> {
 
 		final private int n;
 		final private int k;
