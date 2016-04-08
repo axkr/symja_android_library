@@ -80,14 +80,14 @@ Install and open the latest version of the Eclipse development IDE:
   
 ### BitBucket GIT
 
-1. Fork the Symja repository to use as a starting point.
+a) Fork the Symja repository to use as a starting point.
 
 * Navigate to https://bitbucket.org/axelclk/symja_android_library/fork in your browser.
 * Click the "Fork" button in the top-right of the page.
 * Once your fork is ready, open the new repository's "Settings" by clicking the link in the menu bar on the left.
 * Change the repository name to the name of your Library and save your changes.
   
-2. Clone your new repository to your Eclipse workspace.
+b) Clone your new repository to your Eclipse workspace.
 
 * Open Eclipse and select the File → Import... menu item.
 * Select Git → Projects from Git, and click "Next >".
