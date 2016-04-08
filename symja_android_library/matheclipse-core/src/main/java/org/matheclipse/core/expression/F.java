@@ -4669,6 +4669,12 @@ public class F {
 			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
 			Power.setDefaultValue(2, C1);
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
+			Equal.setEvaluator(org.matheclipse.core.reflection.system.Equal.CONST);
+			Less.setEvaluator(org.matheclipse.core.reflection.system.Less.CONST);
+			Greater.setEvaluator(org.matheclipse.core.reflection.system.Greater.CONST);
+			Expand.setEvaluator(org.matheclipse.core.reflection.system.Expand.CONST);
+			ExpandAll.setEvaluator(org.matheclipse.core.reflection.system.ExpandAll.CONST);
+			
 			// initialize only the utility function rules for Integrate
 			// other rules are "lazy loaded" on first use og Integrate
 			// function

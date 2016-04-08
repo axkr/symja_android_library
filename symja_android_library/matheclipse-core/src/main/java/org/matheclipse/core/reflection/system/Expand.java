@@ -17,6 +17,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import com.google.common.math.LongMath;
 
 public class Expand extends AbstractFunctionEvaluator {
+	public final static Expand CONST = new Expand();
+	
 	private static class Expander {
 
 		boolean expandNegativePowers;

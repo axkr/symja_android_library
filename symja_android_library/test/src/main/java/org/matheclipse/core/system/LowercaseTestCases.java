@@ -1489,7 +1489,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x, x - y^2 + 1}, {x, y, z})", "{1}");
-
+//		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2, x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder -> DegreeReverseLexicographic)", "");
 	}
 
 	public void testHaversine() {

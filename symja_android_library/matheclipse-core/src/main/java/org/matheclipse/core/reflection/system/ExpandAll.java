@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ExpandAll extends AbstractFunctionEvaluator {
+	public final static ExpandAll CONST = new ExpandAll();
+	
 	public ExpandAll() {
 		super();
 	}
