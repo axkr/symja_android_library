@@ -1,13 +1,13 @@
 ## Symja Library - Java Symbolic Math System
 
-Features:
+###Features:
 
 * arbitrary precision integers, rational and complex numbers
-* differentiation, integration, polynomial and linear algebra functions...
+* differentiation, integration, equation solving, polynomial and linear algebra functions...
 * a general purpose Term Rewriting System and Pattern Matching engine
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java.
    
-Online demo: 
+### Online demo: 
 
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
@@ -17,7 +17,7 @@ See the "Getting started with Symja" document on the Wiki pages
 * [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
 	
 
-Examples
+###Examples
 
 ```
 >>> 24/60
@@ -64,11 +64,54 @@ Examples
 {{3,1},{67,1},{163,1}}
 ```
 
-Contact: axelclk_AT_gmail_DOT_com 
+### Getting started
 
-License
+First, you'll need a Java Development Kit compatible with Java 8 or later.
+
+You can find JDK installers at:
+
+* http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+If you're unsure how to install the JDK, you can find instructions for
+all operating systems here: 
+
+* https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html
+
+Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
+
+Install and open the latest version of the Eclipse development IDE:
+
+* http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/mars1
+  
+### BitBucket GIT
+
+1. Fork the Symja repository to use as a starting point.
+  * Navigate to https://bitbucket.org/axelclk/symja_android_library/fork in your browser.
+  * Click the "Fork" button in the top-right of the page.
+  * Once your fork is ready, open the new repository's "Settings" by clicking the link in the menu bar on the left.
+  * Change the repository name to the name of your Library and save your changes.
+1. Clone your new repository to your Eclipse workspace.
+  * Open Eclipse and select the File → Import... menu item.
+  * Select Git → Projects from Git, and click "Next >".
+  * Select "URI" and click "Next >". 
+  * Enter your repository's clone URL in the "URI" field. The remaining fields in the "Location" and "Connection" groups will get automatically filled in.
+  * Enter your BitBucket credentials in the "Authentication" group, and click "Next >".
+  * Select the `master` branch on the next screen, and click "Next >".
+  * The default settings on the "Local Configuration" screen should work fine, click "Next >".
+  * Make sure "Import existing projects" is selected, and click "Next >".
+  * Eclipse should find and select the `symja_android_library` automatically, click "Finish".
+  
+###Contact
+
+If you have any questions about using or developing for this project, shoot me
+an [email][1]!
+
+###License
 
 * the Symja source code is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3
 * the Symja parser (and simple numeric evaluators) are published under the APACHE LICENSE Version 2.0.
 * the Apache Commons Mathematics Library is published under Apache software licence
 * the JAS Java Algebra System is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence 
+
+[1]: mailto:{axelclk@gmail.com}
+[2]: http://www.vogella.com/tutorials/EclipseGit/article.html
