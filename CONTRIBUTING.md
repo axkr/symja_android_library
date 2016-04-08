@@ -23,8 +23,7 @@ an [email][1]!
 
 Submit an [issue][2] or [pull request][3] with a fix if you find any bugs in
 the project. See [below](#submitting-pull-requests) for instructions on sending
-in pull requests, and be sure to reference the [code style guide](#code-style)
-first!
+in pull requests.
 
 When submitting an issue or pull request, make sure you're as detailed as possible
 and fill in all answers to questions asked in the templates. For example, an issue
