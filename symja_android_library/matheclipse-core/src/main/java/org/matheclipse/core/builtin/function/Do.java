@@ -64,6 +64,7 @@ public class Do extends AbstractCoreFunctionEvaluator {
 	}
 
 	public Do() {
+		// default ctor
 	}
 
 	@Override

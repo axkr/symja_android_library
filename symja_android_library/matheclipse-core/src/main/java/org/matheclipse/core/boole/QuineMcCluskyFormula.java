@@ -54,6 +54,7 @@ public class QuineMcCluskyFormula {
 		this.variables = variables;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append(termList.size() + " terms, " + termList.get(0).getNumVars() + " variables\n");
@@ -222,18 +223,4 @@ public class QuineMcCluskyFormula {
 		return -1;
 	}
 
-//	private final static String TEST1 = "000\n" + "010\n" + "011\n" + "110\n" + "101\n" + "111";
-//
-//	private final static String TEST2 = "0000\n" + "0001\n" + "0010\n" + "0011\n" + "0101\n" + "0111\n" + "1000\n" + "1010\n"
-//			+ "1100\n" + "1101\n" + "1111";
-//
-//	private final static String TEST3 = "11\n" + "01";
-
-//	public static void main(String[] args) throws IOException {
-//		QuineMcCluskyFormula f = QuineMcCluskyFormula.read(TEST2);
-//		f.reduceToPrimeImplicants();
-//		System.out.println(f);
-//		f.reducePrimeImplicantsToSubset();
-//		System.out.println(f);
-//	}
 }

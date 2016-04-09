@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Condition extends AbstractCoreFunctionEvaluator {
 
 	public Condition() {
+		// default ctor
 	}
 
 	@Override

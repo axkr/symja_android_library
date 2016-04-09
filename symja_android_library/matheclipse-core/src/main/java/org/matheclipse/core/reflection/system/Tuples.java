@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IInteger;
 public class Tuples extends AbstractFunctionEvaluator {
 
 	public Tuples() {
+		// empty default constructor
 	}
 
 	@Override
@@ -34,10 +35,11 @@ public class Tuples extends AbstractFunctionEvaluator {
 				tuplesOfLists(list, 1, result, temp);
 				return result;
 			} catch (ArithmeticException ae) {
-
+				return F.NIL;
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
+			return F.NIL;
 		} else if (ast.size() == 3 && arg1.isAST() && ast.arg2().isInteger()) {
 			IExpr arg2 = ast.arg2();
 			try {
@@ -66,7 +68,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 			result.add(subResult);
 			return;
 		}
-		IAST temp = null;
+		IAST temp;
 		for (int j = 1; j < originalList.size(); j++) {
 			temp = subResult.clone();
 			temp.add(originalList.get(j));
@@ -91,7 +93,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 			result.add(subResult);
 			return;
 		}
-		IAST temp = null;
+		IAST temp;
 		IAST subAST = (IAST) originalList.get(k);
 		for (int j = 1; j < subAST.size(); j++) {
 			temp = subResult.clone();

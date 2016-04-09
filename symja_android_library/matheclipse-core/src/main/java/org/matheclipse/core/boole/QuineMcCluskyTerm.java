@@ -53,6 +53,7 @@ class QuineMcCluskyTerm {
 		return varVals.length;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("{");
@@ -71,7 +72,7 @@ class QuineMcCluskyTerm {
 	public IExpr toExpr(IAST variables) throws BooleanFunctionConversionException {
 		if (varVals.length == 1) {
 			if (varVals[0] == NIL) {
-				// return F.True;
+				// nothing to do
 			} else if (varVals[0] == (byte) 0) {
 				return F.Not(variables.arg1());
 			} else if (varVals[0] == (byte) 1) {
@@ -83,7 +84,7 @@ class QuineMcCluskyTerm {
 		IAST result = F.ast(F.And);
 		for (int i = 0; i < varVals.length; i++) {
 			if (varVals[i] == NIL) {
-				// return F.True;
+				// nothing to do
 			} else if (varVals[i] == (byte) 0) {
 				result.add(F.Not(variables.get(i + 1)));
 			} else if (varVals[i] == (byte) 1) {
@@ -132,6 +133,7 @@ class QuineMcCluskyTerm {
 		return result;
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == this) {
 			return true;
@@ -143,6 +145,7 @@ class QuineMcCluskyTerm {
 		}
 	}
 
+	@Override
 	public int hashCode() {
 		return java.util.Arrays.hashCode(varVals);
 	}
@@ -167,10 +170,10 @@ class QuineMcCluskyTerm {
 				t.add((byte) 1);
 			}
 		}
-		if (t.size() > 0) {
+		if (!t.isEmpty()) {
 			byte[] resultBytes = new byte[t.size()];
 			for (int i = 0; i < t.size(); i++) {
-				resultBytes[i] = (byte) t.get(i);
+				resultBytes[i] = t.get(i);
 			}
 			return new QuineMcCluskyTerm(resultBytes);
 		} else {
@@ -182,7 +185,7 @@ class QuineMcCluskyTerm {
 		ArrayList<QuineMcCluskyTerm> terms = new ArrayList<QuineMcCluskyTerm>();
 		int j = 0;
 
-		ArrayList<Byte> t = null;
+		ArrayList<Byte> t;
 		do {
 			t = new ArrayList<Byte>();
 			char c = '\0';
@@ -194,10 +197,10 @@ class QuineMcCluskyTerm {
 					t.add((byte) 1);
 				}
 			}
-			if (t.size() > 0) {
+			if (!t.isEmpty()) {
 				addBytes(terms, t);
 			}
-		} while (t.size() > 0);
+		} while (!t.isEmpty());
 		return terms;
 	}
 
@@ -242,7 +245,7 @@ class QuineMcCluskyTerm {
 			} else {
 				throw new BooleanFunctionConversionException();
 			}
-			if (t.size() > 0) {
+			if (!t.isEmpty()) {
 				addBytes(terms, t);
 			}
 		}
@@ -261,7 +264,7 @@ class QuineMcCluskyTerm {
 				addBytes(terms, t);
 				return;
 			}
-			resultBytes[j3] = (byte) t.get(j3);
+			resultBytes[j3] = t.get(j3);
 		}
 		term = new QuineMcCluskyTerm(resultBytes);
 		terms.add(term);
