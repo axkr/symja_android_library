@@ -1,5 +1,7 @@
 ## Symja Library - Java Symbolic Math System
 
+**Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
+
 ###Features:
 
 * arbitrary precision integers, rational and complex numbers
