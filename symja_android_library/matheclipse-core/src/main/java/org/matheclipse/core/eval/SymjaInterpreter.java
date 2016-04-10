@@ -35,6 +35,14 @@ public class SymjaInterpreter extends EvalUtilities {
 		fEvalEngine.setOutPrintStream(outStream);
 	}
 
+	/**
+	 * Evaluate the expression assigned to this interpreter.
+	 * 
+	 * @param function
+	 *            <code>null</code> if you like to evaluate in symbolic mode;
+	 *            &quot;N&quot; if you like to evaluate in numeric mode
+	 * @return
+	 */
 	public String interpreter(String function) {
 		String evalStr = codeString;
 		IExpr expr;
