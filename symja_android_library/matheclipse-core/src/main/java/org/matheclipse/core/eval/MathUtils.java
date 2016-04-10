@@ -429,7 +429,7 @@ public class MathUtils {
 	public static String getDerivative(String fun, String[] var, String resp) {
 		IExpr sym = parse(resp, null);
 		if (sym instanceof ISymbol) {
-			return evaluate(fun, F.D(F.Slot1, sym));
+			return evaluateReaplaceAll(fun, F.D(F.Slot1, sym));
 			// EvalDouble parser = new EvalDouble(true);
 			// parser.defineVariable(resp);
 			// ASTNode f = parser.parse(fun);
@@ -484,7 +484,7 @@ public class MathUtils {
 		if (sym instanceof ISymbol) {
 			IExpr center = parse(cen, null);
 			if (center != null) {
-				return evaluate(fun, F.Taylor(F.Slot1, F.List(sym, center, F.integer(iter))));
+				return evaluateReaplaceAll(fun, F.Taylor(F.Slot1, F.List(sym, center, F.integer(iter))));
 			}
 		}
 		return "error in MathUtils#getPowerSeries()";
@@ -647,6 +647,14 @@ public class MathUtils {
 		}
 	}
 
+	/**
+	 * Evaluate the expression in <code>codeString</code>.
+	 * 
+	 * @param function
+	 *            <code>null</code> if you like to evaluate in symbolic mode;
+	 *            &quot;N&quot; if you like to evaluate in numeric mode
+	 * @return
+	 */
 	public static String evaluate(final String codeString, final String function) {
 		String result = null;
 		// set up and direct the input and output streams
@@ -672,7 +680,16 @@ public class MathUtils {
 		return result;
 	}
 
-	public static String evaluate(final String codeString, final IAST function) {
+	/**
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
+	 * <code>function</code> unequals <code>null</code>, replace all occurences
+	 * of the slot <code>#</code> in the function with the parsed expression.
+	 * After that evaluate the given expression.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public static String evaluateReaplaceAll(final String codeString, final IAST function) {
 		String result = null;
 		// set up and direct the input and output streams
 		try {
@@ -682,7 +699,7 @@ public class MathUtils {
 			// buffer
 			SymjaInterpreter _commandInterpreter = new SymjaInterpreter(codeString, _outputStream);
 			try {
-				_commandInterpreter.eval(function);
+				_commandInterpreter.evalReplaceAll(function);
 				// extract the resulting text output from the stream
 				result = _outputStream.toString("UTF-8");
 			} catch (Throwable t) {

@@ -73,6 +73,9 @@ public class SymjaInterpreter extends EvalUtilities {
 		try {
 			result = evaluate(expr);
 			if (result.isPresent()) {
+				if (result.equals(F.Null)) {
+					return buf.toString();
+				}
 				OutputFormFactory.get(true).convert(buf, result);
 			}
 			return buf.toString();
@@ -92,7 +95,7 @@ public class SymjaInterpreter extends EvalUtilities {
 	/**
 	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
 	 * <code>function</code> unequals <code>null</code>, replace all occurences
-	 * of symbol <code>x</code> in the function with the parsed expression.
+	 * of slot <code>#</code> in the function with the parsed expression.
 	 * After that evaluate the given expression.
 	 * 
 	 * @param function
@@ -126,6 +129,9 @@ public class SymjaInterpreter extends EvalUtilities {
 			if (expr.isPresent()) {
 				result = evaluate(expr);
 				if (result.isPresent()) {
+					if (result.equals(F.Null)) {
+						return buf.toString();
+					}
 					OutputFormFactory.get(true).convert(buf, result);
 				}
 				return buf.toString();
@@ -161,15 +167,33 @@ public class SymjaInterpreter extends EvalUtilities {
 				buf.append("\nError: " + e.getClass().getSimpleName());
 			}
 		} catch (IOException e1) {
+			// ignore
 		}
 	}
 
+	/**
+	 * Evaluate the expression assigned to this interpreter.
+	 * 
+	 * @param function
+	 *            <code>null</code> if you like to evaluate in symbolic mode;
+	 *            &quot;N&quot; if you like to evaluate in numeric mode
+	 * @return
+	 */
 	public void eval(String function) {
 		String result = interpreter(function);
 		outStream.print(result);
 	}
 
-	public void eval(IAST function) {
+	/**
+	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
+	 * <code>function</code> unequals <code>null</code>, replace all occurences
+	 * of the slot <code>#</code> in the function with the parsed expression.
+	 * After that evaluate the given expression.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public void evalReplaceAll(IAST function) {
 		String result = interpreter(function);
 		outStream.print(result);
 	}
