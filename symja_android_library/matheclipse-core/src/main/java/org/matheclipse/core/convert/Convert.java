@@ -252,7 +252,7 @@ public class Convert {
 	}
 
 	/**
-	 * Return the augmented FiledMatrix <code>listMatrix | listVector</code>
+	 * Return the augmented FieldMatrix <code>listMatrix | listVector</code>
 	 * 
 	 * @param listMatrix
 	 * @param listVector
