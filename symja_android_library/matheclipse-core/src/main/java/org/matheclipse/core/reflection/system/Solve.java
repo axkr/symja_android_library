@@ -663,7 +663,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
 		try {
-			IAST list = GroebnerBasis.computeGroebnerBasis(termsEqualZeroList, vars, false);
+			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, vars);
 			if (list.isPresent()) {
 				termsEqualZeroList = list;
 			}
