@@ -695,7 +695,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
-				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList);
+				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList, engine);
 			}
 
 			return sortResults(resultList);

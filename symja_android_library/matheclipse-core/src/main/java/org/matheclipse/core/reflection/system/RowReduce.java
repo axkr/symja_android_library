@@ -18,8 +18,10 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * See:
  * <ul>
- * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a></li>
- * <li><a href="https://www.math.hmc.edu/calculus/tutorials/linearsystems/">Solving Systems of Linear Equations; Row Reduction </a></li>
+ * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
+ * echelon form</a></li>
+ * <li><a href="https://www.math.hmc.edu/calculus/tutorials/linearsystems/">
+ * Solving Systems of Linear Equations; Row Reduction </a></li>
  * </ul>
  */
 public class RowReduce extends AbstractFunctionEvaluator {
@@ -50,19 +52,33 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		}
 
 		return F.NIL;
-	} 
-	
+	}
+
 	/**
-	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations
+	 * Return the solution of the given (augmented-)matrix interpreted as a
+	 * system of linear equations
 	 * 
 	 * @param matrix
-	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no solution
+	 * @return <code>F.NIL</code> if the linear system is inconsistent and has
+	 *         no solution
 	 */
-	public static IAST rowReduced2List(FieldMatrix matrix, EvalEngine engine) {
+	public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, EvalEngine engine) {
+
+		int rows = matrix.getRowDimension();
+		int cols = matrix.getColumnDimension();
+		if (rows == 2 && cols == 3) {
+			IAST list = Det.cramersRule2x3(matrix, false, engine);
+			if (list.isPresent()) {
+				return list;
+			}
+		} else if (rows == 3 && cols == 4) {
+			IAST list = Det.cramersRule3x4(matrix, false, engine);
+			if (list.isPresent()) {
+				return list;
+			}
+		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-		int rows = rowReduced.getRowDimension();
-		int cols = rowReduced.getColumnDimension();
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
@@ -76,14 +92,15 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		}
 		if (rows < cols - 1) {
 			for (int i = rows; i < cols - 1; i++) {
-				list.add(F.eval(F.C0));
+				list.add(F.C0);
 			}
 		}
 		return list;
 	}
 
 	/**
-	 * Row reduce the given <code>(augmented-)matrix</code> and append the result as rules for the given <code>variableList</code>.
+	 * Row reduce the given <code>(augmented-)matrix</code> and append the
+	 * result as rules for the given <code>variableList</code>.
 	 * 
 	 * @param matrix
 	 *            a (augmented-)matrix
@@ -94,12 +111,35 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	 * 
 	 * @return resultList with the appended results as list of rules
 	 */
-	public static IAST rowReduced2RulesList(FieldMatrix matrix, IAST variableList, IAST resultList) {
+	public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST variableList, IAST resultList,
+			EvalEngine engine) {
+		int rows = matrix.getRowDimension();
+		int cols = matrix.getColumnDimension();
+		IAST smallList = null;
+		if (rows == 2 && cols == 3) {
+			smallList = Det.cramersRule2x3(matrix, true, engine);
+		} else if (rows == 3 && cols == 4) {
+			smallList = Det.cramersRule3x4(matrix, true, engine);
+		}
+		if (smallList != null) {
+			if (!smallList.isPresent()) {
+				// no solution
+				return F.List();
+			}
+			IAST list = F.List();
+			IAST rule;
+			for (int j = 1; j < smallList.size(); j++) {
+				rule = F.Rule(variableList.get(j), F.eval(smallList.get(j)));
+				list.add(rule);
+			}
+			
+			resultList.add(list);
+			return resultList;
+		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
 		int size = variableList.size() - 1;
-		int rows = rowReduced.getRowDimension();
-		int cols = rowReduced.getColumnDimension();
+
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		IAST list = F.List();
 		if (lastVarCoefficient.isZero()) {
