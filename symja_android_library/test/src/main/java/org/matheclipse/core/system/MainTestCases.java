@@ -3187,14 +3187,14 @@ public class MainTestCases extends AbstractTestCase {
 		check("Solve(x^2==0,{x,y,z})", "{{x->0}}");
 		check("Solve(x^2==0,x)", "{{x->0}}");
 		check("Solve(x^2==4,x)", "{{x->-2},{x->2}}");
-		check("Solve({x^2==4,x+y==10},{x,y})", "{{x->2,y->8},{x->-2,y->12}}");
+		check("Solve({x^2==4,x+y==10},{x,y})", "{{x->-2,y->12},{x->2,y->8}}");
 		check("Solve({x^2==4,x+20==10},x)", "{}");
 		check("Solve({x^2==4,x+y^2==6},{x,y})",
-				"{{x->2,y->-2},{x->2,y->2},{x->-2,y->-2*Sqrt(2)},{x->-2,y->2*Sqrt(2)}}");
+				"{{x->-2,y->-2*Sqrt(2)},{x->-2,y->2*Sqrt(2)},{x->2,y->-2},{x->2,y->2}}");
 		check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z})",
-				"{{x->2,y->-2,z->-3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(\n" + 
-				"2)},{x->-2,y->2*Sqrt(2),z->-3*Sqrt(2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(\n" + 
-				"2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)}}");
+				"{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->\n" + 
+				"-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n" + 
+				"2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
 	}
 
 	public void testSystem806() {

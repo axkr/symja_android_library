@@ -2868,7 +2868,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->1,y->-10},{x->-2,y->-7}}");
+		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
 
 		// issue 42
 		// check("$sol=Solve(x^3 + 2x^2 - 5x -3 ==0,x);N($sol)",
