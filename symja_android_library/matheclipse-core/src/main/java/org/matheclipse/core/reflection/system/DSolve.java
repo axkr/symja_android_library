@@ -54,8 +54,8 @@ public class DSolve extends AbstractFunctionEvaluator {
 					IExpr temp = solveSingleODE(equation, uFunction1Arg, xVar, listOfVariables, C_1, engine);
 					if (temp.isPresent()) {
 						if (boundaryCondition != null) {
-							IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[1])));
-							IExpr C1 = engine.evaluate(F.Roots(F.Equal(res, boundaryCondition[0]), C_1));
+							IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[0])));
+							IExpr C1 = engine.evaluate(F.Roots(F.Equal(res, boundaryCondition[1]), C_1));
 							if (C1.isAST(F.Equal, 3, C_1)) {
 								res = F.subst(temp, F.List(F.Rule(C_1, ((IAST) C1).arg2())));
 								return F.List(F.List(F.Rule(uFunction1Arg, res)));
@@ -127,6 +127,16 @@ public class DSolve extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
+	/**
+	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the
+	 * boundary equation y(0)==1)
+	 * 
+	 * @param equation the equation
+	 * @param uFunction1Arg function name <code>y(x)</code> 
+	 * @param xVar variable <code>x</code> 
+	 * @param engine
+	 * @return
+	 */
 	private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
 		if (equation.isAST()) {
 			IAST eq = ((IAST) equation).clone();
