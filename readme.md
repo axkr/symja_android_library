@@ -72,6 +72,9 @@ java -classpath symja_java8-YYYY-MM-DD.jar org.matheclipse.core.eval.Console
 
 >>> factorinteger(2^15-5)
 {{3,1},{67,1},{163,1}}
+
+>>> refine(abs(n*abs(m)), n<0)
+-n*Abs(m)
 ```
 
 ### Getting started
