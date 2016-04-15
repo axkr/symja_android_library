@@ -14,7 +14,7 @@
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
-## Quick start
+### Quick start
 
 Include the latest **symja_java8-YYYY-MM-DD.jar** from the Downloads/Release section in your 
 classpath and start coding using parsed input strings or the internal object hierarchy.
