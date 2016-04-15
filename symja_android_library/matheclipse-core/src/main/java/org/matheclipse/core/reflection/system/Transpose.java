@@ -26,24 +26,39 @@ public class Transpose extends AbstractEvaluator {
 		final int[] dim = ast.arg1().isMatrix();
 		if (dim != null) {
 			final IAST originalMatrix = (IAST) ast.arg1();
-			final IAST transposedMatrix = F.ast(F.List, dim[1], true);
-			for (int i = 1; i <= dim[1]; i++) {
-				transposedMatrix.set(i, F.ast(F.List, dim[0], true));
-			}
-
-			IAST originalRow;
-			IAST transposedResultRow;
-			for (int i = 1; i <= dim[0]; i++) {
-				originalRow = (IAST) originalMatrix.get(i);
-				for (int j = 1; j <= dim[1]; j++) {
-					transposedResultRow = (IAST) transposedMatrix.get(j);
-					transposedResultRow.set(i, transform(originalRow.get(j)));
-				}
-			}
-			transposedMatrix.addEvalFlags(IAST.IS_MATRIX);
-			return transposedMatrix;
+			return transpose(originalMatrix, dim[0], dim[1]);
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * Transpose the given matrix.
+	 * 
+	 * @param matrix
+	 *            the matrix which should be transposed
+	 * @param rows
+	 *            number of rows of the matrix
+	 * @param cols
+	 *            number of columns of the matrix
+	 * @return
+	 */
+	public IAST transpose(final IAST matrix, int rows, int cols) {
+		final IAST transposedMatrix = F.ast(F.List, cols, true);
+		for (int i = 1; i <= cols; i++) {
+			transposedMatrix.set(i, F.ast(F.List, rows, true));
+		}
+
+		IAST originalRow;
+		IAST transposedResultRow;
+		for (int i = 1; i <= rows; i++) {
+			originalRow = (IAST) matrix.get(i);
+			for (int j = 1; j <= cols; j++) {
+				transposedResultRow = (IAST) transposedMatrix.get(j);
+				transposedResultRow.set(i, transform(originalRow.get(j)));
+			}
+		}
+		transposedMatrix.addEvalFlags(IAST.IS_MATRIX);
+		return transposedMatrix;
 	}
 
 	protected IExpr transform(final IExpr expr) {
