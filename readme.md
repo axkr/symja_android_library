@@ -15,14 +15,14 @@
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
 ## Quick start
+
 Include the latest **symja_java8-YYYY-MM-DD.jar** from the Downloads/Release section in your 
 classpath and start coding using parsed input strings or the internal object hierarchy.
 
 With the following command you can run a Symja console from the command line
-{{{
-#!text
+```
 java -classpath symja_java8-YYYY-MM-DD.jar org.matheclipse.core.eval.Console
-}}} 
+``` 
 
 ###Examples
 
