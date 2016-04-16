@@ -10,7 +10,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -282,6 +286,38 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 			return arg0.equals(list.head());
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+		final int size = size();
+		for (int i = 1; i < size; i++) {
+			IExpr expr = function.apply(get(i));
+			if (expr.isPresent()) {
+				filterAST.add(expr);
+			} else {
+				restAST.add(get(i));
+			}
+		}
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+		return filterAST;
+	}
+
+	@Override
+	public void forEach(Consumer<? super IExpr> action) {
+		// do nothing
 	}
 
 	@Override

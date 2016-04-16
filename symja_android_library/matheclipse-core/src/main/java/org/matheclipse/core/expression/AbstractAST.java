@@ -11,6 +11,7 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,7 +27,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
-import java.util.function.BiFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -685,7 +685,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
@@ -700,7 +700,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
@@ -720,7 +720,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
@@ -732,7 +732,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
+	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
 		int count = 0;
 		if (count >= maxMatches) {
 			return filterAST;
@@ -760,6 +760,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int findFirstEquals(final IExpr expr) {
 		for (int i = 1; i < size(); i++) {
@@ -770,6 +771,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return -1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
 		final int size = size();
@@ -778,6 +780,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final String fullFormString() {
 		final String sep = ", ";
@@ -1667,7 +1670,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public final boolean isNegativeResult() {
 		if (isPlus()) {
 			for (int i = 1; i < size(); i++) {
-				if (get(i).isNegativeResult()||AbstractAssumptions.assumeNegative(get(i))) {
+				if (get(i).isNegativeResult() || AbstractAssumptions.assumeNegative(get(i))) {
 					continue;
 				}
 				return false;
@@ -2299,7 +2302,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr negate() {
+	public IExpr negate() {
 		if (isTimes()) {
 			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
@@ -2572,6 +2575,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public final IExpr times(final IExpr that) {
 		if (that.isZero()) {
 			return F.C0;
+		}
+		if (that.isOne()) {
+			return this;
 		}
 		return F.eval(F.Times(this, that));
 	}

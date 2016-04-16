@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
+
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import org.matheclipse.core.reflection.system.Apart;
 

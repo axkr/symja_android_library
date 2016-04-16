@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -121,6 +123,32 @@ public class AST1 extends AST0 {
 			return arg0.equals(list.head()) && arg1.equals(list.arg1());
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+		if (predicate.test(arg1)) {
+			filterAST.add(arg1);
+		} else {
+			restAST.add(arg1);
+		}
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+		if (predicate.test(arg1)) {
+			filterAST.add(arg1);
+		}
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void forEach(Consumer<? super IExpr> action) {
+		action.accept(arg1);
 	}
 
 	@Override
