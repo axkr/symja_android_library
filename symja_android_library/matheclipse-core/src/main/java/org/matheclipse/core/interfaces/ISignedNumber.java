@@ -102,11 +102,11 @@ public interface ISignedNumber extends INumber {
 
 	/**
 	 * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises {@link ArithmeticException} if this
-	 * number cannot be represented by an <code>long</code> type.
+	 * number cannot be represented by a <code>long</code> type.
 	 * 
 	 * @return the numeric value represented by this integer after conversion to type <code>long</code>.
 	 * @throws ArithmeticException
-	 *             if conversion to <code>int</code> is not possible.
+	 *             if conversion to <code>long</code> is not possible.
 	 */
 	public long toLong() throws ArithmeticException;
 

@@ -580,6 +580,16 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("CharacteristicPolynomial({{1, 2 I}, {3 + 4 I, 5}}, z)", "13-I*6-6*z+z^2");
 	}
 
+	public void testCarmichaelLambda() {
+		check("CarmichaelLambda(0)", "0");
+		check("CarmichaelLambda(1)", "1");
+		check("CarmichaelLambda(2)", "1");
+		check("CarmichaelLambda(10)", "4");
+		check("CarmichaelLambda(15)", "4");
+		check("CarmichaelLambda(11)", "10");
+		check("CarmichaelLambda(50)", "20");
+	}
+	
 	public void testChebyshevT() {
 		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
 		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
@@ -1671,6 +1681,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testJacobiSymbol() {
+		check("JacobiSymbol(10^10+1, Prime[1000])", "1");
+		check("JacobiSymbol(10^11+1, Prime[2000])", "-1");
 		check("JacobiSymbol(10, 5)", "0");
 		check("Table(f(n, m), {n, 0, 10}, {m, 1, n, 2})",
 				"{{},{f(1,1)},{f(2,1)},{f(3,1),f(3,3)},{f(4,1),f(4,3)},{f(5,1),f(5,3),f(5,5)},{f(\n"
@@ -2014,9 +2026,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testMoebiusMu() {
+		check("MoebiusMu(47)", "-1");
 		check("MoebiusMu(51)", "1");
 		check("MoebiusMu(17291)", "-1");
 		check("MoebiusMu({2, 4, 7, 9})", "{-1,0,-1,0}");
+		check("MoebiusMu(-100)", "0");
 	}
 
 	public void testMultinomial() {

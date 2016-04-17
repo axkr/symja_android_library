@@ -1,7 +1,11 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.F.List;
+
 import java.io.Externalizable;
 import java.math.BigInteger;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -194,6 +198,30 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	}
 
 	@Override
+	public IInteger charmichaelLambda() {
+		if (isZero()) {
+			return F.C0;
+		}
+		if (isOne()) {
+			return F.C1;
+		}
+		IInteger l = F.C1;
+		IAST list = factorInteger();
+		IInteger base;
+		long exponent;
+		for (int i = 1; i < list.size(); i++) {
+			base = (IInteger) list.getAST(i).arg1();
+			exponent = ((IInteger) list.getAST(i).arg2()).toLong();
+			if (exponent >= 3 && base.equals(F.C2)) {
+				l = l.lcm(base.pow(exponent - 2));
+			} else {
+				l = l.lcm((base.pow(exponent - 1)).multiply(base.subtract(F.C1)));
+			}
+		}
+		return l;
+	}
+
+	@Override
 	public IRational divideBy(IRational that) {
 		return AbstractFractionSym.valueOf(this).divideBy(that);
 	}
@@ -224,6 +252,88 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return F.NIL;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IAST factorInteger() {
+		IInteger factor;
+		IInteger last = F.CN2;
+		int count = 0;
+		final IAST iFactors = factorize(F.List());
+		final IAST list = List();
+		IAST subList = null;
+		for (int i = 1; i < iFactors.size(); i++) {
+			factor = (IInteger) iFactors.get(i);
+			if (!last.equals(factor)) {
+				if (subList != null) {
+					subList.add(AbstractIntegerSym.valueOf(count));
+					list.add(subList);
+				}
+				count = 0;
+				subList = List(factor);
+			}
+			count++;
+			last = factor;
+		}
+		if (subList != null) {
+			subList.add(AbstractIntegerSym.valueOf(count));
+			list.add(subList);
+		}
+		return list;
+	}
+
+	/**
+	 * Get all prime factors of this integer
+	 * 
+	 * @return
+	 */
+	public IAST factorize(IAST result) {
+		// final ArrayList<IInteger> result = new ArrayList<IInteger>();
+		IInteger b = this;
+		if (sign() < 0) {
+			b = b.multiply(F.CN1);
+			result.add(F.CN1);
+		} else if (b.isZero()) {
+			result.add(F.C0);
+			return result;
+		} else if (b.isOne()) {
+			result.add(F.C1);
+			return result;
+		}
+		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		BigInteger rest = Primality.countPrimes32749(b.getBigNumerator(), map);
+
+		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+			int key = entry.getKey();
+			AbstractIntegerSym is = valueOf(key);
+			for (int i = 0; i < entry.getValue(); i++) {
+				result.add(is);
+			}
+		}
+		if (rest.equals(BigInteger.ONE)) {
+			return result;
+		}
+		b = valueOf(rest);
+
+		Map<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+		Primality.pollardRhoFactors(b.getBigNumerator(), bigMap);
+
+		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
+			BigInteger key = entry.getKey();
+			IInteger is = valueOf(key);
+			for (int i = 0; i < entry.getValue(); i++) {
+				result.add(is);
+			}
+		}
+
+		return result;
+	}
+
+	// /** {@inheritDoc} */
+	// @Override
+	// public IInteger gcd(final IInteger that) {
+	// return gcd( that);
+	// }
+
 	@Override
 	public IInteger floor() {
 		return this;
@@ -243,11 +353,15 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return F.C1;
 	}
 
-	// /** {@inheritDoc} */
-	// @Override
-	// public IInteger gcd(final IInteger that) {
-	// return gcd( that);
-	// }
+	@Override
+	public double getImaginary() {
+		return 0.0;
+	}
+
+	@Override
+	public double getReal() {
+		return doubleValue();
+	}
 
 	@Override
 	public ISymbol head() {
@@ -285,6 +399,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return true;
 	}
 
+	
 	/**
 	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
 	 * Jacobi symbol</a><br/>
@@ -323,6 +438,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return F.CN1;
 	}
 
+	/** {@inheritDoc} */
+	// @Override
+	// public IInteger lcm(final IInteger that) {
+	// return lcm((IInteger) that);
+	// }
+
 	@Override
 	public IInteger jacobiSymbolG(IInteger b) {
 		IInteger i1 = mod(F.C4);
@@ -351,12 +472,6 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		IInteger lcm = a.multiply(b).div(gcd(b));
 		return lcm;
 	}
-
-	/** {@inheritDoc} */
-	// @Override
-	// public IInteger lcm(final IInteger that) {
-	// return lcm((IInteger) that);
-	// }
 
 	/**
 	 * @param val
@@ -512,15 +627,5 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	@Override
 	public byte[] toByteArray() {
 		return getBigNumerator().toByteArray();
-	}
-
-	@Override
-	public double getImaginary() {
-		return 0.0;
-	}
-
-	@Override
-	public double getReal() {
-		return doubleValue();
 	}
 }

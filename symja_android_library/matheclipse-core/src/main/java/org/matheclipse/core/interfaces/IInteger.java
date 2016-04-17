@@ -14,6 +14,15 @@ public interface IInteger extends IRational {
 
 	public IInteger add(IInteger val);
 
+	/**
+	 * 
+	 * @return <i>&#x03BB;</i>(<i>n</i>) where <i>n</i> is the number
+	 *         represented by this factors
+	 * @throws ArithmeticException
+	 *             if internal conversion to <code>long</code> is not possible.
+	 */
+	public IInteger charmichaelLambda();
+
 	public IInteger div(final IInteger that);
 
 	/**
@@ -83,8 +92,7 @@ public interface IInteger extends IRational {
 	public IInteger jacobiSymbolG(IInteger b);
 
 	/**
-	 * Returns the least common multiple of this large integer and the one
-	 * specified.
+	 * Returns the least common multiple of this integer and the one specified.
 	 * 
 	 */
 	public IInteger lcm(IInteger val);
@@ -133,7 +141,7 @@ public interface IInteger extends IRational {
 	public IInteger[] nthRootSplit(int n);
 
 	public IInteger pow(final long exp) throws ArithmeticException;
-	
+
 	public IInteger[] primitiveRoots() throws ArithmeticException;
 
 	public IInteger quotient(final IInteger that);
