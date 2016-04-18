@@ -515,6 +515,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCases() {
+		check("Cases({x, a, b, x, c}, Except(x))", "{a,b,c}");
+		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", "{0,2,3}");
 		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", "{1,1,2,3,9}");
 		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -1)", "{1,1,2,3,8,9,10}");
 		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer, -2)", "{}");
@@ -589,7 +591,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("CarmichaelLambda(11)", "10");
 		check("CarmichaelLambda(50)", "20");
 	}
-	
+
 	public void testChebyshevT() {
 		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
 		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
@@ -1081,7 +1083,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testDSolve() {
 		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
-		
+
 		check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 		check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
@@ -1502,7 +1504,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x, x - y^2 + 1}, {x, y, z})", "{1}");
-//		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2, x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder -> DegreeReverseLexicographic)", "");
+		// check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,
+		// x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder ->
+		// DegreeReverseLexicographic)", "");
 	}
 
 	public void testHaversine() {
@@ -1860,7 +1864,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("LinearSolve(N({{1, 1, 1}, {1, 2, 3}, {1, 4, 9}}), N({1, 2, 3}))", "{-0.5,2.0,-0.5}");
 		check("LinearSolve({{a, b}, {c, d}}, {x, y})", "{(d*x-b*y)/(-b*c+a*d),(-c*x+a*y)/(-b*c+a*d)}");
 	}
-	
+
 	public void testNMaximize() {
 		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6 && x >= 0 && y >= 0}, {x, y})",
 				"{-3.2500000000000004,{0.5000000000000009,2.7499999999999996}}");
