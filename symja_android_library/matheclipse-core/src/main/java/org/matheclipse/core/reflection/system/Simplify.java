@@ -1,9 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.function.Refine;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -259,12 +263,21 @@ public class Simplify extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
+		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAtom()) {
 			return arg1;
 		}
+
+		if (ast.size() > 2) {
+			IExpr arg2 = ast.arg2();
+			IAssumptions assumptions = Refine.determineAssumptions(ast.topHead(), arg2, engine);
+			if (assumptions != null) {
+				arg1 = Refine.refineAssumptions(arg1, assumptions, engine);
+			}
+		}
+
 		long minCounter = arg1.leafCount();
 
 		IExpr result = arg1;

@@ -2565,6 +2565,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testRefine() {
 		check("Refine(Sqrt(x^2), Element(x, Reals))", "Abs(x)");
+		check("Refine(Sqrt(x^2), Assumptions -> Element(x, Reals))", "Abs(x)");
 		check("Refine(Sqrt(x^2), Element(x, Integers))", "Abs(x)");
 		check("Refine(Sqrt(x^2), x>=0)", "x");
 
@@ -2573,6 +2574,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
 
 		check("Refine(Abs(x), x>0)", "x");
+		check("Refine(Abs(x), Assumptions -> x>0)", "x");
 		check("Refine(Abs(x), x>1)", "x");
 
 		check("Refine(x>0, x>0)", "True");
@@ -2835,6 +2837,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", "x");
 		check("Together(2/(1/Tan(x) + Tan(x)))", "2/(Cot(x)+Tan(x))");
 		check("Together(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
 		check("Simplify(Sin(x)^2 + Cos(x)^2)", "1");
