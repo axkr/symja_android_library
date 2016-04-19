@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,49 +17,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex
  * conjugation</a>
  */
-public class Conjugate extends AbstractEvaluator implements INumeric {
-
+public class Conjugate extends AbstractTrigArg1 implements INumeric {
 	public Conjugate() {
-	}
-
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		IExpr arg1 = ast.arg1();
-		IExpr temp = conjugate(arg1);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		if (arg1.isPlus() || arg1.isTimes()) {
-			IAST result = F.NIL;
-			IAST clone = ((IAST) arg1).clone();
-			int i = 1;
-			while (i < clone.size()) {
-				temp = conjugate(clone.get(i));
-				if (temp.isPresent()) {
-					clone.remove(i);
-					if (!result.isPresent()) {
-						result = ((IAST) arg1).copyHead();
-					}
-					result.add(temp);
-					continue;
-				}
-				i++;
-			}
-			if (result.isPresent()) {
-				if (clone.size() == 1) {
-					return result;
-				}
-				if (clone.size() == 1) {
-					result.add(F.Conjugate(clone.arg1()));
-					return result;
-				}
-				result.add(F.Conjugate(clone));
-				return result;
-			}
-		}
-		return F.NIL;
 	}
 
 	/**
@@ -96,15 +55,67 @@ public class Conjugate extends AbstractEvaluator implements INumeric {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
-	}
-
-	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
 		}
 		return stack[top];
 	}
+
+	@Override
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+		IExpr arg1 = ast.arg1();
+		return evaluateArg1(arg1);
+	}
+
+	@Override
+	public IExpr evaluateArg1(final IExpr arg1) {
+		IExpr temp = conjugate(arg1);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		if (arg1.isPower()) {
+			IExpr p1 = ((IAST) arg1).arg1();
+			if (p1.isPositiveResult()) {
+				return F.Power(p1, F.Conjugate(((IAST) arg1).arg2()));
+			}
+		}
+		if (arg1.isPlus() || arg1.isTimes()) {
+			IAST result = F.NIL;
+			IAST clone = ((IAST) arg1).clone();
+			int i = 1;
+			while (i < clone.size()) {
+				temp = conjugate(clone.get(i));
+				if (temp.isPresent()) {
+					clone.remove(i);
+					if (!result.isPresent()) {
+						result = ((IAST) arg1).copyHead();
+					}
+					result.add(temp);
+					continue;
+				}
+				i++;
+			}
+			if (result.isPresent()) {
+				if (clone.size() == 1) {
+					return result;
+				}
+				if (clone.size() == 1) {
+					result.add(F.Conjugate(clone.arg1()));
+					return result;
+				}
+				result.add(F.Conjugate(clone));
+				return result;
+			}
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(symbol);
+	}
+
 }

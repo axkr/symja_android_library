@@ -1059,7 +1059,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression has a negative result (i.e. less than 0).
+	 * Test if this expression has a negative result (i.e. less than 0) or is
+	 * assumed to be negative.
 	 * 
 	 * @return <code>true</code>, if the given expression is a negative function
 	 *         or value.
@@ -1070,7 +1071,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression has a non-negative result (i.e. greater equal 0).
+	 * Test if this expression has a non-negative result (i.e. greater equal 0)
+	 * or is assumed to be non-negative.
 	 * 
 	 * @return <code>true</code>, if the given expression is a non-negative
 	 *         function or value.
@@ -1333,7 +1335,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression has a positive result (i.e. greater than 0).
+	 * Test if this expression has a positive result (i.e. greater than 0) or is
+	 * assumed to be positive.
 	 * 
 	 * @return <code>true</code>, if the given expression is a positive function
 	 *         or value.

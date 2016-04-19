@@ -720,6 +720,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testConjugate() {
+		check("Conjugate(E^z)", "E^Conjugate(z)");
 		check("Conjugate(Pi)", "Pi");
 		check("Conjugate(0)", "0");
 		check("Conjugate(I)", "-I");
@@ -2371,6 +2372,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("E^(x+2*Pi*I)", "E^x");
+		check("E^(x+11*Pi*I)", "-E^x");
+		check("E^(x+Sin(a)+2*Pi*I)", "E^(x+Sin(a))");
+		
 		check("(-9/5)*(3)^(-1/2)", "-3/5*Sqrt(3)");
 		check("(-1/9)*3^(1/2)", "-1/(3*Sqrt(3))");
 		check("3^(1/2)/9", "1/(3*Sqrt(3))");
@@ -2559,7 +2564,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testRefine() {
-
 		check("Refine(Sqrt(x^2), Element(x, Reals))", "Abs(x)");
 		check("Refine(Sqrt(x^2), Element(x, Integers))", "Abs(x)");
 		check("Refine(Sqrt(x^2), x>=0)", "x");

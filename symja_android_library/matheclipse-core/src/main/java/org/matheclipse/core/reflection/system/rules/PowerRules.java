@@ -13,7 +13,7 @@ public interface PowerRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 4, 9 };
+  final public static int[] SIZES = { 4, 10 };
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
@@ -21,6 +21,8 @@ public interface PowerRules {
       CNI),
     ISetDelayed(Power(E,Times(Pi,$p(c,Complex))),
       Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),
+    ISetDelayed(Power(E,Plus(x_,Times(Pi,$p(c,Complex)))),
+      Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Power(E,x),Negate(Power(E,x))),And(Equal(r,C0),IntegerQ(j))))),
     ISet(Power(E,DirectedInfinity(CI)),
       Indeterminate),
     ISet(Power(E,DirectedInfinity(CNI)),
