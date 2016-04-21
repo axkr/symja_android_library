@@ -1,20 +1,19 @@
 package org.matheclipse.core.builtin.function;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -22,13 +21,14 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Get[{&lt;file name&gt;}}
  * 
  */
-public class Get extends AbstractCoreFunctionEvaluator {
+public class Get extends AbstractFunctionEvaluator {
 
 	public Get() {
 	}
@@ -44,20 +44,20 @@ public class Get extends AbstractCoreFunctionEvaluator {
 			throw new RuleCreationError(null);
 		}
 		IStringX arg1 = (IStringX) ast.arg1();
-		Reader reader;
+		FileReader reader;
 		try {
-			reader = new InputStreamReader(new FileInputStream(arg1.toString()), "UTF-8");
+			reader = new FileReader(arg1.toString());
 			loadPackage(engine, reader);
 			// System.out.println(resultList);
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
 			engine.printMessage("Get: file " + arg1.toString() + " not found!");
 		}
 		return F.Null;
 	}
 
 	@Override
-	public IExpr numericEval(IAST ast, EvalEngine engine) {
-		return evaluate(ast, engine);
+	public IExpr numericEval(IAST functionList, EvalEngine engine) {
+		return null;
 	}
 
 	@Override
@@ -80,18 +80,17 @@ public class Get extends AbstractCoreFunctionEvaluator {
 				builder.append(record);
 				builder.append('\n');
 			}
-			final ExprParser parser = new ExprParser(engine, engine.isRelaxedSyntax(), true);
-			final List<IExpr> node = parser.parsePackage(builder.toString());
+			final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+			final List<ASTNode> node = parser.parsePackage(builder.toString());
 
 			IExpr temp;
 			int i = 0;
-			// AST2Expr ast2Expr = AST2Expr.CONST;
-			// if (engine.isRelaxedSyntax()) {
-			// ast2Expr = AST2Expr.CONST_LC;
-			// }
+			AST2Expr ast2Expr = AST2Expr.CONST;
+			if (engine.isRelaxedSyntax()) {
+				ast2Expr = AST2Expr.CONST_LC;
+			}
 			while (i < node.size()) {
-				temp = node.get(i++); // ast2Expr.convert(node.get(i++),
-										// engine);
+				temp = ast2Expr.convert(node.get(i++), engine);
 				if (temp.isAST()) {
 					IAST ast = (IAST) temp;
 					IExpr head = temp.head();
@@ -100,7 +99,7 @@ public class Get extends AbstractCoreFunctionEvaluator {
 						packageContext = new Context(contextName);
 						ISymbol endSymbol = F.EndPackage;
 						for (int j = 2; j < ast.size(); j++) {
-							Reader reader = new InputStreamReader(new FileInputStream(ast.get(j).toString()), "UTF-8");
+							FileReader reader = new FileReader(ast.get(j).toString());
 							Get.loadPackage(engine, reader);
 							reader.close();
 						}
@@ -116,9 +115,7 @@ public class Get extends AbstractCoreFunctionEvaluator {
 				// System.out.println(temp.toString());
 				engine.evaluate(temp);
 			}
-		} catch (final IOException e) {
-			e.printStackTrace();
-		} catch (final RuntimeException e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
 			if (packageContext != null) {
@@ -133,18 +130,17 @@ public class Get extends AbstractCoreFunctionEvaluator {
 		}
 	}
 
-	private static int addContextToPath(ContextPath contextPath, final List<IExpr> node, int i, final EvalEngine engine,
+	private static int addContextToPath(ContextPath contextPath, final List<ASTNode> node, int i, final EvalEngine engine,
 			ISymbol endSymbol) {
 		ContextPath path = engine.getContextPath();
 		try {
 			engine.setContextPath(contextPath);
-			// AST2Expr ast2Expr = AST2Expr.CONST;
-			// if (engine.isRelaxedSyntax()) {
-			// ast2Expr = AST2Expr.CONST_LC;
-			// }
+			AST2Expr ast2Expr = AST2Expr.CONST;
+			if (engine.isRelaxedSyntax()) {
+				ast2Expr = AST2Expr.CONST_LC;
+			}
 			while (i < node.size()) {
-				IExpr temp = node.get(i++);// ast2Expr.convert(node.get(i++),
-											// engine);
+				IExpr temp = ast2Expr.convert(node.get(i++), engine);
 				if (temp.isAST()) {
 					IExpr head = temp.head();
 					IAST ast = (IAST) temp;

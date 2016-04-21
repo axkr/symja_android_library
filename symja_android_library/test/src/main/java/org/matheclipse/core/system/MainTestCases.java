@@ -817,10 +817,12 @@ public class MainTestCases extends AbstractTestCase {
 
 	public void testSystem071() {
 		check("N(EulerGamma)", "0.5772156649015329");
+		check("D(Sinh(x),x)", "Cosh(x)");
 	}
 
 	public void testSystem072() {
-		check("D(Sinh(x),x)", "Cosh(x)");
+		check("$isatom(_?AtomQ) := True;$isatom(10)", "True");
+		
 	}
 
 	public void testSystem073() {
