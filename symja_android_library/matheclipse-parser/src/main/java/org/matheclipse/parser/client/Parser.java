@@ -32,52 +32,121 @@ import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /**
+ * <p>
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
  * formulas string representation
- * 
+ * </p>
+ * <p>
  * See
  * <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator
  * -precedence parser</a> for the idea, how to parse the operators depending on
  * their precedence.
+ * </p>
  */
 public class Parser extends Scanner {
 	/**
-	 * Use '('...')' as brackets for arguments
+	 * SymbolNode for <code>Derivative</code> corresponding to
+	 * <code>F#Derivative</code>
+	 */
+	public final static SymbolNode DERIVATIVE = new SymbolNode("Derivative");
+
+	/**
+	 * Use '('...')' as brackets for function arguments
 	 */
 	private final boolean fRelaxedSyntax;
+
+	/**
+	 * List of ASTNodes used for parsing packages
+	 */
 	private List<ASTNode> fNodeList = null;
-	public final static SymbolNode DERIVATIVE = new SymbolNode("Derivative");
 
 	public Parser() {
 		this(ASTNodeFactory.MMA_STYLE_FACTORY, false, false);
 	}
 
 	/**
+	 * <p>
+	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a
+	 * math formulas string representation
+	 * </p>
+	 * <p>
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
+	 * Operator -precedence parser</a> for the idea, how to parse the operators
+	 * depending on their precedence.
+	 * </p>
 	 * 
 	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for arguments
-	 * @throws SyntaxError
+	 *            if <code>true</code>, use '('...')' as brackets for function
+	 *            arguments
 	 */
-	public Parser(final boolean relaxedSyntax) throws SyntaxError {
+	public Parser(final boolean relaxedSyntax) {
 		this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax);
 	}
 
-	public Parser(final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
+	/**
+	 * <p>
+	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a
+	 * math formulas string representation
+	 * </p>
+	 * <p>
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
+	 * Operator -precedence parser</a> for the idea, how to parse the operators
+	 * depending on their precedence.
+	 * </p>
+	 * 
+	 * @param relaxedSyntax
+	 *            if <code>true</code>, use '('...')' as brackets for function
+	 *            arguments
+	 * @param packageMode
+	 *            parse in &quot;package mode&quot; and initialize an internal
+	 *            list of ASTNodes
+	 */
+	public Parser(final boolean relaxedSyntax, boolean packageMode) {
 		this(ASTNodeFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
 	}
 
 	/**
+	 * <p>
+	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a
+	 * math formulas string representation
+	 * </p>
+	 * <p>
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
+	 * Operator -precedence parser</a> for the idea, how to parse the operators
+	 * depending on their precedence.
+	 * </p>
 	 * 
 	 * @param factory
+	 *            a parser factory
 	 * @param relaxedSyntax
-	 *            if <code>true</code>, use '('...')' as brackets for arguments
-	 * @throws SyntaxError
+	 *            if <code>true</code>, use '('...')' as brackets for function
+	 *            arguments
 	 */
-	public Parser(IParserFactory factory, final boolean relaxedSyntax) throws SyntaxError {
+	public Parser(IParserFactory factory, final boolean relaxedSyntax) {
 		this(factory, relaxedSyntax, false);
 	}
 
-	public Parser(IParserFactory factory, final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
+	/**
+	 * <p>
+	 * Create an expression of the <code>ASTNode</code> class-hierarchy from a
+	 * math formulas string representation
+	 * </p>
+	 * <p>
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
+	 * Operator -precedence parser</a> for the idea, how to parse the operators
+	 * depending on their precedence.
+	 * </p>
+	 * 
+	 * @param factory
+	 *            a parser factory
+	 * @param relaxedSyntax
+	 *            if <code>true</code>, use '('...')' as brackets for function
+	 *            arguments
+	 * @param packageMode
+	 *            parse in &quot;package mode&quot; and initialize an internal
+	 *            list of ASTNodes
+	 */
+	public Parser(IParserFactory factory, final boolean relaxedSyntax, boolean packageMode) {
 		super(packageMode);
 		this.fRelaxedSyntax = relaxedSyntax;
 		this.fFactory = factory;
@@ -406,6 +475,13 @@ public class Parser extends Scanner {
 		return temp;
 	}
 
+	/**
+	 * Parse a package.
+	 * 
+	 * @param expression
+	 * @return
+	 * @throws SyntaxError
+	 */
 	public List<ASTNode> parsePackage(final String expression) throws SyntaxError {
 		initialize(expression);
 		while (fToken == TT_NEWLINE) {
