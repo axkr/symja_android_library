@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.basic.Config;import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.reflection.system.Thread;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -300,8 +301,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testApart() {
-//		check("Apart(1/((x + a) (x + b) (x + c)))", "");
-		check("Apart(1/((1 + x) (5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
+		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
 	}
 
@@ -541,7 +541,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCancel() {
-		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2 x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
+		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2*x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
 		check("9+3*x+x^2", "9+3*x+x^2");
 		check("(9+3*x+x^2)*(3+x)^(-1)", "(9+3*x+x^2)/(3+x)");
 		check("1+(9+3*x+x^2)*(3+x)^(-1)+x+(x+y)^(-1)", "1+(9+3*x+x^2)/(3+x)+x+1/(x+y)");
@@ -760,7 +760,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCollect() {
-
+		// check("Collect(D(f(Sqrt(x^2 + 1)), {x, 3}), Derivative(_)[f][_],
+		// Together)", "");
 		check("x*(4*a^3+12*a^2+12*a+4)+x^4+(4*a+4)*x^3+(6*a^2+12*a+6)*x^2+a^4+4*a^3+6*a^2+4*a+1",
 				"1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
 		check("x+x^4", "x+x^4");
@@ -870,6 +871,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 		// others -----
 		check("D(InverseErf(x),x)", "1/2*E^InverseErf(x)^2*Sqrt(Pi)");
+		
+		check("D(f(Sqrt(x^2 + 1)), {x, 3})", "(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(3*x*f''(Sqrt(\n" + 
+				"1+x^2)))/(1+x^2)+(-3*x^3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(x^3*Derivative(3)[f][Sqrt(\n" + 
+				"1+x^2)])/(1+x^2)^(3/2)");
 	}
 
 	public void testDegree() {

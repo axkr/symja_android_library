@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.reflection.system.Thread;
 
 /**
  * <code>Collect(expr, variable)</code> - collect subexpressions in expr which
@@ -39,6 +40,10 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				head = engine.evaluate(ast.arg3());
 			}
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
+			IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+			if (temp.isPresent()) {
+				return temp;
+			}
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
 			if (!arg2.isList()) {
 				return collectSingleVariable(arg1, arg2, F.List(), 1, head, engine);
