@@ -70,6 +70,9 @@ public class F {
 
 	public final static Map<String, IPattern> PREDEFINED_PATTERN_MAP = new HashMap<String, IPattern>(61);
 
+	public final static Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP = new HashMap<String, IPatternSequence>(
+			61);
+
 	public final static Map<String, ISymbol> HIDDEN_SYMBOLS_MAP = new HashMap<String, ISymbol>(197);
 
 	public static ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
@@ -504,11 +507,13 @@ public class F {
 	public final static ISymbol ArcSin = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsin" : "ArcSin");
 	public final static ISymbol ArcTan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arctan" : "ArcTan");
 	public final static ISymbol Arg = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arg" : "Arg");
+	
 	public final static ISymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
 	public final static ISymbol Boole = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boole" : "Boole");
 	public final static ISymbol BooleanMinimize = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanminimize" : "BooleanMinimize");
+	
 	public final static ISymbol Cancel = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cancel" : "Cancel");
 	public final static ISymbol CartesianProduct = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cartesianproduct" : "CartesianProduct");
@@ -549,6 +554,7 @@ public class F {
 	public final static ISymbol Csc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
 	public final static ISymbol Csch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
 	public final static ISymbol Curl = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "curl" : "Curl");
+	
 	public final static ISymbol D = initFinalSymbol("D");
 	public final static ISymbol Decrement = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "decrement" : "Decrement");
@@ -574,6 +580,8 @@ public class F {
 	public final static ISymbol Divisible = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divisible" : "Divisible");
 	public final static ISymbol Dot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dot" : "Dot");
+	public final static ISymbol DSolve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dsolve" : "DSolve");
+	
 	public final static ISymbol Eigenvalues = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvalues" : "Eigenvalues");
 	public final static ISymbol Eigenvectors = initFinalSymbol(
@@ -956,6 +964,10 @@ public class F {
 	public final static IPattern x_ = initPredefinedPattern(x);
 	public final static IPattern y_ = initPredefinedPattern(y);
 	public final static IPattern z_ = initPredefinedPattern(z);
+
+	public final static IPatternSequence x__ = initPredefinedPatternSequence(x);
+	public final static IPatternSequence y__ = initPredefinedPatternSequence(y);
+	public final static IPatternSequence z__ = initPredefinedPatternSequence(z);
 
 	public final static IPattern A_ = initPredefinedPattern(ASymbol);
 	public final static IPattern B_ = initPredefinedPattern(BSymbol);
@@ -1621,6 +1633,10 @@ public class F {
 		return ast(And);
 	}
 
+	public static IAST And(final IExpr... a) {
+		return ast(a, And);
+	}
+	
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
 	}
@@ -2320,6 +2336,10 @@ public class F {
 		return binaryAST2(Drop, a0, a1);
 	}
 
+	public static IAST DSolve(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(DSolve, a0, a1, a2);
+	}
+	
 	public static IAST Element(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Element, a0, a1);
 	}
@@ -2886,6 +2906,12 @@ public class F {
 	public static IPattern initPredefinedPattern(@Nonnull final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);
 		PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
+		return temp;
+	}
+
+	public static IPatternSequence initPredefinedPatternSequence(@Nonnull final ISymbol symbol) {
+		PatternSequence temp = PatternSequence.valueOf(symbol);
+		PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
 		return temp;
 	}
 
@@ -4149,7 +4175,6 @@ public class F {
 	}
 
 	public static IAST Tan(final IExpr a0) {
-
 		return unaryAST1(Tan, a0);
 	}
 
@@ -4180,6 +4205,10 @@ public class F {
 		return new AST3(head, a0, a1, a2);
 	}
 
+	public static IAST Thread(final IExpr a0) {
+		return unaryAST1(Thread, a0);
+	}
+	
 	public static IAST Throw(final IExpr a) {
 		return unaryAST1(Throw, a);
 	}
@@ -4674,7 +4703,7 @@ public class F {
 			Greater.setEvaluator(org.matheclipse.core.reflection.system.Greater.CONST);
 			Expand.setEvaluator(org.matheclipse.core.reflection.system.Expand.CONST);
 			ExpandAll.setEvaluator(org.matheclipse.core.reflection.system.ExpandAll.CONST);
-			
+
 			// initialize only the utility function rules for Integrate
 			// other rules are "lazy loaded" on first use og Integrate
 			// function

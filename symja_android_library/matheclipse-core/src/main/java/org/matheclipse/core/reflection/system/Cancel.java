@@ -52,8 +52,9 @@ public class Cancel extends AbstractFunctionEvaluator {
 		if (ast.size() == 2 && arg1.isAtom()) {
 			return arg1;
 		}
-		if (arg1.isPlus()) {
-			return ((IAST) arg1).mapAt(F.Cancel(null), 1);
+		IAST temp = Thread.threadPlusLogicEquationOperators(arg1, ast, 1);
+		if (temp.isPresent()) {
+			return temp;
 		}
 		try {
 			if (arg1.isTimes() || arg1.isPower()) {

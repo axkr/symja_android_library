@@ -591,6 +591,22 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
 			return !iter.execute();
 		} else {
+			if (lhsPatternAST.size() == 2) {
+				if (lhsPatternAST.arg1().isPatternSequence()) {
+					// TODO only the special case, where the last element is
+					// a pattern sequence, is handled here
+					IAST seq = F.Sequence();
+					seq.addAll(lhsEvalAST, 1, lhsEvalAST.size());
+					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap)) {
+//						if (matchAST(lhsPatternAST.copyUntil(1), lhsEvalAST.copyUntil(1),
+//								stackMatcher)) {
+//							return fPatternMap.isPatternTest(lhsPatternAST.arg1(), lhsPatternAST.arg2());
+//						}
+						return true;
+					}
+				}
+				return false;
+			}
 			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
 			NumberPartitionsIterator iter = new NumberPartitionsIterator(visitor, lhsEvalAST.size() - 1,
 					lhsPatternAST.size() - 1);
@@ -599,7 +615,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	protected boolean matchAST(final IAST lhsPatternAST, final IExpr lhsEvalExpr, StackMatcher stackMatcher) {
-//		System.out.println(lhsPatternAST.toString()+"  -  "+lhsEvalExpr.toString()); 
+		// System.out.println(lhsPatternAST.toString()+" -
+		// "+lhsEvalExpr.toString());
 		if (lhsPatternAST.isAST(F.PatternTest, 3)) {
 			if (matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)) {
 				return fPatternMap.isPatternTest(lhsPatternAST.arg1(), lhsPatternAST.arg2());

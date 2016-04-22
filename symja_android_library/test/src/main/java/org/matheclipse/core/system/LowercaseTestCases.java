@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.Config;import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.reflection.system.Thread;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -298,6 +299,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("$l = {1, 2, 4, 9};appendto($l, 16);$l", "{1,2,4,9,16}");
 	}
 
+	public void testApart() {
+//		check("Apart(1/((x + a) (x + b) (x + c)))", "");
+		check("Apart(1/((1 + x) (5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
+		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
+	}
+
 	public void testApply() {
 		check("f @@ {{a, b}, {c}, d}", "f({a,b},{c},d)");
 		check("apply(head, {3,4,5})", "Symbol");
@@ -534,6 +541,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCancel() {
+		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2 x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
 		check("9+3*x+x^2", "9+3*x+x^2");
 		check("(9+3*x+x^2)*(3+x)^(-1)", "(9+3*x+x^2)/(3+x)");
 		check("1+(9+3*x+x^2)*(3+x)^(-1)+x+(x+y)^(-1)", "1+(9+3*x+x^2)/(3+x)+x+1/(x+y)");
@@ -546,6 +554,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"1+(9+3*x+x^2)/(3+x)+1/(x+y)+x");
 		check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", "1/(1+x)+1/(2+x)");
 		check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", "(3+2*x)/(2+3*x+x^2)");
+
 	}
 
 	public void testCatch() {
@@ -2375,7 +2384,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("E^(x+2*Pi*I)", "E^x");
 		check("E^(x+11*Pi*I)", "-E^x");
 		check("E^(x+Sin(a)+2*Pi*I)", "E^(x+Sin(a))");
-		
+
 		check("(-9/5)*(3)^(-1/2)", "-3/5*Sqrt(3)");
 		check("(-1/9)*3^(1/2)", "-1/(3*Sqrt(3))");
 		check("3^(1/2)/9", "1/(3*Sqrt(3))");
@@ -3188,6 +3197,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(1 < 1/x + 1/(1 + x) < 2)", "1<(1+2*x)/(x+x^2)<2");
+		check("Together(1/(1+1/(1+1/a)))", "(1+a)/(1+2*a)");
+		check("Together(1/(1+1/(1+1/(1+a))))", "(2+a)/(3+2*a)");
 		check("ExpandAll(a*b)", "a*b");
 		check("ExpandAll(a*b^(-1))", "a/b");
 		check("(a*b)^(-1)", "1/(a*b)");

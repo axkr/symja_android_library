@@ -213,6 +213,10 @@ public class Together extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+		if (temp.isPresent()) {
+			return temp;
+		}
 		if (arg1.isPlusTimesPower()) {
 			return togetherNull((IAST) arg1).orElse(arg1);
 		}

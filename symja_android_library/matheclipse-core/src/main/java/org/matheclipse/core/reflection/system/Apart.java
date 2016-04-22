@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
+import org.matheclipse.parser.client.SyntaxError;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
@@ -46,11 +47,19 @@ public class Apart extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		final IExpr arg1 = ast.arg1();
+		IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+		if (temp.isPresent()) {
+			return temp;
+		} 
+
 		IAST variableList = null;
 		if (ast.size() == 3) {
 			variableList = Validate.checkSymbolOrSymbolList(ast, 2);
 		} else {
 			VariablesSet eVar = new VariablesSet(arg1);
+			if (eVar.isSize(0)) {
+				return arg1;
+			}
 			if (!eVar.isSize(1)) {
 				// partial fraction only possible for univariate polynomials
 				return F.NIL;
@@ -425,5 +434,11 @@ public class Apart extends AbstractFunctionEvaluator {
 			return parts;
 		}
 		return null;
+	}
+
+	@Override
+	public void setUp(final ISymbol symbol) throws SyntaxError {
+		symbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(symbol);
 	}
 }
