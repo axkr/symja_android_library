@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class Max extends AbstractFunctionEvaluator {
 	public Max() {
+		// default ctor
 	}
 
 	@Override
@@ -21,17 +22,18 @@ public class Max extends AbstractFunctionEvaluator {
 		if (ast.size() == 1) {
 			return F.CNInfinity;
 		}
-		IAST list = ast;
-		IAST resultList = list.copyHead();
-		boolean evaled = false;
-		if (EvalAttributes.flatten(F.List, list, resultList)) {
-			list = resultList;
-			evaled = true;
+		IAST resultList = EvalAttributes.flatten(F.List, ast);
+		if (resultList.isPresent()) {
+			return maximum(resultList, true);
 		}
-		// IExpr max = F.Times(F.CN1, ExprFactory.Infinity);
+
+		return maximum(ast, false);
+	}
+
+	private IExpr maximum(IAST list, boolean flattenedList) {
 		IExpr max1;
 		IExpr max2;
-
+		boolean evaled = flattenedList;
 		max1 = list.arg1();
 		IAST f = list.copyHead();
 		COMPARE_RESULT comp;

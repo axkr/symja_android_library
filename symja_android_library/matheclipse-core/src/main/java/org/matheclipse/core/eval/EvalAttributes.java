@@ -21,8 +21,20 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class EvalAttributes {
 
-	private EvalAttributes() {
-
+	/**
+	 * Check the cached hashcode with the current one. Only necessary in DEBUG
+	 * mode.
+	 * 
+	 * @param ast
+	 */
+	private static void checkCachedHashcode(final IAST ast) {
+		final int hash = ast.getHashCache();
+		if (hash != 0) {
+			ast.clearHashCache();
+			if (hash != ast.hashCode()) {
+				throw new UnsupportedOperationException("Different hash codes for:" + ast.toString());
+			}
+		}
 	}
 
 	/**
@@ -42,8 +54,8 @@ public class EvalAttributes {
 		}
 		final ISymbol sym = ast.topHead();
 		if (ast.isAST(sym)) {
-			final IAST result = ast.copyHead();
-			if (flatten(sym, ast, result)) {
+			IAST result = flatten(sym, ast);
+			if (result.isPresent()) {
 				result.addEvalFlags(IAST.IS_FLATTENED);
 				return result;
 			}
@@ -59,29 +71,35 @@ public class EvalAttributes {
 	 * 
 	 * @param head
 	 *            the head of the expression, which should be flattened.
-	 * @param sublist
+	 * @param ast
 	 *            the <code>sublist</code> which should be added to the
 	 *            <code>result</code> list.
-	 * @param result
-	 *            the <code>result</code> list, where all sublist elements with
-	 *            the same <code>head</code> should be appended.
-	 * @return <code>true</code> if a sublist was flattened out into the
-	 *         <code>result</code> list.
+	 * @return the flattened ast expression if a sublist was flattened out,
+	 *         otherwise return <code>F#NIL</code>..
 	 */
-	public static boolean flatten(final ISymbol head, final IAST sublist, final IAST result) {
-		boolean isEvaled = false;
+	public static IAST flatten(final ISymbol head, final IAST ast) {
+		IAST result = F.NIL;
 		IExpr expr;
-		final int astSize = sublist.size();
+		final int astSize = ast.size();
 		for (int i = 1; i < astSize; i++) {
-			expr = sublist.get(i);
+			expr = ast.get(i);
 			if (expr.isAST(head)) {
-				isEvaled = true;
-				flatten(head, (IAST) expr, result);
+				if (!result.isPresent()) {
+					result = ast.copyUntil(i);
+				}
+				IAST temp = flatten(head, (IAST) expr);
+				if (temp.isPresent()) {
+					result.addAll(temp);
+				} else {
+					result.addAll((IAST) expr);
+				}
 			} else {
-				result.add(expr);
+				if (result.isPresent()) {
+					result.add(expr);
+				}
 			}
 		}
-		return isEvaled;
+		return result;
 	}
 
 	/**
@@ -130,64 +148,23 @@ public class EvalAttributes {
 	 * @return <code>true</code> if the sort algorithm was used;
 	 *         <code>false</code> otherwise
 	 */
-	public final static boolean sort(final IAST ast) {
+	public static final boolean sort(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
 			return false;
 		}
 
 		final int astSize = ast.size();
 		if (astSize > 2) {
-			IExpr temp;
 			switch (astSize) {
 			case 3:
-				if (ast.arg1().compareTo(ast.arg2()) > 0) {
-					// swap arguments
-					temp = ast.arg2();
-					ast.set(2, ast.arg1());
-					ast.set(1, temp);
-					ast.addEvalFlags(IAST.IS_SORTED);
-					if (Config.SHOW_STACKTRACE) {
-						chechCachedHashcode(ast);
-					}
-					return true;
-				}
-				ast.addEvalFlags(IAST.IS_SORTED);
-				return false;
+				return sort2Args(ast);
 			case 4:
-				// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
-				boolean evaled = false;
-				if (ast.arg1().compareTo(ast.arg2()) > 0) {
-					// swap arguments
-					temp = ast.arg2();
-					ast.set(2, ast.arg1());
-					ast.set(1, temp);
-					evaled = true;
-				}
-				if (ast.arg2().compareTo(ast.arg3()) > 0) {
-					// swap arguments
-					temp = ast.arg3();
-					ast.set(3, ast.arg2());
-					ast.set(2, temp);
-					evaled = true;
-					if (ast.arg1().compareTo(ast.arg2()) > 0) {
-						// swap arguments
-						temp = ast.arg2();
-						ast.set(2, ast.arg1());
-						ast.set(1, temp);
-					}
-				}
-				ast.addEvalFlags(IAST.IS_SORTED);
-				if (evaled) {
-					if (Config.SHOW_STACKTRACE) {
-						chechCachedHashcode(ast);
-					}
-				}
-				return evaled;
+				return sort3Args(ast);
 			default:
 				ast.args().sort(Comparators.ExprComparator.CONS);
 				ast.addEvalFlags(IAST.IS_SORTED);
 				if (Config.SHOW_STACKTRACE) {
-					chechCachedHashcode(ast);
+					checkCachedHashcode(ast);
 				}
 				return true;
 			}
@@ -196,18 +173,72 @@ public class EvalAttributes {
 		return false;
 	}
 
-	private static void chechCachedHashcode(final IAST ast) {
-		final int hash = ast.getHashCache();
-		if (hash != 0) {
-			ast.clearHashCache();
-			if (hash != ast.hashCode()) {
-				throw new UnsupportedOperationException("Different hash codes for:" + ast.toString());
-			}
-		}
+	public static final void sort(final IAST ast, Comparator<IExpr> comparator) {
+		ast.args().sort(comparator);
 	}
 
-	public final static void sort(final IAST ast, Comparator<IExpr> comparator) {
-		ast.args().sort(comparator);
+	/**
+	 * Sort an AST with 2 arguments.
+	 * 
+	 * @param ast
+	 *            an ast with 2 arguments
+	 * @return
+	 */
+	private static boolean sort2Args(final IAST ast) {
+		IExpr temp;
+		if (ast.arg1().compareTo(ast.arg2()) > 0) {
+			// swap arguments
+			temp = ast.arg2();
+			ast.set(2, ast.arg1());
+			ast.set(1, temp);
+			ast.addEvalFlags(IAST.IS_SORTED);
+			if (Config.SHOW_STACKTRACE) {
+				checkCachedHashcode(ast);
+			}
+			return true;
+		}
+		ast.addEvalFlags(IAST.IS_SORTED);
+		return false;
+	}
+
+	/**
+	 * Sort an AST with 3 arguments.
+	 * 
+	 * @param ast
+	 *            an ast with 3 arguments
+	 * @return
+	 */
+	private static boolean sort3Args(final IAST ast) {
+		IExpr temp;
+		// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
+		boolean evaled = false;
+		if (ast.arg1().compareTo(ast.arg2()) > 0) {
+			// swap arguments
+			temp = ast.arg2();
+			ast.set(2, ast.arg1());
+			ast.set(1, temp);
+			evaled = true;
+		}
+		if (ast.arg2().compareTo(ast.arg3()) > 0) {
+			// swap arguments
+			temp = ast.arg3();
+			ast.set(3, ast.arg2());
+			ast.set(2, temp);
+			evaled = true;
+			if (ast.arg1().compareTo(ast.arg2()) > 0) {
+				// swap arguments
+				temp = ast.arg2();
+				ast.set(2, ast.arg1());
+				ast.set(1, temp);
+			}
+		}
+		ast.addEvalFlags(IAST.IS_SORTED);
+		if (evaled) {
+			if (Config.SHOW_STACKTRACE) {
+				checkCachedHashcode(ast);
+			}
+		}
+		return evaled;
 	}
 
 	/**
@@ -246,5 +277,9 @@ public class EvalAttributes {
 		}
 
 		return result;
+	}
+
+	private EvalAttributes() {
+
 	}
 }

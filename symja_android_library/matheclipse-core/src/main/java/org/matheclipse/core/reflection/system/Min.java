@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class Min extends AbstractFunctionEvaluator {
 	public Min() {
+		// default ctor
 	}
 
 	@Override
@@ -21,16 +22,19 @@ public class Min extends AbstractFunctionEvaluator {
 		if (ast.size() == 1) {
 			return F.CInfinity;
 		}
-		IAST list = ast;
-		IAST resultList = list.copyHead();
-		boolean evaled = false;
-		if (EvalAttributes.flatten(F.List, list, resultList)) {
-			list = resultList;
-			evaled = true;
+
+		IAST resultList = EvalAttributes.flatten(F.List, ast);
+		if (resultList.isPresent()) {
+			return minimum(resultList, true);
 		}
+
+		return minimum(ast, false);
+	}
+
+	private IExpr minimum(IAST list, final boolean flattenedList) {
 		IExpr min1;
 		IExpr min2;
-
+		boolean evaled = flattenedList;
 		min1 = list.arg1();
 		IAST f = list.copyHead();
 		COMPARE_RESULT comp;

@@ -772,12 +772,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// associative symbol
 				IAST flattened;
 				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
-					IAST resultList = evalArgs(flattened, attr);
-					if (resultList.isPresent()) {
-						returnResult = resultList;
-					} else {
-						returnResult = flattened;
-					}
+//					IAST resultList = evalArgs(flattened, attr);
+//					if (resultList.isPresent()) {
+//						returnResult = resultList;
+//					} else {
+//						returnResult = flattened;
+//					}
+					returnResult = flattened;
 					tempAST = returnResult;
 				}
 			}

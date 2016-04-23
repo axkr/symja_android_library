@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Flatten extends AbstractCoreFunctionEvaluator {
 
 	public Flatten() {
+		// default ctor
 	}
 
 	@Override
@@ -23,27 +24,37 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 2);
 
 		IExpr arg1 = engine.evaluate(ast.arg1());
-		
-		if (ast.size() == 2) {
-			if (arg1.isList()) {
-				IAST resultList = F.List();
-				if (EvalAttributes.flatten(F.List, (IAST) arg1, resultList)) {
+		if (arg1.isAST()) {
+			IAST arg1AST = (IAST) arg1;
+			if (ast.size() == 2) {
+				IAST resultList = EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1);
+				if (resultList.isPresent()) {
 					return resultList;
 				}
-			}
-			return arg1;
-		} else if (ast.size() == 3) {
-			IExpr arg2 = engine.evaluate(ast.arg2());
-			if (arg1.isList()) {
-				int level = Validate.checkIntType(arg2);
+				return arg1AST;
+			} else if (ast.size() == 3) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+
+				int level = Validate.checkIntLevelType(arg2);
 				if (level > 0) {
-					IAST resultList = F.List();
-					if (EvalAttributes.flatten(F.List, (IAST) arg1, resultList, 0, level)) {
+					IAST resultList = F.ast(arg1AST.topHead());
+					if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
 						return resultList;
 					}
 				}
+				return arg1;
+			} else if (ast.size() == 4 && ast.arg3().isSymbol()) {
+				IExpr arg2 = engine.evaluate(ast.arg2());
+
+				int level = Validate.checkIntLevelType(arg2);
+				if (level > 0) {
+					IAST resultList = F.ast(arg1AST.topHead());
+					if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
+						return resultList;
+					}
+				}
+				return arg1;
 			}
-			return arg1;
 		}
 		return F.NIL;
 	}

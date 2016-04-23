@@ -126,6 +126,70 @@ public final class Validate {
 	 * 
 	 * @throws WrongArgumentType
 	 */
+	public static int checkIntLevelType(IExpr expr) {
+		return checkIntLevelType(expr, 0);
+	}
+
+	/**
+	 * Check the expression, if it's a Java {@code int} value in the range [
+	 * {@code startValue}, Integer.MAX_VALUE]
+	 * 
+	 * @param expr
+	 *            a signed number which will be converted to a Java
+	 *            <code>int</code> if possible, otherwise throw a
+	 *            <code>WrongArgumentType</code> exception.
+	 * @throws WrongArgumentType
+	 */
+	public static int checkIntLevelType(IExpr expr, int startValue) {
+		if (expr.isInfinity()) {
+			try {
+				int result = Integer.MAX_VALUE;
+				if (startValue > result) {
+					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+							+ startValue + " - " + Integer.MAX_VALUE);
+				}
+				return result;
+			} catch (ArithmeticException ae) {
+				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
+			}
+		}
+		if (expr.isSignedNumber()) {
+			try {
+				int result = ((ISignedNumber) expr).toInt();
+				if (startValue > result) {
+					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+							+ startValue + " - " + Integer.MAX_VALUE);
+				}
+				return result;
+			} catch (ArithmeticException ae) {
+				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
+			}
+		}
+		if (expr.isNegativeInfinity()) {
+			try {
+				int result = Integer.MIN_VALUE;
+				if (startValue > result) {
+					throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+							+ startValue + " - " + Integer.MAX_VALUE);
+				}
+				return result;
+			} catch (ArithmeticException ae) {
+				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
+			}
+		}
+		throw new WrongArgumentType(expr,
+				"Trying to convert the expression into the integer range: " + startValue + " - " + Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Check the expression, if it's a Java {@code int} value in the range [0 ,
+	 * Integer.MAX_VALUE]
+	 * 
+	 * @throws WrongArgumentType
+	 */
 	public static int checkIntType(IExpr expr) {
 		return checkIntType(expr, 0);
 	}

@@ -488,6 +488,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testBesselJ() {
+		check("BesselJ(1.0, -3.0)", "BesselJ(1.0,-3.0)");
 		check("BesselJ(0.0, 0.0)", "1.0");
 		check("BesselJ(4.0, 0.0)", "-0.3971498098638474");
 		// commons math: Bessel function of order 0 cannot be computed for x =
@@ -871,10 +872,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 		// others -----
 		check("D(InverseErf(x),x)", "1/2*E^InverseErf(x)^2*Sqrt(Pi)");
-		
-		check("D(f(Sqrt(x^2 + 1)), {x, 3})", "(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(3*x*f''(Sqrt(\n" + 
-				"1+x^2)))/(1+x^2)+(-3*x^3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(x^3*Derivative(3)[f][Sqrt(\n" + 
-				"1+x^2)])/(1+x^2)^(3/2)");
+
+		check("D(f(Sqrt(x^2 + 1)), {x, 3})",
+				"(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(3*x*f''(Sqrt(\n"
+						+ "1+x^2)))/(1+x^2)+(-3*x^3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(x^3*Derivative(3)[f][Sqrt(\n"
+						+ "1+x^2)])/(1+x^2)^(3/2)");
 	}
 
 	public void testDegree() {
@@ -1363,6 +1365,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testFlatten() {
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", "{a,b,c,{d},e,f,{g,h}}");
+		check("Flatten(f(f(x, y), z))", "f(x,y,z)");
+		check("Flatten({0, {1}, {{2, -2}}, {{{3}, {-3}}}, {{{{4}}}}}, 0)", "{0,{1},{{2,-2}},{{{3},{-3}}},{{{{4}}}}}");
+		check("Flatten(f(g(u, v), f(x, y)), Infinity, g)", "f(u,v,f(x,y))");
+		check("Flatten(f(g(u, v), f(x, y)), Infinity, f)", "f(g(u,v),x,y)");
 	}
 
 	public void testFloor() {
@@ -3166,6 +3172,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("Times(I*Sqrt(2), I*Sqrt(3))", "-Sqrt(6)");
 		check("Sin(x)^(-2)/Tan(x)", "Csc(x)^2*Cot(x)");
 		check("Sin(x)/Tan(x)", "Cos(x)");
 		// check("Sin(x)^2/Tan(x)^3", "Cos(x)^2*Cot(x)");
