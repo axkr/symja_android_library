@@ -36,6 +36,8 @@ public class BesselJ extends AbstractFunctionEvaluator {
 				org.apache.commons.math4.special.BesselJ besselJ = new org.apache.commons.math4.special.BesselJ(
 						((INum) arg2).doubleValue());
 				return F.num(besselJ.value(((INum) arg1).doubleValue()));
+			} catch (NegativeArraySizeException nae) {
+				engine.printMessage(ast.toString() + " caused NegativeArraySizeException");
 			} catch (RuntimeException rte) {
 				engine.printMessage(rte.getMessage());
 				return F.NIL;
