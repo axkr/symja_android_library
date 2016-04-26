@@ -60,8 +60,8 @@ public class Thread extends AbstractFunctionEvaluator {
 			if (ast.size() > 1) {
 				IAST cloned = replacement.clone();
 				cloned.set(position, null);
-				ISymbol[] plusLogicEquationHeads = { F.Plus, F.And, F.Or, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual,
-						F.GreaterEqual };
+				ISymbol[] plusLogicEquationHeads = { F.Plus, F.And, F.Or, F.Not, F.Implies, F.Equivalent, F.Equal,
+						F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
 						return ((IAST) ast).mapAt(cloned, position);
@@ -93,8 +93,8 @@ public class Thread extends AbstractFunctionEvaluator {
 			if (ast.size() > 1) {
 				IAST cloned = replacement.clone();
 				cloned.set(position, null);
-				ISymbol[] plusLogicEquationHeads = {  F.And, F.Or, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual,
-						F.GreaterEqual };
+				ISymbol[] plusLogicEquationHeads = { F.And, F.Or, F.Not, F.Implies, F.Equivalent, F.Equal, F.Unequal,
+						F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
 						return ((IAST) ast).mapAt(cloned, position);
@@ -105,7 +105,7 @@ public class Thread extends AbstractFunctionEvaluator {
 		}
 		return F.NIL;
 	}
-	
+
 	/**
 	 * Thread through all lists in the arguments of the IAST [i.e. the list
 	 * header has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
