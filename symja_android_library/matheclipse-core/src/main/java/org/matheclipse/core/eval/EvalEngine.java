@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -209,7 +208,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Associate a symbol name with a local variable stack in this thread.
 	 * 
 	 */
-	transient private IdentityHashMap<ISymbol, List<IExpr>> fLocalVariableStackMap = null;
+	transient private HashMap<ISymbol, List<IExpr>> fLocalVariableStackMap = null;
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -1449,7 +1448,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	final public Map<ISymbol, List<IExpr>> getLocalVariableStackMap() {
 		if (fLocalVariableStackMap == null) {
-			fLocalVariableStackMap = new IdentityHashMap<ISymbol, List<IExpr>>();
+			fLocalVariableStackMap = new HashMap<ISymbol, List<IExpr>>();
 		}
 		return fLocalVariableStackMap;
 	}
