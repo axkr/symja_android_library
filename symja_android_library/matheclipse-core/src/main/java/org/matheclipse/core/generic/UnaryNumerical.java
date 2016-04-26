@@ -25,6 +25,10 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 
 	EvalEngine fEngine;
 
+	public UnaryNumerical(final IExpr fn, final ISymbol v) {
+		this(fn, v, EvalEngine.get());
+	}
+	
 	public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine) {
 		fVariable = v;
 		fFunction = fn;

@@ -36,13 +36,13 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		IAST list;
+		IAST variables;
 		if (ast.arg2().isList()) {
-			list = (IAST) ast.arg2();
+			variables = (IAST) ast.arg2();
 		} else {
-			list = List(ast.arg2());
+			variables = List(ast.arg2());
 		}
-		return F.bool(ast.arg1().isPolynomial(list));
+		return F.bool(ast.arg1().isPolynomial(variables));
 
 	}
 
