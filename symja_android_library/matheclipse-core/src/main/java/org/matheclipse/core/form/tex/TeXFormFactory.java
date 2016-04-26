@@ -452,6 +452,12 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		operTab.put("Cos", new TeXFunction(this, "cos"));
 		operTab.put("Tan", new TeXFunction(this, "tan"));
 		operTab.put("Cot", new TeXFunction(this, "cot"));
+		operTab.put("Sinh", new TeXFunction(this, "sinh"));
+		operTab.put("Cosh", new TeXFunction(this, "cosh"));
+		operTab.put("Tanh", new TeXFunction(this, "tanh"));
+		operTab.put("Coth", new TeXFunction(this, "coth"));
+		operTab.put("Csc", new TeXFunction(this, "csc"));
+		operTab.put("Sec", new TeXFunction(this, "sec"));
 		operTab.put("ArcSin", new TeXFunction(this, "arcsin"));
 		operTab.put("ArcCos", new TeXFunction(this, "arccos"));
 		operTab.put("ArcTan", new TeXFunction(this, "arctan"));
