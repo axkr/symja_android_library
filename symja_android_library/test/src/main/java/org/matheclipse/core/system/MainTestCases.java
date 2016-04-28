@@ -7,8 +7,6 @@ import javax.script.ScriptEngine;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
-import org.matheclipse.core.expression.Matrix;
-import org.matheclipse.core.expression.Vector;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 
@@ -3042,27 +3040,6 @@ public class MainTestCases extends AbstractTestCase {
 	// public void testSystem405() {
 	// check("Plot(Sin(x),{x,0,10})", "");
 	// };
-
-	// public void testSystem997() {
-	// check("5000!", "");
-	// }
-	public void testSystem800() {
-		int[] values1 = { 1, 2, 3 };
-		int[] values2 = { 4, 5, 6 };
-		Vector v1 = new Vector(values1);
-		Vector v2 = new Vector(values2);
-		Vector v3 = v1.plus(v2);
-		check(v3.getAST(), "{5,7,9}");
-	}
-
-	public void testSystem801() {
-		int[][] values1 = { { 1, 2, 3, 4 }, { 11, 12, 13, 14 }, { -1, -2, -3, -4 } };
-		int[][] values2 = { { 4, 5, 6, 7 }, { 4, 5, 6, 7 }, { 4, 5, 6, 7 } };
-		Matrix v1 = new Matrix(values1);
-		Matrix v2 = new Matrix(values2);
-		Matrix v3 = v1.plus(v2);
-		check(v3.getAST(), "{{5,7,9,11},{15,17,19,21},{3,3,3,3}}");
-	}
 
 	public void testSystem802() {
 		if (!Config.SERVER_MODE) {
