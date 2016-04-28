@@ -60,8 +60,8 @@ public class Thread extends AbstractFunctionEvaluator {
 			if (ast.size() > 1) {
 				IAST cloned = replacement.clone();
 				cloned.set(position, null);
-				ISymbol[] plusLogicEquationHeads = { F.Plus, F.And, F.Or, F.Not, F.Implies, F.Equivalent, F.Equal,
-						F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
+				ISymbol[] plusLogicEquationHeads = { F.Plus, F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies,
+						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
 						return ((IAST) ast).mapAt(cloned, position);
@@ -93,10 +93,10 @@ public class Thread extends AbstractFunctionEvaluator {
 			if (ast.size() > 1) {
 				IAST cloned = replacement.clone();
 				cloned.set(position, null);
-				ISymbol[] plusLogicEquationHeads = { F.And, F.Or, F.Not, F.Implies, F.Equivalent, F.Equal, F.Unequal,
-						F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
-				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
-					if (ast.isAST(plusLogicEquationHeads[i])) {
+				ISymbol[] logicEquationHeads = { F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies,
+						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
+				for (int i = 0; i < logicEquationHeads.length; i++) {
+					if (ast.isAST(logicEquationHeads[i])) {
 						return ((IAST) ast).mapAt(cloned, position);
 					}
 				}
