@@ -23,7 +23,6 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.MethodSymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
@@ -707,32 +706,32 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		if (symbol instanceof MethodSymbol) {
-			return ((MethodSymbol) symbol).invoke(ast);
-		} else {
-			final IEvaluator module = symbol.getEvaluator();
-			if (module instanceof IFunctionEvaluator) {
-				// evaluate a built-in function.
-				IExpr result;
-				if (fNumericMode) {
-					result = ((IFunctionEvaluator) module).numericEval(ast, this);
-				} else {
-					result = ((IFunctionEvaluator) module).evaluate(ast, this);
-				}
-				// if (result == null) {
-				// System.out.println(ast);
-				// throw new NullPointerException();
-				// }
-				if (result != null && result.isPresent()) {
+		// if (symbol instanceof MethodSymbol) {
+		// return ((MethodSymbol) symbol).invoke(ast);
+		// } else {
+		final IEvaluator module = symbol.getEvaluator();
+		if (module instanceof IFunctionEvaluator) {
+			// evaluate a built-in function.
+			IExpr result;
+			if (fNumericMode) {
+				result = ((IFunctionEvaluator) module).numericEval(ast, this);
+			} else {
+				result = ((IFunctionEvaluator) module).evaluate(ast, this);
+			}
+			// if (result == null) {
+			// System.out.println(ast);
+			// throw new NullPointerException();
+			// }
+			if (result != null && result.isPresent()) {
+				return result;
+			}
+			if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
+				if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
 					return result;
-				}
-				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
-					if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
-						return result;
-					}
 				}
 			}
 		}
+		// }
 		return F.NIL;
 	}
 
@@ -771,12 +770,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// associative symbol
 				IAST flattened;
 				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
-//					IAST resultList = evalArgs(flattened, attr);
-//					if (resultList.isPresent()) {
-//						returnResult = resultList;
-//					} else {
-//						returnResult = flattened;
-//					}
+					// IAST resultList = evalArgs(flattened, attr);
+					// if (resultList.isPresent()) {
+					// returnResult = resultList;
+					// } else {
+					// returnResult = flattened;
+					// }
 					returnResult = flattened;
 					tempAST = returnResult;
 				}

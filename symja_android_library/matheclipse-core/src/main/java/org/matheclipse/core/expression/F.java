@@ -3339,14 +3339,14 @@ public class F {
 		return binaryAST2(MemberQ, a0, a1);
 	}
 
-	public static ISymbol method(final String symbolName, final String className, final String methodName) {
-		return new MethodSymbol(symbolName, className, methodName);
-	}
-
-	public static ISymbol method(final String symbolName, final String packageName, final String className,
-			final String methodName) {
-		return new MethodSymbol(symbolName, packageName, className, methodName);
-	}
+//	public static ISymbol method(final String symbolName, final String className, final String methodName) {
+//		return new MethodSymbol(symbolName, className, methodName);
+//	}
+//
+//	public static ISymbol method(final String symbolName, final String packageName, final String className,
+//			final String methodName) {
+//		return new MethodSymbol(symbolName, packageName, className, methodName);
+//	}
 
 	public static IAST MessageName(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MessageName, a0, a1);
