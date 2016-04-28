@@ -21,6 +21,42 @@ import org.matheclipse.core.visit.VisitorCollectionBoolean;
  * 
  */
 public class VariablesSet {
+	/**
+	 * Collect the variables which satisfy the <code>IExpr#isVariable()</code>
+	 * predicate and which are used in logical functions like Not, And, OR,
+	 * Xor,...
+	 * 
+	 * @see IExpr#isVariable()
+	 */
+	public static class BooleanVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+
+		public BooleanVariablesVisitor(Collection<IExpr> collection) {
+			super(collection);
+		}
+
+		public boolean visit(IAST ast) {
+			ISymbol[] logicEquationHeads = { F.And, F.Or, F.Not, F.Xor, F.Nand, F.Nor, F.Implies, F.Equivalent, F.Equal,
+					F.Unequal };
+			for (int i = 0; i < logicEquationHeads.length; i++) {
+				if (ast.isAST(logicEquationHeads[i])) {
+					for (int j = 1; j < ast.size(); j++) {
+						ast.get(j).accept(this);
+					}
+					break;
+				}
+			}
+
+			return false;
+		}
+
+		public boolean visit(ISymbol symbol) {
+			if (symbol.isVariable()) {
+				fCollection.add(symbol);
+				return true;
+			}
+			return false;
+		}
+	}
 
 	/**
 	 * Return <code>true</code>, if the expression contains one of the variable
@@ -112,11 +148,12 @@ public class VariablesSet {
 	/**
 	 * Determine the variable symbols from a Symja expression.
 	 */
-//	public VariablesSet(final IExpr expression, final Comparator<IExpr> comparator) {
-//		super();
-//		fVariablesSet = new TreeSet<ISymbol>();
-//		expression.accept(new VariablesVisitor(fVariablesSet));
-//	}
+	// public VariablesSet(final IExpr expression, final Comparator<IExpr>
+	// comparator) {
+	// super();
+	// fVariablesSet = new TreeSet<ISymbol>();
+	// expression.accept(new VariablesVisitor(fVariablesSet));
+	// }
 
 	/**
 	 * Add the symbol to the set of variables.
@@ -137,7 +174,18 @@ public class VariablesSet {
 	public void addVarList(final IExpr expression) {
 		expression.accept(new VariablesVisitor(fVariablesSet));
 	}
-	
+
+	/**
+	 * Add the variables which satisfy the <code>IExpr#isVariable()</code>
+	 * predicate and which are used in logical functions like Not, And, OR,
+	 * Xor,...
+	 * 
+	 * @param expression
+	 */
+	public void addBooleanVarList(final IExpr expression) {
+		expression.accept(new BooleanVariablesVisitor(fVariablesSet));
+	}
+
 	/**
 	 * Add the variables of the given expression
 	 * 
@@ -145,7 +193,7 @@ public class VariablesSet {
 	 */
 	public void addVarList(final IAST rest, int fromIndex) {
 		for (int i = 2; i < rest.size(); i++) {
-			IExpr temp =rest.get(i);
+			IExpr temp = rest.get(i);
 			if (temp.isRuleAST()) {
 				return;
 			}

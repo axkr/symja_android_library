@@ -522,6 +522,14 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("BooleanMinimize(a && b || ! a && b)", "b");
 	}
 
+	public void testBooleanVariables() {
+		check("BooleanVariables(a || ! b && b)", "{a,b}");
+		check("BooleanVariables(Xor(a, And(b, Or(c, d))))", "{a,b,c,d}");
+		check("BooleanVariables(a && b || ! a && b)", "{a,b}");
+
+		check("BooleanVariables(a + b*c)", "{}");
+	}
+
 	public void testCancel() {
 		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2*x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
 		check("9+3*x+x^2", "9+3*x+x^2");
