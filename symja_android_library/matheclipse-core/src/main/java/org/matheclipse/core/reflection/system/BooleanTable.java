@@ -12,13 +12,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia:
- * Tautology_</a>
+ * See <a href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia: Truth
+ * table</a>
  * 
  */
-public class TautologyQ extends AbstractFunctionEvaluator {
+public class BooleanTable extends AbstractFunctionEvaluator {
 
-	public TautologyQ() {
+	public BooleanTable() {
+		// default ctor
 	}
 
 	@Override
@@ -35,35 +36,32 @@ public class TautologyQ extends AbstractFunctionEvaluator {
 		} else {
 			VariablesSet vSet = new VariablesSet(ast.arg1());
 			variables = vSet.getVarList();
-
 		}
 
-		return tautologyQ(ast.arg1(), variables, 1) ? F.True : F.False;
+		IAST resultList = F.List();
+		booleanTable(ast.arg1(), variables, 1, resultList);
+		return resultList;
 	}
 
-	private static boolean tautologyQ(IExpr expr, IAST variables, int position) {
+	private static void booleanTable(IExpr expr, IAST variables, int position, IAST resultList) {
 		if (variables.size() <= position) {
-			return EvalEngine.get().evalTrue(expr);
+			resultList.add(EvalEngine.get().evalTrue(expr) ? F.True : F.False);
+			return;
 		}
 		IExpr sym = variables.get(position);
 		if (sym.isSymbol()) {
 			try {
 				((ISymbol) sym).pushLocalVariable(F.True);
-				if (!tautologyQ(expr, variables, position + 1)) {
-					return false;
-				}
+				booleanTable(expr, variables, position + 1, resultList);
 			} finally {
 				((ISymbol) sym).popLocalVariable();
 			}
 			try {
 				((ISymbol) sym).pushLocalVariable(F.False);
-				if (!tautologyQ(expr, variables, position + 1)) {
-					return false;
-				}
+				booleanTable(expr, variables, position + 1, resultList);
 			} finally {
 				((ISymbol) sym).popLocalVariable();
 			}
 		}
-		return true;
 	}
 }

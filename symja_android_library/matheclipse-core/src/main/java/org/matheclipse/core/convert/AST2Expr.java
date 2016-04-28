@@ -52,7 +52,7 @@ public class AST2Expr {
 			"Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec",
 			"ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions",
 			"AtomQ", "Attributes", "Begin", "BeginPackage", "BernoulliB", "BesselI", "BesselJ", "BesselK", "BesselY",
-			"Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize", "BooleanVariables", "Break",
+			"Binomial", "Blank", "Block", "Boole", "BooleanConvert", "BooleanMinimize","BooleanTable", "BooleanVariables", "Break",
 			"Cancel", "CartesianProduct", "Cases", "CatalanNumber", "Catch", "Ceiling", "CharacteristicPolynomial",
 			"CarmichaelLambda", "ChebyshevT", "ChebyshevU", "ChessboardDistance", "Chop", "Clear", "ClearAll",
 			"Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect", "Complement", "Compile",

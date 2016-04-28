@@ -35,14 +35,14 @@ public class SatisfiableQ extends AbstractFunctionEvaluator {
 		return satisfiableQ(ast.arg1(), variables, 1) ? F.True : F.False;
 	}
 
-	private boolean satisfiableQ(IExpr expr, IAST variables, int position) {
+	private static boolean satisfiableQ(IExpr expr, IAST variables, int position) {
 		if (variables.size() <= position) {
 			return EvalEngine.get().evalTrue(expr);
 		}
 		IExpr sym = variables.get(position);
 		if (sym.isSymbol()) {
 			try {
-				((ISymbol) sym).pushLocalVariable(F.False);
+				((ISymbol) sym).pushLocalVariable(F.True);
 				if (satisfiableQ(expr, variables, position + 1)) {
 					return true;
 				}
@@ -50,7 +50,7 @@ public class SatisfiableQ extends AbstractFunctionEvaluator {
 				((ISymbol) sym).popLocalVariable();
 			}
 			try {
-				((ISymbol) sym).pushLocalVariable(F.True);
+				((ISymbol) sym).pushLocalVariable(F.False);
 				if (satisfiableQ(expr, variables, position + 1)) {
 					return true;
 				}
