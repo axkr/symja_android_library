@@ -522,6 +522,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("BooleanMinimize(a && b || ! a && b)", "b");
 	}
 
+	public void testBooleanTable() {
+		check("BooleanTable(p || q, {p, q})", "{True,True,True,False}");
+	}
+
 	public void testBooleanVariables() {
 		check("BooleanVariables(a || ! b && b)", "{a,b}");
 		check("BooleanVariables(Xor(a, And(b, Or(c, d))))", "{a,b,c,d}");
@@ -623,6 +627,15 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("ChebyshevU(0, x)", "1");
 		check("ChebyshevU(1, x)", "2*x");
 		check("ChebyshevU(10, x)", "-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
+	}
+
+	public void testChineseRemainder() {
+		check("ChineseRemainder({23},{17})", "6");
+		check("ChineseRemainder({91},{25})", "16");
+		check("ChineseRemainder({913},{25})", "13");
+		check("ChineseRemainder({3,4},{4,5})", "19");
+
+		check("ChineseRemainder({1, 2}, {6, 10})", "ChineseRemainder({1,2},{6,10})");
 	}
 
 	public void testCoefficient() {

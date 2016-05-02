@@ -72,8 +72,7 @@ public final class Validate {
 	}
 
 	/**
-	 * Check the argument, if it's a Java {@code long} value in the range [0,
-	 * Long.MAX_VALUE]
+	 * Check the argument, if it's a Java {@code long} value.
 	 * 
 	 * @throws WrongArgumentType
 	 */
@@ -92,6 +91,41 @@ public final class Validate {
 			//
 		}
 		throw new WrongArgumentType(expr, "Trying to convert the argument into a Java long number: " + expr);
+	}
+
+	/**
+	 * Check the argument, if it's an {@code IAST} of {@code long} values in the
+	 * range [{@code startValue}, Long.MAX_VALUE]
+	 * 
+	 * @throws WrongArgumentType
+	 */
+	public static long[] checkListOfLongs(IExpr arg, long startValue) {
+		if (arg.isList()) {
+			IAST list = (IAST) arg;
+			long[] result = new long[list.size() - 1];
+			long longValue = 0;
+			try {
+				IExpr expr;
+				for (int i = 1; i < list.size(); i++) {
+					expr = list.get(i);
+					// the following may throw an ArithmeticException
+					if (expr instanceof IInteger) {
+						longValue = ((IInteger) expr).toLong();
+					} else if (expr instanceof INum) {
+						longValue = ((INum) expr).toLong();
+					}
+					if (startValue > longValue) {
+						throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+								+ startValue + " - " + Long.MAX_VALUE);
+					}
+					result[i - 1] = longValue;
+				}
+				return result;
+			} catch (ArithmeticException ae) {
+				//
+			}
+		}
+		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
 	}
 
 	/**

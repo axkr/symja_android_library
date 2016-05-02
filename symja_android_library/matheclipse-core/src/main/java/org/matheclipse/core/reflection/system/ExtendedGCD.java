@@ -16,8 +16,11 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Returns the gcd of two positive numbers plus the bezout relations
  * 
- * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended Euclidean algorithm</a> and See <a
- * href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended
+ * Euclidean algorithm</a> and See
+ * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
+ * identity</a>
  * 
  * @author jeremy watts
  * @version 05/03/07
@@ -27,6 +30,15 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 	public ExtendedGCD() {
 	}
 
+	/**
+	 * Returns the gcd of two positive numbers plus the bezout relations
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">
+	 * Extended Euclidean algorithm</a> and See
+	 * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
+	 * identity</a>
+	 * 
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
@@ -43,24 +55,10 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 		// all arguments are positive integers now
 
 		try {
-			BigInteger gcd = ((IInteger) ast.arg1()).getBigNumerator();
+
 			BigInteger factor = BigInteger.ONE;
 			BigInteger[] subBezouts = new BigInteger[ast.size() - 1];
-			Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).getBigNumerator(), gcd);
-
-			gcd = (BigInteger) stepResult[0];
-			subBezouts[0] = ((BigInteger[]) stepResult[1])[0];
-			subBezouts[1] = ((BigInteger[]) stepResult[1])[1];
-
-			for (int i = 3; i < ast.size(); i++) {
-				stepResult = extendedGCD(((IInteger) ast.get(i)).getBigNumerator(), gcd);
-				gcd = (BigInteger) stepResult[0];
-				factor = ((BigInteger[]) stepResult[1])[0];
-				for (int j = 0; j < i - 1; j++) {
-					subBezouts[j] = subBezouts[j].multiply(factor);
-				}
-				subBezouts[i - 1] = ((BigInteger[]) stepResult[1])[1];
-			}
+			BigInteger gcd = extendedGCD(ast, subBezouts);
 			// convert the Bezout numbers to sublists
 			IAST subList = F.List();
 			for (int i = 0; i < subBezouts.length; i++) {
@@ -77,6 +75,27 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+
+	public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
+		BigInteger factor;
+		BigInteger gcd = ((IInteger) ast.arg1()).getBigNumerator();
+		Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).getBigNumerator(), gcd);
+
+		gcd = (BigInteger) stepResult[0];
+		subBezouts[0] = ((BigInteger[]) stepResult[1])[0];
+		subBezouts[1] = ((BigInteger[]) stepResult[1])[1];
+
+		for (int i = 3; i < ast.size(); i++) {
+			stepResult = extendedGCD(((IInteger) ast.get(i)).getBigNumerator(), gcd);
+			gcd = (BigInteger) stepResult[0];
+			factor = ((BigInteger[]) stepResult[1])[0];
+			for (int j = 0; j < i - 1; j++) {
+				subBezouts[j] = subBezouts[j].multiply(factor);
+			}
+			subBezouts[i - 1] = ((BigInteger[]) stepResult[1])[1];
+		}
+		return gcd;
 	}
 
 	/**
