@@ -1198,6 +1198,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isAbs() {
+		return isSameHead(F.Abs, 2);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isAllExpanded() {
 		if (isEvalFlagOff(IAST.IS_ALL_EXPANDED)) {
 			return false;

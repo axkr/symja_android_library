@@ -11,8 +11,11 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 
 /**
- * Generate the horner scheme for univariate polynomials. See: <a href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia:Horner
- * scheme</a>
+ * Generate the horner scheme for univariate polynomials. See:
+ * <a href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia:Horner
+ * scheme</a> or <a href=
+ * "https://rosettacode.org/wiki/Horner's_rule_for_polynomial_evaluation">
+ * Rosetta Code - Horner's rule for polynomial evaluation</a>.
  */
 public class HornerForm extends AbstractFunctionEvaluator {
 
@@ -30,7 +33,7 @@ public class HornerForm extends AbstractFunctionEvaluator {
 			VariablesSet eVar;
 			IAST variables;
 			if (ast.size() == 3) {
-				variables =Validate.checkSymbolOrSymbolList(ast, 2);
+				variables = Validate.checkSymbolOrSymbolList(ast, 2);
 			} else {
 				eVar = new VariablesSet(ast.arg1());
 				variables = eVar.getVarList();

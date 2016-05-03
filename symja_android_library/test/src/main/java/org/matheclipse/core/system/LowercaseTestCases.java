@@ -1680,6 +1680,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testInverseFunction() {
+		check("InverseFunction(Abs)", "-#1&");
 		check("InverseFunction(Sin)", "ArcSin");
 	}
 
@@ -2953,6 +2954,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->1}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
 
 		// issue 42

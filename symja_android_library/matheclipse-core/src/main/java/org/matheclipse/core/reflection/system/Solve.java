@@ -83,20 +83,24 @@ public class Solve extends AbstractFunctionEvaluator {
 			this.fNumer = expr;
 			this.fDenom = F.C1;
 			if (this.fExpr.isAST()) {
-				this.fExpr = Together.together((IAST) this.fExpr);
-				// split expr into numerator and denominator
-				this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
-				if (!this.fDenom.isOne()) {
-					// search roots for the numerator expression
-					this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
-				} else {
-					this.fNumer = this.fExpr;
-				}
+				splitNumeratorDenominator((IAST)this.fExpr);
 			}
 			this.vars = vars;
 			this.fSymbolSet = new HashSet<ISymbol>();
 			this.fLeafCount = 0;
 			reset();
+		}
+
+		private void splitNumeratorDenominator(IAST expr ) {
+			this.fExpr = Together.together(expr);
+			// split expr into numerator and denominator
+			this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
+			if (!this.fDenom.isOne()) {
+				// search roots for the numerator expression
+				this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
+			} else {
+				this.fNumer = this.fExpr;
+			}
 		}
 
 		/**
@@ -113,7 +117,11 @@ public class Solve extends AbstractFunctionEvaluator {
 				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
 			}
 			if (temp.isPresent()) {
-				fNumer = temp;
+				if (temp.isAST() && fDenom.isOne()) {
+					splitNumeratorDenominator((IAST)temp);
+				} else {
+					fNumer = temp;
+				}
 			}
 
 			analyze(fNumer);
@@ -214,6 +222,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (position > 0) {
 					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 					if (inverseFunction.isPresent()) {
+						engine.printMessage("Solve: using of inverse functions may omit some solutions.");
 						// rewrite fNumer
 						inverseFunction.add(arg1);
 						return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
@@ -223,10 +232,18 @@ public class Solve extends AbstractFunctionEvaluator {
 			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
 				int position = vars.findFirstEquals(ast.arg1());
 				if (position > 0) {
+					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
 					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
+			} else if (ast.isAbs()) {
+				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+				if (inverseFunction.isPresent()) {
+					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
+					inverseFunction.add(arg1);
+					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+				}
 			}
 			return F.NIL;
 		}

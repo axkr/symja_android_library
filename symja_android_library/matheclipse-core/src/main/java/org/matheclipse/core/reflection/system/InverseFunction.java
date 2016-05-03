@@ -15,9 +15,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class InverseFunction extends AbstractFunctionEvaluator {
-	private static Map<ISymbol, ISymbol> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, ISymbol>();
+	private static Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, IExpr>();
 
 	static {
+		UNARY_INVERSE_FUNCTIONS.put(F.Abs, F.Function(F.Times(F.CN1,F.Slot1)));
 		UNARY_INVERSE_FUNCTIONS.put(F.Cos, F.ArcCos);
 		UNARY_INVERSE_FUNCTIONS.put(F.Cot, F.ArcCot);
 		UNARY_INVERSE_FUNCTIONS.put(F.Csc, F.ArcCsc);
@@ -64,25 +65,28 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	 * Get the inverse function symbol if possible.
 	 * 
 	 * @param headSymbol
-	 *            the symbol which represents a function name (i.e. <code>Cos, Sin, ArcSin,...</code>)
+	 *            the symbol which represents a function name (i.e.
+	 *            <code>Cos, Sin, ArcSin,...</code>)
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
-	public static ISymbol getUnaryInverseFunction(ISymbol headSymbol) {
+	public static IExpr getUnaryInverseFunction(ISymbol headSymbol) {
 		return UNARY_INVERSE_FUNCTIONS.get(headSymbol);
 	}
 
 	/**
-	 * Get a new constructed inverse function AST from the given <code>ast</code>, with empty arguments (i.e.
+	 * Get a new constructed inverse function AST from the given
+	 * <code>ast</code>, with empty arguments (i.e.
 	 * <code>inverseAST.size()==1)</code>.
 	 * 
 	 * @param ast
-	 *            the AST which represents a function (i.e. <code>Cos(x), Sin(x), ArcSin(x),...</code>)
+	 *            the AST which represents a function (i.e.
+	 *            <code>Cos(x), Sin(x), ArcSin(x),...</code>)
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
 	public static IAST getUnaryInverseFunction(IAST ast) {
 		IExpr expr = ast.head();
 		if (expr.isSymbol()) {
-			ISymbol inverseSymbol = UNARY_INVERSE_FUNCTIONS.get(expr);
+			IExpr inverseSymbol = UNARY_INVERSE_FUNCTIONS.get(expr);
 			if (inverseSymbol != null) {
 				return F.ast(inverseSymbol);
 			}

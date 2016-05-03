@@ -397,6 +397,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	IExpr inverse();
 
 	/**
+	 * Test if this expression is the function <code>Abs[&lt;arg&gt;]</code>
+	 * 
+	 */
+	default boolean isAbs() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression and all subexpressions are already expanded i.e.
 	 * all <code>Plus, Times, Power</code> (sub-)expressions are expanded.
 	 * 
