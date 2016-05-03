@@ -83,7 +83,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			this.fNumer = expr;
 			this.fDenom = F.C1;
 			if (this.fExpr.isAST()) {
-				splitNumeratorDenominator((IAST)this.fExpr);
+				splitNumeratorDenominator((IAST) this.fExpr);
 			}
 			this.vars = vars;
 			this.fSymbolSet = new HashSet<ISymbol>();
@@ -91,7 +91,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			reset();
 		}
 
-		private void splitNumeratorDenominator(IAST expr ) {
+		private void splitNumeratorDenominator(IAST expr) {
 			this.fExpr = Together.together(expr);
 			// split expr into numerator and denominator
 			this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
@@ -118,7 +118,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			if (temp.isPresent()) {
 				if (temp.isAST() && fDenom.isOne()) {
-					splitNumeratorDenominator((IAST)temp);
+					splitNumeratorDenominator((IAST) temp);
 				} else {
 					fNumer = temp;
 				}
@@ -238,12 +238,8 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 
 			} else if (ast.isAbs()) {
-				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
-				if (inverseFunction.isPresent()) {
-					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
-					inverseFunction.add(arg1);
-					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
-				}
+				return engine.evaluate(
+						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
 			}
 			return F.NIL;
 		}
