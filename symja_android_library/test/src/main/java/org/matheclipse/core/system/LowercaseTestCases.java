@@ -2954,6 +2954,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(Sin((-3+x^2)/x) ==2,{x})", "{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2},{x->Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
 		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
 

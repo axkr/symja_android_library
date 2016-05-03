@@ -27,41 +27,14 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Solve extends AbstractFunctionEvaluator {
 
 	/**
-	 * Check an expression, if it's an allowed object.
-	 *
-	 */
-	private final static class IsWrongSolveExpression implements Predicate<IExpr> {
-		IExpr wrongExpr;
-
-		public IsWrongSolveExpression() {
-			wrongExpr = null;
-		}
-
-		@Override
-		public boolean test(IExpr input) {
-			if (input.isDirectedInfinity() || input.isIndeterminate()) {
-				// input is representing a DirectedInfinity() or Indeterminate
-				// object
-				wrongExpr = input;
-				return true;
-			}
-			return false;
-		}
-
-		public IExpr getWrongExpr() {
-			return wrongExpr;
-		}
-	}
-
-	/**
 	 * Analyze an expression, if it has linear, polynomial or other form.
 	 * 
 	 */
 	private static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
 
-		final static public int LINEAR = 0;
-		final static public int OTHERS = 2;
-		final static public int POLYNOMIAL = 1;
+		public static final int LINEAR = 0;
+		public static final int OTHERS = 2;
+		public static final int POLYNOMIAL = 1;
 
 		private int fEquationType;
 		private IExpr fExpr;
@@ -89,159 +62,6 @@ public class Solve extends AbstractFunctionEvaluator {
 			this.fSymbolSet = new HashSet<ISymbol>();
 			this.fLeafCount = 0;
 			reset();
-		}
-
-		private void splitNumeratorDenominator(IAST expr) {
-			this.fExpr = Together.together(expr);
-			// split expr into numerator and denominator
-			this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
-			if (!this.fDenom.isOne()) {
-				// search roots for the numerator expression
-				this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
-			} else {
-				this.fNumer = this.fExpr;
-			}
-		}
-
-		/**
-		 * If possible simplify the numerator expression. After that analyze the
-		 * numerator expression, if it has linear, polynomial or other form.
-		 */
-		protected void simplifyAndAnalyze() {
-			IExpr temp = F.NIL;
-			if (fNumer.isPlus()) {
-				temp = rewritePlusWithInverseFunctions((IAST) fNumer);
-			} else if (fNumer.isTimes() && !fNumer.isFree(Predicates.in(vars), true)) {
-				temp = rewriteTimesWithInverseFunctions((IAST) fNumer);
-			} else if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
-				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
-			}
-			if (temp.isPresent()) {
-				if (temp.isAST() && fDenom.isOne()) {
-					splitNumeratorDenominator((IAST) temp);
-				} else {
-					fNumer = temp;
-				}
-			}
-
-			analyze(fNumer);
-		}
-
-		/**
-		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which
-		 * may contain an invertable function argument <code>f(x)</code> as
-		 * subexpression.
-		 */
-		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
-			IAST result = F.NIL;
-			int j = 1;
-			// remove constant sub-expressions from Times() expression
-			for (int i = 1; i < times.size(); i++) {
-				if (times.get(i).isFree(Predicates.in(vars), true) && times.get(i).isNumericFunction()) {
-					if (!result.isPresent()) {
-						result = times.clone();
-					}
-					result.remove(j);
-					continue;
-				}
-				j++;
-			}
-			if (!result.isPresent()) {
-				return rewriteInverseFunction(times, F.C0);
-			}
-			IExpr temp0 = result.getOneIdentity(F.C1);
-			if (temp0.isAST()) {
-				return rewriteInverseFunction((IAST) temp0, F.C0).orElse(temp0);
-			}
-			return temp0;
-		}
-
-		/**
-		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which
-		 * contains an invertable function argument <code>f(x)</code>.
-		 */
-		private IExpr rewritePlusWithInverseFunctions(IAST plusAST) {
-			IExpr expr;
-			for (int i = 1; i < plusAST.size(); i++) {
-				expr = plusAST.get(i);
-				if (expr.isFree(Predicates.in(vars), true)) {
-					continue;
-				}
-
-				if (expr.isAST()) {
-					IAST function = (IAST) expr;
-					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
-					if (inverseFunction.isPresent()) {
-						IExpr temp = rewriteInverseFunction(plusAST, i);
-						if (temp.isPresent()) {
-							return temp;
-						}
-					} else if (function.isPower() && function.arg2().isFraction()) {
-						// issue #95
-						IFraction arg2 = (IFraction) function.arg2();
-						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
-						return engine.evaluate(
-								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
-					}
-				}
-
-			}
-			return F.NIL;
-		}
-
-		/**
-		 * Check for an applicable inverse function at the given
-		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
-		 * 
-		 * @param plusAST
-		 *            the <code>Plus(..., ,...)</code> expression
-		 * @param position
-		 * @return <code>F.NIL</code> if no inverse function was found,
-		 *         otherwise return the rewritten expression
-		 */
-		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
-			IAST ast = (IAST) plusAST.get(position);
-			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
-			if (plus.isFree(Predicates.in(vars), true)) {
-				return rewriteInverseFunction(ast, F.Negate(plus));
-			}
-			return F.NIL;
-		}
-
-		/**
-		 * Check for an applicable inverse function at the given
-		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
-		 * 
-		 * @param ast
-		 * @param arg1
-		 * @return
-		 */
-		private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
-			if (ast.size() == 2 && ast.arg1().isSymbol()) {
-				int position = vars.findFirstEquals(ast.arg1());
-				if (position > 0) {
-					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
-					if (inverseFunction.isPresent()) {
-						engine.printMessage("Solve: using of inverse functions may omit some solutions.");
-						// rewrite fNumer
-						inverseFunction.add(arg1);
-						return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
-					}
-				}
-
-			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
-				int position = vars.findFirstEquals(ast.arg1());
-				if (position > 0) {
-					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
-					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
-					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
-				}
-
-			} else if (ast.isAbs()) {
-				return engine.evaluate(
-						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
-			}
-			return F.NIL;
 		}
 
 		/**
@@ -273,24 +93,14 @@ public class Solve extends AbstractFunctionEvaluator {
 		@Override
 		public int compareTo(ExprAnalyzer o) {
 			if (fSymbolSet.size() != o.fSymbolSet.size()) {
-				if (fSymbolSet.size() < o.fSymbolSet.size()) {
-					return -1;
-				}
-				return 1;
+				return (fSymbolSet.size() < o.fSymbolSet.size()) ? -1 : 1;
 			}
 			if (fEquationType != o.fEquationType) {
-				if (fEquationType < o.fEquationType) {
-					return -1;
-				}
-				return 1;
+				return (fEquationType < o.fEquationType) ? -1 : 1;
 			}
 			if (fLeafCount != o.fLeafCount) {
-				if (fLeafCount < o.fLeafCount) {
-					return -1;
-				}
-				return 1;
+				return (fLeafCount < o.fLeafCount) ? -1 : 1;
 			}
-
 			return 0;
 		}
 
@@ -345,6 +155,10 @@ public class Solve extends AbstractFunctionEvaluator {
 			return true;
 		}
 
+		public IExpr getDenominator() {
+			return fDenom;
+		}
+
 		/**
 		 * @return the expr
 		 */
@@ -352,16 +166,12 @@ public class Solve extends AbstractFunctionEvaluator {
 			return fExpr;
 		}
 
-		public IExpr getNumerator() {
-			return fNumer;
-		}
-
-		public IExpr getDenominator() {
-			return fDenom;
-		}
-
 		public int getNumberOfVars() {
 			return fSymbolSet.size();
+		}
+
+		public IExpr getNumerator() {
+			return fNumer;
 		}
 
 		/**
@@ -517,6 +327,183 @@ public class Solve extends AbstractFunctionEvaluator {
 			this.fEquationType = LINEAR;
 		}
 
+		/**
+		 * Check for an applicable inverse function at the given
+		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
+		 * 
+		 * @param ast
+		 * @param arg1
+		 * @return
+		 */
+		private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
+			if (ast.isAbs()) {
+				return engine.evaluate(
+						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
+			} else if (ast.size() == 2) {
+				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+				if (inverseFunction.isPresent()) {
+					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
+					// rewrite fNumer
+					inverseFunction.add(arg1);
+					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+				}
+
+			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
+				int position = vars.findFirstEquals(ast.arg1());
+				if (position > 0) {
+					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
+					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
+					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+				}
+
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Check for an applicable inverse function at the given
+		 * <code>position</code> in the <code>Plus(..., ,...)</code> expression.
+		 * 
+		 * @param plusAST
+		 *            the <code>Plus(..., ,...)</code> expression
+		 * @param position
+		 * @return <code>F.NIL</code> if no inverse function was found,
+		 *         otherwise return the rewritten expression
+		 */
+		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
+			IAST ast = (IAST) plusAST.get(position);
+			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
+			if (plus.isFree(Predicates.in(vars), true)) {
+				return rewriteInverseFunction(ast, F.Negate(plus));
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which
+		 * contains an invertable function argument <code>f(x)</code>.
+		 */
+		private IExpr rewritePlusWithInverseFunctions(IAST plusAST) {
+			IExpr expr;
+			for (int i = 1; i < plusAST.size(); i++) {
+				expr = plusAST.get(i);
+				if (expr.isFree(Predicates.in(vars), true)) {
+					continue;
+				}
+
+				if (expr.isAST()) {
+					IAST function = (IAST) expr;
+					IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function);
+					if (inverseFunction.isPresent()) {
+						IExpr temp = rewriteInverseFunction(plusAST, i);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					} else if (function.isPower() && function.arg2().isFraction()) {
+						// issue #95
+						IFraction arg2 = (IFraction) function.arg2();
+						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+						return engine.evaluate(
+								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+					}
+				}
+
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which
+		 * may contain an invertable function argument <code>f(x)</code> as
+		 * subexpression.
+		 */
+		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
+			IAST result = F.NIL;
+			int j = 1;
+			// remove constant sub-expressions from Times() expression
+			for (int i = 1; i < times.size(); i++) {
+				if (times.get(i).isFree(Predicates.in(vars), true) && times.get(i).isNumericFunction()) {
+					if (!result.isPresent()) {
+						result = times.clone();
+					}
+					result.remove(j);
+					continue;
+				}
+				j++;
+			}
+			if (!result.isPresent()) {
+				return rewriteInverseFunction(times, F.C0);
+			}
+			IExpr temp0 = result.getOneIdentity(F.C1);
+			if (temp0.isAST()) {
+				return rewriteInverseFunction((IAST) temp0, F.C0).orElse(temp0);
+			}
+			return temp0;
+		}
+
+		/**
+		 * If possible simplify the numerator expression. After that analyze the
+		 * numerator expression, if it has linear, polynomial or other form.
+		 */
+		protected void simplifyAndAnalyze() {
+			IExpr temp = F.NIL;
+			if (fNumer.isPlus()) {
+				temp = rewritePlusWithInverseFunctions((IAST) fNumer);
+			} else if (fNumer.isTimes() && !fNumer.isFree(Predicates.in(vars), true)) {
+				temp = rewriteTimesWithInverseFunctions((IAST) fNumer);
+			} else if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
+				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
+			}
+			if (temp.isPresent()) {
+				if (temp.isAST() && fDenom.isOne()) {
+					splitNumeratorDenominator((IAST) temp);
+				} else {
+					fNumer = temp;
+				}
+			}
+
+			analyze(fNumer);
+		}
+
+		private void splitNumeratorDenominator(IAST expr) {
+			this.fExpr = Together.together(expr);
+			// split expr into numerator and denominator
+			this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
+			if (!this.fDenom.isOne()) {
+				// search roots for the numerator expression
+				this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
+			} else {
+				this.fNumer = this.fExpr;
+			}
+		}
+
+	}
+
+	/**
+	 * Check an expression, if it's an allowed object.
+	 *
+	 */
+	private static final class IsWrongSolveExpression implements Predicate<IExpr> {
+		IExpr wrongExpr;
+
+		public IsWrongSolveExpression() {
+			wrongExpr = null;
+		}
+
+		public IExpr getWrongExpr() {
+			return wrongExpr;
+		}
+
+		@Override
+		public boolean test(IExpr input) {
+			if (input.isDirectedInfinity() || input.isIndeterminate()) {
+				// input is representing a DirectedInfinity() or Indeterminate
+				// object
+				wrongExpr = input;
+				return true;
+			}
+			return false;
+		}
 	}
 
 	@SuppressWarnings("serial")
@@ -524,12 +511,12 @@ public class Solve extends AbstractFunctionEvaluator {
 		/**
 		 * Solution couldn't be found.
 		 */
-		final static public int NO_SOLUTION_FOUND = 1;
+		public static final int NO_SOLUTION_FOUND = 1;
 
 		/**
 		 * Definitely wrong solution.
 		 */
-		final static public int WRONG_SOLUTION = 0;
+		public static final int WRONG_SOLUTION = 0;
 
 		final int solType;
 
