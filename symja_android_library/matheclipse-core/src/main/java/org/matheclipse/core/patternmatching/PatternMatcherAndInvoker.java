@@ -35,7 +35,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 	/**
 	 * Void constructor for Externalizable.
 	 */
-	public PatternMatcherAndInvoker() {
+	private PatternMatcherAndInvoker() {
 		super(null);
 	}
 

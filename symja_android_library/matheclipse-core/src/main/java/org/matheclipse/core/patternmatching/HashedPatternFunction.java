@@ -59,7 +59,7 @@ public class HashedPatternFunction extends AbstractHashedPatternRules {
 		return false;
 	}
 
-	public BinaryFunctorImpl<IExpr> getFunction() {
+	private BinaryFunctorImpl<IExpr> getFunction() {
 		return function;
 	}
 
