@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.math4.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.function.PossibleZeroQ;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;

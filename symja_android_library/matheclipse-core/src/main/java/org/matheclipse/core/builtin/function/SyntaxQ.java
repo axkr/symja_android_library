@@ -1,10 +1,10 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -18,19 +18,17 @@ import org.matheclipse.parser.client.SyntaxError;
  * correct syntax
  * 
  */
-public class SyntaxQ extends AbstractFunctionEvaluator implements Predicate<String> {
+public class SyntaxQ extends AbstractCorePredicateEvaluator implements Predicate<String> {
 
 	public SyntaxQ() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		if (!(ast.arg1() instanceof IStringX)) {
-			return F.False;
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+		if (!(arg1 instanceof IStringX)) {
+			return false;
 		}
-		return F.bool(test(ast.arg1().toString()));
+		return test(arg1.toString());
 	}
 
 	@Override

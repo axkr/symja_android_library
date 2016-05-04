@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IInteger;
  * Get the next prime number. See: <a
  * href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
  * 
- * @see org.matheclipse.core.reflection.system.PrimeQ
+ * @see org.matheclipse.core.builtin.function.PrimeQ
  */
 public class NextPrime extends AbstractFunctionEvaluator {
 

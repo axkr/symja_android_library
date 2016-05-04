@@ -1,13 +1,10 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -17,19 +14,17 @@ import org.matheclipse.core.interfaces.ISymbol;
  * contains upper case characters
  *
  */
-public class UpperCaseQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
+public class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 	public UpperCaseQ() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-		if (!(ast.arg1() instanceof IStringX)) {
-			throw new WrongArgumentType(ast, ast.arg1(), 1);
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+		if (!(arg1 instanceof IStringX)) {
+			throw new WrongArgumentType(null, arg1, 1);
 		}
-
-		return F.bool(test(ast.arg1()));
+		return test(arg1);
 	}
 
 	@Override

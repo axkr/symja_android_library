@@ -7,24 +7,22 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Predicate function
- * 
- * Returns <code>True</code> if the first argument is an integer;
+ *
+ * Returns <code>True</code> if the 1st argument is a vector;
  * <code>False</code> otherwise
  */
-public class IntegerQ extends AbstractCorePredicateEvaluator {
+public class VectorQ extends AbstractCorePredicateEvaluator {
 
-	public IntegerQ() {
-		// default ctor
+	public VectorQ() {
 	}
 
 	@Override
 	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-		return arg1.isInteger();
-	}
+		return arg1.isVector() != (-1);
+	} 
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

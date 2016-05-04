@@ -1,10 +1,8 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -14,18 +12,16 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Returns <code>True</code> if the 1st argument is <code>0</code>;
  * <code>False</code> otherwise
  */
-public class PossibleZeroQ extends AbstractFunctionEvaluator {
+public class PossibleZeroQ extends AbstractCorePredicateEvaluator {
 
 	public PossibleZeroQ() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		return F.bool(possibleZeroQ(ast.arg1(), engine));
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+		return possibleZeroQ(arg1, engine);
 	}
-
+	
 	public static boolean possibleZeroQ(IExpr expr, EvalEngine engine) {
 		if (expr.isNumber()) {
 			return expr.isZero();

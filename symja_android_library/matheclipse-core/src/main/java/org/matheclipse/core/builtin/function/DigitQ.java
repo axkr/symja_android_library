@@ -1,12 +1,9 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.function;
 
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -16,16 +13,17 @@ import org.matheclipse.core.interfaces.ISymbol;
  * contains digits.
  * 
  */
-public class DigitQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
+public class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
 	public DigitQ() {
 	}
 
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-		IStringX arg1 = Validate.checkStringType(ast, 1);
-		return F.bool(test(arg1));
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+		if (arg1 instanceof IStringX) {
+			return test(arg1);
+		}
+		return false;
 	}
 
 	@Override

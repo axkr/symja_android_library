@@ -8,23 +8,21 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Predicate function
  * 
- * Returns <code>True</code> if the first argument is an integer;
- * <code>False</code> otherwise
+ * Returns <code>True</code> if the 1st argument is a matrix; <code>False</code>
+ * otherwise
  */
-public class IntegerQ extends AbstractCorePredicateEvaluator {
+public class MatrixQ extends AbstractCorePredicateEvaluator {
 
-	public IntegerQ() {
-		// default ctor
+	public MatrixQ() {
 	}
 
 	@Override
 	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-		return arg1.isInteger();
+		return arg1.isMatrix() != null;
 	}
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

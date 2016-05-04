@@ -3,10 +3,7 @@ package org.matheclipse.core.builtin.function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -17,7 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Returns <code>True</code> if the 1st argument is an odd integer number;
  * <code>False</code> otherwise
  */
-public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
+public class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 	/**
 	 * Constructor for the unary predicate
 	 */
@@ -25,17 +22,10 @@ public class OddQ extends AbstractCoreFunctionEvaluator implements Predicate<IEx
 
 	public OddQ() {
 	}
-
+	
 	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		final IExpr temp = engine.evaluate(ast.arg1());
-		if (temp.isList()) {
-			// thread over list
-			return ((IAST) temp).mapAt(F.OddQ(null), 1);
-		}
-		return F.bool(test(temp));
+	public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+		return arg1.isInteger() && ((IInteger) arg1).isOdd();
 	}
 
 	@Override
