@@ -1362,6 +1362,15 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("factorterms(3 + 6 x + 3 x^2)", "3*(1+2*x+x^2)");
 	}
 
+	public void testFibonacci() {
+		check("Table(Fibonacci(-n), {n, 10})", "{1,-1,2,-3,5,-8,13,-21,34,-55}");
+		check("Table(Fibonacci(n), {n, 20})", "{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
+		check("Fibonacci(1000)", "4346655768693745643568852767504062580256466051737178040248172908953655541794905\\\n" + 
+				"1890403879840079255169295922593080322634775209689623239873322471161642996440906\\\n" + 
+				"533187938298969649928516003704476137795166849228875");
+
+	}
+
 	public void testFit() {
 		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", "0.18644067796610156+0.6949152542372881*x");
 	}
@@ -1517,9 +1526,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x, x - y^2 + 1}, {x, y, z})", "{1}");
-		// check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,
-		// x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder ->
-		// DegreeReverseLexicographic)", "");
+//		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
+//				"");
 	}
 
 	public void testHarmonicNumber() {
@@ -2954,7 +2962,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-		check("Solve(Sin((-3+x^2)/x) ==2,{x})", "{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2},{x->Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
+		check("Solve(Sin((-3+x^2)/x) ==2,{x})",
+				"{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2},{x->Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
 		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
 
