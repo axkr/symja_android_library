@@ -1373,8 +1373,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
-		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})",
-				"{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
+		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
+				"{{a->False,b->True,c->False,d->False}}");
+		
+		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", "{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
 		check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
 
@@ -1395,7 +1397,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("FindInstance({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 
 	}
-	
+
 	public void testFit() {
 		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", "0.18644067796610156+0.6949152542372881*x");
 	}
@@ -1542,19 +1544,18 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testGroebnerBasis() {
-		 check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})",
-		 "{-9+2*y^4,3*x-2*y^3}");
-		 check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
-		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
-		 "{1024-832*z-215*z^2+156*z^3-25*z^4+24*z^5+13*z^6+z^8,-11552+2560*y+2197*z+2764*z^\n"
-		 +
-		 "2+443*z^3+728*z^4+169*z^5+32*z^6+13*z^7,-34656+5120*x+6591*z+5732*z^2+1329*z^3+\n"
-		 + "2184*z^4+507*z^5+96*z^6+39*z^7}");
-		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
-		 "{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
-		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
-//		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
-//				"");
+		check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})", "{-9+2*y^4,3*x-2*y^3}");
+		check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
+				"{1024-832*z-215*z^2+156*z^3-25*z^4+24*z^5+13*z^6+z^8,-11552+2560*y+2197*z+2764*z^\n"
+						+ "2+443*z^3+728*z^4+169*z^5+32*z^6+13*z^7,-34656+5120*x+6591*z+5732*z^2+1329*z^3+\n"
+						+ "2184*z^4+507*z^5+96*z^6+39*z^7}");
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
+				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
+		// check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},
+		// {x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
+		// "");
 	}
 
 	public void testHarmonicNumber() {
@@ -2989,6 +2990,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
+				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
 		check("Solve(Sin((-3+x^2)/x) ==2,{x})",
 				"{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2},{x->Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
 		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");

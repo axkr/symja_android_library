@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
@@ -534,7 +535,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param analyzerList
-	 * @param vars
+	 * @param variables
+	 *            the list of variables
 	 * @param resultList
 	 *            the list of result values as rules assigned to each variable
 	 * @param maximumNumberOfResults
@@ -544,7 +546,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param vector
 	 * @return
 	 */
-	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList,
+	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IAST resultList,
 			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
@@ -584,7 +586,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								IExpr temp = expr.replaceAll(listOfRules.getAST(k));
 								if (temp.isPresent()) {
 									expr = engine.evaluate(temp);
-									exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
+									exprAnalyzer = new ExprAnalyzer(expr, variables, engine);
 									exprAnalyzer.simplifyAndAnalyze();
 								} else {
 									// reuse old analyzer; expression hasn't
@@ -594,7 +596,7 @@ public class Solve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(),
+								IAST subResultList = analyzeSublist(subAnalyzerList, variables, F.List(),
 										maximumNumberOfResults, matrix, vector, engine);
 								if (subResultList.isPresent()) {
 									evaled = true;
@@ -674,16 +676,68 @@ public class Solve extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
-		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
+		Validate.checkRange(ast, 3, 4);
+		IAST variables = Validate.checkSymbolOrSymbolList(ast, 2);
+		if (ast.size() == 4) {
+			if (ast.arg3().equals(F.Booleans)) {
+				IAST resultList = F.List();
+				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
+				return resultList;
+			}
+			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
+		}
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
-		return solveEquations(termsEqualZeroList, vars, 0, engine);
+		return solveEquations(termsEqualZeroList, variables, 0, engine);
 	}
 
-	protected IExpr solveEquations(IAST termsEqualZeroList, IAST vars, int maximumNumberOfResults, EvalEngine engine) {
+	/**
+	 * Solve boolean expressions.
+	 * 
+	 * @param expr
+	 * @param variables
+	 * @param maximumNumberOfResults
+	 * @param position
+	 * @param resultList
+	 */
+	protected static void booleansSolve(IExpr expr, IAST variables, int maximumNumberOfResults, int position,
+			IAST resultList) {
+		if (maximumNumberOfResults > 0 && maximumNumberOfResults < resultList.size()) {
+			return;
+		}
+		if (variables.size() <= position) {
+			if (EvalEngine.get().evalTrue(expr)) {
+				IAST list = F.List();
+				for (int i = 1; i < variables.size(); i++) {
+					ISymbol sym = (ISymbol) variables.get(i);
+					list.add(F.Rule(sym, sym.get()));
+				}
+				resultList.add(list);
+
+			}
+			return;
+		}
+		IExpr sym = variables.get(position);
+		if (sym.isSymbol()) {
+			try {
+				((ISymbol) sym).pushLocalVariable(F.False);
+				booleansSolve(expr, variables, maximumNumberOfResults, position + 1, resultList);
+			} finally {
+				((ISymbol) sym).popLocalVariable();
+			}
+			try {
+				((ISymbol) sym).pushLocalVariable(F.True);
+				booleansSolve(expr, variables, maximumNumberOfResults, position + 1, resultList);
+			} finally {
+				((ISymbol) sym).popLocalVariable();
+			}
+		}
+	}
+
+	protected IExpr solveEquations(IAST termsEqualZeroList, IAST variables, int maximumNumberOfResults,
+			EvalEngine engine) {
 		try {
-			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, vars);
+			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, variables);
 			if (list.isPresent()) {
 				termsEqualZeroList = list;
 			}
@@ -703,7 +757,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						"Solve: the system contains the wrong object: " + predicate.getWrongExpr().toString());
 				return F.NIL;
 			}
-			exprAnalyzer = new ExprAnalyzer(expr, vars, engine);
+			exprAnalyzer = new ExprAnalyzer(expr, variables, engine);
 			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
 		}
@@ -711,11 +765,12 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST vector = F.List();
 		try {
 			IAST resultList = F.List();
-			resultList = analyzeSublist(analyzerList, vars, resultList, maximumNumberOfResults, matrix, vector, engine);
+			resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults, matrix, vector,
+					engine);
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
-				return RowReduce.rowReduced2RulesList(augmentedMatrix, vars, resultList, engine);
+				return RowReduce.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
 			}
 
 			return sortResults(resultList);
