@@ -31,7 +31,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Analyze an expression, if it has linear, polynomial or other form.
 	 * 
 	 */
-	private static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
+	protected static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
 
 		public static final int LINEAR = 0;
 		public static final int OTHERS = 2;
@@ -484,7 +484,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Check an expression, if it's an allowed object.
 	 *
 	 */
-	private static final class IsWrongSolveExpression implements Predicate<IExpr> {
+	protected static final class IsWrongSolveExpression implements Predicate<IExpr> {
 		IExpr wrongExpr;
 
 		public IsWrongSolveExpression() {
@@ -508,7 +508,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	@SuppressWarnings("serial")
-	private static class NoSolution extends Exception {
+	protected static class NoSolution extends Exception {
 		/**
 		 * Solution couldn't be found.
 		 */
@@ -536,12 +536,16 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param analyzerList
 	 * @param vars
 	 * @param resultList
+	 *            the list of result values as rules assigned to each variable
+	 * @param maximumNumberOfResults
+	 *            the maximum number of results in <code>resultList</code>:
+	 *            <code>0</code> gives all results.
 	 * @param matrix
 	 * @param vector
 	 * @return
 	 */
-	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
-			IAST vector, EvalEngine engine) throws NoSolution {
+	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList,
+			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -566,6 +570,9 @@ public class Solve extends AbstractFunctionEvaluator {
 					for (int k = 1; k < listOfRules.size(); k++) {
 						if (currEquation >= analyzerList.size()) {
 							resultList.add(F.List(listOfRules.getAST(k)));
+							if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
+								return resultList;
+							}
 							evaled = true;
 						} else {
 
@@ -587,8 +594,8 @@ public class Solve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector,
-										engine);
+								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(),
+										maximumNumberOfResults, matrix, vector, engine);
 								if (subResultList.isPresent()) {
 									evaled = true;
 									for (IExpr expr : subResultList) {
@@ -596,8 +603,16 @@ public class Solve extends AbstractFunctionEvaluator {
 											IAST list = (IAST) expr;
 											list.add(1, listOfRules.getAST(k));
 											resultList.add(list);
+											if (maximumNumberOfResults > 0
+													&& maximumNumberOfResults <= resultList.size()) {
+												return resultList;
+											}
 										} else {
 											resultList.add(expr);
+											if (maximumNumberOfResults > 0
+													&& maximumNumberOfResults <= resultList.size()) {
+												return resultList;
+											}
 										}
 									}
 								}
@@ -663,6 +678,10 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
+		return solveEquations(termsEqualZeroList, vars, 0, engine);
+	}
+
+	protected IExpr solveEquations(IAST termsEqualZeroList, IAST vars, int maximumNumberOfResults, EvalEngine engine) {
 		try {
 			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, vars);
 			if (list.isPresent()) {
@@ -692,7 +711,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST vector = F.List();
 		try {
 			IAST resultList = F.List();
-			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
+			resultList = analyzeSublist(analyzerList, vars, resultList, maximumNumberOfResults, matrix, vector, engine);
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
@@ -708,7 +727,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 	}
 
-	private IExpr sortResults(IAST resultList) {
+	protected static IExpr sortResults(IAST resultList) {
 		for (int i = 1; i < resultList.size(); i++) {
 			if (resultList.get(i).isList()) {
 				EvalAttributes.sort((IAST) resultList.get(i));

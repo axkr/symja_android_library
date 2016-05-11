@@ -1365,12 +1365,37 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testFibonacci() {
 		check("Table(Fibonacci(-n), {n, 10})", "{1,-1,2,-3,5,-8,13,-21,34,-55}");
 		check("Table(Fibonacci(n), {n, 20})", "{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
-		check("Fibonacci(1000)", "4346655768693745643568852767504062580256466051737178040248172908953655541794905\\\n" + 
-				"1890403879840079255169295922593080322634775209689623239873322471161642996440906\\\n" + 
-				"533187938298969649928516003704476137795166849228875");
+		check("Fibonacci(1000)",
+				"4346655768693745643568852767504062580256466051737178040248172908953655541794905\\\n"
+						+ "1890403879840079255169295922593080322634775209689623239873322471161642996440906\\\n"
+						+ "533187938298969649928516003704476137795166849228875");
 
 	}
 
+	public void testFindInstance() {
+		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})",
+				"{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
+		check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
+		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
+
+		check("FindInstance(2*Sin(x)==1/2,x)", "{{x->ArcSin(1/4)}}");
+		check("FindInstance(3+2*Cos(x)==1/2,x)", "{{x->-Pi+ArcCos(5/4)}}");
+		check("FindInstance(Sin(x)==0,x)", "{{x->0}}");
+		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
+		check("FindInstance(Sin(x)==1/2,x)", "{{x->Pi/6}}");
+		check("FindInstance(sin(x)==0.5,x)", "{{x->0.5235987755982989}}");
+		check("FindInstance(x^2-2500.00==0,x)", "{{x->-50.0}}");
+		check("FindInstance(x^2+a*x+1 == 0, x)", "{{x->-a/2-Sqrt(-4+a^2)/2}}");
+		check("FindInstance((-3)*x^3 +10*x^2-11*x == (-4), {x})", "{{x->1}}");
+
+		check("FindInstance(x^2+50*x-2500.00==0,x)", "{{x->-80.90169943749474}}");
+		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
+
+		check("FindInstance(a x + y == 7 && b x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+		check("FindInstance({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+
+	}
+	
 	public void testFit() {
 		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", "0.18644067796610156+0.6949152542372881*x");
 	}
@@ -1517,15 +1542,17 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testGroebnerBasis() {
-		check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})", "{-9+2*y^4,3*x-2*y^3}");
-		check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
-				"{1024-832*z-215*z^2+156*z^3-25*z^4+24*z^5+13*z^6+z^8,-11552+2560*y+2197*z+2764*z^\n"
-						+ "2+443*z^3+728*z^4+169*z^5+32*z^6+13*z^7,-34656+5120*x+6591*z+5732*z^2+1329*z^3+\n"
-						+ "2184*z^4+507*z^5+96*z^6+39*z^7}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
-				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x, x - y^2 + 1}, {x, y, z})", "{1}");
+		 check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})",
+		 "{-9+2*y^4,3*x-2*y^3}");
+		 check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
+		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
+		 "{1024-832*z-215*z^2+156*z^3-25*z^4+24*z^5+13*z^6+z^8,-11552+2560*y+2197*z+2764*z^\n"
+		 +
+		 "2+443*z^3+728*z^4+169*z^5+32*z^6+13*z^7,-34656+5120*x+6591*z+5732*z^2+1329*z^3+\n"
+		 + "2184*z^4+507*z^5+96*z^6+39*z^7}");
+		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
+		 "{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
+		 check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
 //		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2}, {x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
 //				"");
 	}
