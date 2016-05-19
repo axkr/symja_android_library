@@ -583,9 +583,18 @@ public class OutputFormFactory {
 		if (arg2.isNumber()) {
 			INumber exp = (INumber) arg2;
 			if (exp.isNumEqualRational(F.C1D2)) {
-				append(buf, "Sqrt(");
+				append(buf, "Sqrt");
+				if (fRelaxedSyntax) {
+					append(buf, "(");
+				} else {
+					append(buf, "[");
+				}
 				convert(buf, list.arg1(), 0);
-				append(buf, ")");
+				if (fRelaxedSyntax) {
+					append(buf, ")");
+				} else {
+					append(buf, "]");
+				}
 				return;
 			}
 			if (exp.complexSign() < 0) {
