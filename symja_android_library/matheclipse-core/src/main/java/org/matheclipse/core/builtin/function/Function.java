@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Function extends AbstractCoreFunctionEvaluator {
 
 	public Function() {
+		// defualt ctor
 	}
 
 	@Override
@@ -26,7 +27,7 @@ public class Function extends AbstractCoreFunctionEvaluator {
 			if (function.size() == 2) {
 				return replaceSlots(function.arg1(), ast);
 			} else if (function.size() == 3) {
-				IAST symbolSlots = null;
+				IAST symbolSlots;
 				if (function.arg1().isList()) {
 					symbolSlots = (IAST) function.arg1();
 				} else {
@@ -51,7 +52,7 @@ public class Function extends AbstractCoreFunctionEvaluator {
 		} else {
 			rulesMap = new HashMap<IExpr, IExpr>();
 		}
-		for (int i = 1; i < size; i++) {
+		for (int i = 1; i <= size; i++) {
 			rulesMap.put(symbolSlots.get(i), ast.get(i));
 		}
 		return rulesMap;
