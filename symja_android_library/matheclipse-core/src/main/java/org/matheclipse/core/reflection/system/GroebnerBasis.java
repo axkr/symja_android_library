@@ -20,6 +20,7 @@ import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.OptimizedPolynomialList;
+import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
@@ -108,13 +109,14 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		}
 		GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
 		OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
-
+		List<GenPolynomial<BigRational>> list = OrderedPolynomialList.sort(opl.list);
 		IAST resultList = F.List();
-		for (GenPolynomial<BigRational> p : opl.list) {
+		for (GenPolynomial<BigRational> p : list) {
 			// convert rational to integer coefficients and add
 			// polynomial to result list
 			resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 		}
+
 		return resultList;
 	}
 
@@ -139,7 +141,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			}
 			varList.add((ISymbol) listOfVariables.get(i));
 		}
-		
+
 		IAST rest = F.List();
 		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
 				listOfPolynomials.size() - 1);

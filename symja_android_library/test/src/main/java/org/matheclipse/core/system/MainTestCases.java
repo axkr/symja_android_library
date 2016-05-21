@@ -3245,8 +3245,11 @@ public class MainTestCases extends AbstractTestCase {
 
 	public void testSystem997() {
 		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a})",
-				"{1-a^4-a^2*b^2+a^6*b^2,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,-a-b+a^3*b^2+a^\n"
-						+ "2*b^3,a^2+2*a*c+c^2,a+b+c+d}");
+				"{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n" + 
+				"2+2*a*c+c^2,a+b+c+d}");
+		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a},MonomialOrder ->DegreeReverseLexicographic)",
+				"{a+b+c+d,a^2+2*a*c+c^2,-a^3+a*b^2-a^2*c+b^2*c,-1-a^4+a^3*b+a^2*b^2-a^3*c+a^2*b*c,-a+a^\n" + 
+				"5-c+a^4*c,-a-b+a^3*b^2+a^2*b^3,-2*a^2+a*b+a^4*b^2-a*c+b*c}");
 		check("GroebnerBasis({x-1},{x})", "{-1+x}");
 		// check(
 		// "GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,

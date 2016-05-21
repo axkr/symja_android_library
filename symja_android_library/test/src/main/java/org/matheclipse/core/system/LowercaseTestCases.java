@@ -1375,7 +1375,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testFindInstance() {
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
-		
+
 		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", "{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
 		check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
@@ -1487,6 +1487,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testFunction() {
+		check("Function({x, y}, x^2 + y^3)[a, b]", "a^2+b^3");
 		check("f(x, ##, y, ##) &(a, b, c, d)", "f(x,a,b,c,d,y,a,b,c,d)");
 		check("f(x, ##2, y, ##3) &(a, b, c, d)", "f(x,b,c,d,y,c,d)");
 		check("If(# > 5, #, False) &(2)", "False");
@@ -1544,6 +1545,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testGroebnerBasis() {
+		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},{x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
+				"{x-3*y+x*z-2*z^2,2*x+3*x*y+y^2,1+x+5*x^2-y*z,-1+27*y+5*y^2-z-29*y*z+18*z^2+y*z^2\n"
+						+ "-20*z^3,6-156*y-20*y^2+6*z+174*y*z+y^2*z-104*z^2+120*z^3,180-20*x-4185*y-559*y^2+\n"
+						+ "15*y^3+162*z+4680*y*z-2808*z^2+3240*z^3,4026-20*x-106386*y-17140*y^2+4086*z+\n"
+						+ "114129*y*z-70866*z^2+78768*z^3+1560*z^4}");
 		check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})", "{-9+2*y^4,3*x-2*y^3}");
 		check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
@@ -1553,9 +1559,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
 		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
-		// check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},
-		// {x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
-		// "");
 	}
 
 	public void testHarmonicNumber() {
@@ -3158,6 +3161,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
 		check("Table(0,{4-1})", "{0,0,0}");
 		check("$a=10;Table($a^2, {$a, 10})", "{1,4,9,16,25,36,49,64,81,100}");
 		check("Table(f[a], {a, 0, 20, 2})", "{f(0),f(2),f(4),f(6),f(8),f(10),f(12),f(14),f(16),f(18),f(20)}");
