@@ -90,7 +90,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 			while (i < result.size()) {
 				IExpr arg1 = F.expandAll(result.get(i - 1), true, true);
 				IExpr arg2 = F.expandAll(result.get(i), true, true);
-				b = compareTernary(arg1, arg2);
+				b = prepareCompare(arg1, arg2);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.False;
 				}
@@ -128,7 +128,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 		IExpr arg1 = F.expandAll(a1, true, true);
 		IExpr arg2 = F.expandAll(a2, true, true);
 
-		b = CONST.compareTernary(arg1, arg2);
+		b = CONST.prepareCompare(arg1, arg2);
 		if (b == IExpr.COMPARE_TERNARY.FALSE) {
 			return F.False;
 		}
@@ -141,6 +141,23 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 
 	public static IExpr equals(final IAST ast) {
 		return equalNull(ast.arg1(), ast.arg2()).orElse(ast);
+	}
+
+	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
+		IExpr a0 = o0;
+		IExpr a1 = o1;
+		if (!a0.isSignedNumber() && a0.isNumericFunction()) {
+			a0 = F.evaln(a0);
+		} else if (a1.isNumeric() && a0.isRational()) {
+			a0 = F.evaln(a0);
+		}
+		if (!a1.isSignedNumber() && a1.isNumericFunction()) {
+			a1 = F.evaln(a1);
+		} else if (a0.isNumeric() && a1.isRational()) {
+			a1 = F.evaln(a1);
+		}
+
+		return compareTernary(a0, a1);
 	}
 
 	/** {@inheritDoc} */

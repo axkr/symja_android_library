@@ -212,21 +212,19 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
-		// don't compare strings
 		IExpr a0 = o0;
 		IExpr a1 = o1;
-		if (!(a0.isSignedNumber()) && a0.isNumericFunction()) {
+		if (!a0.isSignedNumber() && a0.isNumericFunction()) {
+			a0 = F.evaln(a0);
+		} else if (a1.isNumeric() && a0.isRational()) {
 			a0 = F.evaln(a0);
 		}
-		if (!(a1.isSignedNumber()) && a1.isNumericFunction()) {
+		if (!a1.isSignedNumber() && a1.isNumericFunction()) {
+			a1 = F.evaln(a1);
+		} else if (a0.isNumeric() && a1.isRational()) {
 			a1 = F.evaln(a1);
 		}
-		if (a0.isNumeric() && a1.isRational()) {
-			a1 = F.evaln(a1);
-		}
-		if (a1.isNumeric() && a0.isRational()) {
-			a0 = F.evaln(a0);
-		}
+
 		return compareTernary(a0, a1);
 	}
 

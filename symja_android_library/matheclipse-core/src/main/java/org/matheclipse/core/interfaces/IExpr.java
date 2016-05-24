@@ -314,6 +314,108 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Compare if <code>this > that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr greaterThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Greater.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this < that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr lessThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Less.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this >= that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr greaterEqualThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.GreaterEqual.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this <= that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr lessEqualThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.LessEqual.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this == that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr equalTo(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Equal.CONST.compareTernary(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this != that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr unequalTo(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Unequal.CONST.compareTernary(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
 	 * If this object is an instance of <code>IAST</code> get the first element
 	 * (offset 0) of the <code>IAST</code> list (i.e. get(0) ).
 	 * 
@@ -408,7 +510,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isAbs() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression and all subexpressions are already expanded i.e.
 	 * all <code>Plus, Times, Power</code> (sub-)expressions are expanded.

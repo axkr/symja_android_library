@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class Unequal extends Equal {
 
 	public Unequal() {
+		// default ctor
 	}
 
 	@Override
@@ -22,7 +23,7 @@ public class Unequal extends Equal {
 				IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 				IExpr arg2 = F.expandAll(ast.arg2(), true, true);
 
-				b = compareTernary(arg1, arg2);
+				b = prepareCompare(arg1, arg2);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.True;
 				}

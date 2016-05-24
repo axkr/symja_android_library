@@ -1160,6 +1160,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		check("Pi==3", "False");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", "True");
 	}
 
