@@ -243,6 +243,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr divide(final IExpr that);
 
 	/**
+	 * Compare if <code>this == that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr equalTo(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Equal.CONST.compareTernary(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
@@ -314,40 +331,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Compare if <code>this > that</code:
-	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
-	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
-	 * evaluated)</li>
-	 * </ul>
-	 * 
-	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
-	 */
-	default public IExpr greaterThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Greater.CONST.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
-	}
-
-	/**
-	 * Compare if <code>this < that</code:
-	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
-	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
-	 * evaluated)</li>
-	 * </ul>
-	 * 
-	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
-	 */
-	default public IExpr lessThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Less.CONST.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
-	}
-
-	/**
 	 * Compare if <code>this >= that</code:
 	 * <ul>
 	 * <li>return F.True if the comparison is <code>true</code></li>
@@ -365,7 +348,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Compare if <code>this <= that</code:
+	 * Compare if <code>this > that</code:
 	 * <ul>
 	 * <li>return F.True if the comparison is <code>true</code></li>
 	 * <li>return F.False if the comparison is <code>false</code></li>
@@ -376,42 +359,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
-	default public IExpr lessEqualThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.LessEqual.CONST.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
-	}
-
-	/**
-	 * Compare if <code>this == that</code:
-	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
-	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
-	 * evaluated)</li>
-	 * </ul>
-	 * 
-	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
-	 */
-	default public IExpr equalTo(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Equal.CONST.compareTernary(this, that);
-		return ITernaryComparator.convertToExpr(temp);
-	}
-
-	/**
-	 * Compare if <code>this != that</code:
-	 * <ul>
-	 * <li>return F.True if the comparison is <code>true</code></li>
-	 * <li>return F.False if the comparison is <code>false</code></li>
-	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
-	 * evaluated)</li>
-	 * </ul>
-	 * 
-	 * @param that
-	 * @return <code>F.True, F.False or F.NIL</code
-	 */
-	default public IExpr unequalTo(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Unequal.CONST.compareTernary(this, that);
+	default public IExpr greaterThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Greater.CONST.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -1739,6 +1688,40 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public List<IExpr> leaves();
 
 	/**
+	 * Compare if <code>this <= that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr lessEqualThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.LessEqual.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Compare if <code>this < that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr lessThan(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Less.CONST.prepareCompare(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this - that)</code>.
 	 * Calculates <code>F.eval(F.Plus(this, F.Times(F.CN1, that)))</code> in the
 	 * common case and uses a specialized implementation for derived number
@@ -2015,6 +1998,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return the 'highest level' head of the expression.
 	 */
 	public ISymbol topHead();
+
+	/**
+	 * Compare if <code>this != that</code:
+	 * <ul>
+	 * <li>return F.True if the comparison is <code>true</code></li>
+	 * <li>return F.False if the comparison is <code>false</code></li>
+	 * <li>return F.NIL if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param that
+	 * @return <code>F.True, F.False or F.NIL</code
+	 */
+	default public IExpr unequalTo(IExpr that) {
+		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Unequal.CONST.compareTernary(this, that);
+		return ITernaryComparator.convertToExpr(temp);
+	}
 
 	/**
 	 * Convert the variables (i.e. expressions of type <code>ISymbol</code>
