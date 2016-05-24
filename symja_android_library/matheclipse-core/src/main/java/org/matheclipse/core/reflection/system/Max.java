@@ -5,9 +5,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ITernaryComparator.COMPARE_RESULT;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Max extends AbstractFunctionEvaluator {
@@ -36,7 +36,7 @@ public class Max extends AbstractFunctionEvaluator {
 		boolean evaled = flattenedList;
 		max1 = list.arg1();
 		IAST f = list.copyHead();
-		COMPARE_RESULT comp;
+		IExpr.COMPARE_TERNARY comp;
 		for (int i = 2; i < list.size(); i++) {
 			max2 = list.get(i);
 			if (max1.equals(max2)) {
@@ -44,11 +44,11 @@ public class Max extends AbstractFunctionEvaluator {
 			}
 			comp = Less.CONST.prepareCompare(max1, max2);
 
-			if (comp == COMPARE_RESULT.TRUE) {
+			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				max1 = max2;
 				evaled = true;
 			} else {
-				if (comp == COMPARE_RESULT.UNDEFINED) {
+				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined
 					if (max1.isNumber()) {
 						f.add(max2);

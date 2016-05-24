@@ -85,6 +85,10 @@ import edu.jas.structure.GcdRingElem;
  */
 public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, FieldElement<IExpr> {
 
+	public enum COMPARE_TERNARY {
+		TRUE, FALSE, UNDEFINED
+	}
+
 	public final static int ASTID = 1024;
 
 	public final static int BLANKID = 256;
@@ -304,6 +308,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public IExpr getAt(final int index);
 
+	@Override
 	default public Field<IExpr> getField() {
 		return ExprField.CONST;
 	}
@@ -1191,6 +1196,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @deprecated use {@link #isOne()} instead.
 	 */
+	@Deprecated
+	@Override
 	default boolean isONE() {
 		return isOne();
 	}
@@ -1556,6 +1563,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	default boolean isUnit() {
 		return true;
 	}
@@ -1607,6 +1615,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @deprecated use {@link #isZero()} instead.
 	 */
+	@Deprecated
+	@Override
 	default boolean isZERO() {
 		return isZero();
 	}
@@ -1650,6 +1660,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	public IExpr multiply(final IExpr that);
 
+	@Override
 	default public IExpr multiply(int n) {
 		return times(F.integer(n));
 	}
@@ -1766,6 +1777,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public IExpr power(final long n);
 
+	@Override
 	default public IExpr reciprocal() throws MathArithmeticException {
 		return inverse();
 	}

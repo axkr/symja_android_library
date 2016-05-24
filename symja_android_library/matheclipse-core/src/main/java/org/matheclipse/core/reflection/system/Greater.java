@@ -4,21 +4,21 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ITernaryComparator;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ITernaryComparator;
 
 /**
  * <code>&gt;</code> operator implementation.
  * 
  */
-public class Greater extends AbstractFunctionEvaluator implements ITernaryComparator<IExpr> {
+public class Greater extends AbstractFunctionEvaluator implements ITernaryComparator {
 	public final static Greater CONST = new Greater();
 
 	public Greater() {
+		// default ctor
 	}
 
 	/**
@@ -137,22 +137,22 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 				}
 			}
 		}
-		COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
+		IExpr.COMPARE_TERNARY b;
 		boolean evaled = false;
 		IAST result = ast.clone();
-		COMPARE_RESULT[] cResult = new COMPARE_RESULT[ast.size()];
-		cResult[0] = COMPARE_RESULT.TRUE;
+		IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
+		cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
 		for (int i = 1; i < ast.size() - 1; i++) {
 			b = prepareCompare(result.get(i), result.get(i + 1));
-			if (b == COMPARE_RESULT.FALSE) {
+			if (b == IExpr.COMPARE_TERNARY.FALSE) {
 				return F.False;
 			}
-			if (b == COMPARE_RESULT.TRUE) {
+			if (b == IExpr.COMPARE_TERNARY.TRUE) {
 				evaled = true;
 			}
 			cResult[i] = b;
 		}
-		cResult[ast.size() - 1] = COMPARE_RESULT.TRUE;
+		cResult[ast.size() - 1] = IExpr.COMPARE_TERNARY.TRUE;
 		if (!evaled) {
 			// expression doesn't change
 			return F.NIL;
@@ -160,7 +160,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		int i = 2;
 		evaled = false;
 		for (int j = 1; j < ast.size(); j++) {
-			if (cResult[j - 1] == COMPARE_RESULT.TRUE && cResult[j] == COMPARE_RESULT.TRUE) {
+			if (cResult[j - 1] == IExpr.COMPARE_TERNARY.TRUE && cResult[j] == IExpr.COMPARE_TERNARY.TRUE) {
 				evaled = true;
 				result.remove(i - 1);
 			} else {
@@ -211,7 +211,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		return F.NIL;
 	}
 
-	public COMPARE_RESULT prepareCompare(final IExpr o0, final IExpr o1) {
+	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
 		// don't compare strings
 		IExpr a0 = o0;
 		IExpr a1 = o1;
@@ -227,36 +227,36 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		if (a1.isNumeric() && a0.isRational()) {
 			a0 = F.evaln(a0);
 		}
-		return compare(a0, a1);
+		return compareTernary(a0, a1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 		// don't compare strings
 		if (a0.isSignedNumber()) {
 			if (a1.isSignedNumber()) {
-				return (a1.isLTOrdered(a0)) ? COMPARE_RESULT.TRUE : COMPARE_RESULT.FALSE;
+				return a1.isLTOrdered(a0) ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
 			} else if (a1.isInfinity()) {
-				return COMPARE_RESULT.FALSE;
+				return IExpr.COMPARE_TERNARY.FALSE;
 			} else if (a1.isNegativeInfinity()) {
-				return COMPARE_RESULT.TRUE;
+				return IExpr.COMPARE_TERNARY.TRUE;
 			}
 		} else if (a1.isSignedNumber()) {
 			if (a0.isInfinity()) {
-				return COMPARE_RESULT.TRUE;
+				return IExpr.COMPARE_TERNARY.TRUE;
 			} else if (a0.isNegativeInfinity()) {
-				return COMPARE_RESULT.FALSE;
+				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 		} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
-			return COMPARE_RESULT.TRUE;
+			return IExpr.COMPARE_TERNARY.TRUE;
 		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
-			return COMPARE_RESULT.FALSE;
+			return IExpr.COMPARE_TERNARY.FALSE;
 		}
 		if (a0.equals(a1)) {
-			return COMPARE_RESULT.FALSE;
+			return IExpr.COMPARE_TERNARY.FALSE;
 		}
-		return COMPARE_RESULT.UNDEFINED;
+		return IExpr.COMPARE_TERNARY.UNDEFINED;
 	}
 
 	@Override

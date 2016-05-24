@@ -246,7 +246,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					eq = (IAST) eqns.get(i);
 					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
 					// F.evalExpandAll(eq.arg2())));
-					equalList.add(Equal.equal(eq));
+					equalList.add(Equal.equals(eq));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");

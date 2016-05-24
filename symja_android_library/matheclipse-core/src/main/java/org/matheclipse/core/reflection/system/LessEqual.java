@@ -47,12 +47,12 @@ public class LessEqual extends Greater {
 
 	/** {@inheritDoc} */
 	@Override
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 		// don't compare strings
 		if (a0.equals(a1)) {
-			return COMPARE_RESULT.TRUE;
+			return IExpr.COMPARE_TERNARY.TRUE;
 		}
 		// swap arguments
-		return super.compare(a1, a0);
+		return super.compareTernary(a1, a0);
 	}
 }

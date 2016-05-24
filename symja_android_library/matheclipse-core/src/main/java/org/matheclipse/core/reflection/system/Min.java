@@ -5,9 +5,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.ITernaryComparator.COMPARE_RESULT;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Min extends AbstractFunctionEvaluator {
@@ -37,7 +37,7 @@ public class Min extends AbstractFunctionEvaluator {
 		boolean evaled = flattenedList;
 		min1 = list.arg1();
 		IAST f = list.copyHead();
-		COMPARE_RESULT comp;
+		IExpr.COMPARE_TERNARY comp;
 		for (int i = 2; i < list.size(); i++) {
 			min2 = list.get(i);
 			if (min1.equals(min2)) {
@@ -45,11 +45,11 @@ public class Min extends AbstractFunctionEvaluator {
 			}
 			comp = Greater.CONST.prepareCompare(min1, min2);
 
-			if (comp == COMPARE_RESULT.TRUE) {
+			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				min1 = min2;
 				evaled = true;
 			} else {
-				if (comp == COMPARE_RESULT.UNDEFINED) {
+				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined
 					if (min1.isNumber()) {
 						f.add(min2);

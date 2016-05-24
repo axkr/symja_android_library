@@ -1,12 +1,6 @@
-package org.matheclipse.core.generic;
+package org.matheclipse.core.interfaces;
 
-import org.matheclipse.core.interfaces.IExpr;
-
-public interface ITernaryComparator<T extends IExpr> {
-
-	public static enum COMPARE_RESULT {
-		TRUE, FALSE, UNDEFINED
-	};
+public interface ITernaryComparator  {
 
 	/**
 	 * <ul>
@@ -19,6 +13,6 @@ public interface ITernaryComparator<T extends IExpr> {
 	 * @param arg2
 	 * @return
 	 */
-	COMPARE_RESULT compare(T arg1, T arg2);
+	IExpr.COMPARE_TERNARY compareTernary(IExpr arg1, IExpr arg2);
 
 }

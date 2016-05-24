@@ -17,16 +17,16 @@ public class Unequal extends Equal {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() > 1) {
-			COMPARE_RESULT b = COMPARE_RESULT.UNDEFINED;
+			IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
 			if (ast.size() == 3) {
 				IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 				IExpr arg2 = F.expandAll(ast.arg2(), true, true);
 
-				b = compare(arg1, arg2);
-				if (b == COMPARE_RESULT.FALSE) {
+				b = compareTernary(arg1, arg2);
+				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.True;
 				}
-				if (b == COMPARE_RESULT.TRUE) {
+				if (b == IExpr.COMPARE_TERNARY.TRUE) {
 					return F.False;
 				}
 
@@ -45,11 +45,11 @@ public class Unequal extends Equal {
 			while (i < result.size()) {
 				j = i;
 				while (j < result.size()) {
-					b = compare(result.get(i - 1), result.get(j++));
-					if (b == COMPARE_RESULT.TRUE) {
+					b = compareTernary(result.get(i - 1), result.get(j++));
+					if (b == IExpr.COMPARE_TERNARY.TRUE) {
 						return F.False;
 					}
-					if (b == COMPARE_RESULT.UNDEFINED) {
+					if (b == IExpr.COMPARE_TERNARY.UNDEFINED) {
 						return F.NIL;
 					}
 				}

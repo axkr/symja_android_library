@@ -48,9 +48,9 @@ public class Less extends Greater {
 
 	/** {@inheritDoc} */
 	@Override
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 		// swap arguments
-		return super.compare(a1, a0);
+		return super.compareTernary(a1, a0);
 	}
 
 }

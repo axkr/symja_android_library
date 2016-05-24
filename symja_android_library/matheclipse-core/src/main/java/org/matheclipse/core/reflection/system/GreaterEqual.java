@@ -47,11 +47,11 @@ public class GreaterEqual extends Greater {
 
 	/** {@inheritDoc} */
 	@Override
-	public COMPARE_RESULT compare(final IExpr a0, final IExpr a1) {
+	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 		if (a0.equals(a1)) {
-			return COMPARE_RESULT.TRUE;
+			return IExpr.COMPARE_TERNARY.TRUE;
 		}
-		return super.compare(a0, a1);
+		return super.compareTernary(a0, a1);
 	}
 
 }
