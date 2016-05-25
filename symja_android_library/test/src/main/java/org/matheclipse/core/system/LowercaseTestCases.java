@@ -2994,6 +2994,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
+		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
 		check("Solve(Sin((-3+x^2)/x) ==2,{x})",
