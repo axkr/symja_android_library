@@ -152,6 +152,10 @@ public class BasicTeXTestCase extends TestCase {
 		
 	}
 	
+	public void testTeX022() {
+		check("-I*1/2*Sqrt(2)", "\\left( \\frac{-1}{2}\\,i \\right) \\,\\sqrt{2}");
+	}
+	
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
