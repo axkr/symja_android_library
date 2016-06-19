@@ -153,7 +153,13 @@ public class BasicTeXTestCase extends TestCase {
 	}
 	
 	public void testTeX022() {
+		// issue #116
 		check("-I*1/2*Sqrt(2)", "\\left( \\frac{-1}{2}\\,i \\right) \\,\\sqrt{2}");
+	}
+	
+	public void testTeX023() {
+		// issue #117
+		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log(3)");
 	}
 	
 	public void check(String strEval, String strResult) {
