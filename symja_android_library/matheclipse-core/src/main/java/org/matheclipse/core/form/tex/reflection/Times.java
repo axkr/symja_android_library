@@ -32,7 +32,8 @@ public class Times extends AbstractOperator {
 	}
 
 	/**
-	 * Try to split a given <code>Times[...]</code> function into nominator and denominator and add the corresponding TeX output
+	 * Try to split a given <code>Times[...]</code> function into nominator and
+	 * denominator and add the corresponding TeX output
 	 * 
 	 * @param buf
 	 *            StringBuffer for TeX output
@@ -79,16 +80,29 @@ public class Times extends AbstractOperator {
 		return true;
 	}
 
-	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence, final int caller) {
-		int size = timesAST.size();
-		String texTimesOperator = "\\,";
-		if (size > 2) {
-			if (timesAST.arg1().isNumber() && timesAST.arg2().isNumber()) {
-				// Issue #67: if we have 2 or more numbers we use the \cdot operator
-				// / see http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-				texTimesOperator = "\\cdot ";
+	/**
+	 * Does the TeX Form of <code>expr</code> begin with a number digit?
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	private boolean isTeXNumberDigit(IExpr expr) {
+		if (expr.isNumber()) {
+			return true;
+		}
+		if (expr.isPower() && ((IAST) expr).arg1().isNumber()) {
+			IAST power = (IAST) expr;
+			if (power.arg1().isNumber() && !power.arg2().isFraction()) {
+				return true;
 			}
 		}
+		return false;
+	}
+
+	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence,
+			final int caller) {
+		int size = timesAST.size();
+
 		if (size > 1) {
 			IExpr arg1 = timesAST.arg1();
 			if (arg1.isMinusOne()) {
@@ -135,7 +149,17 @@ public class Times extends AbstractOperator {
 				}
 				fFactory.convert(buf, arg1, fPrecedence);
 				if (fOperator.compareTo("") != 0) {
-					buf.append(texTimesOperator);
+					if (size > 2) {
+						if (timesAST.arg1().isNumber() && isTeXNumberDigit(timesAST.arg2())) {
+							// Issue #67, #117: if we have 2 TeX number
+							// expressions we use
+							// the \cdot operator see
+							// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+							buf.append("\\cdot ");
+						} else {
+							buf.append("\\,");
+						}
+					}
 				}
 			}
 		}
@@ -143,7 +167,15 @@ public class Times extends AbstractOperator {
 		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, timesAST.get(i), fPrecedence);
 			if ((i < timesAST.size() - 1) && (fOperator.compareTo("") != 0)) {
-				buf.append(texTimesOperator);
+				if (timesAST.get(1).isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
+					// Issue #67, #117: if we have 2 TeX number expressions we
+					// use
+					// the \cdot operator see
+					// http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+					buf.append("\\cdot ");
+				} else {
+					buf.append("\\,");
+				}
 			}
 		}
 		precedenceClose(buf, precedence);
