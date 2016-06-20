@@ -1389,6 +1389,35 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	}
 
 	/**
+	 * If this polynomial contains negative exponents, multiply this polynomial
+	 * by the negated minimal exponents for that variable.
+	 * 
+	 * @return 
+	 */
+	public ExprPolynomial multiplyByMinimumNegativeExponents() {
+		long[] result = new long[numberOfVariables()];
+		boolean negativeExponents = false;
+		for (Map.Entry<ExpVectorLong, IExpr> m : val.entrySet()) {
+			long[] k = m.getKey().getVal();
+			for (int i = 0; i < k.length; i++) {
+				if (k[i] < 0 && k[i] < result[i]) {
+					result[i] = k[i];
+					negativeExponents = true;
+				}
+			}
+		}
+		if (negativeExponents) {
+			for (int i = 0; i < result.length; i++) {
+				if (result[i] < 0) {
+					result[i] *= (-1);
+				}
+			}
+			return multiply(new ExpVectorLong(result));
+		}
+		return this;
+	}
+
+	/**
 	 * GenPolynomial absolute value, i.e. leadingCoefficient &gt; 0.
 	 * 
 	 * @return abs(this).

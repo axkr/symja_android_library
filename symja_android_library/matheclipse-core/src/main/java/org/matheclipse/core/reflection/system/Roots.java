@@ -27,6 +27,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExpVectorLong;
 import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -232,7 +233,8 @@ public class Roots extends AbstractFunctionEvaluator {
 			// JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
 			// GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
-			ExprPolynomial ePoly = ring.create(expr);
+			ExprPolynomial ePoly = ring.create(expr, false, false);
+			ePoly = ePoly.multiplyByMinimumNegativeExponents();
 			result = rootsOfPolynomial(ePoly);
 			if (result.isPresent() && expr.isNumericMode()) {
 				for (int i = 1; i < result.size(); i++) {

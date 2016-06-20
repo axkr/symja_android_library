@@ -109,7 +109,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 						}
 					}
 
-					ExprPolynomial poly = ring.create(eq.getOneIdentity(F.C0), false);
+					ExprPolynomial poly = ring.create(eq.getOneIdentity(F.C0), false, true);
 					if (order == 1 && poly.degree() <= 1) {
 						IAST coeffs = poly.coefficientList();
 						IExpr q = coeffs.get(1); // degree 0
