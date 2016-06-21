@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.commons.math4.FieldElement;
+import org.apache.commons.math4.NumberFieldElement;
 import org.apache.commons.math4.exception.MathArithmeticException;
 import org.apache.commons.math4.exception.MathIllegalArgumentException;
 import org.apache.commons.math4.exception.NullArgumentException;
@@ -38,7 +38,7 @@ import org.apache.commons.math4.util.MathUtils;
  */
 public class BigFraction
     extends Number
-    implements FieldElement<BigFraction>, Comparable<BigFraction>, Serializable {
+    implements NumberFieldElement<BigFraction>, Comparable<BigFraction>, Serializable {
 
     /** A fraction representing "2 / 1". */
     public static final BigFraction TWO = new BigFraction(2);

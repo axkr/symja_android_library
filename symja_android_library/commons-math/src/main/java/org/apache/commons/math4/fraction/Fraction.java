@@ -19,7 +19,7 @@ package org.apache.commons.math4.fraction;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import org.apache.commons.math4.FieldElement;
+import org.apache.commons.math4.NumberFieldElement;
 import org.apache.commons.math4.exception.MathArithmeticException;
 import org.apache.commons.math4.exception.NullArgumentException;
 import org.apache.commons.math4.exception.util.LocalizedFormats;
@@ -35,7 +35,7 @@ import org.apache.commons.math4.util.FastMath;
  */
 public class Fraction
     extends Number
-    implements FieldElement<Fraction>, Comparable<Fraction>, Serializable {
+    implements NumberFieldElement<Fraction>, Comparable<Fraction>, Serializable {
 
     /** A fraction representing "2 / 1". */
     public static final Fraction TWO = new Fraction(2, 1);

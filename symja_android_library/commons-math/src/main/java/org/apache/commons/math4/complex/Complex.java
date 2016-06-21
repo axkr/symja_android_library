@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math4.FieldElement;
+import org.apache.commons.math4.NumberFieldElement;
 import org.apache.commons.math4.exception.NotPositiveException;
 import org.apache.commons.math4.exception.NullArgumentException;
 import org.apache.commons.math4.exception.util.LocalizedFormats;
@@ -52,7 +52,7 @@ import org.apache.commons.math4.util.Precision;
  * for Java object types.</p>
  *
  */
-public class Complex implements FieldElement<Complex>, Serializable  {
+public class Complex implements NumberFieldElement<Complex>, Serializable  {
     /** The square root of -1. A number representing "0.0 + 1.0i" */
     public static final Complex I = new Complex(0.0, 1.0);
     // CHECKSTYLE: stop ConstantName

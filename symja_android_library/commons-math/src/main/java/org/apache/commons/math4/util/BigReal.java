@@ -25,6 +25,7 @@ import java.math.RoundingMode;
 
 import org.apache.commons.math4.Field;
 import org.apache.commons.math4.FieldElement;
+import org.apache.commons.math4.NumberFieldElement;
 import org.apache.commons.math4.exception.MathArithmeticException;
 import org.apache.commons.math4.exception.util.LocalizedFormats;
 
@@ -36,7 +37,7 @@ import org.apache.commons.math4.exception.util.LocalizedFormats;
  * </p>
  * @since 2.0
  */
-public class BigReal implements FieldElement<BigReal>, Comparable<BigReal>, Serializable {
+public class BigReal implements NumberFieldElement<BigReal>, Comparable<BigReal>, Serializable {
 
     /** A big real representing 0. */
     public static final BigReal ZERO = new BigReal(BigDecimal.ZERO);

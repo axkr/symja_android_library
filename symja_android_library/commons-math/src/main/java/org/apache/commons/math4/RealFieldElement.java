@@ -25,7 +25,7 @@ import org.apache.commons.math4.exception.DimensionMismatchException;
  * @see FieldElement
  * @since 3.2
  */
-public interface RealFieldElement<T> extends FieldElement<T> {
+public interface RealFieldElement<T> extends NumberFieldElement<T> {
 
     /** Get the real value of the number.
      * @return real value
