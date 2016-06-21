@@ -2994,6 +2994,13 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve((k*Q*q)/r^2==E,r)", "{{r->(Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)},{r->(-Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", 
+				"{{r->(Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-Sqrt(1/2)*Sqrt(Sqrt(\n" + 
+				"4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-I*Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)},{r->(I*Sqrt(\n" + 
+				"1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", 
+				"{{r->-I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))},{r->I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))}}");
 		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
 		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
