@@ -84,7 +84,7 @@
 	<target name="proguard-library" description="Create shrinked and obfuscated &quot;/build/jar/symja-lib-YYYY-MM-DD.jar&quot; file for download with &quot;/toolslib/proguard.jar&quot;" depends="jar">
 		<taskdef resource="proguard/ant/task.properties" classpath="toolslib/proguard.jar" />
 		<proguard printmapping="proguard.map" overloadaggressively="on" defaultpackage="" allowaccessmodification="on">
--libraryjars "${java.home}/lib/rt.jar";${lib.dir}/log4j-1.2.11.jar;${lib.dir}/jsr305.jar;${lib.dir}/commons-logging-1.1.1.jar
+-libraryjars "${java.home}/lib/rt.jar"
 -injars      ${jar.dir}/symja_java8-${date}.jar
 -outjars     ${jar.dir}/symja-lib-${date}.jar
 -keepattributes Signature
