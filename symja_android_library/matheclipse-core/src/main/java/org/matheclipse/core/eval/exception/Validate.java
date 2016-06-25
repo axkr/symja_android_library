@@ -344,6 +344,22 @@ public final class Validate {
 	}
 
 	/**
+	 * Check if the argument at the given position is a <code>List()</code>
+	 * (i.e. <code>{...}</code>) object.
+	 * 
+	 * @param position
+	 *            the position which has to be a list.
+	 * @throws WrongArgumentType
+	 *             if it's not a list.
+	 */
+	public static IAST checkListType(IAST ast, int position) {
+		if (ast.get(position).isList()) {
+			return (IAST) ast.get(position);
+		}
+		throw new WrongArgumentType(ast, ast.get(position), position, "List expected!");
+	}
+
+	/**
 	 * Check if the argument at the given position is a <code>IStringX</code>
 	 * string object.
 	 * 

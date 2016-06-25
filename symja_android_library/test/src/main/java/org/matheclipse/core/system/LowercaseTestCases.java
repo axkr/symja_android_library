@@ -2995,12 +2995,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testSolve() {
 		check("Solve((k*Q*q)/r^2==E,r)", "{{r->(Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)},{r->(-Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)}}");
-		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", 
-				"{{r->(Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-Sqrt(1/2)*Sqrt(Sqrt(\n" + 
-				"4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-I*Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)},{r->(I*Sqrt(\n" + 
-				"1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)}}");
-		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", 
-				"{{r->-I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))},{r->I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
+				"{{r->(Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-Sqrt(1/2)*Sqrt(Sqrt(\n"
+						+ "4*E+Q^2*k^2*q^2)+Q*k*q))/Sqrt(E)},{r->(-I*Sqrt(1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)},{r->(I*Sqrt(\n"
+						+ "1/2)*Sqrt(Sqrt(4*E+Q^2*k^2*q^2)-Q*k*q))/Sqrt(E)}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->-I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))},{r->I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))}}");
 		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
 		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
@@ -3168,6 +3167,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testSwitch() {
 		check("$f(b_) := switch(b, True, 1, False, 0, _, -1);{$f(True), $f(False), $f(x)}", "{1,0,-1}");
+	}
+
+	public void testTally() {
+		check("Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", "{{{a,b},3},{E,2}}");
+		check("Tally({a,a,b,a,c,b,a})", "{{a,4},{b,2},{c,1}}");
+		check("Tally({b,a,b,a,c,b,a})", "{{b,3},{a,3},{c,1}}");
 	}
 
 	public void testTable() {

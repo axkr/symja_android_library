@@ -100,12 +100,13 @@ public class AST2Expr {
 			"SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Solve", "Sort", "Sow", "Span", "Sqrt",
 			"SquaredEuclidianDistance", "SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength",
 			"StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum",
-			"Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tan", "Tanh",
-			"TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy",
-			"Timing", "ToCharacterCode", "Together", "ToPolarCoordinates", "ToString", "Total", "ToUnicode", "Tr",
-			"Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated",
-			"Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed",
-			"ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
+			"Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SyntaxQ", "Table", "Take", "Tally", "Tan",
+			"Tanh", "TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times",
+			"TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates", "ToString", "Total", "ToUnicode",
+			"Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal",
+			"Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet",
+			"UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While",
+			"Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
