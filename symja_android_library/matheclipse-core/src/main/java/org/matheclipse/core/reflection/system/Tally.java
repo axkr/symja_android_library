@@ -1,11 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.LinkedHashMap;
+import java.util.function.BiPredicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -22,7 +24,7 @@ public class Tally extends AbstractEvaluator {
 
 		int size = ast.size();
 		java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-		
+
 		if (size == 2) {
 			for (int i = 1; i < list.size(); i++) {
 				Integer value = map.get(list.get(i));
@@ -35,14 +37,12 @@ public class Tally extends AbstractEvaluator {
 		}
 
 		if (size == 3) {
-			IAST test = F.binary(ast.arg2(), null, null);
+			BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
 			boolean evaledTrue;
 			for (int i = 1; i < list.size(); i++) {
 				evaledTrue = false;
 				for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-					test.set(1, entry.getKey());
-					test.set(2, list.get(i));
-					if (engine.evalTrue(test)) {
+					if (biPredicate.test(entry.getKey(), list.get(i))) {
 						evaledTrue = true;
 						map.put(entry.getKey(), Integer.valueOf(entry.getValue() + 1));
 						break;
@@ -54,7 +54,7 @@ public class Tally extends AbstractEvaluator {
 			}
 
 		}
-		
+
 		IAST result = F.List();
 		for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
 			result.add(F.List(entry.getKey(), F.integer(entry.getValue())));

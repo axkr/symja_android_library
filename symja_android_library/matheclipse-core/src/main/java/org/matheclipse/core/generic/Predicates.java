@@ -77,7 +77,7 @@ public class Predicates {
 
 		public IsBinaryFalse(final IExpr head, EvalEngine engine) {
 			fEngine = engine;
-			fAST = F.ast(head, 2, true);
+			fAST = F.binaryAST2(head, null, null);
 		}
 
 		@Override
@@ -134,7 +134,7 @@ public class Predicates {
 
 		public IsBinaryTrue(final IExpr head, EvalEngine engine) {
 			fEngine = engine;
-			fAST = F.ast(head, 2, true);
+			fAST = F.binaryAST2(head, null, null);
 		}
 
 		@Override
@@ -191,7 +191,7 @@ public class Predicates {
 		 */
 		public IsUnaryTrue(final EvalEngine engine, final IExpr head) {
 			fEngine = engine;
-			fAST = F.ast(head, 1, false);
+			fAST = F.unaryAST1(head, null);
 		}
 
 		/**
@@ -202,9 +202,8 @@ public class Predicates {
 		 */
 		@Override
 		public boolean test(final IExpr arg) {
-			final IAST ast = fAST.clone();
-			ast.add(arg);
-			return fEngine.evalTrue(ast);
+			fAST.set(1, arg);
+			return fEngine.evalTrue(fAST);
 		}
 
 	}
