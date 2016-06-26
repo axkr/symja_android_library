@@ -136,13 +136,13 @@ public class JASIExpr {
 					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
-			if (monomTimes.size() == 2) {
+			if (monomTimes.isAST1()) {
 				result.add(monomTimes.arg1());
 			} else {
 				result.add(monomTimes);
 			}
 		}
-		if (result.size() == 2) {
+		if (result.isAST1()) {
 			return result.arg1();
 		} else {
 			return result;
@@ -390,13 +390,13 @@ public class JASIExpr {
 					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
-			if (monomTimes.size() == 2) {
+			if (monomTimes.isAST1()) {
 				result.add(monomTimes.arg1());
 			} else {
 				result.add(monomTimes);
 			}
 		}
-		if (result.size() == 2) {
+		if (result.isAST1()) {
 			return result.arg1();
 		} else {
 			return result;

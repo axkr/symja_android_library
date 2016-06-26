@@ -18,10 +18,10 @@ public class Nor extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			return F.True;
 		}
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			return F.Not(ast.arg1());
 		}
 		IAST result = ast.copyHead();
@@ -38,10 +38,10 @@ public class Nor extends AbstractCoreFunctionEvaluator {
 			}
 		}
 		if (evaled) {
-			if (result.size() == 1) {
+			if (result.isAST0()) {
 				return F.True;
 			}
-			if (result.size() == 2) {
+			if (result.isAST1()) {
 				return F.Not(result.arg1());
 			}
 			return result;

@@ -19,7 +19,7 @@ public class ReplacePart extends AbstractEvaluator {
 		Validate.checkRange(ast, 3, 4);
 
 		try {
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				if (ast.arg3().isList()) {
 					IExpr result = ast.arg1();
 					for (IExpr subList : (IAST) ast.arg3()) {

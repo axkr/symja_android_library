@@ -20,7 +20,7 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			boolean numericMode = engine.isNumericMode();
 			try {
 				engine.setNumericMode(false);
@@ -42,7 +42,7 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 	} 
 
 	public static IExpr timesInf(IAST inf, IExpr a2) {
-		if (inf.size() == 2) {
+		if (inf.isAST1()) {
 			IExpr result;
 			IExpr a1 = inf.arg1();
 			if (a1.isNumber()) {

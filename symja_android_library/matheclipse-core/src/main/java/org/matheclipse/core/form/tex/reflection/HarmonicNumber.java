@@ -10,11 +10,11 @@ public class HarmonicNumber extends AbstractConverter {
 
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		if (f.size() == 2) {
+		if (f.isAST1()) {
 			buf.append("H_");
 			fFactory.convert(buf, f.arg1(), 0);
 			return true;
-		} else if (f.size() == 3) {
+		} else if (f.isAST2()) {
 			buf.append("H_");
 			fFactory.convert(buf, f.arg1(), 0);
 

@@ -127,7 +127,7 @@ public class Resultant extends AbstractFunctionEvaluator {
 	// sylvester.add(srow);
 	// }
 	//
-	// if (sylvester.size() == 1) {
+	// if (sylvester.isAST0()) {
 	// return null;
 	// }
 	// // System.out.println(sylvester);

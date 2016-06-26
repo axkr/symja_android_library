@@ -114,7 +114,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
-			if (ast.size() == 4 || ast.size() == 5) {
+			if (ast.isAST3() || ast.size() == 5) {
 				final IExpr arg3 = engine.evaluate(ast.arg3());
 				int maximumResults = -1;
 				if (ast.size() == 5) {

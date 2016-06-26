@@ -69,10 +69,10 @@ public class QuineMcCluskyFormula {
 		for (int i = 0; i < termList.size(); i++) {
 			result.add(termList.get(i).toExpr(variables));
 		}
-		if (result.size() == 1) {
+		if (result.isAST0()) {
 			return F.True;
 		}
-		if (result.size() == 2) {
+		if (result.isAST1()) {
 			return result.arg1();
 		}
 		return result;
@@ -162,7 +162,7 @@ public class QuineMcCluskyFormula {
 	public static QuineMcCluskyFormula read(IAST orAST) throws BooleanFunctionConversionException {
 		VariablesSet exVar = new VariablesSet(orAST);
 		IAST vars = exVar.getVarList();
-		if (vars.size() == 1) {
+		if (vars.isAST0()) {
 			throw new BooleanFunctionConversionException();
 		}
 		ArrayList<QuineMcCluskyTerm> terms = QuineMcCluskyTerm.convertToTerms(orAST, vars);

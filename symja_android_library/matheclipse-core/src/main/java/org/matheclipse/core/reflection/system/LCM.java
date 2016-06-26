@@ -27,7 +27,7 @@ public class LCM extends AbstractArgMultiple {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2);
 
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			if (ast.arg1().isSignedNumber()) {
 				return ast.arg1();
 			}

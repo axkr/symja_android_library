@@ -37,10 +37,10 @@ public class HilbertMatrix extends AbstractFunctionEvaluator {
 
 		int rowSize = 0;
 		int columnSize = 0;
-		if (ast.size() == 2 && ast.arg1().isInteger()) {
+		if (ast.isAST1() && ast.arg1().isInteger()) {
 			rowSize = Validate.checkIntType(ast, 1);
 			columnSize = rowSize;
-		} else if (ast.size() == 3 && ast.arg1().isInteger() && ast.arg2().isInteger()) {
+		} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
 			rowSize = Validate.checkIntType(ast, 1);
 			columnSize = Validate.checkIntType(ast, 2);
 		} else {

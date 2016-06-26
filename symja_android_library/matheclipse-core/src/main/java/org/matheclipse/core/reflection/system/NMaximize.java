@@ -29,7 +29,7 @@ public class NMaximize extends NMinimize {
 			IAST list1 = (IAST) ast.arg1();
 			IAST list2 = (IAST) ast.arg2();
 			VariablesSet vars = new VariablesSet(list2);
-			if (list1.size() == 3) {
+			if (list1.isAST2()) {
 				IExpr function = list1.arg1();
 				IExpr listOfconstraints = list1.arg2();
 				if (listOfconstraints.isAnd()) {

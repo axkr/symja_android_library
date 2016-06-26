@@ -19,7 +19,7 @@ public class Unequal extends Equal {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() > 1) {
 			IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 				IExpr arg2 = F.expandAll(ast.arg2(), true, true);
 

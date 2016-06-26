@@ -61,7 +61,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 
 			if (!evaledAST.arg2().isAtom()) {
 				return evaledAST.arg2().accept(level).orElse(evaledAST.arg2());
-			} else if (evaledAST.size() == 3) {
+			} else if (evaledAST.isAST2()) {
 				if (evaledAST.arg1().isFunction()) {
 					return F.unaryAST1(evaledAST.arg1(), evaledAST.arg2());
 				}

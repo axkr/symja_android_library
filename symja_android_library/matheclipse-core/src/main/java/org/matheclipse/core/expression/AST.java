@@ -201,7 +201,7 @@ public class AST extends HMArrayList implements Externalizable {
 	/** {@inheritDoc} */
 	@Override
 	public IAST addOneIdentity(IAST value) {
-		if (value.size() == 2) {
+		if (value.isAST1()) {
 			add(value.arg1());
 		} else {
 			add(value);

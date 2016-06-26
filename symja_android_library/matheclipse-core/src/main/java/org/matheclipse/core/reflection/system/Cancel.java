@@ -49,7 +49,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (ast.size() == 2 && arg1.isAtom()) {
+		if (ast.isAST1() && arg1.isAtom()) {
 			return arg1;
 		}
 		IAST temp = Thread.threadPlusLogicEquationOperators(arg1, ast, 1);

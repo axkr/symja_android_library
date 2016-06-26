@@ -550,10 +550,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			cloned.add(lhsPatternAST.get(i));
 		}
 		if (defaultValueMatched) {
-			// if (cloned.size() == 1) {
+			// if (cloned.isAST0()) {
 			// return null;
 			// }
-			if (cloned.size() == 2) {
+			if (cloned.isAST1()) {
 				return cloned.arg1();
 			}
 			return cloned;
@@ -567,7 +567,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			// System.out.println(lhsPatternAST.toString() + " << >> " +
 			// lhsEvalAST.toString());
 
-			if (lhsPatternAST.size() == 2) {
+			if (lhsPatternAST.isAST1()) {
 				// TODO check for OneIdentity?
 				return matchExpr(lhsPatternAST.arg1(), lhsEvalAST, stackMatcher);
 			}
@@ -591,7 +591,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
 			return !iter.execute();
 		} else {
-			if (lhsPatternAST.size() == 2) {
+			if (lhsPatternAST.isAST1()) {
 				if (lhsPatternAST.arg1().isPatternSequence()) {
 					// TODO only the special case, where the last element is
 					// a pattern sequence, is handled here
@@ -624,7 +624,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			return false;
 		}
 		if (lhsPatternAST.isAST(F.Except, 2, 3)) {
-			if (lhsPatternAST.size() == 3) {
+			if (lhsPatternAST.isAST2()) {
 				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)
 						&& matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, stackMatcher);
 			} else {

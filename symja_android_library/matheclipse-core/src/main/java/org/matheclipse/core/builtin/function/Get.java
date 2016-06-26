@@ -44,7 +44,7 @@ public class Get extends AbstractFunctionEvaluator {
 				if (temp.isAST()) {
 					IExpr head = temp.head();
 					IAST ast = (IAST) temp;
-					if (head.equals(endSymbol) && ast.size() == 1) {
+					if (head.equals(endSymbol) && ast.isAST0()) {
 						continue;
 					} else if (head.equals(F.Begin) && ast.size() >= 2) {
 						try {

@@ -183,7 +183,7 @@ public class Replace extends AbstractEvaluator {
 		try {
 			IExpr arg1 = ast.arg1();
 			IExpr rules = F.eval(ast.arg2());
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				// arg3 should contain a "level specification":
 				return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
 			}

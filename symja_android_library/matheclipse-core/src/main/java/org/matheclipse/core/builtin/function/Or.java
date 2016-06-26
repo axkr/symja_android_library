@@ -21,7 +21,7 @@ public class Or extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			return F.False;
 		}
 
@@ -87,11 +87,11 @@ public class Or extends AbstractCoreFunctionEvaluator {
 				}
 			}
 		}
-		if (result.size() == 2) {
+		if (result.isAST1()) {
 			return result.arg1();
 		}
 		if (evaled) {
-			if (result.size() == 1) {
+			if (result.isAST0()) {
 				return F.False;
 			}
 			return result;

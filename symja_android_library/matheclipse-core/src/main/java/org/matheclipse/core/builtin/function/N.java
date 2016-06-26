@@ -27,7 +27,7 @@ public class N extends AbstractCoreFunctionEvaluator {
 		final int oldPrecision = engine.getNumericPrecision();
 		try {
 			int numericPrecision = EvalEngine.DOUBLE_PRECISION;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				numericPrecision = Validate.checkIntType(ast.arg2());
 			}
 			engine.setNumericMode(true, numericPrecision);

@@ -24,9 +24,9 @@ public class Function extends AbstractCoreFunctionEvaluator {
 		if (ast.head().isAST()) {
 
 			final IAST function = (IAST) ast.head();
-			if (function.size() == 2) {
+			if (function.isAST1()) {
 				return replaceSlots(function.arg1(), ast);
-			} else if (function.size() == 3) {
+			} else if (function.isAST2()) {
 				IAST symbolSlots;
 				if (function.arg1().isList()) {
 					symbolSlots = (IAST) function.arg1();

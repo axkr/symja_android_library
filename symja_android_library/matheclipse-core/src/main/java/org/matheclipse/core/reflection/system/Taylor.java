@@ -16,7 +16,7 @@ public class Taylor extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 3 && (ast.arg2().isVector() == 3)) {
+		if (ast.isAST2() && (ast.arg2().isVector() == 3)) {
 
 			IAST list = (IAST) ast.arg2();
 			final int lowerLimit = Validate.checkIntType(list, 2, Integer.MIN_VALUE);

@@ -341,7 +341,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (ast.isAbs()) {
 				return engine.evaluate(
 						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
-			} else if (ast.size() == 2) {
+			} else if (ast.isAST1()) {
 				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction.isPresent()) {
 					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
@@ -678,7 +678,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 		IAST variables = Validate.checkSymbolOrSymbolList(ast, 2);
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			if (ast.arg3().equals(F.Booleans)) {
 				IAST resultList = F.List();
 				booleansSolve(ast.arg1(), variables, 0, 1, resultList);

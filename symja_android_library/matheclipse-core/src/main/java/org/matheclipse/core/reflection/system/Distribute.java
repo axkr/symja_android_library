@@ -24,7 +24,7 @@ public class Distribute extends AbstractFunctionEvaluator {
 		if (ast.size() >= 3) {
 			head = ast.arg2();
 		}
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			if (!arg1.head().equals(ast.arg3())) {
 				return arg1;
 			}

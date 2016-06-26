@@ -47,7 +47,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 			}
 
 			if (evaled) {
-				if ((result.size() == 2) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
+				if ((result.isAST1()) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
 					return result.arg1();
 				}
 				return result;

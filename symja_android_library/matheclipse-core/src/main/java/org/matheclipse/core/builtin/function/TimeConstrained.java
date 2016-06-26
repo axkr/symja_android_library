@@ -42,7 +42,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 		} catch (final MathException e) {
 			throw e;
 		} catch (final Throwable th) {
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				return ast.arg3();
 			}
 		}

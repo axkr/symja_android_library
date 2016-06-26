@@ -190,6 +190,30 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isAST0() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST1() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST2() {
+		return true;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST3() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isSameHead(IExpr head, int length) {
 		return arg0.equals(head) && length == SIZE;
 	}

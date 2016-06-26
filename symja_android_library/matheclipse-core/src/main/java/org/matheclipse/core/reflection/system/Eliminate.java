@@ -306,7 +306,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			ISymbol variable) {
 		if (exprWithVariable.isAST()) {
 			IAST ast = (IAST) exprWithVariable;
-			if (ast.size() == 2) {
+			if (ast.isAST1()) {
 				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction.isPresent()) {
 					// example: Sin(f(x)) == y -> f(x) == ArcSin(y)
@@ -327,7 +327,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							plusClone.remove(j);
 						}
 					}
-					if (plusClone.size() == 1) {
+					if (plusClone.isAST0()) {
 						// no change for given expression
 						return F.NIL;
 					}
@@ -346,7 +346,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							timesClone.remove(j);
 						}
 					}
-					if (timesClone.size() == 1) {
+					if (timesClone.isAST0()) {
 						// no change for given expression
 						return F.NIL;
 					}

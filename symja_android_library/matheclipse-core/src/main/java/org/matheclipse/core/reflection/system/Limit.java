@@ -449,7 +449,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			IExpr plusResult = org.matheclipse.core.reflection.system.Apart
 					.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, symbol);
 			if (plusResult.isPlus()) {
-				// OneIdentity if plusResult.size() == 2
+				// OneIdentity if plusResult.isAST1()
 				// if (plusResult.size() > 2) {
 				return mapLimit((IAST) plusResult, data.getRule());
 				// }
@@ -503,7 +503,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			throw new WrongArgumentType(ast, ast.arg1(), 2, "Limit: variable symbol for rule definition expected!");
 		}
 		int direction = DIRECTION_AUTOMATIC; // no direction as default
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			final Options options = new Options(ast.topHead(), ast, 2, engine);
 			IExpr option = options.getOption("Direction");
 			if (option.isPresent()) {

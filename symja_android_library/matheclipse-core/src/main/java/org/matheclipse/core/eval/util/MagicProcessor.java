@@ -154,7 +154,7 @@ public class MagicProcessor {
 			Log.debug(expr.toString() + "is instanceof" + fun.toString());
 			if (expr.isAST()) {
 				IAST ast = (IAST) expr;
-				if (ast.size() == 2) {
+				if (ast.isAST1()) {
 					return true;
 				}  
 			}
@@ -174,7 +174,7 @@ public class MagicProcessor {
 		}
 		IAST varList = eVar.getVarList();
 		// [list, x, null, null, null, null]
-		return (varList.size() == 2) ? varList.get(1).toString() : varList.toString();
+		return (varList.isAST1()) ? varList.get(1).toString() : varList.toString();
 	}
 
 	boolean isEquation(IExpr exp) {

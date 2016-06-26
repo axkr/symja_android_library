@@ -23,7 +23,7 @@ public class Not extends AbstractArg1 {
 			if (o.isNot()) {
 				return ((IAST) o).arg1();
 			}
-			if (temp.size() == 3) {
+			if (temp.isAST2()) {
 				IExpr head = temp.head();
 				if (head.equals(F.Equal)) {
 					return temp.apply(F.Unequal); 

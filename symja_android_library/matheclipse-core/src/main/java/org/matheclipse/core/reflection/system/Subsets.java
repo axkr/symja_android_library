@@ -165,7 +165,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 			final IAST f = (IAST) ast.arg1();
 			final int n = f.size() - 1;
 			final LevelSpecification level;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				level = new LevelSpecification(ast.arg2(), false);
 			} else {
 				level = new LevelSpecification(0, n);

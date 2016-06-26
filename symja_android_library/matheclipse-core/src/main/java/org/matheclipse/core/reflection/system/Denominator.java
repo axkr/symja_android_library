@@ -32,7 +32,7 @@ public class Denominator extends AbstractEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		boolean trig = false;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			final Options options = new Options(ast.topHead(), ast, 2, engine);
 			IExpr option = options.getOption("Trig");
 
@@ -71,7 +71,7 @@ public class Denominator extends AbstractEvaluator {
 	 */
 	public static IExpr getTrigForm(IAST function, boolean trig) {
 		if (trig) {
-			if (function.size() == 2) {
+			if (function.isAST1()) {
 
 				for (int i = 0; i < Denominator.NUMERATOR_SYMBOLS.length; i++) {
 					ISymbol sym = Denominator.NUMERATOR_SYMBOLS[i];

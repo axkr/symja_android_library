@@ -74,7 +74,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		if ((ast.arg2().isList())) {
 			IAST list = (IAST) ast.arg2();
 			IExpr function = ast.arg1();
-			if (list.size() == 4 && list.arg1().isSymbol()) {
+			if (list.isAST3() && list.arg1().isSymbol()) {
 				ISignedNumber min = list.arg2().evalSignedNumber();
 				ISignedNumber max = list.arg3().evalSignedNumber();
 				if (min != null && max != null) {

@@ -26,7 +26,7 @@ public class FixedPoint extends AbstractCoreFunctionEvaluator {
 			IExpr f = ast.arg1();
 			IExpr current = ast.arg2();
 			int iterations = Integer.MAX_VALUE;
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				iterations = Validate.checkIntType(ast, 3);
 			}
 			IExpr last;

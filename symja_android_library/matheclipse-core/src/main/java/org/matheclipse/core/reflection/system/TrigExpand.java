@@ -44,7 +44,7 @@ public class TrigExpand extends AbstractEvaluator {
 		while (temp.isPresent()) {
 			result = evalExpandAll(temp);
 			temp = F.NIL;
-			if (result.isAST() && ((IAST) result).size() == 2) {
+			if (result.isAST1()) {
 				if (result.getAt(1).isPlus()) {
 					if (result.isSin()) {
 						temp = expandSinPlus((IAST) result.getAt(1), 1);

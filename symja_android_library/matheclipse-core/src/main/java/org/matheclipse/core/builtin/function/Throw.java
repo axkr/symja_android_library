@@ -17,7 +17,7 @@ public class Throw extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			throw new ThrowException(engine.evaluate(ast.arg1()));
 		}
 		Validate.checkSize(ast, 2);

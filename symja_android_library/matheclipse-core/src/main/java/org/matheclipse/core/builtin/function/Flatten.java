@@ -26,13 +26,13 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			IAST arg1AST = (IAST) arg1;
-			if (ast.size() == 2) {
+			if (ast.isAST1()) {
 				IAST resultList = EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1);
 				if (resultList.isPresent()) {
 					return resultList;
 				}
 				return arg1AST;
-			} else if (ast.size() == 3) {
+			} else if (ast.isAST2()) {
 				IExpr arg2 = engine.evaluate(ast.arg2());
 
 				int level = Validate.checkIntLevelType(arg2);
@@ -43,7 +43,7 @@ public class Flatten extends AbstractCoreFunctionEvaluator {
 					}
 				}
 				return arg1;
-			} else if (ast.size() == 4 && ast.arg3().isSymbol()) {
+			} else if (ast.isAST3() && ast.arg3().isSymbol()) {
 				IExpr arg2 = engine.evaluate(ast.arg2());
 
 				int level = Validate.checkIntLevelType(arg2);

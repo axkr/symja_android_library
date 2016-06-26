@@ -26,7 +26,7 @@ public class TautologyQ extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IAST variables;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			if (ast.arg2().isList()) {
 				variables = (IAST) ast.arg2();
 			} else {

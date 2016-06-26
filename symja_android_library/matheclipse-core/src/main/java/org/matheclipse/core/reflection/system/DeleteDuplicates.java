@@ -23,7 +23,7 @@ public class DeleteDuplicates extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr test = F.Equal;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			test = ast.arg2();
 		}
 		if (ast.arg1().isList()) {

@@ -26,7 +26,7 @@ public class Total extends AbstractFunctionEvaluator {
 
 		VisitorLevelSpecification level = null;
 		Function<IExpr, IExpr> tf = Functors.apply(F.Plus);
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			level = new VisitorLevelSpecification(tf, ast.arg2(), false);
 			// increment level because we select only subexpressions
 		} else {

@@ -148,10 +148,10 @@ public class D extends AbstractFunctionEvaluator {
 		if (x.isList()) {
 			// D[fx_, {...}]
 			IAST xList = (IAST) x;
-			if (xList.size() == 2 && xList.arg1().isList()) {
+			if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
 				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
-			} else if (xList.size() == 3 && xList.arg2().isInteger()) {
+			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				int n = Validate.checkIntType(xList, 2, 1);
 
 				if (xList.arg1().isList()) {
@@ -219,7 +219,7 @@ public class D extends AbstractFunctionEvaluator {
 				resultList.add(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
 				return resultList;
 				// }
-			} else if ((header == F.Log) && (listArg1.size() == 3)) {
+			} else if ((header == F.Log) && (listArg1.isAST2())) {
 				if (listArg1.isFreeAt(1, x)) {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
 					return F.Times(F.Power(F.Times(listArg1.arg2(), F.Log(listArg1.arg1())), F.CN1),
@@ -244,12 +244,12 @@ public class D extends AbstractFunctionEvaluator {
 				// // D(LaplaceTransform(c,t,s), t) -> 0
 				// return F.C0;
 				// }
-			} else if (listArg1.size() == 2) {
+			} else if (listArg1.isAST1()) {
 				IAST[] derivStruct = listArg1.isDerivative();
 				if (derivStruct != null && derivStruct[2] != null) {
 					IAST headAST = derivStruct[1];
 					IAST a1Head = derivStruct[0];
-					if (a1Head.size() == 2 && a1Head.arg1().isInteger()) {
+					if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							IExpr arg1 = listArg1.arg1();
@@ -267,7 +267,7 @@ public class D extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				return getDerivativeArg1(x, listArg1.arg1(), header);
-			} else if (listArg1.size() == 3) {
+			} else if (listArg1.isAST2()) {
 				return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
 			}
 

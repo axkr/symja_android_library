@@ -21,7 +21,7 @@ public class UnitVector extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			int n = Validate.checkIntType(ast, 1);
 			int k = Validate.checkIntType(ast, 2);
 			if (k <= n) {

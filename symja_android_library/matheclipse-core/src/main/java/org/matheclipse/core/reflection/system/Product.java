@@ -87,7 +87,7 @@ public class Product extends Table implements ProductRules {
 							if (iterator.getStart().isOne()) {
 								if (powArg2.equals(var)) {
 									// Prod( a^i, ..., {i,from,to} )
-									if (ast.size() == 3) {
+									if (ast.isAST2()) {
 										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
 									}
 									IAST result = ast.clone();
@@ -99,7 +99,7 @@ public class Product extends Table implements ProductRules {
 						}
 					}
 					if (arg1.isFree(var)) {
-						if (ast.size() == 3) {
+						if (ast.isAST2()) {
 							if (from.isOne()) {
 								return F.Power(ast.arg1(), to);
 							}
@@ -128,7 +128,7 @@ public class Product extends Table implements ProductRules {
 			if (!temp.isPresent() || temp.equals(resultList)) {
 				return F.NIL;
 			}
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				return temp;
 			} else {
 				IAST result = ast.clone();

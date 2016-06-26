@@ -187,7 +187,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 				if (basicPlus.size() > 1) {
 					temp = tryTransformations(basicPlus.getOneIdentity(F.C0));
 					if (temp.isPresent()) {
-						if (restPlus.size() == 1) {
+						if (restPlus.isAST0()) {
 							return temp;
 						}
 						return F.Plus(temp, restPlus);
@@ -229,7 +229,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 				if (basicTimes.size() > 1) {
 					temp = tryTransformations(basicTimes.getOneIdentity(F.C0));
 					if (temp.isPresent()) {
-						if (restTimes.size() == 1) {
+						if (restTimes.isAST0()) {
 							return temp;
 						}
 						return F.Times(temp, restTimes);

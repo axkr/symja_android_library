@@ -46,7 +46,7 @@ public class DeleteCases extends AbstractCoreFunctionEvaluator {
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-			if (ast.size() == 4 || ast.size() == 5) {
+			if (ast.isAST3() || ast.size() == 5) {
 				final IExpr arg3 = engine.evaluate(ast.arg3());
 				int maximumRemoveOperations = -1;
 				if (ast.size() == 5) {

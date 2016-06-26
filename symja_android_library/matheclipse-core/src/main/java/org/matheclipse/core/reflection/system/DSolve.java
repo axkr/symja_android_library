@@ -45,7 +45,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				}
 			}
 
-			if (uFunction1Arg.size() == 2 && uFunction1Arg.arg1().equals(xVar)) {
+			if (uFunction1Arg.isAST1() && uFunction1Arg.arg1().equals(xVar)) {
 				IAST listOfVariables = F.List(uFunction1Arg);
 				if (listOfEquations.size() <= 2) {
 					IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
@@ -102,7 +102,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				try {
 					int order = -1;
 					if (deriveExpr.length == 3) {
-						if (deriveExpr[0].size() == 2 && deriveExpr[0].arg1().isInteger()) {
+						if (deriveExpr[0].isAST1() && deriveExpr[0].arg1().isInteger()) {
 							order = ((IInteger) deriveExpr[0].arg1()).toInt();
 							// TODO check how and that the uFunction and
 							// xVar is used in the deriv expression...

@@ -27,13 +27,13 @@ public class While extends AbstractCoreFunctionEvaluator {
 		// While(test, body)
 		IExpr test = ast.arg1();
 		IExpr body = F.Null;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			body = ast.arg2();
 		}
 
 		while (engine.evaluate(test).isTrue()) {
 			try {
-				if (ast.size() == 3) {
+				if (ast.isAST2()) {
 					engine.evaluate(body);
 				}
 				if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {

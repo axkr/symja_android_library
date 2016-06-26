@@ -18,14 +18,14 @@ public class Integrate extends AbstractConverter {
 	 *            The math function which should be converted to MathML
 	 */
 	// public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-	// if (f.size() == 3) {
+	// if (f.isAST2()) {
 	// fFactory.tagStart(buf, "mrow");
 	// final Object obj = f.arg2();
 	// IAST list = null;
 	// if (obj instanceof IAST) {
 	// list = (IAST) obj;
 	// }
-	// if ((list != null) && (list.size() == 4) && list.isList()) {
+	// if ((list != null) && (list.isAST3()) && list.isList()) {
 	// fFactory.tagStart(buf, "msubsup");
 	// // &Integral; &#x222B;
 	// fFactory.tag(buf, "mo", "&#x222B;");
@@ -71,7 +71,7 @@ public class Integrate extends AbstractConverter {
 		}
 		if (f.get(i).isList()) {
 			IAST list = (IAST) f.get(i);
-			if (list.size() == 4 && list.arg1().isSymbol()) {
+			if (list.isAST3() && list.arg1().isSymbol()) {
 				ISymbol symbol = (ISymbol) list.arg1();
 				fFactory.tagStart(buf, "msubsup");
 				// &Integral; &#x222B;

@@ -40,7 +40,7 @@ public class MapThread extends AbstractFunctionEvaluator {
 
 		VisitorLevelSpecification level = null;
 		Function<IExpr, IExpr> umt = new UnaryMapThread(ast.arg1());
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			level = new VisitorLevelSpecification(umt, ast.arg3(), false);
 		} else {
 			level = new VisitorLevelSpecification(umt, 0);

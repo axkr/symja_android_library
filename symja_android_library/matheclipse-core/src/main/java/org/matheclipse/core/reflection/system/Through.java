@@ -23,7 +23,7 @@ public class Through extends AbstractFunctionEvaluator {
 
 				IAST clonedList;
 				IAST l2 = (IAST) h;
-				if (ast.size() == 3 && !l2.head().equals(ast.arg2())) {
+				if (ast.isAST2() && !l2.head().equals(ast.arg2())) {
 					return l1;
 				}
 				IAST result = F.ast(l2.head());

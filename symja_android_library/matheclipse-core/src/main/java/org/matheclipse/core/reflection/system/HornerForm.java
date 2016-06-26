@@ -32,7 +32,7 @@ public class HornerForm extends AbstractFunctionEvaluator {
 			IAST poly = (IAST) arg1;
 			VariablesSet eVar;
 			IAST variables;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				variables = Validate.checkSymbolOrSymbolList(ast, 2);
 			} else {
 				eVar = new VariablesSet(ast.arg1());

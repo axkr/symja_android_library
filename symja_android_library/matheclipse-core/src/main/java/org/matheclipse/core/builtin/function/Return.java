@@ -16,10 +16,10 @@ public class Return extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			throw new ReturnException();
 		}
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			throw new ReturnException(engine.evaluate(ast.arg1()));
 		}
 		Validate.checkRange(ast, 1, 2);

@@ -189,7 +189,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 					if (INT_FUNCTIONS.contains(fx.head())) {
-						if (fx.size() == 2 && x.equals(fx.arg1())) {
+						if (fx.isAST1() && x.equals(fx.arg1())) {
 							IExpr head = fx.head();
 							IExpr temp = integrate1ArgumentFunctions(head, x);
 							if (temp.isPresent()) {
@@ -221,7 +221,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 
 						final IAST arg1AST = (IAST) fxExpanded;
-						if (arg1AST.size() == 2 && x.equals(arg1AST.arg1())) {
+						if (arg1AST.isAST1() && x.equals(arg1AST.arg1())) {
 							IExpr head = arg1AST.head();
 							IExpr temp = integrate1ArgumentFunctions(head, x);
 							if (temp.isPresent()) {

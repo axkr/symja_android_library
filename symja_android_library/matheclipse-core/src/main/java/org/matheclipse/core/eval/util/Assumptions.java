@@ -176,7 +176,7 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	private static boolean addGreater(IAST greaterAST, Assumptions assumptions) {
-		if (greaterAST.size() == 4) {
+		if (greaterAST.isAST3()) {
 			// arg1 > arg2 > arg3
 			IExpr arg1 = greaterAST.arg1();
 			IExpr arg2 = greaterAST.arg2();
@@ -228,7 +228,7 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	private static boolean addGreaterEqual(IAST greaterEqualAST, Assumptions assumptions) {
-		if (greaterEqualAST.size() == 4) {
+		if (greaterEqualAST.isAST3()) {
 			// arg1 >= arg2 >= arg3
 			IExpr arg1 = greaterEqualAST.arg1();
 			IExpr arg2 = greaterEqualAST.arg2();
@@ -277,7 +277,7 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	private static boolean addLess(IAST lessAST, Assumptions assumptions) {
-		if (lessAST.size() == 4) {
+		if (lessAST.isAST3()) {
 			// arg1 < arg2 < arg3;
 			IExpr arg1 = lessAST.arg1();
 			IExpr arg2 = lessAST.arg2();
@@ -326,7 +326,7 @@ public class Assumptions extends AbstractAssumptions {
 
 	private static boolean addLessEqual(IAST lessEqualAST, Assumptions assumptions) {
 
-		if (lessEqualAST.size() == 4) {
+		if (lessEqualAST.isAST3()) {
 			// arg1 <= arg2 <= arg3
 			IExpr arg1 = lessEqualAST.arg1();
 			IExpr arg2 = lessEqualAST.arg2();

@@ -33,7 +33,7 @@ public class Partition extends AbstractFunctionEvaluator {
 				IAST temp;
 				int i = n;
 				int v = n;
-				if ((ast.size() == 4) && ast.arg3().isInteger()) {
+				if ((ast.isAST3()) && ast.arg3().isInteger()) {
 					v = ((IInteger) ast.arg3()).getBigNumerator().intValue();
 				}
 				while (i <= f.size() - 1) {

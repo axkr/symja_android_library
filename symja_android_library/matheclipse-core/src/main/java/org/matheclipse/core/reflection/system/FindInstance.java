@@ -26,7 +26,7 @@ public class FindInstance extends Solve {
 		Validate.checkRange(ast, 3, 4);
 
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			if (ast.arg3().equals(F.Booleans)) {
 				IAST resultList = F.List();
 				booleansSolve(ast.arg1(), vars, 1, 1, resultList);

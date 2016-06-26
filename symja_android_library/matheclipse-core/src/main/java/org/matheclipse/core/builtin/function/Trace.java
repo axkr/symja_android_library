@@ -25,7 +25,7 @@ public class Trace extends AbstractCoreFunctionEvaluator {
 
 		final IExpr temp = ast.arg1();
 		IPatternMatcher matcher = null;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			matcher = engine.evalPatternMatcher(ast.arg2());
 		}
 

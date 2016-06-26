@@ -76,7 +76,7 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTTo(final IAST lst) {
-		if ((lst.size() == 2) && (lst.arg1().isSignedNumber())) {
+		if ((lst.isAST1()) && (lst.arg1().isSignedNumber())) {
 			return ((ISignedNumber) lst.arg1()).toInt();
 		}
 		if ((lst.size() > 2) && !(lst.arg2() instanceof IInteger)) {

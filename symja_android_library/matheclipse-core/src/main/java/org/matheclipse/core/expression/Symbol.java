@@ -658,7 +658,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isPolynomial(IAST variables) {
-		if (variables.size() == 1) {
+		if (variables.isAST0()) {
 			return true;
 		}
 		for (int i = 1; i < variables.size(); i++) {

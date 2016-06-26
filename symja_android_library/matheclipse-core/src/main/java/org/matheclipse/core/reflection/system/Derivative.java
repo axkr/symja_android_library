@@ -68,7 +68,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 
 	@Override
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			if (ast.head().isAST(F.Derivative, 2)) {
 				// Derivative(n)
 				IAST head = (IAST) ast.head();

@@ -24,7 +24,7 @@ public class Sort extends AbstractFunctionEvaluator {
 				return shallowCopy;
 			}
 			try {
-				if (ast.size() == 2) {
+				if (ast.isAST1()) {
 					EvalAttributes.sort(shallowCopy);
 				} else {
 					// use the 2nd argument as a head for the comparator

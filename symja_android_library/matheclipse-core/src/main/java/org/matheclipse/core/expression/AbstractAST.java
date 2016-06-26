@@ -1201,7 +1201,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public boolean isAbs() {
 		return isSameHead(F.Abs, 2);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAllExpanded() {
@@ -1259,6 +1259,30 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return true;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST0() {
+		return size() == 1;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST1() {
+		return size() == 2;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST2() {
+		return size() == 3;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST3() {
+		return size() == 4;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST(final IExpr header) {

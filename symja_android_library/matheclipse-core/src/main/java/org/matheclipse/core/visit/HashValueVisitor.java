@@ -29,7 +29,7 @@ public class HashValueVisitor extends AbstractVisitorInt {
 				hash = (31 * list.head().hashCode() + list.size());
 			}
 		} else {
-			if (list.size() == 1) {
+			if (list.isAST0()) {
 				hash = (17 * list.head().hashCode());
 			} else {
 				// this case shouldn't happen

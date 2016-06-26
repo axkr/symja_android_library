@@ -16,7 +16,7 @@ public class Continue extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			throw new ContinueException();
 		}
 		Validate.checkSize(ast, 1);

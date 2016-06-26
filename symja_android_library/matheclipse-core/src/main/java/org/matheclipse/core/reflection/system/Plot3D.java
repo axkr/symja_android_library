@@ -42,7 +42,7 @@ public class Plot3D extends AbstractEvaluator {
 			IExpr temp;
 			final IAST lst1 = (IAST) ast.get(2); // x-Range
 			final IAST lst2 = (IAST) ast.get(3); // y-Range
-			if ((lst1.size() == 4) && (lst2.size() == 4)) {
+			if (lst1.isAST3() && lst2.isAST3()) {
 				// final Options hOptions = new Options(F.Plot3D, ast, 4);
 				// IAST allOptions = List();
 				// for (int i = 0; i < optionsArray.length; i++) {

@@ -36,7 +36,7 @@ public class Plot extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if ((ast.size() >= 3) && (ast.size() <= 4) && ast.get(2).isList()) {
 			final IAST lst = (IAST) ast.get(2);
-			if (lst.size() == 4) {
+			if (lst.isAST3()) {
 				final IExpr a = engine.evaluate(N(lst.get(2)));
 				final IExpr b = engine.evaluate(N(lst.get(3)));
 				if ((!(a instanceof INum)) || (!(b instanceof INum))) {
@@ -50,9 +50,9 @@ public class Plot extends AbstractEvaluator {
 				double y0d = 0.0f;
 				double y1d = 0.0f;
 
-				if ((ast.size() == 4) && ast.get(3).isList()) {
+				if ((ast.isAST3()) && ast.get(3).isList()) {
 					final IAST lsty = (IAST) ast.get(3);
-					if (lsty.size() == 3) {
+					if (lsty.isAST2()) {
 						final IExpr y0 = engine.evaluate(N(lsty.get(1)));
 						final IExpr y1 = engine.evaluate(N(lsty.get(2)));
 						if ((y0 instanceof INum) && (y1 instanceof INum)) {

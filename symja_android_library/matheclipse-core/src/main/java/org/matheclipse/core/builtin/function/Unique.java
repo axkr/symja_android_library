@@ -23,7 +23,7 @@ public class Unique extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 1, 2);
 
 		final int moduleCounter = engine.incModuleCounter();
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			if (ast.arg1().isSymbol()) {
 				final String varAppend = ast.arg1().toString() + "$" + moduleCounter;
 				return F.$s(varAppend);

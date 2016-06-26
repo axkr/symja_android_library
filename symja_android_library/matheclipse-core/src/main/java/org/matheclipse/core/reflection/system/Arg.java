@@ -46,7 +46,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
-			if (directedInfininty.size() == 2) {
+			if (directedInfininty.isAST1()) {
 				if (directedInfininty.isInfinity()) {
 					return F.C0;
 				}

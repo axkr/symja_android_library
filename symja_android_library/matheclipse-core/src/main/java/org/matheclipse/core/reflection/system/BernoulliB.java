@@ -33,7 +33,7 @@ public class BernoulliB extends AbstractFunctionEvaluator {
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			// bernoulli number
 			if (ast.arg1().isInteger()) {
 				IFraction bernoulli = bernoulliNumber((IInteger) ast.arg1());

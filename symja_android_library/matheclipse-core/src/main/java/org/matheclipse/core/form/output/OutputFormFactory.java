@@ -507,7 +507,7 @@ public class OutputFormFactory {
 			} else if (numerator.isComplex() || numerator.isComplexNumeric()) {
 				convertNumber(buf, (INumber) numerator, ASTNodeFactory.DIVIDE_PRECEDENCE, caller);
 			} else {
-				if (numerator.isTimes() && ((IAST) numerator).size() == 3 && ((IAST) numerator).arg1().isMinusOne()) {
+				if (numerator.isTimes() && numerator.isAST2() && ((IAST) numerator).arg1().isMinusOne()) {
 					append(buf, "-");
 					convert(buf, ((IAST) numerator).arg2(), ASTNodeFactory.TIMES_PRECEDENCE);
 				} else {
@@ -624,7 +624,7 @@ public class OutputFormFactory {
 	public void convertInfixOperator(final Appendable buf, final IAST list, final InfixOperator oper,
 			final int precedence) throws IOException {
 
-		if (list.size() == 3) {
+		if (list.isAST2()) {
 			if (oper.getPrecedence() < precedence) {
 				append(buf, "(");
 			}
@@ -745,7 +745,7 @@ public class OutputFormFactory {
 				if (derivStruct != null) {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];
-					if (a1Head.size() == 2 && a1Head.arg1().isInteger() && headAST.size() == 2
+					if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1()
 							&& headAST.arg1().isSymbol() && derivStruct[2] != null) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
@@ -774,7 +774,7 @@ public class OutputFormFactory {
 			ISymbol head = list.topHead();
 			final Operator operator = getOperator(head);
 			if (operator != null) {
-				if ((operator instanceof PrefixOperator) && (list.size() == 2)) {
+				if ((operator instanceof PrefixOperator) && (list.isAST1())) {
 					convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
 					return;
 				}
@@ -796,7 +796,7 @@ public class OutputFormFactory {
 					convertInfixOperator(buf, list, (InfixOperator) operator, precedence);
 					return;
 				}
-				if ((operator instanceof PostfixOperator) && (list.size() == 2)) {
+				if ((operator instanceof PostfixOperator) && (list.isAST1())) {
 					convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
 					return;
 				}
@@ -809,15 +809,15 @@ public class OutputFormFactory {
 				convertPart(buf, list);
 				return;
 			}
-			if (head.equals(F.Slot) && (list.size() == 2) && (list.arg1() instanceof IInteger)) {
+			if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
 				convertSlot(buf, list);
 				return;
 			}
-			if (head.equals(F.Hold) && (list.size() == 2)) {
+			if (head.equals(F.Hold) && (list.isAST1())) {
 				convert(buf, list.arg1());
 				return;
 			}
-			if (head.equals(F.HoldForm) && (list.size() == 2)) {
+			if (head.equals(F.HoldForm) && (list.isAST1())) {
 				convert(buf, list.arg1());
 				return;
 			}
@@ -828,11 +828,11 @@ public class OutputFormFactory {
 			}
 			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
 												// {
-				if (list.size() == 1) {
+				if (list.isAST0()) {
 					append(buf, "ComplexInfinity");
 					return;
 				}
-				if (list.size() == 2) {
+				if (list.isAST1()) {
 					if (list.arg1().isOne()) {
 						append(buf, "Infinity");
 						return;
@@ -925,7 +925,7 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.size() == 3</code> and the
+	 * This method will only be called if <code>list.isAST2()==true</code> and the
 	 * head equals "Part".
 	 * 
 	 * @param buf

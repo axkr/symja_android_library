@@ -40,7 +40,7 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 			if (directedInfininty.isComplexInfinity()) {
 				return F.CComplexInfinity;
 			}
-			if (directedInfininty.size() == 2) {
+			if (directedInfininty.isAST1()) {
 				if (directedInfininty.isInfinity()) {
 					return F.CInfinity;
 				}
@@ -98,10 +98,10 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 				i++;
 			}
 			if (result.isPresent()) {
-				if (clone.size() == 1) {
+				if (clone.isAST0()) {
 					return result;
 				}
-				if (clone.size() == 1) {
+				if (clone.isAST0()) {
 					result.add(F.Conjugate(clone.arg1()));
 					return result;
 				}

@@ -17,7 +17,7 @@ public class D extends AbstractConverter {
    *@param  f    The math function which should be converted to MathML
    */
   public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-    if (f.size() == 3) {
+    if (f.isAST2()) {
       fFactory.tagStart(buf, "mfrac");
       fFactory.tagStart(buf, "mrow");
 //    &PartialD;  &x02202;

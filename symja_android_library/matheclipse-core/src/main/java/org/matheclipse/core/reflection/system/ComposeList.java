@@ -23,7 +23,7 @@ public class ComposeList extends AbstractEvaluator {
 
 	public static IExpr evaluateComposeList(final IAST ast, final IAST resultList) {
 		try {
-			if ((ast.size() == 3) && (ast.arg1().isAST())) {
+			if ((ast.isAST2()) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();
 				final IAST list = (IAST) ast.arg1();
 				FoldList.foldLeft(ast.arg2(), list, 1, list.size(), new BinaryApply(F.ast(ast.arg1())), resultList);

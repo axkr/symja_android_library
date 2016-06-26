@@ -34,11 +34,11 @@ public class Position extends AbstractCoreFunctionEvaluator {
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
 				return position((IAST) arg1, arg2, level);
 			}
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Heads");
 				if (option.isPresent()) {

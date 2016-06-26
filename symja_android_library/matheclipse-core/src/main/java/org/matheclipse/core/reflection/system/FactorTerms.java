@@ -25,7 +25,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IAST variableList = F.List();
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			if (ast.arg2().isSymbol()) {
 				ISymbol variable = (ISymbol) ast.arg2();
 				variableList = F.List(variable);
@@ -35,7 +35,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 		} else {
-			if (ast.size() == 2) {
+			if (ast.isAST1()) {
 				VariablesSet eVar;
 				eVar = new VariablesSet(ast.arg1());
 				if (!eVar.isSize(1)) {

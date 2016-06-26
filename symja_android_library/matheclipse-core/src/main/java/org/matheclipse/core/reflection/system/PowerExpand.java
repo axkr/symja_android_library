@@ -133,7 +133,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 		if (ast.arg1().isAST()) {
 			boolean assumptions = false;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 				IExpr option = options.getOption(Assumptions);
 				if (option.isTrue()) {

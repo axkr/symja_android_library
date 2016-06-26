@@ -25,12 +25,12 @@ public class NextPrime extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.size() == 2 && ast.arg1().isInteger()) {
+		if (ast.isAST1() && ast.arg1().isInteger()) {
 
 			BigInteger primeBase = ((IInteger) ast.arg1()).getBigNumerator();
 			return F.integer(primeBase.nextProbablePrime());
 
-		} else if (ast.size() == 3 && ast.arg1().isInteger() && ast.arg2().isInteger()) {
+		} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
 
 			BigInteger primeBase = ((IInteger) ast.arg1()).getBigNumerator();
 			final int n = Validate.checkIntType(ast, 2, 1);

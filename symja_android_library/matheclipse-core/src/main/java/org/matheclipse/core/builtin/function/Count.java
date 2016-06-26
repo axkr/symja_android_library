@@ -53,7 +53,7 @@ public class Count extends AbstractCoreFunctionEvaluator {
 
 		final VisitorLevelSpecification level;
 		CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
-		if (ast.size() == 4) {
+		if (ast.isAST3()) {
 			final IExpr arg3 = engine.evaluate(ast.arg3());
 			level = new VisitorLevelSpecification(mf, arg3, false);
 		} else {

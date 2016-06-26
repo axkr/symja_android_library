@@ -80,7 +80,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() > 1) {
 			IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				return equalNull(ast.arg1(), ast.arg2());
 			}
 
@@ -103,7 +103,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 				}
 			}
 			if (evaled) {
-				if (result.size() == 2) {
+				if (result.isAST1()) {
 					return F.True;
 				}
 				return result;

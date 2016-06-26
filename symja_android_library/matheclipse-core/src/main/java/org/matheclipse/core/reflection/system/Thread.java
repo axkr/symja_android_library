@@ -24,13 +24,13 @@ public class Thread extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		// LevelSpec level = null;
-		// if (functionList.size() == 4) {
+		// if (functionList.isAST3()) {
 		// level = new LevelSpecification(functionList.arg3());
 		// } else {
 		// level = new LevelSpec(1);
 		// }
 		IExpr head = F.List;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			head = ast.arg2();
 		}
 		final IAST list = (IAST) ast.arg1();

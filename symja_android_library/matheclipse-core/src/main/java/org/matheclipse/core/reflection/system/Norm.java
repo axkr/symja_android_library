@@ -24,7 +24,7 @@ public class Norm extends AbstractEvaluator {
 
 		int dim = arg1.isVector();
 		if (dim > (-1)) {
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
 				if (arg2.isInfinity()) {
 					return ((IAST) arg1).map(F.Max, Functors.replaceAll(F.Abs(F.Null), F.Null));
@@ -40,14 +40,14 @@ public class Norm extends AbstractEvaluator {
 			return F.Sqrt(((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Sqr(F.Abs(F.Null)), F.Null)));
 		}
 		if (arg1.isNumber()) {
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				return F.NIL;
 			}
 			// absolute Value of a number
 			return ((INumber) arg1).eabs();
 		}
 		if (arg1.isNumericFunction()) {
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				return F.NIL;
 			}
 			// absolute Value

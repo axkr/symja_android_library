@@ -89,7 +89,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 		if (levelExpr.isList()) {
 			final IAST lst = (IAST) levelExpr;
 
-			if (lst.size() == 2) {
+			if (lst.isAST1()) {
 				if (lst.arg1() instanceof IInteger) {
 					final IInteger i = (IInteger) lst.arg1();
 
@@ -113,7 +113,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 					return;
 				}
 			} else {
-				if ((lst.size() == 3)) {
+				if ((lst.isAST2())) {
 					if ((lst.arg1() instanceof IInteger) && (lst.arg2() instanceof IInteger)) {
 						final IInteger i0 = (IInteger) lst.arg1();
 						final IInteger i1 = (IInteger) lst.arg2();

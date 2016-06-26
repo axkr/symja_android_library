@@ -119,7 +119,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			IExpr result = simplifyCompare(arg1, arg2);

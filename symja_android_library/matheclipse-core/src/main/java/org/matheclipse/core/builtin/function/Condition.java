@@ -17,7 +17,7 @@ public class Condition extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			if (engine.evalTrue(ast.arg2())) {
 				return engine.evaluate(ast.arg1());
 			}

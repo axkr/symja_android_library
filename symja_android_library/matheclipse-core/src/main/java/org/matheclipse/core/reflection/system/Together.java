@@ -135,7 +135,7 @@ public class Together extends AbstractFunctionEvaluator {
 			}
 			i++;
 		}
-		if (denominator.size() == 1) {
+		if (denominator.isAST0()) {
 			return F.NIL;
 		}
 

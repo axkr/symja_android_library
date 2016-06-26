@@ -23,7 +23,7 @@ public class Names extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			return getAllNames();
 		}
 

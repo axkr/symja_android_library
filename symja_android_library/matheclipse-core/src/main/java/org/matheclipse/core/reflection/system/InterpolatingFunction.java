@@ -24,8 +24,8 @@ public class InterpolatingFunction extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.head().isAST()) {
 			final IAST function = (IAST) ast.head();
-			if (ast.size() == 2 && ast.arg1() instanceof INum) {
-				if (function.size() == 2) {
+			if (ast.isAST1() && ast.arg1() instanceof INum) {
+				if (function.isAST1()) {
 					try {
 						int[] dims = function.arg1().isMatrix();
 						if (dims != null && dims[1] == 2) {

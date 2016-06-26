@@ -41,7 +41,7 @@ public class HarmonicNumber extends AbstractEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr arg2 = ast.arg2();
 			if (arg2.isOne()) {
 				return F.HarmonicNumber(arg1);

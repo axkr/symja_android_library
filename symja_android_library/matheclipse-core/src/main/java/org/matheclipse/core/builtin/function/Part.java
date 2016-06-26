@@ -66,7 +66,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 			return ires;
 		} else if (arg2.isSpan()) {
 			IAST span = (IAST) arg2;
-			if (span.size() == 3) {
+			if (span.isAST2()) {
 				final int indx1 = Validate.checkIntType(span, 1, Integer.MIN_VALUE);
 				final int indx2 = Validate.checkIntType(span, 2, Integer.MIN_VALUE);
 				IAST result = arg1.copyHead();

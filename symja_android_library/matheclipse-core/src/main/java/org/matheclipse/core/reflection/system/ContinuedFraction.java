@@ -32,7 +32,7 @@ public class ContinuedFraction extends AbstractEvaluator {
 		IExpr arg1 = ast.arg1();
 
 		int maxIterations = Integer.MAX_VALUE;
-		if (ast.size() == 3 && ast.arg2().isInteger()) {
+		if (ast.isAST2() && ast.arg2().isInteger()) {
 			maxIterations = Validate.checkIntType(ast, 2);
 		}
 

@@ -33,7 +33,7 @@ public class Gamma extends AbstractTrigArg1 {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 4);
 
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			return evaluateArg1(ast.arg1());
 		}
 		return F.NIL;

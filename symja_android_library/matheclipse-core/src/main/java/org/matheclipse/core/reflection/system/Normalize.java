@@ -19,7 +19,7 @@ public class Normalize extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		IExpr normFunction = F.Norm;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			normFunction = ast.arg2();
 		}
 		IExpr arg1 = ast.arg1();

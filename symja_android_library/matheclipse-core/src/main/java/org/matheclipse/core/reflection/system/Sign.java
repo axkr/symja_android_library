@@ -35,7 +35,7 @@ public class Sign extends AbstractEvaluator {
 			if (directedInfininty.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
-			if (directedInfininty.size() == 2) {
+			if (directedInfininty.isAST1()) {
 				return F.Sign(directedInfininty.arg1());
 			}
 		}

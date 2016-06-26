@@ -28,7 +28,7 @@ public class JavaForm extends AbstractCoreFunctionEvaluator {
 
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		boolean strictJava = false;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			final Options options = new Options(ast.topHead(), arg2, engine);
 			strictJava = options.isOption("Strict");

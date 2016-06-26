@@ -23,7 +23,7 @@ public class Dimensions extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		int n = Integer.MAX_VALUE;
-		if (ast.size() == 3 && ast.arg2().isInteger()) {
+		if (ast.isAST2() && ast.arg2().isInteger()) {
 			n = Validate.checkIntType(ast, 2);
 		}
 		if (ast.arg1().isAST()) {

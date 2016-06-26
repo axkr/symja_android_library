@@ -19,7 +19,7 @@ public class Min extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1);
 
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			return F.CInfinity;
 		}
 

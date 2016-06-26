@@ -30,7 +30,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 		}
 		IAST matrix = (IAST) ast.arg1();
 		IExpr defaultValue = F.C0;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			defaultValue = ast.arg2();
 		}
 		IExpr cond;

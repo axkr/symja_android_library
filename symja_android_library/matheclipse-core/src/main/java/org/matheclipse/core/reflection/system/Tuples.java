@@ -22,7 +22,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		IExpr arg1 = ast.arg1();
-		if (ast.size() == 2 && arg1.isList()) {
+		if (ast.isAST1() && arg1.isList()) {
 			try {
 				IAST list = (IAST) arg1;
 				for (int i = 1; i < list.size(); i++) {
@@ -40,7 +40,7 @@ public class Tuples extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 			return F.NIL;
-		} else if (ast.size() == 3 && arg1.isAST() && ast.arg2().isInteger()) {
+		} else if (ast.isAST2() && arg1.isAST() && ast.arg2().isInteger()) {
 			IExpr arg2 = ast.arg2();
 			try {
 				int k = ((IInteger) arg2).toInt();

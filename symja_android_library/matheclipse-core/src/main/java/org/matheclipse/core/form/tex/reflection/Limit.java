@@ -10,7 +10,7 @@ public class Limit extends AbstractConverter {
 
 	/** {@inheritDoc} */
 	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-		if (f.size() == 3 && f.arg2().isRuleAST()) {
+		if (f.isAST2() && f.arg2().isRuleAST()) {
 			final IAST rule = (IAST) f.arg2();
 			buf.append("\\lim_{");
 			fFactory.convertSubExpr(buf, rule.arg1(), 0);

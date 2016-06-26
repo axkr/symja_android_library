@@ -599,7 +599,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return
 	 */
 	private IExpr evalASTArg1(final IAST ast) {
-		// special case ast.size() == 2
+		// special case ast.isAST1()
 		// head == ast[0] --- arg1 == ast[1]
 		IExpr result = ast.head().evaluateHead(ast, this);
 		if (result.isPresent()) {

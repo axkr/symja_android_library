@@ -22,10 +22,10 @@ public class Blank extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			return F.$b();
 		}
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			return F.$b(ast.arg1());
 		}
 		return F.NIL;

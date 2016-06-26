@@ -25,7 +25,7 @@ public class Union extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 
-		if (ast.size() == 2 && ast.arg1().isAST()) {
+		if (ast.isAST1() && ast.arg1().isAST()) {
 			final IAST result = F.List();
 			IAST arg1 = (IAST) ast.arg1();
 			Set<IExpr> set = arg1.asSet();

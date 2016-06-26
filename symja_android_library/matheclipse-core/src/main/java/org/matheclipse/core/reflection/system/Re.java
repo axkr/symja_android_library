@@ -45,7 +45,7 @@ public class Re extends AbstractEvaluator {
 			if (directedInfininty.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
-			if (directedInfininty.size() == 2) {
+			if (directedInfininty.isAST1()) {
 				if (directedInfininty.isInfinity()) {
 					return F.CInfinity;
 				}

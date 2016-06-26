@@ -26,20 +26,20 @@ public class Cross extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		IExpr arg1 = ast.arg1();
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr arg2 = ast.arg2();
 			int dim1 = arg1.isVector();
 			int dim2 = arg2.isVector();
 			if (dim1 == 3 && dim2 == 3) {
 				final IAST v1 = (IAST) arg1;
 				final IAST v2 = (IAST) arg2;
-				if ((v1.size() == 4) || (v2.size() == 4)) {
+				if ((v1.isAST3()) || (v2.isAST3())) {
 					return List(Plus(Times(v1.arg2(), v2.arg3()), Times(CN1, v1.arg3(), v2.arg2())),
 							Plus(Times(v1.arg3(), v2.arg1()), Times(CN1, v1.arg1(), v2.arg3())),
 							Plus(Times(v1.arg1(), v2.arg2()), Times(CN1, v1.arg2(), v2.arg1())));
 				}
 			}
-		} else if (ast.size() == 2) {
+		} else if (ast.isAST1()) {
 			int dim1 = arg1.isVector();
 			if (dim1 == 2) {
 				final IAST v1 = (IAST) arg1;

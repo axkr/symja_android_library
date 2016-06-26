@@ -21,7 +21,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
 			if (temp.isPresent()) {
 				return temp;
@@ -80,7 +80,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 			if (evaled) {
 
-				if ((result.size() == 2) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
+				if ((result.isAST1()) && ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY)) {
 					return result.arg1();
 				}
 

@@ -27,7 +27,7 @@ public class Chop extends AbstractCoreFunctionEvaluator {
 
 		IExpr arg1 = ast.arg1();
 		double delta = DEFAULT_CHOP_DELTA;
-		if (ast.size() == 3 && ast.arg2() instanceof INum) {
+		if (ast.isAST2() && ast.arg2() instanceof INum) {
 			delta = ((INum) ast.arg2()).getRealPart();
 		}
 		try {

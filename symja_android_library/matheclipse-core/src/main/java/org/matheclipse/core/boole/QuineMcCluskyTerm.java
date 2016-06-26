@@ -93,10 +93,10 @@ class QuineMcCluskyTerm {
 				throw new BooleanFunctionConversionException();
 			}
 		}
-		if (result.size() == 1) {
+		if (result.isAST0()) {
 			return F.False;
 		}
-		if (result.size() == 2) {
+		if (result.isAST1()) {
 			return result.arg1();
 		}
 		return result;

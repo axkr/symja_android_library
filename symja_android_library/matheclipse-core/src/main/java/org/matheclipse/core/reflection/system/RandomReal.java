@@ -13,7 +13,7 @@ public class RandomReal extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1) {
+		if (ast.isAST0()) {
 			// RandomReal[] gives a double value between 0.0 and 1.0
 			double r = Math.random();
 			return F.num(r);

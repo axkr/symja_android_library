@@ -188,7 +188,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			if (o0.isMinusOne()) {
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
-			if (o0.isInteger() && o1.isPlus() && (((IAST) o1).size() == 3)
+			if (o0.isInteger() && o1.isPlus() && o1.isAST2()
 					&& (((IAST) o1).arg1().isNumericFunction())) {
 				// Note: this doesn't work for Together() function, if we allow
 				// o0 to be a fractional number
@@ -227,14 +227,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				return F.CComplexInfinity;
 			}
 		}
-		if (inf.size() == 2) {
+		if (inf.isAST1()) {
 			if (o1.isNumber() || o1.isSymbol()) {
-				if (inf.size() == 2) {
+				if (inf.isAST1()) {
 					return DirectedInfinity.timesInf(inf, o1);
 				}
 
 			}
-			if (o1.isDirectedInfinity() && ((IAST) o1).size() == 2) {
+			if (o1.isDirectedInfinity() && o1.isAST1()) {
 				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
 			}
 		}

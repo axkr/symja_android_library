@@ -27,10 +27,10 @@ public class Multinomial extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2);
 
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			return F.C1;
 		}
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg1());
 		}
 		for (int i = 1; i < ast.size(); i++) {

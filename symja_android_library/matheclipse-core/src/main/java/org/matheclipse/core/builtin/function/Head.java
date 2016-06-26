@@ -13,7 +13,7 @@ public class Head extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			return engine.evaluate(ast.arg1()).head();
 		}
 		return F.SymbolHead;

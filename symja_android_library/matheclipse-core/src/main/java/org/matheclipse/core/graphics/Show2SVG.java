@@ -60,7 +60,7 @@ public class Show2SVG {
 				IExpr point;
 				for (int i = 0; i < numberOfPoints; i++) {
 					point = pointList.get(i + 1);
-					if (point.isList() && ((IAST) point).size() == 3) {
+					if (point.isList() && ((IAST) point).isAST2()) {
 						x[i] = ((INum) ((IAST) point).arg1()).doubleValue();
 						if (x[i] < xMin) {
 							xMin = x[i];

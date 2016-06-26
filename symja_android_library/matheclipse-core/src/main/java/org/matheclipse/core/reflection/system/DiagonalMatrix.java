@@ -25,7 +25,7 @@ public class DiagonalMatrix extends AbstractFunctionEvaluator {
 			int m = list.size();
 			IAST res = F.List();
 			int offset = 0;
-			if ((ast.size() == 3)) {
+			if ((ast.isAST2())) {
 				offset = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			}
 			for (int i = 1; i < m; i++) {

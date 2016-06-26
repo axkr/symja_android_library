@@ -227,14 +227,14 @@ public class Permutations extends AbstractFunctionEvaluator {
 			final IAST f = (IAST) ast.arg1();
 			final IAST result = F.ast(f.head());
 			if (f.size() <= 2) {
-				if (f.size() == 2) {
+				if (f.isAST1()) {
 					result.add(f);
 				}
 				return result;
 			}
 
 			int k = f.size() - 1;
-			if (ast.size() == 3) {
+			if (ast.isAST2()) {
 				if (!ast.arg2().isInteger()) {
 					return F.NIL;
 				}

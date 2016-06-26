@@ -18,7 +18,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 1 || ast.size() == 2) {
+		if (ast.isAST0() || ast.isAST1()) {
 			return F.True;
 		}
 		IAST result = ast.copyHead();
@@ -57,11 +57,11 @@ public class Equivalent extends AbstractFunctionEvaluator {
 			}
 		}
 		if (evaled) {
-			if (result.size() == 1) {
+			if (result.isAST0()) {
 				if (boole.isPresent()) {
 					return F.True;
 				}
-			} else if (result.size() == 2 && !boole.isPresent()) {
+			} else if (result.isAST1() && !boole.isPresent()) {
 				return F.True;
 			}
 			if (boole.isPresent()) {

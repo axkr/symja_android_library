@@ -19,7 +19,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isList()) {
 				// thread over list?

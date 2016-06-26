@@ -82,7 +82,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 
 		try {
 			long n = 1;
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				if (ast.arg3().isNegativeInfinity()) {
 					return F.C0;
 				}

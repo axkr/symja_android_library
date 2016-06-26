@@ -24,7 +24,7 @@ public class IntegerExponent extends AbstractFunctionEvaluator {
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
 		IInteger base = F.C10;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			IExpr arg2 = ast.arg2();
 			if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
 				base = (IInteger) arg2;

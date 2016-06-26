@@ -36,7 +36,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 		Validate.checkRange(ast, 3, 4);
 		try {
 			IExpr head = null;
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				head = engine.evaluate(ast.arg3());
 			}
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);

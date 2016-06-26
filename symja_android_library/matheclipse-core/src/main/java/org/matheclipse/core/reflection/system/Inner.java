@@ -91,7 +91,7 @@ public class Inner extends AbstractFunctionEvaluator {
 			IAST list1 = (IAST) ast.arg2();
 			IAST list2 = (IAST) ast.arg3();
 			IExpr g;
-			if (ast.size() == 4) {
+			if (ast.isAST3()) {
 				g = F.Plus;
 			} else {
 				g = ast.arg4();

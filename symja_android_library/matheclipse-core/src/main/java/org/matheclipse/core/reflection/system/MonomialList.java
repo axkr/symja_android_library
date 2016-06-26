@@ -54,7 +54,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		VariablesSet eVar;
 		IAST symbolList = F.List();
 		List<IExpr> varList;
-		if (ast.size() == 2) {
+		if (ast.isAST1()) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
 			eVar.appendToList(symbolList);

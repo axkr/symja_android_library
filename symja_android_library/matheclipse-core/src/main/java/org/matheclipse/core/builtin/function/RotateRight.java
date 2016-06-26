@@ -20,7 +20,7 @@ public class RotateRight extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IAST result = F.ast(arg1.head());
-			if (ast.size() == 2) {
+			if (ast.isAST1()) {
 				ASTRange range = ((IAST) arg1).args();
 				range.rotateRight(result, 1);
 				// Rotating.rotateRight((IAST) list.arg1(), result, 1, 1);

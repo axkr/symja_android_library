@@ -539,6 +539,54 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an AST list, which contains a <b>header
+	 * element</b> (i.e. the function name) at index position <code>0</code> and
+	 * no <b>argument elements</b>. Therefore this expression is no <b>atomic
+	 * expression</b>.
+	 * 
+	 * @see #isAtom()
+	 */
+	default boolean isAST0() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is an AST list, which contains a <b>header
+	 * element</b> (i.e. the function name) at index position <code>0</code> and
+	 * one <b>argument element</b> at the index position <code>1</code>.
+	 * Therefore this expression is no <b>atomic expression</b>.
+	 * 
+	 * @see #isAtom()
+	 */
+	default boolean isAST1() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is an AST list, which contains a <b>header
+	 * element</b> (i.e. the function name) at index position <code>0</code> and
+	 * two <b>argument elements</b> at the index positions <code>1, 2</code>.
+	 * Therefore this expression is no <b>atomic expression</b>.
+	 * 
+	 * @see #isAtom()
+	 */
+	default boolean isAST2() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is an AST list, which contains a <b>header
+	 * element</b> (i.e. the function name) at index position <code>0</code> and
+	 * three <b>argument elements</b> at the index positions <code>1, 2, 3</code>.
+	 * Therefore this expression is no <b>atomic expression</b>.
+	 * 
+	 * @see #isAtom()
+	 */
+	default boolean isAST3() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression is an AST list, which contains the given
 	 * <b>header element</b> at index position <code>0</code> and some optional
 	 * <b>argument elements</b> at the index positions

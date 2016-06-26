@@ -74,7 +74,7 @@ public class Convert {
 		}
 
 		IAST currInRow = (IAST) listMatrix.arg1();
-		if (currInRow.size() == 1) {
+		if (currInRow.isAST0()) {
 			// special case 0-Matrix
 			double[][] array = new double[0][0];
 			return new Array2DRowRealMatrix(array, false);
@@ -230,7 +230,7 @@ public class Convert {
 		}
 
 		IAST currInRow = (IAST) listMatrix.arg1();
-		if (currInRow.size() == 1) {
+		if (currInRow.isAST0()) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
 			return new Array2DRowFieldMatrix<IExpr>(array, false);
@@ -273,7 +273,7 @@ public class Convert {
 		}
 
 		IAST currInRow = (IAST) listMatrix.arg1();
-		if (currInRow.size() == 1) {
+		if (currInRow.isAST0()) {
 			// special case 0-Matrix
 			IExpr[][] array = new IExpr[0][0];
 			return new Array2DRowFieldMatrix<IExpr>(array, false);

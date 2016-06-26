@@ -53,7 +53,7 @@ public class Apart extends AbstractFunctionEvaluator {
 		} 
 
 		IAST variableList = null;
-		if (ast.size() == 3) {
+		if (ast.isAST2()) {
 			variableList = Validate.checkSymbolOrSymbolList(ast, 2);
 		} else {
 			VariablesSet eVar = new VariablesSet(arg1);
@@ -303,7 +303,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			arg = timesAST.get(i);
 			if (arg.isAST()) {
 				argAST = (IAST) arg;
-				if (trig && argAST.size() == 2) {
+				if (trig && argAST.isAST1()) {
 					IExpr numerForm = Numerator.getTrigForm(argAST, trig);
 					if (numerForm.isPresent()) {
 						IExpr denomForm = Denominator.getTrigForm(argAST, trig);
@@ -369,7 +369,7 @@ public class Apart extends AbstractFunctionEvaluator {
 				result[0] = numerator.getOneIdentity(F.C1);
 				result[1] = denominator.getOneIdentity(F.C1);
 			}
-			if (result[0].isNegative() && result[1].isPlus() && ((IAST) result[1]).size() == 3) {
+			if (result[0].isNegative() && result[1].isPlus() && ((IAST) result[1]).isAST2()) {
 				// negate numerator and denominator:
 				result[0] = result[0].negate();
 				result[1] = result[1].negate();
@@ -382,7 +382,7 @@ public class Apart extends AbstractFunctionEvaluator {
 				result[1] = denominator.getOneIdentity(F.C1); // denominator.getProduct();
 				return result;
 			}
-			if (result[0].isTimes() && ((IAST) result[0]).size() == 3 && ((IAST) result[0]).arg1().isMinusOne()) {
+			if (result[0].isTimes() && ((IAST) result[0]).isAST2() && ((IAST) result[0]).arg1().isMinusOne()) {
 				result[1] = denominator.getOneIdentity(F.C1); // denominator.getProduct();
 				return result;
 			}

@@ -71,7 +71,7 @@ public class Sum extends Table implements SumRules {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
 				if (temp.isPresent() && !temp.equals(resultList)) {
-					if (ast.size() == 3) {
+					if (ast.isAST2()) {
 						return temp;
 					} else {
 						IAST result = ast.clone();
@@ -100,7 +100,7 @@ public class Sum extends Table implements SumRules {
 				if (!temp.isPresent() || temp.equals(resultList)) {
 					return F.NIL;
 				}
-				if (ast.size() == 3) {
+				if (ast.isAST2()) {
 					return temp;
 				} else {
 					IAST result = ast.clone();
@@ -115,7 +115,7 @@ public class Sum extends Table implements SumRules {
 
 					temp = definiteSum(arg1, iterator, (IAST) argN, engine);
 					if (temp.isPresent()) {
-						if (ast.size() == 3) {
+						if (ast.isAST2()) {
 							return temp;
 						}
 						IAST result = ast.clone();
@@ -130,7 +130,7 @@ public class Sum extends Table implements SumRules {
 		} else if (argN.isSymbol()) {
 			temp = indefiniteSum(arg1, (ISymbol) argN);
 			if (temp.isPresent()) {
-				if (ast.size() == 3) {
+				if (ast.isAST2()) {
 					return temp;
 				} else {
 					IAST result = ast.clone();
@@ -266,7 +266,7 @@ public class Sum extends Table implements SumRules {
 				}
 			});
 			if (filterCollector.size() > 1) {
-				if (restCollector.size() == 2) {
+				if (restCollector.isAST1()) {
 					filterCollector.add(F.Sum(restCollector.arg1(), var));
 				} else {
 					filterCollector.add(F.Sum(restCollector, var));
