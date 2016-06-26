@@ -753,6 +753,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 						+ "4*y^3*z+6*z^2+12*y*z^2+6*y^2*z^2+4*z^3+4*y*z^3+z^4");
 	}
 
+	public void testCommonest() { 
+		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", "{b,a,2,c}");
+		check("Commonest({b, a, c, 2, a, b, 1, 2})", "{b,a,2}");
+		check("Commonest({1, 2, 2, 3, 3, 3, 4})", "{3}");
+	}
+	
 	public void testComplexExpand() {
 		check("ComplexExpand(Cos(x+I*y))", "Cos(x)*Cosh(y)+I*Sin(x)*Sinh(y)");
 		check("ComplexExpand(Sin(x+I*y))", "Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)");
