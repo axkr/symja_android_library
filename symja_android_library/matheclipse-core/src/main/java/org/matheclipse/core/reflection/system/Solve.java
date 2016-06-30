@@ -29,6 +29,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Solve extends AbstractFunctionEvaluator {
 
 	/**
+	 * Use <code>-1</code> as an equation expression for which we get no
+	 * solution.
+	 */
+	private static IExpr NO_EQUATION_SOLUTION = F.CN1;
+
+	/**
 	 * Analyze an expression, if it has linear, polynomial or other form.
 	 * 
 	 */
@@ -405,8 +411,13 @@ public class Solve extends AbstractFunctionEvaluator {
 						// issue #95
 						IFraction arg2 = (IFraction) function.arg2();
 						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+						if (plus.isPositiveResult()) {
+							// no solution possible
+							return NO_EQUATION_SOLUTION;
+						}
 						return engine.evaluate(
 								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+
 					}
 				}
 
