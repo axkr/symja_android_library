@@ -29,12 +29,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Solve extends AbstractFunctionEvaluator {
 
 	/**
-	 * Use <code>-1</code> as an equation expression for which we get no
-	 * solution.
-	 */
-	private static IExpr NO_EQUATION_SOLUTION = F.CN1;
-
-	/**
 	 * Analyze an expression, if it has linear, polynomial or other form.
 	 * 
 	 */
@@ -544,6 +538,12 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Use <code>-1</code> as an equation expression for which we get no
+	 * solution.
+	 */
+	private static IExpr NO_EQUATION_SOLUTION = F.CN1;
+
+	/**
 	 * 
 	 * @param analyzerList
 	 * @param variables
@@ -653,56 +653,6 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Evaluate the roots of a univariate polynomial with the Roots[] function.
-	 * 
-	 * @param exprAnalyzer
-	 * @param vars
-	 * @return
-	 */
-	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
-		IExpr expr = exprAnalyzer.getNumerator();
-		IExpr denom = exprAnalyzer.getDenominator();
-		// try to solve the expr for a symbol in the symbol set
-		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
-			if (temp.isPresent()) {
-				IAST resultList = F.List();
-				if (temp.isASTSizeGE(F.List, 2)) {
-					IAST rootsList = (IAST) temp;
-					for (IExpr root : rootsList) {
-						IAST rule = F.Rule(sym, root);
-						resultList.add(rule);
-					}
-					return resultList;
-				}
-				return F.NIL;
-			}
-		}
-		return F.NIL;
-	}
-
-	public Solve() {
-		// empty constructor
-	}
-
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 3, 4);
-		IAST variables = Validate.checkSymbolOrSymbolList(ast, 2);
-		if (ast.isAST3()) {
-			if (ast.arg3().equals(F.Booleans)) {
-				IAST resultList = F.List();
-				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
-				return resultList;
-			}
-			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
-		}
-		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
-
-		return solveEquations(termsEqualZeroList, variables, 0, engine);
-	}
-
-	/**
 	 * Solve boolean expressions.
 	 * 
 	 * @param expr
@@ -745,7 +695,99 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 	}
 
-	protected IExpr solveEquations(IAST termsEqualZeroList, IAST variables, int maximumNumberOfResults,
+	/**
+	 * Evaluate the roots of a univariate polynomial with the Roots[] function.
+	 * 
+	 * @param exprAnalyzer
+	 * @param vars
+	 * @return
+	 */
+	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
+		IExpr expr = exprAnalyzer.getNumerator();
+		IExpr denom = exprAnalyzer.getDenominator();
+		// try to solve the expr for a symbol in the symbol set
+		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
+			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
+			if (temp.isPresent()) {
+				IAST resultList = F.List();
+				if (temp.isASTSizeGE(F.List, 2)) {
+					IAST rootsList = (IAST) temp;
+					for (IExpr root : rootsList) {
+						IAST rule = F.Rule(sym, root);
+						resultList.add(rule);
+					}
+					return resultList;
+				}
+				return F.NIL;
+			}
+		}
+		return F.NIL;
+	}
+
+	protected static IAST sortResults(IAST resultList) {
+		for (int i = 1; i < resultList.size(); i++) {
+			if (resultList.get(i).isList()) {
+				EvalAttributes.sort((IAST) resultList.get(i));
+			}
+		}
+		return resultList;
+	}
+
+	/**
+	 * Return an immutable <code>List[numerator, denominator]</code> of the
+	 * given expression.
+	 * 
+	 * @param expr
+	 * @param engine
+	 * @param evalTogether
+	 *            evaluate <code>Together[expr]</code> before determining
+	 *            numerator and denominator of the expression.
+	 * @return <code>List[numerator, denominator]</code>
+	 */
+	private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine, boolean evalTogether) {
+		IExpr a0, a1;
+		if (evalTogether) {
+			a0 = Together.together(expr);
+		} else {
+			a0 = expr;
+		}
+		// split expr into numerator and denominator
+		a1 = engine.evaluate(F.Denominator(a0));
+		if (!a1.isOne()) {
+			// search roots for the numerator expression
+			a0 = engine.evaluate(F.Numerator(a0));
+		} else {
+			a0 = expr;
+		}
+		return F.binaryAST2(F.List, a0, a1);
+	}
+
+	public Solve() {
+		// empty constructor
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkRange(ast, 3, 4);
+		IAST variables = Validate.checkSymbolOrSymbolList(ast, 2);
+		if (ast.isAST3()) {
+			if (ast.arg3().equals(F.Booleans)) {
+				IAST resultList = F.List();
+				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
+				return resultList;
+			}
+			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
+		}
+		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
+
+		IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		return solveEquations(termsEqualZeroList, variables, 0, engine);
+	}
+
+	protected IAST solveEquations(IAST termsEqualZeroList, IAST variables, int maximumNumberOfResults,
 			EvalEngine engine) {
 		try {
 			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, variables);
@@ -793,12 +835,45 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 	}
 
-	protected static IExpr sortResults(IAST resultList) {
-		for (int i = 1; i < resultList.size(); i++) {
-			if (resultList.get(i).isList()) {
-				EvalAttributes.sort((IAST) resultList.get(i));
+	/**
+	 * Analyze the <code>termsEqualZeroList</code> if it contains a
+	 * <code>Times[..., ,...]</code> expression. If true, set the factors equal
+	 * to <code>0</code> and solve the equations recursively.
+	 * 
+	 * @param termsEqualZeroList
+	 *            the list of equations which should be <code>0</code>.
+	 * @param variables
+	 *            the variables for which the equations should be solved
+	 * @param engine
+	 *            the evaluation engine
+	 * @return
+	 */
+	private IAST solveTimesEquationsRecursively(IAST termsEqualZeroList, IAST variables, EvalEngine engine) {
+		for (int i = 1; i < termsEqualZeroList.size(); i++) {
+			if (termsEqualZeroList.get(i).isTimes()) {
+				IAST times = (IAST) termsEqualZeroList.get(i);
+				IAST splittedList = splitNumeratorDenominator(times, engine, false);
+				if (splittedList.arg2().isFree(Predicates.in(variables), true)) {
+					Set<IExpr> subSolutionSet = new HashSet<IExpr>();
+					for (int j = 1; j < times.size(); j++) {
+						if (!times.get(j).isFree(Predicates.in(variables), true)) {
+							IAST clonedEqualZeroList = termsEqualZeroList.clone();
+							clonedEqualZeroList.set(i, times.get(j));
+							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
+							if (temp.size() > 1) {
+								subSolutionSet.addAll(temp); 
+							}
+						}
+					}
+
+					if (subSolutionSet.size() > 0) {
+						IAST list = F.List();
+						list.addAll(subSolutionSet);
+						return list;
+					}
+				}
 			}
 		}
-		return resultList;
+		return F.NIL;
 	}
 }

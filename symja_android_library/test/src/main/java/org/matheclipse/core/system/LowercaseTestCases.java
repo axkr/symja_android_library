@@ -3000,9 +3000,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// issue #120
+		check("Solve(Sin(x)*x==0, x)", "{{x->0}}");
+		check("Solve(Cos(x)*x==0, x)", "{{x->0},{x->Pi/2}}");
 		// issue #121
 		check("Solve(Sqrt(x)==-1, x)", "{}");
-		
 		check("Solve(x^2+1==0, x)", "{{x->-I},{x->I}}");
 		check("Solve((k*Q*q)/r^2==E,r)",
 				"{{r->(Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)},{r->(-Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)}}");
