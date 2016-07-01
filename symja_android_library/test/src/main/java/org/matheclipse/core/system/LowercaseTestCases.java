@@ -3066,7 +3066,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSpan() {
+		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", "{b,c,d,e,f}");
 		check("{a, b, c, d, e, f, g, h}[[2 ;; 5]]", "{b,c,d,e}");
+		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]", "{b,c,d,e,f,g,h}");
 	}
 
 	public void testStringLength() {

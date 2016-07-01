@@ -3094,6 +3094,8 @@ public class MainTestCases extends AbstractTestCase {
 	}
 
 	public void testSystem805() {
+		check("Solve((x^2-1)/(x-1)==0,x)", "{{x->-1}}");
+		
 		// LinearSolve[{{1,1,1},{1,1,-1},{1,-1,-1}},{100,50,10}]
 		// Fraction[][] testData = { { new Fraction(1), new Fraction(1), new
 		// Fraction(1) },
