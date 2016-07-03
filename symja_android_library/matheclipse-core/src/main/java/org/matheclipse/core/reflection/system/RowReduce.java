@@ -104,14 +104,14 @@ public class RowReduce extends AbstractFunctionEvaluator {
 	 * 
 	 * @param matrix
 	 *            a (augmented-)matrix
-	 * @param variableList
+	 * @param listOfVariables
 	 *            list of variable symbols
 	 * @param resultList
 	 *            a list to which the rules should be appended
 	 * 
 	 * @return resultList with the appended results as list of rules
 	 */
-	public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST variableList, IAST resultList,
+	public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST listOfVariables, IAST resultList,
 			EvalEngine engine) {
 		int rows = matrix.getRowDimension();
 		int cols = matrix.getColumnDimension();
@@ -129,7 +129,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			IAST list = F.List();
 			IAST rule;
 			for (int j = 1; j < smallList.size(); j++) {
-				rule = F.Rule(variableList.get(j), F.eval(smallList.get(j)));
+				rule = F.Rule(listOfVariables.get(j), F.eval(smallList.get(j)));
 				list.add(rule);
 			}
 			
@@ -138,7 +138,7 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-		int size = variableList.size() - 1;
+		int size = listOfVariables.size() - 1;
 
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		IAST list = F.List();
@@ -157,10 +157,10 @@ public class RowReduce extends AbstractFunctionEvaluator {
 					plus.add(rowReduced.getEntry(j - 1, cols - 1));
 					for (int i = j; i < cols - 1; i++) {
 						if (!rowReduced.getEntry(j - 1, i).isZero()) {
-							plus.add(F.Times(rowReduced.getEntry(j - 1, i).negate(), variableList.get(i + 1)));
+							plus.add(F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
 						}
 					}
-					rule = F.Rule(variableList.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
+					rule = F.Rule(listOfVariables.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
 					list.add(rule);
 				}
 			}
