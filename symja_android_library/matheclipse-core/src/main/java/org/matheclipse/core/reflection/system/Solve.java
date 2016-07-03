@@ -34,33 +34,62 @@ public class Solve extends AbstractFunctionEvaluator {
 	 */
 	protected static class ExprAnalyzer implements Comparable<ExprAnalyzer> {
 
+		/**
+		 * A linear expression for the given variables.
+		 */
 		public static final int LINEAR = 0;
-		public static final int OTHERS = 2;
+		/**
+		 * A polynomial expression for the given variables.
+		 */
 		public static final int POLYNOMIAL = 1;
+		/**
+		 * Others type of expression for the given variables.
+		 */
+		public static final int OTHERS = 2;
 
+		/**
+		 * LINEAR, POLYNOMIAL or OTHERS
+		 */
 		private int fEquationType;
+
+		/**
+		 * The expression which should be <code>0</code>.
+		 */
 		private IExpr fExpr;
-		private IExpr fNumer;
-		private IExpr fDenom;
+
+		/**
+		 * The numerator of the expression
+		 */
+		private IExpr fNumerator;
+
+		/**
+		 * The denominator of the expression
+		 */
+		private IExpr fDenominator;
+
+		/**
+		 * The number of leaves in an expression, used as an indicator for the
+		 * complexity of the expression.
+		 */
 		private long fLeafCount;
 
 		private HashSet<ISymbol> fSymbolSet;
 		private IAST fMatrixRow;
 		private IAST fPlusAST;
 
-		final IAST vars;
-		final EvalEngine engine;
+		final IAST fListOfVariables;
+		final EvalEngine fEngine;
 
-		public ExprAnalyzer(IExpr expr, IAST vars, EvalEngine engine) {
+		public ExprAnalyzer(IExpr expr, IAST listOfVariables, EvalEngine engine) {
 			super();
-			this.engine = engine;
+			this.fEngine = engine;
 			this.fExpr = expr;
-			this.fNumer = expr;
-			this.fDenom = F.C1;
+			this.fNumerator = expr;
+			this.fDenominator = F.C1;
 			if (this.fExpr.isAST()) {
 				splitNumeratorDenominator((IAST) this.fExpr);
 			}
-			this.vars = vars;
+			this.fListOfVariables = listOfVariables;
 			this.fSymbolSet = new HashSet<ISymbol>();
 			this.fLeafCount = 0;
 			reset();
@@ -71,7 +100,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * 
 		 */
 		private void analyze(IExpr eqExpr) {
-			if (eqExpr.isFree(Predicates.in(vars), true)) {
+			if (eqExpr.isFree(Predicates.in(fListOfVariables), true)) {
 				fLeafCount++;
 				fPlusAST.add(eqExpr);
 			} else if (eqExpr.isPlus()) {
@@ -80,7 +109,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				IExpr expr;
 				for (int i = 1; i < plusAST.size(); i++) {
 					expr = plusAST.get(i);
-					if (expr.isFree(Predicates.in(vars), true)) {
+					if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 						fLeafCount++;
 						fPlusAST.add(expr);
 					} else {
@@ -115,10 +144,10 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (getClass() != obj.getClass())
 				return false;
 			ExprAnalyzer other = (ExprAnalyzer) obj;
-			if (fDenom == null) {
-				if (other.fDenom != null)
+			if (fDenominator == null) {
+				if (other.fDenominator != null)
 					return false;
-			} else if (!fDenom.equals(other.fDenom))
+			} else if (!fDenominator.equals(other.fDenominator))
 				return false;
 			if (fEquationType != other.fEquationType)
 				return false;
@@ -134,10 +163,10 @@ public class Solve extends AbstractFunctionEvaluator {
 					return false;
 			} else if (!fMatrixRow.equals(other.fMatrixRow))
 				return false;
-			if (fNumer == null) {
-				if (other.fNumer != null)
+			if (fNumerator == null) {
+				if (other.fNumerator != null)
 					return false;
-			} else if (!fNumer.equals(other.fNumer))
+			} else if (!fNumerator.equals(other.fNumerator))
 				return false;
 			if (fPlusAST == null) {
 				if (other.fPlusAST != null)
@@ -149,16 +178,16 @@ public class Solve extends AbstractFunctionEvaluator {
 					return false;
 			} else if (!fSymbolSet.equals(other.fSymbolSet))
 				return false;
-			if (vars == null) {
-				if (other.vars != null)
+			if (fListOfVariables == null) {
+				if (other.fListOfVariables != null)
 					return false;
-			} else if (!vars.equals(other.vars))
+			} else if (!fListOfVariables.equals(other.fListOfVariables))
 				return false;
 			return true;
 		}
 
 		public IExpr getDenominator() {
-			return fDenom;
+			return fDenominator;
 		}
 
 		/**
@@ -173,7 +202,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public IExpr getNumerator() {
-			return fNumer;
+			return fNumerator;
 		}
 
 		/**
@@ -189,12 +218,12 @@ public class Solve extends AbstractFunctionEvaluator {
 				IExpr expr;
 				for (int i = 1; i < arg.size(); i++) {
 					expr = arg.get(i);
-					if (expr.isFree(Predicates.in(vars), true)) {
+					if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 						fLeafCount++;
 					} else if (expr.isSymbol()) {
 						fLeafCount++;
-						for (int j = 1; j < vars.size(); j++) {
-							if (vars.get(j).equals(expr)) {
+						for (int j = 1; j < fListOfVariables.size(); j++) {
+							if (fListOfVariables.get(j).equals(expr)) {
 								fSymbolSet.add((ISymbol) expr);
 								if (sym != null) {
 									if (fEquationType == LINEAR) {
@@ -247,7 +276,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private void getTimesArgumentEquationType(IExpr expr) {
 			if (expr.isSymbol()) {
 				fLeafCount++;
-				int position = vars.findFirstEquals(expr);
+				int position = fListOfVariables.findFirstEquals(expr);
 				if (position > 0) {
 					fSymbolSet.add((ISymbol) expr);
 					if (fEquationType == LINEAR) {
@@ -256,7 +285,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				return;
 			}
-			if (expr.isFree(Predicates.in(vars), true)) {
+			if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 				fLeafCount++;
 				fPlusAST.add(expr);
 				return;
@@ -295,15 +324,15 @@ public class Solve extends AbstractFunctionEvaluator {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((fDenom == null) ? 0 : fDenom.hashCode());
+			result = prime * result + ((fDenominator == null) ? 0 : fDenominator.hashCode());
 			result = prime * result + fEquationType;
 			result = prime * result + ((fExpr == null) ? 0 : fExpr.hashCode());
 			result = prime * result + (int) (fLeafCount ^ (fLeafCount >>> 32));
 			result = prime * result + ((fMatrixRow == null) ? 0 : fMatrixRow.hashCode());
-			result = prime * result + ((fNumer == null) ? 0 : fNumer.hashCode());
+			result = prime * result + ((fNumerator == null) ? 0 : fNumerator.hashCode());
 			result = prime * result + ((fPlusAST == null) ? 0 : fPlusAST.hashCode());
 			result = prime * result + ((fSymbolSet == null) ? 0 : fSymbolSet.hashCode());
-			result = prime * result + ((vars == null) ? 0 : vars.hashCode());
+			result = prime * result + ((fListOfVariables == null) ? 0 : fListOfVariables.hashCode());
 			return result;
 		}
 
@@ -322,7 +351,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		public void reset() {
 			this.fMatrixRow = F.List();
-			for (int i = 1; i < vars.size(); i++) {
+			for (int i = 1; i < fListOfVariables.size(); i++) {
 				fMatrixRow.add(F.C0);
 			}
 			this.fPlusAST = F.Plus();
@@ -339,23 +368,23 @@ public class Solve extends AbstractFunctionEvaluator {
 		 */
 		private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
 			if (ast.isAbs()) {
-				return engine.evaluate(
+				return fEngine.evaluate(
 						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
 			} else if (ast.isAST1()) {
 				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction.isPresent()) {
-					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
+					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					// rewrite fNumer
 					inverseFunction.add(arg1);
-					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+					return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
 			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
-				int position = vars.findFirstEquals(ast.arg1());
+				int position = fListOfVariables.findFirstEquals(ast.arg1());
 				if (position > 0) {
-					engine.printMessage("Solve: using of inverse functions may omit some solutions.");
+					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
-					return engine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+					return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
 			}
@@ -375,7 +404,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
 			IExpr plus = plusAST.removeAtClone(position).getOneIdentity(F.C0);
-			if (plus.isFree(Predicates.in(vars), true)) {
+			if (plus.isFree(Predicates.in(fListOfVariables), true)) {
 				return rewriteInverseFunction(ast, F.Negate(plus));
 			}
 			return F.NIL;
@@ -389,7 +418,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			IExpr expr;
 			for (int i = 1; i < plusAST.size(); i++) {
 				expr = plusAST.get(i);
-				if (expr.isFree(Predicates.in(vars), true)) {
+				if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 					continue;
 				}
 
@@ -409,7 +438,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							// no solution possible
 							return NO_EQUATION_SOLUTION;
 						}
-						return engine.evaluate(
+						return fEngine.evaluate(
 								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
 
 					}
@@ -429,7 +458,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			int j = 1;
 			// remove constant sub-expressions from Times() expression
 			for (int i = 1; i < times.size(); i++) {
-				if (times.get(i).isFree(Predicates.in(vars), true) && times.get(i).isNumericFunction()) {
+				if (times.get(i).isFree(Predicates.in(fListOfVariables), true) && times.get(i).isNumericFunction()) {
 					if (!result.isPresent()) {
 						result = times.clone();
 					}
@@ -454,33 +483,33 @@ public class Solve extends AbstractFunctionEvaluator {
 		 */
 		protected void simplifyAndAnalyze() {
 			IExpr temp = F.NIL;
-			if (fNumer.isPlus()) {
-				temp = rewritePlusWithInverseFunctions((IAST) fNumer);
-			} else if (fNumer.isTimes() && !fNumer.isFree(Predicates.in(vars), true)) {
-				temp = rewriteTimesWithInverseFunctions((IAST) fNumer);
-			} else if (fNumer.isAST() && !fNumer.isFree(Predicates.in(vars), true)) {
-				temp = rewriteInverseFunction((IAST) fNumer, F.C0);
+			if (fNumerator.isPlus()) {
+				temp = rewritePlusWithInverseFunctions((IAST) fNumerator);
+			} else if (fNumerator.isTimes() && !fNumerator.isFree(Predicates.in(fListOfVariables), true)) {
+				temp = rewriteTimesWithInverseFunctions((IAST) fNumerator);
+			} else if (fNumerator.isAST() && !fNumerator.isFree(Predicates.in(fListOfVariables), true)) {
+				temp = rewriteInverseFunction((IAST) fNumerator, F.C0);
 			}
 			if (temp.isPresent()) {
-				if (temp.isAST() && fDenom.isOne()) {
+				if (temp.isAST() && fDenominator.isOne()) {
 					splitNumeratorDenominator((IAST) temp);
 				} else {
-					fNumer = temp;
+					fNumerator = temp;
 				}
 			}
 
-			analyze(fNumer);
+			analyze(fNumerator);
 		}
 
 		private void splitNumeratorDenominator(IAST expr) {
 			this.fExpr = Together.together(expr);
 			// split expr into numerator and denominator
-			this.fDenom = engine.evaluate(F.Denominator(this.fExpr));
-			if (!this.fDenom.isOne()) {
+			this.fDenominator = fEngine.evaluate(F.Denominator(this.fExpr));
+			if (!this.fDenominator.isOne()) {
 				// search roots for the numerator expression
-				this.fNumer = engine.evaluate(F.Numerator(this.fExpr));
+				this.fNumerator = fEngine.evaluate(F.Numerator(this.fExpr));
 			} else {
-				this.fNumer = this.fExpr;
+				this.fNumerator = this.fExpr;
 			}
 		}
 
@@ -603,7 +632,7 @@ public class Solve extends AbstractFunctionEvaluator {
 									evaled = true;
 									IAST tempResult = addSubResultsToResultsList(resultList, subResultList,
 											kListOfSolveRules, maximumNumberOfResults);
-									if (tempResult.isPresent()){
+									if (tempResult.isPresent()) {
 										return tempResult;
 									}
 								}
@@ -742,7 +771,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Evaluate the roots of a univariate polynomial with the Roots[] function.
 	 * 
 	 * @param exprAnalyzer
-	 * @param vars
+	 * @param fListOfVariables
 	 * @return
 	 */
 	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
