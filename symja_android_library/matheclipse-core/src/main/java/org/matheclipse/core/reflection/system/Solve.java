@@ -813,7 +813,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
 	/**
 	 * Return an immutable <code>List[numerator, denominator]</code> of the
-	 * given expression.
+	 * given expression. Uses <code>Numerator[] and Denominator[]</code>
+	 * functions.
 	 * 
 	 * @param expr
 	 * @param engine
