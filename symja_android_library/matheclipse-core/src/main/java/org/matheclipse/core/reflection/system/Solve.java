@@ -501,16 +501,11 @@ public class Solve extends AbstractFunctionEvaluator {
 			analyze(fNumerator);
 		}
 
-		private void splitNumeratorDenominator(IAST expr) {
-			this.fExpr = Together.together(expr);
-			// split expr into numerator and denominator
-			this.fDenominator = fEngine.evaluate(F.Denominator(this.fExpr));
-			if (!this.fDenominator.isOne()) {
-				// search roots for the numerator expression
-				this.fNumerator = fEngine.evaluate(F.Numerator(this.fExpr));
-			} else {
-				this.fNumerator = this.fExpr;
-			}
+		public void splitNumeratorDenominator(IAST ast) {
+			IExpr[] result = Apart.getNumeratorDenominator(ast);
+			this.fNumerator = result[0];
+			this.fDenominator = result[1];
+			this.fExpr = result[2];
 		}
 
 	}
