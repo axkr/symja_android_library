@@ -236,7 +236,7 @@ public class Num extends ExprImpl implements INum {
 
 	@Override
 	public final int hashCode() {
-		return MathUtils.hash(fDouble);
+		return Double.hashCode(fDouble); 
 	}
 
 	/**

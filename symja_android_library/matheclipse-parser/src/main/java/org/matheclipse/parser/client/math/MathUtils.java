@@ -483,7 +483,7 @@ public final class MathUtils {
 	 * @return the hash code
 	 */
 	public static int hash(double value) {
-		return new Double(value).hashCode();
+		return Double.hashCode(value);
 		// long bits = Double.doubleToLongBits(value);
 		// return (int)(bits ^ (bits >>> 32));
 	}
