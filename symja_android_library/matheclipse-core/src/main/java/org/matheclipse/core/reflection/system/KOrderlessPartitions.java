@@ -62,7 +62,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			partitionElement = F.ast(sym);
 			if (partitionStartIndex + 1 == partitionsIndex[i]) {
 				// OneIdentity check here
-				if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
+				if (sym.hasOneIdentityAttribute()) {
 					partition.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
 				} else {
 					partitionElement.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));

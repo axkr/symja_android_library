@@ -9,7 +9,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>NumberPartitionsIterator</code> to match flat expressions in pattern matching.
+ * This visitor is used in an <code>NumberPartitionsIterator</code> to match
+ * flat expressions in pattern matching.
  * 
  * @see PatternMatcher
  * @see NumberPartitionsIterator
@@ -23,9 +24,9 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	protected IAST fLhsPatternAST;
 	protected final boolean fOneIdentity;
 
-	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher, PatternMap patternMap) {
-		this(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap,
-				(sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY);
+	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,
+			PatternMap patternMap) {
+		this(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, sym.hasOneIdentityAttribute());
 	}
 
 	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,

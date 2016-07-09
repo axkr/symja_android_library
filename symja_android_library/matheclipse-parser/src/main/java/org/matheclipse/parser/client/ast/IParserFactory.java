@@ -164,6 +164,14 @@ public interface IParserFactory {
 	public PatternNode createPattern(SymbolNode patternName, ASTNode check, boolean optional);
 
 	/**
+	 * Create a pattern from the given symbol node
+	 * 
+	 * @param patternName
+	 * @return Object
+	 */
+	public PatternNode createPattern(SymbolNode patternName, ASTNode check, ASTNode defaultValue);
+	
+	/**
 	 * Create a string node from the scanned double quoted string
 	 * 
 	 * @param symbolName

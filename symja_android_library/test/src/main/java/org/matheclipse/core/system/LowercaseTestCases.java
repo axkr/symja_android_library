@@ -2129,6 +2129,13 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"{3.2500000000000004,{0.5000000000000009,2.7499999999999996}}");
 	}
 
+	public void testNonCommutativeMultiply() {
+		check("{0 ** a, 1 ** a}", "{0**a,1**a}");
+		check("{a*b == b*a, a ** b == b ** a}", "{True,a**b==b**a}");
+		check("a ** (b ** c) == (a ** b) ** c", "True");
+		check("NonCommutativeMultiply(a)", "NonCommutativeMultiply(a)");
+	}
+
 	public void testNor() {
 		check("Nor( )", "True");
 		check("Nor(2+2)", "!4");
@@ -2282,6 +2289,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPatternTest() {
+		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
+		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
+		check("$f(x_:2):={x};$f()", "{2}");
+		check("$f(x_:2):={x};$f(a)", "{a}");
+
 		check("Cases({1,2,3,5,x,y,4},_?NumberQ)", "{1,2,3,5,4}");
 		check("MatchQ({1,8,Pi},{__?Positive})", "True");
 		check("MatchQ({1,I,0},{__?Positive})", "False");

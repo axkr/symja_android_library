@@ -195,11 +195,9 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			// convertHeadList(buf, f);
 			// }
 			// }
-			final ISymbol symbol = f.topHead();
-			final int attr = symbol.getAttributes();
 			IAST ast = f;
 			IAST temp;
-			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
+			if (f.topHead().hasFlatAttribute()) {
 				// associative
 				if ((temp = EvalAttributes.flatten(f)).isPresent()) {
 					ast = temp;

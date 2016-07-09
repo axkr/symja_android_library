@@ -107,12 +107,14 @@ public class ExprScanner {
 	final static public int TT_LIST_CLOSE = 17;
 
 	/**
-	 * Token type: opening brackets for starting the &quot;index part&quot; of an expression
+	 * Token type: opening brackets for starting the &quot;index part&quot; of
+	 * an expression
 	 */
 	final static public int TT_PARTOPEN = 18;
 
 	/**
-	 * Token type: closing brackets for ending the &quot;index part&quot; of an expression
+	 * Token type: closing brackets for ending the &quot;index part&quot; of an
+	 * expression
 	 */
 	final static public int TT_PARTCLOSE = 19;
 
@@ -170,20 +172,23 @@ public class ExprScanner {
 	 */
 	final static public int TT_BLANK_OPTIONAL = 145;
 
-	final static public int TT_DERIVATIVE = 146;
-	
+	final static public int TT_BLANK_COLON = 146;
+
+	final static public int TT_DERIVATIVE = 147;
+
 	final static public int TT_NEWLINE = 150;
-	
+
 	// ----------------optimized identifier managment------------------
 	static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d", string_e = "e", string_f = "f",
-			string_g = "g", string_h = "h", string_i = "i", string_j = "j", string_k = "k", string_l = "l", string_m = "m",
-			string_n = "n", string_o = "o", string_p = "p", string_q = "q", string_r = "r", string_s = "s", string_t = "t",
-			string_u = "u", string_v = "v", string_w = "w", string_x = "x", string_y = "y", string_z = "z";
+			string_g = "g", string_h = "h", string_i = "i", string_j = "j", string_k = "k", string_l = "l",
+			string_m = "m", string_n = "n", string_o = "o", string_p = "p", string_q = "q", string_r = "r",
+			string_s = "s", string_t = "t", string_u = "u", string_v = "v", string_w = "w", string_x = "x",
+			string_y = "y", string_z = "z";
 
-	static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f", var_g = "$g",
-			var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m", var_n = "$n", var_o = "$o",
-			var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t", var_u = "$u", var_v = "$v", var_w = "$w",
-			var_x = "$x", var_y = "$y", var_z = "$z";
+	static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f",
+			var_g = "$g", var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m",
+			var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t",
+			var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y", var_z = "$z";
 
 	protected int numFormat = 0;
 
@@ -223,8 +228,9 @@ public class ExprScanner {
 	}
 
 	/**
-	 * Verify the length of the input string and get the next character from the input string. If the current position is greater
-	 * than the input length, set current character to SPACE and token to TT_EOF.
+	 * Verify the length of the input string and get the next character from the
+	 * input string. If the current position is greater than the input length,
+	 * set current character to SPACE and token to TT_EOF.
 	 * 
 	 */
 	private void getChar() {
@@ -400,6 +406,10 @@ public class ExprScanner {
 							fCurrentPosition++;
 							fToken = TT_BLANK_OPTIONAL;
 							break;
+						} else if (fInputString.charAt(fCurrentPosition) == ':') {
+							fCurrentPosition++;
+							fToken = TT_BLANK_COLON;
+							break;
 						}
 					}
 
@@ -407,7 +417,8 @@ public class ExprScanner {
 				case '.':
 					// token = TT_DOT;
 					if (fInputString.length() > fCurrentPosition) {
-						if ((fInputString.charAt(fCurrentPosition) >= '0') && (fInputString.charAt(fCurrentPosition) <= '9')) {
+						if ((fInputString.charAt(fCurrentPosition) >= '0')
+								&& (fInputString.charAt(fCurrentPosition) <= '9')) {
 							// don't increment fCurrentPosition (see
 							// getNumberString())
 							// fCurrentPosition++;
@@ -472,7 +483,8 @@ public class ExprScanner {
 					}
 					level--;
 					continue;
-				} else if (fInputString.charAt(fCurrentPosition) == '(' && fInputString.charAt(fCurrentPosition + 1) == '*') {
+				} else if (fInputString.charAt(fCurrentPosition) == '('
+						&& fInputString.charAt(fCurrentPosition + 1) == '*') {
 					fCurrentPosition++;
 					fCurrentPosition++;
 					level++;
@@ -492,8 +504,8 @@ public class ExprScanner {
 	}
 
 	protected void throwSyntaxError(final String error) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(),
-				error, 1);
+		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, 1);
 	}
 
 	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
@@ -816,7 +828,8 @@ public class ExprScanner {
 
 				getChar();
 			} else {
-				// if ((fCurrentChar != '"') && ((fCurrentChar == '\n') || (fToken ==
+				// if ((fCurrentChar != '"') && ((fCurrentChar == '\n') ||
+				// (fToken ==
 				// TT_EOF))) {
 				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
 					throwSyntaxError("string -" + ident.toString() + "- not closed.");

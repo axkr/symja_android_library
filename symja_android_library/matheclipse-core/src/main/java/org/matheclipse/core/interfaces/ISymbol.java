@@ -131,6 +131,117 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public final static int DELAYED_RULE_EVALUATION = 0x00010000;
 
 	/**
+	 * Clear the associated rules for this symbol
+	 * 
+	 */
+	public void clear(EvalEngine engine);
+
+	/**
+	 * Clear all associated rules and attributes for this symbol
+	 * 
+	 */
+	public void clearAll(EvalEngine engine);
+
+	/**
+	 * Check if ths symbol contains a "DownRule" or "UpRule"
+	 * 
+	 * @return <code>true</code> if this symbol contains a "DownRule" or
+	 *         "UpRule"
+	 */
+	public boolean containsRules();
+
+	/**
+	 * Create internal rules data structure with precalculated sizes
+	 * 
+	 * <ul>
+	 * <li>index 0 - number of equal rules in <code>RULES</code></li>
+	 * </ul>
+	 * 
+	 * @param sizes
+	 */
+	public void createRulesData(@Nonnull int[] sizes);
+
+	/**
+	 * Return a list of the rules associated to this symbol
+	 * 
+	 * @return
+	 */
+	public List<IAST> definition();
+
+	/**
+	 * Return the rules associated to this symbol in <code>String</code>
+	 * representation
+	 * 
+	 * @return the <code>String</code> representation of the symbol definition
+	 */
+	public String definitionToString() throws IOException;
+
+	/**
+	 * Evaluate the given expression for the &quot;down value&quot; rules
+	 * associated with this symbol
+	 * 
+	 * @param engine
+	 * @param expression
+	 * @return <code>F.NIL</code> if no evaluation was possible
+	 */
+	public IExpr evalDownRule(IEvaluationEngine engine, IExpr expression);
+
+	/**
+	 * Evaluate the given expression for the &quot;up value&quot; rules
+	 * associated with this symbol
+	 * 
+	 * @param engine
+	 * @param expression
+	 * @return <code>F.NIL</code> if no evaluation was possible
+	 */
+	public IExpr evalUpRule(IEvaluationEngine engine, IExpr expression);
+
+	/**
+	 * Get the topmost value from the local variable stack
+	 * 
+	 * @return <code>null</code> if no local variable is defined
+	 */
+	public IExpr get();
+
+	/**
+	 * Get the value which is assigned to the symbol or <code>null</code>, if no
+	 * value is assigned.
+	 * 
+	 * @return <code>null</code>, if no value is assigned.
+	 */
+	public IExpr getAssignedValue();
+
+	/**
+	 * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
+	 * 
+	 * @return
+	 * @see ISymbol#FLAT
+	 */
+	public int getAttributes();
+
+	/**
+	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code>
+	 * is the default value for <code>Times</code>, <code>0</code> is the
+	 * default value for <code>Plus</code>). The general default value is used
+	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
+	 * 
+	 * @return the default value or <code>null</code> if undefined.
+	 */
+	public IExpr getDefaultValue();
+
+	/**
+	 * Get the <i>default value</i> at the arguments position for this symbol
+	 * (i.e. <code>1</code> is the default value for <code>Power</code> at
+	 * <code>position</code> <code>2</code>). The default value is used in
+	 * pattern-matching for expressions like <code>a ^ b_.</code>
+	 * 
+	 * @param position
+	 *            the position for the default value
+	 * @return the default value or <code>null</code> if undefined.
+	 */
+	public IExpr getDefaultValue(int position);
+
+	/**
 	 * Get the current evaluator for this symbol
 	 * 
 	 * @return the evaluator which is associated to this symbol or
@@ -152,9 +263,53 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public String getSymbolName();
 
 	/**
-	 * Set the current evaluator which is associated to this symbol
+	 * Is a (local or global) value assigned for this symbol?
+	 * 
+	 * @return <code>true</code> if this symbol has an assigned value.
 	 */
-	public void setEvaluator(IEvaluator module);
+	public boolean hasAssignedSymbolValue();
+
+	/**
+	 * Does this symbols attribute set contains the <code>Flat</code> attribute?
+	 * 
+	 * @return <code>true</code> if this symbols attribute set contains the
+	 *         <code>Flat</code> attribute.
+	 */
+	boolean hasFlatAttribute();
+
+	/**
+	 * Is a local variable stack created for this symbol ?
+	 * 
+	 * @return <code>true</code> if this symbol has a local variable stack
+	 */
+	boolean hasLocalVariableStack();
+
+	/**
+	 * Does this symbols attribute set contains the <code>OneIdentity</code>
+	 * attribute?
+	 * 
+	 * @return <code>true</code> if this symbols attribute set contains the
+	 *         <code>OneIdentity</code> attribute.
+	 */
+	boolean hasOneIdentityAttribute();
+
+	/**
+	 * Does this symbols attribute set contains the <code>Orderless</code>
+	 * attribute?
+	 * 
+	 * @return <code>true</code> if this symbols attribute set contains the
+	 *         <code>Orderless</code> attribute.
+	 */
+	boolean hasOrderlessAttribute();
+
+	/**
+	 * Does this symbols attribute set contains the <code>Flat</code> and
+	 * <code>Orderless</code> attribute?
+	 * 
+	 * @return <code>true</code> if this symbols attribute set contains the
+	 *         <code>Flat</code> and the <code>Orderless</code> attribute.
+	 */
+	boolean hasOrderlessFlatAttribute();
 
 	/**
 	 * Tests if this symbols name equals the given string
@@ -189,20 +344,10 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function);
 
 	/**
-	 * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
+	 * Delete the topmost placeholder from the local variable stack
 	 * 
-	 * @return
-	 * @see ISymbol#FLAT
 	 */
-	public int getAttributes();
-
-	/**
-	 * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
-	 * 
-	 * @param attributes
-	 *            the Attributes of this symbol
-	 */
-	public void setAttributes(int attributes);
+	public void popLocalVariable();
 
 	/**
 	 * Create a new variable placeholder on the symbols variable stack
@@ -218,37 +363,10 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void pushLocalVariable(IExpr localValue);
 
 	/**
-	 * Delete the topmost placeholder from the local variable stack
+	 * Associate a new rule, which invokes a method, to this symbol.
 	 * 
 	 */
-	public void popLocalVariable();
-
-	/**
-	 * Is a (local or global) value assigned for this symbol?
-	 * 
-	 * @return <code>true</code> if this symbol has an assigned value.
-	 */
-	public boolean hasAssignedSymbolValue();
-
-	/**
-	 * Is a local variable stack created for this symbol ?
-	 * 
-	 * @return <code>true</code> if this symbol has a local variable stack
-	 */
-	boolean hasLocalVariableStack();
-
-	/**
-	 * Get the topmost value from the local variable stack
-	 * 
-	 * @return <code>null</code> if no local variable is defined
-	 */
-	public IExpr get();
-
-	/**
-	 * Set the value of the local variable on top of the local variable stack
-	 * 
-	 */
-	public void set(IExpr value);
+	public IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
 	/**
 	 * Associate a new &quot;down value&quot; rule with default priority to this
@@ -300,12 +418,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 			IExpr rightHandSide, int priority, boolean packageMode);
 
 	/**
-	 * Associate a new rule, which invokes a method, to this symbol.
-	 * 
-	 */
-	public IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
-
-	/**
 	 * Associate a new &quot;up value&quot; rule with default priority to this
 	 * symbol.
 	 * 
@@ -349,50 +461,48 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IPatternMatcher putUpRule(final RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
 			final IExpr rightHandSide, final int priority);
 
+	/**
+	 * Deserialize the rules associated to this object
+	 * 
+	 * @param stream
+	 * @throws java.io.IOException
+	 */
+	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException;
+
+	/**
+	 * Apply the function to the currently assigned value of the symbol and
+	 * reassign the result value to the symbol. Used for functions like
+	 * AppendTo, Decrement, Increment,...
+	 * 
+	 * @param function
+	 *            the function which should be applied
+	 * @param functionSymbol
+	 *            if this method throws a WrongArgumentType exception the symbol
+	 *            will be displayed in the exceptions message
+	 * @return an array with the currently assigned value of the symbol and the
+	 *         new calculated value of the symbol or <code>null</code> if the
+	 *         reassignment isn't possible.
+	 * 
+	 * @see WrongArgumentType
+	 */
+	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
+
 	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode);
 
 	/**
-	 * Evaluate the given expression for the &quot;down value&quot; rules
-	 * associated with this symbol
+	 * Set the value of the local variable on top of the local variable stack
 	 * 
-	 * @param engine
-	 * @param expression
-	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(IEvaluationEngine engine, IExpr expression);
+	public void set(IExpr value);
 
 	/**
-	 * Evaluate the given expression for the &quot;up value&quot; rules
-	 * associated with this symbol
+	 * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
 	 * 
-	 * @param engine
-	 * @param expression
-	 * @return <code>F.NIL</code> if no evaluation was possible
+	 * @param attributes
+	 *            the Attributes of this symbol
 	 */
-	public IExpr evalUpRule(IEvaluationEngine engine, IExpr expression);
-
-	/**
-	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code>
-	 * is the default value for <code>Times</code>, <code>0</code> is the
-	 * default value for <code>Plus</code>). The general default value is used
-	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
-	 * 
-	 * @return the default value or <code>null</code> if undefined.
-	 */
-	public IExpr getDefaultValue();
-
-	/**
-	 * Get the <i>default value</i> at the arguments position for this symbol
-	 * (i.e. <code>1</code> is the default value for <code>Power</code> at
-	 * <code>position</code> <code>2</code>). The default value is used in
-	 * pattern-matching for expressions like <code>a ^ b_.</code>
-	 * 
-	 * @param position
-	 *            the position for the default value
-	 * @return the default value or <code>null</code> if undefined.
-	 */
-	public IExpr getDefaultValue(int position);
+	public void setAttributes(int attributes);
 
 	/**
 	 * Set the <i>general default value</i> for this symbol (i.e. <code>1</code>
@@ -421,84 +531,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public void setDefaultValue(int position, IExpr expr);
 
 	/**
-	 * Get the value which is assigned to the symbol or <code>null</code>, if no
-	 * value is assigned.
-	 * 
-	 * @return <code>null</code>, if no value is assigned.
+	 * Set the current evaluator which is associated to this symbol
 	 */
-	public IExpr getAssignedValue();
-
-	/**
-	 * Apply the function to the currently assigned value of the symbol and
-	 * reassign the result value to the symbol. Used for functions like
-	 * AppendTo, Decrement, Increment,...
-	 * 
-	 * @param function
-	 *            the function which should be applied
-	 * @param functionSymbol
-	 *            if this method throws a WrongArgumentType exception the symbol
-	 *            will be displayed in the exceptions message
-	 * @return an array with the currently assigned value of the symbol and the
-	 *         new calculated value of the symbol or <code>null</code> if the
-	 *         reassignment isn't possible.
-	 * 
-	 * @see WrongArgumentType
-	 */
-	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
-
-	/**
-	 * Clear the associated rules for this symbol
-	 * 
-	 */
-	public void clear(EvalEngine engine);
-
-	/**
-	 * Clear all associated rules and attributes for this symbol
-	 * 
-	 */
-	public void clearAll(EvalEngine engine);
-
-	/**
-	 * Check if ths symbol contains a "DownRule" or "UpRule"
-	 * 
-	 * @return <code>true</code> if this symbol contains a "DownRule" or
-	 *         "UpRule"
-	 */
-	public boolean containsRules();
-
-	/**
-	 * Create internal rules data structure with precalculated sizes
-	 * 
-	 * <ul>
-	 * <li>index 0 - number of equal rules in <code>RULES</code></li>
-	 * </ul>
-	 * 
-	 * @param sizes
-	 */
-	public void createRulesData(@Nonnull int[] sizes);
-
-	/**
-	 * Return a list of the rules associated to this symbol
-	 * 
-	 * @return
-	 */
-	public List<IAST> definition();
-
-	/**
-	 * Return the rules associated to this symbol in <code>String</code>
-	 * representation
-	 * 
-	 * @return the <code>String</code> representation of the symbol definition
-	 */
-	public String definitionToString() throws IOException;
-
-	/**
-	 * Deserialize the rules associated to this object
-	 * 
-	 * @param stream
-	 * @throws java.io.IOException
-	 */
-	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException;
+	public void setEvaluator(IEvaluator module);
 
 	/**
 	 * Serialize the rule definitions associated to this symbol

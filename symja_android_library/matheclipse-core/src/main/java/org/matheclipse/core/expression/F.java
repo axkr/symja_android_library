@@ -151,8 +151,7 @@ public class F {
 	public final static ISymbol RepeatedNull = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull" : "RepeatedNull");
 
-	public final static ISymbol All = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "all" : "All");
+	public final static ISymbol All = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "all" : "All");
 	public final static ISymbol Algebraics = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
 	public final static ISymbol Booleans = initFinalSymbol(
@@ -428,8 +427,9 @@ public class F {
 	public final static ISymbol Position = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
 			new org.matheclipse.core.builtin.function.Position());
-	
-	public final static ISymbol PossibleZeroQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ",
+
+	public final static ISymbol PossibleZeroQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ",
 			new org.matheclipse.core.builtin.function.PossibleZeroQ());
 	public final static ISymbol Prepend = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend",
 			new org.matheclipse.core.builtin.function.Prepend());
@@ -1344,6 +1344,10 @@ public class F {
 	public static IPattern $b(final IExpr condition, boolean def) {
 		return new org.matheclipse.core.expression.Blank(condition, def);
 	}
+	
+	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
+		return new org.matheclipse.core.expression.Blank(condition, defaultValue);
+	}
 
 	/**
 	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term
@@ -1398,6 +1402,21 @@ public class F {
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final boolean def) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
+	}
+
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbol
+	 * @param check
+	 *            additional condition which should be checked in
+	 *            pattern-matching
+	 * @param defaultValue
+	 *            the pattern can match to this default value 
+	 * @return IPattern
+	 */
+	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
 	}
 
 	/**

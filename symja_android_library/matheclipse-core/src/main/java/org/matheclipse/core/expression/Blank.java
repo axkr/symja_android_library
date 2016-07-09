@@ -33,6 +33,14 @@ public class Blank extends ExprImpl implements IPattern {
 	 */
 	private static final long serialVersionUID = 1306007999071682207L;
 
+	public static IPattern valueOf() {
+		return new Blank(); // NULL_PATTERN;
+	}
+
+	public static IPattern valueOf(final IExpr condition) {
+		return new Blank(condition);
+	}
+
 	/**
 	 * The expression which should check this pattern
 	 */
@@ -43,15 +51,10 @@ public class Blank extends ExprImpl implements IPattern {
 	 */
 	final boolean fDefault;
 
-	// private static Blank NULL_PATTERN = new Blank();
-
-	public static IPattern valueOf() {
-		return new Blank(); // NULL_PATTERN;
-	}
-
-	public static IPattern valueOf(final IExpr condition) {
-		return new Blank(condition);
-	}
+	/**
+	 * Use default value, if no matching expression was found
+	 */
+	final IExpr fDefaultValue;
 
 	public Blank() {
 		this(null);
@@ -65,22 +68,14 @@ public class Blank extends ExprImpl implements IPattern {
 		super();
 		this.fCondition = condition;
 		this.fDefault = def;
+		this.fDefaultValue = null;
 	}
 
-	@Override
-	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
-		patternMap.addPattern(patternIndexMap, this);
-		int[] result = new int[2];
-		if (isPatternDefault()) {
-			// the ast contains a pattern with default value (i.e. "x_.")
-			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
-			result[1] = 2;
-		} else {
-			// the ast contains a pattern without default value (i.e. "x_")
-			result[0] = IAST.CONTAINS_PATTERN;
-			result[1] = 5;
-		}
-		return result;
+	public Blank(final IExpr condition, IExpr defaultValue) {
+		super();
+		this.fCondition = condition;
+		this.fDefault = true;
+		this.fDefaultValue = defaultValue;
 	}
 
 	/**
@@ -114,6 +109,23 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	@Override
+	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
+		patternMap.addPattern(patternIndexMap, this);
+		int[] result = new int[2];
+		if (isPatternDefault()) {
+			// the ast contains a pattern with default value (i.e. "x_." or
+			// "x_:")
+			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
+			result[1] = 2;
+		} else {
+			// the ast contains a pattern without default value (i.e. "x_")
+			result[0] = IAST.CONTAINS_PATTERN;
+			result[1] = 5;
+		}
+		return result;
+	}
+
+	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof Blank) {
 			Blank pat = ((Blank) expr);
@@ -124,6 +136,24 @@ public class Blank extends ExprImpl implements IPattern {
 			}
 		}
 		return super.compareTo(expr);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Blank) {
+			if (hashCode() != obj.hashCode()) {
+				return false;
+			}
+			Blank blank = (Blank) obj;
+			if ((fCondition != null) && (blank.fCondition != null)) {
+				return fCondition.equals(blank.fCondition);
+			}
+			return fCondition == blank.fCondition;
+		}
+		return false;
 	}
 
 	/**
@@ -153,26 +183,23 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
+	public String fullFormString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Blank");
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append('(');
+		} else {
+			buf.append('[');
 		}
-		if (obj instanceof Blank) {
-			if (hashCode() != obj.hashCode()) {
-				return false;
-			}
-			Blank blank = (Blank) obj;
-			if ((fCondition != null) && (blank.fCondition != null)) {
-				return fCondition.equals(blank.fCondition);
-			}
-			return fCondition == blank.fCondition;
+		if (fCondition != null) {
+			buf.append(fCondition.fullFormString());
 		}
-		return false;
-	}
-
-	@Override
-	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
-		return isConditionMatched(expr, patternMap);
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			buf.append(')');
+		} else {
+			buf.append(']');
+		}
+		return buf.toString();
 	}
 
 	@Override
@@ -181,21 +208,27 @@ public class Blank extends ExprImpl implements IPattern {
 	}
 
 	@Override
-	public int getIndex(PatternMap pm) {
-		if (pm != null) {
-			return pm.get(this);
-		}
-		return -1;
+	public IExpr getDefaultValue() {
+		return fDefaultValue;
 	}
 
 	@Override
 	public int getEvalFlags() {
 		if (isPatternDefault()) {
-			// the ast contains a pattern with default value (i.e. "x_.")
+			// the ast contains a pattern with default value (i.e. "x_." or
+			// "x_:")
 			return IAST.CONTAINS_DEFAULT_PATTERN;
 		}
 		// the ast contains a pattern without default value (i.e. "x_")
 		return IAST.CONTAINS_PATTERN;
+	}
+
+	@Override
+	public int getIndex(PatternMap pm) {
+		if (pm != null) {
+			return pm.get(this);
+		}
+		return -1;
 	}
 
 	@Override
@@ -218,6 +251,17 @@ public class Blank extends ExprImpl implements IPattern {
 		return BLANKID;
 	}
 
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("$b(");
+		if (fCondition != null) {
+			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
+		}
+		buffer.append(')');
+		return buffer.toString();
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isBlank() {
@@ -232,24 +276,6 @@ public class Blank extends ExprImpl implements IPattern {
 		if (matcher.test(that)) {
 			return true;
 		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPatternDefault() {
-		return fDefault;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPatternExpr() {
-		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFreeOfPatterns() {
 		return false;
 	}
 
@@ -277,35 +303,33 @@ public class Blank extends ExprImpl implements IPattern {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append("$b(");
-		if (fCondition != null) {
-			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
-		}
-		buffer.append(')');
-		return buffer.toString();
+	public boolean isFreeOfPatterns() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternDefault() {
+		return fDefault;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPatternExpr() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPatternOptional() {
+		return fDefaultValue != null;
 	}
 
 	@Override
-	public String fullFormString() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("Blank");
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			buf.append('(');
-		} else {
-			buf.append('[');
-		}
-		if (fCondition != null) {
-			buf.append(fCondition.fullFormString());
-		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			buf.append(')');
-		} else {
-			buf.append(']');
-		}
-		return buf.toString();
+	public boolean matchPattern(final IExpr expr, PatternMap patternMap) {
+		return isConditionMatched(expr, patternMap);
 	}
 
 	@Override
@@ -314,6 +338,21 @@ public class Blank extends ExprImpl implements IPattern {
 		buffer.append('_');
 		if (fCondition != null) {
 			buffer.append(fCondition.toString());
+		} else {
+			if (fDefaultValue != null) {
+				buffer.append(':');
+				if (!fDefaultValue.isAtom()) {
+					buffer.append('(');
+				}
+				buffer.append(fDefaultValue.toString());
+				if (!fDefaultValue.isAtom()) {
+					buffer.append(')');
+				}
+			} else {
+				if (fDefault) {
+					buffer.append('.');
+				}
+			}
 		}
 		return buffer.toString();
 	}

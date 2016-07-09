@@ -48,6 +48,13 @@ import org.matheclipse.core.visit.IVisitorLong;
  */
 public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
+	static class DummyEvaluator implements IEvaluator {
+		@Override
+		public void setUp(ISymbol symbol) {
+			// do nothing because of dummy evaluator
+		}
+	}
+
 	/**
 	 * 
 	 */
@@ -58,6 +65,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	 */
 
 	private static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
+
+	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
 	/**
 	 * The attribute values of the symbol represented by single bits.
@@ -72,100 +81,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	 */
 	private transient RulesData fRulesData;
 
-	/**
-	 * Get the rules for initializing the pattern matching rules of this symbol.
-	 * 
-	 * @return <code>null</code> if no rule is defined
-	 */
-	@Override
-	public RulesData getRulesData() {
-		return fRulesData;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol) {
-		IExpr[] result = new IExpr[2];
-		IExpr symbolValue;
-		if (hasLocalVariableStack()) {
-			symbolValue = get();
-			result[0] = symbolValue;
-			IExpr calculatedResult = function.apply(symbolValue);
-			if (calculatedResult != null) {
-				set(calculatedResult);
-				result[1] = calculatedResult;
-				return result;
-			}
-
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					symbolValue = pme.getRHS();
-					if (symbolValue != null) {
-						result[0] = symbolValue;
-						IExpr calculatedResult = function.apply(symbolValue);
-						if (calculatedResult != null) {
-							pme.setRHS(calculatedResult);
-							result[1] = calculatedResult;
-							return result;
-						}
-					}
-				}
-			}
-		}
-		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
-				+ " has no value! Reassignment with a new value is not possible");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean hasAssignedSymbolValue() {
-		if (hasLocalVariableStack()) {
-			return get() != null;
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS() != null;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IExpr getAssignedValue() {
-		if (hasLocalVariableStack()) {
-			return get();
-		} else {
-			if (fRulesData != null) {
-				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
-				if (pme != null) {
-					return pme.getRHS();
-				}
-			}
-		}
-		return null;
-	}
-
 	private OpenIntToIExprHashMap fDefaultValues = null;
-
-	static class DummyEvaluator implements IEvaluator {
-		@Override
-		public void setUp(ISymbol symbol) {
-			// do nothing because of dummy evaluator
-		}
-	}
-
-	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
 	/* package private */String fSymbolName;
 
@@ -186,29 +102,40 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		fEvaluator = evaluator;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> T accept(IVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean accept(IVisitorBoolean visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr apply(IExpr... expressions) {
 		return F.ast(expressions, this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void pushLocalVariable() {
-		pushLocalVariable(null);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void pushLocalVariable(final IExpr expression) {
-		EvalEngine.localStackCreate(this).add(expression);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void popLocalVariable() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		localVariableStack.remove(localVariableStack.size() - 1);
 	}
 
 	/** {@inheritDoc} */
@@ -229,293 +156,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	public final void clearAll(EvalEngine engine) {
 		clear(engine);
 		fAttributes = NOATTRIBUTE;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof Symbol) {
-			if (fHashValue != ((Symbol) obj).fHashValue) {
-				return false;
-			}
-			return fSymbolName.equals(((Symbol) obj).fSymbolName);
-		}
-		return false;
-	}
-
-	@Override
-	public final boolean isSymbolName(String name) {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			if (fSymbolName.length() == 1) {
-				return fSymbolName.equals(name);
-			}
-			return fSymbolName.equalsIgnoreCase(name);
-		}
-		return fSymbolName.equals(name);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IExpr evaluate(EvalEngine engine) {
-		if (hasLocalVariableStack()) {
-			return IExpr.ofNullable(get());
-		}
-		IExpr result;
-		if ((result = evalDownRule(engine, this)).isPresent()) {
-			return result;
-		}
-		final IEvaluator module = getEvaluator();
-		if (module instanceof ISymbolEvaluator) {
-			IExpr temp;
-			if (engine.isNumericMode()) {
-				if (engine.isApfloat()) {
-					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
-				} else {
-					temp = ((ISymbolEvaluator) module).numericEval(this);
-				}
-			} else {
-				temp = ((ISymbolEvaluator) module).evaluate(this);
-			}
-			return temp;
-		}
-		return F.NIL;
-	}
-
-	@Override
-	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
-		IExpr result = evaluate(engine);
-		if (result.isPresent()) {
-			// set the new evaluated header !
-			return ast.apply(result);
-		}
-		return F.NIL;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
-		if (fRulesData == null) {
-			return F.NIL;
-		}
-		return fRulesData.evalDownRule(expression);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final double evalDouble() {
-		ISignedNumber signedNumber = evalSignedNumber();
-		if (signedNumber != null) {
-			return signedNumber.doubleValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final Complex evalComplex() {
-		INumber number = evalNumber();
-		if (number != null) {
-			return number.complexNumValue().complexValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final INumber evalNumber() {
-		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
-			if (result.isNumber()) {
-				return (INumber) result;
-			}
-		}
-		return null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final ISignedNumber evalSignedNumber() {
-		if (isNumericFunction()) {
-			IExpr result = F.evaln(this);
-			if (result.isSignedNumber()) {
-				return (ISignedNumber) result;
-			}
-		}
-		return null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
-		if (fRulesData == null) {
-			return F.NIL;
-		}
-		return fRulesData.evalUpRule(expression);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final int getAttributes() {
-		return fAttributes;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IEvaluator getEvaluator() {
-		// use "Double-Checked Locking" idiom
-		// https://en.wikipedia.org/wiki/Double-checked_locking
-		if (fEvaluator == null) {
-			synchronized (this) {
-				if (fEvaluator == null) {
-					fEvaluator = DUMMY_EVALUATOR;
-					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-						SystemNamespace.DEFAULT.setEvaluator(this);
-					} else {
-						if (Character.isUpperCase(fSymbolName.charAt(0))) {
-							SystemNamespace.DEFAULT.setEvaluator(this);
-						}
-					}
-				}
-			}
-		}
-		return fEvaluator;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean hasLocalVariableStack() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		return (localVariableStack != null) && !(localVariableStack.isEmpty());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr get() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		if (localVariableStack == null) {
-			return null;
-		}
-		return localVariableStack.get(localVariableStack.size() - 1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void set(final IExpr value) {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		localVariableStack.set(localVariableStack.size() - 1, value);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int hashCode() {
-		return fHashValue;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int hierarchy() {
-		return SYMBOLID;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isString(final String str) {
-		return fSymbolName.equals(str);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
-		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
-				packageMode);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
-			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
-		EvalEngine evalEngine = EvalEngine.get();
-		if (!packageMode) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
-				throw new RuleCreationError(leftHandSide);
-			}
-
-			EvalEngine.get().addModifiedVariable(this);
-		}
-		if (fRulesData == null) {
-			fRulesData = new RulesData(evalEngine.getContext());
-		}
-		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
-	}
-
-	@Override
-	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
-			boolean packageMode) {
-		if (!packageMode) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
-				throw new RuleCreationError(leftHandSide);
-			}
-
-			EvalEngine.get().addModifiedVariable(this);
-		}
-		if (fRulesData != null) {
-			fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
-		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
-		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
-		}
-		return fRulesData.putDownRule(pmEvaluator);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide,
-			IExpr rightHandSide) {
-		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
-			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
-		EvalEngine engine = EvalEngine.get();
-		if (!engine.isPackageMode()) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
-				throw new RuleCreationError(leftHandSide);
-			}
-
-			engine.addModifiedVariable(this);
-		}
-		if (fRulesData == null) {
-			fRulesData = new RulesData(engine.getContext());
-		}
-		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void setAttributes(final int attributes) {
-		fAttributes = attributes;
-		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
-			EvalEngine engine = EvalEngine.get();
-			engine.addModifiedVariable(this);
-		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void setEvaluator(final IEvaluator evaluator) {
-		fEvaluator = evaluator;
-		evaluator.setUp(this);
 	}
 
 	/**
@@ -582,114 +222,322 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isAtom() {
-		return true;
+	public boolean containsRules() {
+		return fRulesData != null;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isConstant() {
-		return (fAttributes & CONSTANT) == CONSTANT;
+	public final void createRulesData(int[] sizes) {
+		if (fRulesData == null) {
+			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<IAST> definition() {
+		ArrayList<IAST> result = new ArrayList<IAST>();
+		if (fRulesData != null) {
+			result.addAll(fRulesData.definition());
+		}
+		return result;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isE() {
-		return equals(F.E);
-	}
+	public String definitionToString() throws IOException {
+		// dummy call to ensure, that the associated rules are loaded:
+		getEvaluator();
 
-	/** {@inheritDoc} */
-	@Override
-	public boolean isTrue() {
-		return this == F.True;
-	}
+		StringWriter buf = new StringWriter();
 
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isValue() {
-		return evaluate(EvalEngine.get()).isPresent();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isVariable() {
-		return (fAttributes & CONSTANT) != CONSTANT;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFalse() {
-		return this == F.False;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isIndeterminate() {
-		return equals(F.Indeterminate);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isNegative() {
-		if (isNumericFunction()) {
-			IExpr temp = F.evaln(this);
-			if (temp.isSignedNumber() && temp.isNegative()) {
-				return true;
+		OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
+		off.setIgnoreNewLine(true);
+		List<IAST> list = definition();
+		buf.append("{");
+		for (int i = 0; i < list.size(); i++) {
+			off.convert(buf, list.get(i));
+			if (i < list.size() - 1) {
+				buf.append(",\n ");
+				off.setColumnCounter(0);
 			}
 		}
-		return false;
+		buf.append("}\n");
+		return buf.toString();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPi() {
-		return equals(F.Pi);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPolynomial(ISymbol variable) {
-		if (variable == null) {
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		return this.equals(variable);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPolynomial(IAST variables) {
-		if (variables.isAST0()) {
-			return true;
-		}
-		for (int i = 1; i < variables.size(); i++) {
-			if (this.equals(variables.get(i))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
-		if (maxDegree == 0L) {
-			if (this.equals(variable)) {
+		if (obj instanceof Symbol) {
+			if (fHashValue != ((Symbol) obj).fHashValue) {
 				return false;
 			}
+			return fSymbolName.equals(((Symbol) obj).fSymbolName);
 		}
-		return true;
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPositive() {
+	public final Complex evalComplex() {
+		INumber number = evalNumber();
+		if (number != null) {
+			return number.complexNumValue().complexValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final double evalDouble() {
+		ISignedNumber signedNumber = evalSignedNumber();
+		if (signedNumber != null) {
+			return signedNumber.doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
+		if (fRulesData == null) {
+			return F.NIL;
+		}
+		return fRulesData.evalDownRule(expression);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final INumber evalNumber() {
 		if (isNumericFunction()) {
-			IExpr temp = F.evaln(this);
-			if (temp.isSignedNumber() && temp.isPositive()) {
-				return true;
+			IExpr result = F.evaln(this);
+			if (result.isNumber()) {
+				return (INumber) result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final ISignedNumber evalSignedNumber() {
+		if (isNumericFunction()) {
+			IExpr result = F.evaln(this);
+			if (result.isSignedNumber()) {
+				return (ISignedNumber) result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		if (hasLocalVariableStack()) {
+			return IExpr.ofNullable(get());
+		}
+		IExpr result;
+		if ((result = evalDownRule(engine, this)).isPresent()) {
+			return result;
+		}
+		final IEvaluator module = getEvaluator();
+		if (module instanceof ISymbolEvaluator) {
+			IExpr temp;
+			if (engine.isNumericMode()) {
+				if (engine.isApfloat()) {
+					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
+				} else {
+					temp = ((ISymbolEvaluator) module).numericEval(this);
+				}
+			} else {
+				temp = ((ISymbolEvaluator) module).evaluate(this);
+			}
+			return temp;
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+		IExpr result = evaluate(engine);
+		if (result.isPresent()) {
+			// set the new evaluated header !
+			return ast.apply(result);
+		}
+		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
+		if (fRulesData == null) {
+			return F.NIL;
+		}
+		return fRulesData.evalUpRule(expression);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String fullFormString() {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
+			if (str != null) {
+				return str;
+			}
+		}
+		return fSymbolName;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IExpr get() {
+		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		if (localVariableStack == null) {
+			return null;
+		}
+		return localVariableStack.get(localVariableStack.size() - 1);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IExpr getAssignedValue() {
+		if (hasLocalVariableStack()) {
+			return get();
+		} else {
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					return pme.getRHS();
+				}
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final int getAttributes() {
+		return fAttributes;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr getDefaultValue() {
+		// special case for a general default value
+		if (fDefaultValues == null) {
+			return null;
+		}
+		return fDefaultValues.get(DEFAULT_VALUE_INDEX);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr getDefaultValue(int pos) {
+		// default value at this position
+		if (fDefaultValues == null) {
+			return null;
+		}
+		return fDefaultValues.get(pos);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IEvaluator getEvaluator() {
+		// use "Double-Checked Locking" idiom
+		// https://en.wikipedia.org/wiki/Double-checked_locking
+		if (fEvaluator == null) {
+			synchronized (this) {
+				if (fEvaluator == null) {
+					fEvaluator = DUMMY_EVALUATOR;
+					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+						SystemNamespace.DEFAULT.setEvaluator(this);
+					} else {
+						if (Character.isUpperCase(fSymbolName.charAt(0))) {
+							SystemNamespace.DEFAULT.setEvaluator(this);
+						}
+					}
+				}
+			}
+		}
+		return fEvaluator;
+	}
+
+	/**
+	 * Get the rules for initializing the pattern matching rules of this symbol.
+	 * 
+	 * @return <code>null</code> if no rule is defined
+	 */
+	@Override
+	public RulesData getRulesData() {
+		return fRulesData;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final String getSymbolName() {
+		return fSymbolName;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean hasAssignedSymbolValue() {
+		if (hasLocalVariableStack()) {
+			return get() != null;
+		} else {
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					return pme.getRHS() != null;
+				}
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public boolean hasFlatAttribute() {
+		return (fAttributes & FLAT) == FLAT;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int hashCode() {
+		return fHashValue;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean hasLocalVariableStack() {
+		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		return (localVariableStack != null) && !(localVariableStack.isEmpty());
+	}
+
+	@Override
+	public boolean hasOneIdentityAttribute() {
+		return (fAttributes & ONEIDENTITY) == ONEIDENTITY;
+	}
+
+	@Override
+	public boolean hasOrderlessAttribute() {
+		return (fAttributes & ORDERLESS) == ORDERLESS;
+	}
+
+	@Override
+	public boolean hasOrderlessFlatAttribute() {
+		return (fAttributes & FLATORDERLESS) == FLATORDERLESS;
 	}
 
 	/** {@inheritDoc} */
@@ -700,27 +548,14 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final String getSymbolName() {
-		return fSymbolName;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
-		final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
-		return uv2s.apply(this);
+	public int hierarchy() {
+		return SYMBOLID;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
 
 	/** {@inheritDoc} */
@@ -779,61 +614,336 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return "$s(\"" + fSymbolName + "\")";
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
-			return sb.toString();
-		} catch (Exception e1) {
-			return fSymbolName;
-		}
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return internalJavaString(symbolsAsFactoryMethod, depth, true);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
-	public String fullFormString() {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
-			if (str != null) {
-				return str;
+	public final boolean isAtom() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isConstant() {
+		return (fAttributes & CONSTANT) == CONSTANT;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isE() {
+		return equals(F.E);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isFalse() {
+		return this == F.False;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isIndeterminate() {
+		return equals(F.Indeterminate);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isNegative() {
+		if (isNumericFunction()) {
+			IExpr temp = F.evaln(this);
+			if (temp.isSignedNumber() && temp.isNegative()) {
+				return true;
 			}
 		}
-		return fSymbolName;
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPi() {
+		return equals(F.Pi);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPolynomial(IAST variables) {
+		if (variables.isAST0()) {
+			return true;
+		}
+		for (int i = 1; i < variables.size(); i++) {
+			if (this.equals(variables.get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPolynomial(ISymbol variable) {
+		if (variable == null) {
+			return true;
+		}
+		return this.equals(variable);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+		if (maxDegree == 0L) {
+			if (this.equals(variable)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isPositive() {
+		if (isNumericFunction()) {
+			IExpr temp = F.evaln(this);
+			if (temp.isSignedNumber() && temp.isPositive()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isString(final String str) {
+		return fSymbolName.equals(str);
+	}
+
+	@Override
+	public final boolean isSymbolName(String name) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (fSymbolName.length() == 1) {
+				return fSymbolName.equals(name);
+			}
+			return fSymbolName.equalsIgnoreCase(name);
+		}
+		return fSymbolName.equals(name);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isTrue() {
+		return this == F.True;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isValue() {
+		return evaluate(EvalEngine.get()).isPresent();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isVariable() {
+		return (fAttributes & CONSTANT) != CONSTANT;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<IAST> definition() {
-		ArrayList<IAST> result = new ArrayList<IAST>();
+	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
+		if (isConstant()) {
+			IEvaluator evaluator = getEvaluator();
+			if (evaluator instanceof ISignedNumberConstant) {
+				ISignedNumberConstant numericConstant = (ISignedNumberConstant) evaluator;
+				double value = numericConstant.evalReal();
+				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+					return function.apply(value);
+				}
+			}
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public IExpr negate() {
+		return F.Times(F.CN1, this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void popLocalVariable() {
+		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		localVariableStack.remove(localVariableStack.size() - 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void pushLocalVariable() {
+		pushLocalVariable(null);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final void pushLocalVariable(final IExpr expression) {
+		EvalEngine.localStackCreate(this).add(expression);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IPatternMatcher putDownRule(final ISymbol.RuleType symbol, final boolean equalRule,
+			final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+		return putDownRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY,
+				packageMode);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
+		EvalEngine evalEngine = EvalEngine.get();
+		if (!packageMode) {
+			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+				throw new RuleCreationError(leftHandSide);
+			}
+
+			EvalEngine.get().addModifiedVariable(this);
+		}
+		if (fRulesData == null) {
+			fRulesData = new RulesData(evalEngine.getContext());
+		}
+		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
+		if (fRulesData == null) {
+			fRulesData = new RulesData(EvalEngine.get().getContext());
+		}
+		return fRulesData.putDownRule(pmEvaluator);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IPatternMatcher putUpRule(final ISymbol.RuleType symbol, boolean equalRule, IAST leftHandSide,
+			IExpr rightHandSide) {
+		return putUpRule(symbol, equalRule, leftHandSide, rightHandSide, PatternMap.DEFAULT_RULE_PRIORITY);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
+		EvalEngine engine = EvalEngine.get();
+		if (!engine.isPackageMode()) {
+			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+				throw new RuleCreationError(leftHandSide);
+			}
+
+			engine.addModifiedVariable(this);
+		}
+		if (fRulesData == null) {
+			fRulesData = new RulesData(engine.getContext());
+		}
+		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
+	}
+
+	/** {@inheritDoc} */
+	// @Override
+	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		fSymbolName = stream.readUTF();
+		fAttributes = stream.read();
+	}
+
+	public Object readResolve() throws ObjectStreamException {
+		Symbol sym = (Symbol) F.$s(fSymbolName);
+		sym.fAttributes = fAttributes;
+		return sym;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		fSymbolName = stream.readUTF();
+		fAttributes = stream.read();
+		boolean hasDownRulesData = stream.readBoolean();
+		if (hasDownRulesData) {
+			fRulesData = new RulesData(EvalEngine.get().getContext());
+			fRulesData = (RulesData) stream.readObject();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol) {
+		IExpr[] result = new IExpr[2];
+		IExpr symbolValue;
+		if (hasLocalVariableStack()) {
+			symbolValue = get();
+			result[0] = symbolValue;
+			IExpr calculatedResult = function.apply(symbolValue);
+			if (calculatedResult != null) {
+				set(calculatedResult);
+				result[1] = calculatedResult;
+				return result;
+			}
+
+		} else {
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					symbolValue = pme.getRHS();
+					if (symbolValue != null) {
+						result[0] = symbolValue;
+						IExpr calculatedResult = function.apply(symbolValue);
+						if (calculatedResult != null) {
+							pme.setRHS(calculatedResult);
+							result[1] = calculatedResult;
+							return result;
+						}
+					}
+				}
+			}
+		}
+		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
+				+ " has no value! Reassignment with a new value is not possible");
+	}
+
+	@Override
+	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
+			boolean packageMode) {
+		if (!packageMode) {
+			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+				throw new RuleCreationError(leftHandSide);
+			}
+
+			EvalEngine.get().addModifiedVariable(this);
+		}
 		if (fRulesData != null) {
-			result.addAll(fRulesData.definition());
+			fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
 		}
-		return result;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getDefaultValue() {
-		// special case for a general default value
-		if (fDefaultValues == null) {
-			return null;
-		}
-		return fDefaultValues.get(DEFAULT_VALUE_INDEX);
+	public final void set(final IExpr value) {
+		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		localVariableStack.set(localVariableStack.size() - 1, value);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr getDefaultValue(int pos) {
-		// default value at this position
-		if (fDefaultValues == null) {
-			return null;
+	public final void setAttributes(final int attributes) {
+		fAttributes = attributes;
+		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
+			EvalEngine engine = EvalEngine.get();
+			engine.addModifiedVariable(this);
 		}
-		return fDefaultValues.get(pos);
 	}
 
 	/** {@inheritDoc} */
@@ -858,36 +968,27 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public String definitionToString() throws IOException {
-		// dummy call to ensure, that the associated rules are loaded:
-		getEvaluator();
+	public final void setEvaluator(final IEvaluator evaluator) {
+		fEvaluator = evaluator;
+		evaluator.setUp(this);
+	}
 
-		StringWriter buf = new StringWriter();
-
-		OutputFormFactory off = OutputFormFactory.get();
-		off.setIgnoreNewLine(true);
-		List<IAST> list = definition();
-		buf.append("{");
-		for (int i = 0; i < list.size(); i++) {
-			off.convert(buf, list.get(i));
-			if (i < list.size() - 1) {
-				buf.append(",\n ");
-				off.setColumnCounter(0);
-			}
+	@Override
+	public String toString() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
+			return sb.toString();
+		} catch (Exception e1) {
+			return fSymbolName;
 		}
-		buf.append("}\n");
-		return buf.toString();
 	}
 
 	/** {@inheritDoc} */
-	// @Override
-	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		fSymbolName = stream.readUTF();
-		fAttributes = stream.read();
-	}
-
-	private Object writeReplace() throws ObjectStreamException {
-		return optional(F.GLOBAL_IDS_MAP.get(this));
+	@Override
+	public IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+		final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
+		return uv2s.apply(this);
 	}
 
 	/** {@inheritDoc} */
@@ -896,22 +997,8 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		stream.write(fAttributes);
 	}
 
-	public Object readResolve() throws ObjectStreamException {
-		Symbol sym = (Symbol) F.$s(fSymbolName);
-		sym.fAttributes = fAttributes;
-		return sym;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		fSymbolName = stream.readUTF();
-		fAttributes = stream.read();
-		boolean hasDownRulesData = stream.readBoolean();
-		if (hasDownRulesData) {
-			fRulesData = new RulesData(EvalEngine.get().getContext());
-			fRulesData = (RulesData) stream.readObject();
-		}
+	private Object writeReplace() throws ObjectStreamException {
+		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
 
 	/** {@inheritDoc} */
@@ -929,72 +1016,5 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			stream.writeObject(fRulesData);
 		}
 		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean containsRules() {
-		return fRulesData != null;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final void createRulesData(int[] sizes) {
-		if (fRulesData == null) {
-			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
-		if (isConstant()) {
-			IEvaluator evaluator = getEvaluator();
-			if (evaluator instanceof ISignedNumberConstant) {
-				ISignedNumberConstant numericConstant = (ISignedNumberConstant) evaluator;
-				double value = numericConstant.evalReal();
-				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-					return function.apply(value);
-				}
-			}
-		}
-		return F.NIL;
-	}
-
-	@Override
-	public IExpr negate() {
-		return F.Times(F.CN1, this);
 	}
 }

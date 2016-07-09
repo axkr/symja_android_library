@@ -260,6 +260,10 @@ public class ASTNodeFactory implements IParserFactory {
 	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, boolean optional) {
 		return new PatternNode(patternName, check, optional);
 	}
+	
+	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check,final ASTNode defaultValue) {
+		return new PatternNode(patternName, check, defaultValue);
+	}
 
 	public PatternNode createPattern2(final SymbolNode patternName, final ASTNode check) {
 		return new Pattern2Node(patternName, check);

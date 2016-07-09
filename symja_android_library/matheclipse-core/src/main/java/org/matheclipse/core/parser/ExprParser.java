@@ -53,10 +53,6 @@ import org.matheclipse.parser.client.SyntaxError;
  * their precedence.
  */
 public class ExprParser extends ExprScanner {
-	static {
-		F.initSymbols(null, null, true);
-	}
-
 	static class NVisitorExpr extends VisitorExpr {
 		final int fPrecision;
 
@@ -77,6 +73,10 @@ public class ExprParser extends ExprScanner {
 			}
 			return element;
 		}
+	}
+
+	static {
+		F.initSymbols(null, null, true);
 	}
 
 	public final static ISymbol DERIVATIVE = F.Derivative;
@@ -126,213 +126,74 @@ public class ExprParser extends ExprScanner {
 		}
 	}
 
-	public void setFactory(final IExprParserFactory factory) {
-		this.fFactory = factory;
-	}
-
-	public IExprParserFactory getFactory() {
-		return fFactory;
-	}
-
-	/**
-	 * construct the arguments for an expression
-	 * 
-	 */
-	private void getArguments(final IAST function) throws SyntaxError {
-		do {
-			function.add(parseOperators(parsePrimary(), 0));
-
-			if (fToken != TT_COMMA) {
-				break;
+	private IExpr convert(IAST ast) {
+		IExpr head = ast.head();
+		if (ast.isAST(F.N, 3)) {
+			return convertN(ast);
+		} else if (ast.isAST(F.Sqrt, 2)) {
+			// rewrite from input: Sqrt(x) => Power(x, 1/2)
+			return F.Power(ast.arg1(), F.C1D2);
+		} else if (ast.isAST(F.Exp, 2)) {
+			// rewrite from input: Exp(x) => E^x
+			return F.Power(F.E, ast.arg1());
+		} else if (ast.isPower() && ast.arg1().isPower() && ast.arg2().isMinusOne()) {
+			IAST arg1 = (IAST) ast.arg1();
+			if (arg1.arg2().isNumber()) {
+				// Division operator
+				// rewrite from input: Power(Power(x, <number>),-1) => Power(x,
+				// - <number>)
+				return F.Power(arg1.arg1(), ((INumber) arg1.arg2()).negate());
 			}
-
-			getNextToken();
-		} while (true);
-	}
-
-	/**
-	 * Determine the current PrefixOperator
-	 * 
-	 * @return <code>null</code> if no prefix operator could be determined
-	 */
-	private PrefixExprOperator determinePrefixOperator() {
-		AbstractExprOperator oper = null;
-		for (int i = 0; i < fOperList.size(); i++) {
-			oper = fOperList.get(i);
-			if (oper instanceof PrefixExprOperator) {
-				return (PrefixExprOperator) oper;
+		} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
+			ISymbol compareHead = F.Greater;
+			return rewriteLessGreaterAST(ast, compareHead);
+		} else if (ast.isASTSizeGE(F.Greater, 3)) {
+			ISymbol compareHead = F.GreaterEqual;
+			return rewriteLessGreaterAST(ast, compareHead);
+		} else if (ast.isASTSizeGE(F.LessEqual, 3)) {
+			ISymbol compareHead = F.Less;
+			return rewriteLessGreaterAST(ast, compareHead);
+		} else if (ast.isASTSizeGE(F.Less, 3)) {
+			ISymbol compareHead = F.LessEqual;
+			return rewriteLessGreaterAST(ast, compareHead);
+		} else if (head.equals(F.PatternHead)) {
+			final IExpr expr = Pattern.CONST.evaluate(ast, fEngine);
+			if (expr.isPresent()) {
+				return expr;
 			}
-		}
-		return null;
-	}
-
-	/**
-	 * Determine the current PostfixOperator
-	 * 
-	 * @return <code>null</code> if no postfix operator could be determined
-	 */
-	private PostfixExprOperator determinePostfixOperator() {
-		AbstractExprOperator oper = null;
-		for (int i = 0; i < fOperList.size(); i++) {
-			oper = fOperList.get(i);
-			if (oper instanceof PostfixExprOperator) {
-				return (PostfixExprOperator) oper;
+		} else if (head.equals(F.BlankHead)) {
+			final IExpr expr = Blank.CONST.evaluate(ast, fEngine);
+			if (expr.isPresent()) {
+				return expr;
+			}
+		} else if (head.equals(F.Complex)) {
+			final IExpr expr = Complex.CONST.evaluate(ast, fEngine);
+			if (expr.isPresent()) {
+				return expr;
+			}
+		} else if (head.equals(F.Rational)) {
+			final IExpr expr = Rational.CONST.evaluate(ast, fEngine);
+			if (expr.isPresent()) {
+				return expr;
 			}
 		}
-		return null;
+		return ast;
 	}
 
-	/**
-	 * Determine the current BinaryOperator
-	 * 
-	 * @return <code>null</code> if no binary operator could be determined
-	 */
-	private InfixExprOperator determineBinaryOperator() {
-		AbstractExprOperator oper = null;
-		for (int i = 0; i < fOperList.size(); i++) {
-			oper = fOperList.get(i);
-			if (oper instanceof InfixExprOperator) {
-				return (InfixExprOperator) oper;
-			}
-		}
-		return null;
-	}
-
-	private IExpr parseArguments(IExpr lhs) {
-		if (fRelaxedSyntax) {
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				IAST ast = getFunctionArguments(lhs);
-				return convert(ast);
-			} else if (fToken == TT_PRECEDENCE_OPEN) {
-				IAST ast = getFunction(lhs);
-				return convert(ast);
-			}
-		} else {
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				IAST ast = getFunctionArguments(lhs);
-				return convert(ast);
-			}
-		}
-		return lhs;
-	}
-
-	private IExpr parsePrimary() {
-		if (fToken == TT_OPERATOR) {
-			if (fOperatorString.equals(".")) {
-				fCurrentChar = '.';
-				// fToken = TT_DIGIT;
-				// return getPart();
-				return getNumber(false);
-			}
-			final PrefixExprOperator prefixOperator = determinePrefixOperator();
-			if (prefixOperator != null) {
-				getNextToken();
-				final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
-				if (prefixOperator.getFunctionName().equals("PreMinus")) {
-					// special cases for negative numbers
-					if (temp.isNumber()) {
-						return temp.negate();
-					}
-				}
-				return prefixOperator.createFunction(fFactory, temp);
-			}
-			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
-
-		}
-		return getPart();
-	}
-
-	private IExpr parseLookaheadOperator(final int min_precedence) {
-		IExpr rhs = parsePrimary();
-
-		while (true) {
-			final int lookahead = fToken;
-			if (fToken == TT_NEWLINE) {
-				return rhs;
-			}
-			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
-				// if (fPackageMode && fRecursionDepth < 1) {
-				// return rhs;
-				// }
-				// lazy evaluation of multiplication
-				InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-				if (timesOperator.getPrecedence() > min_precedence) {
-					rhs = parseOperators(rhs, timesOperator.getPrecedence());
-					continue;
-				} else if ((timesOperator.getPrecedence() == min_precedence)
-						&& (timesOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE)) {
-					rhs = parseOperators(rhs, timesOperator.getPrecedence());
-					continue;
-				}
-			} else {
-				if (lookahead != TT_OPERATOR) {
-					break;
-				}
-				InfixExprOperator infixOperator = determineBinaryOperator();
-				if (infixOperator != null) {
-					if (infixOperator.getPrecedence() > min_precedence
-							|| ((infixOperator.getPrecedence() == min_precedence)
-									&& (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
-						if (infixOperator.getOperatorString().equals(";")) {
-							IExpr lhs = rhs;
-							rhs = F.Null;
-							if (fPackageMode && fRecursionDepth < 1) {
-								return createInfixFunction(infixOperator, lhs, rhs);
-							}
-						}
-						rhs = parseOperators(rhs, infixOperator.getPrecedence());
-						continue;
-					}
-
-					// if (infixOperator.getPrecedence() > min_precedence) {
-					// IExpr compoundExpressionNull =
-					// parseCompoundExpressionNull(infixOperator, rhs);
-					// if (compoundExpressionNull != null) {
-					// return compoundExpressionNull;
-					// }
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// } else if ((infixOperator.getPrecedence() ==
-					// min_precedence)
-					// && (infixOperator.getGrouping() ==
-					// InfixOperator.RIGHT_ASSOCIATIVE)) {
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// }
-				} else {
-					PostfixExprOperator postfixOperator = determinePostfixOperator();
-					if (postfixOperator != null) {
-						if (postfixOperator.getPrecedence() > min_precedence) {
-							getNextToken();
-							// rhs =
-							// F.$(F.$s(postfixOperator.getFunctionName()),
-							// rhs);
-							rhs = postfixOperator.createFunction(fFactory, rhs);
-							continue;
-						}
-					}
+	private IExpr convertN(final IAST function) {
+		try {
+			int precision = Validate.checkIntType(function.arg2());
+			if (EvalEngine.isApfloat(precision)) {
+				NVisitorExpr nve = new NVisitorExpr(precision);
+				IExpr temp = function.arg1().accept(nve);
+				if (temp.isPresent()) {
+					function.set(1, temp);
 				}
 			}
-			break;
-		}
-		return rhs;
+		} catch (WrongArgumentType wat) {
 
-	}
-
-	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
-		IExpr temp = infixOperator.createFunction(fFactory, lhs, rhs);
-		if (temp.isAST()) {
-			return convert((IAST) temp);
 		}
-		return temp;
-		// if (infixOperator.getOperatorString().equals("//")) {
-		// // lhs // rhs ==> rhs[lhs]
-		// IAST function = F.ast(rhs);
-		// function.add(lhs);
-		// return function;
-		// }
-		// return F.$(F.$s(infixOperator.getFunctionName()), lhs, rhs);
+		return function;
 	}
 
 	private IExpr convertSymbol(final String nodeStr) {
@@ -387,6 +248,665 @@ public class ExprParser extends ExprScanner {
 		}
 	}
 
+	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
+		IExpr temp = infixOperator.createFunction(fFactory, lhs, rhs);
+		if (temp.isAST()) {
+			return convert((IAST) temp);
+		}
+		return temp;
+		// if (infixOperator.getOperatorString().equals("//")) {
+		// // lhs // rhs ==> rhs[lhs]
+		// IAST function = F.ast(rhs);
+		// function.add(lhs);
+		// return function;
+		// }
+		// return F.$(F.$s(infixOperator.getFunctionName()), lhs, rhs);
+	}
+
+	/**
+	 * Determine the current BinaryOperator
+	 * 
+	 * @return <code>null</code> if no binary operator could be determined
+	 */
+	private InfixExprOperator determineBinaryOperator() {
+		AbstractExprOperator oper = null;
+		for (int i = 0; i < fOperList.size(); i++) {
+			oper = fOperList.get(i);
+			if (oper instanceof InfixExprOperator) {
+				return (InfixExprOperator) oper;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Determine the current PostfixOperator
+	 * 
+	 * @return <code>null</code> if no postfix operator could be determined
+	 */
+	private PostfixExprOperator determinePostfixOperator() {
+		AbstractExprOperator oper = null;
+		for (int i = 0; i < fOperList.size(); i++) {
+			oper = fOperList.get(i);
+			if (oper instanceof PostfixExprOperator) {
+				return (PostfixExprOperator) oper;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Determine the current PrefixOperator
+	 * 
+	 * @return <code>null</code> if no prefix operator could be determined
+	 */
+	private PrefixExprOperator determinePrefixOperator() {
+		AbstractExprOperator oper = null;
+		for (int i = 0; i < fOperList.size(); i++) {
+			oper = fOperList.get(i);
+			if (oper instanceof PrefixExprOperator) {
+				return (PrefixExprOperator) oper;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * construct the arguments for an expression
+	 * 
+	 */
+	private void getArguments(final IAST function) throws SyntaxError {
+		do {
+			function.add(parseExpression());
+
+			if (fToken != TT_COMMA) {
+				break;
+			}
+
+			getNextToken();
+		} while (true);
+	}
+
+	private IExpr getFactor() throws SyntaxError {
+		IExpr temp;
+
+		if (fToken == TT_IDENTIFIER) {
+			final IExpr head = getSymbol();
+			if (head.isSymbol()) {
+				final ISymbol symbol = (ISymbol) head;
+				temp = symbol;
+				if (fToken == TT_BLANK) {
+					// read '_'
+					if (isWhitespace()) {
+						temp = F.$p(symbol, null);
+						getNextToken();
+					} else {
+						getNextToken();
+						if (fToken == TT_IDENTIFIER) {
+							final IExpr check = getSymbol();
+							temp = F.$p(symbol, check);
+						} else {
+							temp = F.$p(symbol, null);
+						}
+					}
+				} else if (fToken == TT_BLANK_BLANK) {
+					// read '__'
+					if (isWhitespace()) {
+						temp = F.$ps(symbol, null);
+						getNextToken();
+					} else {
+						getNextToken();
+						if (fToken == TT_IDENTIFIER) {
+							final IExpr check = getSymbol();
+							temp = F.$ps(symbol, check);
+						} else {
+							temp = F.$ps(symbol, null);
+						}
+					}
+				} else if (fToken == TT_BLANK_BLANK_BLANK) {
+					// read '___'
+					if (isWhitespace()) {
+						temp = F.$ps(symbol, null, false, true);
+						getNextToken();
+					} else {
+						getNextToken();
+						if (fToken == TT_IDENTIFIER) {
+							final IExpr check = getSymbol();
+							temp = F.$ps(symbol, check, false, true);
+						} else {
+							temp = F.$ps(symbol, null, false, true);
+						}
+					}
+				} else if (fToken == TT_BLANK_OPTIONAL) {
+					// read '_.'
+					if (isWhitespace()) {
+						temp = F.$p(symbol, null, true);
+						getNextToken();
+					} else {
+						getNextToken();
+						if (fToken == TT_IDENTIFIER) {
+							final IExpr check = getSymbol();
+							temp = F.$p(symbol, check, true);
+						} else {
+							temp = F.$p(symbol, null, true);
+						}
+					}
+				} else if (fToken == TT_BLANK_COLON) {
+					// read '_:'
+					getNextToken();
+					IExpr defaultValue = parseExpression();
+					temp = F.$p(symbol, null, defaultValue);
+				}
+			} else {
+				temp = head;
+			}
+
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK) {
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$b();
+				// temp = fFactory.createPattern(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$b(check);
+					// temp = fFactory.createPattern(null, check);
+				} else {
+					temp = F.$b();
+					// temp = fFactory.createPattern(null, null);
+				}
+			}
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK_BLANK) {
+			// read '__'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$ps(null, null);
+				// temp = fFactory.createPattern2(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(null, check);
+					// temp = fFactory.createPattern2(null, check);
+				} else {
+					temp = F.$ps(null, null);
+					// temp = fFactory.createPattern2(null, null);
+				}
+			}
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			// read '___'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$ps(null, null, false, true);
+				// temp = fFactory.createPattern3(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(null, check, false, true);
+					// temp = fFactory.createPattern3(null, check);
+				} else {
+					temp = F.$ps(null, null, false, true);
+					// temp = fFactory.createPattern3(null, null);
+				}
+			}
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK_OPTIONAL) {
+			// read '_.'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$b(null, true);
+				// temp = fFactory.createPattern(null, null, true);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$b(check, true);
+					// temp = fFactory.createPattern(null, check, true);
+				} else {
+					temp = F.$b(null, true);
+					// temp = fFactory.createPattern(null, null, true);
+				}
+			}
+			return parseArguments(temp);
+		} else if (fToken == TT_BLANK_COLON) {
+			// read '_:'
+			getNextToken();
+			IExpr defaultValue = parseExpression();
+			temp = F.$b( null, defaultValue); 
+			return parseArguments(temp);
+		} else if (fToken == TT_DIGIT) {
+			return getNumber(false);
+		} else if (fToken == TT_PRECEDENCE_OPEN) {
+			fRecursionDepth++;
+			try {
+				getNextToken();
+
+				temp = parseExpression();
+
+				if (fToken != TT_PRECEDENCE_CLOSE) {
+					throwSyntaxError("\')\' expected.");
+				}
+			} finally {
+				fRecursionDepth--;
+			}
+			getNextToken();
+			if (fToken == TT_PRECEDENCE_OPEN) {
+				return getTimes(temp);
+			}
+			return temp;
+
+		} else if (fToken == TT_LIST_OPEN) {
+			return getList();
+		} else if (fToken == TT_STRING) {
+			return getString();
+		} else if (fToken == TT_PERCENT) {
+
+			final IAST out = F.ast(F.Out);
+
+			int countPercent = 1;
+			getNextToken();
+			if (fToken == TT_DIGIT) {
+				countPercent = getIntegerNumber();
+				out.add(F.integer(countPercent));
+				return out;
+			}
+
+			while (fToken == TT_PERCENT) {
+				countPercent++;
+				getNextToken();
+			}
+
+			out.add(F.integer(-countPercent));
+			return parseArguments(out);
+		} else if (fToken == TT_SLOT) {
+
+			getNextToken();
+			if (fToken == TT_DIGIT) {
+				final IAST slot = F.ast(F.Slot);
+				slot.add(getNumber(false));
+				return parseArguments(slot);
+			} else {
+				return parseArguments(F.Slot1);
+			}
+
+		} else if (fToken == TT_SLOTSEQUENCE) {
+
+			getNextToken();
+			final IAST slotSequencce = F.ast(F.SlotSequence);
+			if (fToken == TT_DIGIT) {
+				slotSequencce.add(getNumber(false));
+			} else {
+				slotSequencce.add(F.C1);
+			}
+			return parseArguments(slotSequencce);
+			// final FunctionNode slotSequencce =
+			// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
+			// if (fToken == TT_DIGIT) {
+			// slotSequencce.add(getNumber(false));
+			// } else {
+			// slotSequencce.add(fFactory.createInteger(1));
+			// }
+			// return parseArguments(slotSequencce);
+		}
+		switch (fToken) {
+
+		case TT_PRECEDENCE_CLOSE:
+			throwSyntaxError("Too much closing ) in factor.");
+			break;
+		case TT_LIST_CLOSE:
+			throwSyntaxError("Too much closing } in factor.");
+			break;
+		case TT_ARGUMENTS_CLOSE:
+			throwSyntaxError("Too much closing ] in factor.");
+			break;
+		}
+
+		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (" + fToken + ")");
+		return null;
+	}
+
+	public IExprParserFactory getFactory() {
+		return fFactory;
+	}
+
+	/**
+	 * Get a function f[...][...]
+	 * 
+	 */
+	IAST getFunction(final IExpr head) throws SyntaxError {
+		final IAST function = F.ast(head);
+
+		getNextToken();
+
+		if (fRelaxedSyntax) {
+			if (fToken == TT_PRECEDENCE_CLOSE) {
+				getNextToken();
+				if (fToken == TT_PRECEDENCE_OPEN) {
+					return function;
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
+			}
+		} else {
+			if (fToken == TT_ARGUMENTS_CLOSE) {
+				getNextToken();
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
+			}
+		}
+		fRecursionDepth++;
+		try {
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
+		if (fRelaxedSyntax) {
+			if (fToken == TT_PRECEDENCE_CLOSE) {
+				getNextToken();
+				if (fToken == TT_PRECEDENCE_OPEN) {
+					return function;
+				}
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
+			}
+		} else {
+			if (fToken == TT_ARGUMENTS_CLOSE) {
+				getNextToken();
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
+			}
+		}
+
+		if (fRelaxedSyntax) {
+			throwSyntaxError("')' expected.");
+		} else {
+			throwSyntaxError("']' expected.");
+		}
+		return null;
+
+	}
+
+	/**
+	 * Get a function f[...][...]
+	 * 
+	 */
+	IAST getFunctionArguments(final IExpr head) throws SyntaxError {
+
+		final IAST function = F.ast(head);
+		fRecursionDepth++;
+		try {
+			getNextToken();
+
+			if (fToken == TT_ARGUMENTS_CLOSE) {
+				getNextToken();
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					return getFunctionArguments(function);
+				}
+				return function;
+			}
+
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
+		if (fToken == TT_ARGUMENTS_CLOSE) {
+			getNextToken();
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				return getFunctionArguments(function);
+			}
+			return function;
+		}
+
+		throwSyntaxError("']' expected.");
+		return null;
+
+	}
+
+	private int getIntegerNumber() throws SyntaxError {
+		final Object[] result = getNumberString();
+		final String number = (String) result[0];
+		final int numFormat = ((Integer) result[1]).intValue();
+		int intValue = 0;
+		try {
+			intValue = Integer.parseInt(number, numFormat);
+		} catch (final NumberFormatException e) {
+			throwSyntaxError("Number format error (not an int type): " + number, number.length());
+		}
+		getNextToken();
+		return intValue;
+	}
+
+	/**
+	 * Get a list {...}
+	 * 
+	 */
+	private IExpr getList() throws SyntaxError {
+		final IAST function = F.List(); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
+
+		getNextToken();
+
+		if (fToken == TT_LIST_CLOSE) {
+			getNextToken();
+
+			return function;
+		}
+
+		fRecursionDepth++;
+		try {
+			getArguments(function);
+		} finally {
+			fRecursionDepth--;
+		}
+		if (fToken == TT_LIST_CLOSE) {
+			getNextToken();
+
+			return function;
+		}
+
+		throwSyntaxError("'}' expected.");
+		return null;
+	}
+
+	/**
+	 * Method Declaration.
+	 * 
+	 * @return
+	 * @see
+	 */
+	private IExpr getNumber(final boolean negative) throws SyntaxError {
+		IExpr temp = null;
+		final Object[] result = getNumberString();
+		String number = (String) result[0];
+		final int numFormat = ((Integer) result[1]).intValue();
+		try {
+			if (negative) {
+				number = '-' + number;
+			}
+			if (numFormat < 0) {
+				temp = new NumStr(number);
+				// temp = fFactory.createDouble(number);
+			} else {
+				temp = F.integer(number, numFormat);
+				// temp = fFactory.createInteger(number, numFormat);
+			}
+		} catch (final Throwable e) {
+			throwSyntaxError("Number format error: " + number, number.length());
+		}
+		getNextToken();
+		return temp;
+	}
+
+	/**
+	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code>
+	 * &rarr; <code>b</code>
+	 * 
+	 */
+	private IExpr getPart() throws SyntaxError {
+		IExpr temp = getFactor();
+
+		if (fToken != TT_PARTOPEN) {
+			return temp;
+		}
+
+		IAST function = null;
+		do {
+			if (function == null) {
+				function = F.Part(temp);
+				// function =
+				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
+				// temp);
+			} else {
+				function = F.Part(function);
+				// function =
+				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
+				// function);
+			}
+
+			fRecursionDepth++;
+			try {
+				do {
+					getNextToken();
+
+					if (fToken == TT_ARGUMENTS_CLOSE) {
+						if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == ']') {
+							throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+						}
+					}
+
+					function.add(parseExpression());
+				} while (fToken == TT_COMMA);
+
+				if (fToken == TT_ARGUMENTS_CLOSE) {
+					// scanner-step begin: (instead of getNextToken() call):
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == ']') {
+							fCurrentPosition++;
+							fToken = TT_PARTCLOSE;
+						}
+					}
+					// scanner-step end
+				}
+				if (fToken != TT_PARTCLOSE) {
+					throwSyntaxError("']]' expected.");
+				}
+				// }
+			} finally {
+				fRecursionDepth--;
+			}
+			getNextToken();
+		} while (fToken == TT_PARTOPEN);
+
+		return parseArguments(function);
+
+	}
+
+	/**
+	 * Get the string as IStringX.
+	 * 
+	 * @return
+	 * @throws SyntaxError
+	 */
+	private IStringX getString() throws SyntaxError {
+		final StringBuffer ident = getStringBuffer();
+
+		getNextToken();
+
+		return F.stringx(ident);
+	}
+
+	/**
+	 * Read the current identifier from the expression factories table
+	 * 
+	 * @return
+	 * @see
+	 */
+	private IExpr getSymbol() throws SyntaxError {
+		String identifier = getIdentifier();
+		if (!fFactory.isValidIdentifier(identifier)) {
+			throwSyntaxError("Invalid identifier: " + identifier + " detected.");
+		}
+
+		final IExpr symbol = convertSymbol(identifier);
+		// final ISymbol symbol = F.$s(identifier);
+		getNextToken();
+		return symbol;
+	}
+
+	private IExpr getTimes(IExpr temp) throws SyntaxError {
+		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
+		IAST func = F.Times();
+		func.add(temp);
+		do {
+			getNextToken();
+			temp = parseExpression();
+			func.add(temp);
+			if (fToken != TT_PRECEDENCE_CLOSE) {
+				throwSyntaxError("\')\' expected.");
+			}
+			getNextToken();
+		} while (fToken == TT_PRECEDENCE_OPEN);
+		return func;
+	}
+
+	/**
+	 * Parse the given <code>expression</code> String into an IExpr.
+	 * 
+	 * @param expression
+	 *            a formula string which should be parsed.
+	 * @return the parsed IExpr representation of the given formula string
+	 * @throws SyntaxError
+	 */
+	public IExpr parse(final String expression) throws SyntaxError {
+		initialize(expression);
+		final IExpr temp = parseExpression();
+		if (fToken != TT_EOF) {
+			if (fToken == TT_PRECEDENCE_CLOSE) {
+				throwSyntaxError("Too many closing ')'; End-of-file not reached.");
+			}
+			if (fToken == TT_LIST_CLOSE) {
+				throwSyntaxError("Too many closing '}'; End-of-file not reached.");
+			}
+			if (fToken == TT_ARGUMENTS_CLOSE) {
+				throwSyntaxError("Too many closing ']'; End-of-file not reached.");
+			}
+
+			throwSyntaxError("End-of-file not reached.");
+		}
+
+		return temp;
+	}
+
+	private IExpr parseArguments(IExpr lhs) {
+		if (fRelaxedSyntax) {
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				IAST ast = getFunctionArguments(lhs);
+				return convert(ast);
+			} else if (fToken == TT_PRECEDENCE_OPEN) {
+				IAST ast = getFunction(lhs);
+				return convert(ast);
+			}
+		} else {
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				IAST ast = getFunctionArguments(lhs);
+				return convert(ast);
+			}
+		}
+		return lhs;
+	}
+
 	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr rhs) {
 		if (infixOperator.getOperatorString().equals(";")) {
 			if (fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
@@ -403,6 +923,10 @@ public class ExprParser extends ExprScanner {
 		return null;
 	}
 
+	private IExpr parseExpression() {
+		return parseExpression(parsePrimary(), 0);
+	}
+
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
 	 * Operator -precedence parser</a> for the idea, how to parse the operators
@@ -413,7 +937,7 @@ public class ExprParser extends ExprScanner {
 	 * @param min_precedence
 	 * @return
 	 */
-	private IExpr parseOperators(IExpr lhs, final int min_precedence) {
+	private IExpr parseExpression(IExpr lhs, final int min_precedence) {
 		IExpr rhs = null;
 		AbstractExprOperator oper;
 		InfixExprOperator infixOperator;
@@ -498,32 +1022,82 @@ public class ExprParser extends ExprScanner {
 		return lhs;
 	}
 
-	/**
-	 * Parse the given <code>expression</code> String into an IExpr.
-	 * 
-	 * @param expression
-	 *            a formula string which should be parsed.
-	 * @return the parsed IExpr representation of the given formula string
-	 * @throws SyntaxError
-	 */
-	public IExpr parse(final String expression) throws SyntaxError {
-		initialize(expression);
-		final IExpr temp = parseOperators(parsePrimary(), 0);
-		if (fToken != TT_EOF) {
-			if (fToken == TT_PRECEDENCE_CLOSE) {
-				throwSyntaxError("Too many closing ')'; End-of-file not reached.");
-			}
-			if (fToken == TT_LIST_CLOSE) {
-				throwSyntaxError("Too many closing '}'; End-of-file not reached.");
-			}
-			if (fToken == TT_ARGUMENTS_CLOSE) {
-				throwSyntaxError("Too many closing ']'; End-of-file not reached.");
-			}
+	private IExpr parseLookaheadOperator(final int min_precedence) {
+		IExpr rhs = parsePrimary();
 
-			throwSyntaxError("End-of-file not reached.");
+		while (true) {
+			final int lookahead = fToken;
+			if (fToken == TT_NEWLINE) {
+				return rhs;
+			}
+			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
+					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
+				// if (fPackageMode && fRecursionDepth < 1) {
+				// return rhs;
+				// }
+				// lazy evaluation of multiplication
+				InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
+				if (timesOperator.getPrecedence() > min_precedence) {
+					rhs = parseExpression(rhs, timesOperator.getPrecedence());
+					continue;
+				} else if ((timesOperator.getPrecedence() == min_precedence)
+						&& (timesOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE)) {
+					rhs = parseExpression(rhs, timesOperator.getPrecedence());
+					continue;
+				}
+			} else {
+				if (lookahead != TT_OPERATOR) {
+					break;
+				}
+				InfixExprOperator infixOperator = determineBinaryOperator();
+				if (infixOperator != null) {
+					if (infixOperator.getPrecedence() > min_precedence
+							|| ((infixOperator.getPrecedence() == min_precedence)
+									&& (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
+						if (infixOperator.getOperatorString().equals(";")) {
+							IExpr lhs = rhs;
+							rhs = F.Null;
+							if (fPackageMode && fRecursionDepth < 1) {
+								return createInfixFunction(infixOperator, lhs, rhs);
+							}
+						}
+						rhs = parseExpression(rhs, infixOperator.getPrecedence());
+						continue;
+					}
+
+					// if (infixOperator.getPrecedence() > min_precedence) {
+					// IExpr compoundExpressionNull =
+					// parseCompoundExpressionNull(infixOperator, rhs);
+					// if (compoundExpressionNull != null) {
+					// return compoundExpressionNull;
+					// }
+					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
+					// continue;
+					// } else if ((infixOperator.getPrecedence() ==
+					// min_precedence)
+					// && (infixOperator.getGrouping() ==
+					// InfixOperator.RIGHT_ASSOCIATIVE)) {
+					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
+					// continue;
+					// }
+				} else {
+					PostfixExprOperator postfixOperator = determinePostfixOperator();
+					if (postfixOperator != null) {
+						if (postfixOperator.getPrecedence() > min_precedence) {
+							getNextToken();
+							// rhs =
+							// F.$(F.$s(postfixOperator.getFunctionName()),
+							// rhs);
+							rhs = postfixOperator.createFunction(fFactory, rhs);
+							continue;
+						}
+					}
+				}
+			}
+			break;
 		}
+		return rhs;
 
-		return temp;
 	}
 
 	public List<IExpr> parsePackage(final String expression) throws SyntaxError {
@@ -531,7 +1105,7 @@ public class ExprParser extends ExprScanner {
 		while (fToken == TT_NEWLINE) {
 			getNextToken();
 		}
-		IExpr temp = parseOperators(parsePrimary(), 0);
+		IExpr temp = parseExpression();
 		fNodeList.add(temp);
 		while (fToken != TT_EOF) {
 			if (fToken == TT_PRECEDENCE_CLOSE) {
@@ -549,7 +1123,7 @@ public class ExprParser extends ExprScanner {
 			if (fToken == TT_EOF) {
 				return fNodeList;
 			}
-			temp = parseOperators(parsePrimary(), 0);
+			temp = parseExpression();
 			fNodeList.add(temp);
 			// throwSyntaxError("End-of-file not reached.");
 		}
@@ -557,607 +1131,30 @@ public class ExprParser extends ExprScanner {
 		return fNodeList;
 	}
 
-	/**
-	 * Method Declaration.
-	 * 
-	 * @return
-	 * @see
-	 */
-	private IExpr getNumber(final boolean negative) throws SyntaxError {
-		IExpr temp = null;
-		final Object[] result = getNumberString();
-		String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
-		try {
-			if (negative) {
-				number = '-' + number;
+	private IExpr parsePrimary() {
+		if (fToken == TT_OPERATOR) {
+			if (fOperatorString.equals(".")) {
+				fCurrentChar = '.';
+				// fToken = TT_DIGIT;
+				// return getPart();
+				return getNumber(false);
 			}
-			if (numFormat < 0) {
-				temp = new NumStr(number);
-				// temp = fFactory.createDouble(number);
-			} else {
-				temp = F.integer(number, numFormat);
-				// temp = fFactory.createInteger(number, numFormat);
-			}
-		} catch (final Throwable e) {
-			throwSyntaxError("Number format error: " + number, number.length());
-		}
-		getNextToken();
-		return temp;
-	}
-
-	private int getIntegerNumber() throws SyntaxError {
-		final Object[] result = getNumberString();
-		final String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
-		int intValue = 0;
-		try {
-			intValue = Integer.parseInt(number, numFormat);
-		} catch (final NumberFormatException e) {
-			throwSyntaxError("Number format error (not an int type): " + number, number.length());
-		}
-		getNextToken();
-		return intValue;
-	}
-
-	/**
-	 * Read the current identifier from the expression factories table
-	 * 
-	 * @return
-	 * @see
-	 */
-	private IExpr getSymbol() throws SyntaxError {
-		String identifier = getIdentifier();
-		if (!fFactory.isValidIdentifier(identifier)) {
-			throwSyntaxError("Invalid identifier: " + identifier + " detected.");
-		}
-
-		final IExpr symbol = convertSymbol(identifier);
-		// final ISymbol symbol = F.$s(identifier);
-		getNextToken();
-		return symbol;
-	}
-
-	/**
-	 * Get the string as IStringX.
-	 * 
-	 * @return
-	 * @throws SyntaxError
-	 */
-	private IStringX getString() throws SyntaxError {
-		final StringBuffer ident = getStringBuffer();
-
-		getNextToken();
-
-		return F.stringx(ident);
-	}
-
-	/**
-	 * Get a list {...}
-	 * 
-	 */
-	private IExpr getList() throws SyntaxError {
-		final IAST function = F.List(); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
-
-		getNextToken();
-
-		if (fToken == TT_LIST_CLOSE) {
-			getNextToken();
-
-			return function;
-		}
-
-		fRecursionDepth++;
-		try {
-			getArguments(function);
-		} finally {
-			fRecursionDepth--;
-		}
-		if (fToken == TT_LIST_CLOSE) {
-			getNextToken();
-
-			return function;
-		}
-
-		throwSyntaxError("'}' expected.");
-		return null;
-	}
-
-	/**
-	 * Get a function f[...][...]
-	 * 
-	 */
-	IAST getFunction(final IExpr head) throws SyntaxError {
-		final IAST function = F.ast(head);
-
-		getNextToken();
-
-		if (fRelaxedSyntax) {
-			if (fToken == TT_PRECEDENCE_CLOSE) {
+			final PrefixExprOperator prefixOperator = determinePrefixOperator();
+			if (prefixOperator != null) {
 				getNextToken();
-				if (fToken == TT_PRECEDENCE_OPEN) {
-					return function;
-				}
-				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunctionArguments(function);
-				}
-				return function;
-			}
-		} else {
-			if (fToken == TT_ARGUMENTS_CLOSE) {
-				getNextToken();
-				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunctionArguments(function);
-				}
-				return function;
-			}
-		}
-		fRecursionDepth++;
-		try {
-			getArguments(function);
-		} finally {
-			fRecursionDepth--;
-		}
-		if (fRelaxedSyntax) {
-			if (fToken == TT_PRECEDENCE_CLOSE) {
-				getNextToken();
-				if (fToken == TT_PRECEDENCE_OPEN) {
-					return function;
-				}
-				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunctionArguments(function);
-				}
-				return function;
-			}
-		} else {
-			if (fToken == TT_ARGUMENTS_CLOSE) {
-				getNextToken();
-				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunctionArguments(function);
-				}
-				return function;
-			}
-		}
-
-		if (fRelaxedSyntax) {
-			throwSyntaxError("')' expected.");
-		} else {
-			throwSyntaxError("']' expected.");
-		}
-		return null;
-
-	}
-
-	private IExpr convertN(final IAST function) {
-		try {
-			int precision = Validate.checkIntType(function.arg2());
-			if (EvalEngine.isApfloat(precision)) {
-				NVisitorExpr nve = new NVisitorExpr(precision);
-				IExpr temp = function.arg1().accept(nve);
-				if (temp.isPresent()) {
-					function.set(1, temp);
-				}
-			}
-		} catch (WrongArgumentType wat) {
-
-		}
-		return function;
-	}
-
-	/**
-	 * Get a function f[...][...]
-	 * 
-	 */
-	IAST getFunctionArguments(final IExpr head) throws SyntaxError {
-
-		final IAST function = F.ast(head);
-		fRecursionDepth++;
-		try {
-			getNextToken();
-
-			if (fToken == TT_ARGUMENTS_CLOSE) {
-				getNextToken();
-				if (fToken == TT_ARGUMENTS_OPEN) {
-					return getFunctionArguments(function);
-				}
-				return function;
-			}
-
-			getArguments(function);
-		} finally {
-			fRecursionDepth--;
-		}
-		if (fToken == TT_ARGUMENTS_CLOSE) {
-			getNextToken();
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				return getFunctionArguments(function);
-			}
-			return function;
-		}
-
-		throwSyntaxError("']' expected.");
-		return null;
-
-	}
-
-	private IExpr getFactor() throws SyntaxError {
-		IExpr temp;
-
-		if (fToken == TT_IDENTIFIER) {
-			final IExpr head = getSymbol();
-			if (head.isSymbol()) {
-				final ISymbol symbol = (ISymbol) head;
-				temp = symbol;
-				if (fToken == TT_BLANK) {
-					// read '_'
-					if (isWhitespace()) {
-						temp = F.$p(symbol, null);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$p(symbol, check);
-							// temp = fFactory.createPattern(symbol, check);
-						} else {
-							temp = F.$p(symbol, null);
-							// temp = fFactory.createPattern(symbol, null);
-						}
-					}
-				} else if (fToken == TT_BLANK_BLANK) {
-					// read '__'
-					if (isWhitespace()) {
-						temp = F.$ps(symbol, null);
-						// temp = fFactory.createPattern2(symbol, null);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$ps(symbol, check);
-							// temp = fFactory.createPattern2(symbol, check);
-						} else {
-							temp = F.$ps(symbol, null);
-							// temp = fFactory.createPattern2(symbol, null);
-						}
-					}
-				} else if (fToken == TT_BLANK_BLANK_BLANK) {
-					// read '___'
-					if (isWhitespace()) {
-						temp = F.$ps(symbol, null, false, true);
-						// temp = fFactory.createPattern3(symbol, null);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$ps(symbol, check, false, true);
-							// temp = fFactory.createPattern3(symbol, check);
-						} else {
-							temp = F.$ps(symbol, null, false, true);
-							// temp = fFactory.createPattern3(symbol, null);
-						}
-					}
-				} else if (fToken == TT_BLANK_OPTIONAL) {
-					// read '_.'
-					if (isWhitespace()) {
-						temp = F.$p(symbol, null, true);
-						// temp = fFactory.createPattern(symbol, null, true);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$p(symbol, check, true);
-							// temp = fFactory.createPattern(symbol, check,
-							// true);
-						} else {
-							temp = F.$p(symbol, null, true);
-							// temp = fFactory.createPattern(symbol, null,
-							// true);
-						}
+				final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
+				if (prefixOperator.getFunctionName().equals("PreMinus")) {
+					// special cases for negative numbers
+					if (temp.isNumber()) {
+						return temp.negate();
 					}
 				}
-			} else {
-				temp = head;
+				return prefixOperator.createFunction(fFactory, temp);
 			}
+			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
 
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK) {
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$b();
-				// temp = fFactory.createPattern(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$b(check);
-					// temp = fFactory.createPattern(null, check);
-				} else {
-					temp = F.$b();
-					// temp = fFactory.createPattern(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK) {
-			// read '__'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$ps(null, null);
-				// temp = fFactory.createPattern2(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$ps(null, check);
-					// temp = fFactory.createPattern2(null, check);
-				} else {
-					temp = F.$ps(null, null);
-					// temp = fFactory.createPattern2(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK_BLANK) {
-			// read '___'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$ps(null, null, false, true);
-				// temp = fFactory.createPattern3(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$ps(null, check, false, true);
-					// temp = fFactory.createPattern3(null, check);
-				} else {
-					temp = F.$ps(null, null, false, true);
-					// temp = fFactory.createPattern3(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_OPTIONAL) {
-			// read '_.'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$b(null, true);
-				// temp = fFactory.createPattern(null, null, true);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$b(check, true);
-					// temp = fFactory.createPattern(null, check, true);
-				} else {
-					temp = F.$b(null, true);
-					// temp = fFactory.createPattern(null, null, true);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_DIGIT) {
-			return getNumber(false);
-		} else if (fToken == TT_PRECEDENCE_OPEN) {
-			fRecursionDepth++;
-			try {
-				getNextToken();
-
-				temp = parseOperators(parsePrimary(), 0);
-
-				if (fToken != TT_PRECEDENCE_CLOSE) {
-					throwSyntaxError("\')\' expected.");
-				}
-			} finally {
-				fRecursionDepth--;
-			}
-			getNextToken();
-			if (fToken == TT_PRECEDENCE_OPEN) {
-				return getTimes(temp);
-			}
-			return temp;
-
-		} else if (fToken == TT_LIST_OPEN) {
-			return getList();
-		} else if (fToken == TT_STRING) {
-			return getString();
-		} else if (fToken == TT_PERCENT) {
-
-			final IAST out = F.ast(F.Out);
-
-			int countPercent = 1;
-			getNextToken();
-			if (fToken == TT_DIGIT) {
-				countPercent = getIntegerNumber();
-				out.add(F.integer(countPercent));
-				return out;
-			}
-
-			while (fToken == TT_PERCENT) {
-				countPercent++;
-				getNextToken();
-			}
-
-			out.add(F.integer(-countPercent));
-			return parseArguments(out);
-		} else if (fToken == TT_SLOT) {
-
-			getNextToken();
-			if (fToken == TT_DIGIT) {
-				final IAST slot = F.ast(F.Slot);
-				slot.add(getNumber(false));
-				return parseArguments(slot);
-			} else {
-				return parseArguments(F.Slot1);
-			}
-
-		} else if (fToken == TT_SLOTSEQUENCE) {
-
-			getNextToken();
-			final IAST slotSequencce = F.ast(F.SlotSequence);
-			if (fToken == TT_DIGIT) {
-				slotSequencce.add(getNumber(false));
-			} else {
-				slotSequencce.add(F.C1);
-			}
-			return parseArguments(slotSequencce);
-			// final FunctionNode slotSequencce =
-			// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.SlotSequence));
-			// if (fToken == TT_DIGIT) {
-			// slotSequencce.add(getNumber(false));
-			// } else {
-			// slotSequencce.add(fFactory.createInteger(1));
-			// }
-			// return parseArguments(slotSequencce);
 		}
-		switch (fToken) {
-
-		case TT_PRECEDENCE_CLOSE:
-			throwSyntaxError("Too much closing ) in factor.");
-			break;
-		case TT_LIST_CLOSE:
-			throwSyntaxError("Too much closing } in factor.");
-			break;
-		case TT_ARGUMENTS_CLOSE:
-			throwSyntaxError("Too much closing ] in factor.");
-			break;
-		}
-
-		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (" + fToken + ")");
-		return null;
-	}
-
-	private IExpr getTimes(IExpr temp) throws SyntaxError {
-		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
-		IAST func = F.Times();
-		func.add(temp);
-		do {
-			getNextToken();
-
-			temp = parseOperators(parsePrimary(), 0);
-			func.add(temp);
-			if (fToken != TT_PRECEDENCE_CLOSE) {
-				throwSyntaxError("\')\' expected.");
-			}
-			getNextToken();
-		} while (fToken == TT_PRECEDENCE_OPEN);
-		return func;
-	}
-
-	/**
-	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code>
-	 * &rarr; <code>b</code>
-	 * 
-	 */
-	private IExpr getPart() throws SyntaxError {
-		IExpr temp = getFactor();
-
-		if (fToken != TT_PARTOPEN) {
-			return temp;
-		}
-
-		IAST function = null;
-		do {
-			if (function == null) {
-				function = F.Part(temp);
-				// function =
-				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
-				// temp);
-			} else {
-				function = F.Part(function);
-				// function =
-				// fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part),
-				// function);
-			}
-
-			fRecursionDepth++;
-			try {
-				do {
-					getNextToken();
-
-					if (fToken == TT_ARGUMENTS_CLOSE) {
-						if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == ']') {
-							throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
-						}
-					}
-
-					function.add(parseOperators(parsePrimary(), 0));
-				} while (fToken == TT_COMMA);
-
-				if (fToken == TT_ARGUMENTS_CLOSE) {
-					// scanner-step begin: (instead of getNextToken() call):
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == ']') {
-							fCurrentPosition++;
-							fToken = TT_PARTCLOSE;
-						}
-					}
-					// scanner-step end
-				}
-				if (fToken != TT_PARTCLOSE) {
-					throwSyntaxError("']]' expected.");
-				}
-				// }
-			} finally {
-				fRecursionDepth--;
-			}
-			getNextToken();
-		} while (fToken == TT_PARTOPEN);
-
-		return parseArguments(function);
-
-	}
-
-	private IExpr convert(IAST ast) {
-		IExpr head = ast.head();
-		if (ast.isAST(F.N, 3)) {
-			return convertN(ast);
-		} else if (ast.isAST(F.Sqrt, 2)) {
-			// rewrite from input: Sqrt(x) => Power(x, 1/2)
-			return F.Power(ast.arg1(), F.C1D2);
-		} else if (ast.isAST(F.Exp, 2)) {
-			// rewrite from input: Exp(x) => E^x
-			return F.Power(F.E, ast.arg1());
-		} else if (ast.isPower() && ast.arg1().isPower() && ast.arg2().isMinusOne()) {
-			IAST arg1 = (IAST) ast.arg1();
-			if (arg1.arg2().isNumber()) {
-				// Division operator
-				// rewrite from input: Power(Power(x, <number>),-1) => Power(x,
-				// - <number>)
-				return F.Power(arg1.arg1(), ((INumber) arg1.arg2()).negate());
-			}
-		} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
-			ISymbol compareHead = F.Greater;
-			return rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.Greater, 3)) {
-			ISymbol compareHead = F.GreaterEqual;
-			return rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.LessEqual, 3)) {
-			ISymbol compareHead = F.Less;
-			return rewriteLessGreaterAST(ast, compareHead);
-		} else if (ast.isASTSizeGE(F.Less, 3)) {
-			ISymbol compareHead = F.LessEqual;
-			return rewriteLessGreaterAST(ast, compareHead);
-		} else if (head.equals(F.PatternHead)) {
-			final IExpr expr = Pattern.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
-		} else if (head.equals(F.BlankHead)) {
-			final IExpr expr = Blank.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
-		} else if (head.equals(F.Complex)) {
-			final IExpr expr = Complex.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
-		} else if (head.equals(F.Rational)) {
-			final IExpr expr = Rational.CONST.evaluate(ast, fEngine);
-			if (expr.isPresent()) {
-				return expr;
-			}
-		}
-		return ast;
+		return getPart();
 	}
 
 	/**
@@ -1187,5 +1184,9 @@ public class ExprParser extends ExprScanner {
 		} else {
 			return ast;
 		}
+	}
+
+	public void setFactory(final IExprParserFactory factory) {
+		this.fFactory = factory;
 	}
 }

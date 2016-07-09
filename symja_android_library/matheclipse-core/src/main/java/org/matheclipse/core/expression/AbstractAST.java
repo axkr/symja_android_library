@@ -1261,30 +1261,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isAST0() {
-		return size() == 1;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public boolean isAST1() {
-		return size() == 2;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public boolean isAST2() {
-		return size() == 3;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isAST3() {
-		return size() == 4;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
 	public boolean isAST(final IExpr header) {
 		return isSameHead(header);
 	}
@@ -1343,6 +1319,30 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			return (size() == length) && head().toString().equals(name);
 		}
 		return (size() == length) && head().toString().equals(symbol);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST0() {
+		return size() == 1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST1() {
+		return size() == 2;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST2() {
+		return size() == 3;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isAST3() {
+		return size() == 4;
 	}
 
 	/**
@@ -1449,7 +1449,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFlatAST() {
-		return (ISymbol.FLAT & topHead().getAttributes()) == ISymbol.FLAT;
+		return topHead().hasFlatAttribute();
 	}
 
 	/** {@inheritDoc} */
@@ -1821,6 +1821,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isOneIdentityAST1() {
+		return isAST1() && topHead().hasOneIdentityAttribute();
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isOr() {
 		return isSameHeadSizeGE(F.Or, 3);
 	}
@@ -1828,7 +1834,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isOrderlessAST() {
-		return (ISymbol.ORDERLESS & topHead().getAttributes()) == ISymbol.ORDERLESS;
+		return topHead().hasOrderlessAttribute();
 	}
 
 	/** {@inheritDoc} */

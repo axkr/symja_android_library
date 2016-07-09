@@ -19,8 +19,8 @@ public class NonCommutativeMultiply extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT
-				| ISymbol.LISTABLE);
+		// don't set OneIdentity attribute!
+		symbol.setAttributes(ISymbol.FLAT | ISymbol.LISTABLE);
 	}
 
 }

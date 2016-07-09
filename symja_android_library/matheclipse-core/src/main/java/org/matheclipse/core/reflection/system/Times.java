@@ -320,7 +320,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			}
 
 			if (evaled) {
-				if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY && result.size() > 1) {
+				if (sym.hasOneIdentityAttribute() && result.size() > 1) {
 					return result.getOneIdentity(F.C0);
 				}
 

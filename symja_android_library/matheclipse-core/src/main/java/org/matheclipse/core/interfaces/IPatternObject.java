@@ -62,7 +62,7 @@ public interface IPatternObject extends IExpr {
 	 * @return
 	 */
 	public ISymbol getSymbol();
-
+	
 	/**
 	 * Check if this pattern object matches the given <code>expr</code>.
 	 * 

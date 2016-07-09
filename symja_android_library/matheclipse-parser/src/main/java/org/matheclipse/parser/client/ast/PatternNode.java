@@ -23,10 +23,19 @@ package org.matheclipse.parser.client.ast;
 public class PatternNode extends ASTNode {
 	protected final SymbolNode fSymbol;
 	protected final boolean fDefault;
+	protected final ASTNode fDefaultValue;
 	protected final ASTNode fConstraint;
 
 	public PatternNode(final SymbolNode symbol, final ASTNode constraint) {
 		this(symbol, constraint, false);
+	}
+
+	public PatternNode(final SymbolNode symbol, final ASTNode constraint, final ASTNode defaultValue) {
+		super(null);
+		fSymbol = symbol;
+		fConstraint = constraint;
+		fDefault = true;
+		fDefaultValue = defaultValue;
 	}
 
 	public PatternNode(final SymbolNode symbol, final ASTNode constraint, boolean optional) {
@@ -34,36 +43,7 @@ public class PatternNode extends ASTNode {
 		fSymbol = symbol;
 		fConstraint = constraint;
 		fDefault = optional;
-	}
-
-	public ASTNode getConstraint() {
-		return fConstraint;
-	}
-
-	public SymbolNode getSymbol() {
-		return fSymbol;
-	}
-
-	/**
-	 * @return the fOptional
-	 */
-	public boolean isDefault() {
-		return fDefault;
-	}
-
-	public String toString() {
-		final StringBuffer buff = new StringBuffer();
-		if (fSymbol != null) {
-			buff.append(fSymbol.toString());
-		}
-		buff.append('_');
-		if (fDefault) {
-			buff.append('.');
-		}
-		if (fConstraint != null) {
-			buff.append(fConstraint.toString());
-		}
-		return buff.toString();
+		fDefaultValue = null;
 	}
 
 	public boolean equals(Object obj) {
@@ -95,11 +75,48 @@ public class PatternNode extends ASTNode {
 		return false;
 	}
 
+	public ASTNode getConstraint() {
+		return fConstraint;
+	}
+
+	/**
+	 * @return the fOptional
+	 */
+	public ASTNode getDefaultValue() {
+		return fDefaultValue;
+	}
+
+	public SymbolNode getSymbol() {
+		return fSymbol;
+	}
+
 	public int hashCode() {
 		if (fSymbol != null) {
 			return fSymbol.hashCode();
 		}
 		return 11;
+	}
+
+	/**
+	 * @return the fOptional
+	 */
+	public boolean isDefault() {
+		return fDefault;
+	}
+
+	public String toString() {
+		final StringBuffer buff = new StringBuffer();
+		if (fSymbol != null) {
+			buff.append(fSymbol.toString());
+		}
+		buff.append('_');
+		if (fDefault) {
+			buff.append('.');
+		}
+		if (fConstraint != null) {
+			buff.append(fConstraint.toString());
+		}
+		return buff.toString();
 	}
 
 }

@@ -46,6 +46,10 @@ public class Pattern extends Blank {
 		return new Pattern(symbol, check, def);
 	}
 
+	public static IPattern valueOf(@Nonnull final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+		return new Pattern(symbol, check, defaultValue);
+	}
+
 	private static final long serialVersionUID = 7617138748475243L;
 
 	/**
@@ -69,12 +73,19 @@ public class Pattern extends Blank {
 		fSymbol = symbol;
 	}
 
+	/** package private */
+	public Pattern(@Nonnull final ISymbol symbol, IExpr condition, IExpr defaultValue) {
+		super(condition, defaultValue);
+		fSymbol = symbol;
+	}
+
 	@Override
 	public int[] addPattern(PatternMap patternMap, Map<IExpr, Integer> patternIndexMap) {
 		patternMap.addPattern(patternIndexMap, this);
 		int[] result = new int[2];
 		if (isPatternDefault()) {
-			// the ast contains a pattern with default value (i.e. "x_.")
+			// the ast contains a pattern with default value (i.e. "x_." or
+			// "x_:")
 			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
 			result[1] = 2;
 		} else {
@@ -327,14 +338,36 @@ public class Pattern extends Blank {
 		if (fCondition == null) {
 			buffer.append(fSymbol.toString());
 			buffer.append('_');
-			if (fDefault) {
-				buffer.append('.');
+			if (fDefaultValue != null) {
+				buffer.append(':');
+				if (!fDefaultValue.isAtom()) {
+					buffer.append('(');
+				}
+				buffer.append(fDefaultValue.toString());
+				if (!fDefaultValue.isAtom()) {
+					buffer.append(')');
+				}
+			} else {
+				if (fDefault) {
+					buffer.append('.');
+				}
 			}
 		} else {
 			buffer.append(fSymbol.toString());
 			buffer.append('_');
-			if (fDefault) {
-				buffer.append('.');
+			if (fDefaultValue != null) {
+				buffer.append(':');
+				if (!fDefaultValue.isAtom()) {
+					buffer.append('(');
+				}
+				buffer.append(fDefaultValue.toString());
+				if (!fDefaultValue.isAtom()) {
+					buffer.append(')');
+				}
+			} else {
+				if (fDefault) {
+					buffer.append('.');
+				}
 			}
 			buffer.append(fCondition.toString());
 		}

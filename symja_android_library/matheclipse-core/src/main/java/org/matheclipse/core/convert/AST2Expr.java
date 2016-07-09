@@ -350,6 +350,11 @@ public class AST2Expr {
 				return F.$b(convertNode(pn.getConstraint(), engine)); // TODO ,
 																		// p2n.isDefault());
 			}
+			ASTNode defaultValue = pn.getDefaultValue();
+			if (defaultValue != null) {
+				return F.$p((ISymbol) convertNode(pn.getSymbol(), engine), convertNode(pn.getConstraint(), engine),
+						convertNode(defaultValue, engine));
+			}
 			return F.$p((ISymbol) convertNode(pn.getSymbol(), engine), convertNode(pn.getConstraint(), engine),
 					pn.isDefault());
 		}

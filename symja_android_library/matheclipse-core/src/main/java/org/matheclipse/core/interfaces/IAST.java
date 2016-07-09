@@ -611,6 +611,31 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	public IExpr getPart(final List<Integer> positions);
 
 	/**
+	 * Test if the last argument contains a pattern with a default argument.
+	 * 
+	 * @return
+	 */
+	default boolean hasDefaultArgument() {
+		if (size() > 1) {
+			return get(size() - 1).isPatternDefault();
+		}
+		return false;
+	}
+
+	/**
+	 * Test if the last argument contains a pattern with an optional argument.
+	 * (i.e. <code>x_:value</code>)
+	 * 
+	 * @return
+	 */
+	default boolean hasOptionalArgument() {
+		if (size() > 1) {
+			return get(size() - 1).isPatternDefault();
+		}
+		return false;
+	}
+
+	/**
 	 * Are the given evaluation flags disabled for this list ?
 	 * 
 	 * @return
