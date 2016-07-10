@@ -1332,7 +1332,7 @@ public class F {
 	 * Create a <code>Blank[condition]</code> pattern object for
 	 * pattern-matching and term rewriting
 	 * 
-	 * @param check
+	 * @param condition
 	 *            additional condition which should be checked in
 	 *            pattern-matching
 	 * @return IPattern
@@ -1341,10 +1341,34 @@ public class F {
 		return org.matheclipse.core.expression.Blank.valueOf(condition);
 	}
 
+	/**
+	 * Create a <code>Blank[condition]</code> pattern object for
+	 * pattern-matching and term rewriting
+	 * 
+	 * @param condition
+	 *            additional condition which should be checked in
+	 *            pattern-matching
+	 * @param def
+	 *            if <code>true</code> use a default value in pattern-matching
+	 *            if an argument is optional
+	 * @return IPattern
+	 */
 	public static IPattern $b(final IExpr condition, boolean def) {
 		return new org.matheclipse.core.expression.Blank(condition, def);
 	}
-	
+
+	/**
+	 * Create a <code>Blank[condition]</code> pattern object for
+	 * pattern-matching and term rewriting
+	 * 
+	 * @param condition
+	 *            additional condition which should be checked in
+	 *            pattern-matching
+	 * @param defaultValue
+	 *            use this <code>defaultValue</code> in pattern-matching if an
+	 *            argument is optional
+	 * @return IPattern
+	 */
 	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
 		return new org.matheclipse.core.expression.Blank(condition, defaultValue);
 	}
@@ -1412,7 +1436,8 @@ public class F {
 	 *            additional condition which should be checked in
 	 *            pattern-matching
 	 * @param defaultValue
-	 *            the pattern can match to this default value 
+	 *            use this <code>defaultValue</code> in pattern-matching if an
+	 *            argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
@@ -3622,6 +3647,10 @@ public class F {
 
 	public static IAST Part(final IExpr... a) {
 		return ast(a, Part);
+	}
+
+	public static IAST PatternTest(final IExpr a0, final IExpr a1) {
+		return binaryAST2(PatternTest, a0, a1);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {
