@@ -3016,7 +3016,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testSinIntegral() {
 		check("SinIntegral(2.8)", "1.8320965890813214");
 	}
-	
+
 	public void testSlot() {
 		check("#", "#1");
 		check("#42", "#42");
@@ -3025,6 +3025,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testSlotSequence() {
 		check("##", "##1");
 		check("##42", "##42");
+		check("f(x, ##, y, ##) &[a, b, c, d]", "f(x,a,b,c,d,y,a,b,c,d)");
+		check("f(##2) &[a, b, c, d]", "f(b,c,d)");
+		check("{##2} &[a, b, c]", "{b,c}");
 	}
 
 	public void testSolve() {
