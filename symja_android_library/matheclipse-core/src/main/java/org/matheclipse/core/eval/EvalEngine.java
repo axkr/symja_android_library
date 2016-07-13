@@ -312,7 +312,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (DEBUG) {
 				System.out.println("ThreadLocal" + fID);
 			}
-			return new EvalEngine("ThreadLocal" + (fID++), 0, System.out, false, true);
+			return new EvalEngine("ThreadLocal" + (fID++), 0, System.out, false);
 		}
 	};
 
@@ -321,7 +321,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 */
 	public EvalEngine() {
-		this("", 0, System.out, false, true);
+		this("", 0, System.out, false);
 	}
 
 	/**
@@ -332,22 +332,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            upper and lower case identifiers
 	 */
 	public EvalEngine(boolean relaxedSyntax) {
-		this("", 0, System.out, relaxedSyntax, true);
-	}
-
-	/**
-	 * Constructor for an evaluation engine
-	 * 
-	 * @param relaxedSyntax
-	 *            if <code>true</code>, the parser doesn't distinguidh between
-	 *            upper and lower case identifiers
-	 * @param outListDisabled
-	 *            if <code>true</code>, no output history for the
-	 *            <code>Out()</code> function is stored in the evaluation
-	 *            engine.
-	 */
-	public EvalEngine(boolean relaxedSyntax, boolean outListDisabled) {
-		this("", 0, System.out, relaxedSyntax, outListDisabled);
+		this("", 0, System.out, relaxedSyntax);
 	}
 
 	/**
@@ -355,31 +340,27 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * 
 	 * @param sessionID
 	 *            an ID which uniquely identifies this session
-	 * @param iterationLimit
-	 *            the maximum allowed iteration limit (if set to zero, no limit
-	 *            will be checked)
 	 * @param recursionLimit
 	 *            the maximum allowed recursion limit (if set to zero, no limit
+	 *            will be checked)
+	 * @param iterationLimit
+	 *            the maximum allowed iteration limit (if set to zero, no limit
 	 *            will be checked)
 	 * @param out
 	 *            the output print stream
 	 * @param relaxedSyntax
 	 *            if <code>true</code>, the parser doesn't distinguidh between
 	 *            upper and lower case identifiers
-	 * @param outListDisabled
-	 *            if <code>true</code>, no output history for the
-	 *            <code>Out()</code> function is stored in the evaluation
-	 *            engine.
 	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit, final PrintStream out,
-			boolean relaxedSyntax, boolean outListDisabled) {
+			boolean relaxedSyntax) {
 		fSessionID = sessionID;
 		// fExpressionFactory = f;
 		fRecursionLimit = recursionLimit;
 		fIterationLimit = iterationLimit;
 		fOutPrintStream = out;
 		fRelaxedSyntax = relaxedSyntax;
-		fOutListDisabled = outListDisabled;
+		fOutListDisabled = true;
 		// fNamespace = fExpressionFactory.getNamespace();
 
 		init();
@@ -402,18 +383,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param relaxedSyntax
 	 *            if <code>true</code>, the parser doesn't distinguidh between
 	 *            upper and lower case identifiers
-	 * @param outListDisabled
-	 *            if <code>true</code>, no output history for the
-	 *            <code>Out()</code> function is stored in the evaluation
-	 *            engine.
 	 */
-	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax,
-			boolean outListDisabled) {
-		this(sessionID, recursionLimit, -1, out, relaxedSyntax, outListDisabled);
+	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax) {
+		this(sessionID, recursionLimit, -1, out, relaxedSyntax);
 	}
 
 	public EvalEngine(final String sessionID, final PrintStream out) {
-		this(sessionID, -1, -1, out, false, true);
+		this(sessionID, -1, -1, out, false);
 	}
 
 	/**
@@ -651,27 +627,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		return evalASTBuiltinFunction(symbol, ast);
-	}
-
-	private IExpr evalASTAttributes(IAST ast) {
-		IExpr head = ast.head();
-		ISymbol symbol = null;
-		if (head instanceof ISymbol) {
-			symbol = (ISymbol) head;
-			final IEvaluator module = symbol.getEvaluator();
-			if (module instanceof ICoreFunctionEvaluator) {
-				// evaluate a built-in function.
-				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
-				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
-			}
-
-		} else {
-			symbol = ast.topHead();
-		}
-
-		return evalAttributes(symbol, ast);
 	}
 
 	/**
@@ -1797,7 +1752,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public void setOutListDisabled(boolean outListDisabled, int historyCapacity) {
 		if (outListDisabled == false) {
 			if (fOutList == null) {
-				fOutList = new LastCalculationsHistory(100);
+				fOutList = new LastCalculationsHistory(historyCapacity);
 			}
 		} else {
 			fOutList = null;

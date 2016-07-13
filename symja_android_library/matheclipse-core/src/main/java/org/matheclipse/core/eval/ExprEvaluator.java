@@ -56,7 +56,7 @@ public class ExprEvaluator {
 	 *            stored.
 	 */
 	public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
-		this(new EvalEngine(true, outListDisabled), outListDisabled, historyCapacity);
+		this(new EvalEngine(true), outListDisabled, historyCapacity);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class ExprEvaluator {
 		this.fVariables = new ArrayList<ISymbol>();
 		this.engine = engine;
 		if (!outListDisabled) {
-			engine.setOutListDisabled(outListDisabled, 100);
+			engine.setOutListDisabled(outListDisabled, historyCapacity);
 		}
 	}
 
