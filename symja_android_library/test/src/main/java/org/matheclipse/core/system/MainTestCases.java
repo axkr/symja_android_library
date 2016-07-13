@@ -151,6 +151,11 @@ public class MainTestCases extends AbstractTestCase {
 		check("10!", "3628800");
 	}
 
+	public void testOut() {
+		check("1+1", "2");
+		check("Out()", "2");
+	}
+	
 	public void testPower() {
 		check("(Infinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(-Infinity)", "0");
