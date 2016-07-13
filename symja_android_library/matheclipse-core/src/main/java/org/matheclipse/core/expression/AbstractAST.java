@@ -2094,6 +2094,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isInterval1() {
+		return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isSin() {
 		return isSameHead(F.Sin, 2);
 	}

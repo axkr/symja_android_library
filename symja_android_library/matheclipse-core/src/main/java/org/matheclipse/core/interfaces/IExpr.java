@@ -1031,6 +1031,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an interval expression with one
+	 * <code>List[min, max]</code> argument <code>Interval[{min, max};]</code>
+	 * 
+	 */
+	default boolean isInterval1() {
+		return false;
+	}
+
+	/**
 	 * Compares this expression with the specified expression for order. Returns
 	 * true if this expression is canonical less than or equal to the specified
 	 * expression (&lt;= relation).

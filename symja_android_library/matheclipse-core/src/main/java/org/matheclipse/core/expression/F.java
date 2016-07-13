@@ -177,6 +177,8 @@ public class F {
 	public final static ISymbol Second = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");
 	public final static ISymbol Indeterminate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "indeterminate" : "Indeterminate");
+	public final static ISymbol Interval = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interval" : "Interval");
 	public final static ISymbol Listable = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listable" : "Listable");
 	public final static ISymbol Constant = initFinalSymbol(
@@ -4118,8 +4120,17 @@ public class F {
 	 * @return
 	 */
 	public static IAST Sqr(final IExpr x) {
-
 		return binaryAST2(Power, x, C2);
+	}
+
+	/**
+	 * Create an "interval" expression: <code>Interval(List(from, to))</code>.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static IAST Interval(final ISignedNumber from, ISignedNumber to) {
+		return unaryAST1(Interval, binaryAST2(List, from, to));
 	}
 
 	/**

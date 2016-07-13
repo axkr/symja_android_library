@@ -1708,6 +1708,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Intersection({a,a,b,c},{b,a})", "{a,b}");
 	}
 
+	public void testInterval() {
+		// check("Max(Interval({4,2}))", "4");
+		check("Max(Interval({2,4}))", "4");
+		check("Min(Interval({2,4}))", "2");
+	}
+
 	public void testInverse() {
 		check("Inverse({{u, v}, {v, u}})", "{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + " {-v/(u^2-v^2),u/(u^2-v^2)}}");
 	}
@@ -2073,7 +2079,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integrate,InterpolatingFunction,InterpolatingPolynomial,Intersection}");
+				"{Interval,IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integrate,InterpolatingFunction,InterpolatingPolynomial,Intersection}");
 		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
 		// check("Names(\"*\" )", "{}");

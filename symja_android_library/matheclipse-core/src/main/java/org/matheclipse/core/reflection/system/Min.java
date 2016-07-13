@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -23,6 +24,15 @@ public class Min extends AbstractFunctionEvaluator {
 			return F.CInfinity;
 		}
 
+		if (ast.arg1().isInterval1()) {
+			IAST list = (IAST) ast.arg1().getAt(1);
+			try {
+				return (ISignedNumber) list.arg1();
+			} catch (ClassCastException cca) {
+				// do nothing
+			}
+		}
+		
 		IAST resultList = EvalAttributes.flatten(F.List, ast);
 		if (resultList.isPresent()) {
 			return minimum(resultList, true);
