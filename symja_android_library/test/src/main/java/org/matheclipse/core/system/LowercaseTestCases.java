@@ -3016,6 +3016,16 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testSinIntegral() {
 		check("SinIntegral(2.8)", "1.8320965890813214");
 	}
+	
+	public void testSlot() {
+		check("#", "#1");
+		check("#42", "#42");
+	}
+
+	public void testSlotSequence() {
+		check("##", "##1");
+		check("##42", "##42");
+	}
 
 	public void testSolve() {
 		// issue #120

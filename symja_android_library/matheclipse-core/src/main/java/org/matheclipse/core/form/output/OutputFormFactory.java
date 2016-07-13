@@ -745,8 +745,8 @@ public class OutputFormFactory {
 				if (derivStruct != null) {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];
-					if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1()
-							&& headAST.arg1().isSymbol() && derivStruct[2] != null) {
+					if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1() && headAST.arg1().isSymbol()
+							&& derivStruct[2] != null) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							// IExpr arg1 = listArg1.arg1();
@@ -811,6 +811,10 @@ public class OutputFormFactory {
 			}
 			if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
 				convertSlot(buf, list);
+				return;
+			}
+			if (head.equals(F.SlotSequence) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
+				convertSlotSequence(buf, list);
 				return;
 			}
 			if (head.equals(F.Hold) && (list.isAST1())) {
@@ -901,6 +905,15 @@ public class OutputFormFactory {
 		}
 	}
 
+	public void convertSlotSequence(final Appendable buf, final IAST list) throws IOException {
+		try {
+			final int slotSequenceStartPosition = ((ISignedNumber) list.arg1()).toInt();
+			append(buf, "##" + slotSequenceStartPosition);
+		} catch (final ArithmeticException e) {
+			// add message to evaluation problemReporter
+		}
+	}
+
 	public void convertList(final Appendable buf, final IAST list) throws IOException {
 		if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
 			if (!fEmpty) {
@@ -925,8 +938,8 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.isAST2()==true</code> and the
-	 * head equals "Part".
+	 * This method will only be called if <code>list.isAST2()==true</code> and
+	 * the head equals "Part".
 	 * 
 	 * @param buf
 	 * @param list
