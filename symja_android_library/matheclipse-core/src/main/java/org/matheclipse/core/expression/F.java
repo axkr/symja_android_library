@@ -1306,6 +1306,254 @@ public class F {
 	 */
 	public final static IntegerSym CN10 = new IntegerSym(-10);
 
+	public final static ISymbol AppellF1 = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
+
+	public final static ISymbol CosIntegral = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
+
+	public final static ISymbol EllipticE = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
+
+	public final static ISymbol EllipticF = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticf" : "EllipticF");
+
+	public final static ISymbol EllipticPi = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticpi" : "EllipticPi");
+
+	public final static ISymbol FresnelC = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnelc" : "FresnelC");
+
+	public final static ISymbol FresnelS = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnels" : "FresnelS");
+
+	public final static ISymbol HypergeometricPFQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfq" : "HypergeometricPFQ");
+
+	public final static ISymbol Hypergeometric2F1 = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric2f1" : "Hypergeometric2F1");
+
+	public final static ISymbol SinIntegral = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinintegral" : "SinIntegral");
+
+	public final static ISymbol CoshIntegral = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coshintegral" : "CoshIntegral");
+
+	public final static ISymbol SinhIntegral = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinhintegral" : "SinhIntegral");
+
+	public final static ISymbol ExpIntegralEi = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegralei" : "ExpIntegralEi");
+
+	public final static ISymbol LogIntegral = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "logintegral" : "LogIntegral");
+
+	public final static ISymbol PolyLog = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polylog" : "PolyLog");
+
+	public final static ISymbol LogGamma = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "loggamma" : "LogGamma");
+
+	public final static ISymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
+
+	public final static ISymbol PolyGamma = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygamma" : "PolyGamma");
+
+	public final static ISymbol ExpIntegralE = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegrale" : "ExpIntegralE");
+
+	/**
+	 * Global map of predefined constant expressions.
+	 */
+	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
+
+	/**
+	 * Global array of predefined constant expressions.
+	 */
+	final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
+			C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1, CInfinity,
+			CNInfinity, CComplexInfinity, CSqrt2, CSqrt3, CSqrt5, CSqrt6, CSqrt7, CSqrt10, C1DSqrt2, C1DSqrt3, C1DSqrt5,
+			C1DSqrt6, C1DSqrt7, C1DSqrt10, Slot1, Slot2,
+			// start symbols
+			a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ASymbol, BSymbol, CSymbol,
+			FSymbol, GSymbol,
+			// start pattern
+			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_,
+			B_, C_, F_, G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol, h_Symbol, i_Symbol,
+			j_Symbol, k_Symbol, l_Symbol, m_Symbol, n_Symbol, o_Symbol, p_Symbol, q_Symbol, r_Symbol, s_Symbol,
+			t_Symbol, u_Symbol, v_Symbol, w_Symbol, x_Symbol, y_Symbol, z_Symbol, a_DEFAULT, b_DEFAULT, c_DEFAULT,
+			d_DEFAULT, e_DEFAULT, f_DEFAULT, g_DEFAULT, h_DEFAULT, i_DEFAULT, j_DEFAULT, k_DEFAULT, l_DEFAULT,
+			m_DEFAULT, n_DEFAULT, o_DEFAULT, p_DEFAULT, q_DEFAULT, r_DEFAULT, s_DEFAULT, t_DEFAULT, u_DEFAULT,
+			v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT, F_DEFAULT,
+			G_DEFAULT,
+			// start symbol strings
+			Algebraics, Booleans, ComplexInfinity, Catalan, Complexes, Degree, EulerGamma, False, Flat, Glaisher,
+			GoldenRatio, HoldAll, HoldFirst, HoldForm, HoldRest, Indeterminate, Infinity, IntegerHead, Integers,
+			Khinchin, Listable, Modulus, Null, NumericFunction, OneIdentity, Orderless, Pi, Primes, Rationals, RealHead,
+			Reals, Slot, SlotSequence, StringHead, SymbolHead, True,
+			// start function strings
+			Abs, AddTo, And, Alternatives, Apart, AppellF1, Append, AppendTo, Apply, ArcCos, ArcCosh, ArcCot, ArcCoth,
+			ArcCsc, ArcCsch, ArcSec, ArcSech, ArcSin, ArcSinh, ArcTan, ArcTanh, Arg, Array,
+			// ArrayDepth,
+			ArrayQ, Assumptions, AtomQ, Attributes,
+			// BernoulliB,
+			Binomial, Blank, Block, Boole,
+			// BooleanConvert,
+			BooleanMinimize, Break, Cancel, CartesianProduct, Cases, CatalanNumber, Catch, Ceiling,
+			CharacteristicPolynomial,
+			// ChebyshevT,
+			ChessboardDistance, Chop, Clear, ClearAll, Coefficient, CoefficientList, Collect, Complement, Complex,
+			// ComplexExpand,
+			ComplexInfinity, ComposeList, CompoundExpression, Condition, Conjugate, ConjugateTranspose, ConstantArray,
+			Continue, ContinuedFraction, CoprimeQ, Cos, Cosh, CosIntegral, CoshIntegral, Cot, Coth, Count, Cross, Csc,
+			Csch, Curl, Decrement, Default, Defer, Definition, Delete, DeleteCases,
+			// DeleteDuplicates,
+			Denominator, Depth, Derivative, Det, DiagonalMatrix, DigitQ, Dimensions, DirectedInfinity, Discriminant,
+			Distribute, Divergence, DivideBy, Divisible,
+			// Divisors,
+			Do, Dot, Drop, Eigenvalues, Eigenvectors, Element,
+			// Eliminate,
+			EllipticE, EllipticF, EllipticPi, Equal, Equivalent, Erf, Erfc, Erfi, EuclidianDistance,
+			// EulerE,
+			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract,
+			Factor, Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten,
+			Fibonacci, FindRoot, First, Fit, FixedPoint, Floor, Fold, FoldList, For, FractionalPart, FreeQ, FresnelC,
+			FresnelS, FrobeniusSolve, FromCharacterCode, FromContinuedFraction, FullForm, FullSimplify, Function, Gamma,
+			GCD, GeometricMean, Graphics, Graphics3D, Graphics3D, Greater, GreaterEqual, GroebnerBasis, HarmonicNumber,
+			Head,
+			// HermiteH,
+			HilbertMatrix, Hold, HoldForm, Horner,
+			// HornerForm,
+			HurwitzZeta, HypergeometricPFQ, Hypergeometric2F1, Identity, IdentityMatrix, If, Im, Implies, Increment,
+			Inner, Insert, IntegerPart, IntegerPartitions, IntegerQ, Integrate,
+			// InterpolatingFunction, InterpolatingPolynomial,
+			Intersection, Inverse, InverseErf, InverseFunction, JacobiMatrix, JacobiSymbol, JavaForm, Join,
+			KOrderlessPartitions, KPartitions, LaplaceTransform, Last, LCM, LeafCount,
+			// LaguerreL, LegendreP,
+			Length, Less, LessEqual, LetterQ, Level, Limit, Line, LinearProgramming, LinearSolve, List, ListQ, Log,
+			// Log2, Log10,
+			LogGamma,
+			// LogicalExpand,
+			LogIntegral, LowerCaseQ, LUDecomposition, ManhattanDistance, Map, MapAll, MapThread, MatchQ, MathMLForm,
+			// MatrixForm,
+			MatrixPower, MatrixQ,
+			// MatrixRank,
+			Max, Mean, Median, MemberQ, Min, Mod, Module, MoebiusMu,
+			// MonomialList,
+			Most, Multinomial, Nand, Negative, Nest, NestList, NestWhile, NestWhileList, NextPrime, NFourierTransform,
+			NIntegrate,
+			// NMaximize, NMinimize,
+			NonCommutativeMultiply, NonNegative, Nor, Norm, Not, NRoots, NSolve,
+			// NullSpace,
+			NumberQ, Numerator, NumericQ, OddQ, Options, Or, Order, OrderedQ, Out, Outer, Package, PadLeft, PadRight,
+			// ParametricPlot,
+			Part, Partition, Pattern, Permutations, Piecewise, Plot, Plot3D, Plus,
+			// Pochhammer,
+			PolyGamma, PolyLog, PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ, PolynomialQuotient,
+			PolynomialQuotientRemainder, PolynomialRemainder, Position, Positive, PossibleZeroQ, Power, PowerExpand,
+			PowerMod, PreDecrement, PreIncrement, Prepend, PrependTo,
+			// Prime,
+			PrimeQ, PrimitiveRoots, Print, Product, ProductLog, Quiet, Quotient, RandomInteger, RandomReal,
+			// RandomSample,
+			Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart, ReplaceRepeated, Rest, Resultant,
+			Return, Reverse, Riffle, RootIntervals, RootOf, Roots, Surd, RotateLeft, RotateRight, Round,
+			// RowReduce,
+			Rule, RuleDelayed, SameQ, Scan, Sec, Sech, Select, Sequence, Set, SetAttributes, SetDelayed, Show, Sign,
+			SignCmp, Simplify, Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral, Solve, Sort, Sow,
+			Sqrt, SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin, StringLength, StringTake,
+			Subfactorial, Subscript, Subsuperscript, Subsets, SubtractFrom, Sum, Superscript, Switch, SyntaxLength,
+			SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm, Thread, Through, Throw, TimeConstrained, Times, TimesBy,
+			Timing, ToCharacterCode, Together, ToString, Total, ToUnicode, Tr, Trace, Transpose, TrigExpand, TrigReduce,
+			TrigToExp, TrueQ,
+			// Tuples,
+			Unequal, Unevaluated, Union, Unique, UnitStep,
+			// UnitVector,
+			UnsameQ, UpperCaseQ, UpSet, UpSetDelayed, ValueQ, VandermondeMatrix, Variables, VectorQ, Which, While, Xor
+			// Zeta
+	};
+
+	static {
+		try {
+			// if (Config.DEBUG) {
+			// System.out.println("Config.DEBUG == true");
+			// }
+			// if (Config.SHOW_STACKTRACE) {
+			// System.out.println("Config.SHOW_STACKTRACE == true");
+			// }
+			ApfloatContext ctx = ApfloatContext.getContext();
+			ctx.setNumberOfProcessors(1);
+			// long start = System.currentTimeMillis();
+
+			Slot.setAttributes(ISymbol.NHOLDALL);
+			SlotSequence.setAttributes(ISymbol.NHOLDALL);
+
+			CInfinity = unaryAST1(DirectedInfinity, C1);
+			CNInfinity = unaryAST1(DirectedInfinity, CN1);
+			CIInfinity = unaryAST1(DirectedInfinity, CI);
+			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
+			CComplexInfinity = headAST0(DirectedInfinity);
+
+			CSqrt2 = binaryAST2(Power, C2, C1D2);
+			CSqrt3 = binaryAST2(Power, C3, C1D2);
+			CSqrt5 = binaryAST2(Power, C5, C1D2);
+			CSqrt6 = binaryAST2(Power, C6, C1D2);
+			CSqrt7 = binaryAST2(Power, C7, C1D2);
+			CSqrt10 = binaryAST2(Power, C10, C1D2);
+
+			C1DSqrt2 = binaryAST2(Power, C2, CN1D2);
+			C1DSqrt3 = binaryAST2(Power, C3, CN1D2);
+			C1DSqrt5 = binaryAST2(Power, C5, CN1D2);
+			C1DSqrt6 = binaryAST2(Power, C6, CN1D2);
+			C1DSqrt7 = binaryAST2(Power, C7, CN1D2);
+			C1DSqrt10 = binaryAST2(Power, C10, CN1D2);
+
+			Slot1 = unaryAST1(Slot, C1);
+			Slot2 = unaryAST1(Slot, C2);
+
+			for (short i = 0; i < GLOBAL_IDS.length; i++) {
+				GLOBAL_IDS_MAP.put(GLOBAL_IDS[i], new ExprID(i));
+			}
+
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Pi", "Pi");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("E", "E");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("False", "False");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("True", "True");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Null", "Null");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Integer", "IntegerHead");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Symbol", "SymbolHead");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Infinity", "CInfinity");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("ComplexInfinity", "CComplexInfinity");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Plus", "Plus");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Power", "Power");
+			PREDEFINED_INTERNAL_FORM_STRINGS.put("Times", "Times");
+
+			Plus.setDefaultValue(C0);
+			Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
+			Times.setDefaultValue(C1);
+			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
+			Power.setDefaultValue(2, C1);
+			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
+			Equal.setEvaluator(org.matheclipse.core.reflection.system.Equal.CONST);
+			Less.setEvaluator(org.matheclipse.core.reflection.system.Less.CONST);
+			Greater.setEvaluator(org.matheclipse.core.reflection.system.Greater.CONST);
+			Expand.setEvaluator(org.matheclipse.core.reflection.system.Expand.CONST);
+			ExpandAll.setEvaluator(org.matheclipse.core.reflection.system.ExpandAll.CONST);
+
+			// initialize only the utility function rules for Integrate
+			// other rules are "lazy loaded" on first use og Integrate
+			// function
+			final EvalEngine engine = EvalEngine.get();
+			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+			if (ruleList != null) {
+				engine.addRules(ruleList);
+			}
+			// long end = System.currentTimeMillis();
+			// System.out.println("Init time: " + (end - start));
+
+		} catch (Throwable th) {
+			th.printStackTrace();
+		}
+	}
+
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
@@ -1649,23 +1897,13 @@ public class F {
 		return symbol;
 	}
 
-	/**
-	 * Get or create a symbol which is retrieved from the eval engines context
-	 * path.
-	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @return the symbol object from the context path
-	 */
-	public static ISymbol retrieveSymbol(final String symbolName) {
-		EvalEngine engine = EvalEngine.get();
-		ContextPath contextPath = engine.getContextPath();
-		return contextPath.getSymbol(symbolName);
-	}
-
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
 		return unaryAST1(Abs, a0);
+	}
+
+	public static IAST Alternatives(final IExpr... a) {
+		return ast(a, Alternatives);
 	}
 
 	public static IExpr and(IExpr a, Integer i) {
@@ -1696,16 +1934,16 @@ public class F {
 		return binary(And, a0, a1);
 	}
 
-	public static IAST Alternatives(final IExpr... a) {
-		return ast(a, Alternatives);
-	}
-
 	public static IAST Apart(final IExpr a0) {
 		return unaryAST1(Apart, a0);
 	}
 
 	public static IAST Apart(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Apart, a0, a1);
+	}
+
+	public static IAST AppellF1(final IExpr... a) {
+		return ast(a, AppellF1);
 	}
 
 	public static IAST Append(final IExpr a0, final IExpr a1) {
@@ -1813,19 +2051,6 @@ public class F {
 	 */
 	public final static IAST ast(final IExpr head) {
 		return AST.newInstance(head);
-	}
-
-	/**
-	 * Create a new abstract syntax tree (AST).
-	 * 
-	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
-	 * 
-	 */
-	public final static IAST headAST0(final IExpr head) {
-		return new AST0(head);
 	}
 
 	/**
@@ -2000,6 +2225,55 @@ public class F {
 		return unaryAST1(Ceiling, a0);
 	}
 
+	public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ChebyshevT, a0, a1);
+	}
+
+	public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ChebyshevU, a0, a1);
+	}
+
+	public static IAST Chop(final IExpr a0) {
+		return unaryAST1(Chop, a0);
+	}
+
+	public static IExpr chopExpr(IExpr arg, double delta) {
+		if (arg.isNumber()) {
+			return chopNumber((INumber) arg, delta);
+		}
+		return arg;
+	}
+
+	/**
+	 * Set real or imaginary parts of a numeric argument to zero, those absolute
+	 * value is less than a delta.
+	 * 
+	 * @param arg
+	 *            a numeric number
+	 * @param delta
+	 *            the delta for which
+	 * @return <code>arg</code> if the argument couldn't be chopped
+	 */
+	public static INumber chopNumber(INumber arg, double delta) {
+		if (arg instanceof INum) {
+			if (isZero(((INum) arg).getRealPart(), delta)) {
+				return C0;
+			}
+		} else if (arg instanceof IComplexNum) {
+			if (isZero(((IComplexNum) arg).getRealPart(), delta)) {
+				if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+					return C0;
+				}
+				return complexNum(0.0, ((IComplexNum) arg).getImaginaryPart());
+			}
+			if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
+				return num(((IComplexNum) arg).getRealPart());
+			}
+
+		}
+		return arg;
+	}
+
 	public static IAST Clear(final IExpr... a) {
 		return ast(a, Clear);
 	}
@@ -2130,6 +2404,33 @@ public class F {
 	}
 
 	/**
+	 * TODO: check if Complex is working in pattern matching?
+	 * 
+	 * @param a0
+	 * @param a1
+	 * @return
+	 */
+	public static IAST Complex(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Complex, a0, a1);
+	}
+
+	public static IComplexNum complexNum(final Apcomplex c) {
+		return ApcomplexNum.valueOf(c);
+	}
+
+	public static IComplexNum complexNum(final Apfloat r) {
+		return ApcomplexNum.valueOf(r, Apcomplex.ZERO);
+	}
+
+	public static IComplexNum complexNum(final Apfloat r, final Apfloat i) {
+		return ApcomplexNum.valueOf(r, i);
+	}
+
+	public static IComplexNum complexNum(final Complex c) {
+		return ComplexNum.valueOf(c);
+	}
+
+	/**
 	 * Create a complex numeric number with imaginary part = 0.0
 	 * 
 	 * @param r
@@ -2151,22 +2452,6 @@ public class F {
 	 */
 	public static IComplexNum complexNum(final double r, final double i) {
 		return ComplexNum.valueOf(r, i);
-	}
-
-	public static IComplexNum complexNum(final Complex c) {
-		return ComplexNum.valueOf(c);
-	}
-
-	public static IComplexNum complexNum(final Apfloat r, final Apfloat i) {
-		return ApcomplexNum.valueOf(r, i);
-	}
-
-	public static IComplexNum complexNum(final Apfloat r) {
-		return ApcomplexNum.valueOf(r, Apcomplex.ZERO);
-	}
-
-	public static IComplexNum complexNum(final Apcomplex c) {
-		return ApcomplexNum.valueOf(c);
 	}
 
 	public static IComplexNum complexNum(final IComplex value) {
@@ -2204,29 +2489,6 @@ public class F {
 		return complexNum(value.doubleValue(), 0.0d);
 	}
 
-	public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
-		return binaryAST2(ChebyshevT, a0, a1);
-	}
-
-	public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
-		return binaryAST2(ChebyshevU, a0, a1);
-	}
-
-	public static IAST Chop(final IExpr a0) {
-		return unaryAST1(Chop, a0);
-	}
-
-	/**
-	 * TODO: check if Complex is working in pattern matching?
-	 * 
-	 * @param a0
-	 * @param a1
-	 * @return
-	 */
-	public static IAST Complex(final IExpr a0, final IExpr a1) {
-		return binaryAST2(Complex, a0, a1);
-	}
-
 	public static IAST CompoundExpression(final IExpr... a) {
 		return ast(a, CompoundExpression);
 	}
@@ -2253,6 +2515,14 @@ public class F {
 
 	public static IAST Cosh(final IExpr a0) {
 		return unaryAST1(Cosh, a0);
+	}
+
+	public static IAST CoshIntegral(final IExpr a) {
+		return unaryAST1(CoshIntegral, a);
+	}
+
+	public static IAST CosIntegral(final IExpr a) {
+		return unaryAST1(CosIntegral, a);
 	}
 
 	public static IAST Cot(final IExpr a0) {
@@ -2399,6 +2669,18 @@ public class F {
 		return binaryAST2(Element, a0, a1);
 	}
 
+	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
+		return binaryAST2(EllipticE, a0, a1);
+	}
+
+	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
+		return binaryAST2(EllipticF, a0, a1);
+	}
+
+	public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(EllipticPi, a0, a1, a2);
+	}
+
 	public static IAST Equal(final IExpr... a) {
 		return ast(a, Equal);
 	}
@@ -2409,6 +2691,14 @@ public class F {
 
 	public static IAST Erf(final IExpr a) {
 		return unaryAST1(Erf, a);
+	}
+
+	public static IAST Erfc(final IExpr a) {
+		return unaryAST1(Erfc, a);
+	}
+
+	public static IAST Erfi(final IExpr a) {
+		return unaryAST1(Erfi, a);
 	}
 
 	/**
@@ -2422,39 +2712,6 @@ public class F {
 	 */
 	public static IExpr eval(IExpr a) {
 		return EvalEngine.get().evaluate(a);
-	}
-
-	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was
-	 * possible this method returns the given argument. In &quot;quiet
-	 * mode&quot; all warnings would be suppressed.
-	 * 
-	 * @param a
-	 *            the expression which should be evaluated
-	 * @return the evaluated expression
-	 * @see EvalEngine#evalQuiet(IExpr)
-	 * @deprecated use EvalEngine#evalQuiet();
-	 */
-	@Deprecated
-	public static IExpr evalQuiet(IExpr a) {
-		return EvalEngine.get().evalQuiet(a);
-	}
-
-	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return <code>null</code>. In &quot;quiet mode&quot; all warnings
-	 * would be suppressed.
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was
-	 *         possible
-	 * @see EvalEngine#evalQuietNull(IExpr)
-	 * @deprecated use EvalEngine#evalQuietNull()
-	 */
-	@Deprecated
-	public static IExpr evalQuietNull(IExpr a) {
-		return EvalEngine.get().evalQuietNull(a);
 	}
 
 	/**
@@ -2552,6 +2809,86 @@ public class F {
 	}
 
 	/**
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an
+	 * <code>IAST</code>. If expanding wasn't possible this method returns the
+	 * given argument.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#evaluate(IExpr)
+	 */
+	public static IExpr evalExpandAll(IExpr a) {
+		return EvalEngine.get().evaluate(ExpandAll(a));
+	}
+
+	/**
+	 * Evaluate the given expression in numeric mode
+	 * 
+	 * @param a0
+	 * @return
+	 * @deprecated use EvalEngine.get().evalN() instead
+	 */
+	@Deprecated
+	public static IExpr evaln(final IExpr a0) {
+		return eval(N, a0);
+	}
+
+	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was
+	 * possible this method returns the given argument. In &quot;quiet
+	 * mode&quot; all warnings would be suppressed.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#evalQuiet(IExpr)
+	 * @deprecated use EvalEngine#evalQuiet();
+	 */
+	@Deprecated
+	public static IExpr evalQuiet(IExpr a) {
+		return EvalEngine.get().evalQuiet(a);
+	}
+
+	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
+	 * possible return <code>null</code>. In &quot;quiet mode&quot; all warnings
+	 * would be suppressed.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was
+	 *         possible
+	 * @see EvalEngine#evalQuietNull(IExpr)
+	 * @deprecated use EvalEngine#evalQuietNull()
+	 */
+	@Deprecated
+	public static IExpr evalQuietNull(IExpr a) {
+		return EvalEngine.get().evalQuietNull(a);
+	}
+
+	/**
+	 * Evaluate the given expression and test if the result equals the symbol
+	 * <code>True</code>.
+	 * 
+	 * @param expr
+	 * @return
+	 * @deprecated use EvalEngine#evalTrue()
+	 */
+	@Deprecated
+	public static boolean evalTrue(IExpr expr) {
+		return EvalEngine.get().evalTrue(expr);
+	}
+
+	public static IAST EvenQ(final IExpr a) {
+		return unaryAST1(EvenQ, a);
+	}
+
+	public static IAST Exp(final IExpr a0) {
+		return binaryAST2(Power, E, a0);
+	}
+
+	/**
 	 * Apply <code>Expand()</code> to the given expression if it's an
 	 * <code>IAST</code>. If expanding wasn't possible this method returns the
 	 * given argument.
@@ -2578,19 +2915,20 @@ public class F {
 		return a;
 	}
 
-	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an
-	 * <code>IAST</code>. If expanding wasn't possible this method returns the
-	 * given argument.
-	 * 
-	 * @param a
-	 *            the expression which should be evaluated
-	 * @return the evaluated expression
-	 * @see EvalEngine#evaluate(IExpr)
-	 */
-	public static IExpr evalExpandAll(IExpr a) {
-		return EvalEngine.get().evaluate(ExpandAll(a));
+	public static IAST Expand(final IExpr a0) {
+		return unaryAST1(Expand, a0);
 	}
+
+	public static IAST Expand(final IExpr a0, final IExpr a1) {
+
+		return binaryAST2(Expand, a0, a1);
+	}
+
+	//
+	// public static IAST NumberPartitions(final IExpr a0) {
+	//
+	// return unaryAST2(NumberPartitions, a0);
+	// }
 
 	/**
 	 * Apply <code>ExpandAll()</code> to the given expression if it's an
@@ -2623,50 +2961,16 @@ public class F {
 		return a;
 	}
 
-	/**
-	 * Evaluate the given expression in numeric mode
-	 * 
-	 * @param a0
-	 * @return
-	 * @deprecated use EvalEngine.get().evalN() instead
-	 */
-	@Deprecated
-	public static IExpr evaln(final IExpr a0) {
-		return eval(N, a0);
-	}
-
-	/**
-	 * Evaluate the given expression and test if the result equals the symbol
-	 * <code>True</code>.
-	 * 
-	 * @param expr
-	 * @return
-	 * @deprecated use EvalEngine#evalTrue()
-	 */
-	@Deprecated
-	public static boolean evalTrue(IExpr expr) {
-		return EvalEngine.get().evalTrue(expr);
-	}
-
-	public static IAST EvenQ(final IExpr a) {
-		return unaryAST1(EvenQ, a);
-	}
-
-	public static IAST Exp(final IExpr a0) {
-		return binaryAST2(Power, E, a0);
-	}
-
-	public static IAST Expand(final IExpr a0) {
-		return unaryAST1(Expand, a0);
-	}
-
-	public static IAST Expand(final IExpr a0, final IExpr a1) {
-
-		return binaryAST2(Expand, a0, a1);
-	}
-
 	public static IAST ExpandAll(final IExpr a0) {
 		return unaryAST1(ExpandAll, a0);
+	}
+
+	public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ExpIntegralE, a0, a1);
+	}
+
+	public static IAST ExpIntegralEi(final IExpr a) {
+		return unaryAST1(ExpIntegralEi, a);
 	}
 
 	public static IAST Exponent(final IExpr a0, final IExpr a1) {
@@ -2793,6 +3097,14 @@ public class F {
 		return binaryAST2(FreeQ, a0, a1);
 	}
 
+	public static IAST FresnelC(final IExpr a) {
+		return unaryAST1(FresnelC, a);
+	}
+
+	public static IAST FresnelS(final IExpr a) {
+		return unaryAST1(FresnelS, a);
+	}
+
 	public static IAST FullForm(final IExpr a0) {
 		return unaryAST1(FullForm, a0);
 	}
@@ -2830,12 +3142,6 @@ public class F {
 		return SystemNamespace.DEFAULT;
 	}
 
-	//
-	// public static IAST NumberPartitions(final IExpr a0) {
-	//
-	// return unaryAST2(NumberPartitions, a0);
-	// }
-
 	public static IAST Graphics() {
 
 		return ast(Graphics);
@@ -2867,6 +3173,19 @@ public class F {
 		return unaryAST1(Head, a);
 	}
 
+	/**
+	 * Create a new abstract syntax tree (AST).
+	 * 
+	 * @param head
+	 *            the header expression of the function. If the ast represents a
+	 *            function like <code>f[x,y], Sin[x],...</code>, the
+	 *            <code>head</code> will be an instance of type ISymbol.
+	 * 
+	 */
+	public final static IAST headAST0(final IExpr head) {
+		return new AST0(head);
+	}
+
 	public static IAST Hold(final IExpr a0) {
 		return unaryAST1(Hold, a0);
 	}
@@ -2877,6 +3196,14 @@ public class F {
 
 	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(HurwitzZeta, a0, a1);
+	}
+
+	public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
+	}
+
+	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
 	}
 
 	public static IAST Identity(final IExpr a0) {
@@ -2893,6 +3220,11 @@ public class F {
 
 	public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(If, a0, a1, a2, a3);
+	}
+
+	public static IAST IInit(final ISymbol sym, int[] sizes) {
+		sym.createRulesData(sizes);
+		return null;
 	}
 
 	public static IExpr Im(final IExpr a0) {
@@ -2917,9 +3249,9 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
-	public static ISymbol initFinalSymbol(final String symbolName) {
+	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
 		ISymbol temp = new Symbol(symbolName);
-		Context.SYSTEM.put(symbolName, temp);
+		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
 
@@ -2934,9 +3266,9 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
-	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
+	public static ISymbol initFinalSymbol(final String symbolName) {
 		ISymbol temp = new Symbol(symbolName);
-		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
+		Context.SYSTEM.put(symbolName, temp);
 		return temp;
 	}
 
@@ -2977,6 +3309,29 @@ public class F {
 	 */
 	public synchronized static void initSymbols() {
 		initSymbols(null, null, false);
+	}
+
+	public synchronized static void initSymbols(Reader reader, ISymbolObserver symbolObserver) {
+		if (!isSystemStarted) {
+			try {
+				isSystemStarted = true;
+
+				if (Config.SHOW_PATTERN_EVAL_STEPS) {
+					// watch the rules which are used in pattern matching in
+					// system.out
+					Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
+				}
+				if (symbolObserver != null) {
+					SYMBOL_OBSERVER = symbolObserver;
+				}
+
+				org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
+
+				isSystemInitialized = true;
+			} catch (Throwable th) {
+				th.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -3034,27 +3389,8 @@ public class F {
 		}
 	}
 
-	public synchronized static void initSymbols(Reader reader, ISymbolObserver symbolObserver) {
-		if (!isSystemStarted) {
-			try {
-				isSystemStarted = true;
-
-				if (Config.SHOW_PATTERN_EVAL_STEPS) {
-					// watch the rules which are used in pattern matching in
-					// system.out
-					Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
-				}
-				if (symbolObserver != null) {
-					SYMBOL_OBSERVER = symbolObserver;
-				}
-
-				org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
-
-				isSystemInitialized = true;
-			} catch (Throwable th) {
-				th.printStackTrace();
-			}
-		}
+	public static IAST Insert(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Insert, a0, a1, a2);
 	}
 
 	/**
@@ -3090,10 +3426,6 @@ public class F {
 		return AbstractIntegerSym.valueOf(integerString, radix);
 	}
 
-	public static IAST Insert(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(Insert, a0, a1, a2);
-	}
-
 	public static IAST IntegerPart(final IExpr a0) {
 		return unaryAST1(IntegerPart, a0);
 	}
@@ -3107,6 +3439,29 @@ public class F {
 		return binaryAST2(Integrate, a0, a1);
 	}
 
+	/**
+	 * Create an "interval" expression: <code>Interval(list)</code>.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public static IAST Interval(final IExpr list) {
+		return unaryAST1(Interval, list);
+	}
+
+	/**
+	 * Create an "interval" expression: <code>Interval(List(from, to))</code>.
+	 * 
+	 * @param min
+	 *            minimum value of the interval
+	 * @param max
+	 *            maximum value of the interval
+	 * @return
+	 */
+	public static IAST Interval(final ISignedNumber min, ISignedNumber max) {
+		return unaryAST1(Interval, binaryAST2(List, min, max));
+	}
+
 	public static IAST Inverse(final IExpr a0) {
 
 		return unaryAST1(Inverse, a0);
@@ -3116,8 +3471,57 @@ public class F {
 		return unaryAST1(InverseErf, a0);
 	}
 
+	// public static ISymbol method(final String symbolName, final String
+	// className, final String methodName) {
+	// return new MethodSymbol(symbolName, className, methodName);
+	// }
+	//
+	// public static ISymbol method(final String symbolName, final String
+	// packageName, final String className,
+	// final String methodName) {
+	// return new MethodSymbol(symbolName, packageName, className, methodName);
+	// }
+
 	public static IAST InverseFunction(final IExpr a) {
 		return unaryAST1(InverseFunction, a);
+	}
+
+	/**
+	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
+	 * 
+	 * <b>Note:</b> this method returns <code>null</code>.
+	 * 
+	 * @param lhs
+	 *            left-hand-side of the assignment
+	 * @param rhs
+	 *            right-hand-side of the assignment
+	 * @return <code>null</code>
+	 */
+	public static IAST ISet(final IExpr lhs, final IExpr rhs) {
+		if (lhs.isAST()) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		}
+		org.matheclipse.core.builtin.function.Set.CONST.putDownRule(lhs, rhs, true);
+		return null;
+	}
+
+	/**
+	 * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br/>
+	 * 
+	 * <b>Note:</b> this method returns <code>null</code>.
+	 * 
+	 * @param lhs
+	 *            left-hand-side of the assignment
+	 * @param rhs
+	 *            right-hand-side of the assignment
+	 * @return <code>null</code>
+	 */
+	public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
+		if (lhs.isAST()) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		}
+		org.matheclipse.core.builtin.function.SetDelayed.putDownRule(lhs, rhs, true);
+		return null;
 	}
 
 	/**
@@ -3165,16 +3569,16 @@ public class F {
 		return isZero(value - d, Config.DOUBLE_TOLERANCE);
 	}
 
-	public static boolean isNumIntValue(double value, int i) {
-		return isZero(value - i, Config.DOUBLE_TOLERANCE);
-	}
-
 	public static boolean isNumIntValue(double value) {
 		return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
 	}
 
 	public static boolean isNumIntValue(double value, double epsilon) {
 		return isZero(value - Math.rint(value), epsilon);
+	}
+
+	public static boolean isNumIntValue(double value, int i) {
+		return isZero(value - i, Config.DOUBLE_TOLERANCE);
 	}
 
 	/**
@@ -3267,18 +3671,6 @@ public class F {
 		return ast(List);
 	}
 
-	/**
-	 * Create a new <code>List</code> with the given <code>capacity</code>.
-	 * 
-	 * @param capacity
-	 *            the assumed number of arguments (+ 1 for the header expression
-	 *            is added internally).
-	 * @return
-	 */
-	public static IAST ListC(int capacity) {
-		return ast(List, capacity, false);
-	}
-
 	public static IAST List(final double... numbers) {
 		INum a[] = new INum[numbers.length];
 		for (int i = 0; i < numbers.length; i++) {
@@ -3309,6 +3701,18 @@ public class F {
 			a[i] = integer(numbers[i]);
 		}
 		return ast(a, List);
+	}
+
+	/**
+	 * Create a new <code>List</code> with the given <code>capacity</code>.
+	 * 
+	 * @param capacity
+	 *            the assumed number of arguments (+ 1 for the header expression
+	 *            is added internally).
+	 * @return
+	 */
+	public static IAST ListC(int capacity) {
+		return ast(List, capacity, false);
 	}
 
 	public static IAST ListQ(final IExpr a) {
@@ -3355,6 +3759,14 @@ public class F {
 		return binaryAST2(Log, F.C10, a0);
 	}
 
+	public static IAST LogGamma(final IExpr a0) {
+		return unaryAST1(LogGamma, a0);
+	}
+
+	public static IAST LogIntegral(final IExpr a) {
+		return unaryAST1(LogIntegral, a);
+	}
+
 	public static IAST Map(final IExpr a0) {
 
 		return unaryAST1(Map, a0);
@@ -3393,17 +3805,6 @@ public class F {
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MemberQ, a0, a1);
 	}
-
-	// public static ISymbol method(final String symbolName, final String
-	// className, final String methodName) {
-	// return new MethodSymbol(symbolName, className, methodName);
-	// }
-	//
-	// public static ISymbol method(final String symbolName, final String
-	// packageName, final String className,
-	// final String methodName) {
-	// return new MethodSymbol(symbolName, packageName, className, methodName);
-	// }
 
 	public static IAST MessageName(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MessageName, a0, a1);
@@ -3538,6 +3939,10 @@ public class F {
 		return unaryAST1(Not, a);
 	}
 
+	public static INum num(final Apfloat af) {
+		return ApfloatNum.valueOf(af);
+	}
+
 	/**
 	 * Create a numeric value
 	 * 
@@ -3579,10 +3984,6 @@ public class F {
 			return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
 		}
 		return Num.valueOf(Double.parseDouble(valueString));
-	}
-
-	public static INum num(final Apfloat af) {
-		return ApfloatNum.valueOf(af);
 	}
 
 	public static IAST NumberQ(final IExpr a0) {
@@ -3683,10 +4084,6 @@ public class F {
 		return ast(a, Plus);
 	}
 
-	public static IAST Plus(final long num, final IExpr... a) {
-		return ast(a, Plus).prependClone(ZZ(num));
-	}
-
 	public static IAST Plus(final IExpr a0, final IExpr a1) {
 		if (a0 != null && a1 != null) {
 			if (a0.isPlus() || a1.isPlus()) {
@@ -3712,6 +4109,22 @@ public class F {
 		return binary(Plus, a0, a1);
 	}
 
+	public static IAST Plus(final long num, final IExpr... a) {
+		return ast(a, Plus).prependClone(ZZ(num));
+	}
+
+	public static IAST PolyGamma(final IExpr a0) {
+		return unaryAST1(PolyGamma, a0);
+	}
+
+	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
+		return binaryAST2(PolyGamma, a0, a1);
+	}
+
+	public static IAST PolyLog(final IExpr a0, final IExpr a1) {
+		return binaryAST2(PolyLog, a0, a1);
+	}
+
 	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolynomialQ, a0, a1);
 	}
@@ -3720,12 +4133,12 @@ public class F {
 		return ternaryAST3(PolynomialQuotient, a0, a1, a2);
 	}
 
-	public static IAST PolynomialRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(PolynomialRemainder, a0, a1, a2);
-	}
-
 	public static IAST PolynomialQuotientRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(PolynomialQuotientRemainder, a0, a1, a2);
+	}
+
+	public static IAST PolynomialRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(PolynomialRemainder, a0, a1, a2);
 	}
 
 	/**
@@ -3869,13 +4282,13 @@ public class F {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}
 
+	public static IAST Quiet(final IExpr a0) {
+		return unaryAST1(Quiet, a0);
+	}
+
 	public final static IAST quinary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
 			final IExpr a4) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4 });
-	}
-
-	public static IAST Quiet(final IExpr a0) {
-		return unaryAST1(Quiet, a0);
 	}
 
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
@@ -3928,6 +4341,20 @@ public class F {
 		return ternaryAST3(Resultant, a0, a1, a2);
 	}
 
+	/**
+	 * Get or create a symbol which is retrieved from the eval engines context
+	 * path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol retrieveSymbol(final String symbolName) {
+		EvalEngine engine = EvalEngine.get();
+		ContextPath contextPath = engine.getContextPath();
+		return contextPath.getSymbol(symbolName);
+	}
+
 	public static IAST Return(final IExpr a) {
 		return unaryAST1(Return, a);
 	}
@@ -3976,13 +4403,13 @@ public class F {
 		return unaryAST1(Sech, a0);
 	}
 
+	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Select, a0, a1, a2);
+	}
+
 	public final static IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
 			final IExpr a4, final IExpr a5) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4, a5 });
-	}
-
-	public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(Select, a0, a1, a2);
 	}
 
 	public static IAST Sequence() {
@@ -4005,6 +4432,10 @@ public class F {
 		return ast(a, SeriesData);
 	}
 
+	public static IAST Set(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Set, a0, a1);
+	}
+
 	public static IAST SetAttributes(final IExpr a0) {
 		return unaryAST1(SetAttributes, a0);
 	}
@@ -4013,55 +4444,8 @@ public class F {
 		return binaryAST2(SetAttributes, a0, a1);
 	}
 
-	public static IAST Set(final IExpr a0, final IExpr a1) {
-		return binaryAST2(Set, a0, a1);
-	}
-
-	public static IAST IInit(final ISymbol sym, int[] sizes) {
-		sym.createRulesData(sizes);
-		return null;
-	}
-
-	/**
-	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
-	 * 
-	 * <b>Note:</b> this method returns <code>null</code>.
-	 * 
-	 * @param lhs
-	 *            left-hand-side of the assignment
-	 * @param rhs
-	 *            right-hand-side of the assignment
-	 * @return <code>null</code>
-	 */
-	public static IAST ISet(final IExpr lhs, final IExpr rhs) {
-		if (lhs.isAST()) {
-			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-		}
-		org.matheclipse.core.builtin.function.Set.CONST.putDownRule(lhs, rhs, true);
-		return null;
-	}
-
 	public static IAST SetDelayed(final IExpr a0, final IExpr a1) {
 		return binaryAST2(SetDelayed, a0, a1);
-	}
-
-	/**
-	 * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br/>
-	 * 
-	 * <b>Note:</b> this method returns <code>null</code>.
-	 * 
-	 * @param lhs
-	 *            left-hand-side of the assignment
-	 * @param rhs
-	 *            right-hand-side of the assignment
-	 * @return <code>null</code>
-	 */
-	public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
-		if (lhs.isAST()) {
-			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-		}
-		org.matheclipse.core.builtin.function.SetDelayed.putDownRule(lhs, rhs, true);
-		return null;
 	}
 
 	public static IAST Show(final IExpr a0) {
@@ -4093,6 +4477,14 @@ public class F {
 		return unaryAST1(Sinh, a0);
 	}
 
+	public static IAST SinhIntegral(final IExpr a) {
+		return unaryAST1(SinhIntegral, a);
+	}
+
+	public static IAST SinIntegral(final IExpr a) {
+		return unaryAST1(SinIntegral, a);
+	}
+
 	public static IAST Slot(final IExpr a0) {
 		return unaryAST1(Slot, a0);
 	}
@@ -4113,6 +4505,10 @@ public class F {
 		return unaryAST1(Sow, a);
 	}
 
+	public static IAST Span(final IExpr... a) {
+		return ast(a, Span);
+	}
+
 	/**
 	 * Create a "square" expression: <code>Power(x, 2)</code>.
 	 * 
@@ -4124,16 +4520,6 @@ public class F {
 	}
 
 	/**
-	 * Create an "interval" expression: <code>Interval(List(from, to))</code>.
-	 * 
-	 * @param x
-	 * @return
-	 */
-	public static IAST Interval(final ISignedNumber from, ISignedNumber to) {
-		return unaryAST1(Interval, binaryAST2(List, from, to));
-	}
-
-	/**
 	 * Create a "square root" expression: <code>Power(x, 1/2)</code>.
 	 * 
 	 * @param x
@@ -4141,10 +4527,6 @@ public class F {
 	 */
 	public static IAST Sqrt(final IExpr x) {
 		return binaryAST2(Power, x, C1D2);
-	}
-
-	public static IAST Span(final IExpr... a) {
-		return ast(a, Span);
 	}
 
 	public static IAST StringJoin(final IExpr a) {
@@ -4160,7 +4542,6 @@ public class F {
 	final static public IStringX stringx(final String str) {
 		return StringX.valueOf(str);
 	}
-
 	/**
 	 * Create a string expression
 	 * 
@@ -4170,22 +4551,9 @@ public class F {
 	final static public IStringX stringx(final StringBuffer str) {
 		return StringX.valueOf(str);
 	}
-
-	/**
-	 * Substitute all (sub-) expressions with the given replacement expression.
-	 * If no (sub-) expression matches, the method returns the given
-	 * <code>expr</code>.
-	 * 
-	 * @param expr
-	 * @param subExpr
-	 * @param replacementExpr
-	 * @return the input <code>expr</code> if no substitution of a
-	 *         (sub-)expression was possible or the substituted expression.
-	 */
-	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
-		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr))).orElse(expr);
+	public static IAST Subfactorial(final IExpr a0) {
+		return unaryAST1(Subfactorial, a0);
 	}
-
 	/**
 	 * Substitute all (sub-) expressions with the given unary function. If no
 	 * substitution matches, the method returns the given <code>expr</code>.
@@ -4200,7 +4568,6 @@ public class F {
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
 		return expr.replaceAll(function).orElse(expr);
 	}
-
 	/**
 	 * Substitute all (sub-) expressions with the given rule set. If no
 	 * substitution matches, the method returns the given <code>expr</code>.
@@ -4216,11 +4583,20 @@ public class F {
 	public static IExpr subst(IExpr expr, final IAST astRules) {
 		return expr.replaceAll(astRules).orElse(expr);
 	}
-
-	public static IAST Subfactorial(final IExpr a0) {
-		return unaryAST1(Subfactorial, a0);
+	/**
+	 * Substitute all (sub-) expressions with the given replacement expression.
+	 * If no (sub-) expression matches, the method returns the given
+	 * <code>expr</code>.
+	 * 
+	 * @param expr
+	 * @param subExpr
+	 * @param replacementExpr
+	 * @return the input <code>expr</code> if no substitution of a
+	 *         (sub-)expression was possible or the substituted expression.
+	 */
+	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
+		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr))).orElse(expr);
 	}
-
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		if (a0.isPlus()) {
 			IAST clone = ((IAST) a0).clone();
@@ -4229,38 +4605,30 @@ public class F {
 		}
 		return binary(Plus, a0, binary(Times, CN1, a1));
 	}
-
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
 
 		return binaryAST2(Sum, a0, a1);
 	}
-
 	public static IAST SurfaceGraphics() {
 
 		return ast(SurfaceGraphics);
 	}
-
 	public static IAST Take(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Take, a0, a1);
 	}
-
 	public static IAST Tan(final IExpr a0) {
 		return unaryAST1(Tan, a0);
 	}
-
 	public static IAST Tanh(final IExpr a0) {
 
 		return unaryAST1(Tanh, a0);
 	}
-
 	public static IAST Taylor(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Taylor, a0, a1);
 	}
-
 	public final static IAST ternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST(new IExpr[] { head, a0, a1, a2 });
 	}
-
 	/**
 	 * Create a function with 3 arguments as a <code>AST3</code> immutable
 	 * object without evaluation.
@@ -4274,19 +4642,15 @@ public class F {
 	public final static IAST ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(head, a0, a1, a2);
 	}
-
 	public static IAST Thread(final IExpr a0) {
 		return unaryAST1(Thread, a0);
 	}
-
 	public static IAST Throw(final IExpr a) {
 		return unaryAST1(Throw, a);
 	}
-
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1) {
 		return binaryAST2(TimeConstrained, a0, a1);
 	}
-
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(TimeConstrained, a0, a1, a2);
 	}
@@ -4301,10 +4665,6 @@ public class F {
 
 	public static IAST Times(final IExpr... a) {
 		return ast(a, Times);
-	}
-
-	public static IAST Times(final long num, final IExpr... a) {
-		return ast(a, Times).prependClone(ZZ(num));
 	}
 
 	public static IAST Times(final IExpr a0, final IExpr a1) {
@@ -4330,6 +4690,10 @@ public class F {
 			}
 		}
 		return binary(Times, a0, a1);
+	}
+
+	public static IAST Times(final long num, final IExpr... a) {
+		return ast(a, Times).prependClone(ZZ(num));
 	}
 
 	public static IAST Together(final IExpr a0) {
@@ -4415,6 +4779,10 @@ public class F {
 		return binaryAST2(While, a0, a1);
 	}
 
+	public static IAST Zeta(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Zeta, a0, a1);
+	}
+
 	/**
 	 * Create a large integer number.
 	 * 
@@ -4433,361 +4801,6 @@ public class F {
 	 */
 	public static IInteger ZZ(final long integerValue) {
 		return AbstractIntegerSym.valueOf(integerValue);
-	}
-
-	/**
-	 * Set real or imaginary parts of a numeric argument to zero, those absolute
-	 * value is less than a delta.
-	 * 
-	 * @param arg
-	 *            a numeric number
-	 * @param delta
-	 *            the delta for which
-	 * @return <code>arg</code> if the argument couldn't be chopped
-	 */
-	public static INumber chopNumber(INumber arg, double delta) {
-		if (arg instanceof INum) {
-			if (isZero(((INum) arg).getRealPart(), delta)) {
-				return C0;
-			}
-		} else if (arg instanceof IComplexNum) {
-			if (isZero(((IComplexNum) arg).getRealPart(), delta)) {
-				if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
-					return C0;
-				}
-				return complexNum(0.0, ((IComplexNum) arg).getImaginaryPart());
-			}
-			if (isZero(((IComplexNum) arg).getImaginaryPart(), delta)) {
-				return num(((IComplexNum) arg).getRealPart());
-			}
-
-		}
-		return arg;
-	}
-
-	public static IExpr chopExpr(IExpr arg, double delta) {
-		if (arg.isNumber()) {
-			return chopNumber((INumber) arg, delta);
-		}
-		return arg;
-	}
-
-	public final static ISymbol AppellF1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
-	public final static ISymbol CosIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
-	public final static ISymbol EllipticE = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
-	public final static ISymbol EllipticF = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticf" : "EllipticF");
-	public final static ISymbol EllipticPi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticpi" : "EllipticPi");
-	public final static ISymbol FresnelC = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnelc" : "FresnelC");
-	public final static ISymbol FresnelS = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnels" : "FresnelS");
-	public final static ISymbol HypergeometricPFQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfq" : "HypergeometricPFQ");
-	public final static ISymbol Hypergeometric2F1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric2f1" : "Hypergeometric2F1");
-	public final static ISymbol SinIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinintegral" : "SinIntegral");
-	public final static ISymbol CoshIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coshintegral" : "CoshIntegral");
-	public final static ISymbol SinhIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinhintegral" : "SinhIntegral");
-	public final static ISymbol ExpIntegralEi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegralei" : "ExpIntegralEi");
-	public final static ISymbol LogIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "logintegral" : "LogIntegral");
-	public final static ISymbol PolyLog = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polylog" : "PolyLog");
-	public final static ISymbol LogGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "loggamma" : "LogGamma");
-	public final static ISymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
-	public final static ISymbol PolyGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygamma" : "PolyGamma");
-	public final static ISymbol ExpIntegralE = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegrale" : "ExpIntegralE");
-
-	public static IAST AppellF1(final IExpr... a) {
-		return ast(a, AppellF1);
-	}
-
-	public static IAST CosIntegral(final IExpr a) {
-		return unaryAST1(CosIntegral, a);
-	}
-
-	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
-		return binaryAST2(EllipticE, a0, a1);
-	}
-
-	public static IAST EllipticF(final IExpr a0, final IExpr a1) {
-		return binaryAST2(EllipticF, a0, a1);
-	}
-
-	public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(EllipticPi, a0, a1, a2);
-	}
-
-	public static IAST FresnelC(final IExpr a) {
-		return unaryAST1(FresnelC, a);
-	}
-
-	public static IAST FresnelS(final IExpr a) {
-		return unaryAST1(FresnelS, a);
-	}
-
-	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
-	}
-
-	public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-		return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
-	}
-
-	public static IAST SinIntegral(final IExpr a) {
-		return unaryAST1(SinIntegral, a);
-	}
-
-	public static IAST CoshIntegral(final IExpr a) {
-		return unaryAST1(CoshIntegral, a);
-	}
-
-	public static IAST SinhIntegral(final IExpr a) {
-		return unaryAST1(SinhIntegral, a);
-	}
-
-	public static IAST Erfi(final IExpr a) {
-		return unaryAST1(Erfi, a);
-	}
-
-	public static IAST ExpIntegralEi(final IExpr a) {
-		return unaryAST1(ExpIntegralEi, a);
-	}
-
-	public static IAST LogIntegral(final IExpr a) {
-		return unaryAST1(LogIntegral, a);
-	}
-
-	public static IAST PolyLog(final IExpr a0, final IExpr a1) {
-		return binaryAST2(PolyLog, a0, a1);
-	}
-
-	public static IAST Erfc(final IExpr a) {
-		return unaryAST1(Erfc, a);
-	}
-
-	public static IAST LogGamma(final IExpr a0) {
-		return unaryAST1(LogGamma, a0);
-	}
-
-	public static IAST Zeta(final IExpr a0, final IExpr a1) {
-		return binaryAST2(Zeta, a0, a1);
-	}
-
-	public static IAST PolyGamma(final IExpr a0) {
-		return unaryAST1(PolyGamma, a0);
-	}
-
-	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
-		return binaryAST2(PolyGamma, a0, a1);
-	}
-
-	public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
-		return binaryAST2(ExpIntegralE, a0, a1);
-	}
-
-	/**
-	 * Global map of predefined constant expressions.
-	 */
-	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
-
-	/**
-	 * Global array of predefined constant expressions.
-	 */
-	final static IExpr[] GLOBAL_IDS = new IExpr[] { CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
-			C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1, CInfinity,
-			CNInfinity, CComplexInfinity, CSqrt2, CSqrt3, CSqrt5, CSqrt6, CSqrt7, CSqrt10, C1DSqrt2, C1DSqrt3, C1DSqrt5,
-			C1DSqrt6, C1DSqrt7, C1DSqrt10, Slot1, Slot2,
-			// start symbols
-			a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ASymbol, BSymbol, CSymbol,
-			FSymbol, GSymbol,
-			// start pattern
-			a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_, w_, x_, y_, z_, A_,
-			B_, C_, F_, G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol, f_Symbol, g_Symbol, h_Symbol, i_Symbol,
-			j_Symbol, k_Symbol, l_Symbol, m_Symbol, n_Symbol, o_Symbol, p_Symbol, q_Symbol, r_Symbol, s_Symbol,
-			t_Symbol, u_Symbol, v_Symbol, w_Symbol, x_Symbol, y_Symbol, z_Symbol, a_DEFAULT, b_DEFAULT, c_DEFAULT,
-			d_DEFAULT, e_DEFAULT, f_DEFAULT, g_DEFAULT, h_DEFAULT, i_DEFAULT, j_DEFAULT, k_DEFAULT, l_DEFAULT,
-			m_DEFAULT, n_DEFAULT, o_DEFAULT, p_DEFAULT, q_DEFAULT, r_DEFAULT, s_DEFAULT, t_DEFAULT, u_DEFAULT,
-			v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT, F_DEFAULT,
-			G_DEFAULT,
-			// start symbol strings
-			Algebraics, Booleans, ComplexInfinity, Catalan, Complexes, Degree, EulerGamma, False, Flat, Glaisher,
-			GoldenRatio, HoldAll, HoldFirst, HoldForm, HoldRest, Indeterminate, Infinity, IntegerHead, Integers,
-			Khinchin, Listable, Modulus, Null, NumericFunction, OneIdentity, Orderless, Pi, Primes, Rationals, RealHead,
-			Reals, Slot, SlotSequence, StringHead, SymbolHead, True,
-			// start function strings
-			Abs, AddTo, And, Alternatives, Apart, AppellF1, Append, AppendTo, Apply, ArcCos, ArcCosh, ArcCot, ArcCoth,
-			ArcCsc, ArcCsch, ArcSec, ArcSech, ArcSin, ArcSinh, ArcTan, ArcTanh, Arg, Array,
-			// ArrayDepth,
-			ArrayQ, Assumptions, AtomQ, Attributes,
-			// BernoulliB,
-			Binomial, Blank, Block, Boole,
-			// BooleanConvert,
-			BooleanMinimize, Break, Cancel, CartesianProduct, Cases, CatalanNumber, Catch, Ceiling,
-			CharacteristicPolynomial,
-			// ChebyshevT,
-			ChessboardDistance, Chop, Clear, ClearAll, Coefficient, CoefficientList, Collect, Complement, Complex,
-			// ComplexExpand,
-			ComplexInfinity, ComposeList, CompoundExpression, Condition, Conjugate, ConjugateTranspose, ConstantArray,
-			Continue, ContinuedFraction, CoprimeQ, Cos, Cosh, CosIntegral, CoshIntegral, Cot, Coth, Count, Cross, Csc,
-			Csch, Curl, Decrement, Default, Defer, Definition, Delete, DeleteCases,
-			// DeleteDuplicates,
-			Denominator, Depth, Derivative, Det, DiagonalMatrix, DigitQ, Dimensions, DirectedInfinity, Discriminant,
-			Distribute, Divergence, DivideBy, Divisible,
-			// Divisors,
-			Do, Dot, Drop, Eigenvalues, Eigenvectors, Element,
-			// Eliminate,
-			EllipticE, EllipticF, EllipticPi, Equal, Equivalent, Erf, Erfc, Erfi, EuclidianDistance,
-			// EulerE,
-			EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD, Extract,
-			Factor, Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList, FactorTerms, Flatten,
-			Fibonacci, FindRoot, First, Fit, FixedPoint, Floor, Fold, FoldList, For, FractionalPart, FreeQ, FresnelC,
-			FresnelS, FrobeniusSolve, FromCharacterCode, FromContinuedFraction, FullForm, FullSimplify, Function, Gamma,
-			GCD, GeometricMean, Graphics, Graphics3D, Graphics3D, Greater, GreaterEqual, GroebnerBasis, HarmonicNumber,
-			Head,
-			// HermiteH,
-			HilbertMatrix, Hold, HoldForm, Horner,
-			// HornerForm,
-			HurwitzZeta, HypergeometricPFQ, Hypergeometric2F1, Identity, IdentityMatrix, If, Im, Implies, Increment,
-			Inner, Insert, IntegerPart, IntegerPartitions, IntegerQ, Integrate,
-			// InterpolatingFunction, InterpolatingPolynomial,
-			Intersection, Inverse, InverseErf, InverseFunction, JacobiMatrix, JacobiSymbol, JavaForm, Join,
-			KOrderlessPartitions, KPartitions, LaplaceTransform, Last, LCM, LeafCount,
-			// LaguerreL, LegendreP,
-			Length, Less, LessEqual, LetterQ, Level, Limit, Line, LinearProgramming, LinearSolve, List, ListQ, Log,
-			// Log2, Log10,
-			LogGamma,
-			// LogicalExpand,
-			LogIntegral, LowerCaseQ, LUDecomposition, ManhattanDistance, Map, MapAll, MapThread, MatchQ, MathMLForm,
-			// MatrixForm,
-			MatrixPower, MatrixQ,
-			// MatrixRank,
-			Max, Mean, Median, MemberQ, Min, Mod, Module, MoebiusMu,
-			// MonomialList,
-			Most, Multinomial, Nand, Negative, Nest, NestList, NestWhile, NestWhileList, NextPrime, NFourierTransform,
-			NIntegrate,
-			// NMaximize, NMinimize,
-			NonCommutativeMultiply, NonNegative, Nor, Norm, Not, NRoots, NSolve,
-			// NullSpace,
-			NumberQ, Numerator, NumericQ, OddQ, Options, Or, Order, OrderedQ, Out, Outer, Package, PadLeft, PadRight,
-			// ParametricPlot,
-			Part, Partition, Pattern, Permutations, Piecewise, Plot, Plot3D, Plus,
-			// Pochhammer,
-			PolyGamma, PolyLog, PolynomialExtendedGCD, PolynomialGCD, PolynomialLCM, PolynomialQ, PolynomialQuotient,
-			PolynomialQuotientRemainder, PolynomialRemainder, Position, Positive, PossibleZeroQ, Power, PowerExpand,
-			PowerMod, PreDecrement, PreIncrement, Prepend, PrependTo,
-			// Prime,
-			PrimeQ, PrimitiveRoots, Print, Product, ProductLog, Quiet, Quotient, RandomInteger, RandomReal,
-			// RandomSample,
-			Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart, ReplaceRepeated, Rest, Resultant,
-			Return, Reverse, Riffle, RootIntervals, RootOf, Roots, Surd, RotateLeft, RotateRight, Round,
-			// RowReduce,
-			Rule, RuleDelayed, SameQ, Scan, Sec, Sech, Select, Sequence, Set, SetAttributes, SetDelayed, Show, Sign,
-			SignCmp, Simplify, Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral, Solve, Sort, Sow,
-			Sqrt, SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin, StringLength, StringTake,
-			Subfactorial, Subscript, Subsuperscript, Subsets, SubtractFrom, Sum, Superscript, Switch, SyntaxLength,
-			SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm, Thread, Through, Throw, TimeConstrained, Times, TimesBy,
-			Timing, ToCharacterCode, Together, ToString, Total, ToUnicode, Tr, Trace, Transpose, TrigExpand, TrigReduce,
-			TrigToExp, TrueQ,
-			// Tuples,
-			Unequal, Unevaluated, Union, Unique, UnitStep,
-			// UnitVector,
-			UnsameQ, UpperCaseQ, UpSet, UpSetDelayed, ValueQ, VandermondeMatrix, Variables, VectorQ, Which, While, Xor
-			// Zeta
-	};
-
-	static {
-		try {
-			// if (Config.DEBUG) {
-			// System.out.println("Config.DEBUG == true");
-			// }
-			// if (Config.SHOW_STACKTRACE) {
-			// System.out.println("Config.SHOW_STACKTRACE == true");
-			// }
-			ApfloatContext ctx = ApfloatContext.getContext();
-			ctx.setNumberOfProcessors(1);
-			// long start = System.currentTimeMillis();
-
-			Slot.setAttributes(ISymbol.NHOLDALL);
-			SlotSequence.setAttributes(ISymbol.NHOLDALL);
-
-			CInfinity = unaryAST1(DirectedInfinity, C1);
-			CNInfinity = unaryAST1(DirectedInfinity, CN1);
-			CIInfinity = unaryAST1(DirectedInfinity, CI);
-			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
-			CComplexInfinity = headAST0(DirectedInfinity);
-
-			CSqrt2 = binaryAST2(Power, C2, C1D2);
-			CSqrt3 = binaryAST2(Power, C3, C1D2);
-			CSqrt5 = binaryAST2(Power, C5, C1D2);
-			CSqrt6 = binaryAST2(Power, C6, C1D2);
-			CSqrt7 = binaryAST2(Power, C7, C1D2);
-			CSqrt10 = binaryAST2(Power, C10, C1D2);
-
-			C1DSqrt2 = binaryAST2(Power, C2, CN1D2);
-			C1DSqrt3 = binaryAST2(Power, C3, CN1D2);
-			C1DSqrt5 = binaryAST2(Power, C5, CN1D2);
-			C1DSqrt6 = binaryAST2(Power, C6, CN1D2);
-			C1DSqrt7 = binaryAST2(Power, C7, CN1D2);
-			C1DSqrt10 = binaryAST2(Power, C10, CN1D2);
-
-			Slot1 = unaryAST1(Slot, C1);
-			Slot2 = unaryAST1(Slot, C2);
-
-			for (short i = 0; i < GLOBAL_IDS.length; i++) {
-				GLOBAL_IDS_MAP.put(GLOBAL_IDS[i], new ExprID(i));
-			}
-
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Pi", "Pi");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("E", "E");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("False", "False");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("True", "True");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Null", "Null");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Integer", "IntegerHead");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Symbol", "SymbolHead");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Infinity", "CInfinity");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("ComplexInfinity", "CComplexInfinity");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Plus", "Plus");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Power", "Power");
-			PREDEFINED_INTERNAL_FORM_STRINGS.put("Times", "Times");
-
-			Plus.setDefaultValue(C0);
-			Plus.setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
-			Times.setDefaultValue(C1);
-			Times.setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
-			Power.setDefaultValue(2, C1);
-			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
-			Equal.setEvaluator(org.matheclipse.core.reflection.system.Equal.CONST);
-			Less.setEvaluator(org.matheclipse.core.reflection.system.Less.CONST);
-			Greater.setEvaluator(org.matheclipse.core.reflection.system.Greater.CONST);
-			Expand.setEvaluator(org.matheclipse.core.reflection.system.Expand.CONST);
-			ExpandAll.setEvaluator(org.matheclipse.core.reflection.system.ExpandAll.CONST);
-
-			// initialize only the utility function rules for Integrate
-			// other rules are "lazy loaded" on first use og Integrate
-			// function
-			final EvalEngine engine = EvalEngine.get();
-			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-			if (ruleList != null) {
-				engine.addRules(ruleList);
-			}
-			// long end = System.currentTimeMillis();
-			// System.out.println("Init time: " + (end - start));
-
-		} catch (Throwable th) {
-			th.printStackTrace();
-		}
 	}
 
 }

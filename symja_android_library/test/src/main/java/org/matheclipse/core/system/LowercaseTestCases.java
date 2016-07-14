@@ -1709,7 +1709,21 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		check("Pi>3", "True");
+		check("3>Pi", "False");
+		check("Pi<3", "False");
+		check("3<Pi", "True");
+		check("Pi>=3", "True");
+		check("3>=Pi", "False");
+		check("Pi<=3", "False");
+		check("3<=Pi", "True");
 		// check("Max(Interval({4,2}))", "4");
+		check("Interval({5,8})>2", "True");
+		check("Interval({3,4})>Pi", "Interval({3,4})>Pi");
+		check("Interval({1,2})>Pi", "False");
+		check("Limit(Sin(x),x->Infinity)", "Interval({-1,1})");
+		check("Limit(Sin(x),x->-Infinity)", "Interval({-1,1})");
+		check("Limit(Sin(1/x),x->0)", "Interval({-1,1})");
 		check("Max(Interval({2,4}))", "4");
 		check("Min(Interval({2,4}))", "2");
 	}

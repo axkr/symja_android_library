@@ -13,7 +13,7 @@ public interface SinRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 53, 4 };
+  final public static int[] SIZES = { 55, 4 };
 
   final public static IAST RULES = List(
     IInit(Sin, SIZES),
@@ -130,6 +130,10 @@ public interface SinRules {
     ISet(Sin(DirectedInfinity(CNI)),
       DirectedInfinity(CNI)),
     ISet(Sin(CComplexInfinity),
-      Indeterminate)
+      Indeterminate),
+    ISet(Sin(CInfinity),
+      Interval(List(CN1,C1))),
+    ISet(Sin(CNInfinity),
+      Interval(List(CN1,C1)))
   );
 }

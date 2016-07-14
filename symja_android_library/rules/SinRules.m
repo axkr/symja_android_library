@@ -57,5 +57,9 @@ Sin(x_NumberQ*Pi):=If(x<1, Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi), Sin((x-2*Quotien
 	 
 Sin(I*Infinity)=I*Infinity,
 Sin(-I*Infinity)=-I*Infinity,
-Sin(ComplexInfinity)=Indeterminate
+Sin(ComplexInfinity)=Indeterminate,
+
+Sin(Infinity)=Interval({-1,1}),
+Sin(-Infinity)=Interval({-1,1}) 
+
 }

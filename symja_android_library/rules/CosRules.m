@@ -57,5 +57,8 @@ Cos(ArcSin(x_)):=(1-x^2)^(1/2),
 	 
 Cos(I*Infinity)=Infinity,
 Cos(-I*Infinity)=Infinity,
-Cos(ComplexInfinity)=Indeterminate
+Cos(ComplexInfinity)=Indeterminate,
+
+Cos(Infinity)=Interval({-1,1}),
+Cos(-Infinity)=Interval({-1,1}) 
 }
