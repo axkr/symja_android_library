@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 
@@ -234,7 +235,8 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		// don't compare strings
 		if (a0.isSignedNumber()) {
 			if (a1.isSignedNumber()) {
-				return a1.isLTOrdered(a0) ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+				return ((ISignedNumber) a0).isGreaterThan((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
+						: IExpr.COMPARE_TERNARY.FALSE;
 			} else if (a1.isInfinity()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			} else if (a1.isNegativeInfinity()) {
@@ -251,8 +253,33 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
 			return IExpr.COMPARE_TERNARY.FALSE;
 		}
+
 		if (a0.equals(a1)) {
 			return IExpr.COMPARE_TERNARY.FALSE;
+		}
+
+		if (a0.isInterval1() && a1.isSignedNumber()) {
+			return compareIntervalTernary(a0, a1);
+		}
+
+		return IExpr.COMPARE_TERNARY.UNDEFINED;
+	}
+
+	public IExpr.COMPARE_TERNARY compareIntervalTernary(final IExpr a0, final IExpr a1) {
+		IExpr temp = a0.getAt(1).getAt(1);
+		if (temp.isSignedNumber()) {
+			IExpr.COMPARE_TERNARY cr = compareTernary(temp, a1);
+			if (cr == IExpr.COMPARE_TERNARY.TRUE) {
+				return IExpr.COMPARE_TERNARY.TRUE;
+			} else if (cr == IExpr.COMPARE_TERNARY.FALSE) {
+				temp = a0.getAt(1).getAt(2);
+				if (temp.isSignedNumber()) {
+					cr = compareTernary(temp, a1);
+					if (cr == IExpr.COMPARE_TERNARY.FALSE) {
+						return IExpr.COMPARE_TERNARY.FALSE;
+					}
+				}
+			}
 		}
 		return IExpr.COMPARE_TERNARY.UNDEFINED;
 	}
