@@ -18,15 +18,15 @@ import org.matheclipse.parser.client.math.MathException;
  * 
  */
 public class ExprEvaluator {
-	private Map<ISymbol, IExpr> fVariableMap;
-	private final List<ISymbol> fVariables;
-	private final EvalEngine engine;
-
-	private IExpr fExpr;
-
 	static {
 		F.initSymbols(null, null, true);
 	}
+	private Map<ISymbol, IExpr> fVariableMap;
+	private final List<ISymbol> fVariables;
+
+	private final EvalEngine engine;
+
+	private IExpr fExpr;
 
 	/**
 	 * Constructor for an <code>IExpr</code> object evaluator. By default no
@@ -77,8 +77,8 @@ public class ExprEvaluator {
 	 *            stored.
 	 */
 	public ExprEvaluator(EvalEngine engine, boolean outListDisabled, int historyCapacity) {
-		this.fVariableMap = new IdentityHashMap<ISymbol, IExpr>();
-		this.fVariables = new ArrayList<ISymbol>();
+		this.fVariableMap = new IdentityHashMap<>();
+		this.fVariables = new ArrayList<>();
 		this.engine = engine;
 		if (!outListDisabled) {
 			engine.setOutListDisabled(outListDisabled, historyCapacity);
@@ -86,7 +86,12 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Clear all defined variables for this evaluator.
+	 * Clear all <b>local variables</b> defined with the
+	 * <code>defineVariable()</code> method for this evaluator. <b>Note:</b>
+	 * global variables assigned in scripting mode can be cleared with the
+	 * <code>Clear(variable)</code> function.
+	 * 
+	 * @see #defineVariable(ISymbol, IExpr)
 	 */
 	public void clearVariables() {
 		fVariableMap.clear();
@@ -97,8 +102,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable on the local variable stack without assigning a
-	 * value.
+	 * Define a given variable on the <b>local variable stack</b> without
+	 * assigning a value.
 	 * 
 	 * @param variable
 	 * @param value
@@ -108,7 +113,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a double value for a given variable name.
+	 * Define a double value for a given variable name on the <b>local variable
+	 * stack</b> .
 	 * 
 	 * @param variable
 	 * @param value
@@ -118,8 +124,9 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a value for a given variable name. The value is evauate before
-	 * it's assigned to the local variable
+	 * Define a value for a given variable name on the <b>local variable
+	 * stack</b>. The value is evaluated before it's assigned to the local
+	 * variable.
 	 * 
 	 * @param variable
 	 * @param value
@@ -137,7 +144,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable name on the local variable stack without
+	 * Define a given variable name on the <b>local variable stack</b> without
 	 * assigning a value.
 	 * 
 	 * @param variableName
@@ -148,7 +155,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a boolean value for a given variable name.
+	 * Define a boolean value for a given variable name on the< b>local variable
+	 * stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
@@ -158,7 +166,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a double value for a given variable name.
+	 * Define a double value for a given variable name on the< b>local variable
+	 * stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
@@ -168,7 +177,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a value for a given variable name.
+	 * Define a value for a given variable name on the< b>local variable
+	 * stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
@@ -222,8 +232,7 @@ public class ExprEvaluator {
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
-				IExpr temp = evaluate(fExpr);
-				return temp;
+				return evaluate(fExpr);
 			}
 		}
 		return null;
@@ -274,13 +283,10 @@ public class ExprEvaluator {
 	 * @param out
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
-		IExpr parsedExpression = null;
-		// ASTNode node;
+		IExpr parsedExpression;
 		if (inputExpression != null) {
 			ExprParser parser = new ExprParser(EvalEngine.get());
 			parsedExpression = parser.parse(inputExpression);
-			// node = engine.parseNode(inputExpression);
-			// parsedExpression = AST2Expr.CONST.convert(node, engine);
 			return parsedExpression.internalFormString(false, 0);
 		}
 		return "";
@@ -294,13 +300,10 @@ public class ExprEvaluator {
 	 * @param out
 	 */
 	public String toScalaForm(final String inputExpression) throws MathException {
-		IExpr parsedExpression = null;
-		// ASTNode node;
+		IExpr parsedExpression;
 		if (inputExpression != null) {
 			ExprParser parser = new ExprParser(EvalEngine.get());
 			parsedExpression = parser.parse(inputExpression);
-			// node = engine.parseNode(inputExpression);
-			// parsedExpression = AST2Expr.CONST.convert(node, engine);
 			return parsedExpression.internalScalaString(false, 0);
 		}
 		return "";
