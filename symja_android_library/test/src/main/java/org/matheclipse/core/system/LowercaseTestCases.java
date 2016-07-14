@@ -1721,6 +1721,23 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Interval({5,8})>2", "True");
 		check("Interval({3,4})>Pi", "Interval({3,4})>Pi");
 		check("Interval({1,2})>Pi", "False");
+		check("Interval({5,8})<2", "False");
+		check("Interval({3,4})<Pi", "Interval({3,4})<Pi");
+		check("Interval({1,2})<Pi", "True");
+		check("Interval({5,8})>=2", "True");
+		check("Interval({3,4})>=Pi", "Interval({3,4})>=Pi");
+		check("Interval({1,2})>=Pi", "False");
+		check("Interval({5,8})<=2", "False");
+		check("Interval({3,4})<=Pi", "Interval({3,4})<=Pi");
+		check("Interval({1,2})<=Pi", "True");
+		
+		check("Interval({5,8})>Interval({1,2})", "True");
+		check("Interval({3,4})>Interval({Pi,5})", "Interval({3,4})>Interval({Pi,5})");
+		check("Interval({1,2})>Interval({Pi,5})", "False");
+		check("Interval({5,8})<Interval({1,2})", "False");
+		check("Interval({3,4})<Interval({Pi,5})", "Interval({3,4})<Interval({Pi,5})");
+		check("Interval({1,2})<Interval({Pi,5})", "True");
+		
 		check("Limit(Sin(x),x->Infinity)", "Interval({-1,1})");
 		check("Limit(Sin(x),x->-Infinity)", "Interval({-1,1})");
 		check("Limit(Sin(1/x),x->0)", "Interval({-1,1})");

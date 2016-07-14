@@ -1593,6 +1593,12 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isInterval1() {
+		return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
@@ -2094,12 +2100,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isInterval1() {
-		return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isSin() {
 		return isSameHead(F.Sin, 2);
 	}
@@ -2264,6 +2264,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			return new ArrayList<IExpr>();
 		}
 		return subList(1, sz);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr lower() {
+		if (isInterval1()) {
+			return ((IAST) arg1()).arg1();
+		}
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */
@@ -2766,6 +2775,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			throw e;
 		}
 
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr upper() {
+		if (isInterval1()) {
+			return ((IAST) arg1()).arg2();
+		}
+		return F.NIL;
 	}
 
 	/** {@inheritDoc} */

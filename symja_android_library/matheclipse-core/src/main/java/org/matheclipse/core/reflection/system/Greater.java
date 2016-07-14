@@ -23,75 +23,106 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 	}
 
 	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
-	 * will be simplified to <code>x &gt; 2</code>.
+	 * Check assumptions for the comparison operator. Will be overridden in
+	 * <code>GreaterEqual, Less, LessEqual</code>.
 	 * 
-	 * @param a1
-	 *            left-hand-side of the comparator expression
-	 * @param a2
-	 *            right-hand-side of the comparator expression
-	 * @return the simplified comparator expression or <code>null</code> if no
-	 *         simplification was found
+	 * @param arg1
+	 *            the left-hand-side of the comparison
+	 * @param arg2
+	 *            the right-hand-side of the comparison
+	 * @return
 	 */
-	protected IAST simplifyCompare(IExpr a1, IExpr a2) {
-		return simplifyCompare(a1, a2, F.Greater, F.Less);
-	}
-
-	/**
-	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
-	 * wll be simplified to <code>x &gt; 2</code>.
-	 * 
-	 * @param a1
-	 *            left-hand-side of the comparator expression
-	 * @param a2
-	 *            right-hand-side of the comparator expression
-	 * @param originalHead
-	 *            symbol of the comparator operator for which the simplification
-	 *            was started
-	 * @param oppositeHead
-	 *            opposite of the symbol of the comparator operator for which
-	 *            the comparison was started
-	 * @return the simplified comparator expression or <code>F.NIL</code> if no
-	 *         simplification was found
-	 */
-	final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
-		IExpr lhs;
-		IExpr rhs;
-		boolean useOppositeHeader = false;
-		if (a2.isNumericFunction()) {
-			lhs = a1;
-			rhs = a2;
-		} else if (a1.isNumericFunction()) {
-			lhs = a2;
-			rhs = a1;
-			useOppositeHeader = true;
+	protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
+		if (arg2.isNegative()) {
+			// arg1 > "negative number"
+			if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+				return F.True;
+			}
+		} else if (arg2.isZero()) {
+			// arg1 > 0
+			if (arg1.isPositiveResult()) {
+				return F.True;
+			}
+			if (arg1.isNegativeResult()) {
+				return F.False;
+			}
 		} else {
-			lhs = F.eval(F.Subtract(a1, a2));
-			rhs = F.C0;
-		}
-		if (lhs.isAST()) {
-			IAST lhsAST = (IAST) lhs;
-			if (lhsAST.isTimes()) {
-				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
-				if (result[0].size() > 1) {
-					IExpr temp = result[0].getOneIdentity(F.C0);
-					if (temp.isNegative()) {
-						useOppositeHeader = !useOppositeHeader;
-					}
-					rhs = rhs.divide(temp);
-					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
-							oppositeHead);
-				}
-			} else if (lhsAST.isPlus()) {
-				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
-				if (result[0].size() > 1) {
-					rhs = rhs.subtract(result[0].getOneIdentity(F.C0));
-					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
-							oppositeHead);
-				}
+			// arg1 > "positive number" > 0
+			if (arg1.isNegativeResult()) {
+				return F.False;
 			}
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * Compare two intervals if they are greater.
+	 * 
+	 * <ul>
+	 * <li>Return TRUE if the comparison is <code>true</code></li>
+	 * <li>Return FALSE if the comparison is <code>false</code></li>
+	 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be
+	 * evaluated)</li>
+	 * </ul>
+	 * 
+	 * @param lower0
+	 *            the lower bound of the first interval
+	 * @param upper0
+	 *            the upper bound of the first interval
+	 * @param lower1
+	 *            the lower bound of the second interval
+	 * @param upper1
+	 *            the upper bound of the second interval
+	 * @return
+	 */
+	private static IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0, final IExpr upper0,
+			final IExpr lower1, final IExpr upper1) {
+		if (lower0.greaterThan(upper1).isTrue()) {
+			return IExpr.COMPARE_TERNARY.TRUE;
+		} else {
+			if (upper0.lessThan(lower1).isTrue()) {
+				return IExpr.COMPARE_TERNARY.FALSE;
+			}
+		}
+		return IExpr.COMPARE_TERNARY.UNDEFINED;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
+		// don't compare strings
+		if (a0.isSignedNumber()) {
+			if (a1.isSignedNumber()) {
+				return ((ISignedNumber) a0).isGreaterThan((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
+						: IExpr.COMPARE_TERNARY.FALSE;
+			} else if (a1.isInfinity()) {
+				return IExpr.COMPARE_TERNARY.FALSE;
+			} else if (a1.isNegativeInfinity()) {
+				return IExpr.COMPARE_TERNARY.TRUE;
+			} else if (a1.isInterval1()) {
+				return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
+			}
+		} else if (a1.isSignedNumber()) {
+			if (a0.isInfinity()) {
+				return IExpr.COMPARE_TERNARY.TRUE;
+			} else if (a0.isNegativeInfinity()) {
+				return IExpr.COMPARE_TERNARY.FALSE;
+			} else if (a0.isInterval1()) {
+				return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
+			}
+		} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
+			return IExpr.COMPARE_TERNARY.TRUE;
+		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
+			return IExpr.COMPARE_TERNARY.FALSE;
+		} else if (a0.isInterval1() && a1.isInterval1()) {
+			return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
+		}
+
+		if (a0.equals(a1)) {
+			return IExpr.COMPARE_TERNARY.FALSE;
+		}
+
+		return IExpr.COMPARE_TERNARY.UNDEFINED;
 	}
 
 	/**
@@ -179,39 +210,6 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		return F.NIL;
 	}
 
-	/**
-	 * Check assumptions for the comparison operator. Will be overridden in
-	 * <code>GreaterEqual, Less, LessEqual</code>.
-	 * 
-	 * @param arg1
-	 *            the left-hand-side of the comparison
-	 * @param arg2
-	 *            the right-hand-side of the comparison
-	 * @return
-	 */
-	protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
-		if (arg2.isNegative()) {
-			// arg1 > "negative number"
-			if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
-				return F.True;
-			}
-		} else if (arg2.isZero()) {
-			// arg1 > 0
-			if (arg1.isPositiveResult()) {
-				return F.True;
-			}
-			if (arg1.isNegativeResult()) {
-				return F.False;
-			}
-		} else {
-			// arg1 > "positive number" > 0
-			if (arg1.isNegativeResult()) {
-				return F.False;
-			}
-		}
-		return F.NIL;
-	}
-
 	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
 		IExpr a0 = o0;
 		IExpr a1 = o1;
@@ -229,63 +227,80 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 		return compareTernary(a0, a1);
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
-		// don't compare strings
-		if (a0.isSignedNumber()) {
-			if (a1.isSignedNumber()) {
-				return ((ISignedNumber) a0).isGreaterThan((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
-						: IExpr.COMPARE_TERNARY.FALSE;
-			} else if (a1.isInfinity()) {
-				return IExpr.COMPARE_TERNARY.FALSE;
-			} else if (a1.isNegativeInfinity()) {
-				return IExpr.COMPARE_TERNARY.TRUE;
-			}
-		} else if (a1.isSignedNumber()) {
-			if (a0.isInfinity()) {
-				return IExpr.COMPARE_TERNARY.TRUE;
-			} else if (a0.isNegativeInfinity()) {
-				return IExpr.COMPARE_TERNARY.FALSE;
-			}
-		} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
-			return IExpr.COMPARE_TERNARY.TRUE;
-		} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
-			return IExpr.COMPARE_TERNARY.FALSE;
-		}
-
-		if (a0.equals(a1)) {
-			return IExpr.COMPARE_TERNARY.FALSE;
-		}
-
-		if (a0.isInterval1() && a1.isSignedNumber()) {
-			return compareIntervalTernary(a0, a1);
-		}
-
-		return IExpr.COMPARE_TERNARY.UNDEFINED;
-	}
-
-	public IExpr.COMPARE_TERNARY compareIntervalTernary(final IExpr a0, final IExpr a1) {
-		IExpr temp = a0.getAt(1).getAt(1);
-		if (temp.isSignedNumber()) {
-			IExpr.COMPARE_TERNARY cr = compareTernary(temp, a1);
-			if (cr == IExpr.COMPARE_TERNARY.TRUE) {
-				return IExpr.COMPARE_TERNARY.TRUE;
-			} else if (cr == IExpr.COMPARE_TERNARY.FALSE) {
-				temp = a0.getAt(1).getAt(2);
-				if (temp.isSignedNumber()) {
-					cr = compareTernary(temp, a1);
-					if (cr == IExpr.COMPARE_TERNARY.FALSE) {
-						return IExpr.COMPARE_TERNARY.FALSE;
-					}
-				}
-			}
-		}
-		return IExpr.COMPARE_TERNARY.UNDEFINED;
-	}
-
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.FLAT);
+	}
+
+	/**
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
+	 * will be simplified to <code>x &gt; 2</code>.
+	 * 
+	 * @param a1
+	 *            left-hand-side of the comparator expression
+	 * @param a2
+	 *            right-hand-side of the comparator expression
+	 * @return the simplified comparator expression or <code>null</code> if no
+	 *         simplification was found
+	 */
+	protected IAST simplifyCompare(IExpr a1, IExpr a2) {
+		return simplifyCompare(a1, a2, F.Greater, F.Less);
+	}
+
+	/**
+	 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
+	 * wll be simplified to <code>x &gt; 2</code>.
+	 * 
+	 * @param a1
+	 *            left-hand-side of the comparator expression
+	 * @param a2
+	 *            right-hand-side of the comparator expression
+	 * @param originalHead
+	 *            symbol of the comparator operator for which the simplification
+	 *            was started
+	 * @param oppositeHead
+	 *            opposite of the symbol of the comparator operator for which
+	 *            the comparison was started
+	 * @return the simplified comparator expression or <code>F.NIL</code> if no
+	 *         simplification was found
+	 */
+	final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
+		IExpr lhs;
+		IExpr rhs;
+		boolean useOppositeHeader = false;
+		if (a2.isNumericFunction()) {
+			lhs = a1;
+			rhs = a2;
+		} else if (a1.isNumericFunction()) {
+			lhs = a2;
+			rhs = a1;
+			useOppositeHeader = true;
+		} else {
+			lhs = F.eval(F.Subtract(a1, a2));
+			rhs = F.C0;
+		}
+		if (lhs.isAST()) {
+			IAST lhsAST = (IAST) lhs;
+			if (lhsAST.isTimes()) {
+				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
+				if (result[0].size() > 1) {
+					IExpr temp = result[0].getOneIdentity(F.C0);
+					if (temp.isNegative()) {
+						useOppositeHeader = !useOppositeHeader;
+					}
+					rhs = rhs.divide(temp);
+					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
+							oppositeHead);
+				}
+			} else if (lhsAST.isPlus()) {
+				IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
+				if (result[0].size() > 1) {
+					rhs = rhs.subtract(result[0].getOneIdentity(F.C0));
+					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
+							oppositeHead);
+				}
+			}
+		}
+		return F.NIL;
 	}
 }

@@ -1806,6 +1806,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
+	 * <code>lower</code> value. If this is a <code>ISignedNUmber</code>
+	 * expression return <code>this</code>.
+	 * 
+	 * @return <code>F.NIL</code> if this expression is no interval and no
+	 *         signed number.
+	 */
+	default public IExpr lower() {
+		return F.NIL;
+	}
+
+	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this - that)</code>.
 	 * Calculates <code>F.eval(F.Plus(this, F.Times(F.CN1, that)))</code> in the
 	 * common case and uses a specialized implementation for derived number
@@ -2098,6 +2110,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr unequalTo(IExpr that) {
 		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Unequal.CONST.compareTernary(this, that);
 		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
+	 * <code>upper</code> value. If this is a <code>ISignedNUmber</code>
+	 * expression return <code>this</code>.
+	 * 
+	 * @return <code>F.NIL</code> if this expression is no interval and no
+	 *         signed number.
+	 */
+	default public IExpr upper() {
+		return F.NIL;
 	}
 
 	/**
