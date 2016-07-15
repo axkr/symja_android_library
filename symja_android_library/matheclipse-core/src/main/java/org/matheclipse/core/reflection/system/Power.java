@@ -33,12 +33,77 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	 */
 	public final static Power CONST = new Power();
 
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
+	/**
+	 * <p>
+	 * Calculate <code>interval({lower, upper}) ^ exponent</code>.
+	 * </p>
+	 * <p>
+	 * See: <a href=
+	 * "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen">
+	 * Intervallarithmetik - Elementare Funktionen</a>
+	 * </p>
+	 * 
+	 * @param interval
+	 * @param exponent
+	 * @return
+	 */
+	private static IExpr powerInterval(final IExpr interval, IInteger exponent) {
+		if (exponent.isNegative()) {
+			if (exponent.isMinusOne()) {
+				// TODO implement division
+				return F.NIL;
+			}
+			return F.Power(powerIntervalPositiveExponent(interval, exponent.negate()), F.CN1);
+		}
+		return powerIntervalPositiveExponent(interval, exponent);
+	}
+
+	private static IExpr powerIntervalPositiveExponent(final IExpr interval, IInteger exponent) {
+		if (exponent.isEven()) {
+			if (!interval.lower().isNegativeResult()) {
+				return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
+			} else {
+				if (interval.upper().isNegativeResult()) {
+					return F.Interval(F.List(interval.upper().power(exponent), interval.lower().power(exponent)));
+				}
+				return F.Interval(
+						F.List(F.C0, F.Max(interval.lower().power(exponent), interval.upper().power(exponent))));
+			}
+		}
+		return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
 	}
 
 	public Power() {
+	}
+
+	/**
+	 * Split this integer into the nth-root (with prime factors less equal 1021)
+	 * and the &quot;rest factor&quot;
+	 * 
+	 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the
+	 *         root is not available
+	 */
+	private IInteger[] calculateRoot(IInteger a, IInteger root) {
+		try {
+			int n = root.toInt();
+			if (n > 0) {
+				if (a.isOne()) {
+					return null;
+				}
+				if (a.isMinusOne()) {
+					return null;
+				}
+				IInteger[] result = a.nthRootSplit(n);
+				if (result[1].equals(a)) {
+					// no roots found
+					return null;
+				}
+				return result;
+			}
+		} catch (ArithmeticException e) {
+
+		}
+		return null;
 	}
 
 	@Override
@@ -47,18 +112,13 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	}
 
 	@Override
-	public IExpr e2DblComArg(final IComplexNum c0, final IComplexNum c1) {
-		return c0.pow(c1);
+	public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
+		return af0.pow(af1);
 	}
 
 	@Override
 	public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
 		return F.NIL;
-	}
-
-	@Override
-	public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
-		return af0.pow(af1);
 	}
 
 	@Override
@@ -76,6 +136,118 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	}
 
 	@Override
+	public IExpr e2DblComArg(final IComplexNum c0, final IComplexNum c1) {
+		return c0.pow(c1);
+	}
+
+	@Override
+	public IExpr e2FraArg(IFraction f0, IFraction f1) {
+		if (f0.getNumerator().isZero()) {
+			return F.C0;
+		}
+
+		if (f1.getNumerator().isZero()) {
+			return F.C1;
+		}
+
+		if (f1.equals(F.C1D2)) {
+			if (f0.isNegative()) {
+				return F.Times(F.CI, F.Power(f0.negate(), f1));
+			}
+		}
+
+		if (f1.equals(F.CN1D2)) {
+			if (f0.isNegative()) {
+				return F.Times(F.CNI, F.Power(f0.negate().inverse(), f1.negate()));
+			}
+		}
+
+		if (!f1.getDenominator().isOne()) {
+			IInteger a;
+			IInteger b;
+			IFraction f0Temp = f0;
+			if (f0.sign() < 0) {
+				f0Temp = (IFraction) f0Temp.negate();
+			}
+			if (f1.isNegative()) {
+				a = f0Temp.getDenominator();
+				b = f0Temp.getNumerator();
+			} else {
+				a = f0Temp.getNumerator();
+				b = f0Temp.getDenominator();
+			}
+
+			// example: (-27)^(2/3) or 8^(1/3)
+			if (!f1.getNumerator().isOne()) {
+				try {
+					int exp = f1.getNumerator().toInt();
+					if (exp < 0) {
+						exp *= (-1);
+					}
+					a = a.pow(exp);
+					b = b.pow(exp);
+				} catch (ArithmeticException e) {
+					return F.NIL;
+				}
+			}
+
+			final IInteger root = f1.getDenominator();
+
+			IInteger[] new_numer = calculateRoot(a, root);
+			IInteger[] new_denom = calculateRoot(b, root);
+			final IFraction new_root = F.fraction(C1, root);
+
+			if (new_numer != null) {
+				if (new_denom != null) {
+					IRational p0 = null;
+					if (new_denom[1].isOne()) {
+						p0 = new_numer[1];
+					} else {
+						p0 = fraction(new_numer[1], new_denom[1]);
+					}
+					if (f0.sign() < 0) {
+						return Times(fraction(new_numer[0], new_denom[0]), Power(p0.negate(), new_root));
+					}
+					return Times(fraction(new_numer[0], new_denom[0]), Power(p0, new_root));
+				} else {
+					if (a.isOne()) {
+						return F.NIL;
+					}
+					IRational p0 = null;
+					if (b.isOne()) {
+						p0 = new_numer[1];
+					} else {
+						p0 = fraction(new_numer[1], b);
+					}
+					if (f0.sign() < 0) {
+						return Times(new_numer[0], Power(p0.negate(), new_root));
+					}
+					return Times(new_numer[0], Power(p0, new_root));
+				}
+			} else {
+				if (new_denom != null) {
+					if (b.isOne()) {
+						return F.NIL;
+					}
+					IRational p0 = null;
+					if (new_denom[1].isOne()) {
+						p0 = a;
+					} else {
+						p0 = F.fraction(a, new_denom[1]);
+					}
+					if (f0.sign() < 0) {
+						return Times(fraction(C1, new_denom[0]), Power(p0.negate(), new_root));
+					}
+					return Times(fraction(C1, new_denom[0]), Power(p0, new_root));
+				}
+			}
+
+			return F.NIL;
+		}
+		return f0.power(f1);
+	}
+
+	@Override
 	public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
 		if (i0.isZero()) {
 			// all other cases see e2ObjArg
@@ -87,6 +259,51 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			return i0.power(n);
 		} catch (ArithmeticException ae) {
 
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * 
+	 * @param arg1
+	 *            a number
+	 * @param arg2
+	 *            must be a <code>DirectedInfinity[...]</code> expression
+	 * @return
+	 */
+	private IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
+		int comp = arg1.compareAbsValueToOne();
+		switch (comp) {
+		case 1:
+			// Abs(arg1) > 1
+			if (arg2.isInfinity()) {
+				// arg1 ^ Inf
+				if (arg1.isSignedNumber() && arg1.isPositive()) {
+					return F.CInfinity;
+				}
+				// complex or negative numbers
+				return F.CComplexInfinity;
+			}
+			if (arg2.isNegativeInfinity()) {
+				// arg1 ^ (-Inf)
+				return F.C0;
+			}
+			break;
+		case -1:
+			// Abs(arg1) < 1
+			if (arg2.isInfinity()) {
+				// arg1 ^ Inf
+				return F.C0;
+			}
+			if (arg2.isNegativeInfinity()) {
+				// arg1 ^ (-Inf)
+				if (arg1.isSignedNumber() && arg1.isPositive()) {
+					return F.CInfinity;
+				}
+				// complex or negative numbers
+				return F.CComplexInfinity;
+			}
+			break;
 		}
 		return F.NIL;
 	}
@@ -212,6 +429,12 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			}
 
 			return F.NIL;
+		}
+		if (arg1.isInterval1()) {
+			if (arg2.isInteger()) {
+				IInteger ii = (IInteger) arg2;
+				return powerInterval(arg1, ii);
+			}
 		}
 
 		if (arg2.isZero()) {
@@ -346,201 +569,6 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		return F.NIL;
 	}
 
-	/**
-	 * 
-	 * @param arg1
-	 *            a number
-	 * @param arg2
-	 *            must be a <code>DirectedInfinity[...]</code> expression
-	 * @return
-	 */
-	private IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
-		int comp = arg1.compareAbsValueToOne();
-		switch (comp) {
-		case 1:
-			// Abs(arg1) > 1
-			if (arg2.isInfinity()) {
-				// arg1 ^ Inf
-				if (arg1.isSignedNumber() && arg1.isPositive()) {
-					return F.CInfinity;
-				}
-				// complex or negative numbers
-				return F.CComplexInfinity;
-			}
-			if (arg2.isNegativeInfinity()) {
-				// arg1 ^ (-Inf)
-				return F.C0;
-			}
-			break;
-		case -1:
-			// Abs(arg1) < 1
-			if (arg2.isInfinity()) {
-				// arg1 ^ Inf
-				return F.C0;
-			}
-			if (arg2.isNegativeInfinity()) {
-				// arg1 ^ (-Inf)
-				if (arg1.isSignedNumber() && arg1.isPositive()) {
-					return F.CInfinity;
-				}
-				// complex or negative numbers
-				return F.CComplexInfinity;
-			}
-			break;
-		}
-		return F.NIL;
-	}
-
-	@Override
-	public IExpr e2FraArg(IFraction f0, IFraction f1) {
-		if (f0.getNumerator().isZero()) {
-			return F.C0;
-		}
-
-		if (f1.getNumerator().isZero()) {
-			return F.C1;
-		}
-
-		if (f1.equals(F.C1D2)) {
-			if (f0.isNegative()) {
-				return F.Times(F.CI, F.Power(f0.negate(), f1));
-			}
-		}
-
-		if (f1.equals(F.CN1D2)) {
-			if (f0.isNegative()) {
-				return F.Times(F.CNI, F.Power(f0.negate().inverse(), f1.negate()));
-			}
-		}
-
-		if (!f1.getDenominator().isOne()) {
-			IInteger a;
-			IInteger b;
-			IFraction f0Temp = f0;
-			if (f0.sign() < 0) {
-				f0Temp = (IFraction) f0Temp.negate();
-			}
-			if (f1.isNegative()) {
-				a = f0Temp.getDenominator();
-				b = f0Temp.getNumerator();
-			} else {
-				a = f0Temp.getNumerator();
-				b = f0Temp.getDenominator();
-			}
-
-			// example: (-27)^(2/3) or 8^(1/3)
-			if (!f1.getNumerator().isOne()) {
-				try {
-					int exp = f1.getNumerator().toInt();
-					if (exp < 0) {
-						exp *= (-1);
-					}
-					a = a.pow(exp);
-					b = b.pow(exp);
-				} catch (ArithmeticException e) {
-					return F.NIL;
-				}
-			}
-
-			final IInteger root = f1.getDenominator();
-
-			IInteger[] new_numer = calculateRoot(a, root);
-			IInteger[] new_denom = calculateRoot(b, root);
-			final IFraction new_root = F.fraction(C1, root);
-
-			if (new_numer != null) {
-				if (new_denom != null) {
-					IRational p0 = null;
-					if (new_denom[1].isOne()) {
-						p0 = new_numer[1];
-					} else {
-						p0 = fraction(new_numer[1], new_denom[1]);
-					}
-					if (f0.sign() < 0) {
-						return Times(fraction(new_numer[0], new_denom[0]), Power(p0.negate(), new_root));
-					}
-					return Times(fraction(new_numer[0], new_denom[0]), Power(p0, new_root));
-				} else {
-					if (a.isOne()) {
-						return F.NIL;
-					}
-					IRational p0 = null;
-					if (b.isOne()) {
-						p0 = new_numer[1];
-					} else {
-						p0 = fraction(new_numer[1], b);
-					}
-					if (f0.sign() < 0) {
-						return Times(new_numer[0], Power(p0.negate(), new_root));
-					}
-					return Times(new_numer[0], Power(p0, new_root));
-				}
-			} else {
-				if (new_denom != null) {
-					if (b.isOne()) {
-						return F.NIL;
-					}
-					IRational p0 = null;
-					if (new_denom[1].isOne()) {
-						p0 = a;
-					} else {
-						p0 = F.fraction(a, new_denom[1]);
-					}
-					if (f0.sign() < 0) {
-						return Times(fraction(C1, new_denom[0]), Power(p0.negate(), new_root));
-					}
-					return Times(fraction(C1, new_denom[0]), Power(p0, new_root));
-				}
-			}
-
-			return F.NIL;
-		}
-		return f0.power(f1);
-	}
-
-	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest factor&quot;
-	 * 
-	 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the
-	 *         root is not available
-	 */
-	private IInteger[] calculateRoot(IInteger a, IInteger root) {
-		try {
-			int n = root.toInt();
-			if (n > 0) {
-				if (a.isOne()) {
-					return null;
-				}
-				if (a.isMinusOne()) {
-					return null;
-				}
-				IInteger[] result = a.nthRootSplit(n);
-				if (result[1].equals(a)) {
-					// no roots found
-					return null;
-				}
-				return result;
-			}
-		} catch (ArithmeticException e) {
-
-		}
-		return null;
-	}
-
-	@Override
-	public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
-		if (c0.isZero()) {
-			return F.C0;
-		}
-
-		if (i1.isZero()) {
-			return F.C1;
-		}
-
-		return c0.pow(i1.getBigNumerator().intValue());
-	}
-
 	@Override
 	public IExpr eComFraArg(final IComplex c0, final IFraction i1) {
 		if (i1.equals(F.C1D2) && c0.getRealPart().isZero()) {
@@ -565,11 +593,17 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		return F.NIL;
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
+		if (c0.isZero()) {
+			return F.C0;
+		}
+
+		if (i1.isZero()) {
+			return F.C1;
+		}
+
+		return c0.pow(i1.getBigNumerator().intValue());
 	}
 
 	@Override
@@ -578,5 +612,17 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			throw new UnsupportedOperationException();
 		}
 		return Math.pow(stack[top - 1], stack[top]);
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.NUMERICFUNCTION);
+		super.setUp(symbol);
 	}
 }

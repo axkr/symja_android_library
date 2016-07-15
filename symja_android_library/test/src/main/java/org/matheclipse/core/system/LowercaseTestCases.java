@@ -1709,6 +1709,13 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testInterval() {
+		//https://de.wikipedia.org/wiki/Intervallarithmetik
+		check("Interval({-2, 5})^2","Interval({0,25})");
+		check("Interval({-7, 5})^2","Interval({0,49})");
+		check("Interval({-2, 5})^(-2)","1/Interval({0,25})");
+		check("Interval({2, 5})^2","Interval({4,25})");
+		check("Interval({-2, 5})^3","Interval({-8,125})");
+		check("Interval({-10, -5})^2","Interval({25,100})");
 		check("Pi>3", "True");
 		check("3>Pi", "False");
 		check("Pi<3", "False");
