@@ -48,9 +48,9 @@ public class MathMLPresentationTestCase extends TestCase {
 
 		check("a*b+c", "<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi></mrow></mrow>");
 		check("a*b+c-2",
-				"<mrow><mrow><mo>-</mo><mn>2</mn></mrow><mo>+</mo><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi></mrow></mrow>");
+				"<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi></mrow><mo>-</mo><mn>2</mn></mrow>");
 		check("a*b+c-2-d",
-				"<mrow><mrow><mo>-</mo><mi>d</mi></mrow><mo>-</mo><mn>2</mn><mo>+</mo><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi></mrow></mrow>");
+				"<mrow><mrow><mo>-</mo><mi>d</mi></mrow><mo>+</mo><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#x2062;</mo><mi>b</mi></mrow><mo>-</mo><mn>2</mn></mrow>");
 
 		check("a*(b+c)",
 				"<mrow><mi>a</mi><mo>&#x2062;</mo><mrow><mrow><mo>(</mo><mi>c</mi><mo>+</mo><mi>b</mi><mo>)</mo></mrow></mrow></mrow>");

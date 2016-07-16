@@ -67,7 +67,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX010() {
 		check("3+x*(4+x*(5+(33+x^2)*x^4))",
-				"3+\\left( 4+\\left( 5+\\left( 33+x^{2}\\right) \\,x^{4}\\right) \\,x\\right) \\,x");
+				"3+x\\,\\left( 4+x\\,\\left( 5+\\left( 33+x^{2}\\right) \\,x^{4}\\right) \\right) ");
 	}
 
 	public void testTeX011() {
@@ -135,9 +135,10 @@ public class BasicTeXTestCase extends TestCase {
 	}
 	
 	public void testTeX021() {
+		check("-Infinity", " - \\infty");
 		check("GoldenRatio", "\\phi");
 		check("Infinity", "\\infty");
-		check("-Infinity", " - \\infty");
+		
 		check("EulerGamma", "\\gamma");
 		check("Pi", "\\pi");
 //		check("E", "E");

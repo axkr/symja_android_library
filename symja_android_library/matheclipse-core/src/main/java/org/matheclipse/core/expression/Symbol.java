@@ -173,51 +173,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			}
 			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
-		if (expr.isAST()) {
-			return compareToAST((IAST) expr);
-		}
 		return super.compareTo(expr);
-	}
-
-	private int compareToAST(final IAST ast) {
-		if (ast.isAST(F.DirectedInfinity)) {
-			return 1;
-		}
-
-		if (ast.size() > 1) {
-			if (ast.isPlus()) {
-				return 1;
-			} else if (ast.isPower()) {
-				if (ast.arg1() instanceof ISymbol) {
-					final int cp = fSymbolName.compareTo(((Symbol) ast.arg1()).fSymbolName);
-					if (cp != 0) {
-						return cp;
-					}
-					if (EvalEngine.get().isNumericMode()) {
-						return F.CD1.compareTo(ast.arg2());
-					}
-					return F.C1.compareTo(ast.arg2());
-				}
-			} else if (ast.isTimes()) {
-				// compare with the last ast element:
-				final IExpr lastTimes = ast.last();
-				if (lastTimes.isPower()) {
-					final int cp = compareTo(((IAST) lastTimes).arg1());
-					if (cp != 0) {
-						return cp;
-					}
-					// "x^1" compared to "x^arg2()"
-					return F.C1.compareTo(((IAST) lastTimes).arg2());
-				}
-				if (lastTimes.isSymbol()) {
-					final int cp = compareTo(lastTimes);
-					if (cp != 0) {
-						return cp;
-					}
-				}
-			}
-		}
-		return -1;
 	}
 
 	/** {@inheritDoc} */

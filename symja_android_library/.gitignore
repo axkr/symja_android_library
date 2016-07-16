@@ -1,3 +1,4 @@
 proguard.map
 /bin
 /build
+/dump/

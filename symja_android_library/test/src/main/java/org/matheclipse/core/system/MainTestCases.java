@@ -874,13 +874,13 @@ public class MainTestCases extends AbstractTestCase {
 
 	public void testSystem081() {
 		check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})",
-				"{{(5+2*s-4*s^2-s^3)/((1+s)*(10-s-4*s^2-s^3)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n"
-						+ "5+6*s+s^2)/((-10+s+4*s^2+s^3)*(1+s))},\n"
-						+ " {((-40+7*s+15*s^2+4*s^3)*(1+s))/((8+5*s+s^2)*(10+9*s-5*s^2-5*s^3-s^4)),((-16-10*s+\n"
-						+ "6*s^2+5*s^3+s^4)*(1+s))/((-10-9*s+5*s^2+5*s^3+s^4)*(8+5*s+s^2)),(3-s)/(10-s-4*s^\n"
-						+ "2-s^3)},\n"
-						+ " {((8+5*s+s^2)*s)/((-8-5*s-s^2)*(10-s-4*s^2-s^3)),((-1-s)*(2+s))/((1+s)*(10-s-4*s^\n"
-						+ "2-s^3)),(-8-5*s-s^2)/(10-s-4*s^2-s^3)}}");
+				"{{(5+2*s-4*s^2-s^3)/((1+s)*(10-s-4*s^2-s^3)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n" + 
+				"5+6*s+s^2)/((-10+s+4*s^2+s^3)*(1+s))},\n" + 
+				" {((-40+7*s+15*s^2+4*s^3)*(1+s))/((8+5*s+s^2)*(10+9*s-5*s^2-5*s^3-s^4)),((-16-10*s+\n" + 
+				"6*s^2+5*s^3+s^4)*(1+s))/((-10-9*s+5*s^2+5*s^3+s^4)*(8+5*s+s^2)),(3-s)/(10-s-4*s^\n" + 
+				"2-s^3)},\n" + 
+				" {(s*(8+5*s+s^2))/((-8-5*s-s^2)*(10-s-4*s^2-s^3)),((-1-s)*(2+s))/((1+s)*(10-s-4*s^\n" + 
+				"2-s^3)),(-8-5*s-s^2)/(10-s-4*s^2-s^3)}}");
 		check("Inverse(s*({{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}}))", "{{1/(4*s),-1/(4*s),-3/2*1/s},\n"
 				+ " {-1/(4*s),1/(4*s),1/(2*s)},\n" + " {-1/(4*s),-3/4*1/s,-7/2*1/s}}");
 		check("N(Inverse({{1,2.0},{3,4}}),50)", "{{-2,1},\n" + " {1.5,-5e-1}}");
@@ -1525,7 +1525,7 @@ public class MainTestCases extends AbstractTestCase {
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)",
 				"-0.020833333333333332");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", "-0.020833333333333332");
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.020833333333333343");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.02083333333333334");
 
 	}
 
@@ -1534,12 +1534,12 @@ public class MainTestCases extends AbstractTestCase {
 		check("Integrate(Cos(x*(a+b)),x)", "Sin((a+b)*x)/(a+b)");
 		check("Integrate(Cos(a*x)*Sin(b*x),x)", "-Cos((a+b)*x)/(2*(a+b))-Cos((-a+b)*x)/(2*(-a+b))");
 		check("Integrate(Cos(a*x)*Sin(b*x)^2,x)",
-				"-Sin((a-2*b)*x)/(4*(a-2*b))-Sin((a+2*b)*x)/(4*(a+2*b))+Sin(a*x)/(2*a)");
+				"Sin(a*x)/(2*a)-Sin(x*(a-2*b))/(4*(a-2*b))-Sin(x*(a+2*b))/(4*(a+2*b))");
 		check("Integrate(Cos(a*x)^2*Sin(b*x),x)",
-				"-Cos((-2*a+b)*x)/(4*(-2*a+b))-Cos((2*a+b)*x)/(4*(2*a+b))-Cos(b*x)/(2*b)");
+				"-Cos(b*x)/(2*b)-Cos((-2*a+b)*x)/(4*(-2*a+b))-Cos((2*a+b)*x)/(4*(2*a+b))");
 		check("Integrate(Cos(b*x)^2*Sin(a*x)^2,x)",
-				"x/4-Sin((2*a-2*b)*x)/(8*(2*a-2*b))-Sin((2*a+2*b)*x)/(8*(2*a+2*b))-Sin(2*a*x)/(8*a)+Sin(\n"
-						+ "2*b*x)/(8*b)");
+				"x/4-Sin(2*a*x)/(8*a)+Sin(2*b*x)/(8*b)-Sin(x*(2*a-2*b))/(8*(2*a-2*b))-Sin(x*(2*a+\n" + 
+				"2*b))/(8*(2*a+2*b))");
 	}
 
 	public void testSystem173() {
@@ -1634,7 +1634,7 @@ public class MainTestCases extends AbstractTestCase {
 
 	public void testSystem193() {
 		check("Sum(x,{x,10})", "55");
-		check("Sum(x,{a,10,z})", "(-9+z)*x");
+		check("Sum(x,{a,10,z})", "x*(-9+z)");
 		check("Sum(x,{x,1,1})", "1");
 		check("Sum(x,{x,3,2,-1})", "5");
 		check("Sum(x,{x,10,3,-4})", "16");
@@ -1643,7 +1643,7 @@ public class MainTestCases extends AbstractTestCase {
 		check("Sum(x,{x,2,3,-1})", "0");
 		// 1*1 + 2*1 + 3*1 + 2*2 + 2*3 + 3*3
 		check("Sum(x*y, {x, 1, 3}, {y, 1, x})", "25");
-		check("Sum(k+a,{k,1,n})", "1/2*(1+n)*n+a*n");
+		check("Sum(k+a,{k,1,n})", "a*n+1/2*n*(1+n)");
 	}
 
 	public void testSystem194() {
@@ -2769,9 +2769,9 @@ public class MainTestCases extends AbstractTestCase {
 		check("Expand(1/2*((b^2*c^2-12)^(1/2)-b*c))", "-1/2*b*c+Sqrt(-12+b^2*c^2)/2");
 
 		check("ExpandAll(3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0)))", "3.0+4.0*x+5.0*x^2.0+33.0*x^6.0+x^8.0");
-		check("Horner(3+4*x+5*x^2+33*x^6.0+x^8)", "3.0+(4.0+(5.0+(33.0+x^2.0)*x^4.0)*x)*x");
+		check("Horner(3+4*x+5*x^2+33*x^6.0+x^8)", "3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0))");
 		check("ExpandAll(3+x*(4+x*(5+(33+x^2)*x^4)))", "3+4*x+5*x^2+33*x^6+x^8");
-		check("Horner(3+4*x+5*x^2+33*x^6+x^8)", "3+(4+(5+(33+x^2)*x^4)*x)*x");
+		check("Horner(3+4*x+5*x^2+33*x^6+x^8)", "3+x*(4+x*(5+(33+x^2)*x^4))");
 	}
 
 	public void testSystem402() {
@@ -2939,8 +2939,8 @@ public class MainTestCases extends AbstractTestCase {
 		check("Limit(Pi^42,x->42)", "Pi^42");
 		check("Limit(x,x->42)", "42");
 		check("Limit(a+b+2*x,x->42)", "84+a+b");
-		check("Limit(a+b+2*x,x->Infinity)", "Infinity+a+b");
-		check("Limit(a+b+2*x,x->-Infinity)", "-Infinity+a+b");
+		check("Limit(a+b+2*x,x->Infinity)", "a+b+Infinity");
+		check("Limit(a+b+2*x,x->-Infinity)", "a+b+-Infinity");
 		check("Limit(-x,x->Infinity)", "-Infinity");
 		check("Limit(x-x,x->Infinity)", "0");
 		check("Limit((x^2-3*x+2)/(x-1),x->1)", "-1");
@@ -2990,8 +2990,8 @@ public class MainTestCases extends AbstractTestCase {
 		check("TrigToExp(a+b+Sin(c+d))", "(I*1/2)/E^(I*(c+d))-I*1/2*E^(I*(c+d))+a+b");
 		check("TrigToExp(Cos(x)+f(a))", "1/(2*E^(I*x))+E^(I*x)/2+f(a)");
 		check("TrigToExp(Tan(x))", "(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
-		check("TrigToExp(ArcSin(x))", "-I*Log(Sqrt(1-x^2)+I*x)");
-		check("TrigToExp(ArcCos(x))", "Pi/2+I*Log(Sqrt(1-x^2)+I*x)");
+		check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");
+		check("TrigToExp(ArcCos(x))", "Pi/2+I*Log(I*x+Sqrt(1-x^2))");
 		check("TrigToExp(ArcTan(x))", "I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)");
 	}
 

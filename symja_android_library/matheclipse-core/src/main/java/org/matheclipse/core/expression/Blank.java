@@ -128,12 +128,37 @@ public class Blank extends ExprImpl implements IPattern {
 	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof Blank) {
-			Blank pat = ((Blank) expr);
-			if (fCondition == null) {
-				return (pat.fCondition != null) ? -1 : 0;
-			} else {
-				return (pat.fCondition == null) ? 1 : fCondition.compareTo(pat.fCondition);
+			Blank blank = ((Blank) expr);
+			if (fDefault != blank.fDefault) {
+				return fDefault ? 1 : -1;
 			}
+			if (fCondition == null) {
+				if (blank.fCondition != null) {
+					return -1;
+				}
+			} else {
+				if (blank.fCondition == null) {
+					return 1;
+				}
+				int result = fCondition.compareTo(blank.fCondition);
+				if (result != 0) {
+					return result;
+				}
+			}
+			if (fDefaultValue == null) {
+				if (blank.fDefaultValue != null) {
+					return -1;
+				}
+			} else {
+				if (blank.fDefaultValue == null) {  
+					return 1;
+				}
+				int result = fDefaultValue.compareTo(blank.fDefaultValue);
+				if (result != 0) {
+					return result;
+				}
+			}
+			return 0;
 		}
 		return super.compareTo(expr);
 	}

@@ -109,9 +109,6 @@ public class Pattern extends Blank {
 			if (cp != 0) {
 				return cp;
 			}
-			if (fDefault != pat.fDefault) {
-				return fDefault ? 1 : -1;
-			}
 		}
 		return super.compareTo(expr);
 	}

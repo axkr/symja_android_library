@@ -1655,11 +1655,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a symbol
+	 * Test if this expression is a symbol (instanceof ISymbol)
 	 * 
 	 */
 	default boolean isSymbol() {
 		return this instanceof ISymbol;
+	}
+
+	/**
+	 * Test if this expression is a symbol (instanceof ISymbol) or a pattern
+	 * object (instanceof IPatternObject)
+	 * 
+	 */
+	default boolean isSymbolOrPatternObject() {
+		return this instanceof ISymbol || this instanceof IPatternObject;
 	}
 
 	/**

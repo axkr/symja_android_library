@@ -179,27 +179,30 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			// compare from the last this (Times) element:
 			final IExpr lastTimes = lhsAST.get(lhsAST.size() - 1);
 			int cp;
-			if (!(lastTimes instanceof IAST)) {
+			if (lastTimes.isSymbolOrPatternObject()) {
 				cp = lastTimes.compareTo(rhsAST.arg1());
 				if (cp != 0) {
 					return cp;
 				}
-				return F.C1.compareTo(rhsAST.arg2());
-			} else {
-				if (lastTimes.isPower()) {
-					// compare 2 Power ast's
-					cp = ((IAST) lastTimes).arg1().compareTo(rhsAST.arg1());
-					if (cp != 0) {
-						return cp;
-					}
-					cp = ((IAST) lastTimes).arg2().compareTo(rhsAST.arg2());
-					if (cp != 0) {
-						return cp;
-					}
-					return 1;
-				} else {
-					return compareToAST(lhsAST, rhsAST);
+				IExpr arg2 = rhsAST.arg2();
+				if (arg2.isNumeric()) {
+					return F.CD1.compareTo(arg2);
 				}
+				return F.C1.compareTo(arg2);
+				// return F.C1.compareTo(rhsAST.arg2());
+			} else if (lastTimes.isPower()) {
+				// compare 2 Power ast's
+				cp = ((IAST) lastTimes).arg1().compareTo(rhsAST.arg1());
+				if (cp != 0) {
+					return cp;
+				}
+				cp = ((IAST) lastTimes).arg2().compareTo(rhsAST.arg2());
+				if (cp != 0) {
+					return cp;
+				}
+				return 1;
+			} else {
+				return compareToAST(lhsAST, rhsAST);
 			}
 		} else if (rhsAST.isTimes()) {
 			// compare from the last element:
@@ -217,6 +220,52 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 
 		return compareToAST(lhsAST, rhsAST);
+	}
+
+	/**
+	 * Compares lhsTimesAST (Times) AST with the specified rhsSymbolOrPattern
+	 * for order. Returns a negative integer, zero, or a positive integer as
+	 * lhsTimesAST (Times) AST is canonical less than, equal to, or greater than
+	 * the specified AST.
+	 */
+	private static int compareToTimesExpr(final IAST lhsTimesAST, final IExpr rhsSymbolOrPattern) {
+		// compare from the last this (Times) element:
+		final IExpr lastTimes = lhsTimesAST.get(lhsTimesAST.size() - 1);
+		int cp;
+		if (!(lastTimes instanceof IAST)) {
+			cp = lastTimes.compareTo(rhsSymbolOrPattern);
+			if (cp != 0) {
+				return cp;
+			}
+		} else {
+			if (lastTimes.isPower()) {
+				return compareToPowerExpr((IAST) lastTimes, rhsSymbolOrPattern);
+			}
+		}
+
+		return 1;
+	}
+
+	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
+		IExpr arg1 = ((IAST) lhsPowerAST).arg1();
+		if (arg1.isSymbolOrPatternObject()) {
+			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
+			// {
+			// return (-1) * compareToTimes((IAST) rhsSymbolOrPattern,
+			// lhsPowerAST);
+			// }
+			final int cp = arg1.compareTo(rhsSymbolOrPattern);
+			if (cp != 0) {
+				return cp;
+			}
+			// "x^1" compared to "x^arg2()"
+			IExpr arg2 = ((IAST) lhsPowerAST).arg2();
+			if (arg2.isNumeric()) {
+				return ((IAST) lhsPowerAST).arg2().compareTo(F.CD1);
+			}
+			return arg2.compareTo(F.C1);
+		}
+		return 1;
 	}
 
 	private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
@@ -483,9 +532,15 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			return compareToAST(this, (IAST) rhsExpr);
 		}
 
-		if (rhsExpr instanceof Symbol) {
-			return -1 * ((Symbol) rhsExpr).compareTo(this);
+		if (rhsExpr.isSymbolOrPatternObject()) {
+			if (isPlus() || isTimes()) {
+				return compareToTimesExpr(this, rhsExpr);
+			}
 		}
+		if (isPower()) {
+			return compareToPowerExpr(this, rhsExpr);
+		}
+
 		int x = hierarchy();
 		int y = rhsExpr.hierarchy();
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);

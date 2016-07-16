@@ -305,26 +305,23 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof PatternSequence) {
-			int cp;
 			if (fSymbol == null) {
-				if (((PatternSequence) expr).fSymbol == null) {
-					cp = -1;
-				} else {
-					cp = 0;
+				if (((PatternSequence) expr).fSymbol != null) {
+					return -1;
 				}
 			} else if (((PatternSequence) expr).fSymbol == null) {
-				cp = 1;
+				return 1;
 			} else {
-				cp = fSymbol.compareTo(((PatternSequence) expr).fSymbol);
+				int cp = fSymbol.compareTo(((PatternSequence) expr).fSymbol);
+				if (cp != 0) {
+					return cp;
+				}
 			}
-			if (cp != 0) {
-				return cp;
-			}
+
 			if (fCondition == null) {
 				if (((PatternSequence) expr).fCondition != null) {
 					return -1;
 				}
-				return 0;
 			} else {
 				if (((PatternSequence) expr).fCondition == null) {
 					return 1;
@@ -332,6 +329,7 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 					return fCondition.compareTo(((PatternSequence) expr).fCondition);
 				}
 			}
+			return 0;
 		}
 		return super.compareTo(expr);
 	}
