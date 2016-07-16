@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -13,6 +14,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 
@@ -304,20 +307,23 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr limit = data.getLimitValue();
 		if (limit.isInfinity() || limit.isNegativeInfinity()) {
 			ISymbol symbol = data.getSymbol();
-			GenPolynomial<IExpr> poly = org.matheclipse.core.reflection.system.PolynomialQ.polynomial(arg1, symbol,
-					true);
-			if (poly != null) {
-
+			try {
+				ExprPolynomialRing ring = new ExprPolynomialRing(symbol);
+				ExprPolynomial poly = ring.create(arg1);
 				IExpr coeff = poly.leadingBaseCoefficient();
 				long oddDegree = poly.degree() % 2;
 				if (oddDegree == 1) {
 					// odd degree
 					return F.Limit(F.Times(coeff, limit), rule);
-				} else {
-					// even degree
-					return F.Limit(F.Times(coeff, F.CInfinity), rule);
+				}
+				// even degree
+				return F.Limit(F.Times(coeff, F.CInfinity), rule);
+			} catch (RuntimeException e) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
 				}
 			}
+
 		}
 		return mapLimit(arg1, rule);
 	}

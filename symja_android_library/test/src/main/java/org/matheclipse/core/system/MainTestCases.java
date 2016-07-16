@@ -2939,8 +2939,8 @@ public class MainTestCases extends AbstractTestCase {
 		check("Limit(Pi^42,x->42)", "Pi^42");
 		check("Limit(x,x->42)", "42");
 		check("Limit(a+b+2*x,x->42)", "84+a+b");
-		check("Limit(a+b+2*x,x->Infinity)", "a+b+Infinity");
-		check("Limit(a+b+2*x,x->-Infinity)", "a+b-Infinity");
+		check("Limit(a+b+2*x,x->Infinity)", "Infinity");
+		check("Limit(a+b+2*x,x->-Infinity)", "-Infinity");
 		check("Limit(-x,x->Infinity)", "-Infinity");
 		check("Limit(x-x,x->Infinity)", "0");
 		check("Limit((x^2-3*x+2)/(x-1),x->1)", "-1");

@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ExprRingFactory;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -141,6 +142,28 @@ public class ExprPolynomialRing {
 	 */
 	public ExprPolynomialRing(IAST listOfVariables, ExprTermOrder t) {
 		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1, t);
+	}
+
+	/**
+	 * The constructor creates a polynomial factory object.
+	 * 
+	 * @param symbol
+	 *            name of a variable.
+	 */
+	public ExprPolynomialRing(ISymbol symbol) {
+		this(ExprRingFactory.CONST, F.List(symbol), 1, ExprTermOrderByName.Lexicographic);
+	}
+
+	/**
+	 * The constructor creates a polynomial factory object.
+	 * 
+	 * @param symbol
+	 *            name of a variable.
+	 * @param t
+	 *            a term order.
+	 */
+	public ExprPolynomialRing(ISymbol symbol, ExprTermOrder t) {
+		this(ExprRingFactory.CONST, F.List(symbol), 1, t);
 	}
 
 	/**

@@ -46,7 +46,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 
 	}
 
-	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,
+	private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,
 			boolean numericFunction) {
 		IExpr expr = F.evalExpandAll(polnomialExpr);
 		int termOrder = ExprTermOrder.INVLEX;
@@ -63,6 +63,16 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param polnomialExpr
+	 * @param symbol
+	 * @param numericFunction
+	 * @return
+	 * @deprecated use
+	 *             <code>ExprPolynomialRing ring = new ExprPolynomialRing(symbol); ExprPolynomial poly = ring.create(polnomialExpr);</code>
+	 *             if possible
+	 */
 	public static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,
 			boolean numericFunction) {
 		return polynomial(polnomialExpr, List(symbol), numericFunction);
