@@ -248,6 +248,54 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
 	}
 
+	/**
+	 * See:
+	 * <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at
+	 * Infinity of Rational Functions</a>
+	 * 
+	 * @param numeratorPoly
+	 * @param denominatorPoly
+	 * @param symbol
+	 *            the variable for which to approach to the limit
+	 * @param limit
+	 *            the limit value which the variable should approach to
+	 * @param rule
+	 * @return
+	 */
+	private static IExpr limitsInfinityOfRationalFunctions(ExprPolynomial numeratorPoly, ExprPolynomial denominatorPoly,
+			ISymbol symbol, IExpr limit, IAST rule) {
+		long numDegree = numeratorPoly.degree();
+		long denomDegree = denominatorPoly.degree();
+		if (numDegree > denomDegree) {
+			// If the numerator has the highest term, then the fraction is
+			// called "top-heavy". If, when you divide the numerator
+			// by the denominator the resulting exponent on the variable is
+			// even, then the limit (at both \infty and -\infty) is
+			// \infty. If it is odd, then the limit at \infty is \infty, and the
+			// limit at -\infty is -\infty.
+			long oddDegree = (numDegree + denomDegree) % 2;
+			if (oddDegree == 1) {
+				return F.Limit(F.Times(
+						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+						limit), rule);
+			} else {
+				return F.Limit(F.Times(
+						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+						F.CInfinity), rule);
+			}
+		} else if (numDegree < denomDegree) {
+			// If the denominator has the highest term, then the fraction is
+			// called "bottom-heavy" and the limit (at both \infty
+			// and -\infty) is zero.
+			return F.C0;
+		}
+		// If the exponent of the highest term in the numerator matches the
+		// exponent of the highest term in the denominator,
+		// the limit (at both \infty and -\infty) is the ratio of the
+		// coefficients of the highest terms.
+		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
+	}
+
 	private static IExpr mapLimit(final IAST expr, IAST rule) {
 		return expr.mapAt(F.Limit(null, rule), 1);
 	}
@@ -440,14 +488,15 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			IExpr limit = data.getLimitValue();
 			ISymbol symbol = data.getSymbol();
 			if (limit.isInfinity() || limit.isNegativeInfinity()) {
-				GenPolynomial<IExpr> denominatorPoly = org.matheclipse.core.reflection.system.PolynomialQ
-						.polynomial(denominator, symbol, true);
-				if (denominatorPoly != null) {
-					GenPolynomial<IExpr> numeratorPoly = org.matheclipse.core.reflection.system.PolynomialQ
-							.polynomial(numerator, symbol, true);
-					if (numeratorPoly != null) {
-						return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
-								data.getRule());
+				try {
+					ExprPolynomialRing ring = new ExprPolynomialRing(symbol);
+					ExprPolynomial denominatorPoly = ring.create(denominator);
+					ExprPolynomial numeratorPoly = ring.create(numerator);
+					return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
+							data.getRule());
+				} catch (RuntimeException e) {
+					if (Config.DEBUG) {
+						e.printStackTrace();
 					}
 				}
 			}
