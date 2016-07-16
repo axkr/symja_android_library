@@ -3801,6 +3801,10 @@ public class F {
 	public static IAST Max(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Max, a0, a1);
 	}
+	
+	public static IAST Max(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Max, a0, a1, a2, a3);
+	}
 
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MemberQ, a0, a1);
@@ -3820,6 +3824,10 @@ public class F {
 
 	public static IAST Min(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Min, a0, a1);
+	}
+
+	public static IAST Min(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Min, a0, a1, a2, a3);
 	}
 
 	public static IExpr minus(IExpr a, Integer i) {
@@ -4542,6 +4550,7 @@ public class F {
 	final static public IStringX stringx(final String str) {
 		return StringX.valueOf(str);
 	}
+
 	/**
 	 * Create a string expression
 	 * 
@@ -4551,9 +4560,11 @@ public class F {
 	final static public IStringX stringx(final StringBuffer str) {
 		return StringX.valueOf(str);
 	}
+
 	public static IAST Subfactorial(final IExpr a0) {
 		return unaryAST1(Subfactorial, a0);
 	}
+
 	/**
 	 * Substitute all (sub-) expressions with the given unary function. If no
 	 * substitution matches, the method returns the given <code>expr</code>.
@@ -4568,6 +4579,7 @@ public class F {
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
 		return expr.replaceAll(function).orElse(expr);
 	}
+
 	/**
 	 * Substitute all (sub-) expressions with the given rule set. If no
 	 * substitution matches, the method returns the given <code>expr</code>.
@@ -4583,6 +4595,7 @@ public class F {
 	public static IExpr subst(IExpr expr, final IAST astRules) {
 		return expr.replaceAll(astRules).orElse(expr);
 	}
+
 	/**
 	 * Substitute all (sub-) expressions with the given replacement expression.
 	 * If no (sub-) expression matches, the method returns the given
@@ -4597,6 +4610,7 @@ public class F {
 	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
 		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr))).orElse(expr);
 	}
+
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		if (a0.isPlus()) {
 			IAST clone = ((IAST) a0).clone();
@@ -4605,30 +4619,38 @@ public class F {
 		}
 		return binary(Plus, a0, binary(Times, CN1, a1));
 	}
+
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
 
 		return binaryAST2(Sum, a0, a1);
 	}
+
 	public static IAST SurfaceGraphics() {
 
 		return ast(SurfaceGraphics);
 	}
+
 	public static IAST Take(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Take, a0, a1);
 	}
+
 	public static IAST Tan(final IExpr a0) {
 		return unaryAST1(Tan, a0);
 	}
+
 	public static IAST Tanh(final IExpr a0) {
 
 		return unaryAST1(Tanh, a0);
 	}
+
 	public static IAST Taylor(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Taylor, a0, a1);
 	}
+
 	public final static IAST ternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST(new IExpr[] { head, a0, a1, a2 });
 	}
+
 	/**
 	 * Create a function with 3 arguments as a <code>AST3</code> immutable
 	 * object without evaluation.
@@ -4642,15 +4664,19 @@ public class F {
 	public final static IAST ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(head, a0, a1, a2);
 	}
+
 	public static IAST Thread(final IExpr a0) {
 		return unaryAST1(Thread, a0);
 	}
+
 	public static IAST Throw(final IExpr a) {
 		return unaryAST1(Throw, a);
 	}
+
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1) {
 		return binaryAST2(TimeConstrained, a0, a1);
 	}
+
 	public static IAST TimeConstrained(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(TimeConstrained, a0, a1, a2);
 	}

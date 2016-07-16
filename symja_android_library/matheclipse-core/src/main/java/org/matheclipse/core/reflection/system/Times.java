@@ -188,14 +188,31 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			if (o0.isMinusOne()) {
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
-			if (o0.isInteger() && o1.isPlus() && o1.isAST2()
-					&& (((IAST) o1).arg1().isNumericFunction())) {
+			if (o0.isInteger() && o1.isPlus() && o1.isAST2() && (((IAST) o1).arg1().isNumericFunction())) {
 				// Note: this doesn't work for Together() function, if we allow
 				// o0 to be a fractional number
 				return f1.mapAt(F.Times(o0, null), 2);
 			}
 		}
+		if (o0.isInterval1()) {
+			if (o1.isInterval1() || o1.isSignedNumber()) {
+				return timesInterval(o0, o1);
+			}
+		}
+		if (o1.isInterval1()) {
+			if (o0.isInterval1() || o0.isSignedNumber()) {
+				return timesInterval(o0, o1);
+			}
+		}
 		return F.NIL;
+	}
+
+	private IExpr timesInterval(final IExpr o0, final IExpr o1) {
+		return F.Interval(F.List(
+				F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+						o0.upper().times(o1.upper())),
+				F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+						o0.upper().times(o1.upper()))));
 	}
 
 	private static IExpr eInfinity(IAST inf, IExpr o1) {
@@ -339,11 +356,11 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		// Log.getFunction());
 		ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1),
 				org.matheclipse.core.reflection.system.Log.getFunction());
-//		addTrigRules(F.Sin, F.Cot, F.Cos);
-//		addTrigRules(F.Sin, F.Sec, F.Tan);
-//		addTrigRules(F.Cos, F.Tan, F.Sin);
-//		addTrigRules(F.Csc, F.Tan, F.Sec);
-//		addTrigRules(F.Cos, F.Csc, F.Cot);
+		// addTrigRules(F.Sin, F.Cot, F.Cos);
+		// addTrigRules(F.Sin, F.Sec, F.Tan);
+		// addTrigRules(F.Cos, F.Tan, F.Sin);
+		// addTrigRules(F.Csc, F.Tan, F.Sec);
+		// addTrigRules(F.Cos, F.Csc, F.Cot);
 		ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));
 		ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Sec(x_), F.Tan(x));
 		ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));

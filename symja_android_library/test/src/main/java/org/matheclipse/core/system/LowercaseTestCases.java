@@ -1719,6 +1719,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testInterval() {
 		// https://de.wikipedia.org/wiki/Intervallarithmetik
+		check("Interval({1, 6}) * Interval({0, 2})", "Interval({0,12})");
 		check("Interval({-2, 5})^2", "Interval({0,25})");
 		check("Interval({-7, 5})^2", "Interval({0,49})");
 		check("Interval({-2, 5})^(-2)", "1/Interval({0,25})");
@@ -2304,11 +2305,13 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 //	public void testOrderedQ() {
-//		check("a+b-Infinity", "a+b-Infinity");
+//		check("OrderedQ({x^2,x^3})", "True");
+//		check("OrderedQ({4+4*a,x^2,x^3, 4+6*x})", "True");
+//
 //		check("OrderedQ({x,x^6.0 })", "True");
 //		check("OrderedQ({4.0*x,33.0*x^6.0 })", "True");
 //		check("OrderedQ({x^3,4+4*a })", "False");
-//		check("OrderedQ({x^2, 4+6*x})", "False");
+//		check("OrderedQ({x^2, 4+6*x})", "True");
 //
 //		check("OrderedQ({x^2, 6*x})", "False");
 //		check("OrderedQ({6*x,x^2})", "True");
