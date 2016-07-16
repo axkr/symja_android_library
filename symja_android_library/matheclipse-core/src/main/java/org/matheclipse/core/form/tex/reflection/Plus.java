@@ -21,7 +21,7 @@ public class Plus extends AbstractOperator {
 		IExpr expr;
 		precedenceOpen(buf, precedence);
 		final Times timesConverter = new org.matheclipse.core.form.tex.reflection.Times();
-		timesConverter.setFactory(fFactory);  
+		timesConverter.setFactory(fFactory);
 		for (int i = 1; i < f.size(); i++) {
 			expr = f.get(i);
 
@@ -32,6 +32,7 @@ public class Plus extends AbstractOperator {
 					if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
 						buf.append("-");
 						expr = ((INumber) expr).negate();
+					} else if (expr.isNegativeSigned()) {
 					} else {
 						buf.append("+");
 					}

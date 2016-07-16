@@ -26,7 +26,7 @@ public class Complex extends AbstractOperator {
 			fFactory.convert(buf, arg1, 0);
 		}
 		if (!imZero) {
-			if (!reZero && !AbstractFunctionEvaluator.isNegativeExpression(arg2)) {
+			if (!reZero && !arg2.isNegativeSigned()) {
 				buf.append(" + ");
 			}
 			if (arg2.isMinusOne()) {

@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.reflection.system.Equal;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -1193,6 +1194,45 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Check if the expression is a negative signed expression. This method is
+	 * used in output forms of <code>Plus[...]</code> expressions.
+	 * 
+	 * @param expr
+	 *            the expression which should be analyzed for a negative sign
+	 * @return <code>true</code> if the expression is a negative signed
+	 *         expression
+	 */
+	default boolean isNegativeSigned() {
+		if (isNumber()) {
+			if (((INumber) this).complexSign() < 0) {
+				return true;
+			}
+		} else if (isTimes()) {
+			IExpr arg1 = ((IAST) this).arg1();
+			if (arg1.isNumber()) {
+				if (((INumber) arg1).complexSign() < 0) {
+					return true;
+				}
+			} else if (arg1.isNegativeInfinity()) {
+				return true;
+			}
+		} else if (isPlus()) {
+			IExpr arg1 = ((IAST) this).arg1();
+			if (arg1.isNumber()) {
+				if (((INumber) arg1).complexSign() < 0) {
+					return true;
+				}
+			} else if (arg1.isNegativeInfinity()) {
+				return true;
+			}
+		} else if (isNegativeInfinity()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Test if this expression has a non-negative result (i.e. greater equal 0)
 	 * or is assumed to be non-negative.
 	 * 
@@ -2117,7 +2157,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr unequalTo(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Unequal.CONST.compareTernary(this, that);
+		COMPARE_TERNARY temp = Equal.CONST.compareTernary(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 

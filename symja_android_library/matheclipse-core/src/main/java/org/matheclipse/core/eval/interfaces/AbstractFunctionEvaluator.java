@@ -77,40 +77,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		symbol.putDownRule(pm);
 	}
 
-	/**
-	 * Check if the expression is canonical negative.
-	 * 
-	 * @return <code>true</code> if the first argument is canonical negative
-	 */
-	public static boolean isNegativeExpression(final IExpr expr) {
-		if (expr.isNumber()) {
-			if (((INumber) expr).complexSign() < 0) {
-				return true;
-			}
-		} else if (expr.isTimes()) {
-			IExpr arg1 = ((IAST) expr).arg1();
-			if (arg1.isNumber()) {
-				if (((INumber) arg1).complexSign() < 0) {
-					return true;
-				}
-			} else if (arg1.isNegativeInfinity()) {
-				return true;
-			}
-		} else if (expr.isPlus()) {
-			IExpr arg1 = ((IAST) expr).arg1();
-			if (arg1.isNumber()) {
-				if (((INumber) arg1).complexSign() < 0) {
-					return true;
-				}
-			} else if (arg1.isNegativeInfinity()) {
-				return true;
-			}
-		} else if (expr.isNegativeInfinity()) {
-			return true;
-		}
-
-		return false;
-	}
+	
 
 	/**
 	 * Check if the expression is canonical negative.

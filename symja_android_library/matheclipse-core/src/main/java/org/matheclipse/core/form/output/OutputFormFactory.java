@@ -7,6 +7,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -398,8 +399,8 @@ public class OutputFormFactory {
 			final InfixOperator TIMES_OPERATOR = (InfixOperator) ASTNodeFactory.MMA_STYLE_FACTORY.get("Times");
 			convertTimesFraction(buf, timesAST, TIMES_OPERATOR, ASTNodeFactory.TIMES_PRECEDENCE, caller);
 		} else {
-			if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
-				// special case negative number:
+			if (plusArg.isNegativeSigned()) {
+				// special case negative number or -Infinity...
 				convert(buf, plusArg);
 			} else {
 				if (caller == PLUS_CALL) {
