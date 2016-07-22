@@ -2689,7 +2689,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testQuotient() {
+		check("Quotient(-17, 7)", "-3");
+		check("Quotient(15, -5)", "-3");
 		check("Quotient(17, 5)", "3");
+		check("Quotient(-17, -4)", "4");
+		check("Quotient(-14, 7)", "-2");
+		check("Quotient(13, 0)", "/ by zero");
 	}
 
 	public void testRational() {

@@ -233,7 +233,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 * 
 	 * @param that
 	 *            if that is of type IntegerSym calculate the extended GCD
-	 *            otherwise call {@link super#egcd(IExpr)};
+	 *            otherwise call <code>super#egcd(IExpr)</code>
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -766,11 +766,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public Num numValue() {
 		return Num.valueOf(doubleValue());
-	}
-
-	@Override
-	public IInteger quotient(final IInteger that) {
-		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
 	}
 
 	@Override

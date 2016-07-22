@@ -121,7 +121,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * radix, except the first character which may be a plus sign
 	 * <code>'+'</code> or a minus sign <code>'-'</code> .
 	 * 
-	 * @param chars
+	 * @param integerString
 	 *            the character sequence to parse.
 	 * @param radix
 	 *            the radix to be used while parsing.
@@ -284,6 +284,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	/**
 	 * Get all prime factors of this integer
 	 * 
+	 * @param result
+	 *            add the prime factors to this result list
 	 * @return
 	 */
 	public IAST factorize(IAST result) {
@@ -399,7 +401,6 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		return true;
 	}
 
-	
 	/**
 	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
 	 * Jacobi symbol</a><br/>
@@ -586,6 +587,19 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			return new IInteger[0];
 		}
 		return resultArray;
+	}
+
+	@Override
+	public IInteger quotient(final IInteger that) {
+		BigInteger quotient = getBigNumerator().divide(that.getBigNumerator());
+		BigInteger mod = getBigNumerator().remainder(that.getBigNumerator());
+		if (mod.equals(BigInteger.ZERO)) {
+			return valueOf(quotient);
+		}
+		if (quotient.compareTo(BigInteger.ZERO) < 0) {
+			return valueOf(quotient.subtract(BigInteger.ONE));
+		}
+		return valueOf(quotient);
 	}
 
 	@Override

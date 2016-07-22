@@ -53,6 +53,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	/**
 	 * do not use directly, needed for serialization/deserialization
 	 * 
+	 * @param value
 	 */
 	public IntegerSym(int value) {
 		fIntValue = value;
@@ -244,7 +245,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 * 
 	 * @param that
 	 *            if that is of type IntegerSym calculate the extended GCD
-	 *            otherwise call {@link super#egcd(IExpr)};
+	 *            otherwise call <code>super.egcd(IExpr)</code>
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -825,7 +826,19 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public IInteger quotient(final IInteger that) {
-		return valueOf(getBigNumerator().divide(that.getBigNumerator()));
+		if (that instanceof BigIntegerSym) {
+			return super.quotient(that);
+		}
+		int thatValue = ((IntegerSym) that).fIntValue;
+		long quotient = fIntValue / thatValue;
+		long mod = fIntValue % thatValue;
+		if (mod == 0L) {
+			return valueOf(quotient);
+		}
+		if (quotient < 0) {
+			return valueOf(quotient - 1);
+		}
+		return valueOf(quotient);
 	}
 
 	@Override
