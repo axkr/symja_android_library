@@ -100,7 +100,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		ISymbol method = LegendreGauss;
 		int maxPoints = DEFAULT_MAX_POINTS;
 		int maxIterations = DEFAULT_MAX_ITERATIONS;
-		int scale = 16; // automatic scale value
+		int precisionGoal = 16; // automatic scale value
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
 			IExpr option = options.getOption("Method");
@@ -126,9 +126,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			option = options.getOption("PrecisionGoal");
 			if (option.isSignedNumber()) {
 				try {
-					scale = ((ISignedNumber) option).toInt();
+					precisionGoal = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
-					engine.printMessage("Error in option PrecisionGoal. Using default value: " + scale);
+					engine.printMessage("Error in option PrecisionGoal. Using default value: " + precisionGoal);
 				}
 			}
 		}
@@ -146,7 +146,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 					try {
 						double result = integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(),
 								function, maxPoints, maxIterations);
-						result = Precision.round(result, scale);
+						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);
 					} catch (Exception e) {
 						throw new WrappedException(e);
