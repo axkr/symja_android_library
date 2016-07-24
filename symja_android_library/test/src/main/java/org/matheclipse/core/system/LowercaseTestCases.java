@@ -1,8 +1,6 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.system.Thread;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -599,6 +597,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 		// " {Map(Function($lst=False;\n" +
 		// " If($lst===False,Throw(False),$lst((1)))),\n" +
 		// " u),$lst((2)),$lst((3))})","");
+	}
+
+	public void testCatenate() {
+		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", "{1,2,3,a,b,c,4,5,6}");
 	}
 
 	public void testCeiling() {
@@ -2175,7 +2177,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
 		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
 	}
-	
+
 	public void testNMaximize() {
 		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6 && x >= 0 && y >= 0}, {x, y})",
 				"{-3.2500000000000004,{0.5000000000000009,2.7499999999999996}}");
@@ -2309,21 +2311,21 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Outer(Times, {{1, 2}}, {{a, b}, {x, y, z}})", "{{{{a,b},{x,y,z}},{{2*a,2*b},{2*x,2*y,2*z}}}}");
 	}
 
-//	public void testOrderedQ() {
-//		check("OrderedQ({x^2,x^3})", "True");
-//		check("OrderedQ({4+4*a,x^2,x^3, 4+6*x})", "True");
-//
-//		check("OrderedQ({x,x^6.0 })", "True");
-//		check("OrderedQ({4.0*x,33.0*x^6.0 })", "True");
-//		check("OrderedQ({x^3,4+4*a })", "False");
-//		check("OrderedQ({x^2, 4+6*x})", "True");
-//
-//		check("OrderedQ({x^2, 6*x})", "False");
-//		check("OrderedQ({6*x,x^2})", "True");
-//		check("OrderedQ({3*x^2, x*(4+6*x)})", "True");
-//		check("OrderedQ({a,a})", "True");
-//		check("OrderedQ({x, y, x + y})", "True");
-//	}
+	// public void testOrderedQ() {
+	// check("OrderedQ({x^2,x^3})", "True");
+	// check("OrderedQ({4+4*a,x^2,x^3, 4+6*x})", "True");
+	//
+	// check("OrderedQ({x,x^6.0 })", "True");
+	// check("OrderedQ({4.0*x,33.0*x^6.0 })", "True");
+	// check("OrderedQ({x^3,4+4*a })", "False");
+	// check("OrderedQ({x^2, 4+6*x})", "True");
+	//
+	// check("OrderedQ({x^2, 6*x})", "False");
+	// check("OrderedQ({6*x,x^2})", "True");
+	// check("OrderedQ({3*x^2, x*(4+6*x)})", "True");
+	// check("OrderedQ({a,a})", "True");
+	// check("OrderedQ({x, y, x + y})", "True");
+	// }
 
 	public void testPadLeft() {
 		check("PadLeft({a, b, c}, 10)", "{0,0,0,0,0,0,0,a,b,c}");
