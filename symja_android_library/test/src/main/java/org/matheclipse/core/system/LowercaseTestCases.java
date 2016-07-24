@@ -2171,6 +2171,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"{100,Log(100),Log(Log(100)),Log(Log(Log(100))),Log(Log(Log(Log(100))))}");
 	}
 
+	public void testNIntegrate() {
+		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
+		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
+	}
+	
 	public void testNMaximize() {
 		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6 && x >= 0 && y >= 0}, {x, y})",
 				"{-3.2500000000000004,{0.5000000000000009,2.7499999999999996}}");

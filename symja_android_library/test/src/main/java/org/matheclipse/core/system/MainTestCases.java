@@ -1514,18 +1514,18 @@ public class MainTestCases extends AbstractTestCase {
 		check("(-1.0)/48", "-0.020833333333333332");
 
 		// to low max points
-		check("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", "0.10453108224782834");
+		check("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", "0.1045310822478283");
 		check("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->100)", "0.9988852159737868");
 
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", "-0.020833327124516472");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", "-0.0208333271245165");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)",
 				"illegal state: maximal count (10) exceeded: evaluations");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", "-0.0208333320915699");
 
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)",
-				"-0.020833333333333332");
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", "-0.020833333333333332");
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.02083333333333334");
+				"-0.0208333333333333");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", "-0.0208333333333333");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.0208333333333333");
 
 	}
 
