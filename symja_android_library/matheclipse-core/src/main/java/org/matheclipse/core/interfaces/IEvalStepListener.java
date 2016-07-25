@@ -1,5 +1,8 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+
 /**
  * A listener which could listen to the <code>EvalEngine#evalLoop()</code>
  * steps, to implement an evaluation trace or a step by step evaluation.
@@ -62,4 +65,15 @@ public interface IEvalStepListener {
 	 */
 	public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, String hint);
 
+	/**
+	 * Solve a polynomial with degree &lt;= 2.
+	 * 
+	 * @param polynomial
+	 *            the polynomial
+	 * @return <code>F.NIL</code> if no evaluation was possible, or if this
+	 *         method isn't interesting for listening
+	 */
+	default IAST rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+		return F.NIL;
+	}
 }

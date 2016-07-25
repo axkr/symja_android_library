@@ -13,7 +13,6 @@ import org.apache.commons.math4.linear.EigenDecomposition;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -25,18 +24,16 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.ExpVectorLong;
 import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.Monomial;
 
 /**
  * Determine the roots of a univariate polynomial
@@ -156,13 +153,13 @@ public class Roots extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param expr
-	 * @param denom
+	 * @param denominator
 	 * @param variables
 	 * @param numericSolutions
 	 * @param engine
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom, final IAST variables,
+	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denominator, final IAST variables,
 			boolean numericSolutions, EvalEngine engine) {
 		IAST result = F.NIL;
 		ASTRange r = new ASTRange(variables, 1);
@@ -170,6 +167,10 @@ public class Roots extends AbstractFunctionEvaluator {
 		try {
 			result = F.List();
 			IExpr temp;
+			IAST list = rootsOfQuadraticExprPolynomial(expr, variables);
+			if (list.isPresent()) {
+				return list;
+			}
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
 			if (polyRat.degree(0) <= 2) {
@@ -208,12 +209,12 @@ public class Roots extends AbstractFunctionEvaluator {
 			result = rootsOfExprPolynomial(expr, variables);
 		}
 		if (result.isPresent()) {
-			if (!denom.isNumber()) {
+			if (!denominator.isNumber()) {
 				// eliminate roots from the result list, which occur in the
 				// denominator
 				int i = 1;
 				while (i < result.size()) {
-					IExpr temp = denom.replaceAll(F.Rule(variables.arg1(), result.get(i)));
+					IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
 					if (temp.isPresent() && engine.evaluate(temp).isZero()) {
 						result.remove(i);
 						continue;
@@ -230,12 +231,10 @@ public class Roots extends AbstractFunctionEvaluator {
 		IAST result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
-			// JASIExpr eJas = new JASIExpr(varList, new ExprRingFactory());
-			// GenPolynomial<IExpr> ePoly = eJas.expr2IExprJAS(expr);
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
 			ExprPolynomial ePoly = ring.create(expr, false, false);
 			ePoly = ePoly.multiplyByMinimumNegativeExponents();
-			result = rootsOfPolynomial(ePoly);
+			result = rootsOfQuarticPolynomial(ePoly);
 			if (result.isPresent() && expr.isNumericMode()) {
 				for (int i = 1; i < result.size(); i++) {
 					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
@@ -250,14 +249,44 @@ public class Roots extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Solve a polynomial with degree &lt;= 2.
 	 * 
-	 * @param ePoly
+	 * @param expr
+	 * @param varList
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IAST rootsOfPolynomial(GenPolynomial<IExpr> ePoly) {
-		long varDegree = ePoly.degree(0);
+	private static IAST rootsOfQuadraticExprPolynomial(final IExpr expr, IAST varList) {
+		IAST result = F.NIL;
+		try {
+			// try to generate a common expression polynomial
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+			ExprPolynomial ePoly = ring.create(expr, false, false);
+			ePoly = ePoly.multiplyByMinimumNegativeExponents();
+			result = rootsOfQuadraticPolynomial(ePoly);
+			if (result.isPresent() && expr.isNumericMode()) {
+				for (int i = 1; i < result.size(); i++) {
+					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+				}
+			}
+		} catch (JASConversionException e2) {
+			if (Config.SHOW_STACKTRACE) {
+				e2.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Solve a polynomial with degree &lt;= 4.
+	 * 
+	 * @param polynomial
+	 *            the polynomial
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
+	private static IAST rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
+		long varDegree = polynomial.degree(0);
 		IAST result = List();
-		if (ePoly.isConstant()) {
+		if (polynomial.isConstant()) {
 			return result;
 		}
 		IExpr a;
@@ -272,7 +301,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			c = C0;
 			d = C0;
 			e = C0;
-			for (Monomial<IExpr> monomial : ePoly) {
+			for (ExprMonomial monomial : polynomial) {
 				IExpr coeff = monomial.coefficient();
 				long lExp = monomial.exponent().getVal(0);
 				if (lExp == 4) {
@@ -301,14 +330,16 @@ public class Roots extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Solve a polynomial with degree &lt;= 2.
 	 * 
-	 * @param ePoly
+	 * @param polynomial
+	 *            the polynomial
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IAST rootsOfPolynomial(ExprPolynomial ePoly) {
-		long varDegree = ePoly.degree(0);
+	private static IAST rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+		long varDegree = polynomial.degree(0);
 		IAST result = List();
-		if (ePoly.isConstant()) {
+		if (polynomial.isConstant()) {
 			return result;
 		}
 		IExpr a;
@@ -316,14 +347,21 @@ public class Roots extends AbstractFunctionEvaluator {
 		IExpr c;
 		IExpr d;
 		IExpr e;
-		if (varDegree <= 4) {
-			// solve quartic equation:
+		if (varDegree <= 2) {
+			IEvalStepListener listener = EvalEngine.get().getStepListener();
+			if (listener != null) {
+				IAST temp = listener.rootsOfQuadraticPolynomial(polynomial);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
+			// solve quadratic equation:
 			a = C0;
 			b = C0;
 			c = C0;
 			d = C0;
 			e = C0;
-			for (ExprMonomial monomial : ePoly) {
+			for (ExprMonomial monomial : polynomial) {
 				IExpr coeff = monomial.coefficient();
 				long lExp = monomial.exponent().getVal(0);
 				if (lExp == 4) {
