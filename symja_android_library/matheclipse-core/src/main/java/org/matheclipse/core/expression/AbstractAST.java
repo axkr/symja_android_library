@@ -1182,9 +1182,11 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				internalOperatorForm(arg2, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, text);
 				return text.toString();
 			} else if (isPlus()) {
-				arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators);
+				IExpr arg1 = arg1();
+				IExpr arg2 = arg2();
+				internalOperatorForm(arg1, false, symbolsAsFactoryMethod, depth, useOperators, text);
 				text.append('+');
-				arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators);
+				internalOperatorForm(arg2, false, symbolsAsFactoryMethod, depth, useOperators, text);
 				return text.toString();
 			} else if (isPower()) {
 				IExpr arg1 = arg1();
