@@ -3679,20 +3679,10 @@ public class F {
 		return ast(a, List);
 	}
 
-	public static IAST List(final IExpr a0) {
-
-		return unary(List, a0);
-	}
-
 	public static IAST List(final IExpr... a) {// 0, final IExpr a1, final IExpr
 		// a2) {
 		return ast(a, List);
 		// return ternary(List, a0, a1, a2);
-	}
-
-	public static IAST List(final IExpr a0, final IExpr a1) {
-
-		return binary(List, a0, a1);
 	}
 
 	public static IAST List(final long... numbers) {
