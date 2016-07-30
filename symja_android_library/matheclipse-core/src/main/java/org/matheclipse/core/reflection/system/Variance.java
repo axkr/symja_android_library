@@ -23,27 +23,28 @@ public class Variance extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		IExpr arg1 = ast.arg1();
-		int dim = arg1.isVector();
-		if (dim >= 0) {
-			if (arg1.isRealVector()) {
-				return F.num(StatUtils.variance(arg1.toDoubleVector()));
-			}
-			return F.NIL;
-		}
-		int[] matrixDimensions = arg1.isMatrix();
-		if (matrixDimensions != null) {
-
-			if (arg1.isRealMatrix()) {
-				double[][] matrix = arg1.toDoubleMatrix();
-				matrix = Convert.toDoubleTransposed(matrix);
-				double[] result = new double[matrixDimensions[1]];
-				for (int i = 0; i < matrix.length; i++) {
-					result[i] = StatUtils.variance(matrix[i]);
+		if (ast.arg1().isAST()) {
+			IAST arg1 = (IAST) ast.arg1();
+			int dim = arg1.isVector();
+			if (dim >= 0) {
+				if (arg1.isRealVector()) {
+					return F.num(StatUtils.variance(arg1.toDoubleVector()));
 				}
-				return new ASTRealVector(result, false);
+				return Covariance.vectorCovariance(arg1, arg1, dim);
 			}
-			return F.NIL;
+			int[] matrixDimensions = arg1.isMatrix();
+			if (matrixDimensions != null) {
+				if (arg1.isRealMatrix()) {
+					double[][] matrix = arg1.toDoubleMatrix();
+					matrix = Convert.toDoubleTransposed(matrix);
+					double[] result = new double[matrixDimensions[1]];
+					for (int i = 0; i < matrix.length; i++) {
+						result[i] = StatUtils.variance(matrix[i]);
+					}
+					return new ASTRealVector(result, false);
+				}
+				return F.NIL;
+			}
 		}
 		return F.NIL;
 	}

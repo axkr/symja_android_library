@@ -3584,7 +3584,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testVariance() {
-		check("Variance({1., 2., 3., 4.})","1.6666666666666667");
+		check("Variance({Pi,E,3})//Together", "1/3*(9-3*E+E^2-3*Pi-E*Pi+Pi^2)");
+		check("Variance({a,b,c,d})",
+				"1/12*((3*a-b-c-d)*Conjugate(a)+(-a+3*b-c-d)*Conjugate(b)+(-a-b+3*c-d)*Conjugate(c)+(-a-b-c+\n"
+						+ "3*d)*Conjugate(d))");
+		check("Variance({1., 2., 3., 4.})", "1.6666666666666667");
 		check("Variance({{5.2, 7}, {5.3, 8}, {5.4, 9}})", "{0.010000000000000018,1.0}");
 		check("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", "5.16122380952381");
 	}

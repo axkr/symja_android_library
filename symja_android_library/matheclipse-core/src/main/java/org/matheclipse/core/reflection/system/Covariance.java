@@ -66,18 +66,7 @@ public class Covariance extends AbstractMatrix1Expr {
 					} catch (Exception ex) {
 						//
 					}
-					if (arg1Length == 2) {
-						return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
-								F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
-					}
-					IAST num1 = arg1.apply(F.Plus);
-					IExpr factor = F.integer(-1 * (arg1.size() - 2));
-					IAST v1 = F.Plus();
-					for (int i = 1; i < arg1.size(); i++) {
-						v1.add(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))),
-								F.Conjugate(arg2.get(i))));
-					}
-					return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
+					return vectorCovariance(arg1, arg2, arg1Length);
 				}
 			}
 		} catch (final WrongArgumentType e) {
@@ -89,6 +78,21 @@ public class Covariance extends AbstractMatrix1Expr {
 			}
 		}
 		return F.NIL;
+	}
+
+	public static IExpr vectorCovariance(final IAST arg1, final IAST arg2, int arg1Length) {
+		if (arg1Length == 2) {
+			return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
+					F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
+		}
+		IAST num1 = arg1.apply(F.Plus);
+		IExpr factor = F.integer(-1 * (arg1.size() - 2));
+		IAST v1 = F.Plus();
+		for (int i = 1; i < arg1.size(); i++) {
+			v1.add(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))),
+					F.Conjugate(arg2.get(i))));
+		}
+		return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
 	}
 
 	@Override

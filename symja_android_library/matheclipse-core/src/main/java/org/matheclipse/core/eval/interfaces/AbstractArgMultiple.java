@@ -21,6 +21,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		
 		if (ast.isAST2()) {
 			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
 			if (temp.isPresent()) {
@@ -30,27 +31,28 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		}
 
 		if (ast.size() > 3) {
-			final ISymbol sym = ast.topHead();
+			IAST tempAST = ast.clone();
+			final ISymbol sym = tempAST.topHead();
 			final IAST result = F.ast(sym);
 			IExpr tres;
-			IExpr temp = ast.arg1();
+			IExpr temp = tempAST.arg1();
 			boolean evaled = false;
 			int i = 2;
 
-			while (i < ast.size()) {
+			while (i < tempAST.size()) {
 
-				tres = binaryOperator(temp, ast.get(i));
+				tres = binaryOperator(temp, tempAST.get(i));
 
 				if (!tres.isPresent()) {
 
-					for (int j = i + 1; j < ast.size(); j++) {
-						tres = binaryOperator(temp, ast.get(j));
+					for (int j = i + 1; j < tempAST.size(); j++) {
+						tres = binaryOperator(temp, tempAST.get(j));
 
 						if (tres.isPresent()) {
 							evaled = true;
 							temp = tres;
 
-							ast.remove(j);
+							tempAST.remove(j);
 
 							break;
 						}
@@ -58,10 +60,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 					if (!tres.isPresent()) {
 						result.add(temp);
-						if (i == ast.size() - 1) {
-							result.add(ast.get(i));
+						if (i == tempAST.size() - 1) {
+							result.add(tempAST.get(i));
 						} else {
-							temp = ast.get(i);
+							temp = tempAST.get(i);
 						}
 						i++;
 					}
@@ -70,7 +72,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					evaled = true;
 					temp = tres;
 
-					if (i == (ast.size() - 1)) {
+					if (i == (tempAST.size() - 1)) {
 						result.add(temp);
 					}
 
@@ -86,11 +88,11 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 				return result;
 			}
+			if (tempAST.size() > 2) {
+				return evaluateHashs(tempAST); 
+			}
 		}
 
-		if (ast.size() > 2) {
-			return evaluateHashs(ast); 
-		}
 		return F.NIL;
 	}
 
