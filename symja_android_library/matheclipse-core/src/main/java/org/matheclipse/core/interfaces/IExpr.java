@@ -16,13 +16,13 @@ import org.apache.commons.math4.Field;
 import org.apache.commons.math4.FieldElement;
 import org.apache.commons.math4.complex.Complex;
 import org.apache.commons.math4.exception.MathArithmeticException;
-import org.apache.commons.math4.linear.ArrayRealVector;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
@@ -1138,24 +1138,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix)
-	 * 
-	 * @return
-	 */
-	default boolean isRealMatrix() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is a real vector (i.e. an ASTRealVector)
-	 * 
-	 * @return
-	 */
-	default boolean isRealVector() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is a list of lists
 	 * 
 	 * @return
@@ -1396,6 +1378,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isNumeric() {
 		return this instanceof INum || this instanceof IComplexNum;
+	}
+
+	/**
+	 * Test if this expression is a numeric number (i.e. an instance of type
+	 * <code>INum</code> or type <code>IComplexNum</code>), an
+	 * <code>ASTRealVector</code> or an <code>ASTRealMatrix</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isNumericArgument() {
+		return this instanceof INum || this instanceof IComplexNum || this instanceof ASTRealVector
+				|| this instanceof ASTRealMatrix;
 	}
 
 	/**
@@ -1717,6 +1711,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix)
+	 * 
+	 * @return
+	 */
+	default boolean isRealMatrix() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a real function (i.e. a number, a symbolic
 	 * constant or an integer function where all arguments are also &quot;reals
 	 * functions&quot;)
@@ -1730,6 +1733,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			return true;
 		}
 		return this instanceof ISignedNumber;
+	}
+
+	/**
+	 * Test if this expression is a real vector (i.e. an ASTRealVector)
+	 * 
+	 * @return
+	 */
+	default boolean isRealVector() {
+		return false;
 	}
 
 	/**
@@ -1775,46 +1787,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isSequence() {
 		return false;
-	}
-
-	/**
-	 * Convert this object into a <code>double[]</code> vector.
-	 * 
-	 * @return <code>null</code> if this object can not be converted into a
-	 *         <code>double[]</code> vector
-	 */
-	default double[] toDoubleVector() {
-		return null;
-	}
-
-	/**
-	 * Convert this object into a <code>double[]</code> matrix.
-	 * 
-	 * @return <code>null</code> if this object can not be converted into a
-	 *         <code>double[]</code> matrix
-	 */
-	default double[][] toDoubleMatrix() {
-		return null;
-	}
-
-	/**
-	 * Convert this object into a RealVector.
-	 * 
-	 * @return <code>null</code> if this object can not be converted into a
-	 *         RealVector
-	 */
-	default RealVector toRealVector() {
-		return null;
-	}
-
-	/**
-	 * Convert this object into a RealMatrix.
-	 * 
-	 * @return <code>null</code> if this object can not be converted into a
-	 *         RealMatrix
-	 */
-	default RealMatrix toRealMatrix() {
-		return null;
 	}
 
 	/**
@@ -2326,6 +2298,26 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Convert this object into a <code>double[]</code> matrix.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         <code>double[]</code> matrix
+	 */
+	default double[][] toDoubleMatrix() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a <code>double[]</code> vector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         <code>double[]</code> vector
+	 */
+	default double[] toDoubleVector() {
+		return null;
+	}
+
+	/**
 	 * The 'highest level' head of the expression, before Symbol, Integer, Real
 	 * or String. for example while the head of a[b][c] is a[b], the top head is
 	 * a.
@@ -2333,6 +2325,26 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return the 'highest level' head of the expression.
 	 */
 	public ISymbol topHead();
+
+	/**
+	 * Convert this object into a RealMatrix.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         RealMatrix
+	 */
+	default RealMatrix toRealMatrix() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a RealVector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         RealVector
+	 */
+	default RealVector toRealVector() {
+		return null;
+	}
 
 	/**
 	 * Compare if <code>this != that</code:

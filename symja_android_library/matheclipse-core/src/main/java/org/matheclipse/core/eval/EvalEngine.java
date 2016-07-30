@@ -475,7 +475,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			boolean localNumericMode = fNumericMode;
 			if (!fNumericMode) {
 				for (int i = 1; i < astSize; i++) {
-					if (ast.get(i).isNumeric()) {
+					if (ast.get(i).isNumericArgument()) {
 						localNumericMode = true;
 						break;
 					}
