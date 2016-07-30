@@ -860,6 +860,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCovariance() {
+		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})", 
+				"1/20*((-a-b-c+4*d-e)*Conjugate(v)+(-a-b-c-d+4*e)*Conjugate(w)+(4*a-b-c-d-e)*Conjugate(x)+(-a+\n" + 
+				"4*b-c-d-e)*Conjugate(y)+(-a-b+4*c-d-e)*Conjugate(z))");
+		check("Covariance({a, b, c}, {x, y, z})", "1/6*((2*a-b-c)*Conjugate(x)+(-a+2*b-c)*Conjugate(y)+(-a-b+2*c)*Conjugate(z))");
+		check("Covariance({a, b}, {x, y})", "1/2*(a-b)*(-Conjugate(y)+Conjugate(x))");
 		check("Covariance({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", "11.260416666666666");
 	}
 

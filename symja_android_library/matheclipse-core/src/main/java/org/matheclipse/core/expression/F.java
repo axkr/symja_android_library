@@ -172,9 +172,11 @@ public class F {
 	public final static ISymbol Direction = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "direction" : "Direction");
 	public final static ISymbol List = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
-	public final static ISymbol $RealVector = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
-	public final static ISymbol $RealMatrix = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
-	
+	public final static ISymbol $RealVector = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
+	public final static ISymbol $RealMatrix = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
+
 	public final static ISymbol True = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
 	public final static ISymbol Null = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "null" : "Null");
 	public final static ISymbol Second = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");
@@ -2927,12 +2929,6 @@ public class F {
 		return binaryAST2(Expand, a0, a1);
 	}
 
-	//
-	// public static IAST NumberPartitions(final IExpr a0) {
-	//
-	// return unaryAST2(NumberPartitions, a0);
-	// }
-
 	/**
 	 * Apply <code>ExpandAll()</code> to the given expression if it's an
 	 * <code>IAST</code>. If expanding wasn't possible this method returns the
@@ -2963,6 +2959,12 @@ public class F {
 		}
 		return a;
 	}
+
+	//
+	// public static IAST NumberPartitions(final IExpr a0) {
+	//
+	// return unaryAST2(NumberPartitions, a0);
+	// }
 
 	public static IAST ExpandAll(final IExpr a0) {
 		return unaryAST1(ExpandAll, a0);
@@ -3474,6 +3476,10 @@ public class F {
 		return unaryAST1(InverseErf, a0);
 	}
 
+	public static IAST InverseFunction(final IExpr a) {
+		return unaryAST1(InverseFunction, a);
+	}
+
 	// public static ISymbol method(final String symbolName, final String
 	// className, final String methodName) {
 	// return new MethodSymbol(symbolName, className, methodName);
@@ -3484,10 +3490,6 @@ public class F {
 	// final String methodName) {
 	// return new MethodSymbol(symbolName, packageName, className, methodName);
 	// }
-
-	public static IAST InverseFunction(final IExpr a) {
-		return unaryAST1(InverseFunction, a);
-	}
 
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
@@ -3794,9 +3796,13 @@ public class F {
 	public static IAST Max(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Max, a0, a1);
 	}
-	
+
 	public static IAST Max(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(Max, a0, a1, a2, a3);
+	}
+
+	public static IAST Mean(final IExpr a0) {
+		return unaryAST1(Mean, a0);
 	}
 
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
