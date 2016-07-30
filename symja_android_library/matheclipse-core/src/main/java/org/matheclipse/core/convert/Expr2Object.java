@@ -14,6 +14,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.DoubleMath;
 
 public class Expr2Object {
+	/**
+	 * 
+	 * @param ast
+	 * @return
+	 * @throws WrongArgumentType
+	 * @deprecated use {@link IExpr#toDoubleVector()}
+	 */
 	public static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
 		double[] result = new double[ast.size() - 1];
 		ISignedNumber signedNumber;
@@ -33,6 +40,7 @@ public class Expr2Object {
 	 * @param ast
 	 * @return <code>null</code> if ast is no matrix
 	 * @throws WrongArgumentType
+	 * @deprecated use {@link IExpr#toDoubleMatrix()}
 	 */
 	public static double[][] toDoubleMatrix(IAST ast) throws WrongArgumentType {
 		int[] dim = ast.isMatrix();

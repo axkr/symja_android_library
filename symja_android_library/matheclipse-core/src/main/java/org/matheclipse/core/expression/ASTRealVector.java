@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.apache.commons.math4.linear.ArrayRealVector;
 import org.apache.commons.math4.linear.RealVector;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -70,6 +72,15 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 		} else {
 			this.vector = vector;
 		}
+	}
+
+	/**
+	 * 
+	 * @param vector
+	 * @param deepCopy
+	 */
+	public ASTRealVector(double[] vector, boolean deepCopy) {
+		this.vector = new ArrayRealVector(vector, deepCopy);
 	}
 
 	/**
@@ -294,6 +305,12 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 
 	/** {@inheritDoc} */
 	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
@@ -368,6 +385,18 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isList() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealVector() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isSameHead(IExpr head) {
 		return F.$RealVector.equals(head);
 	}
@@ -396,7 +425,7 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 	public final int isVector() {
 		return vector.getDimension();
 	}
-	
+
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		this.fEvalFlags = objectInput.readShort();
@@ -509,6 +538,18 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 		return result;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public double[] toDoubleVector() {
+		return vector.toArray();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public RealVector toRealVector() {
+		return vector;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder buf = new StringBuilder();
@@ -520,10 +561,10 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 		try {
 			buf.append('{');
 			int size = vector.getDimension();
-			for (int i = 1; i < size; i++) {
+			for (int i = 0; i < size; i++) {
 				buf.append(Double.toString(vector.getEntry(i)));
 				if (i < size - 1) {
-					buf.append(", ");
+					buf.append(",");
 				}
 			}
 			buf.append('}');
@@ -585,5 +626,4 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
-
 }

@@ -107,7 +107,7 @@ public class AST2Expr {
 			"Together", "ToPolarCoordinates", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
 			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique",
 			"UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
-			"VandermondeMatrix", "Variables", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
+			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "Which", "While", "Xor", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

@@ -16,8 +16,12 @@ import org.apache.commons.math4.Field;
 import org.apache.commons.math4.FieldElement;
 import org.apache.commons.math4.complex.Complex;
 import org.apache.commons.math4.exception.MathArithmeticException;
+import org.apache.commons.math4.linear.ArrayRealVector;
+import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
@@ -1134,6 +1138,24 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix)
+	 * 
+	 * @return
+	 */
+	default boolean isRealMatrix() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a real vector (i.e. an ASTRealVector)
+	 * 
+	 * @return
+	 */
+	default boolean isRealVector() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a list of lists
 	 * 
 	 * @return
@@ -1753,6 +1775,46 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isSequence() {
 		return false;
+	}
+
+	/**
+	 * Convert this object into a <code>double[]</code> vector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         <code>double[]</code> vector
+	 */
+	default double[] toDoubleVector() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a <code>double[]</code> matrix.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         <code>double[]</code> matrix
+	 */
+	default double[][] toDoubleMatrix() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a RealVector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         RealVector
+	 */
+	default RealVector toRealVector() {
+		return null;
+	}
+
+	/**
+	 * Convert this object into a RealMatrix.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         RealMatrix
+	 */
+	default RealMatrix toRealMatrix() {
+		return null;
 	}
 
 	/**

@@ -17,6 +17,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.linear.ArrayRealVector;
+import org.apache.commons.math4.linear.BlockRealMatrix;
+import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
@@ -169,6 +173,28 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return lhaAST.size() - rhsAST.size();
 	}
 
+	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
+		IExpr arg1 = ((IAST) lhsPowerAST).arg1();
+		if (arg1.isSymbolOrPatternObject()) {
+			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
+			// {
+			// return (-1) * compareToTimes((IAST) rhsSymbolOrPattern,
+			// lhsPowerAST);
+			// }
+			final int cp = arg1.compareTo(rhsSymbolOrPattern);
+			if (cp != 0) {
+				return cp;
+			}
+			// "x^1" compared to "x^arg2()"
+			IExpr arg2 = ((IAST) lhsPowerAST).arg2();
+			if (arg2.isNumeric()) {
+				return ((IAST) lhsPowerAST).arg2().compareTo(F.CD1);
+			}
+			return arg2.compareTo(F.C1);
+		}
+		return 1;
+	}
+
 	/**
 	 * Compares lhsAST (Times) AST with the specified rhsAST for order. Returns
 	 * a negative integer, zero, or a positive integer as lhsAST (Times) AST is
@@ -243,28 +269,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 		}
 
-		return 1;
-	}
-
-	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
-		IExpr arg1 = ((IAST) lhsPowerAST).arg1();
-		if (arg1.isSymbolOrPatternObject()) {
-			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
-			// {
-			// return (-1) * compareToTimes((IAST) rhsSymbolOrPattern,
-			// lhsPowerAST);
-			// }
-			final int cp = arg1.compareTo(rhsSymbolOrPattern);
-			if (cp != 0) {
-				return cp;
-			}
-			// "x^1" compared to "x^arg2()"
-			IExpr arg2 = ((IAST) lhsPowerAST).arg2();
-			if (arg2.isNumeric()) {
-				return ((IAST) lhsPowerAST).arg2().compareTo(F.CD1);
-			}
-			return arg2.compareTo(F.C1);
-		}
 		return 1;
 	}
 
@@ -1656,7 +1660,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isList() {
+	public boolean isList() {
 		return isSameHeadSizeGE(F.List, 1);
 	}
 
@@ -2038,6 +2042,47 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isRealMatrix() {
+		if (isList()) {
+			final int[] dim = new int[2];
+			dim[0] = size() - 1;
+			if (dim[0] > 0) {
+				dim[1] = 0;
+				if (arg1().isList()) {
+					IAST row = (IAST) arg1();
+					dim[1] = row.size() - 1;
+					for (int j = 1; j < row.size(); j++) {
+						if (!row.get(j).isSignedNumber()) {
+							return false;
+						}
+					}
+					for (int i = 2; i < size(); i++) {
+						if (!get(i).isList()) {
+							// this row is not a list
+							return false;
+						}
+						row = (IAST) get(i);
+						if (dim[1] != row.size() - 1) {
+							// this row has another dimension
+							return false;
+						}
+						for (int j = 1; j < row.size(); j++) {
+							if (!row.get(j).isSignedNumber()) {
+								return false;
+							}
+						}
+					}
+					addEvalFlags(IAST.IS_MATRIX);
+					return true;
+				}
+			}
+
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isRealResult() {
 		IExpr head = head();
 		if (size() == 2 && F.Cos.equals(head) && F.Sin.equals(head)) {
@@ -2060,6 +2105,20 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			}
 			if (!arg2().isRealResult()) {
 				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealVector() {
+		if (isList()) {
+			for (int i = 1; i < size(); i++) {
+				if (!get(i).isSignedNumber()) {
+					return false;
+				}
 			}
 			return true;
 		}
@@ -2702,6 +2761,47 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return F.eval(F.Times(this, that));
 	}
 
+	/**
+	 * 
+	 * @param ast
+	 * @return <code>null</code> if ast is no matrix
+	 * @throws WrongArgumentType
+	 */
+	public double[][] toDoubleMatrix() {
+		int[] dim = isMatrix();
+		if (dim == null) {
+			return null;
+		}
+		double[][] result = new double[dim[0]][dim[1]];
+		ISignedNumber signedNumber;
+		for (int i = 1; i <= dim[0]; i++) {
+			IAST row = (IAST) get(i);
+			for (int j = 1; j <= dim[1]; j++) {
+				signedNumber = row.get(j).evalSignedNumber();
+				if (signedNumber != null) {
+					result[i - 1][j - 1] = signedNumber.doubleValue();
+				} else {
+					return null;
+				}
+			}
+		}
+		return result;
+	}
+
+	public double[] toDoubleVector() {
+		double[] result = new double[size() - 1];
+		ISignedNumber signedNumber;
+		for (int i = 1; i < size(); i++) {
+			signedNumber = get(i).evalSignedNumber();
+			if (signedNumber != null) {
+				result[i - 1] = signedNumber.doubleValue();
+			} else {
+				return null;
+			}
+		}
+		return result;
+	}
+
 	private final String toFullFormString() {
 		final String sep = ", ";
 		IExpr temp = null;
@@ -2765,6 +2865,26 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		}
 		if (head() instanceof IStringX) {
 			return F.StringHead;
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public RealMatrix toRealMatrix() {
+		final double[][] elements = toDoubleMatrix();
+		if (elements != null) {
+			return new BlockRealMatrix(elements.length, elements[0].length, elements, false);
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public RealVector toRealVector() {
+		final double[] elements = toDoubleVector();
+		if (elements != null) {
+			return new ArrayRealVector(elements, false);
 		}
 		return null;
 	}

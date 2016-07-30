@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.commons.math4.linear.RealMatrix;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -294,6 +295,12 @@ public class ASTRealMatrix extends AbstractAST implements List<IExpr>, Cloneable
 
 	/** {@inheritDoc} */
 	@Override
+	public IExpr evaluate(EvalEngine engine) {
+		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
@@ -367,11 +374,23 @@ public class ASTRealMatrix extends AbstractAST implements List<IExpr>, Cloneable
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isList() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final int[] isMatrix() {
 		int[] dim = new int[2];
 		dim[0] = matrix.getRowDimension();
 		dim[1] = matrix.getColumnDimension();
 		return dim;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isRealMatrix() {
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -509,6 +528,18 @@ public class ASTRealMatrix extends AbstractAST implements List<IExpr>, Cloneable
 		return result;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public double[][] toDoubleMatrix() {
+		return matrix.getData();
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public RealMatrix toRealMatrix() {
+		return matrix;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder buf = new StringBuilder();
@@ -601,5 +632,4 @@ public class ASTRealMatrix extends AbstractAST implements List<IExpr>, Cloneable
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
-
 }

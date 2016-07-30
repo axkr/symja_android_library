@@ -860,10 +860,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCovariance() {
-		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})", 
-				"1/20*((-a-b-c+4*d-e)*Conjugate(v)+(-a-b-c-d+4*e)*Conjugate(w)+(4*a-b-c-d-e)*Conjugate(x)+(-a+\n" + 
-				"4*b-c-d-e)*Conjugate(y)+(-a-b+4*c-d-e)*Conjugate(z))");
-		check("Covariance({a, b, c}, {x, y, z})", "1/6*((2*a-b-c)*Conjugate(x)+(-a+2*b-c)*Conjugate(y)+(-a-b+2*c)*Conjugate(z))");
+		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})",
+				"1/20*((-a-b-c+4*d-e)*Conjugate(v)+(-a-b-c-d+4*e)*Conjugate(w)+(4*a-b-c-d-e)*Conjugate(x)+(-a+\n"
+						+ "4*b-c-d-e)*Conjugate(y)+(-a-b+4*c-d-e)*Conjugate(z))");
+		check("Covariance({a, b, c}, {x, y, z})",
+				"1/6*((2*a-b-c)*Conjugate(x)+(-a+2*b-c)*Conjugate(y)+(-a-b+2*c)*Conjugate(z))");
 		check("Covariance({a, b}, {x, y})", "1/2*(a-b)*(-Conjugate(y)+Conjugate(x))");
 		check("Covariance({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", "11.260416666666666");
 	}
@@ -3300,12 +3301,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("$f(b_) := switch(b, True, 1, False, 0, _, -1);{$f(True), $f(False), $f(x)}", "{1,0,-1}");
 	}
 
-	public void testTally() {
-		check("Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", "{{{a,b},3},{E,2}}");
-		check("Tally({a,a,b,a,c,b,a})", "{{a,4},{b,2},{c,1}}");
-		check("Tally({b,a,b,a,c,b,a})", "{{b,3},{a,3},{c,1}}");
-	}
-
 	public void testTable() {
 		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
 		check("Table(0,{4-1})", "{0,0,0}");
@@ -3331,6 +3326,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Take({{11, 12, 13}, {21, 22, 23},{31, 32, 33}}, 2, 2)", "{{11,12},{21,22}}");
 		check("Take({{11, 12, 13}, {21, 22, 23},a,{31, 32, 33}}, 3, 2)",
 				"Take({{11,12,13},{21,22,23},a,{31,32,33}},3,2)");
+	}
+
+	public void testTally() {
+		check("Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", "{{{a,b},3},{E,2}}");
+		check("Tally({a,a,b,a,c,b,a})", "{{a,4},{b,2},{c,1}}");
+		check("Tally({b,a,b,a,c,b,a})", "{{b,3},{a,3},{c,1}}");
 	}
 
 	public void testTan() {
@@ -3580,6 +3581,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 		// TODO: see http://reference.wolfram.com/language/ref/MonomialList.html
 		check("Variables(y + x z)", "{x,y,z}");
+	}
+
+	public void testVariance() {
+		check("Variance({1., 2., 3., 4.})","1.6666666666666667");
+		check("Variance({{5.2, 7}, {5.3, 8}, {5.4, 9}})", "{0.010000000000000018,1.0}");
+		check("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", "5.16122380952381");
 	}
 
 	public void testVectorAngle() {

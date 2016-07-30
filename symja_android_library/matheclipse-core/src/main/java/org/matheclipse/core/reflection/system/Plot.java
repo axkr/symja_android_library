@@ -139,7 +139,7 @@ public class Plot extends AbstractEvaluator {
 			}
 			x += step;
 		}
-		return Convert.doubleToExprTranspose(data);
+		return Convert.toExprTransposed(data);
 	}
 
 	public void setUp(final ISymbol symbol) throws SyntaxError {
