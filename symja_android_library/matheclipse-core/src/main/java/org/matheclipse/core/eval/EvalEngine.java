@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -18,6 +19,8 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -607,7 +610,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
 			final IExpr arg1 = ast.arg1();
-			if (arg1.isList()) {
+			// if (arg1 instanceof ASTRealVector) {
+			// final IEvaluator module = symbol.getEvaluator();
+			// if (module instanceof DoubleUnaryOperator) {
+			// // forEach((DoubleUnaryOperator)module);
+			// }
+			// }
+			if (arg1.isList() || arg1 instanceof ASTRealVector || arg1 instanceof ASTRealMatrix) {
 				// thread over the list
 				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1);
 			}

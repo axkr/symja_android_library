@@ -80,7 +80,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	 * 
 	 * @param matrix
 	 *            the matrix which contains symbolic values
-	 * @return
+	 * @return <code>F.NIL</code> if the evaluation isn't possible
 	 */
 	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
 
@@ -89,7 +89,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 	 * 
 	 * @param matrix
 	 *            the matrix which contains numeric values
-	 * @return
+	 * @return <code>F.NIL</code> if the evaluation isn't possible
 	 */
 	public abstract IExpr realMatrixEval(RealMatrix matrix);
 }

@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.parser.client.SyntaxError;
 
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 /**
@@ -24,26 +25,7 @@ import java.util.function.Function;
  * <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
  * value</a>
  */
-public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
-
-	private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
-		@Override
-		public IExpr apply(IExpr expr) {
-			if (expr.isNumber()) {
-				return ((INumber) expr).eabs();
-			}
-			IExpr temp = F.eval(F.Abs(expr));
-			if (!temp.topHead().equals(F.Abs)) {
-				return temp;
-			}
-			return F.NIL;
-		}
-	}
+public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
 
 	private static final class AbsNumericFunction implements INumericFunction<IExpr> {
 		final ISymbol symbol;
@@ -64,7 +46,46 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 		}
 	}
 
+	private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
+		@Override
+		public IExpr apply(IExpr expr) {
+			if (expr.isNumber()) {
+				return ((INumber) expr).eabs();
+			}
+			IExpr temp = F.eval(F.Abs(expr));
+			if (!temp.topHead().equals(F.Abs)) {
+				return temp;
+			}
+			return F.NIL;
+		}
+	}
+
 	public Abs() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.abs(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.num(ApcomplexMath.abs(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.abs(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.num(ComplexNum.dabs(arg1));
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.abs(arg1));
 	}
 
 	@Override
@@ -110,23 +131,8 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.abs(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.num(ComplexNum.dabs(arg1));
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.abs(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.num(ApcomplexMath.abs(arg1));
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

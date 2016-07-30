@@ -7,7 +7,8 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -802,7 +803,7 @@ public class OutputFormFactory {
 					return;
 				}
 			}
-			if (list.isList()) { // header.equals(List)) {
+			if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
 				convertList(buf, list);
 				return;
 			}
@@ -916,6 +917,16 @@ public class OutputFormFactory {
 	}
 
 	public void convertList(final Appendable buf, final IAST list) throws IOException {
+		if (list instanceof ASTRealVector) {
+			((ASTRealVector) list).toString(buf);
+			return;
+		}
+		if (list instanceof ASTRealMatrix) {
+			((ASTRealMatrix) list).toString(buf, fEmpty);
+			fColumnCounter = 1;
+			fEmpty = false;
+			return;
+		}
 		if (list.isEvalFlagOn(IAST.IS_MATRIX)) {
 			if (!fEmpty) {
 				newLine(buf);

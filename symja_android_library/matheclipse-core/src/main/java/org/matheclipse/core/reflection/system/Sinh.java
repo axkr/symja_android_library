@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Sinh;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -24,14 +26,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * function</a>
  */
-public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules, DoubleUnaryOperator {
 
 	public Sinh() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.sinh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.sinh(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.sinh(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.sinh());
+	}
+	
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.sinh(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.sinh(stack[top]);
 	}
 
 	@Override
@@ -51,31 +81,8 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.sinh(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.sinh());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.sinh(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.sinh(arg1));
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.sinh(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

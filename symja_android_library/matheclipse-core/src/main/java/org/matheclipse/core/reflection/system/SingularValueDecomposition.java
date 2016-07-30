@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -39,9 +40,9 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 			final RealMatrix vMatrix = svd.getV();
 
 			final IAST result = List();
-			final IAST uMatrixAST = Convert.realMatrix2List(uMatrix);
-			final IAST sMatrixAST = Convert.realMatrix2List(sMatrix);
-			final IAST vMatrixAST = Convert.realMatrix2List(vMatrix);
+			final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
+			final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
+			final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
 			result.add(uMatrixAST);
 			result.add(sMatrixAST);
 			result.add(vMatrixAST);

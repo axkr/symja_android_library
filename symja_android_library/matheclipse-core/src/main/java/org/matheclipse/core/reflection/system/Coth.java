@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Coth;
 import static org.matheclipse.core.expression.F.Negate;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -24,14 +26,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * function</a>
  */
-public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class Coth extends AbstractTrigArg1 implements INumeric, CothRules, DoubleUnaryOperator {
 
 	public Coth() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.cosh(operand) / Math.sinh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.cosh(arg1).divide(ApcomplexMath.sinh(arg1)));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.cosh(arg1).divide(ApfloatMath.sinh(arg1)));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cosh().divide(arg1.sinh()));
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.cosh(arg1) / Math.sinh(arg1));
+	}
+	
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.cosh(stack[top]) / Math.sinh(stack[top]);
 	}
 
 	@Override
@@ -51,31 +81,8 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules {
 	}
 
 	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.cosh(stack[top]) / Math.sinh(stack[top]);
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.cosh(arg1) / Math.sinh(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.cosh().divide(arg1.sinh()));
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.cosh(arg1).divide(ApfloatMath.sinh(arg1)));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.cosh(arg1).divide(ApcomplexMath.sinh(arg1)));
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

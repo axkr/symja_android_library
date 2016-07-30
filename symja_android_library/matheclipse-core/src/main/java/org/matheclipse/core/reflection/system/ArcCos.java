@@ -5,11 +5,14 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -26,23 +29,33 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
  * > Inverse_trigonometric functions</a>
  */
-public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules, DoubleUnaryOperator {
 
 	public ArcCos() {
 	}
 
 	@Override
-	public IExpr evaluateArg1(final IExpr arg1) {
-		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr.isPresent()) {
-			return Plus(Negate(Pi), ArcCos(negExpr));
+	public double applyAsDouble(double operand) {
+		double val = Math.acos(operand);
+		if (Double.isNaN(val)) {
+			throw new ComplexResultException("ArcCos(NaN)");
 		}
-		return F.NIL;
+		return val;
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.acos(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.acos(arg1));
+	}
+	
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.acos());
 	}
 
 	@Override
@@ -56,26 +69,25 @@ public class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules {
 	}
 
 	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.acos());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.acos(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.acos(arg1));
-	}
-
-	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
 			throw new UnsupportedOperationException();
 		}
 		return Math.acos(stack[top]);
+	}
+
+	@Override
+	public IExpr evaluateArg1(final IExpr arg1) {
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr.isPresent()) {
+			return Plus(Negate(Pi), ArcCos(negExpr));
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

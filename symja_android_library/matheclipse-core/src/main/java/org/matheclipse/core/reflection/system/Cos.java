@@ -13,11 +13,14 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -41,14 +44,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">
  * Wikipedia - Exact trigonometric constants</a>
  */
-public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class Cos extends AbstractTrigArg1 implements INumeric, CosRules, DoubleUnaryOperator {
 
 	public Cos() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.cos(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.cos(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.cos(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cos());
+	}
+	
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.cos(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.cos(stack[top]);
 	}
 
 	@Override
@@ -103,31 +134,8 @@ public class Cos extends AbstractTrigArg1 implements INumeric, CosRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.cos(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.cos());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.cos(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.cos(arg1));
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.cos(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

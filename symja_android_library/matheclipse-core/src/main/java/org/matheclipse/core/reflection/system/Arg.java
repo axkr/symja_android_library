@@ -10,10 +10,13 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -34,9 +37,62 @@ import org.matheclipse.parser.client.SyntaxError;
  * Wikipedia - Argument (complex_analysis)</a>
  * 
  */
-public class Arg extends AbstractTrigArg1 implements INumeric {
+public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
 	public Arg() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		if (operand < 0) {
+			return Math.PI;
+		}
+		return 0.0;
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.num(ApcomplexMath.arg(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApcomplexMath.arg(arg1));
+	}
+
+	/**
+	 * Evaluate this function for one double complex argument
+	 * 
+	 * @param arg1
+	 *            a double complex number
+	 * @return
+	 */
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return num(Math.atan2(arg1.getImaginary(), arg1.getReal()));
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		if (arg1 < 0) {
+			return F.num(Math.PI);
+		} else if (arg1 >= 0) {
+			return F.CD0;
+		}
+		return F.NIL;
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		if (stack[top] < 0) {
+			return Math.PI;
+		} else if (stack[top] >= 0) {
+			return 0;
+		}
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -115,51 +171,6 @@ public class Arg extends AbstractTrigArg1 implements INumeric {
 			}
 		}
 		return F.NIL;
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		if (arg1 < 0) {
-			return F.num(Math.PI);
-		} else if (arg1 > 0) {
-			return F.CD0;
-		}
-		return F.NIL;
-	}
-
-	/**
-	 * Evaluate this function for one double complex argument
-	 * 
-	 * @param arg1
-	 *            a double complex number
-	 * @return
-	 */
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return num(Math.atan2(arg1.getImaginary(), arg1.getReal()));
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApcomplexMath.arg(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.num(ApcomplexMath.arg(arg1));
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		if (stack[top] < 0) {
-			return Math.PI;
-		} else if (stack[top] > 0) {
-			return 0;
-		}
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -60,7 +60,7 @@ public class AST2Expr {
 			"Colon", "Collect", "Commonest", "Complement", "Compile", "Complex", "ComplexExpand", "ComplexInfinity",
 			"ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray",
 			"Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral", "CoshIntegral", "Cot", "Coth",
-			"Count", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete",
+			"Count", "Covariance", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete",
 			"DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
 			"Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence", "DivideBy",
 			"Divisible", "Divisors", "Do", "Dot", "Drop", "DSolve", "Eigenvalues", "Eigenvectors", "Element",

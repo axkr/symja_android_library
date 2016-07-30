@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.math.BigInteger;
+import java.util.function.DoubleUnaryOperator;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -24,26 +25,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * Particular values of the Gamma function</a>
  * 
  */
-public class Gamma extends AbstractTrigArg1 {
-
-	public Gamma() {
-	}
-
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkRange(ast, 2, 4);
-
-		if (ast.isAST1()) {
-			return evaluateArg1(ast.arg1());
-		}
-		return F.NIL;
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		double gamma = org.apache.commons.math4.special.Gamma.gamma(arg1);
-		return F.num(gamma);
-	}
+public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 
 	/**
 	 * Implement: <code>Gamma(x_Integer) := (x-1)!</code>
@@ -53,6 +35,30 @@ public class Gamma extends AbstractTrigArg1 {
 	 */
 	public static IInteger gamma(final IInteger x) {
 		return Factorial.factorial(x.subtract(F.C1));
+	}
+
+	public Gamma() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return org.apache.commons.math4.special.Gamma.gamma(operand);
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		double gamma = org.apache.commons.math4.special.Gamma.gamma(arg1);
+		return F.num(gamma);
+	}
+	
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkRange(ast, 2, 4);
+
+		if (ast.isAST1()) {
+			return evaluateArg1(ast.arg1());
+		}
+		return F.NIL;
 	}
 
 	@Override

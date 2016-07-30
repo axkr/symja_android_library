@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -7,14 +9,14 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
-public class CosIntegral extends AbstractTrigArg1 implements INumeric {
+public class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
 	public CosIntegral() {
 	}
 
 	@Override
-	public IExpr evaluateArg1(final IExpr arg1) {
-		return F.NIL;
+	public double applyAsDouble(double operand) {
+		return de.lab4inf.math.functions.CosineIntegral.ci(operand);
 	}
 
 	@Override
@@ -28,6 +30,11 @@ public class CosIntegral extends AbstractTrigArg1 implements INumeric {
 			throw new UnsupportedOperationException();
 		}
 		return de.lab4inf.math.functions.CosineIntegral.ci(stack[top]);
+	}
+
+	@Override
+	public IExpr evaluateArg1(final IExpr arg1) {
+		return F.NIL;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -21,14 +23,24 @@ import org.matheclipse.parser.client.SyntaxError;
  * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
  * hyperbolic functions</a>
  */
-public class ArcCosh extends AbstractTrigArg1 implements INumeric, ArcCoshRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class ArcCosh extends AbstractTrigArg1 implements INumeric, ArcCoshRules, DoubleUnaryOperator {
 
 	public ArcCosh() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return FastMath.acosh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.acosh(arg1));
+	}
+	
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.acosh(arg1));
 	}
 
 	@Override
@@ -49,18 +61,13 @@ public class ArcCosh extends AbstractTrigArg1 implements INumeric, ArcCoshRules 
 	}
 
 	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.acosh(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.acosh(arg1));
-	}
-
-	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		return F.NIL;
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

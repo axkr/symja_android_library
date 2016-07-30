@@ -10,6 +10,8 @@ import org.apache.commons.math4.linear.FieldVector;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.Array2DRowFieldMatrix;
 //import org.matheclipse.commons.math.linear.ArrayFieldVector;
 //import org.matheclipse.commons.math.linear.FieldMatrix;
@@ -68,6 +70,9 @@ public class Convert {
 		if (listMatrix == null) {
 			return null;
 		}
+		if (listMatrix instanceof ASTRealMatrix) {
+			return ((ASTRealMatrix)listMatrix).getRealMatrix();
+		}
 		final Object header = listMatrix.head();
 		if (header != F.List) {
 			return null;
@@ -107,20 +112,21 @@ public class Convert {
 		if (matrix == null) {
 			return F.NIL;
 		}
-		final int rowSize = matrix.getRowDimension();
-		final int colSize = matrix.getColumnDimension();
-
-		final IAST out = F.ListC(rowSize);
-		IAST currOutRow;
-		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.ListC(colSize);
-			out.add(currOutRow);
-			for (int j = 0; j < colSize; j++) {
-				currOutRow.add(F.num(matrix.getEntry(i, j)));
-			}
-		}
-		out.addEvalFlags(IAST.IS_MATRIX);
-		return out;
+		return new ASTRealMatrix(matrix, false);
+//		final int rowSize = matrix.getRowDimension();
+//		final int colSize = matrix.getColumnDimension();
+//
+//		final IAST out = F.ListC(rowSize);
+//		IAST currOutRow;
+//		for (int i = 0; i < rowSize; i++) {
+//			currOutRow = F.ListC(colSize);
+//			out.add(currOutRow);
+//			for (int j = 0; j < colSize; j++) {
+//				currOutRow.add(F.num(matrix.getEntry(i, j)));
+//			}
+//		}
+//		out.addEvalFlags(IAST.IS_MATRIX);
+//		return out;
 	}
 
 	/**
@@ -135,6 +141,9 @@ public class Convert {
 	 */
 	public static RealVector list2RealVector(final IAST listVector)
 			throws ClassCastException, IndexOutOfBoundsException {
+		if (listVector instanceof ASTRealVector) {
+			return ((ASTRealVector)listVector).getRealVector();
+		}
 		final Object header = listVector.head();
 		if (header != F.List) {
 			return null;

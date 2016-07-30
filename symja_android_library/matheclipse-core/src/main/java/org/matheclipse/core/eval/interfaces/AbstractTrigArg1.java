@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,7 +16,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 
 /**
- * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes <i>Listable</i> and <i>NumericFunction</i>
+ * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes
+ * <i>Listable</i> and <i>NumericFunction</i>
  * 
  */
 public abstract class AbstractTrigArg1 extends AbstractArg1 {

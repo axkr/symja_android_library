@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Tanh;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -24,14 +26,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * function</a>
  */
-public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules, DoubleUnaryOperator {
 
 	public Tanh() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.tanh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.tanh(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.tanh(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.tanh());
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(Math.tanh(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.tanh(stack[top]);
 	}
 
 	@Override
@@ -51,31 +81,8 @@ public class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(Math.tanh(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.tanh());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.tanh(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.tanh(arg1));
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.tanh(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

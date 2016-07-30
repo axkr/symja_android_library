@@ -14,6 +14,8 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -37,9 +39,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
  */
-public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
+public class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleUnaryOperator {
 
 	public Sin() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.sin(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.sin(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.sin(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.sin());
+	}
+	
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return num(Math.sin(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.sin(stack[top]);
 	}
 
 	@Override
@@ -96,34 +131,6 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules {
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return num(Math.sin(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.sin());
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.sin(stack[top]);
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.sin(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.sin(arg1));
 	}
 
 	@Override

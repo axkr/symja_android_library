@@ -172,6 +172,9 @@ public class F {
 	public final static ISymbol Direction = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "direction" : "Direction");
 	public final static ISymbol List = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
+	public final static ISymbol $RealVector = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
+	public final static ISymbol $RealMatrix = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
+	
 	public final static ISymbol True = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
 	public final static ISymbol Null = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "null" : "Null");
 	public final static ISymbol Second = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");

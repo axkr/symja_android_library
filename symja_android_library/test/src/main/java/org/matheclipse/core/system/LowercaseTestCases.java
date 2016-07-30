@@ -859,6 +859,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("count({3, 4, x, x^2, x^3}, x^_)", "2");
 	}
 
+	public void testCovariance() {
+		check("Covariance({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", "11.260416666666666");
+	}
+
 	public void testCross() {
 		check("Cross({a, b, c}, {x, y, z})", "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
 		check("Cross({x, y})", "{-y,x}");

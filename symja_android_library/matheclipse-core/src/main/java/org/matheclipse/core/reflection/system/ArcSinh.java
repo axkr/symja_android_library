@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.ArcSinh;
 import static org.matheclipse.core.expression.F.Negate;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -25,14 +27,38 @@ import org.matheclipse.parser.client.SyntaxError;
  * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
  * hyperbolic functions</a>
  */
-public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules {
+public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules, DoubleUnaryOperator {
 	
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
+	public ArcSinh() {
 	}
 
-	public ArcSinh() {
+	@Override
+	public double applyAsDouble(double operand) {
+		return FastMath.asinh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.asinh(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.asinh(arg1));
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		double val = FastMath.asinh(arg1);
+		return F.num(val);
+	}
+	
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return FastMath.asinh(stack[top]);
 	}
 
 	@Override
@@ -49,27 +75,8 @@ public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules 
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		double val = FastMath.asinh(arg1);
-		return F.num(val);
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return FastMath.asinh(stack[top]);
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.asinh(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.asinh(arg1));
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

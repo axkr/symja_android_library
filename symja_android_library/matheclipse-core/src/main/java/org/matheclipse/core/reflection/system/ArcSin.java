@@ -3,11 +3,14 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.Negate;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -21,17 +24,53 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arcsine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
- * > Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+ * Inverse_trigonometric functions</a>
  */
-public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules, DoubleUnaryOperator {
 
 	public ArcSin() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		double val = Math.asin(operand);
+		if (Double.isNaN(val)) {
+			throw new ComplexResultException("");
+		}
+		return val;
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.asin(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.asin(arg1));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.asin());
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		double val = Math.asin(arg1);
+		if (Double.isNaN(val)) {
+			return F.complexNum(Complex.valueOf(arg1).asin());
+		}
+		return F.num(val);
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return Math.asin(stack[top]);
 	}
 
 	@Override
@@ -48,35 +87,8 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		double val = Math.asin(arg1);
-		if (Double.isNaN(val)) {
-			return F.complexNum(Complex.valueOf(arg1).asin());
-		}
-		return F.num(val);
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.asin());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.asin(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.asin(arg1));
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return Math.asin(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

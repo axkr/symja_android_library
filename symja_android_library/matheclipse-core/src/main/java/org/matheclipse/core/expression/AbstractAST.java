@@ -1683,7 +1683,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final int[] isMatrix() {
+	public int[] isMatrix() {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = size() - 1;
@@ -2238,7 +2238,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final int isVector() {
+	public int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
 			return size() - 1;
 		}

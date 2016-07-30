@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.InverseErf;
 import static org.matheclipse.core.expression.F.Negate;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.exception.MaxCountExceededException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -18,8 +20,13 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * @see org.matheclipse.core.reflection.system.Erf
  */
-public class InverseErf extends AbstractTrigArg1 implements INumeric {
+public class InverseErf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 	public InverseErf() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return org.apache.commons.math4.special.Erf.erfInv(operand);
 	}
 
 	@Override
@@ -29,6 +36,18 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 		} catch (final MaxCountExceededException e) {
 		}
 		return F.NIL;
+	}
+	
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		try {
+			return org.apache.commons.math4.special.Erf.erfInv(stack[top]);
+		} catch (final MaxCountExceededException e) {
+		}
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -47,18 +66,6 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 			return Negate(InverseErf(negExpr));
 		}
 		return F.NIL;
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		try {
-			return org.apache.commons.math4.special.Erf.erfInv(stack[top]);
-		} catch (final MaxCountExceededException e) {
-		}
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

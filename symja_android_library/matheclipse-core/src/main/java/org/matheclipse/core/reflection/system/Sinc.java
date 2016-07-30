@@ -4,6 +4,8 @@ import static org.matheclipse.core.expression.F.CD1;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.num;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -23,9 +25,38 @@ import org.matheclipse.parser.client.SyntaxError;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
  */
-public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
+public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules, DoubleUnaryOperator {
 
 	public Sinc() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return Math.sin(operand) / operand;
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		if (arg1.equals(Apcomplex.ZERO)) {
+			return F.num(Apcomplex.ONE);
+		}
+		return F.complexNum(ApcomplexMath.sin(arg1).divide(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		if (arg1.equals(Apcomplex.ZERO)) {
+			return F.num(Apcomplex.ONE);
+		}
+		return F.num(ApfloatMath.sin(arg1).divide(arg1));
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		if (arg1 == 0.0) {
+			return CD1;
+		}
+		return num(Math.sin(arg1) / arg1);
 	}
 
 	@Override
@@ -49,34 +80,9 @@ public class Sinc extends AbstractTrigArg1 implements INumeric, SincRules {
 		return F.NIL;
 	}
 
-	
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		if (arg1 == 0.0) {
-			return CD1;
-		}
-		return num(Math.sin(arg1) / arg1);
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		if (arg1.equals(Apcomplex.ZERO)) {
-			return F.num(Apcomplex.ONE);
-		}
-		return F.num(ApfloatMath.sin(arg1).divide(arg1));
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		if (arg1.equals(Apcomplex.ZERO)) {
-			return F.num(Apcomplex.ONE);
-		}
-		return F.complexNum(ApcomplexMath.sin(arg1).divide(arg1));
 	}
 
 	@Override

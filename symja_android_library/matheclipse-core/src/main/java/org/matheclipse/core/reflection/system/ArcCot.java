@@ -5,11 +5,15 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -22,46 +26,21 @@ import org.matheclipse.parser.client.SyntaxError;
 /**
  * Arccotangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
- * > Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+ * Inverse_trigonometric functions</a>
  */
-public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class ArcCot extends AbstractTrigArg1 implements ArcCotRules, DoubleUnaryOperator {
 
 	public ArcCot() {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		if (F.isZero(arg1)) {
+	public double applyAsDouble(double operand) {
+		if (F.isZero(operand)) {
 			// Pi / 2
-			return F.num(Math.PI / 2.0);
+			return Math.PI / 2.0;
 		}
-		return F.num(Math.atan(1 / arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		// I/arg1
-		Complex c = Complex.I.divide(arg1);
-
-		// (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
-		Complex result = Complex.I.divide(new Complex(2.0))
-				.multiply(Complex.ONE.subtract(c).log().subtract(Complex.ONE.sum(c).log()));
-		return F.complexNum(result);
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		if (arg1.equals(Apcomplex.ZERO)) {
-			// Pi / 2
-			return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
-		}
-		return F.num(ApfloatMath.atan(arg1.inverse()));
+		return Math.atan(1 / operand);
 	}
 
 	@Override
@@ -76,6 +55,35 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 	}
 
 	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		if (arg1.equals(Apcomplex.ZERO)) {
+			// Pi / 2
+			return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
+		}
+		return F.num(ApfloatMath.atan(arg1.inverse()));
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		// I/arg1
+		Complex c = Complex.I.divide(arg1);
+
+		// (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
+		Complex result = Complex.I.divide(new Complex(2.0))
+				.multiply(Complex.ONE.subtract(c).log().subtract(Complex.ONE.sum(c).log()));
+		return F.complexNum(result);
+	}
+
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		if (F.isZero(arg1)) {
+			// Pi / 2
+			return F.num(Math.PI / 2.0);
+		}
+		return F.num(Math.atan(1 / arg1));
+	}
+
+	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr.isPresent()) {
@@ -86,6 +94,11 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules {
 			return F.Times(F.CNI, F.ArcCoth(imPart));
 		}
 		return F.NIL;
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

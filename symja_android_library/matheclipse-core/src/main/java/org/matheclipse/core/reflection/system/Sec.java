@@ -10,6 +10,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -35,14 +37,42 @@ import org.matheclipse.parser.client.SyntaxError;
  * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
  * functions</a>
  */
-public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class Sec extends AbstractTrigArg1 implements INumeric, SecRules, DoubleUnaryOperator {
 
 	public Sec() {
+	}
+
+	@Override
+	public double applyAsDouble(double operand) {
+		return 1.0D / Math.cos(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.cos(arg1).inverse());
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.cos(arg1).inverse());
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cos().reciprocal());
+	}
+	
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(1.0D / Math.cos(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return 1.0D / Math.cos(stack[top]);
 	}
 
 	@Override
@@ -94,31 +124,8 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(1.0D / Math.cos(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.cos().reciprocal());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.cos(arg1).inverse());
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.cos(arg1).inverse());
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return 1.0D / Math.cos(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Sech;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -23,13 +25,41 @@ import org.matheclipse.parser.client.SyntaxError;
  * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
  * functions</a>
  */
-public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
+public class Sech extends AbstractTrigArg1 implements INumeric, SechRules, DoubleUnaryOperator {
+	public Sech() {
 	}
 
-	public Sech() {
+	@Override
+	public double applyAsDouble(double operand) {
+		return 1.0D / Math.cosh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.cosh(arg1).inverse());
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.cosh(arg1).inverse());
+	}
+
+	@Override
+	public IExpr e1ComplexArg(final Complex arg1) {
+		return F.complexNum(arg1.cosh().reciprocal());
+	}
+	
+	@Override
+	public IExpr e1DblArg(final double arg1) {
+		return F.num(1.0D / Math.cosh(arg1));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		if (size != 1) {
+			throw new UnsupportedOperationException();
+		}
+		return 1.0D / Math.cosh(stack[top]);
 	}
 
 	@Override
@@ -49,31 +79,8 @@ public class Sech extends AbstractTrigArg1 implements INumeric, SechRules {
 	}
 
 	@Override
-	public IExpr e1DblArg(final double arg1) {
-		return F.num(1.0D / Math.cosh(arg1));
-	}
-
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return F.complexNum(arg1.cosh().reciprocal());
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.cosh(arg1).inverse());
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.cosh(arg1).inverse());
-	}
-
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		if (size != 1) {
-			throw new UnsupportedOperationException();
-		}
-		return 1.0D / Math.cosh(stack[top]);
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override

@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.ArcTanh;
 import static org.matheclipse.core.expression.F.Negate;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -25,27 +27,24 @@ import org.matheclipse.parser.client.SyntaxError;
  * <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse
  * hyperbolic functions</a>
  */
-public class ArcTanh extends AbstractTrigArg1 implements INumeric, ArcTanhRules {
-
-	@Override
-	public IAST getRuleAST() {
-		return RULES;
-	}
+public class ArcTanh extends AbstractTrigArg1 implements INumeric, ArcTanhRules, DoubleUnaryOperator {
 
 	public ArcTanh() {
 	}
 
 	@Override
-	public IExpr evaluateArg1(final IExpr arg1) {
-		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-		if (negExpr.isPresent()) {
-			return Negate(ArcTanh(negExpr));
-		}
-		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-		if (imPart.isPresent()) {
-			return F.Times(F.CI, F.ArcTan(imPart));
-		}
-		return F.NIL;
+	public double applyAsDouble(double operand) {
+		return FastMath.atanh(operand);
+	}
+
+	@Override
+	public IExpr e1ApcomplexArg(Apcomplex arg1) {
+		return F.complexNum(ApcomplexMath.atanh(arg1));
+	}
+
+	@Override
+	public IExpr e1ApfloatArg(Apfloat arg1) {
+		return F.num(ApfloatMath.atanh(arg1));
 	}
 
 	@Override
@@ -66,13 +65,21 @@ public class ArcTanh extends AbstractTrigArg1 implements INumeric, ArcTanhRules 
 	}
 
 	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.atanh(arg1));
+	public IExpr evaluateArg1(final IExpr arg1) {
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr.isPresent()) {
+			return Negate(ArcTanh(negExpr));
+		}
+		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+		if (imPart.isPresent()) {
+			return F.Times(F.CI, F.ArcTan(imPart));
+		}
+		return F.NIL;
 	}
 
 	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.atanh(arg1));
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	@Override
