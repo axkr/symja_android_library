@@ -237,7 +237,7 @@ public class SquarefreeInfiniteFieldCharP<C extends GcdRingElem<C>> extends Squa
                 Quotient<C> rp = me.getKey();
                 long gl = me.getValue(); // sm.get(rp);
                 if (gl > 1) {
-                    rp = Power.<Quotient<C>> positivePower(rp, gl);
+                    rp = rp.power(gl); //Power.<Quotient<C>> positivePower(rp, gl);
                 }
                 r = r.multiply(rp);
             }
@@ -294,7 +294,7 @@ public class SquarefreeInfiniteFieldCharP<C extends GcdRingElem<C>> extends Squa
                 //System.out.println("gl = " + gl);
                 Quotient<C> re = rp;
                 if (gl > 1) {
-                    re = Power.<Quotient<C>> positivePower(rp, gl);
+                    re = rp.power(gl); //Power.<Quotient<C>> positivePower(rp, gl);
                 }
                 //System.out.println("re = " + re);
                 r = r.multiply(re);

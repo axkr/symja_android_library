@@ -407,8 +407,8 @@ public class GreatestCommonDivisorModular<MOD extends GcdRingElem<MOD> & Modular
         // compute norms
         BigInteger an = r.maxNorm();
         BigInteger bn = q.maxNorm();
-        an = Power.<BigInteger> power(fac.coFac, an, f);
-        bn = Power.<BigInteger> power(fac.coFac, bn, e);
+        an = an.power(f); //Power.<BigInteger> power(fac.coFac, an, f);
+        bn = bn.power(e); //Power.<BigInteger> power(fac.coFac, bn, e);
         BigInteger cn = Combinatoric.factorial(e + f);
         BigInteger n = cn.multiply(an).multiply(bn);
 

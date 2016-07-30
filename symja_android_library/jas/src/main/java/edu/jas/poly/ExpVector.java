@@ -505,7 +505,7 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector> {
             if (ai.isZERO()) {
                 return ai;
             }
-            C pi = Power.<C> positivePower(ai, ei);
+            C pi = ai.power(ei); //Power.<C> positivePower(ai, ei);
             c = c.multiply(pi);
         }
         return c;

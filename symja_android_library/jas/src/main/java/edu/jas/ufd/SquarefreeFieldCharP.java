@@ -600,9 +600,9 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
             GenPolynomial<C> f = me.getKey();
             Long E = me.getValue(); //F.get(f);
             long e = E.longValue();
-            GenPolynomial<C> g = Power.<GenPolynomial<C>> positivePower(f, e);
+            GenPolynomial<C> g = f.power(e); //Power.<GenPolynomial<C>> positivePower(f, e);
             if (!f.isConstant()) {
-                g = Power.<GenPolynomial<C>> positivePower(g, p);
+                g = g.power(p); //Power.<GenPolynomial<C>> positivePower(g, p);
             }
             t = t.multiply(g);
         }
@@ -645,9 +645,9 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
             GenPolynomial<GenPolynomial<C>> f = me.getKey();
             Long E = me.getValue(); //F.get(f);
             long e = E.longValue();
-            GenPolynomial<GenPolynomial<C>> g = Power.<GenPolynomial<GenPolynomial<C>>> positivePower(f, e);
+            GenPolynomial<GenPolynomial<C>> g = f.power(e); //Power.<GenPolynomial<GenPolynomial<C>>> positivePower(f, e);
             if (!f.isConstant()) {
-                g = Power.<GenPolynomial<GenPolynomial<C>>> positivePower(g, p);
+                g = g.power(p); //Power.<GenPolynomial<GenPolynomial<C>>> positivePower(g, p);
             }
             t = t.multiply(g);
         }
@@ -684,7 +684,7 @@ public abstract class SquarefreeFieldCharP<C extends GcdRingElem<C>> extends Squ
             return true;
         }
         long p = P.ring.characteristic().longValue();
-        GenPolynomial<GenPolynomial<C>> t = Power.<GenPolynomial<GenPolynomial<C>>> positivePower(r, p);
+        GenPolynomial<GenPolynomial<C>> t = r.power(p); //Power.<GenPolynomial<GenPolynomial<C>>> positivePower(r, p);
 
         boolean f = P.equals(t) || P.equals(t.negate());
         if (!f) {

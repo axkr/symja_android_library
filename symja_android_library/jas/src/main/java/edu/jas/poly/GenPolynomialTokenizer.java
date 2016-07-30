@@ -368,7 +368,7 @@ public class GenPolynomialTokenizer {
                 ie = nextExponent();
                 if (debug)
                     logger.debug("ie " + ie);
-                r = Power.<RingElem> positivePower(r, ie);
+                r = (RingElem) r.power(ie); //Power.<RingElem> positivePower(r, ie);
                 if (debug)
                     logger.debug("coeff^ie " + r);
                 b = b.multiply(r, leer);
@@ -451,7 +451,7 @@ public class GenPolynomialTokenizer {
                     if (debug)
                         logger.debug("ie " + ie);
                     // r = r^ie;
-                    r = Power.<RingElem> positivePower(r, ie);
+                    r = (RingElem) r.power(ie); //Power.<RingElem> positivePower(r, ie);
                     if (debug)
                         logger.debug("coeff^ie " + r);
                     b = b.multiply(r, leer);
@@ -483,7 +483,7 @@ public class GenPolynomialTokenizer {
                         //}
                         ie = nextExponent();
                         //  System.out.println("ie: " + ie);
-                        r = Power.<RingElem> positivePower(r, ie);
+                        r = (RingElem) r.power(ie); //Power.<RingElem> positivePower(r, ie);
                         b = b.multiply(r);
                     } else { // found
                         //  System.out.println("ix: " + ix);
@@ -505,7 +505,7 @@ public class GenPolynomialTokenizer {
                 ie = nextExponent();
                 if (debug)
                     logger.debug("ie " + ie);
-                c = Power.<GenPolynomial> positivePower(c, ie);
+                c = (GenPolynomial) c.power(ie); //Power.<GenPolynomial> positivePower(c, ie);
                 if (debug)
                     logger.debug("factor^ie " + c);
                 b = b.multiply(c);

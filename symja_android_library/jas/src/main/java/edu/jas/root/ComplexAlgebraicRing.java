@@ -80,7 +80,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
         }
         C e = m.ring.coFac.fromInteger(10L).getRe();
         e = e.inverse();
-        e = Power.positivePower(e, PRECISION);
+        e = e.power(PRECISION); //Power.positivePower(e, PRECISION);
         eps = e;
     }
 
@@ -101,7 +101,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
         }
         C e = m.ring.coFac.fromInteger(10L).getRe();
         e = e.inverse();
-        e = Power.positivePower(e, PRECISION);
+        e = e.power(PRECISION); //Power.positivePower(e, PRECISION);
         eps = e;
     }
 

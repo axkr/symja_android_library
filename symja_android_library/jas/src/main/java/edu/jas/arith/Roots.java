@@ -49,7 +49,7 @@ public class Roots {
         java.math.BigInteger RP = Ar.val.toBigInteger();
         BigInteger R = new BigInteger(RP);
         while (true) {
-            BigInteger P = Power.positivePower(R, n);
+            BigInteger P = R.power(n); //Power.positivePower(R, n);
             //System.out.println("P = " + P);
             if (A.compareTo(P) >= 0) {
                 break;
@@ -172,7 +172,7 @@ public class Roots {
         BigDecimal eps = new BigDecimal("0.1"); //e-13"); // TODO
         int p = Math.max(mc.getPrecision(),java.math.MathContext.DECIMAL64.getPrecision());
         //java.math.MathContext.UNLIMITED.getPrecision() == 0
-        eps = Power.positivePower(eps,p/2);
+        eps = eps.power(p/2); //Power.positivePower(eps,p/2);
         // newton iteration
         BigDecimal Ap = new BigDecimal(A.val, mc);
         BigDecimal ninv = new BigDecimal(0.5, mc);
@@ -231,7 +231,7 @@ public class Roots {
         BigDecimal eps = new BigDecimal("0.1"); //e-10"); // TODO
         int p = Math.max(mc.getPrecision(),java.math.MathContext.DECIMAL64.getPrecision());
         //java.math.MathContext.UNLIMITED.getPrecision() == 0
-        eps = Power.positivePower(eps,(p*2)/3);
+        eps = eps.power((p*2)/3); //Power.positivePower(eps,(p*2)/3);
         // newton iteration
         BigDecimal Ap = A;
         BigDecimal N = new BigDecimal(n, mc);
@@ -242,7 +242,7 @@ public class Roots {
         BigDecimal d;
         int i = 0;
         while (true) {
-            P = Power.positivePower(R, n - 1);
+            P = R.power(n-1); //Power.positivePower(R, n - 1);
             R1 = Ap.divide(P.multiply(N));
             R1 = R.multiply(nsub).sum(R1);
             d = R.subtract(R1).abs();

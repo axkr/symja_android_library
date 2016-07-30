@@ -170,7 +170,13 @@ public class ThreadPool {
                 Thread.currentThread().interrupt();
             }
         }
+        if (workers == null) {
+            return;
+        }
         for (int i = 0; i < workers.length; i++) {
+            if (workers[i] == null) {
+                continue;
+            }
             try {
                 while (workers[i].isAlive()) {
                     workers[i].interrupt();
@@ -197,6 +203,9 @@ public class ThreadPool {
             }
         }
         //int re = 0;
+        if (workers == null) {
+            return s;
+        }
         for (int i = 0; i < workers.length; i++) {
             if (workers[i] == null) {
                 continue;

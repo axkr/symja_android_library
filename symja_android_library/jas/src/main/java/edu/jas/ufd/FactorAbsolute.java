@@ -823,7 +823,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
         for (Map.Entry<GenPolynomial<C>, Long> me : facs.factors.entrySet()) {
             GenPolynomial<C> f = me.getKey();
             long e = me.getValue(); //facs.factors.get(f);
-            GenPolynomial<C> g = Power.<GenPolynomial<C>> positivePower(f, e);
+            GenPolynomial<C> g = f.power(e); //Power.<GenPolynomial<C>> positivePower(f, e);
             t = t.multiply(g);
         }
         if (P.equals(t) || P.equals(t.negate())) {
@@ -838,7 +838,7 @@ public abstract class FactorAbsolute<C extends GcdRingElem<C>> extends FactorAbs
                 return false;
             }
             long e = me.getValue(); // facs.afactors.get(fs);
-            GenPolynomial<C> g = Power.<GenPolynomial<C>> positivePower(fs.poly, e);
+            GenPolynomial<C> g = fs.poly.power(e); //Power.<GenPolynomial<C>> positivePower(fs.poly, e);
             t = t.multiply(g);
         }
         boolean b = P.equals(t) || P.equals(t.negate());

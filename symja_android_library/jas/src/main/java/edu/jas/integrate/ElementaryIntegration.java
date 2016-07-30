@@ -182,7 +182,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
         List<GenPolynomial<C>> DP = new ArrayList<GenPolynomial<C>>();
         for (GenPolynomial<C> f : D) {
             long e = sfactors.get(f);
-            GenPolynomial<C> dp = Power.<GenPolynomial<C>> positivePower(f, e);
+            GenPolynomial<C> dp = f.power(e); //Power.<GenPolynomial<C>> positivePower(f, e);
             DP.add(dp);
         }
         //System.out.println("D:      " + D);
@@ -210,7 +210,7 @@ public class ElementaryIntegration<C extends GcdRingElem<C>> {
                 GenPolynomial<C>[] BC = ufd.baseGcdDiophant(DV_dx, v, Aik);
                 GenPolynomial<C> b = BC[0];
                 GenPolynomial<C> c = BC[1];
-                GenPolynomial<C> vj = Power.<GenPolynomial<C>> positivePower(v, j);
+                GenPolynomial<C> vj = v.power(j); //Power.<GenPolynomial<C>> positivePower(v, j);
                 G.add(b); // B
                 G.add(vj); // v^j
                 Ak = fac.fromInteger(-j).multiply(c).subtract(PolyUtil.<C> baseDeriviative(b));

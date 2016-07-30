@@ -97,6 +97,20 @@ public class PolyModUtil {
      */
     public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzGcd(GenSolvablePolynomialRing<C> r,
                     GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
+        return syzLeftGcd(r, n, d);
+    }
+
+
+    /**
+     * Left greatest common divisor via least common multiple.
+     * @param r solvable polynomial ring.
+     * @param n first solvable polynomial.
+     * @param d second solvable polynomial.
+     * @return gcd(n,d)
+     */
+    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzLeftGcd(GenSolvablePolynomialRing<C> r,
+                    GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
+
         if (n.isZERO()) {
             return d;
         }
@@ -120,8 +134,54 @@ public class PolyModUtil {
         A.add(n);
         A.add(d);
         SolvableGroebnerBaseAbstract<C> sbb = new SolvableGroebnerBaseSeq<C>();
-        logger.warn("syzGcd computing GB: " + A);
-        List<GenSolvablePolynomial<C>> G = sbb.rightGB(A); //leftGB, not: sbb.twosidedGB(A);
+        logger.warn("left syzGcd computing GB: " + A);
+        List<GenSolvablePolynomial<C>> G = sbb.rightGB(A); //not: leftGB, not: sbb.twosidedGB(A);
+        if (debug) {
+            logger.info("G = " + G);
+        }
+        if (G.size() == 1) {
+            return G.get(0);
+        }
+        logger.warn("gcd not determined, set to 1: " + G); // + ", A = " + A);
+        return r.getONE();
+    }
+
+
+    /**
+     * Right greatest common divisor via least common multiple.
+     * @param r solvable polynomial ring.
+     * @param n first solvable polynomial.
+     * @param d second solvable polynomial.
+     * @return gcd(n,d)
+     */
+    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzRightGcd(GenSolvablePolynomialRing<C> r,
+                    GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
+
+        if (n.isZERO()) {
+            return d;
+        }
+        if (d.isZERO()) {
+            return n;
+        }
+        if (n.isConstant()) {
+            return r.getONE();
+        }
+        if (d.isConstant()) {
+            return r.getONE();
+        }
+        if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
+            //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
+            // && n.length() < 10 && d.length() < 10
+            logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", "
+                        + d.totalDegree());
+            return r.getONE();
+        }
+        List<GenSolvablePolynomial<C>> A = new ArrayList<GenSolvablePolynomial<C>>(2);
+        A.add(n);
+        A.add(d);
+        SolvableGroebnerBaseAbstract<C> sbb = new SolvableGroebnerBaseSeq<C>();
+        logger.warn("right syzGcd computing GB: " + A);
+        List<GenSolvablePolynomial<C>> G = sbb.leftGB(A); // not: sbb.twosidedGB(A);
         if (debug) {
             logger.info("G = " + G);
         }
@@ -141,7 +201,7 @@ public class PolyModUtil {
      * @param d second solvable polynomial.
      * @return [ g=gcd(n,d), n/g, d/g ]
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C>[] syzGcdCofactors(
                     GenSolvablePolynomialRing<C> r, GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         GenSolvablePolynomial<C>[] res = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[3];

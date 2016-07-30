@@ -287,7 +287,7 @@ public class RecSolvableWordPolynomial<C extends RingElem<C>> extends
                     if (Cps.isConstant()) {
                         Ds = ring.valueOf(Cps.leadingBaseCoefficient(), g); //new RecSolvableWordPolynomial<C>(ring, Cps.leadingBaseCoefficient(), g); // symmetric!
                     } else {
-                        Ds = shift(Cps, f); // symmetric
+                        Ds = Cps.shift(f); // symmetric
                     }
                 } else { // eventually unsymmetric
                     if (debug)
@@ -620,20 +620,19 @@ public class RecSolvableWordPolynomial<C extends RingElem<C>> extends
     /**
      * RecSolvableWordPolynomial multiplication. Commutative product with
      * exponent vector.
-     * @param B solvable polynomial.
      * @param f exponent vector.
      * @return B*f, where * is commutative multiplication.
      */
-    protected RecSolvableWordPolynomial<C> shift(RecSolvableWordPolynomial<C> B, ExpVector f) {
+    protected RecSolvableWordPolynomial<C> shift(ExpVector f) {
         RecSolvableWordPolynomial<C> C = ring.getZERO().copy();
-        if (B == null || B.isZERO()) {
+        if (this.isZERO()) {
             return C;
         }
         if (f == null || f.isZERO()) {
-            return B;
+            return this;
         }
         Map<ExpVector, GenWordPolynomial<C>> Cm = C.val;
-        Map<ExpVector, GenWordPolynomial<C>> Bm = B.val;
+        Map<ExpVector, GenWordPolynomial<C>> Bm = this.val;
         for (Map.Entry<ExpVector, GenWordPolynomial<C>> y : Bm.entrySet()) {
             ExpVector e = y.getKey();
             GenWordPolynomial<C> a = y.getValue();

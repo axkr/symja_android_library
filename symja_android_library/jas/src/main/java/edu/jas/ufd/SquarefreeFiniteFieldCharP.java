@@ -97,9 +97,9 @@ public class SquarefreeFiniteFieldCharP<C extends GcdRingElem<C>> extends Square
                 return r;
             }
             BigInteger p = new BigInteger(aCoFac.characteristic());
-            BigInteger q = Power.<BigInteger> positivePower(p, d - 1);
+            BigInteger q = p.power(d-1); //Power.<BigInteger> positivePower(p, d - 1);
             //System.out.println("p**(d-1) = " + q);
-            r = Power.<C> positivePower(r, q.getVal());
+            r = Power.<C> positivePower(r, q.getVal()); // r.power(q.getVal());
             //System.out.println("r**q = " + r);
             return r;
         }
@@ -168,7 +168,7 @@ public class SquarefreeFiniteFieldCharP<C extends GcdRingElem<C>> extends Square
                 C qc = q.leadingBaseCoefficient();
                 //System.out.println("qc,const = " + qc + ", e = " + e);
                 if (e > 1L) {
-                    qc = Power.<C> positivePower(qc, e);
+                    qc = qc.power(e); //Power.<C> positivePower(qc, e);
                     //e = 1L;
                 }
                 C qr = coeffRootCharacteristic(qc);
@@ -179,7 +179,7 @@ public class SquarefreeFiniteFieldCharP<C extends GcdRingElem<C>> extends Square
             }
             if (e > k) {
                 long ep = e / cl;
-                q = Power.<GenPolynomial<C>> positivePower(q, ep);
+                q = q.power(ep); //Power.<GenPolynomial<C>> positivePower(q, ep);
             }
             rp = rp.multiply(q);
         }
@@ -275,7 +275,7 @@ public class SquarefreeFiniteFieldCharP<C extends GcdRingElem<C>> extends Square
                 GenPolynomial<C> rp = me.getKey();
                 long gl = me.getValue(); //sm.get(rp);
                 if (gl > 1) {
-                    rp = Power.<GenPolynomial<C>> positivePower(rp, gl);
+                    rp = rp.power(gl); //Power.<GenPolynomial<C>> positivePower(rp, gl);
                 }
                 r = r.multiply(rp);
             }

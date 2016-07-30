@@ -1213,7 +1213,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         long k = Power.logarithm(cofac.getIntegerModul(), mn) + 1L;
         //System.out.println("mn = " + mn + ", k = " +k);
 
-        BigInteger q = Power.positivePower(cofac.getIntegerModul(), k);
+        BigInteger q = cofac.getIntegerModul().power(k); //Power.positivePower(cofac.getIntegerModul(), k);
         ModularRingFactory<MOD> muqfac;
         if (ModLongRing.MAX_LONG.compareTo(q.getVal()) > 0) {
             muqfac = (ModularRingFactory) new ModLongRing(q.getVal());

@@ -1667,7 +1667,7 @@ public class HenselUtil {
             }
         }
         // setup ring mod p^k
-        modul = Power.positivePower(p, k);
+        modul = p.power(k); //Power.positivePower(p, k);
         if (ModLongRing.MAX_LONG.compareTo(modul.getVal()) > 0) {
             mcfac = (ModularRingFactory) new ModLongRing(modul.getVal());
         } else {
@@ -1854,7 +1854,7 @@ public class HenselUtil {
         Fi = Fii;
 
         // setup ring mod p^k
-        modul = Power.positivePower(p, k);
+        modul = p.power(k); //Power.positivePower(p, k);
         if (ModLongRing.MAX_LONG.compareTo(modul.getVal()) > 0) {
             mcfac = (ModularRingFactory) new ModLongRing(modul.getVal());
         } else {

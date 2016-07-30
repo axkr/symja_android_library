@@ -308,7 +308,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
             GenPolynomial<C> f = me.getKey();
             Long E = me.getValue(); // F.get(f);
             long e = E.longValue();
-            GenPolynomial<C> g = Power.<GenPolynomial<C>> positivePower(f, e);
+            GenPolynomial<C> g = f.power(e); //Power.<GenPolynomial<C>> positivePower(f, e);
             t = t.multiply(g);
         }
         boolean f = P.equals(t) || P.equals(t.negate());
@@ -352,7 +352,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
             GenPolynomial<GenPolynomial<C>> f = me.getKey();
             Long E = me.getValue(); // F.get(f);
             long e = E.longValue();
-            GenPolynomial<GenPolynomial<C>> g = Power.<GenPolynomial<GenPolynomial<C>>> positivePower(f, e);
+            GenPolynomial<GenPolynomial<C>> g = f.power(e); //Power.<GenPolynomial<GenPolynomial<C>>> positivePower(f, e);
             t = t.multiply(g);
         }
         boolean f = P.equals(t) || P.equals(t.negate());
@@ -481,7 +481,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         for (Map.Entry<GenPolynomial<C>, Long> me : D.entrySet()) {
             GenPolynomial<C> d = me.getKey();
             long e = me.getValue(); //D.get(d);
-            GenPolynomial<C> f = Power.<GenPolynomial<C>> positivePower(d, e);
+            GenPolynomial<C> f = d.power(e); //Power.<GenPolynomial<C>> positivePower(d, e);
             Dp.add(f);
         }
         List<GenPolynomial<C>> F = engine.basePartialFraction(A, Dp);
@@ -527,7 +527,7 @@ public abstract class SquarefreeAbstract<C extends GcdRingElem<C>> implements Sq
         for (Map.Entry<GenPolynomial<C>, Long> me : D.entrySet()) {
             GenPolynomial<C> d = me.getKey();
             long e = me.getValue(); // D.get(d);
-            GenPolynomial<C> f = Power.<GenPolynomial<C>> positivePower(d, e);
+            GenPolynomial<C> f = d.power(e); //Power.<GenPolynomial<C>> positivePower(d, e);
             Dp.add(f);
         }
         List<GenPolynomial<C>> fi = F.get(0);

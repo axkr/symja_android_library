@@ -931,7 +931,7 @@ public class HenselMultUtil {
         ModularRingFactory<MOD> pcfac = (ModularRingFactory<MOD>) cfac;
         //System.out.println("pcfac = " + pcfac);
         BigInteger p = pcfac.getIntegerModul();
-        BigInteger q = Power.positivePower(p, k);
+        BigInteger q = p.power(k); //Power.positivePower(p, k);
         ModularRingFactory<MOD> mcfac;
         if (ModLongRing.MAX_LONG.compareTo(q.getVal()) > 0) {
             mcfac = (ModularRingFactory) new ModLongRing(q.getVal());

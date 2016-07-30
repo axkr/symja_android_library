@@ -69,15 +69,16 @@ public interface MonoidElem<C extends MonoidElem<C>> extends Element<C> {
     public C inverse(); /*throws NotInvertibleException*/
 
 
-    /*
+    /**
      * Power of this to the n-th.
      * @param n integer exponent.
-     * @return a**n, with 0**0 = 0, a**0 = 1 and a**{-n} = {1/a}**n.
+     * @return a**n, with a**0 = 1 and a**{-n} = {1/a}**n.
      * Java 8 only
      */ 
-    //default public C power(long n) {
-    //  //System.out.println("this = " + this + ", n = " + n);
-    //  return Power.<C>power((MonoidFactory<C>)factory(),(C)this,n);
-    //}
+    @SuppressWarnings("unchecked")
+    default public C power(long n) {
+        //System.out.println("this = " + this + ", n = " + n);
+        return Power.<C>power((MonoidFactory<C>)factory(), (C)this, n);
+    }
 
 }

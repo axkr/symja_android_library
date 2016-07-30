@@ -434,13 +434,12 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
                 }
             }
         }
-        //System.out.println("G generated = " + G);
-        PairList<C> pairlist = strategy.create(modv, ring);
-        pairlist.put(PolynomialList.castToList(G));
-
         if (G.size() <= 1) { // 1 ok
             return G; // since no threads are activated
         }
+        //System.out.println("G generated = " + G);
+        PairList<C> pairlist = strategy.create(modv, ring);
+        pairlist.put(PolynomialList.castToList(G));
         logger.info("twosided start " + pairlist);
 
         Pair<C> pair;
@@ -723,8 +722,8 @@ public class SolvableGroebnerBaseSeq<C extends RingElem<C>> extends SolvableGroe
 
 
     /**
-     * Right Groebner base using pairlist class. Overides rightGB() via opposite
-     * ring.
+     * Right Groebner base via right reduction using pairlist
+     * class. Overides rightGB() via opposite ring.
      * @param modv number of module variables.
      * @param F solvable polynomial list.
      * @return rightGB(F) a right Groebner base of F.

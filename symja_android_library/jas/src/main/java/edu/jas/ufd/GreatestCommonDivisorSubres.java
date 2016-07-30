@@ -413,7 +413,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @return A^i.
      */
     C power(RingFactory<C> fac, C A, long i) {
-        return Power.<C> power(fac, A, i);
+        return A.power(i); //Power.<C> power(fac, A, i);
     }
 
 
@@ -424,7 +424,7 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @return A^i.
      */
     GenPolynomial<C> power(RingFactory<GenPolynomial<C>> fac, GenPolynomial<C> A, long i) {
-        return Power.<GenPolynomial<C>> power(fac, A, i);
+        return A.power(i); //Power.<GenPolynomial<C>> power(fac, A, i);
     }
 
 

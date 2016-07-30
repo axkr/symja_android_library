@@ -10,6 +10,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -56,15 +57,19 @@ public class ComputerThreads {
     //public static final int N_THREADS = ( N_CPUS < 3 ? 5 : 3*N_CPUS );
 
 
-    /*
-      * Queue capacity.
-      */
-    //public static final int Q_CAPACITY = 1000; // 10000
+    /**
+     * Timeout for timed execution. 
+     * @see edu.jas.fd.SGCDParallelProxy
+     */
+    static long timeout = 10L; //-1L;
 
-    /*
-      * WorkQueue.
-      */
-    //private static BlockingQueue<Runnable> workpile; 
+
+    /**
+     * TimeUnit for timed execution. 
+     * @see edu.jas.fd.SGCDParallelProxy
+     */
+    static TimeUnit timeunit = TimeUnit.SECONDS;
+
 
     /*
       * Saturation policy.
@@ -179,6 +184,42 @@ public class ComputerThreads {
      */
     public static synchronized void setThreads() {
         NO_THREADS = false;
+    }
+
+
+    /**
+     * Set timeout.
+     * @param t time value to set
+     */
+    public static synchronized void setTimeout(long t) {
+        timeout = t;
+    }
+
+
+    /**
+     * Get timeout.
+     * @return timeout value
+     */
+    public static synchronized long getTimeout() {
+        return timeout;
+    }
+
+
+    /**
+     * Set TimeUnit.
+     * @param t TimeUnit value to set
+     */
+    public static synchronized void setTimeUnit(TimeUnit t) {
+        timeunit = t;
+    }
+
+
+    /**
+     * Get TimeUnit.
+     * @return timeunit value
+     */
+    public static synchronized TimeUnit getTimeUnit() {
+        return timeunit;
     }
 
 }

@@ -807,6 +807,40 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
 
 
     /**
+     * GenSolvablePolynomial left division. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
+     * @return quotient with this = quotient * S + remainder and
+     *         deg(remainder) &lt; deg(S) or remiander = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     */
+    // cannot @Override, @NoOverride
+    @SuppressWarnings({ "unchecked" })
+    public GenSolvablePolynomial<C> divide(GenSolvablePolynomial<C> S) {
+        return quotientRemainder(S)[0];
+    }
+
+
+    /**
+     * GenSolvablePolynomial remainder by left division. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
+     * @return remainder with this = quotient * S + remainder and
+     *         deg(remainder) &lt; deg(S) or remiander = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     */
+    // cannot @Override, @NoOverride
+    @SuppressWarnings({ "unchecked" })
+    public GenSolvablePolynomial<C> remainder(GenSolvablePolynomial<C> S) {
+        return quotientRemainder(S)[1];
+    }
+
+
+    /**
      * GenSolvablePolynomial left division with remainder. Fails, if exact
      * division by leading base coefficient is not possible. Meaningful only for
      * univariate polynomials over fields, but works in any case.
@@ -842,6 +876,88 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
                 a = a.multiply(ci); // this is correct!
                 q = (GenSolvablePolynomial<C>) q.sum(a, f);
                 h = S.multiplyLeft(a, f);
+                if (!h.leadingBaseCoefficient().equals(r.leadingBaseCoefficient())) {
+                    throw new RuntimeException("something is wrong: r = " + r + ", h = " + h);
+                }
+                r = (GenSolvablePolynomial<C>) r.subtract(h);
+            } else {
+                break;
+            }
+        }
+        GenSolvablePolynomial<C>[] ret = new GenSolvablePolynomial[2];
+        ret[0] = q;
+        ret[1] = r;
+        return ret;
+    }
+
+
+    /**
+     * GenSolvablePolynomial right division. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
+     * @return quotient with this = S * quotient + remainder and
+     *         deg(remainder) &lt; deg(S) or remiander = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     */
+    @SuppressWarnings({ "unchecked" })
+    public GenSolvablePolynomial<C> rightDivide(GenSolvablePolynomial<C> S) {
+        return rightQuotientRemainder(S)[0];
+    }
+
+
+    /**
+     * GenSolvablePolynomial remainder by right division. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
+     * @return remainder with this = S * quotient + remainder and
+     *         deg(remainder) &lt; deg(S) or remiander = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     */
+    @SuppressWarnings({ "unchecked" })
+    public GenSolvablePolynomial<C> rightRemainder(GenSolvablePolynomial<C> S) {
+        return rightQuotientRemainder(S)[1];
+    }
+
+
+    /**
+     * GenSolvablePolynomial right division with remainder. Fails, if exact
+     * division by leading base coefficient is not possible. Meaningful only for
+     * univariate polynomials over fields, but works in any case.
+     * @param S nonzero GenSolvablePolynomial with invertible leading
+     *            coefficient.
+     * @return [ quotient , remainder ] with this = S * quotient + remainder and
+     *         deg(remainder) &lt; deg(S) or remainder = 0.
+     * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+     */
+    @SuppressWarnings({ "unchecked" })
+    public GenSolvablePolynomial<C>[] rightQuotientRemainder(GenSolvablePolynomial<C> S) {
+        if (S == null || S.isZERO()) {
+            throw new ArithmeticException("division by zero");
+        }
+        C c = S.leadingBaseCoefficient();
+        if (!c.isUnit()) {
+            throw new ArithmeticException("lbcf not invertible " + c);
+        }
+        C ci = c.inverse();
+        assert (ring.nvar == S.ring.nvar);
+        ExpVector e = S.leadingExpVector();
+        GenSolvablePolynomial<C> h;
+        GenSolvablePolynomial<C> q = ring.getZERO().copy();
+        GenSolvablePolynomial<C> r = this.copy();
+        while (!r.isZERO()) {
+            ExpVector f = r.leadingExpVector();
+            if (f.multipleOf(e)) {
+                C a = r.leadingBaseCoefficient();
+                //System.out.println("FDQR: f = " + f + ", a = " + a);
+                f = f.subtract(e);
+                //a = a.multiplyLeft(ci); // not existing
+                a = ci.multiply(a); // this is correct!
+                q = (GenSolvablePolynomial<C>) q.sum(a, f);
+                h = S.multiply(a, f);
                 if (!h.leadingBaseCoefficient().equals(r.leadingBaseCoefficient())) {
                     throw new RuntimeException("something is wrong: r = " + r + ", h = " + h);
                 }

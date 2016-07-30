@@ -201,10 +201,10 @@ public class GreatestCommonDivisorSimple<C extends GcdRingElem<C>> extends Great
             return P.ring.getONE();
         }
         if ( e == 0 ) {
-            return Power.<GenPolynomial<C>> power(P.ring,P,f);
+            return P.power(f); //Power.<GenPolynomial<C>> power(P.ring,P,f);
         }
         if ( f == 0 ) {
-            return Power.<GenPolynomial<C>> power(S.ring,S,e);
+            return S.power(e); //Power.<GenPolynomial<C>> power(S.ring,S,e);
         }
         GenPolynomial<C> q;
         GenPolynomial<C> r;
@@ -290,10 +290,10 @@ public class GreatestCommonDivisorSimple<C extends GcdRingElem<C>> extends Great
             return P.ring.getONE().multiply(t);
         }
         if ( e == 0 ) {
-            return Power.<GenPolynomial<GenPolynomial<C>>> power(P.ring,P,f);
+            return P.power(f); //Power.<GenPolynomial<GenPolynomial<C>>> power(P.ring,P,f);
         }
         if ( f == 0 ) {
-            return Power.<GenPolynomial<GenPolynomial<C>>> power(S.ring,S,e);
+            return S.power(e); //Power.<GenPolynomial<GenPolynomial<C>>> power(S.ring,S,e);
         }
         GenPolynomial<GenPolynomial<C>> q;
         GenPolynomial<GenPolynomial<C>> r;

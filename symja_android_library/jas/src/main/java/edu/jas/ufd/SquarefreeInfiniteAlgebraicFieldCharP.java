@@ -262,7 +262,7 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>> ext
                         long ll = me.getValue(); //br.get(bc);
                         if (ll % c.longValue() == 0L) {
                             long fl = ll / c.longValue();
-                            cc = cc.multiply(Power.<C> positivePower(bc, fl));
+                            cc = cc.multiply( bc.power(fl) ); //  Power.<C> positivePower(bc, fl));
                         } else { // fail ?
                             cc = cc.multiply(bc);
                         }
@@ -335,7 +335,7 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>> ext
                 AlgebraicNumber<C> rp = me.getKey();
                 long gl = me.getValue(); //sm.get(rp);
                 if (gl > 1) {
-                    rp = Power.<AlgebraicNumber<C>> positivePower(rp, gl);
+                    rp = rp.power(gl); //Power.<AlgebraicNumber<C>> positivePower(rp, gl);
                 }
                 r = r.multiply(rp);
             }
@@ -392,7 +392,7 @@ public class SquarefreeInfiniteAlgebraicFieldCharP<C extends GcdRingElem<C>> ext
                 //System.out.println("gl = " + gl);
                 AlgebraicNumber<C> re = rp;
                 if (gl > 1) {
-                    re = Power.<AlgebraicNumber<C>> positivePower(rp, gl);
+                    re = rp.power(gl); //Power.<AlgebraicNumber<C>> positivePower(rp, gl);
                 }
                 //System.out.println("re = " + re);
                 r = r.multiply(re);

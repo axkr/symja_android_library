@@ -178,7 +178,7 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
             //System.out.println("n = " + n);
             //System.out.println("d = " + d);
             BigRational z = new BigRational(1, 10);
-            z = Power.<BigRational> positivePower(z, j);
+            z = z.power(j); //Power.<BigRational> positivePower(z, j);
             BigRational f = new BigRational(d);
             f = f.multiply(z);
             r = r.sum(f);
