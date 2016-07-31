@@ -3056,6 +3056,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSin() {
+		check("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
+		check("Sin({{0.5,1.1},{6.4,7.5}})", "{{0.479425538604203,0.8912073600614354},\n" + 
+				" {0.11654920485049364,0.9379999767747389}}");
+		check("Sin({1,2})", "{Sin(1),Sin(2)}");
 		check("Sin(z+1/4*Pi)", "Sin(Pi/4+z)");
 		check("Sin(z+1/2*Pi)", "Cos(z)");
 		check("Sin(z+1/3*Pi)", "Sin(Pi/3+z)");

@@ -30,7 +30,7 @@ public class Variance extends AbstractFunctionEvaluator {
 				if (arg1.isRealVector()) {
 					return F.num(StatUtils.variance(arg1.toDoubleVector()));
 				}
-				return Covariance.vectorCovariance(arg1, arg1, dim);
+				return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
 			}
 			int[] matrixDimensions = arg1.isMatrix();
 			if (matrixDimensions != null) {

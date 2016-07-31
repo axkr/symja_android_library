@@ -9,9 +9,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.apache.commons.math4.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.linear.ArrayRealVector;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -53,9 +56,37 @@ import jdk.nashorn.internal.runtime.regexp.joni.Config;
 public class ASTRealMatrix extends AbstractAST implements List<IExpr>, Cloneable, Externalizable, RandomAccess {
 
 	/**
+	 * 
+	 * Returns a new ASTRealMatrix where each element is mapped by the given
+	 * function.
+	 *
+	 * @param matrixAST
+	 *            an AST which could be converted into a <code>double[][]</code>
+	 *            matrix array.
+	 * @param function
+	 *            Function to apply to each entry.
+	 * @return a new matrix.
+	 */
+	public static ASTRealMatrix map(final IAST matrixAST, DoubleUnaryOperator function) {
+		double[][] matrix = matrixAST.toDoubleMatrix();
+		int rows = matrix.length;
+		int cols = matrix[0].length;
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				matrix[i][j] = function.applyAsDouble(matrix[i][j]);
+			}
+		}
+		return new ASTRealMatrix(matrix, false);
+	}
+
+	/**
 	 * The underlying matrix
 	 */
 	RealMatrix matrix;
+
+	public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
+		this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
+	}
 
 	/**
 	 * 

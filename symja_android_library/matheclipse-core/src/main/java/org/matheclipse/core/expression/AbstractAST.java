@@ -17,8 +17,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math4.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.linear.ArrayRealVector;
-import org.apache.commons.math4.linear.BlockRealMatrix;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.apache.commons.math4.linear.RealVector;
 import org.matheclipse.core.basic.Config;
@@ -2052,7 +2052,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 					IAST row = (IAST) arg1();
 					dim[1] = row.size() - 1;
 					for (int j = 1; j < row.size(); j++) {
-						if (!row.get(j).isSignedNumber()) {
+						if (!(row.get(j) instanceof Num)) {
 							return false;
 						}
 					}
@@ -2067,7 +2067,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 							return false;
 						}
 						for (int j = 1; j < row.size(); j++) {
-							if (!row.get(j).isSignedNumber()) {
+							if (!(row.get(j) instanceof Num)) {
 								return false;
 							}
 						}
@@ -2116,7 +2116,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public boolean isRealVector() {
 		if (isList()) {
 			for (int i = 1; i < size(); i++) {
-				if (!get(i).isSignedNumber()) {
+				if (!(get(i) instanceof Num)) {
 					return false;
 				}
 			}
@@ -2874,7 +2874,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public RealMatrix toRealMatrix() {
 		final double[][] elements = toDoubleMatrix();
 		if (elements != null) {
-			return new BlockRealMatrix(elements.length, elements[0].length, elements, false);
+			return new Array2DRowRealMatrix(elements, false);
 		}
 		return null;
 	}

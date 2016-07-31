@@ -66,7 +66,7 @@ public class Covariance extends AbstractMatrix1Expr {
 					} catch (Exception ex) {
 						//
 					}
-					return vectorCovariance(arg1, arg2, arg1Length);
+					return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
 				}
 			}
 		} catch (final WrongArgumentType e) {
@@ -80,7 +80,7 @@ public class Covariance extends AbstractMatrix1Expr {
 		return F.NIL;
 	}
 
-	public static IExpr vectorCovariance(final IAST arg1, final IAST arg2, int arg1Length) {
+	public static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2, int arg1Length) {
 		if (arg1Length == 2) {
 			return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
 					F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));

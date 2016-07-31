@@ -46,45 +46,31 @@ import org.matheclipse.parser.client.math.MathException;
 public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return the input object. In &quot;quiet mode&quot; all warnings
-	 * would be suppressed.
 	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @return the evaluated object
-	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
 	 */
-	public final IExpr evalQuiet(final IExpr expr) {
-		boolean quiet = isQuietMode();
-		try {
-			setQuietMode(true);
-			return evaluate(expr);
-		} finally {
-			setQuietMode(quiet);
-		}
-	}
+	private static final long serialVersionUID = 407328682800652434L;
+
+	static int fAnonymousCounter = 0;
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return <code>F.NIL</code>. In &quot;quiet mode&quot; all
-	 * warnings would be suppressed.
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.NUIL</code> if no evaluation was
-	 *         possible
-	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
+	 * Use <code>Num</code> objects for numeric calculations up to 15 digits
+	 * precision.
 	 */
-	public final IExpr evalQuietNull(final IExpr expr) {
-		boolean quiet = isQuietMode();
-		try {
-			setQuietMode(true);
-			return evaluateNull(expr);
-		} finally {
-			setQuietMode(quiet);
+	public static final int DOUBLE_PRECISION = 15;
+
+	public final static boolean DEBUG = false;
+
+	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
+		private int fID = 1;
+
+		@Override
+		public EvalEngine initialValue() {
+			if (DEBUG) {
+				System.out.println("ThreadLocal" + fID);
+			}
+			return new EvalEngine("ThreadLocal" + (fID++), 0, System.out, false);
 		}
-	}
+	};
 
 	/**
 	 * Get the thread local evaluation engine instance
@@ -121,10 +107,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol name. If the local
-	 * variable stack doesn't exist, return <code>null</code>
+	 * Get the local variable stack for a given symbol. If the local variable
+	 * stack doesn't exist, return <code>null</code>
 	 * 
-	 * @param symbolName
+	 * @param symbol
 	 * @return <code>null</code> if the stack doesn't exist
 	 */
 	final public static List<IExpr> localStack(final ISymbol symbol) {
@@ -132,10 +118,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol name. If the local
-	 * variable stack doesn't exist, create a new one for the symbol.
+	 * Get the local variable stack for a given symbol. If the local variable
+	 * stack doesn't exist, create a new one for the symbol.
 	 * 
-	 * @param symbolName
+	 * @param symbol
 	 * @return
 	 */
 	public static List<IExpr> localStackCreate(final ISymbol symbol) {
@@ -162,7 +148,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * Set the thread local evaluation engine instance
 	 * 
-	 * @return
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public static void set(final EvalEngine engine) {
 		instance.set(engine);
@@ -192,11 +179,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 		return F.NIL;
 	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 407328682800652434L;
 
 	/**
 	 * Associate a symbol name in this ThreadLocal with the symbol created in
@@ -254,8 +236,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	protected int fIterationLimit;
 
-	static int fAnonymousCounter = 0;
-
 	protected boolean fPackageMode = false;
 
 	transient int fModuleCounter = 0;
@@ -272,7 +252,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * The history list for the <code>Out[]</code> function.
 	 * 
-	 * @see org.matheclipse.core.reflection.Out
 	 */
 	transient protected LastCalculationsHistory fOutList = null;
 
@@ -298,26 +277,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see org.matheclipse.core.builtin.function.Quiet
 	 */
 	transient boolean fQuietMode = false;
-
-	/**
-	 * Use <code>Num</code> objects for numeric calculations up to 15 digits
-	 * precision.
-	 */
-	public static final int DOUBLE_PRECISION = 15;
-
-	public final static boolean DEBUG = false;
-
-	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
-		private int fID = 1;
-
-		@Override
-		public EvalEngine initialValue() {
-			if (DEBUG) {
-				System.out.println("ThreadLocal" + fID);
-			}
-			return new EvalEngine("ThreadLocal" + (fID++), 0, System.out, false);
-		}
-	};
 
 	/**
 	 * 
@@ -410,7 +369,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Add an expression to the <code>Out[]</code> list. To avoid memory leaks
 	 * you can disable the appending of expressions to the output history.
 	 * 
-	 * @see #setOutListDisabled(boolean)
+	 * @param arg0
 	 */
 	public void addOut(IExpr arg0) {
 		// remember the last result
@@ -610,13 +569,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
 			final IExpr arg1 = ast.arg1();
-			// if (arg1 instanceof ASTRealVector) {
-			// final IEvaluator module = symbol.getEvaluator();
-			// if (module instanceof DoubleUnaryOperator) {
-			// // forEach((DoubleUnaryOperator)module);
-			// }
-			// }
-			if (arg1.isList() || arg1 instanceof ASTRealVector || arg1 instanceof ASTRealMatrix) {
+			if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
+				final IEvaluator module = symbol.getEvaluator();
+				if (module instanceof DoubleUnaryOperator) {
+					DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+					return ASTRealVector.map((IAST) arg1, oper);
+				}
+			} else if (arg1.isRealMatrix()) {
+				final IEvaluator module = symbol.getEvaluator();
+				if (module instanceof DoubleUnaryOperator) {
+					DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+					return ASTRealMatrix.map((IAST) arg1, oper);
+				}
+			}
+			if (arg1.isList()) {
 				// thread over the list
 				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1);
 			}
@@ -703,7 +669,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Evaluate an AST according to the attributes set in the header symbol. The
 	 * evaluation steps are controlled by the header attributes.
 	 * 
+	 * @param symbol
+	 *            the header symbol
 	 * @param ast
+	 *            the AST which should be evaluated
 	 * @return
 	 */
 	public IExpr evalAttributes(@Nonnull ISymbol symbol, @Nonnull IAST ast) {
@@ -734,12 +703,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// associative symbol
 				IAST flattened;
 				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
-					// IAST resultList = evalArgs(flattened, attr);
-					// if (resultList.isPresent()) {
-					// returnResult = resultList;
-					// } else {
-					// returnResult = flattened;
-					// }
 					returnResult = flattened;
 					tempAST = returnResult;
 				}
@@ -910,8 +873,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				ast.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return ast;
 			}
-			// TODO testSystem081 fails if we return null then sort() gives
-			// false?
 			return ast;
 		}
 		return F.NIL;
@@ -991,6 +952,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
+	final public IExpr evalN(final IExpr expr) {
+		return evaluate(F.N(expr));
+	}
+
 	/**
 	 * <p>
 	 * Store the current numeric mode and evaluate the expression
@@ -1040,6 +1005,47 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public final IPatternMatcher evalPatternMatcher(@Nonnull final IExpr expr) {
 		IExpr temp = evalPattern(expr);
 		return new PatternMatcher(temp);
+	}
+
+	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
+	 * possible return the input object. In &quot;quiet mode&quot; all warnings
+	 * would be suppressed.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return the evaluated object
+	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
+	 */
+	public final IExpr evalQuiet(final IExpr expr) {
+		boolean quiet = isQuietMode();
+		try {
+			setQuietMode(true);
+			return evaluate(expr);
+		} finally {
+			setQuietMode(quiet);
+		}
+	}
+
+	/**
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
+	 * possible return <code>F.NIL</code>. In &quot;quiet mode&quot; all
+	 * warnings would be suppressed.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return the evaluated object or <code>F.NUIL</code> if no evaluation was
+	 *         possible
+	 * @see EvalEngine#evalWithoutNumericReset(IExpr)
+	 */
+	public final IExpr evalQuietNull(final IExpr expr) {
+		boolean quiet = isQuietMode();
+		try {
+			setQuietMode(true);
+			return evaluateNull(expr);
+		} finally {
+			setQuietMode(quiet);
+		}
 	}
 
 	/**
@@ -1308,15 +1314,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 	}
 
-	final public IExpr evalN(final IExpr expr) {
-		return evaluate(F.N(expr));
-	}
-
 	/**
 	 * Parse the given <code>expression String</code> into an IExpr and evaluate
 	 * it.
 	 * 
-	 * @param astString
+	 * @param expression
 	 *            an expression in math formula notation
 	 * @return
 	 * @throws org.matheclipse.parser.client.SyntaxError
@@ -1477,7 +1479,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * the specified <code>symbolName</code> is mapped, or <code>null</code> if
 	 * this map contains no mapping for the <code>symbolName</code>.
 	 * 
-	 * @param name
+	 * @param symbolName
 	 * @return
 	 */
 	public ISymbol getUserVariable(final String symbolName) {
@@ -1546,7 +1548,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * <code>$ans</code> returns the result from the last evluation done with
 	 * this evaluation engine.
 	 * 
-	 * @see org.matheclipse.core.reflection.Out
+	 * @return
 	 */
 	public boolean isOutListDisabled() {
 		return fOutListDisabled;
@@ -1560,6 +1562,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e.
 	 * no warning messages are showw in the evaluation).
 	 * 
+	 * @return
 	 * @see org.matheclipse.core.builtin.function.Quiet
 	 */
 	public boolean isQuietMode() {
@@ -1586,7 +1589,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * first evaluated result.
 	 * 
 	 * @return
-	 * @see org.matheclipse.core.reflection.system.Trace
 	 */
 	public boolean isTraceMode() {
 		return fTraceMode;
@@ -1596,7 +1598,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Parse the given <code>expression String</code> into an IExpr without
 	 * evaluation.
 	 * 
-	 * @param astString
+	 * @param expression
 	 *            an expression in math formula notation
 	 * 
 	 * @return
@@ -1735,7 +1737,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
+	 * Set the numeric mode and precision of numeric calculations.
+	 * 
 	 * @param b
+	 * @param precision
 	 */
 	public void setNumericMode(final boolean b, int precision) {
 		fNumericMode = b;

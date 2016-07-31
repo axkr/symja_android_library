@@ -1711,7 +1711,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix)
+	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix) or a
+	 * <code>List[List[...],...,List[...]]</code> matrix with elements of type
+	 * <code>org.matheclipse.core.expression.Num</code>.
 	 * 
 	 * @return
 	 */
@@ -1736,7 +1738,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a real vector (i.e. an ASTRealVector)
+	 * Test if this expression is a real vector (i.e. an ASTRealVector) or a
+	 * <code>List[...]</code> with elements of type
+	 * <code>org.matheclipse.core.expression.Num</code>.
 	 * 
 	 * @return
 	 */

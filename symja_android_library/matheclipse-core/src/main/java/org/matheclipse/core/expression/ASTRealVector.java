@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -54,9 +55,37 @@ import jdk.nashorn.internal.runtime.regexp.joni.Config;
 public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable, Externalizable, RandomAccess {
 
 	/**
+	 * 
+	 * Returns a new ASTRealVector where each element is mapped by the given
+	 * function.
+	 *
+	 * @param astVector
+	 *            an AST which could be converted into <code>double[]</code>
+	 * @param function
+	 *            Function to apply to each entry.
+	 * @return a new vector.
+	 */
+	public static ASTRealVector map(final IAST astVector, DoubleUnaryOperator function) {
+		double[] vector = astVector.toDoubleVector();
+		for (int i = 0; i < vector.length; i++) {
+			vector[i] = function.applyAsDouble(vector[i]);
+		}
+		return new ASTRealVector(vector, false);
+	}
+
+	/**
 	 * The underlying matrix
 	 */
 	RealVector vector;
+
+	/**
+	 * 
+	 * @param vector
+	 * @param deepCopy
+	 */
+	public ASTRealVector(double[] vector, boolean deepCopy) {
+		this.vector = new ArrayRealVector(vector, deepCopy);
+	}
 
 	/**
 	 * 
@@ -72,15 +101,6 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 		} else {
 			this.vector = vector;
 		}
-	}
-
-	/**
-	 * 
-	 * @param vector
-	 * @param deepCopy
-	 */
-	public ASTRealVector(double[] vector, boolean deepCopy) {
-		this.vector = new ArrayRealVector(vector, deepCopy);
 	}
 
 	/**
