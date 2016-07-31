@@ -1675,6 +1675,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testIndeterminate() {
+		check("{And(True, Indeterminate), And(False, Indeterminate)}","{Indeterminate,False}");
+		check("Indeterminate==Indeterminate", "False");
+		check("Indeterminate===Indeterminate", "True");
 		check("{Re(Indeterminate), Im(Indeterminate)}", "{Indeterminate,Indeterminate}");
 		check("NumberQ(Indeterminate)", "False");
 		check("{1,2,3} Indeterminate", "{Indeterminate,Indeterminate,Indeterminate}");

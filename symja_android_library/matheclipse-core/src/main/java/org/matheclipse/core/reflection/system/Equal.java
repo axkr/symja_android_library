@@ -144,6 +144,9 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	}
 
 	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
+		if (o0.isIndeterminate() || o1.isIndeterminate()) {
+			return IExpr.COMPARE_TERNARY.FALSE;
+		}
 		IExpr a0 = o0;
 		IExpr a1 = o1;
 		if (!a0.isSignedNumber() && a0.isNumericFunction()) {
