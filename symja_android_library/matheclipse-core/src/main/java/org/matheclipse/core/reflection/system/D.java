@@ -134,6 +134,9 @@ public class D extends AbstractFunctionEvaluator {
 		}
 
 		IExpr fx = ast.arg1();
+		if (fx.isIndeterminate()){
+			return F.Indeterminate;
+		}
 		if (ast.size() > 3) {
 			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
 			return ast.range(2).foldLeft(new BinaryEval(F.D, engine), fx);

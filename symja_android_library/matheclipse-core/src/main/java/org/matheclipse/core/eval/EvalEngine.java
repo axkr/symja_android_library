@@ -564,12 +564,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-			if (ast.arg1().isIndeterminate()) {
-				return F.Indeterminate;
-			}
-		}
-		
 		if ((result = evalArgs(ast, attr)).isPresent()) {
 			return result;
 		}
@@ -592,6 +586,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (arg1.isList()) {
 				// thread over the list
 				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1);
+			}
+		}
+
+		if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+			if (ast.arg1().isIndeterminate()) {
+				return F.Indeterminate;
 			}
 		}
 
@@ -715,14 +715,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 
-			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-				for (int i = 1; i < tempAST.size(); i++) {
-					if (tempAST.get(i).isIndeterminate()) {
-						return F.Indeterminate;
-					}
-				}
-			}
-
 			IAST resultList = evalArgs(tempAST, attr);
 			if (resultList.isPresent()) {
 				returnResult = resultList;
@@ -735,6 +727,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				resultList = threadASTListArgs(tempAST);
 				if (resultList.isPresent()) {
 					return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
+				}
+			}
+
+			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+				for (int i = 1; i < tempAST.size(); i++) {
+					if (tempAST.get(i).isIndeterminate()) {
+						return F.Indeterminate;
+					}
 				}
 			}
 

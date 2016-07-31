@@ -378,6 +378,10 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 	private static IExpr powerLimit(final IAST arg1, LimitData data) {
 		// IAST rule = data.getRule();
+		if (arg1.arg2().equals(data.getSymbol()) && arg1.arg2().equals(data.getSymbol())
+				&& data.getLimitValue().isZero()) {
+			return F.C1;
+		}
 		if (arg1.arg2().isNumericFunction()) {
 			// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
 			IExpr exp = arg1.arg2();

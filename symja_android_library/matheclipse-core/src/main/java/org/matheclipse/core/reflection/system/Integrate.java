@@ -81,6 +81,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 			} else {
 				arg1 = holdallAST.arg1();
 			}
+			if (arg1.isIndeterminate()){
+				return F.Indeterminate;
+			}
 			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to
 				// Integrate[

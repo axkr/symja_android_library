@@ -618,7 +618,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testChebyshevT() {
 		check("ChebyshevT(Indeterminate,0)", "Indeterminate");
-		
+
 		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
 		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
 		check("ChebyshevT({0,-1,-2,-3,-4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
@@ -1018,6 +1018,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testDirectedInfinity() {
+		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
 		check("ComplexInfinity+b", "ComplexInfinity");
 		// Power()
 		check("0^(-1)", "ComplexInfinity");
@@ -1673,6 +1674,17 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Inner(f, {{{a, b}}, {{x, y}}}, {{1}, {2}}, g)", "{{{g(f(a,1),f(b,2))}},{{g(f(x,1),f(y,2))}}}");
 	}
 
+	public void testIndeterminate() {
+		check("{Re(Indeterminate), Im(Indeterminate)}", "{Indeterminate,Indeterminate}");
+		check("NumberQ(Indeterminate)", "False");
+		check("{1,2,3} Indeterminate", "{Indeterminate,Indeterminate,Indeterminate}");
+		check("{1,2,3}+Indeterminate", "{Indeterminate,Indeterminate,Indeterminate}");
+		
+		check("Integrate(Indeterminate,x)", "Indeterminate");
+		check("D(Indeterminate,x)", "Indeterminate");
+		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
+	}
+
 	public void testInsert() {
 		check("Insert({a, b, c, d, e}, x, 3)", "{a,b,x,c,d,e}");
 		check("Insert({a, b, c, d, e}, x, -2)", "{a,b,c,d,x,e}");
@@ -1927,6 +1939,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testLimit() {
+		check("Limit(x^x, x -> 0)", "1");
 		check("Limit(1/x, x -> Infinity, Direction->1)", "0");
 		check("Limit(1/x, x -> Infinity, Direction->-1)", "0");
 		check("Limit(1/x, x -> 0, Direction->1)", "-Infinity");
@@ -3059,8 +3072,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testSin() {
 		check("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
-		check("Sin({{0.5,1.1},{6.4,7.5}})", "{{0.479425538604203,0.8912073600614354},\n" + 
-				" {0.11654920485049364,0.9379999767747389}}");
+		check("Sin({{0.5,1.1},{6.4,7.5}})",
+				"{{0.479425538604203,0.8912073600614354},\n" + " {0.11654920485049364,0.9379999767747389}}");
 		check("Sin({1,2})", "{Sin(1),Sin(2)}");
 		check("Sin(z+1/4*Pi)", "Sin(Pi/4+z)");
 		check("Sin(z+1/2*Pi)", "Cos(z)");
