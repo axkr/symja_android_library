@@ -536,10 +536,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			return compareToAST(this, (IAST) rhsExpr);
 		}
 
-		if (rhsExpr.isSymbolOrPatternObject()) {
-			if (isPlus() || isTimes()) {
-				return compareToTimesExpr(this, rhsExpr);
-			}
+		if (rhsExpr.isSymbolOrPatternObject() && (isPlus() || isTimes())) {
+			return compareToTimesExpr(this, rhsExpr);
 		}
 		if (isPower()) {
 			return compareToPowerExpr(this, rhsExpr);
@@ -1778,20 +1776,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			boolean flag = false;
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isNonNegativeResult()) {
-					continue;
-				}
-				if (AbstractAssumptions.assumeNonNegative(get(i))) {
-					continue;
-				}
-				if (get(i).isNegativeResult()) {
+				} else if (AbstractAssumptions.assumeNonNegative(get(i))) {
+				} else if (get(i).isNegativeResult()) {
 					flag = !flag;
-					continue;
-				}
-				if (AbstractAssumptions.assumeNegative(get(i))) {
+				} else if (AbstractAssumptions.assumeNegative(get(i))) {
 					flag = !flag;
-					continue;
+				} else {
+					return false;
 				}
-				return false;
 			}
 			return flag;
 		}
@@ -1818,20 +1810,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			boolean flag = true;
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isNonNegativeResult()) {
-					continue;
-				}
-				if (AbstractAssumptions.assumeNonNegative(get(i))) {
-					continue;
-				}
-				if (get(i).isNegativeResult()) {
+				} else if (AbstractAssumptions.assumeNonNegative(get(i))) {
+				} else if (get(i).isNegativeResult()) {
 					flag = !flag;
-					continue;
-				}
-				if (AbstractAssumptions.assumeNegative(get(i))) {
+				} else if (AbstractAssumptions.assumeNegative(get(i))) {
 					flag = !flag;
-					continue;
+				} else {
+					return false;
 				}
-				return false;
 			}
 			return flag;
 		}
@@ -1987,20 +1973,14 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 			boolean flag = true;
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isPositiveResult()) {
-					continue;
-				}
-				if (AbstractAssumptions.assumePositive(get(i))) {
-					continue;
-				}
-				if (get(i).isNegativeResult()) {
+				} else if (AbstractAssumptions.assumePositive(get(i))) {
+				} else if (get(i).isNegativeResult()) {
 					flag = !flag;
-					continue;
-				}
-				if (AbstractAssumptions.assumeNegative(get(i))) {
+				} else if (AbstractAssumptions.assumeNegative(get(i))) {
 					flag = !flag;
-					continue;
+				} else {
+					return false;
 				}
-				return false;
 			}
 			return flag;
 		}
@@ -2051,11 +2031,21 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				if (arg1().isList()) {
 					IAST row = (IAST) arg1();
 					dim[1] = row.size() - 1;
+					boolean containsNum = false;
 					for (int j = 1; j < row.size(); j++) {
-						if (!(row.get(j) instanceof Num)) {
+						if (row.get(j).isSignedNumber()) {
+							if (row.get(j) instanceof INum) {
+								if (!(row.get(j) instanceof Num)) {
+									// Apfloat number
+									return false;
+								}
+								containsNum = true;
+							}
+						} else {
 							return false;
 						}
 					}
+
 					for (int i = 2; i < size(); i++) {
 						if (!get(i).isList()) {
 							// this row is not a list
@@ -2067,13 +2057,21 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 							return false;
 						}
 						for (int j = 1; j < row.size(); j++) {
-							if (!(row.get(j) instanceof Num)) {
+							if (row.get(j).isSignedNumber()) {
+								if (row.get(j) instanceof INum) {
+									if (!(row.get(j) instanceof Num)) {
+										// Apfloat number
+										return false;
+									}
+									containsNum = true;
+								}
+							} else {
 								return false;
 							}
 						}
 					}
 					addEvalFlags(IAST.IS_MATRIX);
-					return true;
+					return containsNum;
 				}
 			}
 
@@ -2115,12 +2113,20 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public boolean isRealVector() {
 		if (isList()) {
+			boolean containsNum = false;
 			for (int i = 1; i < size(); i++) {
-				if (!(get(i) instanceof Num)) {
+				if (get(i).isSignedNumber()) {
+					if (get(i) instanceof INum) {
+						if (!(get(i) instanceof Num)) {
+							return false;
+						}
+						containsNum = true;
+					}
+				} else {
 					return false;
 				}
 			}
-			return true;
+			return containsNum;
 		}
 		return false;
 	}
@@ -2761,12 +2767,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return F.eval(F.Times(this, that));
 	}
 
-	/**
-	 * 
-	 * @param ast
-	 * @return <code>null</code> if ast is no matrix
-	 * @throws WrongArgumentType
-	 */
+	/** {@inheritDoc} */
+	@Override
 	public double[][] toDoubleMatrix() {
 		int[] dim = isMatrix();
 		if (dim == null) {
@@ -2788,6 +2790,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		return result;
 	}
 
+	/** {@inheritDoc} */
+	@Override
 	public double[] toDoubleVector() {
 		double[] result = new double[size() - 1];
 		ISignedNumber signedNumber;

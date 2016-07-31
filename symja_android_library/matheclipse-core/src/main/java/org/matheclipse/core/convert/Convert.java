@@ -164,7 +164,7 @@ public class Convert {
 	 * @param listVector
 	 * @return a RealVector or <code>null</code> if the given list is no matrix.
 	 * @throws WrongArgumentType
-	 *             if not all elements are convertable to a <code>double</code>
+	 *             if not all elements are convertible to a <code>double</code>
 	 *             value.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
@@ -298,20 +298,6 @@ public class Convert {
 			return F.NIL;
 		}
 		return new ASTRealMatrix(matrix, false);
-		// final int rowSize = matrix.getRowDimension();
-		// final int colSize = matrix.getColumnDimension();
-		//
-		// final IAST out = F.ListC(rowSize);
-		// IAST currOutRow;
-		// for (int i = 0; i < rowSize; i++) {
-		// currOutRow = F.ListC(colSize);
-		// out.add(currOutRow);
-		// for (int j = 0; j < colSize; j++) {
-		// currOutRow.add(F.num(matrix.getEntry(i, j)));
-		// }
-		// }
-		// out.addEvalFlags(IAST.IS_MATRIX);
-		// return out;
 	}
 
 	/**

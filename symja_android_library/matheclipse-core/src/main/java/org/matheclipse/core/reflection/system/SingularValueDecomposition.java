@@ -16,7 +16,8 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * 
- * See <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia: Singular value decomposition</a>
+ * See <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">
+ * Wikipedia: Singular value decomposition</a>
  */
 public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
@@ -31,22 +32,23 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 		RealMatrix matrix;
 		try {
 
-			final IAST list = (IAST) ast.arg1();
-			matrix = Convert.list2RealMatrix(list);
-			final org.apache.commons.math4.linear.SingularValueDecomposition svd = new org.apache.commons.math4.linear.SingularValueDecomposition(
-					matrix);
-			final RealMatrix uMatrix = svd.getU();
-			final RealMatrix sMatrix = svd.getS();
-			final RealMatrix vMatrix = svd.getV();
+			matrix = ast.arg1().toRealMatrix();
+			if (matrix != null) {
+				final org.apache.commons.math4.linear.SingularValueDecomposition svd = new org.apache.commons.math4.linear.SingularValueDecomposition(
+						matrix);
+				final RealMatrix uMatrix = svd.getU();
+				final RealMatrix sMatrix = svd.getS();
+				final RealMatrix vMatrix = svd.getV();
 
-			final IAST result = List();
-			final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
-			final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
-			final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
-			result.add(uMatrixAST);
-			result.add(sMatrixAST);
-			result.add(vMatrixAST);
-			return result;
+				final IAST result = List();
+				final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
+				final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
+				final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
+				result.add(uMatrixAST);
+				result.add(sMatrixAST);
+				result.add(vMatrixAST);
+				return result;
+			}
 
 		} catch (final WrongArgumentType e) {
 			// WrongArgumentType occurs in list2RealMatrix(),

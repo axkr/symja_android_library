@@ -5,7 +5,6 @@ import org.apache.commons.math4.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math4.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -29,9 +28,11 @@ public class InterpolatingFunction extends AbstractEvaluator {
 					try {
 						int[] dims = function.arg1().isMatrix();
 						if (dims != null && dims[1] == 2) {
-							RealMatrix matrix = Convert.list2RealMatrix((IAST) function.arg1());
-							double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
-							return F.num(interpolatedY);
+							RealMatrix matrix = function.arg1().toRealMatrix();
+							if (matrix != null) {
+								double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
+								return F.num(interpolatedY);
+							}
 						}
 					} catch (final WrongArgumentType e) {
 						// WrongArgumentType occurs in list2RealMatrix(),

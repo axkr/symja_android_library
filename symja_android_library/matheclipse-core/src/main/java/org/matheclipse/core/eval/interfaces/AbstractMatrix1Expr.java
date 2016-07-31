@@ -6,7 +6,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -45,6 +44,15 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
+	/**
+	 * Evaluate the symbolic matrix for this algorithm.
+	 * 
+	 * @param matrix
+	 *            the matrix which contains symbolic values
+	 * @return <code>F.NIL</code> if the evaluation isn't possible
+	 */
+	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
+
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
@@ -59,13 +67,13 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				}
 				return F.NIL;
 			}
-			matrix = Convert.list2RealMatrix(list);
-			return realMatrixEval(matrix);
-		} catch (final WrongArgumentType e) {
-			// WrongArgumentType occurs in list2RealMatrix(),
-			// if the matrix elements aren't pure numerical values
-			FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
-			return matrixEval(fieldMatrix);
+			matrix = list.toRealMatrix();
+			if (matrix != null) {
+				return realMatrixEval(matrix);
+			} else {
+				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+				return matrixEval(fieldMatrix);
+			}
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
@@ -74,15 +82,6 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 
 		return F.NIL;
 	}
-
-	/**
-	 * Evaluate the symbolic matrix for this algorithm.
-	 * 
-	 * @param matrix
-	 *            the matrix which contains symbolic values
-	 * @return <code>F.NIL</code> if the evaluation isn't possible
-	 */
-	public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix);
 
 	/**
 	 * Evaluate the numeric matrix for this algorithm.

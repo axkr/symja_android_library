@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -59,8 +58,8 @@ public class Covariance extends AbstractMatrix1Expr {
 				int arg2Length = arg2.isVector();
 				if (arg1Length == arg2Length) {
 					try {
-						double[] arg1DoubleArray = Convert.list2RealVector(arg1).toArray();
-						double[] arg2DoubleArray = Convert.list2RealVector(arg2).toArray();
+						double[] arg1DoubleArray = arg1.toDoubleVector();
+						double[] arg2DoubleArray = arg2.toDoubleVector();
 						org.apache.commons.math4.stat.correlation.Covariance cov = new org.apache.commons.math4.stat.correlation.Covariance();
 						return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 					} catch (Exception ex) {
@@ -89,8 +88,7 @@ public class Covariance extends AbstractMatrix1Expr {
 		IExpr factor = F.integer(-1 * (arg1.size() - 2));
 		IAST v1 = F.Plus();
 		for (int i = 1; i < arg1.size(); i++) {
-			v1.add(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))),
-					F.Conjugate(arg2.get(i))));
+			v1.add(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
 		}
 		return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
 	}
