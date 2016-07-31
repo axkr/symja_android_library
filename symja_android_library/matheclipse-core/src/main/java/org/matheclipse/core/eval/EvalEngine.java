@@ -432,6 +432,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;
 			boolean localNumericMode = fNumericMode;
+
 			if (!fNumericMode) {
 				for (int i = 1; i < astSize; i++) {
 					if (ast.get(i).isNumericArgument()) {
@@ -563,6 +564,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
+		if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+			if (ast.arg1().isIndeterminate()) {
+				return F.Indeterminate;
+			}
+		}
+		
 		if ((result = evalArgs(ast, attr)).isPresent()) {
 			return result;
 		}
@@ -705,6 +712,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
 					returnResult = flattened;
 					tempAST = returnResult;
+				}
+			}
+
+			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+				for (int i = 1; i < tempAST.size(); i++) {
+					if (tempAST.get(i).isIndeterminate()) {
+						return F.Indeterminate;
+					}
 				}
 			}
 

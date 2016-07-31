@@ -70,9 +70,6 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
 		IExpr temp = F.NIL;
-		if (o0.equals(F.Indeterminate) || o1.equals(F.Indeterminate)) {
-			return F.Indeterminate;
-		}
 
 		if (o0.isZero()) {
 			if (o1.isDirectedInfinity()) {

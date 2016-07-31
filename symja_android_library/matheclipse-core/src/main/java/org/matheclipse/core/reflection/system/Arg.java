@@ -97,9 +97,6 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (arg1.isIndeterminate()) {
-			return F.Indeterminate;
-		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
 			if (directedInfininty.isAST1()) {

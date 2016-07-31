@@ -98,9 +98,6 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (arg1.isIndeterminate()) {
-			return F.Indeterminate;
-		}
 		if (arg1.isDirectedInfinity()) {
 			return F.CInfinity;
 		}

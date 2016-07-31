@@ -310,10 +310,6 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 	@Override
 	public IExpr e2ObjArg(final IExpr arg1, final IExpr arg2) {
-		if (arg1.equals(F.Indeterminate) || arg2.equals(F.Indeterminate)) {
-			return F.Indeterminate;
-		}
-
 		if (arg2.isDirectedInfinity()) {
 			if (arg2.isComplexInfinity()) {
 				return F.Indeterminate;

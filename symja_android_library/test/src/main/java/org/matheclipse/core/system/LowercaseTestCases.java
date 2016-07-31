@@ -617,6 +617,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testChebyshevT() {
+		check("ChebyshevT(Indeterminate,0)", "Indeterminate");
+		
 		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
 		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
 		check("ChebyshevT({0,-1,-2,-3,-4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");

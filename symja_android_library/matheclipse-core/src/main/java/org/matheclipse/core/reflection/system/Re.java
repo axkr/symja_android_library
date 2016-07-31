@@ -37,9 +37,6 @@ public class Re extends AbstractEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isIndeterminate()) {
-			return F.Indeterminate;
-		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
 			if (directedInfininty.isComplexInfinity()) {

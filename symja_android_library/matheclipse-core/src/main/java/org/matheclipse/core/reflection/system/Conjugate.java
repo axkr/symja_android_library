@@ -48,9 +48,6 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 				return F.Times(conjug, F.CInfinity);
 			}
 		}
-		if (arg1.isIndeterminate()) {
-			return F.Indeterminate;
-		}
 		return F.NIL;
 	}
 
@@ -114,7 +111,7 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 
 	@Override
 	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+		symbol.setAttributes(ISymbol.LISTABLE|ISymbol.NUMERICFUNCTION);
 		super.setUp(symbol);
 	}
 
