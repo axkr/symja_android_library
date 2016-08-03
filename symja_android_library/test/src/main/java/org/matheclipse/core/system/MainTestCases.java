@@ -1004,7 +1004,7 @@ public class MainTestCases extends AbstractTestCase {
 	}
 
 	public void testSystem100() {
-		check("{-11/4,33/4,-5/4}.{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}", "{{23/4,75/4,145/2}}");
+		check("{-11/4,33/4,-5/4}.{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}", "{23/4,75/4,145/2}");
 	}
 
 	public void testSystem101() {

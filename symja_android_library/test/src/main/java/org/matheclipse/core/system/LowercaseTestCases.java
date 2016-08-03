@@ -1115,22 +1115,18 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testDot() {
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", "{3.0,7.0,11.0}");
-		check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", "{{3.0},\n" + 
-				" {7.0},\n" + 
-				" {11.0}}");
+		check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", "{{3.0},\n" + " {7.0},\n" + " {11.0}}");
 		check("{1,1,1}.{{1, 2}, {3.0, 4}, {5, 6}}", "{9.0,12.0}");
 		check("{{1,1,1}}.{{1, 2}, {3.0, 4}, {5, 6}}", "{{9.0,12.0}}");
 		check("{1,2,3.0}.{4,5.0,6}", "32.0");
-		
+
 		check("{{1, 2}, {3, 4}, {5, 6}}.{1,1}", "{3,7,11}");
-		check("{{1, 2}, {3, 4}, {5, 6}}.{{1},{1}}", "{{3},\n" + 
-				" {7},\n" + 
-				" {11}}");
+		check("{{1, 2}, {3, 4}, {5, 6}}.{{1},{1}}", "{{3},\n" + " {7},\n" + " {11}}");
 		check("{1,1,1}.{{1, 2}, {3, 4}, {5, 6}}", "{9,12}");
 		check("{{1,1,1}}.{{1, 2}, {3, 4}, {5, 6}}", "{{9,12}}");
 		check("{1,2,3}.{4,5,6}", "32");
 	}
-	
+
 	public void testDrop() {
 		check("Drop({a, b, c, d, e, f}, 2)", "{c,d,e,f}");
 		check("Drop[{a, b, c, d, e, f}, -3]", "{a,b,c}");
@@ -1578,6 +1574,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testGeometricMean() {
+		check("GeometricMean({1, 2.0, 3, 4})", "2.213363839400643");
+		check("GeometricMean({Pi,E,2})", "2^(1/3)*(E*Pi)^(1/3)");
+		check("GeometricMean({1, 2, 3, 4})", "24^(1/4)");
+
 		check("GeometricMean({})", "GeometricMean({})");
 		check("GeometricMean({2, 6, 5, 15, 10, 1})", "9000^(1/6)");
 		check("GeometricMean(N({2, 6, 5, 15, 10, 1}))", "4.56079359657056");
@@ -2084,11 +2084,17 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testMax() {
 		check("Max(Abs(x), Abs(y))", "Max(Abs(x),Abs(y))");
 	}
-	
+
 	public void testMean() {
-		check("Mean({{a, u}, {b, v}, {c, w}})","{1/3*(a+b+c),1/3*(u+v+w)}");
+		check("Mean({{a, u}, {b, v}, {c, w}})", "{1/3*(a+b+c),1/3*(u+v+w)}");
 		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.4619999999999997");
 		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
+	}
+
+	public void testMedian() {
+		check("Median({1,2,3,4,5,6,7.0})", "4.0");
+		check("Median({1,2,3,4,5,6,7.0,8})", "4.5");
+		check("Median({1,2,3,4,5,6,7})", "4");
 	}
 
 	public void testMemberQ() {
@@ -2363,25 +2369,25 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Outer(Times, {{1, 2}}, {{a, b}, {x, y, z}})", "{{{{a,b},{x,y,z}},{{2*a,2*b},{2*x,2*y,2*z}}}}");
 	}
 
-//	public void testOrderedQ() {
-//		check("OrderedQ({x^2, 4+6*x})", "True");
-//		
-//		check("Sort({x^2,4+6*x})", "{x^2,4+6*x}");
-//		check("Sort({4+4*a,x^2,x^3, 4+6*x})", "{4+4*a,x^2,x^3,4+6*x}");
-//		check("OrderedQ({x^2,x^3})", "True");
-////		check("OrderedQ({4+4*a,x^2,x^3, 4+6*x})", "True");
-//
-//		check("OrderedQ({x,x^6.0 })", "True");
-//		check("OrderedQ({4.0*x,33.0*x^6.0 })", "True");
-//		check("OrderedQ({x^3,4+4*a })", "False");
-////		check("OrderedQ({x^2, 4+6*x})", "True");
-//
-//		check("OrderedQ({x^2, 6*x})", "False");
-//		check("OrderedQ({6*x,x^2})", "True");
-////		check("OrderedQ({3*x^2, x*(4+6*x)})", "True");
-//		check("OrderedQ({a,a})", "True");
-//		check("OrderedQ({x, y, x + y})", "True");
-//	}
+	// public void testOrderedQ() {
+	// check("OrderedQ({x^2, 4+6*x})", "True");
+	//
+	// check("Sort({x^2,4+6*x})", "{x^2,4+6*x}");
+	// check("Sort({4+4*a,x^2,x^3, 4+6*x})", "{4+4*a,x^2,x^3,4+6*x}");
+	// check("OrderedQ({x^2,x^3})", "True");
+	//// check("OrderedQ({4+4*a,x^2,x^3, 4+6*x})", "True");
+	//
+	// check("OrderedQ({x,x^6.0 })", "True");
+	// check("OrderedQ({4.0*x,33.0*x^6.0 })", "True");
+	// check("OrderedQ({x^3,4+4*a })", "False");
+	//// check("OrderedQ({x^2, 4+6*x})", "True");
+	//
+	// check("OrderedQ({x^2, 6*x})", "False");
+	// check("OrderedQ({6*x,x^2})", "True");
+	//// check("OrderedQ({3*x^2, x*(4+6*x)})", "True");
+	// check("OrderedQ({a,a})", "True");
+	// check("OrderedQ({x, y, x + y})", "True");
+	// }
 
 	public void testPadLeft() {
 		check("PadLeft({a, b, c}, 10)", "{0,0,0,0,0,0,0,a,b,c}");
