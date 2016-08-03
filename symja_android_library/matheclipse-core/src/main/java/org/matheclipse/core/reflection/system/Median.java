@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.commons.math4.stat.StatUtils;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -18,6 +19,9 @@ public class Median extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
+		if (arg1.isRealVector()) {
+			return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
+		}
 		if (arg1.isList()) {
 			final IAST list = (IAST) arg1;
 			if (list.size() > 1) {
