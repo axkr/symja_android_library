@@ -33,6 +33,12 @@ public class FresnelS extends AbstractTrigArg1 implements INumeric, DoubleUnaryO
 	
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
+		if (arg1.isZero()){
+			return F.C0;
+		}
+		if (arg1.isInfinity()){
+			return F.C1D2;
+		}
 		return F.NIL;
 	}
 

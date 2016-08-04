@@ -3504,7 +3504,7 @@ public class MainTestCases extends AbstractTestCase {
 	}
 
 	public void testSystem1105() {
-		check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)");
+		check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)"); 
 	}
 
 	public void testSystem1106() {

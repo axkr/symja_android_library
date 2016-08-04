@@ -1816,7 +1816,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testInverseErf() {
 		check("InverseErf(0)", "0");
 		check("InverseErf(1)", "Infinity");
-		check("InverseErf(-1)", "-Infinity");
+		check("InverseErf(-1)",  "-Infinity");
 		check("InverseErf(-x)", "-InverseErf(x)");
 		check("InverseErf(0.6)", "0.5951160814499948");
 		check("Sqrt(2)*InverseErf(0.99)", "2.5758293035489004");
@@ -2589,6 +2589,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("0^(-1/2)", "ComplexInfinity");
+		
 		check("E^(x+2*Pi*I)", "E^x");
 		check("E^(x+11*Pi*I)", "-E^x");
 		check("E^(x+Sin(a)+2*Pi*I)", "E^(x+Sin(a))");
@@ -3681,5 +3683,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Xor(True, True, True)", "True");
 		check("Xor(True, True, True, True)", "False");
 		check("Xor(True, False, True)", "False");
+	}
+	
+	public void testZeta() {
+		check("Zeta(2)", "Pi^2/6"); 
 	}
 }

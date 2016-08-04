@@ -27,6 +27,7 @@ public class ProductLog extends AbstractArg12 implements ProductLogRules {
 	}
 
 	public ProductLog() {
+		// default ctor
 	}
 
 	@Override
