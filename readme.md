@@ -26,6 +26,8 @@ java -classpath symja_java8-YYYY-MM-DD.jar org.matheclipse.core.eval.Console
 
 ###Examples
 
+![Console Examples](console.gif)
+
 ```
 >>> 24/60
 2/5
