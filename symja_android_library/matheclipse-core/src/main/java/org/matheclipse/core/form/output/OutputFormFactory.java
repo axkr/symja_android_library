@@ -3,6 +3,7 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.apache.commons.math4.util.Precision;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -107,6 +108,7 @@ public class OutputFormFactory {
 
 	public void convertDouble(final Appendable buf, final INum d, final int precedence, boolean caller)
 			throws IOException {
+
 		if (d.isZero()) {
 			convertDoubleValue(buf, "0.0", precedence, false);
 			return;
@@ -115,6 +117,9 @@ public class OutputFormFactory {
 		if (!isNegative && caller == PLUS_CALL) {
 			append(buf, "+");
 		}
+		// double value = Precision.round(d.doubleValue(), 6);
+		// convertDoubleValue(buf, Double.toString(value), precedence,
+		// isNegative);
 		convertDoubleValue(buf, d.toString(), precedence, isNegative);
 	}
 

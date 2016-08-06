@@ -208,6 +208,8 @@ public class F {
 	public final static ISymbol NHoldAll = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdall" : "NHoldAll");
 	public final static ISymbol Line = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "line" : "Line");
+	public final static ISymbol Polygon = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygon" : "Polygon");
+
 	public final static ISymbol BoxRatios = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boxratios" : "BoxRatios");
 	public final static ISymbol Modulus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");

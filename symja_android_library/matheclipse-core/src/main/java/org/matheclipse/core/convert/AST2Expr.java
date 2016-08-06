@@ -60,15 +60,15 @@ public class AST2Expr {
 			"Colon", "Collect", "Commonest", "Complement", "Compile", "Complex", "ComplexExpand", "ComplexInfinity",
 			"ComposeList", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray",
 			"Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh", "CosIntegral", "CoshIntegral", "Cot", "Coth",
-			"Count", "Covariance", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete",
-			"DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix", "DigitQ",
-			"Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence", "DivideBy",
-			"Divisible", "Divisors", "Do", "Dot", "Drop", "DSolve", "Eigenvalues", "Eigenvectors", "Element",
-			"Eliminate", "EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf",
-			"Erfc", "Erfi", "EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exp", "Expand", "ExpandAll",
-			"ExpIntegralE", "ExpIntegralEi", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2",
-			"FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "Fibonacci",
-			"FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For",
+			"Count", "Covariance", "Cross", "Csc", "Csch", "Curl", "Decrement", "Default", "Defer", "Definition",
+			"Delete", "DeleteCases", "DeleteDuplicates", "Denominator", "Depth", "Derivative", "Det", "DiagonalMatrix",
+			"DigitQ", "Dimensions", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence",
+			"DivideBy", "Divisible", "Divisors", "Do", "Dot", "Drop", "DSolve", "Eigenvalues", "Eigenvectors",
+			"Element", "Eliminate", "EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent",
+			"Erf", "Erfc", "Erfi", "EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exp", "Expand",
+			"ExpandAll", "ExpIntegralE", "ExpIntegralEi", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial",
+			"Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten",
+			"Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For",
 			"FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
 			"FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "Gather",
 			"GCD", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual",
@@ -88,7 +88,7 @@ public class AST2Expr {
 			"NonCommutativeMultiply", "NonNegative", "Nor", "Normalize", "Norm", "Not", "NRoots", "NSolve", "NullSpace",
 			"NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ", "Out", "Outer", "Package",
 			"PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern", "PatternTest", "Permutations",
-			"Piecewise", "Plot", "PlotRange", "Plot3D", "Plus", "Pochhammer", "PolyGamma", "PolyLog",
+			"Piecewise", "Plot", "PlotRange", "Plot3D", "Plus", "Pochhammer", "PolyGamma", "Polygon", "PolyLog",
 			"PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
 			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power",
 			"PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime", "PrimeQ",
@@ -200,9 +200,17 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Converts a parsed FunctionNode expression into an IAST expression
+	 * Converts a parsed FunctionNode expression into an IAST expression.
+	 * 
+	 * @param functionNode
+	 *            the parsed elements which should be added to the
+	 *            <code>IAST</code>
+	 * @param ast
+	 *            the empty <code>IAST</code> instance without any elements
+	 * @return the <code>ast</code>with the added elements
+	 * @throws ConversionException
 	 */
-	public IAST convert(IAST ast, FunctionNode functionNode) throws ConversionException {
+	public IAST convert(FunctionNode functionNode, IAST ast) throws ConversionException {
 		EvalEngine engine = EvalEngine.get();
 		ast.set(0, convertNode(functionNode.get(0), engine));
 		for (int i = 1; i < functionNode.size(); i++) {
