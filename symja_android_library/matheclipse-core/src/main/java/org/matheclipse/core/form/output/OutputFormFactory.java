@@ -2,8 +2,11 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
 
-import org.apache.commons.math4.util.Precision;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -12,6 +15,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -53,10 +57,12 @@ public class OutputFormFactory {
 	private boolean fIgnoreNewLine = false;
 	private boolean fEmpty = true;
 	private int fColumnCounter;
+	private NumberFormat fNumberFormat = null;
 
-	private OutputFormFactory(final boolean relaxedSyntax, final boolean reversed) {
+	private OutputFormFactory(final boolean relaxedSyntax, final boolean reversed, NumberFormat numberFormat) {
 		fRelaxedSyntax = relaxedSyntax;
 		fPlusReversed = reversed;
+		fNumberFormat = numberFormat;
 	}
 
 	/**
@@ -91,7 +97,29 @@ public class OutputFormFactory {
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
-		return new OutputFormFactory(relaxedSyntax, plusReversed);
+		return get(relaxedSyntax, plusReversed, null);
+	}
+
+	/**
+	 * Get an <code>OutputFormFactory</code> for converting an internal
+	 * expression to a user readable string.
+	 * 
+	 * @param relaxedSyntax
+	 *            if <code>true</code> use paranthesis instead of square
+	 *            brackets and ignore case for functions, i.e. sin() instead of
+	 *            Sin[]. If <code>true</code> use single square brackets instead
+	 *            of double square brackets for extracting parts of an
+	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 * @param plusReversed
+	 *            if <code>true</code> the arguments of the <code>Plus()</code>
+	 *            function will be printed in reversed order
+	 * @param numberFormat
+	 *            define the decimal format output for double values
+	 * @return
+	 */
+	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
+			NumberFormat numberFormat) {
+		return new OutputFormFactory(relaxedSyntax, plusReversed, numberFormat);
 	}
 
 	/**
@@ -110,20 +138,26 @@ public class OutputFormFactory {
 			throws IOException {
 
 		if (d.isZero()) {
-			convertDoubleValue(buf, "0.0", precedence, false);
+			convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
 			return;
 		}
 		final boolean isNegative = d.isNegative();
 		if (!isNegative && caller == PLUS_CALL) {
 			append(buf, "+");
 		}
-		// double value = Precision.round(d.doubleValue(), 6);
-		// convertDoubleValue(buf, Double.toString(value), precedence,
-		// isNegative);
-		convertDoubleValue(buf, d.toString(), precedence, isNegative);
+		if (d instanceof Num) {
+			double dValue = d.doubleValue();
+			convertDoubleString(buf, convertDoubleToFormattedString(dValue), precedence, isNegative);
+		} else {
+			convertDoubleString(buf, d.toString(), precedence, isNegative);
+		}
 	}
 
-	private void convertDoubleValue(final Appendable buf, final String d, final int precedence,
+	private String convertDoubleToFormattedString(double dValue) {
+		return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
+	}
+
+	private void convertDoubleString(final Appendable buf, final String d, final int precedence,
 			final boolean isNegative) throws IOException {
 		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, "(");
@@ -147,23 +181,24 @@ public class OutputFormFactory {
 		double imaginaryPart = dc.getImaginaryPart();
 		boolean realZero = F.isZero(realPart);
 		boolean imaginaryZero = F.isZero(imaginaryPart);
-		if (realZero && imaginaryZero) {
-			convertDoubleValue(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+		if (realZero && imaginaryZero) { 
+			convertDoubleString(buf, convertDoubleToFormattedString(0.0), ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
-				append(buf, String.valueOf(realPart));
+				append(buf, convertDoubleToFormattedString(realPart));
 				if (!imaginaryZero) {
 					append(buf, "+I*");
-					final boolean isNegative = dc.getImaginaryPart() < 0;
-					convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+					final boolean isNegative = imaginaryPart < 0;
+					convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
+							isNegative);
 				}
 			} else {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
 				}
 				append(buf, "I*");
-				final boolean isNegative = dc.getImaginaryPart() < 0;
-				convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				final boolean isNegative = imaginaryPart < 0;
+				convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
@@ -181,14 +216,15 @@ public class OutputFormFactory {
 		boolean realZero = realPart.equals(Apfloat.ZERO);
 		boolean imaginaryZero = imaginaryPart.equals(Apfloat.ZERO);
 		if (realZero && imaginaryZero) {
-			convertDoubleValue(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
+			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
 				append(buf, String.valueOf(realPart));
 				if (!imaginaryZero) {
 					append(buf, "+I*");
 					final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
-					convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+					convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
+							isNegative);
 				}
 			} else {
 				if (caller == PLUS_CALL) {
@@ -196,7 +232,7 @@ public class OutputFormFactory {
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
-				convertDoubleValue(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
@@ -990,6 +1026,9 @@ public class OutputFormFactory {
 	 * @param seriesData
 	 *            <code>SeriesData[x, x0, list, nmin, nmax, den]</code>
 	 *            expression
+	 * @param precedence
+	 *            the precedence of the parent expression
+	 * @return <code>true</code> if the conversion was successful
 	 * @throws IOException
 	 */
 	public boolean convertSeriesData(final Appendable buf, final IAST seriesData, final int precedence)
