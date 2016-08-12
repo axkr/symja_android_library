@@ -16,6 +16,9 @@ public class ReplaceAll extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
 		Validate.checkSize(ast, 3);
 		try {
 			if (ast.arg2().isListOfLists()) {

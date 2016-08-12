@@ -4830,4 +4830,11 @@ public class F {
 		return AbstractIntegerSym.valueOf(integerValue);
 	}
 
+	public static IExpr operatorFormAST1(final IAST ast) {
+		if (ast.head().isAST1() && ast.isAST1()) {
+			return binaryAST2(ast.topHead(), ast.arg1(), ((IAST) ast.head()).arg1());
+		}
+		return NIL;
+	}
+
 }

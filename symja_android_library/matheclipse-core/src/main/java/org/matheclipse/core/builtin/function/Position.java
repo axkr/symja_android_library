@@ -15,6 +15,7 @@ import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
@@ -25,10 +26,14 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 public class Position extends AbstractCoreFunctionEvaluator {
 
 	public Position() {
+		// default ctor
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
 		Validate.checkRange(ast, 3, 4);
 
 		final IExpr arg1 = engine.evaluate(ast.arg1());
@@ -73,6 +78,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	 * @param matcher
 	 * @param positionConverter
 	 * @param headOffset
+	 * @return
 	 */
 	public static IAST position(final IAST list, final IAST prototypeList, final IAST resultCollection,
 			final LevelSpec level, final Predicate<? super IExpr> matcher,
@@ -118,4 +124,8 @@ public class Position extends AbstractCoreFunctionEvaluator {
 		return resultList;
 	}
 
+	@Override
+	public void setUp(final ISymbol symbol) {
+		symbol.setAttributes(ISymbol.NHOLDALL);
+	}
 }

@@ -7,7 +7,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates to the <code>evaluate()</code>
+ * Abstract interface for built-in Symja functions. The
+ * <code>numericEval()</code> method delegates to the <code>evaluate()</code>
  * 
  */
 public abstract class AbstractCoreFunctionEvaluator implements ICoreFunctionEvaluator {

@@ -17,6 +17,9 @@ public class MemberQ extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
 		Validate.checkRange(ast, 3, 5);
 
 		boolean heads = false;

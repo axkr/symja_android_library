@@ -560,6 +560,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testCases() {
+		check("Cases(_Complex)[{1, 2I, 3, 4-I, 5}]", "{I*2,4-I}");
 		check("Cases({x, a, b, x, c}, Except(x))", "{a,b,c}");
 		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", "{0,2,3}");
 		check("Cases({1, 1, f(a), 2, 3, y, f(8), 9, f(10)}, _Integer)", "{1,1,2,3,9}");
@@ -1508,6 +1509,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testFreeQ() {
 		// see notes for MemberQ
+		check("FreeQ(x_+y_+z_)[a+b]", "True");
 		check("FreeQ(a + b + c, a + c)", "False");
 	}
 
@@ -2057,6 +2059,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
 	}
@@ -2098,6 +2101,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testMemberQ() {
+		check("MemberQ(x^_)[{x^2, y^2, x^3}]", "True");
 		check("MemberQ({1, 3, 4, 1, 2}, 2)", "True");
 		check("MemberQ({x^2, y^2, x^3}, x^_)", "True");
 		check("MemberQ(a + b + f(c), f)", "False");
@@ -2566,6 +2570,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPosition() {
+		check("Position(_Integer)[{a, 2, b}]", "{{2}}");
 		check("Position({x, {x, y}, y},x,1)", "{{1}}");
 		check("Position({x, {x, y}, y},x,2)", "{{1},{2,1}}");
 		check("Position({x, {x, y}, y},x,{2})", "{{2,1}}");
@@ -2854,6 +2859,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		check("ReplaceAll({a -> 1})[{a, b}]", "{1,b}");
 		check("{x, x^2, y, z} /. x -> a", "{a,a^2,y,z}");
 		check("{x, x^2, y, z} /. x -> {a, b}", "{{a,b},{a^2,b^2},y,z}");
 		check("Sin(x) /. Sin -> Cos", "Cos(x)");

@@ -13,14 +13,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
-/** 
+
+/**
  * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">Cases</a>
+ * See the online Symja function reference: <a href=
+ * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">
+ * Cases</a>
  * </p>
  */
 public class Cases extends AbstractCoreFunctionEvaluator {
 	/**
-	 * StopException will be thrown, if maximum number of Cases results are reached
+	 * StopException will be thrown, if maximum number of Cases results are
+	 * reached
 	 *
 	 */
 	@SuppressWarnings("serial")
@@ -109,8 +113,11 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
 		Validate.checkRange(ast, 3, 5);
-		
+
 		final IExpr arg1 = engine.evaluate(ast.arg1());
 		if (arg1.isAST()) {
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
@@ -125,7 +132,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 					try {
 						Function<IExpr, IExpr> function = Functors.rules((IAST) arg2);
 						CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
-						VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3 , false);
+						VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false);
 						arg1.accept(level);
 
 					} catch (StopException se) {
