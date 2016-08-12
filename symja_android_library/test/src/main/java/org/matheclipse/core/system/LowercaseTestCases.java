@@ -837,6 +837,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Cosh(ComplexInfinity)", "Indeterminate");
 	}
 
+	public void testCosineDistance() {
+		check("CosineDistance({a, b}, {x, y})", "1+(-a*x-b*y)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(x)^2+Abs(y)^2))");
+		check("CosineDistance({a, b, c}, {x, y, z})", "1+(-a*x-b*y-c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + 
+				"2))");
+	}
+	
 	public void testCosIntegral() {
 		check("CosIntegral(2.8)", "0.18648838964317638");
 	}
@@ -2457,6 +2463,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPiecewise() {
+		check("Piecewise({{1, False}})", "0");
 		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",
 				"{Sin(5)/5,1,3/4}");
 		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", "e1");

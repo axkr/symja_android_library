@@ -8,11 +8,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * ChessboardDistance of two vectors
+ * CosineDistance of two vectors
  */
-public class ChessboardDistance extends AbstractEvaluator  {
+public class CosineDistance extends AbstractEvaluator {
 
-	public ChessboardDistance() {
+	public CosineDistance() {
 	}
 
 	@Override
@@ -30,16 +30,12 @@ public class ChessboardDistance extends AbstractEvaluator  {
 				if (dim1 == 0) {
 					return F.C0;
 				}
-				IAST a1 = ((IAST) arg1);
-				IAST a2 = ((IAST) arg2);
-				IAST maxAST = F.Max();
-				for (int i = 1; i < a1.size(); i++) {
-					maxAST.add(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-				}
-				return maxAST;
+
+				return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(F.Norm(arg1), F.Norm(arg2))));
+
 			}
 		}
 		return F.NIL;
-	} 
+	}
 
 }
