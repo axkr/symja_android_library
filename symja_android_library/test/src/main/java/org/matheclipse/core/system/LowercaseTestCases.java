@@ -13,11 +13,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 		super(name);
 	}
 
-	@Override
-	public void check(String evalString, String expectedResult) {
-		// fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-		super.check(evalString, expectedResult);
-	}
+	// @Override
+	// public void check(String evalString, String expectedResult) {
+	// // fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+	// super.check(evalString, expectedResult);
+	// }
 
 	public void test001() {
 		// syntax error in relaxed mode
@@ -1816,7 +1816,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testInverseErf() {
 		check("InverseErf(0)", "0");
 		check("InverseErf(1)", "Infinity");
-		check("InverseErf(-1)",  "-Infinity");
+		check("InverseErf(-1)", "-Infinity");
 		check("InverseErf(-x)", "-InverseErf(x)");
 		check("InverseErf(0.6)", "0.5951160814499948");
 		check("Sqrt(2)*InverseErf(0.99)", "2.5758293035489004");
@@ -2590,7 +2590,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testPower() {
 		check("0^(-1/2)", "ComplexInfinity");
-		
+
 		check("E^(x+2*Pi*I)", "E^x");
 		check("E^(x+11*Pi*I)", "-E^x");
 		check("E^(x+Sin(a)+2*Pi*I)", "E^(x+Sin(a))");
@@ -3246,6 +3246,17 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]", "{b,c,d,e,f,g,h}");
 	}
 
+	public void testStirlingS2() {
+		check("StirlingS2(10,11)", "0");
+		check("StirlingS2(0,0)", "1");
+		check("StirlingS2(a+b,0)", "0");
+		check("StirlingS2(b,b)", "1");
+		check("Table(StirlingS2(10, m), {m, 10})", "{1,511,9330,34105,42525,22827,5880,750,45,1}");
+		check("StirlingS2({2, 4, 6}, 2)", "{1,7,31}");
+		check("StirlingS2(10,4)", "34105");
+		check("StirlingS2(1000, 500)", "11897164077580438091910055658742826<<SHORT>>", 35);
+	}
+
 	public void testStringLength() {
 		check("StringLength(\"tiger\")", "5");
 	}
@@ -3684,8 +3695,8 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("Xor(True, True, True, True)", "False");
 		check("Xor(True, False, True)", "False");
 	}
-	
+
 	public void testZeta() {
-		check("Zeta(2)", "Pi^2/6"); 
+		check("Zeta(2)", "Pi^2/6");
 	}
 }

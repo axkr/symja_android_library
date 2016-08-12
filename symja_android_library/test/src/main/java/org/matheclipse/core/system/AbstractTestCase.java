@@ -27,10 +27,14 @@ public abstract class AbstractTestCase extends TestCase {
 	}
 
 	public void check(String evalString, String expectedResult) {
-		check(fScriptEngine, evalString, expectedResult);
+		check(fScriptEngine, evalString, expectedResult, -1);
 	}
 
-	public void check(ScriptEngine scriptEngine, String evalString, String expectedResult) {
+	public void check(String evalString, String expectedResult, int resultLength) {
+		check(fScriptEngine, evalString, expectedResult, resultLength);
+	}
+
+	public void check(ScriptEngine scriptEngine, String evalString, String expectedResult, int resultLength) {
 		try {
 			if (evalString.length() == 0 && expectedResult.length() == 0) {
 				return;
@@ -38,7 +42,12 @@ public abstract class AbstractTestCase extends TestCase {
 			// scriptEngine.put("STEPWISE",Boolean.TRUE);
 			String evaledResult = (String) scriptEngine.eval(evalString);
 
-			assertEquals(evaledResult, expectedResult);
+			if (resultLength > 0 && evaledResult.length() > resultLength) {
+				evaledResult = evaledResult.substring(0, resultLength) + "<<SHORT>>";
+				assertEquals(evaledResult, expectedResult);
+			} else {
+				assertEquals(evaledResult, expectedResult);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals(e, "");
@@ -83,7 +92,7 @@ public abstract class AbstractTestCase extends TestCase {
 		try {
 			synchronized (fScriptManager) {
 				fScriptEngine = fScriptManager.getEngineByExtension("m");
-				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE); 
+				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

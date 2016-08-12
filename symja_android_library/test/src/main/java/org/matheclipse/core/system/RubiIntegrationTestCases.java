@@ -16,7 +16,7 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 	}
 
 	public void check(String evalString, String expectedResult) {
-		check(fScriptEngine, evalString, expectedResult);
+		check(fScriptEngine, evalString, expectedResult, -1);
 	}
 
 	public void testRubi001() {

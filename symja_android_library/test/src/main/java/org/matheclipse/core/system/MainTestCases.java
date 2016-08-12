@@ -21,10 +21,10 @@ public class MainTestCases extends AbstractTestCase {
 	}
 
 	public void check(String evalString, String expectedResult) {
-		check(fScriptEngine, evalString, expectedResult);
+		check(fScriptEngine, evalString, expectedResult, -1);
 	}
 
-	public void check(ScriptEngine scriptEngine, String evalString, String expectedResult) {
+	public void check(ScriptEngine scriptEngine, String evalString, String expectedResult, int resultLength) {
 		try {
 			if (evalString.length() == 0 && expectedResult.length() == 0) {
 				return;
