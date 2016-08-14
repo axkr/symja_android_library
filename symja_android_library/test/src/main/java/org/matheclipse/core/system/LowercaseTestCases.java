@@ -839,10 +839,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testCosineDistance() {
 		check("CosineDistance({a, b}, {x, y})", "1+(-a*x-b*y)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(x)^2+Abs(y)^2))");
-		check("CosineDistance({a, b, c}, {x, y, z})", "1+(-a*x-b*y-c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + 
-				"2))");
+		check("CosineDistance({a, b, c}, {x, y, z})",
+				"1+(-a*x-b*y-c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + "2))");
 	}
-	
+
 	public void testCosIntegral() {
 		check("CosIntegral(2.8)", "0.18648838964317638");
 	}
@@ -2782,6 +2782,16 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	public void testRational() {
 		check("f[22/7, 201/64, x/y] /. Rational[n_, d_] :> d/n", "f(7/22,64/201,x/y)");
+	}
+
+	public void testRationalize() {
+		check("Rationalize(0.202898)","101449/500000");
+		check("Rationalize(1.2 + 6.7 x)", "6/5+67/10*x");
+		check("Rationalize(Exp(Sqrt(2)), 2^-12)", "218/53");
+		check("Rationalize(6.75)", "27/4");
+		check("Rationalize(Pi)", "245850922/78256779");
+		check("Rationalize(Pi, .01)", "22/7");
+		check("Rationalize(Pi, .001)", "333/106");
 	}
 
 	public void testRe() {

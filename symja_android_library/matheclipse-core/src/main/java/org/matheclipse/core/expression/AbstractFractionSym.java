@@ -42,7 +42,8 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -8743141041586314213L; 
+	private static final long serialVersionUID = -8743141041586314213L;
+
 	public static BigInteger gcd(BigInteger i1, BigInteger i2) {
 		if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE))
 			return BigInteger.ONE;
@@ -55,7 +56,8 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		} else {
 			return i1.gcd(i2);
 		}
-	} 
+	}
+
 	public static IFraction valueOf(BigFraction fraction) {
 		return valueOf(fraction.getNumerator(), fraction.getDenominator());
 	}
@@ -73,6 +75,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 *            Numerator
 	 * @param den
 	 *            Denominator
+	 * @return
 	 */
 	public static IFraction valueOf(BigInteger num, BigInteger den) {
 		if (BigInteger.ZERO.equals(den)) {
@@ -97,10 +100,27 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 	}
 
+	/**
+	 * Rationalize the given double value.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public static IFraction valueOf(final double value) {
+		return valueOf(value, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Rationalize the given double value.
+	 * 
+	 * @param value
+	 * @param epsilon
+	 * @return
+	 */
+	public static IFraction valueOf(final double value, final double epsilon) {
 		BigFraction fraction;
 		try {
-			fraction = new BigFraction(value, Config.DOUBLE_EPSILON, 200);
+			fraction = new BigFraction(value, epsilon, 200);
 			return new BigFractionSym(fraction);
 		} catch (FractionConversionException e) {
 			fraction = new BigFraction(value);
@@ -132,6 +152,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 *            Numerator.
 	 * @param newdenom
 	 *            Denominator.
+	 * @return
 	 */
 	public static IFraction valueOf(long newnum, long newdenom) {
 		if (newdenom != 1) {
@@ -171,7 +192,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 */
 	@Override
 	public abstract IFraction abs();
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {
@@ -201,6 +222,12 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 
 	/**
 	 * Returns <code>this+(fac1*fac2)</code>.
+	 * 
+	 * @param fac1
+	 *            the first factor
+	 * @param fac2
+	 *            the second factor
+	 * @return <code>this+(fac1*fac2)</code>
 	 */
 	public IFraction addmul(IFraction fac1, IFraction fac2) {
 		return add(fac1.mul(fac2));
@@ -342,8 +369,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return compareTo((obj)) > 0;
 		}
 		if (obj instanceof IInteger) {
-			return compareTo(
-					AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) > 0;
+			return compareTo(AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) > 0;
 		}
 		return doubleValue() > obj.doubleValue();
 	}
@@ -362,8 +388,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return compareTo((obj)) < 0;
 		}
 		if (obj instanceof IInteger) {
-			return compareTo(
-					AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) < 0;
+			return compareTo(AbstractFractionSym.valueOf(((IInteger) obj).getBigNumerator(), BigInteger.ONE)) < 0;
 		}
 		return doubleValue() < obj.doubleValue();
 	}
@@ -396,7 +421,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return other;
 		}
 		if (other.isMinusOne()) {
-			return ((IFraction)this).negate();
+			return ((IFraction) this).negate();
 		}
 
 		BigInteger newnum = getBigNumerator().multiply(other.getBigNumerator());
@@ -424,7 +449,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 
 	@Override
 	public ISignedNumber opposite() {
-		return ((IFraction)this).negate();
+		return ((IFraction) this).negate();
 	}
 
 	/**
@@ -474,14 +499,14 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		IFraction x = r;
 
 		while ((exp >>= 1) > 0) {
-			x =  x.multiply(x);
+			x = x.multiply(x);
 			if ((exp & 1) != 0) {
 				r = r.multiply(x);
 			}
 		}
 
 		while (b2pow-- > 0) {
-			r =   r.multiply(r);
+			r = r.multiply(r);
 		}
 		if (n < 0) {
 			return r.inverse();
@@ -509,6 +534,10 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 
 	/**
 	 * Returns <code>(this-s)/d</code>.
+	 * 
+	 * @param s
+	 * @param d the denominator
+	 * @return <code>(this-s)/d</code>
 	 */
 	public IFraction subdiv(IFraction s, FractionSym d) {
 		return sub(s).div(d);
@@ -549,7 +578,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 		return super.times(that);
 	}
-	
+
 	@Override
 	public double getImaginary() {
 		return 0.0;

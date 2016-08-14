@@ -1644,10 +1644,7 @@ public class F {
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
-	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in
-	 *            pattern-matching
+	 * @param symbol
 	 * @param def
 	 *            use a default value for this pattern if necessary
 	 * @return IPattern
@@ -1718,9 +1715,6 @@ public class F {
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbolName
-	 * @param check
-	 *            additional condition which should be checked in
-	 *            pattern-matching
 	 * @param def
 	 *            use a default value for this pattern if necessary
 	 * @return IPattern
@@ -2374,7 +2368,24 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IComplex complex(final double realPart, final double imagPart) {
-		return ComplexSym.valueOf(AbstractFractionSym.valueOf(realPart), AbstractFractionSym.valueOf(imagPart));
+		return complex(realPart, imagPart, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Create a symbolic complex number
+	 * 
+	 * @param realPart
+	 *            the real double value part which should be converted to a
+	 *            complex number
+	 * @param imagPart
+	 *            the imaginary double value part which should be converted to a
+	 *            complex number
+	 * @param epsilon
+	 * @return IFraction
+	 */
+	public static IComplex complex(final double realPart, final double imagPart, final double epsilon) {
+		return ComplexSym.valueOf(AbstractFractionSym.valueOf(realPart, epsilon),
+				AbstractFractionSym.valueOf(imagPart, epsilon));
 	}
 
 	/**
@@ -3069,6 +3080,9 @@ public class F {
 		return AbstractFractionSym.valueOf(value);
 	}
 
+	public static IFraction fraction(final double value, final double epsilon) {
+		return AbstractFractionSym.valueOf(value, epsilon);
+	}
 	/**
 	 * Create a "fractional" number
 	 * 
@@ -3749,7 +3763,10 @@ public class F {
 	}
 
 	/**
-	 * @return <code>Log[10, a0]</code>
+	 * <code>Log[10, a0]</code>.
+	 * 
+	 * @param a0
+	 * @return <code>Log[10, a0]</code>.
 	 */
 	public static IAST Log10(final IExpr a0) {
 
