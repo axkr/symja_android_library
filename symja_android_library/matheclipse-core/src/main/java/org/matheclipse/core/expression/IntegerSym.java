@@ -8,9 +8,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.math4.fraction.BigFraction;
@@ -763,56 +761,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		}
 	}
 
-	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest-factor&quot;, so that
-	 * <code>this== (nth-root)^n + rest</code>
-	 * 
-	 * @return <code>{nth-root, rest}</code>
-	 */
-	@Override
-	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
-		IInteger[] result = new IInteger[2];
-		if (sign() == 0) {
-			result[0] = AbstractIntegerSym.valueOf(0);
-			result[1] = AbstractIntegerSym.valueOf(1);
-			return result;
-		} else if (sign() < 0) {
-			if (n % 2 == 0) {
-				// even exponent n
-				throw new ArithmeticException();
-			} else {
-				// odd exponent n
-				result = negate().nthRootSplit(n);
-				result[1] = result[1].negate();
-				return result;
-			}
-		}
-
-		IntegerSym b = this;
-		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
-		BigInteger rest = Primality.countPrimes1021(b.getBigNumerator(), map);
-		IInteger nthRoot = AbstractIntegerSym.valueOf(1);
-		IInteger restFactors = AbstractIntegerSym.valueOf(rest);
-		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-			IntegerSym primeLE1021 = AbstractIntegerSym.valueOf(entry.getKey());
-			int primeCounter = entry.getValue();
-			int div = primeCounter / n;
-			if (div > 0) {
-				// build nth-root
-				nthRoot = nthRoot.multiply(primeLE1021.pow(div));
-			}
-			int mod = primeCounter % n;
-			if (mod > 0) {
-				// build rest factor
-				restFactors = restFactors.multiply(primeLE1021.pow(mod));
-			}
-		}
-		result[0] = nthRoot;
-		result[1] = restFactors;
-		return result;
-
-	}
+	
 
 	@Override
 	public final INumber numericNumber() {

@@ -1383,6 +1383,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testFactorInteger() {
+		check("FactorInteger(4)", "{{2,2}}");
 		check("FactorInteger(3/8)", "{{2,-3},{3,1}}");
 		// sort is important for rational numbers
 		check("FactorInteger(2345354/2424245)", "{{2,1},{5,-1},{11,1},{17,1},{311,-1},{1559,-1},{6271,1}}");
@@ -2601,6 +2602,11 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("27^(1/3)", "3");
+		check("5103^(1/3)", "9*7^(1/3)");
+		check("5103^(1/2)", "27*Sqrt(7)");
+		check("Sqrt(75/4)", "5/2*Sqrt(3)");
+
 		check("0^(-1/2)", "ComplexInfinity");
 
 		check("E^(x+2*Pi*I)", "E^x");
