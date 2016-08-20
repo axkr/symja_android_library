@@ -18,7 +18,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Iterator for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
+ * Iterator for functions like <code>Table()</code> or <code>Sum()</code> or
+ * <code>Product()</code>
  * 
  * @see org.matheclipse.core.reflection.system.Product
  * @see org.matheclipse.core.reflection.system.Sum
@@ -36,7 +37,9 @@ public class Iterator implements IIterator<IExpr> {
 	IExpr maxCounterOrList;
 
 	/**
-	 * If <code>maxCounterOrList</code> is a list the <code>maxCounterOrListIndex</code> attribute points to the current element.
+	 * If <code>maxCounterOrList</code> is a list the
+	 * <code>maxCounterOrListIndex</code> attribute points to the current
+	 * element.
 	 */
 	int maxCounterOrListIndex;
 
@@ -51,7 +54,8 @@ public class Iterator implements IIterator<IExpr> {
 	final ISymbol variable;
 
 	/**
-	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
+	 * Iterator specification for functions like <code>Table()</code> or
+	 * <code>Sum()</code> or <code>Product()</code>
 	 * 
 	 * @param list
 	 *            a list representing an iterator specification
@@ -63,56 +67,66 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public Iterator(final IAST list, final EvalEngine engine) {
 		evalEngine = engine;
-		fNumericMode = evalEngine.isNumericMode() || list.isMember(Predicates.isNumeric(), false);
-		switch (list.size()) {
+		// fNumericMode = evalEngine.isNumericMode() ||
+		// list.isMember(Predicates.isNumeric(), false);
+		boolean localNumericMode = evalEngine.isNumericMode();
+		try {
+			if (list.hasNumericArgument()) {
+				evalEngine.setNumericMode(true);
+			}
+			fNumericMode = evalEngine.isNumericMode();
+			switch (list.size()) {
 
-		case 2:
-			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
-			step = F.C1;
-			variable = null;
+			case 2:
+				start = F.C1;
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
+				step = F.C1;
+				variable = null;
 
-			break;
-		case 3:
-			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
-			step = F.C1;
+				break;
+			case 3:
+				start = F.C1;
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				step = F.C1;
 
-			if (list.arg1() instanceof Symbol) {
-				variable = (Symbol) list.arg1();
-			} else {
+				if (list.arg1() instanceof Symbol) {
+					variable = (Symbol) list.arg1();
+				} else {
+					variable = null;
+				}
+
+				break;
+			case 4:
+				start = evalEngine.evalWithoutNumericReset(list.arg2());
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
+				step = F.C1;
+
+				if (list.arg1().isSymbol()) {
+					variable = (Symbol) list.arg1();
+				} else {
+					variable = null;
+				}
+
+				break;
+			case 5:
+				start = evalEngine.evalWithoutNumericReset(list.arg2());
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
+				step = evalEngine.evalWithoutNumericReset(list.arg4());
+				if (list.arg1() instanceof Symbol) {
+					variable = (Symbol) list.arg1();
+				} else {
+					variable = null;
+				}
+
+				break;
+			default:
+				start = null;
+				maxCounterOrList = null;
+				step = null;
 				variable = null;
 			}
-
-			break;
-		case 4:
-			start = evalEngine.evalWithoutNumericReset(list.arg2());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
-			step = F.C1;
-
-			if (list.arg1().isSymbol()) {
-				variable = (Symbol) list.arg1();
-			} else {
-				variable = null;
-			}
-
-			break;
-		case 5:
-			start = evalEngine.evalWithoutNumericReset(list.arg2());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
-			step = evalEngine.evalWithoutNumericReset(list.arg4());
-			if (list.arg1() instanceof Symbol) {
-				variable = (Symbol) list.arg1();
-			} else {
-				variable = null;
-			}
-
-			break;
-		default:
-			start = null;
-			maxCounterOrList = null;
-			step = null;
-			variable = null;
+		} finally {
+			evalEngine.setNumericMode(localNumericMode);
 		}
 		originalStart = start;
 		originalMaxCount = maxCounterOrList;
@@ -120,7 +134,8 @@ public class Iterator implements IIterator<IExpr> {
 	}
 
 	/**
-	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
+	 * Iterator specification for functions like <code>Table()</code> or
+	 * <code>Sum()</code> or <code>Product()</code>
 	 * 
 	 * @param list
 	 *            a list representing an iterator specification
@@ -134,32 +149,40 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public Iterator(final IAST list, final Symbol symbol, final EvalEngine engine) {
 		evalEngine = engine;
-		fNumericMode = evalEngine.isNumericMode();
-		switch (list.size()) {
+		boolean localNumericMode = evalEngine.isNumericMode();
+		try {
+			if (list.hasNumericArgument()) {
+				evalEngine.setNumericMode(true);
+			}
+			fNumericMode = evalEngine.isNumericMode();
+			switch (list.size()) {
 
-		case 2:
-			start = F.C1;
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
-			step = F.C1;
-			variable = symbol;
-			break;
-		case 3:
-			start = evalEngine.evalWithoutNumericReset(list.arg1());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
-			step = F.C1;
-			variable = symbol;
-			break;
-		case 4:
-			start = evalEngine.evalWithoutNumericReset(list.arg1());
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
-			step = evalEngine.evalWithoutNumericReset(list.arg3());
-			variable = symbol;
-			break;
-		default:
-			start = null;
-			maxCounterOrList = null;
-			step = null;
-			variable = null;
+			case 2:
+				start = F.C1;
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
+				step = F.C1;
+				variable = symbol;
+				break;
+			case 3:
+				start = evalEngine.evalWithoutNumericReset(list.arg1());
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				step = F.C1;
+				variable = symbol;
+				break;
+			case 4:
+				start = evalEngine.evalWithoutNumericReset(list.arg1());
+				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				step = evalEngine.evalWithoutNumericReset(list.arg3());
+				variable = symbol;
+				break;
+			default:
+				start = null;
+				maxCounterOrList = null;
+				step = null;
+				variable = null;
+			}
+		} finally {
+			evalEngine.setNumericMode(localNumericMode);
 		}
 		originalStart = start;
 		originalMaxCount = maxCounterOrList;
@@ -185,7 +208,8 @@ public class Iterator implements IIterator<IExpr> {
 	/**
 	 * Tests if this enumeration contains more elements.
 	 * 
-	 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
+	 * @return <code>true</code> if this enumeration contains more elements;
+	 *         <code>false</code> otherwise.
 	 */
 	public boolean hasNext() {
 		if (maxCounterOrList == null) {// || (illegalIterator)) {
@@ -233,7 +257,8 @@ public class Iterator implements IIterator<IExpr> {
 	}
 
 	public boolean isNumericFunction() {
-		return originalStart.isNumericFunction() && originalStep.isNumericFunction() && originalMaxCount.isNumericFunction();
+		return originalStart.isNumericFunction() && originalStep.isNumericFunction()
+				&& originalMaxCount.isNumericFunction();
 	}
 
 	public boolean isSetIterator() {

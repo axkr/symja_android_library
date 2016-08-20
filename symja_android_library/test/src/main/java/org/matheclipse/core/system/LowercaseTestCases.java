@@ -699,7 +699,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 		check("CoefficientList(1 + 6 x - x^4, x)", "{1,6,0,0,-1}");
 		check("CoefficientList((1 + x)^10 , x)", "{1,10,45,120,210,252,210,120,45,10,1}");
 		check("CoefficientList(a*42*x^3+12*b*x+c*4, x)", "{4*c,12*b,0,42*a}");
-		check("CoefficientList((1.0 + x)^10 , x)", "{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1.0}");
+		check("CoefficientList((1.0 + x)^10 , x)", "{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1}");
 	}
 
 	public void testCoefficientRules() {
@@ -2578,6 +2578,9 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testPosition() {
+		check("Position({1.0, 2+3, b}, _Integer)", "{{2}}");
+		check("Position(_Integer)[{1.0, 2+3, b}]", "{{2}}");
+		check("Position(_Integer)[{1.0, 2, b}]", "{{2}}");
 		check("Position(_Integer)[{a, 2, b}]", "{{2}}");
 		check("Position({x, {x, y}, y},x,1)", "{{1}}");
 		check("Position({x, {x, y}, y},x,2)", "{{1},{2,1}}");

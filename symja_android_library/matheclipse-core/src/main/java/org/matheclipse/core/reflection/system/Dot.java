@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apache.commons.math4.exception.DimensionMismatchException;
 import org.apache.commons.math4.linear.FieldMatrix;
 import org.apache.commons.math4.linear.FieldVector;
 import org.apache.commons.math4.linear.RealMatrix;
@@ -23,27 +24,12 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 
 	@Override
 	public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
-		if (o0.isRealMatrix()) {
-			if (o1.isRealMatrix()) {
-				RealMatrix m0 = o0.toRealMatrix();
-				RealMatrix m1 = o1.toRealMatrix();
-				return new ASTRealMatrix(m0.multiply(m1), false);
-			} else if (o1.isRealVector()) {
-				RealMatrix m0 = o0.toRealMatrix();
-				RealVector m1 = o1.toRealVector();
-				return new ASTRealVector(m0.operate(m1), false);
-			}
-		} else if (o0.isRealVector()) {
-			if (o1.isRealMatrix()) {
-				RealVector m0 = o0.toRealVector();
-				RealMatrix m1 = o1.toRealMatrix();
-				return new ASTRealVector(m1.preMultiply(m0), false);
-			} else if (o1.isRealVector()) {
-				RealVector m0 = o0.toRealVector();
-				RealVector m1 = o1.toRealVector();
-				return F.num(m0.dotProduct(m1));
-			}
+
+		IExpr temp = numericalDot(o0, o1);
+		if (temp.isPresent()) {
+			return temp;
 		}
+
 		FieldMatrix<IExpr> matrix0;
 		FieldMatrix<IExpr> matrix1;
 		FieldVector<IExpr> vector0;
@@ -90,6 +76,69 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
+			}
+		}
+		return F.NIL;
+	}
+
+	private IExpr numericalDot(final IExpr o0, final IExpr o1) throws DimensionMismatchException {
+		if (o0.isRealMatrix()) {
+			if (o1.isMatrix() != null) {
+				RealMatrix m1 = o1.toRealMatrix();
+				if (m1 != null) {
+					RealMatrix m0 = o0.toRealMatrix();
+					return new ASTRealMatrix(m0.multiply(m1), false);
+				}
+			} else if (o1.isVector() != (-1)) {
+				RealVector m1 = o1.toRealVector();
+				if (m1 != null) {
+					RealMatrix m0 = o0.toRealMatrix();
+					return new ASTRealVector(m0.operate(m1), false);
+				}
+			}
+		} else if (o0.isRealVector()) {
+			if (o1.isMatrix() != null) {
+				RealMatrix m1 = o1.toRealMatrix();
+				if (m1 != null) {
+					RealVector v0 = o0.toRealVector();
+					return new ASTRealVector(m1.preMultiply(v0), false);
+				}
+			} else if (o1.isVector() != (-1)) {
+				RealVector v1 = o1.toRealVector();
+				if (v1 != null) {
+					RealVector v0 = o0.toRealVector();
+					return F.num(v0.dotProduct(v1));
+				}
+			}
+		}
+
+		if (o1.isRealMatrix()) {
+			if (o0.isMatrix() != null) {
+				RealMatrix m0 = o0.toRealMatrix();
+				if (m0 != null) {
+					RealMatrix m1 = o1.toRealMatrix();
+					return new ASTRealMatrix(m0.multiply(m1), false);
+				}
+			} else if (o0.isVector() != (-1)) {
+				RealVector v0 = o0.toRealVector();
+				if (v0 != null) {
+					RealMatrix m1 = o1.toRealMatrix();
+					return new ASTRealVector(m1.preMultiply(v0), false);
+				}
+			}
+		} else if (o1.isRealVector()) {
+			if (o0.isMatrix() != null) {
+				RealMatrix m0 = o0.toRealMatrix();
+				if (m0 != null) {
+					RealVector m1 = o1.toRealVector();
+					return new ASTRealVector(m0.operate(m1), false);
+				}
+			} else if (o0.isVector() != (-1)) {
+				RealVector v0 = o0.toRealVector();
+				if (v0 != null) {
+					RealVector v1 = o1.toRealVector();
+					return F.num(v0.dotProduct(v1));
+				}
 			}
 		}
 		return F.NIL;

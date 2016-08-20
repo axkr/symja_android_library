@@ -2809,7 +2809,7 @@ public class MainTestCases extends AbstractTestCase {
 	public void testSystem407() {
 		check("ContinuedFraction(45/16)", "{2,1,4,3}");
 		check("FromContinuedFraction({2,1,4,3})", "45/16");
-		check("ContinuedFraction(0.753)", "{0.0,1.0,3.0,20.0,1.0,1.0,2.0,2.0}");
+		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,2}");
 		check("FromContinuedFraction({0.0,1.0,3.0,20.0,1.0,1.0,2.0,2.0})", "0.753");
 		check("FromContinuedFraction({0,1,3,20,1,1,2,2})", "753/1000");
 		check("FromContinuedFraction({3})", "3");
@@ -3153,7 +3153,7 @@ public class MainTestCases extends AbstractTestCase {
 		check("Solve({x+y==1, x-y==0}, {x,y})", "{{x->1/2,y->1/2}}");
 		check("Solve(x*(-0.006*x^2.0+1.0)^2.0-0.1*x==7.217,x)",
 				"{{x->16.955857565963104},{x->-14.046984417469712+I*(-3.7076764944679925)},{x->-14.046984417469712+I*3.7076764944679925},{x->5.569055634488159+I*(-5.000250639949149)},{x->5.569055634488159+I*5.000250639949149}}");
-		check("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)", "{-7.217,0.9,0.0,-0.012,0.0,3.6E-5}");
+		check("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)", "{-7.217,0.9,0,-0.012,0,3.6E-5}");
 
 		check("Solve(2.5*x^2+1650==0,x)", "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
 		check("Solve(x*(x^2+1)^2==7,x)",

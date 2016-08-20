@@ -25,46 +25,6 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
  */
 public class Position extends AbstractCoreFunctionEvaluator {
 
-	public Position() {
-		// default ctor
-	}
-
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.isAST1()) {
-			return F.operatorFormAST1(ast);
-		}
-		Validate.checkRange(ast, 3, 4);
-
-		final IExpr arg1 = engine.evaluate(ast.arg1());
-		if (arg1.isAST()) {
-			final IExpr arg2 = engine.evalPattern(ast.arg2());
-			if (ast.isAST2()) {
-				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
-				return position((IAST) arg1, arg2, level);
-			}
-			if (ast.isAST3()) {
-				final Options options = new Options(ast.topHead(), ast, 2, engine);
-				IExpr option = options.getOption("Heads");
-				if (option.isPresent()) {
-					if (option.isTrue()) {
-						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
-						return position((IAST) arg1, arg2, level);
-					}
-					if (option.isFalse()) {
-						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
-						return position((IAST) arg1, arg2, level);
-					}
-					return F.NIL;
-				}
-				final IExpr arg3 = engine.evaluate(ast.arg3());
-				final LevelSpec level = new LevelSpecification(arg3, true);
-				return position((IAST) arg1, arg2, level);
-			}
-		}
-		return F.NIL;
-	}
-
 	/**
 	 * Add the positions to the <code>resultCollection</code> where the matching
 	 * expressions appear in <code>list</code>. The
@@ -122,6 +82,46 @@ public class Position extends AbstractCoreFunctionEvaluator {
 		}
 		position(list, cloneList, resultList, level, matcher, pos, headOffset);
 		return resultList;
+	}
+
+	public Position() {
+		// default ctor
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
+		Validate.checkRange(ast, 3, 4);
+
+		final IExpr arg1 = engine.evaluate(ast.arg1());
+		if (arg1.isAST()) {
+			final IExpr arg2 = engine.evalPattern(ast.arg2());
+			if (ast.isAST2()) {
+				final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
+				return position((IAST) arg1, arg2, level);
+			}
+			if (ast.isAST3()) {
+				final Options options = new Options(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption("Heads");
+				if (option.isPresent()) {
+					if (option.isTrue()) {
+						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
+						return position((IAST) arg1, arg2, level);
+					}
+					if (option.isFalse()) {
+						final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
+						return position((IAST) arg1, arg2, level);
+					}
+					return F.NIL;
+				}
+				final IExpr arg3 = engine.evaluate(ast.arg3());
+				final LevelSpec level = new LevelSpecification(arg3, true);
+				return position((IAST) arg1, arg2, level);
+			}
+		}
+		return F.NIL;
 	}
 
 	@Override

@@ -57,7 +57,7 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	/**
 	 * NO_FLAG ACTIVATED
 	 */
-	public final int NO_FLAG = 0x0000; 
+	public final int NO_FLAG = 0x0000;
 
 	/**
 	 * The head or one of the arguments of the list or sublists contains a
@@ -635,6 +635,23 @@ public interface IAST extends IExpr, List<IExpr>, Cloneable {
 	default boolean hasDefaultArgument() {
 		if (size() > 1) {
 			return get(size() - 1).isPatternDefault();
+		}
+		return false;
+	}
+
+	/**
+	 * Test if one of the arguments gives <code>true</code> for the
+	 * <code>isNumericArgument()</code> method
+	 * 
+	 * @return <code>true</code> if one of the arguments gives <code>true</code>
+	 *         for the <code>isNumericArgument()</code> method
+	 */
+	default boolean hasNumericArgument() {
+		int size = size();
+		for (int i = 1; i < size; i++) {
+			if (get(i).isNumericArgument()) {
+				return true;
+			}
 		}
 		return false;
 	}
