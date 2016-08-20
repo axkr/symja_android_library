@@ -55,17 +55,16 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 * 
 	 * @param function
 	 *            the function which should be applied for an element
-	 * @param expr
+	 * @param unevaledLevelExpr
 	 *            the given <i>level specification</i>
 	 * @param includeHeads
 	 *            set to <code>true</code>, if the header of an AST expression
 	 *            should be included
 	 * @throws MathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
-	 * @see
 	 */
-	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr expr, boolean includeHeads) {
-		IExpr levelExpr = F.eval(expr);
+	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr unevaledLevelExpr, boolean includeHeads) {
+		IExpr levelExpr = F.eval(unevaledLevelExpr);
 		fFromLevel = fToLevel = -1;
 		fFromDepth = fToDepth = 0;
 		this.fIncludeHeads = includeHeads;
@@ -151,7 +150,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 				}
 			}
 		}
-		if (levelExpr.equals(F.CInfinity)) {
+		if (levelExpr.equals(F.CInfinity)||levelExpr.equals(F.All)) {
 			fToLevel = Integer.MAX_VALUE;
 			fFromLevel = 1;
 			fFromDepth = Integer.MIN_VALUE;
