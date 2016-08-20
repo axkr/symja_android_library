@@ -2791,7 +2791,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testRationalize() {
-		check("Rationalize(0.202898)","101449/500000");
+		check("Rationalize(0.202898)", "101449/500000");
 		check("Rationalize(1.2 + 6.7 x)", "6/5+67/10*x");
 		check("Rationalize(Exp(Sqrt(2)), 2^-12)", "218/53");
 		check("Rationalize(6.75)", "27/4");
@@ -2861,6 +2861,14 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testReplace() {
+		// By default, only the top level is searched for matches
+		check("Replace(1 + x, {x -> 2})", "1+x");
+		// use Replace() as an operator
+		check("Replace({x_ -> x + 1})[10]", "11");
+		// Replace replaces the deepest levels first
+		check("Replace(x(1), {x(1) -> y, 1 -> 2}, All)", "x(2)");
+		// Replace stops after the first replacement
+		check("Replace(x, {x -> {}, _List -> y})", "{}");
 		check("Replace(x^2, x^2 -> a + b)", "a+b");
 		check("Replace(1+x^2, x^2 -> a + b)", "1+x^2");
 

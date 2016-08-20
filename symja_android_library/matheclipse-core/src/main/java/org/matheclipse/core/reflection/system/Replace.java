@@ -179,6 +179,9 @@ public class Replace extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1()) {
+			return F.operatorFormAST1(ast);
+		}
 		Validate.checkRange(ast, 3, 4);
 		try {
 			IExpr arg1 = ast.arg1();
