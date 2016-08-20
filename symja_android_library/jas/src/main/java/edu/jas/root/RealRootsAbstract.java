@@ -191,8 +191,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @return a list of isolating intervals v such that |v| &lt; eps.
      */
     public List<Interval<C>> realRoots(GenPolynomial<C> f, C eps) {
-        List<Interval<C>> iv = realRoots(f);
-        return refineIntervals(iv, f, eps);
+        return realRoots(f, eps.getRational());
     }
 
 
@@ -203,8 +202,8 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @return a list of isolating intervals v such that |v| &lt; eps.
      */
     public List<Interval<C>> realRoots(GenPolynomial<C> f, BigRational eps) {
-        C e = f.ring.coFac.parse(eps.toString());
-        return realRoots(f, e);
+        List<Interval<C>> iv = realRoots(f);
+        return refineIntervals(iv, f, eps);
     }
 
 
@@ -244,9 +243,9 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
         if (f == null || f.isZERO()) {
             return iv;
         }
-        C len = iv.length();
-        C two = len.factory().fromInteger(2);
-        C eps = len.divide(two);
+        BigRational len = iv.rationalLength();
+        BigRational two = len.factory().fromInteger(2);
+        BigRational eps = len.divide(two);
         return refineInterval(iv, f, eps);
     }
 
@@ -258,17 +257,17 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @param eps requested interval length.
      * @return a new interval v such that |v| &lt; eps.
      */
-    public Interval<C> refineInterval(Interval<C> iv, GenPolynomial<C> f, C eps) {
+    public Interval<C> refineInterval(Interval<C> iv, GenPolynomial<C> f, BigRational eps) {
         if (f == null || f.isZERO() || f.isConstant() || eps == null) {
             return iv;
         }
-        if (iv.length().compareTo(eps) < 0) {
+        if (iv.rationalLength().compareTo(eps) < 0) {
             return iv;
         }
         RingFactory<C> cfac = f.ring.coFac;
         C two = cfac.fromInteger(2);
         Interval<C> v = iv;
-        while (v.length().compareTo(eps) >= 0) {
+        while (v.rationalLength().compareTo(eps) >= 0) {
             C c = v.left.sum(v.right);
             c = c.divide(two);
             //System.out.println("c = " + c);
@@ -295,7 +294,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @param eps requested intervals length.
      * @return a list of new intervals v such that |v| &lt; eps.
      */
-    public List<Interval<C>> refineIntervals(List<Interval<C>> V, GenPolynomial<C> f, C eps) {
+    public List<Interval<C>> refineIntervals(List<Interval<C>> V, GenPolynomial<C> f, BigRational eps) {
         if (f == null || f.isZERO() || f.isConstant() || eps == null) {
             return V;
         }
@@ -378,7 +377,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      *         &lt; eps for a, b in v in iv.
      */
     public Interval<C> invariantMagnitudeInterval(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g,
-                    C eps) {
+                    BigRational eps) {
         Interval<C> v = iv;
         if (g == null || g.isZERO()) {
             return v;
@@ -398,7 +397,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
         RingFactory<C> cfac = f.ring.coFac;
         C two = cfac.fromInteger(2);
 
-        while (B.multiply(v.length()).compareTo(eps) >= 0) {
+        while (B.multiply(v.length()).getRational().compareTo(eps) >= 0) {
             C c = v.left.sum(v.right);
             c = c.divide(two);
             Interval<C> im = new Interval<C>(c, v.right);
@@ -451,7 +450,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @param eps length limit for interval length.
      * @return g(iv) .
      */
-    public C realMagnitude(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g, C eps) {
+    public C realMagnitude(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g, BigRational eps) {
         if (g.isZERO() || g.isConstant()) {
             return g.leadingBaseCoefficient();
         }
@@ -468,7 +467,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @return a decimal approximation d such that |d-v| &lt; eps, for f(v) = 0,
      *         v real.
      */
-    public BigDecimal approximateRoot(Interval<C> iv, GenPolynomial<C> f, C eps)
+    public BigDecimal approximateRoot(Interval<C> iv, GenPolynomial<C> f, BigRational eps)
                     throws NoConvergenceException {
         if (iv == null) {
             throw new IllegalArgumentException("null interval not allowed");
@@ -477,7 +476,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
         if (f == null || f.isZERO() || f.isConstant() || eps == null) {
             return d;
         }
-        if (iv.length().compareTo(eps) < 0) {
+        if (iv.rationalLength().compareTo(eps) < 0) {
             return d;
         }
         BigDecimal left = new BigDecimal(iv.left.getRational());
@@ -515,8 +514,9 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
             if (d.subtract(dx).abs().compareTo(e) <= 0) {
                 return dx;
             }
-            while (dx.compareTo(left) < 0 || dx.compareTo(right) > 0) { // dx < left: dx - left < 0
-                                                                        // dx > right: dx - right > 0
+            while (dx.compareTo(left) < 0 || dx.compareTo(right) > 0) {
+                // dx < left: dx - left < 0
+                // dx > right: dx - right > 0
                 //System.out.println("trying to leave interval");
                 if (i++ > MITER) { // dx > right: dx - right > 0
                     throw new NoConvergenceException("no convergence after " + i + " steps");
@@ -555,7 +555,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @return a list of decimal approximations d such that |d-v| &lt; eps for
      *         all real v with f(v) = 0.
      */
-    public List<BigDecimal> approximateRoots(GenPolynomial<C> f, C eps) {
+    public List<BigDecimal> approximateRoots(GenPolynomial<C> f, BigRational eps) {
         List<Interval<C>> iv = realRoots(f);
         List<BigDecimal> roots = new ArrayList<BigDecimal>(iv.size());
         for (Interval<C> i : iv) {
@@ -567,8 +567,8 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
                 } catch (NoConvergenceException e) {
                     // fall back to exact algorithm
                     //System.out.println("" + e);
-                    C len = i.length();
-                    len = len.divide(f.ring.coFac.fromInteger(1000));
+                    BigRational len = i.rationalLength();
+                    len = len.divide(len.factory().fromInteger(1000));
                     i = refineInterval(i, f, len);
                     logger.info("fall back rootRefinement = " + i);
                 }
@@ -657,7 +657,7 @@ public abstract class RealRootsAbstract<C extends RingElem<C> & Rational> implem
      * @return true if each x in R is a decimal approximation of a real v with
      *         f(v) = 0 with |d-v| &lt; eps, else false.
      */
-    public boolean isApproximateRoot(List<BigDecimal> R, GenPolynomial<C> f, C eps) {
+    public boolean isApproximateRoot(List<BigDecimal> R, GenPolynomial<C> f, BigRational eps) {
         if (R == null) {
             throw new IllegalArgumentException("null root not allowed");
         }

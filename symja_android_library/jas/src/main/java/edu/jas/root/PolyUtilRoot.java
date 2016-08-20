@@ -159,6 +159,27 @@ public class PolyUtilRoot {
                         new CoeffToComplexFromComplex<C>(afac));
     }
 
+
+    /**
+     * Convert to Complex coefficients. Represent as polynomial
+     * with Complex&lt;C&gt; coefficients.
+     * @param f univariate polynomial.
+     * @return f with complex coefficients
+     */
+    public static <C extends GcdRingElem<C> & Rational> 
+           GenPolynomial<Complex<C>> complexFromAny(GenPolynomial<C> f) {
+        if (f.ring.coFac instanceof ComplexRing) {
+            throw new IllegalArgumentException("f already has ComplexRing coefficients " + f.ring);
+        }
+        if (f.ring.coFac instanceof ComplexAlgebraicRing) {
+            throw new UnsupportedOperationException(
+                            "unsupported ComplexAlgebraicRing coefficients " + f.ring);
+        }
+        ComplexRing<C> cr = new ComplexRing<C>(f.ring.coFac);
+        GenPolynomialRing<Complex<C>> fac = new GenPolynomialRing<Complex<C>>(cr, f.ring);
+        GenPolynomial<Complex<C>> fc = PolyUtil.<C> complexFromAny(fac, f);
+        return fc;
+    }
 }
 
 

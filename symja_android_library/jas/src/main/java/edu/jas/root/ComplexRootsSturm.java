@@ -151,6 +151,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                     throws InvalidBoundaryException {
         C rl = rect.lengthReal();
         C il = rect.lengthImag();
+        //System.out.println("complexRootCount: rl = " + rl + ", il = " + il);
         // only linear polynomials have zero length intervals
         if (rl.isZERO() && il.isZERO()) {
             Complex<C> e = PolyUtil.<Complex<C>> evaluateMain(a.ring.coFac, a, rect.getSW());
@@ -185,7 +186,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
 
                 Complex<C> sw = rect.getSW();
                 Complex<C> ne = rect.getNE();
-                C delta = sw.ring.ring.parse("1"); // works since linear polynomial
+                C delta = sw.ring.ring.getONE(); //parse("1"); // works since linear polynomial
                 Complex<C> cd = new Complex<C>(sw.ring, delta/*, 0*/);
                 sw = sw.subtract(cd);
                 ne = ne.sum(cd);
@@ -202,7 +203,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
 
                 Complex<C> sw = rect.getSW();
                 Complex<C> ne = rect.getNE();
-                C delta = sw.ring.ring.parse("1"); // works since linear polynomial
+                C delta = sw.ring.ring.getONE(); //parse("1"); // works since linear polynomial
                 Complex<C> cd = new Complex<C>(sw.ring, sw.ring.ring.getZERO(), delta);
                 sw = sw.subtract(cd);
                 ne = ne.sum(cd);
@@ -211,7 +212,9 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
                 logger.info("new rectangle: " + rect.toScript());
             }
         }
-        return windingNumber(rect, a);
+        long wn = windingNumber(rect, a);
+        //System.out.println("complexRootCount: wn = " + wn);
+        return wn;
     }
 
 
@@ -221,7 +224,8 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
      * @param A univariate complex polynomial.
      * @return winding number of A arround rect.
      */
-    public long windingNumber(Rectangle<C> rect, GenPolynomial<Complex<C>> A) throws InvalidBoundaryException {
+    public long windingNumber(Rectangle<C> rect, GenPolynomial<Complex<C>> A)
+                    throws InvalidBoundaryException {
         Boundary<C> bound = new Boundary<C>(rect, A); // throws InvalidBoundaryException
         ComplexRing<C> cr = (ComplexRing<C>) A.ring.coFac;
         RingFactory<C> cf = cr.ring;
@@ -230,7 +234,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
         long ix = 0L;
         for (int i = 0; i < 4; i++) {
             long ci = indexOfCauchy(zero, one, bound.getRealPart(i), bound.getImagPart(i));
-            //System.out.println("ci["+i+","+(i+1)+"] = " + ci);
+            //System.out.println("ci[" + i + "," + (i + 1) + "] = " + ci);
             ix += ci;
         }
         if (ix % 2L != 0) {
@@ -246,7 +250,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
      * @param a univariate squarefree complex polynomial.
      * @return list of complex roots.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({"cast","unchecked"})
     @Override
     public List<Rectangle<C>> complexRoots(Rectangle<C> rect, GenPolynomial<Complex<C>> a)
                     throws InvalidBoundaryException {
@@ -266,6 +270,7 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             return roots;
         }
         if (n == 1) {
+            //not ok: rect = excludeZero(rect, a);
             roots.add(rect);
             return roots;
         }
@@ -399,6 +404,70 @@ public class ComplexRootsSturm<C extends RingElem<C> & Rational> extends Complex
             }
         }
         //return v;
+    }
+
+
+    /**
+     * Exclude zero. If an axis intersects with the rectangle, it is shrinked 
+     * to exclude the axis.
+     * Not used.
+     * @param rect root isolating rectangle for f which contains exactly one
+     *            root.
+     * @return a new rectangle r such that re(r) &lt; 0 or (re)r &gt; 0 and
+     *         im(r) &lt; 0 or (im)r &gt; 0.
+     */
+    public Rectangle<C> excludeZero(Rectangle<C> rect, GenPolynomial<Complex<C>> f)
+                    throws InvalidBoundaryException {
+        if (f == null || f.isZERO()) {
+            return rect;
+        }
+        System.out.println("\nexcludeZero: rect = " + rect + ", f = " + f);
+        Complex<C> zero = f.ring.coFac.getZERO();
+        ComplexRing<C> cr = zero.ring;
+        Complex<C> sw = rect.getSW();
+        Complex<C> ne = rect.getNE();
+        Interval<C> ir = new Interval<C>(sw.getRe(), ne.getRe());
+        Interval<C> ii = new Interval<C>(sw.getIm(), ne.getIm());
+        System.out.println("intervals, ir = " + ir + ", ii = " + ii);
+        if (!(ir.contains(zero.getRe()) || ii.contains(zero.getIm()))) {
+            // !rect.contains(zero) not correct
+            return rect;
+        }
+        //System.out.println("contains: ir = " + ir.contains(zero.getRe()) + ", ii = " + ii.contains(zero.getIm()) );
+        Rectangle<C> rn = rect;
+        // shrink real part
+        if (ir.contains(zero.getRe())) {
+            Complex<C> sw0 = new Complex<C>(cr, zero.getRe(), sw.getIm());
+            Complex<C> ne0 = new Complex<C>(cr, zero.getRe(), ne.getIm());
+            Rectangle<C> rl = new Rectangle<C>(sw, ne0);
+            Rectangle<C> rr = new Rectangle<C>(sw0, ne);
+            System.out.println("rectangle, rl = " + rl + ", rr = " + rr);
+            if (complexRootCount(rr, f) == 1) {
+                rn = rr;
+            } else { // complexRootCount(rl,f) == 1
+                rn = rl;
+            }
+            System.out.println("rectangle, real = " + rn);
+        }
+        // shrink imaginary part
+        sw = rn.getSW();
+        ne = rn.getNE();
+        ii = new Interval<C>(sw.getIm(), ne.getIm());
+        System.out.println("interval, ii = " + ii);
+        if (ii.contains(zero.getIm())) {
+            Complex<C> sw1 = new Complex<C>(cr, sw.getRe(), zero.getIm());
+            Complex<C> ne1 = new Complex<C>(cr, ne.getRe(), zero.getIm());
+            Rectangle<C> iu = new Rectangle<C>(sw1, ne);
+            Rectangle<C> il = new Rectangle<C>(sw, ne1);
+            System.out.println("rectangle, il = " + il + ", iu = " + iu);
+            if (complexRootCount(il, f) == 1) {
+                rn = il;;
+            } else { // complexRootCount(iu,f) == 1
+                rn = iu;
+            }
+            System.out.println("rectangle, imag = " + rn);
+        }
+        return rn;
     }
 
 }

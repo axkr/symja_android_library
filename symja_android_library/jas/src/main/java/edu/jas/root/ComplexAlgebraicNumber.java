@@ -24,8 +24,8 @@ import edu.jas.structure.NotInvertibleException;
  */
 
 public class ComplexAlgebraicNumber<C extends GcdRingElem<C> & Rational>
-/*extends AlgebraicNumber<C>*/
-implements GcdRingElem<ComplexAlgebraicNumber<C>> {
+                /*extends AlgebraicNumber<C>*/
+                implements GcdRingElem<ComplexAlgebraicNumber<C>> {
 
 
     /**
@@ -121,6 +121,16 @@ implements GcdRingElem<ComplexAlgebraicNumber<C>> {
      */
     public boolean isUnit() {
         return number.isUnit();
+    }
+
+
+    /**
+     * Is ComplexAlgebraicNumber a root of unity.
+     * @return true if |this**i| == 1, for some 0 &lt; i &le; deg(modul), else
+     *         false.
+     */
+    public boolean isRootOfUnity() {
+        return number.isRootOfUnity();
     }
 
 
@@ -433,15 +443,10 @@ implements GcdRingElem<ComplexAlgebraicNumber<C>> {
             ring.setRoot(v);
             //System.out.println("new v = " + v);
             Complex<C> ev = ring.engine.complexRectangleMagnitude(v, ring.algebraic.modul, number.val); //, ring.eps);
-            //C re = ev.getRe();
-            //if ( (Object) re instanceof Rational) { // true by type parameter
             BigRational er = ev.getRe().getRational();
             BigRational ei = ev.getIm().getRational();
             ComplexRing<BigRational> cr = new ComplexRing<BigRational>(er.factory());
             return new Complex<BigRational>(cr, er, ei);
-            //} else {
-            //    throw new RuntimeException("Rational expected, but was " + ev.getClass());
-            //}
         } catch (InvalidBoundaryException e) { // should not happen
             e.printStackTrace();
             throw new RuntimeException(e);

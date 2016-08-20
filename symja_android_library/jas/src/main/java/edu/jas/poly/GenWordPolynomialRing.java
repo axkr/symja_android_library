@@ -592,7 +592,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
             p = p.sum(one, e.multiply(f));
             p = p.subtract(one, f.multiply(e));
             if (i > j) {
-		p = p.negate();
+                p = p.negate();
             }
         }
         return p;
@@ -608,7 +608,7 @@ public final class GenWordPolynomialRing<C extends RingElem<C>> implements RingF
         int n = alphabet.length();
         List<GenWordPolynomial<C>> pols = new ArrayList<GenWordPolynomial<C>>(n-1);
         for ( int j = 0; j < n; j++ ) {
-	    if (i != j) {
+            if (i != j) {
                 pols.add(commute(i,j));
             }
         }

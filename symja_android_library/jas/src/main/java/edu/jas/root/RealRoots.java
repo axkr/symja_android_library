@@ -8,11 +8,10 @@ package edu.jas.root;
 import java.io.Serializable;
 import java.util.List;
 
-import edu.jas.arith.Rational;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.Rational;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingElem;
-import edu.jas.structure.GcdRingElem;
 
 
 /**
@@ -82,7 +81,7 @@ public interface RealRoots<C extends RingElem<C> & Rational> extends Serializabl
      * @param eps requested interval length.
      * @return a new interval v such that |v| &lt; eps.
      */
-    public Interval<C> refineInterval(Interval<C> iv, GenPolynomial<C> f, C eps);
+    public Interval<C> refineInterval(Interval<C> iv, GenPolynomial<C> f, BigRational eps);
 
 
     /**
@@ -92,7 +91,7 @@ public interface RealRoots<C extends RingElem<C> & Rational> extends Serializabl
      * @param eps requested intervals length.
      * @return a list of new intervals v such that |v| &lt; eps.
      */
-    public List<Interval<C>> refineIntervals(List<Interval<C>> V, GenPolynomial<C> f, C eps);
+    public List<Interval<C>> refineIntervals(List<Interval<C>> V, GenPolynomial<C> f, BigRational eps);
 
 
     /**
@@ -100,8 +99,8 @@ public interface RealRoots<C extends RingElem<C> & Rational> extends Serializabl
      * @param iv root isolating interval for f, with f(left) * f(right) &lt; 0.
      * @param f univariate polynomial, non-zero.
      * @param g univariate polynomial, gcd(f,g) == 1.
-     * @return sign(g(v)), with v a new interval contained in iv such that g(v) !=
-     *         0.
+     * @return sign(g(v)), with v a new interval contained in iv such that g(v)
+     *         != 0.
      */
     public int realSign(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g);
 
@@ -114,6 +113,6 @@ public interface RealRoots<C extends RingElem<C> & Rational> extends Serializabl
      * @param eps length limit for interval length.
      * @return g(iv).
      */
-    public C realMagnitude(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g, C eps);
+    public C realMagnitude(Interval<C> iv, GenPolynomial<C> f, GenPolynomial<C> g, BigRational eps);
 
 }

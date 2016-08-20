@@ -8,12 +8,11 @@ package edu.jas.root;
 import java.io.Serializable;
 import java.util.List;
 
-import edu.jas.arith.Rational;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.Rational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingElem;
-import edu.jas.structure.GcdRingElem;
 
 
 /**
@@ -25,7 +24,8 @@ public interface ComplexRoots<C extends RingElem<C> & Rational> extends Serializ
 
 
     /**
-     * Root bound. With f(-M + i M) * f(-M - i M) * f(M - i M) * f(M + i M) != 0.
+     * Root bound. With f(-M + i M) * f(-M - i M) * f(M - i M) * f(M + i M) !=
+     * 0.
      * @param f univariate polynomial.
      * @return M such that root(f) is contained in the rectangle spanned by M.
      */
@@ -39,7 +39,7 @@ public interface ComplexRoots<C extends RingElem<C> & Rational> extends Serializ
      * @return root count of a in rectangle.
      */
     public long complexRootCount(Rectangle<C> rect, GenPolynomial<Complex<C>> a)
-            throws InvalidBoundaryException;
+                    throws InvalidBoundaryException;
 
 
     /**
@@ -49,7 +49,7 @@ public interface ComplexRoots<C extends RingElem<C> & Rational> extends Serializ
      * @return list of complex roots.
      */
     public List<Rectangle<C>> complexRoots(Rectangle<C> rect, GenPolynomial<Complex<C>> a)
-            throws InvalidBoundaryException;
+                    throws InvalidBoundaryException;
 
 
     /**
@@ -68,6 +68,6 @@ public interface ComplexRoots<C extends RingElem<C> & Rational> extends Serializ
      * @return refined complex root.
      */
     public Rectangle<C> complexRootRefinement(Rectangle<C> rect, GenPolynomial<Complex<C>> a, BigRational len)
-            throws InvalidBoundaryException;
+                    throws InvalidBoundaryException;
 
 }

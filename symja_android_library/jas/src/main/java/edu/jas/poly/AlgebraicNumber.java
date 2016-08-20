@@ -148,6 +148,24 @@ public class AlgebraicNumber<C extends RingElem<C>> implements GcdRingElem<Algeb
 
 
     /**
+     * Is AlgebraicNumber a root of unity.
+     * @return true if |this**i| == 1, for some 0 &lt; i &le; deg(modul), else false.
+     */
+    public boolean isRootOfUnity() {
+        long d = ring.modul.degree();
+        AlgebraicNumber<C> t = ring.getONE(); 
+        for (long i = 1; i <= d; i++) {
+            t = t.multiply(this);
+            if (t.abs().isONE()) {
+                //System.out.println("isRootOfUnity for i = " + i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * Get the String representation as RingElem.
      * @see java.lang.Object#toString()
      */

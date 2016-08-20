@@ -585,7 +585,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         }
         List<GenPolynomial<C>> P = new ArrayList<GenPolynomial<C>>(); //E.size());
         for ( ExpVector e : E ) {
-	    GenPolynomial<C> p = valueOf(e);
+            GenPolynomial<C> p = valueOf(e);
             P.add(p);
         }
         return P;
@@ -720,7 +720,7 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
         }
         List<GenPolynomial<C>> R = new ArrayList<GenPolynomial<C>>(L.size());
         for ( GenPolynomial<C> a : L ) {
-	    R.add( copy(a) );
+            R.add( copy(a) );
         }
         return R;
     }

@@ -1593,6 +1593,9 @@ public class PolyUtil {
             return P;
         }
         GenPolynomialRing<C> pfac = P.ring;
+        if (pfac.nvar == 0) {
+            return pfac.getZERO();
+        }
         if (pfac.nvar > 1) {
             // baseContent not possible by return type
             throw new IllegalArgumentException(P.getClass().getName() + " only for univariate polynomials");
@@ -1665,6 +1668,9 @@ public class PolyUtil {
             return P;
         }
         GenPolynomialRing<C> pfac = P.ring;
+        if (pfac.nvar == 0) {
+            return pfac.getONE();
+        }
         if (pfac.nvar > 1) {
             // baseContent not possible by return type
             throw new IllegalArgumentException(P.getClass().getName() + " only for univariate polynomials");
@@ -1700,6 +1706,9 @@ public class PolyUtil {
             return P;
         }
         GenPolynomialRing<GenPolynomial<C>> pfac = P.ring;
+        if (pfac.nvar == 0) {
+            return pfac.getZERO();
+        }
         if (pfac.nvar > 1) {
             // baseContent not possible by return type
             throw new IllegalArgumentException(P.getClass().getName() + " only for univariate polynomials");
@@ -2055,7 +2064,7 @@ public class PolyUtil {
      * Substitute univariate polynomial.
      * @param f univariate polynomial.
      * @param t polynomial for substitution.
-     * @return polynomial A(x <- t).
+     * @return polynomial f(x <- t).
      */
     public static <C extends RingElem<C>> GenPolynomial<C> substituteUnivariate(GenPolynomial<C> f,
                     GenPolynomial<C> t) {

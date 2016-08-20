@@ -166,7 +166,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @param a univariate complex polynomial.
      * @return list of complex roots.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({"cast","unchecked"})
     public List<Rectangle<C>> complexRoots(GenPolynomial<Complex<C>> a) {
         List<Rectangle<C>> roots = new ArrayList<Rectangle<C>>();
         if (a.isConstant() || a.isZERO()) {
@@ -211,7 +211,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @param len rational length for refinement.
      * @return refined complex root.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({"cast","unchecked"})
     public Rectangle<C> complexRootRefinement(Rectangle<C> rect, GenPolynomial<Complex<C>> a, BigRational len)
                     throws InvalidBoundaryException {
         ComplexRing<C> cr = (ComplexRing<C>) a.ring.coFac;
@@ -324,7 +324,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @param len rational length for refinement.
      * @return list of complex roots to desired precision.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings({"cast","unchecked"})
     public List<Rectangle<C>> complexRoots(GenPolynomial<Complex<C>> a, BigRational len) {
         ComplexRing<C> cr = (ComplexRing<C>) a.ring.coFac;
         SortedMap<GenPolynomial<Complex<C>>, Long> sa = engine.squarefreeFactors(a);
@@ -403,7 +403,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @return a decimal approximation d such that |d-v| &lt; eps, for f(v) = 0,
      *         v in rt.
      */
-    public Complex<BigDecimal> approximateRoot(Rectangle<C> rt, GenPolynomial<Complex<C>> f, C eps)
+    public Complex<BigDecimal> approximateRoot(Rectangle<C> rt, GenPolynomial<Complex<C>> f, BigRational eps)
                     throws NoConvergenceException {
         if (rt == null) {
             throw new IllegalArgumentException("null interval not allowed");
@@ -413,7 +413,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
         if (f == null || f.isZERO() || f.isConstant() || eps == null) {
             return d;
         }
-        if (rt.length().compareTo(eps) < 0) {
+        if (rt.rationalLength().compareTo(eps) < 0) {
             return d;
         }
         ComplexRing<BigDecimal> cr = d.ring;
@@ -480,8 +480,9 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
             //             }
             // check interval bounds
             while (dx.getRe().compareTo(ll.getRe()) < 0 || dx.getIm().compareTo(ll.getIm()) < 0
-                            || dx.getRe().compareTo(ur.getRe()) > 0 || dx.getIm().compareTo(ur.getIm()) > 0) { // dx < ll: dx - ll < 0
-                                                                                                               // dx > ur: dx - ur > 0
+                            || dx.getRe().compareTo(ur.getRe()) > 0 || dx.getIm().compareTo(ur.getIm()) > 0) {
+                // dx < ll: dx - ll < 0
+                // dx > ur: dx - ur > 0
                 if (i++ > MITER) { // dx > right: dx - right > 0
                     throw new NoConvergenceException("no convergence after " + i + " steps");
                 }
@@ -561,8 +562,8 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @param eps length for refinement.
      * @return list of complex decimal root approximations to desired precision.
      */
-    @SuppressWarnings("cast")
-    public List<Complex<BigDecimal>> approximateRoots(GenPolynomial<Complex<C>> a, C eps) {
+    @SuppressWarnings({"cast","unchecked"})
+    public List<Complex<BigDecimal>> approximateRoots(GenPolynomial<Complex<C>> a, BigRational eps) {
         ComplexRing<C> cr = (ComplexRing<C>) a.ring.coFac;
         SortedMap<GenPolynomial<Complex<C>>, Long> sa = engine.squarefreeFactors(a);
         List<Complex<BigDecimal>> roots = new ArrayList<Complex<BigDecimal>>();
@@ -652,7 +653,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      *         g(b)| &lt; eps for a, b in v in rect.
      */
     public Rectangle<C> invariantMagnitudeRectangle(Rectangle<C> rect, GenPolynomial<Complex<C>> f,
-                    GenPolynomial<Complex<C>> g, C eps) throws InvalidBoundaryException {
+                    GenPolynomial<Complex<C>> g, BigRational eps) throws InvalidBoundaryException {
         Rectangle<C> v = rect;
         if (g == null || g.isZERO()) {
             return v;
@@ -666,13 +667,13 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
         GenPolynomial<Complex<C>> gp = PolyUtil.<Complex<C>> baseDeriviative(g);
         //System.out.println("g  = " + g);
         //System.out.println("gp = " + gp);
-        C B = magnitudeBound(rect, gp);
+        BigRational B = magnitudeBound(rect, gp).getRational();
         //System.out.println("B = " + B + " : " + B.getClass());
 
         BigRational len = v.rationalLength();
         BigRational half = new BigRational(1, 2);
 
-        C vlen = v.length();
+        BigRational vlen = v.rationalLength();
         vlen = vlen.multiply(vlen);
         //eps = eps.multiply(eps);
         //System.out.println("v = " + v);
@@ -681,7 +682,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
             len = len.multiply(half);
             v = complexRootRefinement(v, f, len);
             //System.out.println("v = " + v);
-            vlen = v.length();
+            vlen = v.rationalLength();
             vlen = vlen.multiply(vlen);
             //System.out.println("vlen = " + vlen);
         }
@@ -723,7 +724,7 @@ public abstract class ComplexRootsAbstract<C extends RingElem<C> & Rational> imp
      * @return g(rect) .
      */
     public Complex<C> complexMagnitude(Rectangle<C> rect, GenPolynomial<Complex<C>> f,
-                    GenPolynomial<Complex<C>> g, C eps) throws InvalidBoundaryException {
+                    GenPolynomial<Complex<C>> g, BigRational eps) throws InvalidBoundaryException {
         if (g.isZERO() || g.isConstant()) {
             return g.leadingBaseCoefficient();
         }

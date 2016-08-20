@@ -120,8 +120,8 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
         if (f.isZERO()) {
             C z = f.leadingBaseCoefficient();
             if (!iv.contains(z)) {
-                throw new IllegalArgumentException("root not in interval: f = " + f + ", iv = " + iv
-                                + ", z = " + z);
+                throw new IllegalArgumentException(
+                                "root not in interval: f = " + f + ", iv = " + iv + ", z = " + z);
             }
             Interval<C> iv1 = new Interval<C>(z);
             R.add(iv1);
@@ -149,6 +149,7 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
             return R;
         }
         if (v == 1) {
+            iv = excludeZero(iv, S);
             R.add(iv);
             return R;
         }
@@ -347,6 +348,29 @@ public class RealRootsSturm<C extends RingElem<C> & Rational> extends RealRootsA
             }
         }
         // return v;
+    }
+
+
+    /**
+     * Exclude zero.
+     * @param iv root isolating interval with f(left) * f(right) &lt; 0.
+     * @param S sturm sequence for f and I.
+     * @return a new interval v such that v &lt; 0 or v &gt; 0.
+     */
+    public Interval<C> excludeZero(Interval<C> iv, List<GenPolynomial<C>> S) {
+        if (S == null || S.isEmpty()) {
+            return iv;
+        }
+        C zero = S.get(0).ring.coFac.getZERO();
+        if (!iv.contains(zero)) {
+            return iv;
+        }
+        Interval<C> vn = new Interval<C>(iv.left, zero);
+        if (realRootCount(vn,S) == 1) {
+            return vn;
+        }
+        vn = new Interval<C>(zero, iv.right);
+        return vn;
     }
 
 }

@@ -37,8 +37,9 @@ import edu.jas.structure.UnaryFunctor;
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
-public class GenPolynomial<C extends RingElem<C>> implements RingElem<GenPolynomial<C>>, /* not yet Polynomial<C> */
-Iterable<Monomial<C>> {
+public class GenPolynomial<C extends RingElem<C>>
+                implements RingElem<GenPolynomial<C>>, /* not yet Polynomial<C> */
+                Iterable<Monomial<C>> {
 
 
     /**
@@ -730,6 +731,9 @@ Iterable<Monomial<C>> {
             j = ring.nvar + i;
         }
         long deg = 0;
+        if (j < 0) {
+            return deg;
+        }
         for (ExpVector e : val.keySet()) {
             long d = e.getVal(j);
             if (d > deg) {
@@ -1786,8 +1790,8 @@ Iterable<Monomial<C>> {
             return ret;
         }
         if (ring.nvar != 1) {
-            throw new IllegalArgumentException(this.getClass().getName() + " not univariate polynomials"
-                            + ring);
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " not univariate polynomials" + ring);
         }
         if (this.isConstant() && S.isConstant()) {
             C t = this.leadingBaseCoefficient();
@@ -1858,8 +1862,8 @@ Iterable<Monomial<C>> {
             return ret;
         }
         if (ring.nvar != 1) {
-            throw new IllegalArgumentException(this.getClass().getName() + " not univariate polynomials"
-                            + ring);
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " not univariate polynomials" + ring);
         }
         GenPolynomial<C>[] qr;
         GenPolynomial<C> q = this;
@@ -1994,7 +1998,8 @@ Iterable<Monomial<C>> {
     public Map<ExpVector, GenPolynomial<C>> contract(GenPolynomialRing<C> pfac) {
         GenPolynomial<C> zero = pfac.getZERO(); //not pfac.coFac;
         TermOrder t = new TermOrder(TermOrder.INVLEX);
-        Map<ExpVector, GenPolynomial<C>> B = new TreeMap<ExpVector, GenPolynomial<C>>(t.getAscendComparator());
+        Map<ExpVector, GenPolynomial<C>> B = new TreeMap<ExpVector, GenPolynomial<C>>(
+                        t.getAscendComparator());
         if (this.isZERO()) {
             return B;
         }
@@ -2214,8 +2219,8 @@ Iterable<Monomial<C>> {
                 n += m.e.bitLength();
                 //n += m.c.bitLength(); // TODO add bitLength to Element
                 try { // hack
-                    Method method = m.c.getClass().getMethod("bitLength", null);
-                    n += (Long) method.invoke(m.c, null);
+                    Method method = m.c.getClass().getMethod("bitLength", (Class<?>[]) null);
+                    n += (Long) method.invoke(m.c, (Object[]) null);
                 } catch (NoSuchMethodException e) {
                     logger.error("Exception, class: " + m.c.getClass());
                     throw new RuntimeException(e);

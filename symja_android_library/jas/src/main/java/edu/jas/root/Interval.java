@@ -19,7 +19,7 @@ import edu.jas.structure.RingFactory;
  * @param <C> coefficient type.
  * @author Heinz Kredel
  */
-public class Interval<C extends RingElem<C> & Rational > implements Serializable { //findbugs
+public class Interval<C extends RingElem<C> & Rational> implements Serializable { //findbugs
 
 
     /**
@@ -61,6 +61,7 @@ public class Interval<C extends RingElem<C> & Rational > implements Serializable
     @Override
     public String toString() {
         return "[" + left + ", " + right + "]";
+        //return "[" + left.getRational().getDecimal() + ", " + right.getRational().getDecimal() + "]";
     }
 
 
@@ -170,7 +171,7 @@ public class Interval<C extends RingElem<C> & Rational > implements Serializable
      */
     public BigRational rationalMiddle() {
         BigRational m = left.getRational().sum(right.getRational());
-        BigRational t = new BigRational(1L,2L);
+        BigRational t = new BigRational(1L, 2L);
         m = m.multiply(t);
         return m;
     }
@@ -194,11 +195,11 @@ public class Interval<C extends RingElem<C> & Rational > implements Serializable
      */
     public C randomPoint() {
         C dr = right.subtract(left);
-        RingFactory<C> fac = (RingFactory<C>)dr.factory();
+        RingFactory<C> fac = (RingFactory<C>) dr.factory();
         C r = fac.random(13);
         r = r.abs();
-        if ( !r.isZERO() ) {
-            if ( r.compareTo( fac.getONE() ) > 0 ) {
+        if (!r.isZERO()) {
+            if (r.compareTo(fac.getONE()) > 0) {
                 r = r.inverse();
             }
         }

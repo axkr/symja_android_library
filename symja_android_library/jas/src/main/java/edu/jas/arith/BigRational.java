@@ -322,6 +322,16 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
 
 
     /**
+     * Get the decimal representation.
+     * @return decimal.
+     */
+    public BigDecimal getDecimal() {
+        BigDecimal d = new BigDecimal(this);
+        return d;
+    }
+
+
+    /**
      * Get this as a <tt>double</tt>.
      * @return this as a <tt>double</tt>
      * @see java.lang.Number#doubleValue()

@@ -313,7 +313,7 @@ public final class Word implements MonoidElem<Word> {
      * @return [left,right] with left * V * right = this.
      */
     public Word[] divideWord(Word V) {
-	return divideWord(V,true); 
+        return divideWord(V,true); 
     }
 
     /**

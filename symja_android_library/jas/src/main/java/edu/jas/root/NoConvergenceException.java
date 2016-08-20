@@ -6,8 +6,8 @@ package edu.jas.root;
 
 
 /**
- * No convergence exception class. Exception to be thrown when an
- * iteration does not converge.
+ * No convergence exception class. Exception to be thrown when an iteration does
+ * not converge.
  * @author Heinz Kredel
  */
 

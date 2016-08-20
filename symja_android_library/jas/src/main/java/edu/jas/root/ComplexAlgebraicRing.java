@@ -10,7 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
+
 import edu.jas.arith.BigRational;
+import edu.jas.arith.BigDecimal;
 import edu.jas.arith.Rational;
 import edu.jas.poly.AlgebraicNumber;
 import edu.jas.poly.AlgebraicNumberRing;
@@ -18,7 +21,6 @@ import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.Power;
 import edu.jas.structure.RingFactory;
 
 
@@ -30,8 +32,11 @@ import edu.jas.structure.RingFactory;
  */
 
 public class ComplexAlgebraicRing<C extends GcdRingElem<C> & Rational>
-/*extends AlgebraicNumberRing<C>*/
-implements RingFactory<ComplexAlgebraicNumber<C>> {
+                /*extends AlgebraicNumberRing<C>*/
+                implements RingFactory<ComplexAlgebraicNumber<C>> {
+
+
+    private static final Logger logger = Logger.getLogger(ComplexAlgebraicRing.class);
 
 
     /**
@@ -50,13 +55,13 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
     /**
      * Epsilon of the isolating rectangle for a complex root.
      */
-    protected C eps;
+    protected BigRational eps;
 
 
     /**
      * Precision of the isolating rectangle for a complex root.
      */
-    public static final int PRECISION = 9; //BigDecimal.DEFAULT_PRECISION;
+    public static final int PRECISION = BigDecimal.DEFAULT_PRECISION;
 
 
     /**
@@ -78,10 +83,9 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
         if (m.ring.characteristic().signum() > 0) {
             throw new IllegalArgumentException("characteristic not zero");
         }
-        C e = m.ring.coFac.fromInteger(10L).getRe();
-        e = e.inverse();
-        e = e.power(PRECISION); //Power.positivePower(e, PRECISION);
-        eps = e;
+        BigRational e = new BigRational(10L); //m.ring.coFac.fromInteger(10L).getRe();
+        e = e.power( - PRECISION/2 ); //Power.positivePower(e, PRECISION);
+        eps = e; //BigRational.ONE; // initially
     }
 
 
@@ -93,24 +97,9 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      * @param isField indicator if m is prime.
      */
     public ComplexAlgebraicRing(GenPolynomial<Complex<C>> m, Rectangle<C> root, boolean isField) {
-        algebraic = new AlgebraicNumberRing<Complex<C>>(m, isField);
-        this.root = root;
-        engine = new ComplexRootsSturm<C>(m.ring.coFac);
-        if (m.ring.characteristic().signum() > 0) {
-            throw new IllegalArgumentException("characteristic not zero");
-        }
-        C e = m.ring.coFac.fromInteger(10L).getRe();
-        e = e.inverse();
-        e = e.power(PRECISION); //Power.positivePower(e, PRECISION);
-        eps = e;
+        this(m, root);
+        setField(isField);
     }
-
-
-    /*
-     * Get the module part.
-     * @return modul. public GenPolynomial<C> getModul() { return
-     *         algebraic.modul; }
-     */
 
 
     /**
@@ -120,6 +109,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      */
     public synchronized void setRoot(Rectangle<C> v) {
         // assert v is contained in root
+        assert root.contains(v) : "root contains v";
         this.root = v;
     }
 
@@ -137,7 +127,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      * Get epsilon.
      * @return epsilon.
      */
-    public synchronized C getEps() {
+    public synchronized BigRational getEps() {
         return this.eps;
     }
 
@@ -147,7 +137,7 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      * @param e epsilon.
      */
     public synchronized void setEps(C e) {
-        this.eps = e;
+        setEps(e.getRational());
     }
 
 
@@ -156,7 +146,31 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      * @param e epsilon.
      */
     public synchronized void setEps(BigRational e) {
-        this.eps = algebraic.ring.coFac.parse(e.toString()).getRe();
+        this.eps = e; //algebraic.ring.coFac.parse(e.toString()).getRe();
+    }
+
+
+    /**
+     * Refine root.
+     */
+    public synchronized void refineRoot() {
+	    refineRoot(eps);
+    }
+
+
+    /**
+     * Refine root.
+     * @param e epsilon.
+     */
+    public synchronized void refineRoot(BigRational e) {
+        try {
+            root = engine.complexRootRefinement(root, algebraic.modul, e);
+        } catch (InvalidBoundaryException e1) {
+            logger.warn("new eps not set: " + e);
+            //e1.printStackTrace();
+            return; // ignore new eps
+        }
+        this.eps = e; 
     }
 
 
@@ -257,6 +271,15 @@ implements RingFactory<ComplexAlgebraicNumber<C>> {
      */
     public boolean isField() {
         return algebraic.isField();
+    }
+
+
+    /**
+     * Assert that this ring is a field.
+     * @param isField true if this ring is a field, else false.
+     */
+    public void setField(boolean isField) {
+        algebraic.setField(isField);
     }
 
 

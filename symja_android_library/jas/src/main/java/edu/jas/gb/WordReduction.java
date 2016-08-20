@@ -172,6 +172,6 @@ public interface WordReduction<C extends RingElem<C>> extends Serializable {
      * @return nf(Pp,Ap), the right normal form of Ap wrt. Pp.
      */
     public GenWordPolynomial<C> rightNormalform(List<GenWordPolynomial<C>> rrow, 
-		List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
+                List<GenWordPolynomial<C>> Pp, GenWordPolynomial<C> Ap);
 
 }

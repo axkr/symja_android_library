@@ -36,10 +36,7 @@ public final class BigDecimal implements GcdRingElem<BigDecimal>, RingFactory<Bi
     private final static Random random = new Random();
 
 
-    //public static final int DEFAULT_PRECISION = 50;
-    //public static final MathContext DEFAULT_CONTEXT = new MathContext(DEFAULT_PRECISION);
-
-    public static final MathContext DEFAULT_CONTEXT = MathContext.DECIMAL128;
+    public static final MathContext DEFAULT_CONTEXT = MathContext.DECIMAL64; //32; //64; //128;
 
 
     public static final int DEFAULT_PRECISION = DEFAULT_CONTEXT.getPrecision();

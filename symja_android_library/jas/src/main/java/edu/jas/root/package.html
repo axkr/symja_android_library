@@ -14,6 +14,12 @@
   isolating and refining intervals of real roots and complex roots of univariate polynomials.
 </p>
 <p>
+  Method <code>algebraicRoots()</code> from class <code>RootFactory</code>
+  computes both the real and complex algebraic roots of a univariate polynomial.
+  Method <code>decimalRoots()</code> computes isolating intervals (or rectangles) for the roots 
+  and then uses a numerical algorithm to get a decimal approximation of the roots.
+</p>
+<p>
   For the computation of real roots the main interface is <code>RealRoots</code> 
   and main implementing class is <code>RealRootsSturm</code>.
   The implementation follows in part 
@@ -24,7 +30,8 @@
   with factory class <code>RealAlgebraicRing</code> based on <code>AlgebraicNumberRing</code>.
   They implement real algebraic numbers, which are algebraic numbers plus an  
   isolating interval for a real root of the generator.
-  <code>RealRootsSturm</code> can be applied to polynomials with real algebraic numbers.
+  <code>RealRootsSturm</code> can be applied to polynomials with real algebraic
+  numbers as coefficients.
 </p>
 <p>
   For the computation of complex roots the main interface is <code>ComplexRoots</code> 
@@ -44,7 +51,7 @@
 <p>
 <!-- Created: Sat Mar 21 20:20:15 CET 2009 -->
 <!-- hhmts start -->
-Last modified: Sun Dec 20 22:33:25 CET 2009
+Last modified: Wed Aug 17 23:32:35 CEST 2016
 <!-- hhmts end -->
 </p>
 <p>$Id$ 

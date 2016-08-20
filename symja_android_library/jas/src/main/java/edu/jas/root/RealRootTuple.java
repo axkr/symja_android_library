@@ -6,16 +6,13 @@ package edu.jas.root;
 
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
-import edu.jas.structure.ElemFactory;
-import edu.jas.structure.RingElem;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.RingFactory;
 
 
 /**
@@ -37,7 +34,7 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
      * @param t list of roots.
      */
     public RealRootTuple(List<RealAlgebraicNumber<C>> t) {
-        if ( t == null ) {
+        if (t == null) {
             throw new IllegalArgumentException("null tuple not allowed");
         }
         tuple = t;
@@ -63,7 +60,7 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
         StringBuffer sb = new StringBuffer("[");
         boolean first = true;
         for (RealAlgebraicNumber<C> r : tuple) {
-            if ( first ) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(",");
@@ -74,53 +71,58 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
     }
 
 
-    /*
+    /**
      * Contains a point.
-     * @param c point.
-     * @return true if c is contained in this rectangle, else false.
-     public boolean contains(Complex<C> c) {
-     Complex<C> ll = getSW();
-     Complex<C> ur = getSW();
-     return c.getRe().compareTo(ll.getRe()) < 0 ||
-     c.getIm().compareTo(ll.getIm()) < 0 || 
-     c.getRe().compareTo(ur.getRe()) > 0 || 
-     c.getIm().compareTo(ur.getIm()) > 0;
+     * @param c real root tuple representing a point.
+     * @return true if c is contained in this root tuple, else false.
+     */
+     public boolean contains(RealRootTuple<C> c) {
+         return contains(tuple);
      }
-    */
 
 
-    /*
-     * Random point of recatangle.
-     * @return a random point contained in this rectangle.
-     public Complex<C> randomPoint() {
-     Complex<C> sw = getSW();
-     Complex<C> se = getSE();
-     Complex<C> nw = getNW();
-     Complex<C> r = sw.factory().random(13);
-     C dr = se.getRe().subtract(sw.getRe()); // >= 0
-     C di = nw.getIm().subtract(sw.getIm()); // >= 0
-     C rr = r.getRe().abs();
-     C ri = r.getIm().abs();
-     C one = ((RingFactory<C>)dr.factory()).getONE();
-     if ( !rr.isZERO() ) {
-     if ( rr.compareTo(one) > 0 ) {
-     rr = rr.inverse();
+    /**
+     * Contains a point.
+     * @param c list of real algebraic numbers representing a point.
+     * @return true if c is contained in this root tuple, else false.
+     */
+     public boolean contains(List<RealAlgebraicNumber<C>> c) {
+         int i = 0;
+         for (RealAlgebraicNumber<C> r : tuple) {
+             RealAlgebraicNumber<C> cn = c.get(i++);
+             boolean t = r.ring.root.contains(cn.ring.root);
+             if (!t) {
+                 return false;
+             }
+         }
+         return true;
      }
-     }
-     if ( !ri.isZERO() ) {
-     if ( ri.compareTo(one) > 0 ) {
-     ri = ri.inverse();
-     }
-     }
-     // 0 <= rr, ri <= 1
-     rr = rr.multiply(dr);
-     ri = ri.multiply(di);
-     Complex<C> rp = new Complex<C>(sw.factory(),rr,ri);
-     //System.out.println("rp = " + rp);
-     rp = sw.sum(rp);
-     return rp;
-     }
-    */
+
+
+    /**
+     * Random point of real root tuple.
+     * @return a random point contained in this real root tuple.
+     */
+    public List<C> randomPoint() {
+        List<C> tp = new ArrayList<C>(tuple.size());
+        for (RealAlgebraicNumber<C> r : tuple) {
+            C rp = r.ring.root.randomPoint();
+            tp.add(rp);
+        }
+        return tp;
+    }
+
+
+    /**
+     * Refine root isolating intervals.
+     * @param eps desired interval length.
+     */
+    public void refineRoot(BigRational eps) {
+        for (RealAlgebraicNumber<C> r : tuple) {
+            r.ring.refineRoot(eps);
+        }
+        return;
+    }
 
 
     /**
@@ -167,7 +169,7 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
      */
     public List<BigRational> getRational() {
         List<BigRational> center = new ArrayList<BigRational>(tuple.size());
-        for ( RealAlgebraicNumber<C> rr : tuple ) {
+        for (RealAlgebraicNumber<C> rr : tuple) {
             BigRational r = rr.getRational();
             center.add(r);
         }
@@ -181,7 +183,7 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
      */
     public List<BigDecimal> decimalMagnitude() {
         List<BigDecimal> center = new ArrayList<BigDecimal>(tuple.size());
-        for ( RealAlgebraicNumber<C> rr : tuple ) {
+        for (RealAlgebraicNumber<C> rr : tuple) {
             BigDecimal r = rr.decimalMagnitude();
             center.add(r);
         }
@@ -195,10 +197,10 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
      */
     public BigRational rationalLength() {
         BigRational len = new BigRational();
-        for ( RealAlgebraicNumber<C> rr : tuple ) {
+        for (RealAlgebraicNumber<C> rr : tuple) {
             BigRational r = rr.ring.root.rationalLength();
             int s = len.compareTo(r);
-            if ( s < 0 ) {
+            if (s < 0) {
                 len = r;
             }
         }
@@ -212,9 +214,9 @@ public class RealRootTuple<C extends GcdRingElem<C> & Rational> implements Seria
      */
     public int signum() {
         int s = 0;
-        for ( RealAlgebraicNumber<C> rr : tuple ) {
+        for (RealAlgebraicNumber<C> rr : tuple) {
             int rs = rr.signum();
-            if ( rs != 0 ) {
+            if (rs != 0) {
                 s = rs;
             }
         }
